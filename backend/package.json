@@ -1,0 +1,16 @@
+{
+  "name": "backend-placeholder",
+  "version": "1.0.0",
+  "description": "placeholder code for the eventual node REST API",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "prettier": "3.3.3"
+  }
+}
