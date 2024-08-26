@@ -11,7 +11,7 @@ services:
     environment:
       - PG_CONNECTION_STRING=postgres://user:password@db:5432/mydatabase
     ports:
-      - "3000:3000"
+      - "8000:8000"
     depends_on:
       - db
 

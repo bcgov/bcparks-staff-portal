@@ -21,7 +21,7 @@ const server = http.createServer(async (req, res) => {
   res.end(JSON.stringify({ hello: "world", time: new Date(), dbRecords }));
 });
 
-const PORT = 3000;
+const PORT = 8000;
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
