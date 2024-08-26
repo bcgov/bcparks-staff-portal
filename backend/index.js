@@ -8,6 +8,13 @@ if (!process.env.PG_CONNECTION_STRING) {
 const db = pgp()(process.env.PG_CONNECTION_STRING);
 
 const server = http.createServer(async (req, res) => {
+  if (req.url !== "/") {
+    res.writeHead(404);
+    res.end();
+    return;
+  }
+  console.log("Request received", new Date());
+
   const dbRecords = await db.any("SELECT * FROM example_table");
 
   res.writeHead(200, { "Content-Type": "application/json" });
