@@ -12,5 +12,8 @@
   "license": "ISC",
   "devDependencies": {
     "prettier": "3.3.3"
+  },
+  "dependencies": {
+    "pg-promise": "^11.9.1"
   }
 }

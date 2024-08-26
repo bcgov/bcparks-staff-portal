@@ -9,7 +9,7 @@ services:
   backend:
     image: bcparks-staff-portal-backend:latest
     environment:
-      - DATABASE_URL=postgres://user:password@db:5432/mydatabase
+      - PG_CONNECTION_STRING=postgres://user:password@db:5432/mydatabase
     ports:
       - "3000:3000"
     depends_on:
