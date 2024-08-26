@@ -1,0 +1,15 @@
+# Use the official Node.js image as a base
+FROM node:20.17
+
+WORKDIR /usr/src/app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+COPY . .
+
+EXPOSE 3000
+
+# Command to run the application
+CMD ["npm", "run", "start"]
