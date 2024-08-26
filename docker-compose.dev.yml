@@ -2,14 +2,12 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile.prod # TODO: dev
+      dockerfile: Dockerfile.dev
     ports:
-      - "3001:80"
+      - "3000:3000"
     volumes:
       - ./frontend:/app
-    depends_on:
-      - backend
-    # command: npm start # TODO: dev
+      - /app/node_modules
 
   backend:
     build:
@@ -18,9 +16,10 @@ services:
     environment:
       PG_CONNECTION_STRING: postgres://user:password@db:5432/mydatabase
     ports:
-      - "3000:3000"
+      - "3001:3000"
     volumes:
       - ./backend:/app
+      - /app/node_modules
     depends_on:
       - db
 
