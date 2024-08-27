@@ -6,8 +6,8 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
+      - .:/app:cached
+    command: sleep infinity
 
   backend:
     build:
@@ -18,8 +18,8 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - .:/app:cached
+    command: sleep infinity
     depends_on:
       - db
 
