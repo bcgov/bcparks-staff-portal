@@ -1,5 +1,8 @@
 FROM mcr.microsoft.com/devcontainers/javascript-node:20
 
+# Everything below gets ignored by devcontainer.json,
+# but can still be used by docker-compose
+
 WORKDIR /app
 
 # Install dependencies
