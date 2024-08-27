@@ -7,7 +7,7 @@ services:
       - "3000:3000"
     volumes:
       - .:/app:cached
-    command: sleep infinity
+    command: sleep infinity # Keep the container running
 
   backend:
     build:
@@ -19,7 +19,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/app:cached
-    command: sleep infinity
+    command: sleep infinity # Keep the container running
     depends_on:
       - db
 
