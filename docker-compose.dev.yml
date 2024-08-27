@@ -1,3 +1,5 @@
+# VSCode devcontainer configuration
+
 services:
   frontend:
     build:
@@ -8,6 +10,9 @@ services:
     volumes:
       - .:/app:cached
     command: sleep infinity # Keep the container running
+    # Just send SIGKILL to stop the container (no grace period for `sleep infinity`)
+    # https://docs.docker.com/compose/faq/#why-do-my-services-take-10-seconds-to-recreate-or-stop
+    stop_signal: SIGKILL
 
   backend:
     build:
@@ -22,6 +27,9 @@ services:
     command: sleep infinity # Keep the container running
     depends_on:
       - db
+    # Just send SIGKILL to stop the container (no grace period for `sleep infinity`)
+    # https://docs.docker.com/compose/faq/#why-do-my-services-take-10-seconds-to-recreate-or-stop
+    stop_signal: SIGKILL
 
   db:
     image: postgres:15
