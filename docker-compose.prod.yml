@@ -1,13 +1,17 @@
 services:
   frontend:
-    image: bcparks-staff-portal-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
     ports:
       - "80:80"
     depends_on:
       - backend
 
   backend:
-    image: bcparks-staff-portal-backend:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
     environment:
       - PG_CONNECTION_STRING=postgres://user:password@db:5432/mydatabase
     ports:
