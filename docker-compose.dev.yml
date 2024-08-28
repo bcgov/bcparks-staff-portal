@@ -13,7 +13,6 @@ services:
     # Just send SIGKILL to stop the container (no grace period for `sleep infinity`)
     # https://docs.docker.com/compose/faq/#why-do-my-services-take-10-seconds-to-recreate-or-stop
     stop_signal: SIGKILL
-    # @TODO: fix git problem
 
   backend:
     build:
