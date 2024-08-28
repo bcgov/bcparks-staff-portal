@@ -22,5 +22,8 @@
   },
   "dependencies": {
     "pg-promise": "^11.9.1"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }

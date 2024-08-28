@@ -1,4 +1,4 @@
-import http from "http";
+import http from "node:http";
 import pgp from "pg-promise";
 
 if (!process.env.PG_CONNECTION_STRING) {
@@ -22,6 +22,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 const PORT = 8000;
+
 server.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });

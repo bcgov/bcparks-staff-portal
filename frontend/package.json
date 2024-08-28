@@ -43,5 +43,8 @@
     "eslint-plugin-react": "^7.35.0",
     "globals": "^15.9.0",
     "prettier": "3.3.3"
+  },
+  "engines": {
+    "node": "20.x"
   }
 }

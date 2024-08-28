@@ -6,7 +6,11 @@ import eslintConfigESLintFormatting from "eslint-config-eslint/formatting";
 
 export default [
   { files: ["**/*.{js,mjs,cjs,jsx}"] },
-  { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
+  {
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
   ...eslintConfigESLint,
   eslintConfigESLintFormatting,
   pluginReact.configs.flat.recommended,
