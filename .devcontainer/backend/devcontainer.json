@@ -38,6 +38,16 @@
   // Configure tool-specific properties.
   "customizations": {
     "vscode": {
+      "settings": {
+        // Use ZSH as default shell
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        }
+      },
+
       "extensions": [
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
