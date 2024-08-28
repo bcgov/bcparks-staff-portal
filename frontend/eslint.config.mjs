@@ -14,6 +14,7 @@ export default [
   ...eslintConfigESLint,
   eslintConfigESLintFormatting,
   pluginReact.configs.flat.recommended,
+  pluginReact.configs.flat["jsx-runtime"],
   eslintConfigPrettier,
 
   // override rules
@@ -21,6 +22,9 @@ export default [
     rules: {
       // Allow console.warn and console.error
       "no-console": ["warn", { allow: ["warn", "error"] }],
+
+      // Allow functions without JSDocs (ie React components)
+      "jsdoc/require-jsdoc": "off",
     },
   },
 ];
