@@ -1,5 +1,5 @@
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import autoLoad from "@fastify/autoload";
 import fastify from "fastify";
 
@@ -12,11 +12,11 @@ const app = fastify({
 });
 
 // auto-load routes defined in the `routes/` directory
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+const filename = fileURLToPath(import.meta.url);
+const path = dirname(filename);
 
 app.register(autoLoad, {
-  dir: join(__dirname, "routes"),
+  dir: join(path, "routes"),
 });
 
 // Run the server!
