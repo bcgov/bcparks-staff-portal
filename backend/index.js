@@ -1,28 +1,21 @@
-import http from "node:http";
 import pgp from "pg-promise";
+import fastify from "fastify";
 
 if (!process.env.PG_CONNECTION_STRING) {
   throw new Error("Required environment variables are not set");
 }
 
-const db = pgp()(process.env.PG_CONNECTION_STRING);
-
-const server = http.createServer(async (req, res) => {
-  if (req.url !== "/") {
-    res.writeHead(404);
-    res.end();
-    return;
-  }
-  console.log("Request received", new Date());
-
-  const dbRecords = await db.any("SELECT * FROM example_table");
-
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ hello: "world", time: new Date(), dbRecords }));
+const app = fastify({
+  logger: true,
 });
 
-const PORT = 8000;
+// Declare a route
+app.get("/", async (request, reply) => ({ hello: "world" }));
 
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// Run the server!
+try {
+  await app.listen({ host: "0.0.0.0", port: 8000 });
+} catch (err) {
+  app.log.error(err);
+  throw new Error("Server failed to start");
+}
