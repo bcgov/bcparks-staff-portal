@@ -1,4 +1,6 @@
-import pgp from "pg-promise";
+import { dirname, join } from "path";
+import { fileURLToPath } from "url";
+import autoLoad from "@fastify/autoload";
 import fastify from "fastify";
 
 if (!process.env.PG_CONNECTION_STRING) {
@@ -9,8 +11,13 @@ const app = fastify({
   logger: true,
 });
 
-// Declare a route
-app.get("/", async (request, reply) => ({ hello: "world" }));
+// auto-load routes defined in the `routes/` directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+app.register(autoLoad, {
+  dir: join(__dirname, "routes"),
+});
 
 // Run the server!
 try {

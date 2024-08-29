@@ -21,6 +21,7 @@
     "prettier": "3.3.3"
   },
   "dependencies": {
+    "@fastify/autoload": "^5.10.0",
     "fastify": "^4.28.1",
     "pg-promise": "^11.9.1"
   },

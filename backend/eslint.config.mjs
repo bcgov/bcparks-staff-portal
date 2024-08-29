@@ -6,6 +6,7 @@ import eslintConfigESLintFormatting from "eslint-config-eslint/formatting";
 
 export default [
   { files: ["**/*.{js,mjs,cjs,jsx}"] },
+  { env: "node" },
   {
     languageOptions: {
       globals: { ...globals.browser, ...globals.node },
@@ -19,8 +20,8 @@ export default [
   // override rules
   {
     rules: {
-      // Allow console.warn and console.error
-      "no-console": ["warn", { allow: ["warn", "error"] }],
+      // Allow console logging
+      "no-console": "off",
     },
   },
 ];
