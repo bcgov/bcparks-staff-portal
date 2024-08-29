@@ -19,7 +19,7 @@ app.register(autoLoad, {
   dir: join(path, "routes"),
 });
 
-// Run the server!
+// start the server
 try {
   await app.listen({ host: "0.0.0.0", port: 8000 });
 } catch (err) {
