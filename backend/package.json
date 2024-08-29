@@ -1,0 +1,29 @@
+{
+  "name": "backend-placeholder",
+  "version": "1.0.0",
+  "description": "placeholder code for the eventual node REST API",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon index.js",
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "eslint": "^9.9.1",
+    "eslint-config-eslint": "^11.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.35.0",
+    "globals": "^15.9.0",
+    "nodemon": "^3.1.4",
+    "prettier": "3.3.3"
+  },
+  "dependencies": {
+    "pg-promise": "^11.9.1"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}

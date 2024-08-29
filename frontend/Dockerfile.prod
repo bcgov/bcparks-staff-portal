@@ -1,0 +1,23 @@
+# Stage 1: Build the React app in a Node 20 environment
+FROM node:20.17 AS build
+
+WORKDIR /app
+
+# Install dependencies
+COPY package*.json ./
+RUN npm install --production
+
+# Copy the rest of the files and build the app
+COPY . .
+RUN npm run build
+
+# Stage 2: Serve the React app with Nginx
+FROM nginx:1.27-alpine
+
+# Copy the built app to Nginx's default public directory
+COPY --from=build /app/build /usr/share/nginx/html
+
+EXPOSE 80
+
+# Start Nginx when the container launches
+CMD ["nginx", "-g", "daemon off;"]
