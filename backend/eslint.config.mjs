@@ -25,6 +25,9 @@ export default [
 
       // Allow functions without JSDocs (ie server routes)
       "jsdoc/require-jsdoc": "off",
+
+      // Disable "new-cap" rule for Express Router, etc.
+      "new-cap": "off",
     },
   },
 ];

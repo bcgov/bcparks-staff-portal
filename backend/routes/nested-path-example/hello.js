@@ -1,4 +1,10 @@
+import { Router } from "express";
+
+const router = Router();
+
 // http://0.0.0.0:8000/nested-path-example/
-export default async function (fastify) {
-  fastify.get("/", async () => ({ msg: "hello world!" }));
-}
+router.get("/", (req, res) => {
+  res.json({ msg: "hello world!" });
+});
+
+export default router;

@@ -1,8 +1,15 @@
-export default async function (fastify) {
-  // http://localhost:8000/
-  // http://0.0.0.0:8000/
-  fastify.get("/", async () => ({ msg: "this is the homepage" }));
+import { Router } from "express";
 
-  // http://0.0.0.0:8000/time
-  fastify.get("/time", async () => ({ time: new Date() }));
-}
+const router = Router();
+
+// http://0.0.0.0:8000/
+router.get("/", (req, res) => {
+  res.json({ msg: "this is the home route" });
+});
+
+// http://0.0.0.0:8000/time
+router.get("/time", (req, res) => {
+  res.json({ time: new Date() });
+});
+
+export default router;
