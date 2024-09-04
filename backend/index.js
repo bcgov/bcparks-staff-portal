@@ -1,28 +1,57 @@
-import http from "node:http";
-import pgp from "pg-promise";
+import express from "express";
+import cors from "cors";
+import morgan from "morgan";
+import compression from "compression";
+
+import homeRoutes from "./routes/home.js";
+import helloRoute from "./routes/nested-path-example/hello.js";
+import ormTestRoutes from "./routes/nested-path-example/orm.js";
 
 if (!process.env.PG_CONNECTION_STRING) {
   throw new Error("Required environment variables are not set");
 }
 
-const db = pgp()(process.env.PG_CONNECTION_STRING);
+const app = express();
 
-const server = http.createServer(async (req, res) => {
-  if (req.url !== "/") {
-    res.writeHead(404);
-    res.end();
-    return;
-  }
-  console.log("Request received", new Date());
+// enable CORS for all routes
+app.use(cors());
 
-  const dbRecords = await db.any("SELECT * FROM example_table");
+// JSON parsing middleware
+app.use(express.json());
 
-  res.writeHead(200, { "Content-Type": "application/json" });
-  res.end(JSON.stringify({ hello: "world", time: new Date(), dbRecords }));
+// Logging middleware
+app.use(morgan("dev"));
+
+// Compression middleware
+app.use(compression());
+
+// add routes
+app.use("/", homeRoutes); // example stuff for testing
+app.use("/nested-path-example/", helloRoute); // example stuff for testing
+app.use("/nested-path-example/", ormTestRoutes); // example stuff for testing
+
+// error handling middleware
+// eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+
+  const status = err.status || 500;
+  const message = err.message || "Internal Server Error";
+
+  res.status(status).json({
+    error: {
+      message,
+      status,
+    },
+  });
 });
 
-const PORT = 8000;
-
-server.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+// start the server
+try {
+  app.listen(8000, "0.0.0.0", () => {
+    console.log("Server listening at http://localhost:8000");
+  });
+} catch (err) {
+  console.error("Error starting server", err);
+  throw new Error("Server failed to start");
+}
