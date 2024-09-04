@@ -1,8 +1,34 @@
-# React + Vite
+# Frontend - React application
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This directory contains the code for the frontend Staff Portal web application, built with React.
 
-Currently, two official plugins are available:
+## Project structure
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- `src/`: Directory containing the main application code.
+- `public/`: Directory for static assets.
+- `vite.config.js`: Configuration file for Vite, the build tool.
+
+## Setup
+
+### Development environment
+
+This workspace is set up to open in a Dev Container. All necessary dependencies, including Node.js, are pre-installed in the container. See the [README in root workspace](../README.md) for details about the Dev Containers workflow.
+
+### Installation
+
+Inside the dev container, install the project dependencies with `npm`:
+
+```sh
+npm install
+```
+
+### Running the app
+
+#### Development
+
+The React app runs in development mode with `Vite`. The app will automatically update with Hot Module Replacement when you save a file.
+
+```sh
+# Start the dev server with HMR
+npm run dev
+```
