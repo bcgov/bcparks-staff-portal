@@ -9,6 +9,8 @@ const router = Router();
 // http://0.0.0.0:8000/nested-path-example/orm-2
 router.get(
   "/orm-:rowId",
+  // wrap in asyncHandler so thrown errors are caught and handled by Express
+  // without needing to manually try/catch and call next(err)
   asyncHandler(async (req, res) => {
     const { rowId } = req.params;
 
