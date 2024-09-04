@@ -1,5 +1,5 @@
 {
-  "name": "backend-placeholder",
+  "name": "staff-portal-backend",
   "version": "1.0.0",
   "description": "placeholder code for the eventual node REST API",
   "main": "index.js",
