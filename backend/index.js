@@ -31,6 +31,7 @@ app.use("/nested-path-example/", helloRoute); // example stuff for testing
 app.use("/nested-path-example/", ormTestRoutes); // example stuff for testing
 
 // error handling middleware
+// eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware
 app.use((err, req, res, next) => {
   console.error("Test", err.stack);
 
