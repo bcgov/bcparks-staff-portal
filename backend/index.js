@@ -30,12 +30,27 @@ app.use("/", homeRoutes); // example stuff for testing
 app.use("/nested-path-example/", helloRoute); // example stuff for testing
 app.use("/nested-path-example/", ormTestRoutes); // example stuff for testing
 
+// error handling middleware
+app.use((err, req, res, next) => {
+  console.error("Test", err.stack);
+
+  const status = err.status || 500;
+  const message = err.message || "Internal Server Error";
+
+  res.status(status).json({
+    error: {
+      message,
+      status,
+    },
+  });
+});
+
 // start the server
 try {
   app.listen(8000, "0.0.0.0", () => {
     console.log("Server listening at http://localhost:8000");
   });
 } catch (err) {
-  app.log.error(err);
+  console.error("Error starting server", err);
   throw new Error("Server failed to start");
 }
