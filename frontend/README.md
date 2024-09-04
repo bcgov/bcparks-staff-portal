@@ -32,3 +32,7 @@ The React app runs in development mode with `Vite`. The app will automatically u
 # Start the dev server with HMR
 npm run dev
 ```
+
+### Code formatting
+
+The Dev Container is configured with Prettier and ESLint. Code will be automatically formatted on save.
