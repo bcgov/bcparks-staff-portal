@@ -48,8 +48,20 @@ export default function MainLayout() {
           <Outlet />
         </main>
 
-        <footer className="bcparks-global container-fluid bg-primary-nav">
-          test
+        <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">
+          <div className="quick-links d-flex flex-column flex-md-row me-md-4">
+            <span>Quick links:</span>
+
+            <a href="https://attendance-revenue.bcparks.ca/">
+              Attendance and Revenue
+            </a>
+
+            <a href="https://reserve-admin.bcparks.ca/dayuse/">
+              Day-use Pass admin
+            </a>
+
+            <a href="mailto:TODO_POPULATE_THIS@example.com">Contact us</a>
+          </div>
         </footer>
       </div>
     </>
