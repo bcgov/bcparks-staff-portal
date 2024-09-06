@@ -1,0 +1,47 @@
+name: Run Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test-strapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - run: cd src/cms
+
+      - name: Set env
+        run: |
+          echo "APP_KEYS=unit,test,keys" >> $GITHUB_ENV
+          echo "JWT_SECRET=secret" >> $GITHUB_ENV
+          echo "API_TOKEN_SALT=salt" >> $GITHUB_ENV
+          echo "ADMIN_JWT_SECRET=secret" >> $GITHUB_ENV
+
+      - run: npm install
+        working-directory: src/cms
+
+      - run: npm run test
+        working-directory: src/cms
+  test-gatsby:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - run: npm install
+        working-directory: src/gatsby
+
+      - run: npm run test
+        working-directory: src/gatsby
