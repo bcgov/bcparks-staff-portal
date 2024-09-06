@@ -6,7 +6,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     ports:
-      - "3000:3000"
+      - "8101:8101"
     volumes:
       - .:/app:cached
     command: sleep infinity # Keep the container running
@@ -21,7 +21,7 @@ services:
     environment:
       PG_CONNECTION_STRING: postgres://user:password@db:5432/mydatabase
     ports:
-      - "8000:8000"
+      - "8100:8100"
     volumes:
       - .:/app:cached
     command: sleep infinity # Keep the container running
@@ -38,7 +38,7 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - "8102:5432"
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql

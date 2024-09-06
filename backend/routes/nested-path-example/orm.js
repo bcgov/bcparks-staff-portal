@@ -5,8 +5,8 @@ import asyncHandler from "express-async-handler";
 const router = Router();
 
 // example with Sequelize ORM
-// http://0.0.0.0:8000/nested-path-example/orm-1
-// http://0.0.0.0:8000/nested-path-example/orm-2
+// http://0.0.0.0:8100/nested-path-example/orm-1
+// http://0.0.0.0:8100/nested-path-example/orm-2
 router.get(
   "/orm-:rowId",
   // wrap in asyncHandler so thrown errors are caught and handled by Express
