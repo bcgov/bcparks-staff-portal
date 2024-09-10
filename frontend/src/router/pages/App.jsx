@@ -12,7 +12,7 @@ function App() {
     try {
       setLoading(true);
       const response = await axios.get(
-        `http://0.0.0.0:8000/nested-path-example/orm-${rowId}`,
+        `http://0.0.0.0:8100/nested-path-example/orm-${rowId}`,
       );
 
       setApiData(response.data);

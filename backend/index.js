@@ -48,8 +48,8 @@ app.use((err, req, res, next) => {
 
 // start the server
 try {
-  app.listen(8000, "0.0.0.0", () => {
-    console.log("Server listening at http://localhost:8000");
+  app.listen(8100, "0.0.0.0", () => {
+    console.log("Server listening at http://localhost:8100");
   });
 } catch (err) {
   console.error("Error starting server", err);
