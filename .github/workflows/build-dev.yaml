@@ -21,13 +21,13 @@ jobs:
       - name: Set env
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-          echo "REGISTRY_IMAGE=${{ secrets.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ env.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+          echo "REGISTRY_IMAGE=${{ vars.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ vars.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
 
       - name: Login to OpenShift Container Repository
         uses: docker/login-action@v3
         with:
-          registry: ${{env.OPENSHIFT_EXTERNAL_REPOSITORY}}
-          username: ${{env.OPENSHIFT_SA_USERNAME}}
+          registry: ${{vars.OPENSHIFT_EXTERNAL_REPOSITORY}}
+          username: ${{vars.OPENSHIFT_SA_USERNAME}}
           password: ${{secrets.OPENSHIFT_SA_PASSWORD}}
 
       - name: Setup Node
