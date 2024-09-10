@@ -3,7 +3,7 @@ name: Build dev on branch push
 on:
   push:
     branches:
-      - guthub-actions
+      - main
 
 concurrency:
   group: build-dev-${{ github.ref_name }}
