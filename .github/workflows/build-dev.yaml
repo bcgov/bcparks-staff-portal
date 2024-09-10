@@ -13,7 +13,7 @@ jobs:
   build-frontend:
     runs-on: ubuntu-latest
     env:
-      IMAGE_NAME: frontend-${{ github.ref_name }}
+      IMAGE_NAME: react-frontend
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -21,13 +21,13 @@ jobs:
       - name: Set env
         run: |
           echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
-          echo "REGISTRY_IMAGE=${{ secrets.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ secrets.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+          echo "REGISTRY_IMAGE=${{ secrets.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ env.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
 
       - name: Login to OpenShift Container Repository
         uses: docker/login-action@v3
         with:
-          registry: ${{secrets.OPENSHIFT_EXTERNAL_REPOSITORY}}
-          username: ${{secrets.OPENSHIFT_SA_USERNAME}}
+          registry: ${{env.OPENSHIFT_EXTERNAL_REPOSITORY}}
+          username: ${{env.OPENSHIFT_SA_USERNAME}}
           password: ${{secrets.OPENSHIFT_SA_PASSWORD}}
 
       - name: Setup Node
