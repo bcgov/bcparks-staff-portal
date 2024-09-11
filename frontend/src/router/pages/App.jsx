@@ -3,23 +3,37 @@ import reactLogo from "../../assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.scss";
 import axios from "axios";
+import { useAuth } from "react-oidc-context";
 
 function App() {
   const [apiData, setApiData] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const auth = useAuth();
+
   async function getData(rowId) {
     try {
+      const token = auth?.user?.access_token;
+
       setLoading(true);
       const response = await axios.get(
         `http://0.0.0.0:8100/nested-path-example/orm-${rowId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
-      setApiData(response.data);
+      setApiData(response.data.specificRow.name);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching data:", error);
       setApiData(null);
+
+      if (error.status === 401) {
+        setApiData("error: not logged in");
+      }
     } finally {
       setLoading(false);
     }
@@ -42,10 +56,10 @@ function App() {
         </button>
         &nbsp;
         <button disabled={loading} onClick={() => getData(2)}>
-          Get DB row 2
+          🔒 Get DB row 2
         </button>
         {loading && <p>Loading...</p>}
-        {!loading && apiData && <p>{apiData.specificRow.name}</p>}
+        {!loading && apiData && <p>{apiData}</p>}
         {!loading && !apiData && <p>Click a button to test the API</p>}
       </div>
       <p className="read-the-docs">

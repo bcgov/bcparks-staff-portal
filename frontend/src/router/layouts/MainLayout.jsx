@@ -34,10 +34,10 @@ export default function MainLayout() {
                 <Link to={`/`}>Home page</Link>
               </li>
               <li>
-                <Link to={`/foo/A`}>Foo page A</Link>
+                <Link to={`/foo/A`}>🔒 Foo page A</Link>
               </li>
               <li>
-                <Link to={`/foo/B`}>Foo page B</Link>
+                <Link to={`/foo/B`}>🔒 Foo page B</Link>
               </li>
               <li>
                 <Link to={`/bar`}>Bar page</Link>

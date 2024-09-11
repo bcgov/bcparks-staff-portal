@@ -22,6 +22,14 @@ Inside the dev container, install the project dependencies with `npm`:
 npm install
 ```
 
+Create a `.env` file to set environment variables for local development.
+
+```sh
+# Create ".env.local"
+# and refer to .env.example and the shared vault in your password manager
+cp .env.example .env.local
+```
+
 ### Running the server
 
 #### Development
