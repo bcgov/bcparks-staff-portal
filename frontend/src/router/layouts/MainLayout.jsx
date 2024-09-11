@@ -60,7 +60,7 @@ export default function MainLayout() {
               Day-use Pass admin
             </a>
 
-            <a href="mailto:TODO_POPULATE_THIS@example.com">Contact us</a>
+            <a href="mailto:parksweb@gov.bc.ca">Contact us</a>
           </div>
         </footer>
       </div>
