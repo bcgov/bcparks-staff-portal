@@ -1,0 +1,17 @@
+:80 {
+    try_files {path} /
+
+    header /assets/* Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
+
+    encode gzip
+
+    root * /usr/share/caddy
+
+    file_server
+
+    log {
+        output stdout
+        format console
+    }
+}
+

@@ -43,7 +43,7 @@ jobs:
 
       - name: Docker build
         run: |
-          docker build -t ${{ env.IMAGE_NAME }} .
+          docker build -t ${{ env.IMAGE_NAME }} -f Dockerfile.prod .
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:latest
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
         working-directory: frontend

@@ -11,13 +11,18 @@ RUN npm install --production
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve the React app with Nginx
-FROM nginx:1.27-alpine
+# Stage 2: Serve the React app with Caddy
+FROM caddy:2.8.4-alpine
 
-# Copy the built app to Nginx's default public directory
-COPY --from=build /app/build /usr/share/nginx/html
+ENV APP_ROOT=/usr/share/caddy
+ENV XDG_CONFIG_HOME=/tmp/config
 
-EXPOSE 80
+ADD Caddyfile /etc/caddy/Caddyfile
 
-# Start Nginx when the container launches
-CMD ["nginx", "-g", "daemon off;"]
+# Copy the built app to Caddy's default public directory
+COPY --from=build /app/dist $APP_ROOT/
+
+# Fix permissions
+RUN chgrp -R 0 $APP_ROOT && chmod -R g=u $APP_ROOT
+
+USER 1001
