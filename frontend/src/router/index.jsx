@@ -29,6 +29,6 @@ const RouterConfig = createBrowserRouter([
     path: "/hello",
     element: <div>Hello world!</div>,
   },
-]);
+], { basename: "/v2/" });
 
 export default RouterConfig;

@@ -4,11 +4,11 @@ FROM node:20.17 AS build
 WORKDIR /app
 
 # Install dependencies
-COPY package*.json ./
+COPY frontend/package*.json ./
 RUN npm install --production
 
 # Copy the rest of the files and build the app
-COPY . .
+COPY ./frontend .
 RUN npm run build
 
 # Stage 2: Serve the React app with Caddy
@@ -17,12 +17,19 @@ FROM caddy:2.8.4-alpine
 ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
 
-ADD Caddyfile /etc/caddy/Caddyfile
+ADD frontend/Caddyfile /etc/caddy/Caddyfile
 
-# Copy the built app to Caddy's default public directory
-COPY --from=build /app/dist $APP_ROOT/
+# Copy the built app to Caddy's vs subdirectoy
+COPY --from=build /app/dist $APP_ROOT/v2
+
+# Add the built legacy app to Caddy's default public directory
+ADD frontend-legacy/entrypoint.sh /entrypoint.sh
+ADD frontend-legacy/build $APP_ROOT
 
 # Fix permissions
+RUN chmod +x /entrypoint.sh
 RUN chgrp -R 0 $APP_ROOT && chmod -R g=u $APP_ROOT
 
 USER 1001
+
+# CMD ["/entrypoint.sh"]

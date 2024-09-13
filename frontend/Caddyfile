@@ -1,13 +1,21 @@
 :80 {
-    try_files {path} /
+    file_server
 
-    header /assets/* Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
+    redir /v2 /v2/
+    handle_path /v2/* {
+        try_files /v2/{path} /v2/index.html
+    }
+
+    handle {
+        try_files {path} /index.html
+    }
+
+    header /v2/* Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
+    header /v2/assets/* -Cache-Control
 
     encode gzip
 
     root * /usr/share/caddy
-
-    file_server
 
     log {
         output stdout

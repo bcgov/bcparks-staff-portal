@@ -33,20 +33,19 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "18"
 
       - name: npm build
         run: |
           npm install
           npm run build
-        working-directory: frontend
+        working-directory: frontend-legacy
 
       - name: Docker build
         run: |
-          docker build -t ${{ env.IMAGE_NAME }} -f Dockerfile.prod .
+          docker build -t ${{ env.IMAGE_NAME }} -f frontend/Dockerfile.prod .
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:latest
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
-        working-directory: frontend
 
       - name: Push Docker image
         run: docker push --all-tags ${{ env.REGISTRY_IMAGE }}
