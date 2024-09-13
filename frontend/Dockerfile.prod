@@ -32,6 +32,6 @@ RUN chgrp -R 0 $APP_ROOT && chmod -R g=u $APP_ROOT
 
 EXPOSE 3000
 
-USER 1001
+# USER 1001
 
 CMD ["/entrypoint.sh"]
