@@ -3,6 +3,8 @@ FROM node:20.17
 
 WORKDIR /app
 
+ENV NODE_ENV=production
+
 # Install dependencies
 COPY package*.json ./
 RUN npm install --production

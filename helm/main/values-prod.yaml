@@ -1,0 +1,11 @@
+cluster:
+  ssoAuthUrl: https://loginproxy.gov.bc.ca/auth
+
+images:
+  frontend:
+    tag: prod
+
+frontend:
+  env:
+    externalUrl: https://staff.bcparks.ca
+    publicUrl: https://bcparks.ca

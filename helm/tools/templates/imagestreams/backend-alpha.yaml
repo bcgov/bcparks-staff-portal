@@ -1,9 +1,9 @@
 kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
-  name: express-backend
+  name: backend-alpha
   annotations:
-    description: BC Parks Staff Portal (backend)
+    description: BC Parks Staff Portal (backend alpha)
   labels:
     release: {{ .Release.Name }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"

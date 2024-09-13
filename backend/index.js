@@ -1,7 +1,9 @@
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
+import helmet from "helmet";
 import compression from "compression";
+import RateLimit from "express-rate-limit";
 
 import homeRoutes from "./routes/home.js";
 import helloRoute from "./routes/nested-path-example/hello.js";
@@ -22,8 +24,19 @@ app.use(express.json());
 // Logging middleware
 app.use(morgan("dev"));
 
+// Helmet security middleware
+app.use(helmet());
+
 // Compression middleware
 app.use(compression());
+
+// Rate limiter (100 requests per minute)
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100,
+});
+
+app.use(limiter);
 
 // add routes
 app.use("/", homeRoutes); // example stuff for testing

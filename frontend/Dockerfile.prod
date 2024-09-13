@@ -12,7 +12,7 @@ COPY ./frontend .
 RUN npm run build
 
 # Stage 2: Serve the React app with Caddy
-FROM caddy:2.8.4-alpine
+FROM caddy:2.8-alpine
 
 ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
@@ -32,4 +32,4 @@ RUN chgrp -R 0 $APP_ROOT && chmod -R g=u $APP_ROOT
 
 USER 1001
 
-# CMD ["/entrypoint.sh"]
+CMD ["/entrypoint.sh"]

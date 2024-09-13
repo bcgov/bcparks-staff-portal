@@ -46,7 +46,7 @@ spec:
                   value: '10'
                 - name: IMAGESTRAMS_TO_CLEAN
                   value: >-
-                    react-frontend-legacy,react-frontend,express-backend
+                    frontend-main,frontend-alpha,backend-main,backend-alpha
               resources: {}
               terminationMessagePath: /dev/termination-log
               terminationMessagePolicy: File

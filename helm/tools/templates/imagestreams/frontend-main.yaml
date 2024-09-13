@@ -1,7 +1,7 @@
 kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
-  name: react-frontend
+  name: frontend-main
   annotations:
     description: BC Parks Staff Portal (frontend)
   labels:

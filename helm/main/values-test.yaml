@@ -1,0 +1,11 @@
+cluster:
+  ssoAuthUrl: https://test.loginproxy.gov.bc.ca/auth
+
+images:
+  frontend:
+    tag: test
+
+frontend:
+  env:
+    externalUrl: https://test-staff.bcparks.ca
+    publicUrl: https://test.bcparks.ca
