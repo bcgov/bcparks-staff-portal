@@ -34,4 +34,4 @@ EXPOSE 3000
 
 # USER 1001
 
-CMD ["/entrypoint.sh"]
+# CMD ["/entrypoint.sh"]
