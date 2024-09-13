@@ -1,16 +1,16 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: {{ .Release.Name }}-{{ .Values.admin.componentName }}
+  name: {{ .Release.Name }}-{{ .Values.frontend.componentName }}
   labels:
-    component: {{ .Values.admin.componentName }}
+    component: {{ .Values.frontend.componentName }}
     release: {{ .Release.Name }}
     chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
     heritage: {{ .Release.Service }}
 spec:
   selector:
     matchLabels:
-      component: {{ .Values.admin.componentName }}
+      component: {{ .Values.frontend.componentName }}
       release: {{ .Release.Name }}
   replicas: 1
   strategy:
@@ -36,17 +36,7 @@ spec:
               protocol: TCP
           env:
             - name: REACT_APP_CMS_BASE_URL
-            {{- if .Values.cms.env.externalUrl }}
-              value: {{ .Values.cms.env.externalUrl }}
-            {{- else }}
-              value: {{ template "bcparks_cms_external_url" . }}
-            {{- end }}
-            - name: REACT_APP_FRONTEND_BASE_URL
-            {{- if .Values.cms.env.externalUrl }}
-              value: {{ .Values.frontend.env.externalUrl }}
-            {{- else }}
-              value: {{ template "bcparks_frontend_external_url" . }}
-            {{- end }}
+              value: {{ .Values.backend.env.externalUrl }}
             - name: REACT_APP_KEYCLOAK_AUTH_URL
               value: {{ .Values.cluster.ssoAuthUrl }}
             - name: REACT_APP_KEYCLOAK_REALM

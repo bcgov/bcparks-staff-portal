@@ -9,3 +9,7 @@ frontend:
   env:
     externalUrl: https://staff.bcparks.ca
     publicUrl: https://bcparks.ca
+
+backend:
+  env:
+    externalUrl: https://staff-backend.bcparks.ca

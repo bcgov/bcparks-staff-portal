@@ -10,8 +10,7 @@ Install `helm` CLI from https://helm.sh/docs/intro/install/
 
 The `install` command can be used when deploying to a namespace for the very first time.
 
-Run the following commands from the `helm/main` directory.
-
+Run the following commands from the `helm/deployment` directory.
 
 ### Dev
 
@@ -24,7 +23,6 @@ Run the following commands from the `helm/main` directory.
 ### Prod
 
 `helm -n a7dd13-prod install main . -f values-prod.yaml`
-
 
 ## Upgrading
 
@@ -43,7 +41,6 @@ Run the following commands from the `helm/main` directory.
 ### Prod
 
 `helm -n a7dd13-prod upgrade main . -f values-prod.yaml`
-
 
 ## Teardown
 

@@ -5,3 +5,7 @@ frontend:
   env:
     externalUrl: https://dev-staff.bcparks.ca
     publicUrl: https://dev.bcparks.ca
+
+backend:
+  env:
+    externalUrl: https://dev-staff-backend.bcparks.ca
