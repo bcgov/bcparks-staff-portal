@@ -19,12 +19,12 @@ ENV XDG_CONFIG_HOME=/tmp/config
 
 ADD frontend/Caddyfile /etc/caddy/Caddyfile
 
+# Add the built legacy app to Caddy's default public directory
+COPY frontend-legacy/entrypoint.sh /entrypoint.sh
+COPY frontend-legacy/build $APP_ROOT/
+
 # Copy the built app to Caddy's vs subdirectoy
 COPY --from=build /app/dist $APP_ROOT/v2
-
-# Add the built legacy app to Caddy's default public directory
-ADD frontend-legacy/entrypoint.sh /entrypoint.sh
-ADD frontend-legacy/build $APP_ROOT
 
 # Fix permissions
 #R UN chmod +x /entrypoint.sh
