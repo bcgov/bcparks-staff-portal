@@ -12,7 +12,7 @@ COPY ./frontend .
 RUN npm run build
 
 # Stage 2: Serve the React app with Caddy
-FROM caddy:2.6.2-alpine
+FROM caddy:2.6.3-alpine
 
 ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
