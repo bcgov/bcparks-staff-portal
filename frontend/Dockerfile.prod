@@ -27,11 +27,13 @@ COPY frontend-legacy/build $APP_ROOT/
 COPY --from=build /app/dist $APP_ROOT/v2
 
 # Fix permissions
-#R UN chmod +x /entrypoint.sh
-# RUN chgrp -R 0 $APP_ROOT && chmod -R g=u $APP_ROOT
+RUN chmod +x /entrypoint.sh
+RUN chgrp -R 0 $APP_ROOT && chmod -R g=u $APP_ROOT
 
-# EXPOSE 3000
+EXPOSE 3000
 
-# USER 1001
+USER 1001
 
 # CMD ["/entrypoint.sh"]
+
+ENTRYPOINT [ "sleep", "infinity" ]
