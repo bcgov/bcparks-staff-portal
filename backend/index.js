@@ -39,9 +39,11 @@ const limiter = RateLimit({
 
 app.use(limiter);
 
-// add routes
+// Public routes
 app.use("/", homeRoutes); // example stuff for testing
-app.use("/nested-path-example/", ormTestRoutes); // example stuff for testing
+
+// Routes with JWT check middleware
+app.use("/nested-path-example/", checkJwt, ormTestRoutes); // example stuff for testing
 app.use("/nested-path-example/", checkJwt, helloRoute); // example stuff for testing
 
 // error handling middleware

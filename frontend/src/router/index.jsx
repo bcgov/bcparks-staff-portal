@@ -4,11 +4,13 @@ import MainLayout from "./layouts/MainLayout";
 import ErrorPage from "./pages/Error";
 import Foo from "./pages/Foo";
 import Bar from "./pages/Bar";
+import ProtectedRoute from "./ProtectedRoute";
 
 const RouterConfig = createBrowserRouter([
   {
     path: "/",
-    element: <MainLayout />,
+    // Protect the entire app with the AuthProvider
+    element: <ProtectedRoute component={MainLayout} />,
     errorElement: <ErrorPage />,
     children: [
       {
