@@ -25,16 +25,12 @@ function AuthTest() {
     return (
       <div>
         Hello, {auth.user?.profile.name} <br />
-        You&rsquo;re logged in and your keycloak ID is {
-          auth.user?.profile.sub
-        }{" "}
-        <br />
-        <button onClick={() => void auth.signoutRedirect()}>Log out</button>
+        You&rsquo;re logged in and your keycloak ID is {auth.user?.profile.sub}
       </div>
     );
   }
 
-  return <button onClick={() => void auth.signinRedirect()}>Log in</button>;
+  return <div>Protected content</div>;
 }
 
 export default function FooPage() {

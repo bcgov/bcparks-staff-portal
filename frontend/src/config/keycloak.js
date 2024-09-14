@@ -7,9 +7,7 @@ export default {
   // Automatically renew the access token before it expires
   automaticSilentRenew: true,
 
-  onSigninCallback(user) {
-    console.log("onSigninCallback", user);
-
+  onSigninCallback() {
     window.history.replaceState({}, document.title, window.location.pathname);
   },
 };
