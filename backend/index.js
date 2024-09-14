@@ -4,6 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import RateLimit from "express-rate-limit";
+import checkJwt from "./middleware/checkJwt.js";
 
 import homeRoutes from "./routes/home.js";
 import helloRoute from "./routes/nested-path-example/hello.js";
@@ -40,8 +41,8 @@ app.use(limiter);
 
 // add routes
 app.use("/", homeRoutes); // example stuff for testing
-app.use("/nested-path-example/", helloRoute); // example stuff for testing
 app.use("/nested-path-example/", ormTestRoutes); // example stuff for testing
+app.use("/nested-path-example/", checkJwt, helloRoute); // example stuff for testing
 
 // error handling middleware
 // eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware

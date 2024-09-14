@@ -47,4 +47,10 @@ export default [
     },
   },
   eslintConfigPrettier,
+  {
+    // ignore camel case rule for config files
+    // modules expect key names we can't change
+    rules: { camelcase: "off" },
+    files: ["src/config/*.js"],
+  },
 ];
