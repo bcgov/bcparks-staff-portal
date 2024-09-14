@@ -12,12 +12,16 @@ COPY ./frontend .
 RUN npm run build
 
 # Stage 2: Serve the React app with Caddy
-FROM caddy:2.6.3-alpine
+# anything newer than 2.6.2 causes an OpenShift error
+FROM caddy:2.6.2-alpine 
+
+RUN apk add --no-cache ca-certificates
 
 ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
 
 ADD frontend/Caddyfile /etc/caddy/Caddyfile
+RUN caddy fmt --overwrite /etc/caddy/Caddyfile
 
 # Add the built legacy app to Caddy's default public directory
 COPY frontend-legacy/entrypoint.sh /entrypoint.sh
@@ -34,6 +38,4 @@ EXPOSE 3000
 
 USER 1001
 
-# CMD ["/entrypoint.sh"]
-
-ENTRYPOINT [ "sleep", "infinity" ]
+CMD ["/entrypoint.sh"]
