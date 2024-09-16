@@ -5,5 +5,5 @@
  * @returns {string|undefined} - environment variable value
  */
 export default function getEnv(name) {
-  return window[name] || import.meta.env?.[name];
+  return window.envVars[name] || import.meta.env[name];
 }
