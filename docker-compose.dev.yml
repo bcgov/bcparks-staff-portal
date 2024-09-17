@@ -19,7 +19,11 @@ services:
       context: ./backend
       dockerfile: Dockerfile.dev
     environment:
-      PG_CONNECTION_STRING: postgres://user:password@db:5432/mydatabase
+      POSTGRES_SERVER: db
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: mydatabase
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
     ports:
       - "8100:8100"
     volumes:

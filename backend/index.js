@@ -10,7 +10,7 @@ import homeRoutes from "./routes/home.js";
 import helloRoute from "./routes/nested-path-example/hello.js";
 import ormTestRoutes from "./routes/nested-path-example/orm.js";
 
-if (!process.env.PG_CONNECTION_STRING) {
+if (!process.env.POSTGRES_SERVER) {
   throw new Error("Required environment variables are not set");
 }
 

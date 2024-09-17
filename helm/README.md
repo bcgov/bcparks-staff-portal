@@ -6,6 +6,8 @@ This is a quick overview on how to create deployments using the `bcparks-staff-p
 
 Install `helm` CLI from https://helm.sh/docs/intro/install/
 
+Install [crunchy-postgres](crunchy-postgres/README.md)
+
 ## Deploying
 
 The `install` command can be used when deploying to a namespace for the very first time.

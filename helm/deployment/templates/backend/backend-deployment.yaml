@@ -1,0 +1,66 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.backend.componentName }}
+  labels:
+    component: {{ .Values.backend.componentName }}
+    release: {{ .Release.Name }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    heritage: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      component: {{ .Values.backend.componentName }}
+      release: {{ .Release.Name }}
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        component: {{ .Values.backend.componentName }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: {{ .Values.backend.componentName }}
+          resources:
+{{ toYaml .Values.backend.resources | indent 12 }}
+          image: {{ .Values.images.backend.name }}:{{ .Values.images.backend.tag }}
+          imagePullPolicy: {{ .Values.backend.imagePullPolicy }}
+          ports:
+            - name: {{ .Values.backend.service.portName }}
+              containerPort: {{ .Values.backend.service.port }}
+              protocol: TCP
+          env:
+            - name: NODE_ENV
+              value: {{ .Values.backend.env.nodeEnv }}
+            - name: POSTGRES_SERVER
+              value: {{ .Values.backend.env.dbServer }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.backend.env.dbPort | quote }}
+            - name: POSTGRES_DB
+              value: {{ template "bcparks_postgres_db" . }}
+          envFrom:
+            - secretRef:
+                name: {{ template "bcparks_postgres_secret" . }}
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.backend.service.portName }}
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 20
+          startupProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.backend.service.portName }}
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 20

@@ -1,2 +1,5 @@
 instances:
   replicas: 1
+
+pgmonitor:
+  namespace: a7dd13 #The high level namespace of your project without the -tools -dev, etc part.
