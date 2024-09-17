@@ -11,7 +11,7 @@ RUN npm install --production
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 8100
 
 # Command to run the application
 CMD ["npm", "run", "start"]

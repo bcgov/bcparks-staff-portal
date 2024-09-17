@@ -52,7 +52,7 @@ backend:
 
   service:
     portName: express
-    port: 8000
+    port: 8100
 
   hpa:
     minReplicas: 1
