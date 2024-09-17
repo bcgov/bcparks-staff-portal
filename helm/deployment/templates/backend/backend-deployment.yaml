@@ -42,10 +42,10 @@ spec:
             - name: POSTGRES_PORT
               value: {{ .Values.backend.env.dbPort | quote }}
             - name: POSTGRES_DB
-              value: {{ template "bcparks_postgres_db" . }}
+              value: staff-portal-{{ .Release.Name }}
           envFrom:
             - secretRef:
-                name: {{ template "bcparks_postgres_secret" . }}
+                name: {{ .Release.Name }}-postgres-secret
           readinessProbe:
             httpGet:
               path: /

@@ -72,14 +72,3 @@ Gets the suffix of the namespace. (-dev, -tools, ... )
 https://{{ .Release.Name }}-{{ .Values.frontend.componentName }}-{{ .Release.Namespace }}.{{ .Values.cluster.domain }}
 {{- end -}}
 
-{{ define "bcparks_postgres_fullname" -}}
-{{ .Release.Name }}-postgres
-{{- end -}}
-
-{{ define "bcparks_postgres_secret" -}}
-{{ .Release.Name }}-postgres-secret
-{{- end -}}
-
-{{ define "bcparks_postgres_db" -}}
-staff-portal-{{ .Release.Name }}
-{{- end -}}
