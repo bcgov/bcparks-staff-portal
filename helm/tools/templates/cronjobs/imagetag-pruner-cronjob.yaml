@@ -38,7 +38,7 @@ spec:
                 - name: OPENSHIFT_AUTH_TOKEN
                   valueFrom:
                     secretKeyRef:
-                      name: pipeline-token-ngfsp
+                      name: pipeline-token-zgnzc
                       key: token
                 - name: DRY_RUN
                   value: 'false'
@@ -59,4 +59,3 @@ spec:
           schedulerName: default-scheduler
   successfulJobsHistoryLimit: 5
   failedJobsHistoryLimit: 2
-
