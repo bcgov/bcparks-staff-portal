@@ -18,7 +18,8 @@ frontend:
   componentName: frontend
 
   env:
-    externalUrl: https://main-frontend-a7dd13-dev.apps.silver.devops.gov.bc.ca/
+    externalUrl: https://dev-staff.bcparks.ca
+    statHolidayApi: https://canada-holidays.ca/api/v1/provinces/BC
 
   resources:
     limits:
@@ -58,3 +59,7 @@ backend:
     minReplicas: 1
     maxReplicas: 2
     cpuUtilizationThreshold: 125
+
+cms:
+  env:
+    externalUrl: https://dev-cms.bcparks.ca

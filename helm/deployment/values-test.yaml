@@ -13,3 +13,7 @@ frontend:
 backend:
   env:
     externalUrl: https://test-staff-backend.bcparks.ca
+
+cms:
+  env:
+    externalUrl: https://test-cms.bcparks.ca

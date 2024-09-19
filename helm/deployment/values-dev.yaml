@@ -3,9 +3,13 @@ cluster:
 
 frontend:
   env:
-    externalUrl: https://main-frontend-a7dd13-dev.apps.silver.devops.gov.bc.ca
+    externalUrl: https://dev-staff.bcparks.ca
     publicUrl: https://dev.bcparks.ca
 
 backend:
   env:
-    externalUrl: https://main-backend-a7dd13-dev.apps.silver.devops.gov.bc.ca
+    externalUrl: https://dev-staff-api.bcparks.ca
+
+cms:
+  env:
+    externalUrl: https://dev-cms.bcparks.ca
