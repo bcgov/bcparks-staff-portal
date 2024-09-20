@@ -2,11 +2,12 @@ cluster:
   ssoAuthUrl: https://dev.loginproxy.gov.bc.ca/auth
   cmsUrl: https://alpha-dev-cms.bcparks.ca
 
-images:
   frontend:
-    tag: alpha-dev
+    name: image-registry.openshift-image-registry.svc:5000/a7dd13-tools/frontend-alpha
+    tag: latest
   backend:
-    tag: alpha-dev
+    name: image-registry.openshift-image-registry.svc:5000/a7dd13-tools/backend-alpha
+    tag: latest
 
 frontend:
   env:

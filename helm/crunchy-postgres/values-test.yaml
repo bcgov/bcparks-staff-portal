@@ -1,5 +1,7 @@
 instances:
   replicas: 1
+  limits:
+    memory: 384Mi
 
 proxy:
   pgBouncer:
