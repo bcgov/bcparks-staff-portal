@@ -1,0 +1,28 @@
+name: Deploy Alpha to Alpha-Test
+
+on: workflow_dispatch
+
+env:
+  TOOLS_NAMESPACE: ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-tools
+  ENVIRONMENT: test
+  NAMESPACE: ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-test
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_SERVICE_TOKEN }}
+
+      - name: Tag Test images
+        run: |
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag frontend-alpha:latest frontend-alpha:${{ env.ENVIRONMENT }}
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag backend-alpha:latest backend-alpha:${{ env.ENVIRONMENT }}
+
+      - name: Trigger new rollout
+        run: |
+          oc -n ${{ env.NAMESPACE }} rollout restart deployment alpha-frontend
+          oc -n ${{ env.NAMESPACE }} rollout restart deployment alpha-backend

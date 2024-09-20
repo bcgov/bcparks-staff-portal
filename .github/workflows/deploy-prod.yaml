@@ -1,0 +1,47 @@
+name: Deploy to Prod
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseTag:
+        description: "Tag of version to be promoted to PROD"
+        required: true
+
+env:
+  TOOLS_NAMESPACE: ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-tools
+  ENVIRONMENT: prod
+  NAMESPACE: ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Attempt to checkout tag
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.inputs.releaseTag }}
+
+      - name: Tag not found
+        if: ${{ failure() }}
+        run: |
+          echo "::error::Git Tag not found, please double check input"
+          exit 1
+
+      - name: Set env
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
+      - name: Login OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_SERVICE_TOKEN }}
+
+      - name: Tag Prod images
+        run: |
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag frontend-main:${{ github.event.inputs.releaseTag }} frontend-main:${{ env.ENVIRONMENT }}
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag backend-main:${{ github.event.inputs.releaseTag }} backend-main:${{ env.ENVIRONMENT }}
+
+      - name: Trigger new rollout
+        run: |
+          oc -n ${{ env.NAMESPACE }} rollout restart deployment main-frontend
+          oc -n ${{ env.NAMESPACE }} rollout restart deployment main-backend
