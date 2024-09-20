@@ -1,8 +1,11 @@
 cluster:
   ssoAuthUrl: https://loginproxy.gov.bc.ca/auth
+  cmsUrl: https://cms.bcparks.ca
 
 images:
   frontend:
+    tag: prod
+  backend:
     tag: prod
 
 frontend:
@@ -12,8 +15,4 @@ frontend:
 
 backend:
   env:
-    externalUrl: https://staff-backend.bcparks.ca
-
-cms:
-  env:
-    externalUrl: https://cms.bcparks.ca
+    externalUrl: https://staff-api.bcparks.ca

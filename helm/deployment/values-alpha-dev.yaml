@@ -1,0 +1,18 @@
+cluster:
+  ssoAuthUrl: https://dev.loginproxy.gov.bc.ca/auth
+  cmsUrl: https://alpha-dev-cms.bcparks.ca
+
+images:
+  frontend:
+    tag: alpha-dev
+  backend:
+    tag: alpha-dev
+
+frontend:
+  env:
+    externalUrl: https://alpha-dev-staff.bcparks.ca
+    publicUrl: https://alpha-dev.bcparks.ca
+
+backend:
+  env:
+    externalUrl: https://alpha-dev-staff-api.bcparks.ca

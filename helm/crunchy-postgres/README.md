@@ -1,4 +1,4 @@
-# Crunch Postgres Installation
+# Crunchy Postgres Installation
 
 ## Prerequesites
 
@@ -48,7 +48,7 @@ spec:
 
 ### Alpha-dev / Alpha-test
 
-Alpha environments share the crunch-postgres infrastructure with the main environments.
+Alpha environments share the crunchy-postgres infrastructure with the main environments.
 
 ## Upgrading
 

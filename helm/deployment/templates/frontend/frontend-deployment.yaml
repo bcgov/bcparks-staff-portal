@@ -36,7 +36,7 @@ spec:
               protocol: TCP
           env:
             - name: REACT_APP_CMS_BASE_URL
-              value: {{ .Values.cms.env.externalUrl }}
+              value: {{ .Values.cluster.cmsUrl }}
             - name: REACT_APP_FRONTEND_BASE_URL
               value: {{ .Values.frontend.env.externalUrl }}
             - name: REACT_APP_KEYCLOAK_AUTH_URL

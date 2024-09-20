@@ -1,0 +1,18 @@
+cluster:
+  ssoAuthUrl: https://test.loginproxy.gov.bc.ca/auth
+  cmsUrl: https://alpha-test-cms.bcparks.ca
+
+images:
+  frontend:
+    tag: alpha-test
+  backend:
+    tag: alpha-test
+
+frontend:
+  env:
+    externalUrl: https://alpha-test-staff.bcparks.ca
+    publicUrl: https://alpha-test.bcparks.ca
+
+backend:
+  env:
+    externalUrl: https://alpha-test-staff-api.bcparks.ca

@@ -28,11 +28,11 @@ Run the following commands from the `helm/deployment` directory.
 
 ### Alpha-Dev
 
-`helm -n a7dd13-dev install main . -f values-alpha-dev.yaml`
+`helm -n a7dd13-dev install alpha . -f values-alpha-dev.yaml`
 
 ### Alpha-Test
 
-`helm -n a7dd13-test install main . -f values-alpha-test.yaml`
+`helm -n a7dd13-test install alpha . -f values-alpha-test.yaml`
 
 ### Create the Postgres user and db
 
@@ -79,11 +79,11 @@ Run the following commands from the `helm/main` directory.
 
 ### Alpha-Dev
 
-`helm -n a7dd13-dev upgrade main . -f values-alpha-dev.yaml`
+`helm -n a7dd13-dev upgrade alpha . -f values-alpha-dev.yaml`
 
 ### Alpha-Test
 
-`helm -n a7dd13-test upgrade main . -f values-alpha-test.yaml`
+`helm -n a7dd13-test upgrade alpha . -f values-alpha-test.yaml`
 
 ## Teardown
 

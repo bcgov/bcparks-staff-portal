@@ -1,5 +1,6 @@
 cluster:
   ssoAuthUrl: https://dev.loginproxy.gov.bc.ca/auth
+  cmsUrl: https://dev-cms.bcparks.ca
 
 frontend:
   env:
@@ -10,6 +11,3 @@ backend:
   env:
     externalUrl: https://dev-staff-api.bcparks.ca
 
-cms:
-  env:
-    externalUrl: https://dev-cms.bcparks.ca
