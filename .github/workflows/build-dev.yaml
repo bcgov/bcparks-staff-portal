@@ -84,16 +84,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-frontend, build-backend]
     steps:
-      - name: Git Checkout
-        uses: actions/checkout@v3
-
       - name: Login OpenShift
         uses: redhat-actions/oc-login@v1
         with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
+          openshift_server_url: ${{ vars.OPENSHIFT_SERVER_URL }}
           openshift_token: ${{ secrets.OPENSHIFT_SERVICE_TOKEN }}
 
       - name: Trigger rollout
         run: |
-          oc -n ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-frontend
-          oc -n ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-backend
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-frontend
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-backend

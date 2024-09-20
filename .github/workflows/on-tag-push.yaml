@@ -26,8 +26,10 @@ jobs:
 
       - name: Tag images
         run: |
-          oc -n ${{ env.TOOLS_NAMESPACE }} tag react-frontend:${{ env.SHORT_SHA }} react-frontend:${{ env.RELEASE_VERSION }}
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag frontend-main:${{ env.SHORT_SHA }} frontend-main:${{ env.RELEASE_VERSION }}
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag backend-main:${{ env.SHORT_SHA }} backend-main:${{ env.RELEASE_VERSION }}
 
       - name: Delete images tags with commit hash
         run: |
-          oc -n ${{ env.TOOLS_NAMESPACE }} tag -d react-frontend:${{ env.SHORT_SHA }}
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag -d frontend-main:${{ env.SHORT_SHA }}
+          oc -n ${{ env.TOOLS_NAMESPACE }} tag -d backend-main:${{ env.SHORT_SHA }}

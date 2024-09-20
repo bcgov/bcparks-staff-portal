@@ -3,9 +3,9 @@ name: Deploy Alpha to Alpha-Test
 on: workflow_dispatch
 
 env:
-  TOOLS_NAMESPACE: ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-tools
+  TOOLS_NAMESPACE: ${{ vars.OPENSHIFT_LICENSE_PLATE }}-tools
   ENVIRONMENT: test
-  NAMESPACE: ${{ secrets.OPENSHIFT_LICENSE_PLATE }}-test
+  NAMESPACE: ${{ vars.OPENSHIFT_LICENSE_PLATE }}-test
 
 jobs:
   deploy:
@@ -14,10 +14,10 @@ jobs:
       - name: Login OpenShift
         uses: redhat-actions/oc-login@v1
         with:
-          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER_URL }}
+          openshift_server_url: ${{ vars.OPENSHIFT_SERVER_URL }}
           openshift_token: ${{ secrets.OPENSHIFT_SERVICE_TOKEN }}
 
-      - name: Tag Test images
+      - name: Tag Alpha Test images
         run: |
           oc -n ${{ env.TOOLS_NAMESPACE }} tag frontend-alpha:latest frontend-alpha:${{ env.ENVIRONMENT }}
           oc -n ${{ env.TOOLS_NAMESPACE }} tag backend-alpha:latest backend-alpha:${{ env.ENVIRONMENT }}
