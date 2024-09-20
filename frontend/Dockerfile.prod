@@ -19,6 +19,7 @@ RUN apk add --no-cache ca-certificates
 
 ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
+ENV V2_APP_ROOT=$APP_ROOT/v2
 
 ADD frontend/Caddyfile /etc/caddy/Caddyfile
 RUN caddy fmt --overwrite /etc/caddy/Caddyfile
@@ -28,7 +29,7 @@ COPY frontend-legacy/entrypoint.sh /entrypoint.sh
 COPY frontend-legacy/build $APP_ROOT/
 
 # Copy the built app to Caddy's vs subdirectoy
-COPY --from=build /app/dist $APP_ROOT/v2
+COPY --from=build /app/dist $V2_APP_ROOT
 
 # Fix permissions
 RUN chmod +x /entrypoint.sh

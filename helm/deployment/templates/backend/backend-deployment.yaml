@@ -43,6 +43,10 @@ spec:
               value: {{ .Values.backend.env.dbPort | quote }}
             - name: POSTGRES_DB
               value: staff-portal-{{ .Release.Name }}
+            - name: JWKS_URI
+              value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}/protocol/openid-connect/certs
+            - name: JWT_ISSUER
+              value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-postgres-secret

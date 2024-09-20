@@ -49,6 +49,14 @@ spec:
               value: {{ .Values.frontend.env.statHolidayApi }}
             - name: REACT_APP_PUBLIC_URL
               value: {{ .Values.frontend.env.publicUrl }}
+            - name: VITE_OIDC_AUTHORITY
+              value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}
+            - name: VITE_OIDC_CLIENT_ID
+              value: {{ .Values.cluster.ssoClientId }}
+            - name: VITE_OIDC_LOGIN_REDIRECT
+              value: {{ .Values.frontend.env.externalUrl }}/v2
+            - name: VITE_OIDC_LOGOUT_REDIRECT
+              value: {{ .Values.frontend.env.externalUrl }}
           readinessProbe:
             httpGet:
               path: /
