@@ -14,6 +14,14 @@ export default function Home({ page: { setError } }) {
   useEffect(() => {
     if (initialized && keycloak.authenticated) {
       setToDashboard(true);
+    } else {
+      // If the user is logged out,
+      // Remove keycloak tokens from session storage (used by the v2 staff portal).
+      Object.keys(sessionStorage).forEach((key) => {
+        if (key.startsWith("oidc.")) {
+          sessionStorage.removeItem(key);
+        }
+      });
     }
   }, [initialized, keycloak]);
 
