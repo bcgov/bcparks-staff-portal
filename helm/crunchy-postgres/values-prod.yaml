@@ -1,7 +1,11 @@
 instances:
   replicas: 2
+  requests:
+    cpu: 200m
+    memory: 256Mi
   limits:
-    memory: 384Mi
+    cpu: 500m
+    memory: 512Mi
 
 proxy:
   pgBouncer:
