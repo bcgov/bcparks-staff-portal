@@ -1,11 +1,9 @@
 import { useState } from "react";
-import reactLogo from "../../assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.scss";
+import "./ApiTest.scss";
 import axios from "axios";
 import { useAuth } from "react-oidc-context";
 
-function App() {
+function ApiTest() {
   const [apiData, setApiData] = useState(null);
   const [loading, setLoading] = useState(false);
 
@@ -41,18 +39,9 @@ function App() {
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
       <div className="card">
         <button disabled={loading} onClick={() => getData(1)}>
-          Get DB row 1
+          🔒 Get DB row 1
         </button>
         &nbsp;
         <button disabled={loading} onClick={() => getData(2)}>
@@ -62,11 +51,8 @@ function App() {
         {!loading && apiData && <p>{apiData}</p>}
         {!loading && !apiData && <p>Click a button to test the API</p>}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
   );
 }
 
-export default App;
+export default ApiTest;
