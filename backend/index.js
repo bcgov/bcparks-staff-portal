@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
+import RateLimit from "express-rate-limit";
 
 import checkJwt from "./middleware/checkJwt.js";
 import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
@@ -35,6 +36,14 @@ app.use(
 
 // Compression middleware
 app.use(compression());
+
+// Rate limiter (100 requests per minute)
+const limiter = RateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 100,
+});
+
+app.use(limiter);
 
 // Session store middleware (for AdminJS)
 app.use(sessionMiddleware);
