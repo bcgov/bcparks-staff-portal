@@ -26,21 +26,13 @@ export default function MainLayout() {
         </header>
 
         <main className="container">
-          <h1>Router test</h1>
-
           <nav>
             <ul style={{ listStyle: "none" }}>
               <li>
                 <Link to={`/`}>Home page</Link>
               </li>
               <li>
-                <Link to={`/foo/A`}>Foo page A</Link>
-              </li>
-              <li>
-                <Link to={`/foo/B`}>Foo page B</Link>
-              </li>
-              <li>
-                <Link to={`/bar`}>Bar page</Link>
+                <Link to={`/test`}>API test</Link>
               </li>
             </ul>
           </nav>

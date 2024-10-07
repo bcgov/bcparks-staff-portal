@@ -1,0 +1,5 @@
+.card {
+  // using global design token variables
+  padding: var(--layout-padding-medium);
+  box-shadow: var(--surface-shadow-small);
+}
