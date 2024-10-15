@@ -41,6 +41,18 @@ const RouterConfig = createBrowserRouter(
           path: "/park/:parkId/edit/:seasonId/review",
           element: <div>Review changes page</div>,
         },
+
+        // publish
+        {
+          path: "/publish",
+          element: <div>Publish page</div>,
+        },
+
+        // export
+        {
+          path: "/export",
+          element: <div>Export page</div>,
+        },
       ],
     },
   ],
