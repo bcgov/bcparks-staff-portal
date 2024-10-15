@@ -5,3 +5,15 @@
 // Design tokens
 // https://www2.gov.bc.ca/gov/content/digital/design-system/foundations/design-tokens
 @import "@bcgov/design-tokens/css/variables.css";
+
+// Bootstrap overrides
+
+// append search icon: same styles as the "success" state
+.input-search {
+  padding-right: calc(1.5em + 0.75rem);
+  // placeholder bootstrap search icon
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='currentColor' class='bi bi-search' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right calc(0.375em + 0.1875rem) center;
+  background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem);
+}

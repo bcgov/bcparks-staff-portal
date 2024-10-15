@@ -1,5 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 import ApiTest from "./pages/ApiTest";
+import DatesManagement from "./pages/DatesManagement";
 import MainLayout from "./layouts/MainLayout";
 import ErrorPage from "./pages/Error";
 import ProtectedRoute from "./ProtectedRoute";
@@ -15,7 +16,7 @@ const RouterConfig = createBrowserRouter(
         // dates management table / landing page
         {
           path: "/",
-          element: <div>Dates management table page</div>,
+          element: <DatesManagement />,
         },
 
         // API endpoint test page
