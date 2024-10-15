@@ -22,18 +22,25 @@
     "prettier": "3.3.3"
   },
   "dependencies": {
+    "@adminjs/express": "^6.1.0",
+    "@adminjs/sequelize": "^4.1.1",
+    "adminjs": "^7.8.13",
     "compression": "^1.7.4",
+    "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "express-async-handler": "^1.2.0",
+    "express-formidable": "^1.2.0",
     "express-jwt": "^8.4.1",
     "express-rate-limit": "^7.4.0",
+    "express-session": "^1.18.0",
     "helmet": "^7.1.0",
     "jwks-rsa": "^3.1.0",
     "morgan": "^1.10.0",
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "tslib": "^2.7.0"
   },
   "engines": {
     "node": "20.x"
