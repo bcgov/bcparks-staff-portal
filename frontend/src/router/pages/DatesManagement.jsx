@@ -1,9 +1,9 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { useState } from "react";
 
 function DatesManagement() {
   return (
     <div className="page dates-management">
-      <header className="page-header">
+      <header>
         <h1>Dates management</h1>
       </header>
 
@@ -13,18 +13,12 @@ function DatesManagement() {
             Park name
           </label>
 
-          <div className="input-with-append">
-            <input
-              type="text"
-              className="form-control input-search"
-              id="parkName"
-              placeholder="Search by park name"
-            />
-            <FontAwesomeIcon
-              className="append-content"
-              icon="fa-solid fa-magnifying-glass"
-            />
-          </div>
+          <input
+            type="text"
+            className="form-control input-search"
+            id="parkName"
+            placeholder="Search by park name"
+          />
         </div>
 
         <div className="col-lg-3 col-md-6 col-12">
