@@ -48,12 +48,6 @@ const RouterConfig = createBrowserRouter(
           element: <div>Publish page</div>,
         },
 
-        // lock
-        {
-          path: "/lock",
-          element: <div>Lock page</div>,
-        },
-
         // export
         {
           path: "/export",
