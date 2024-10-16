@@ -26,7 +26,10 @@ export default function MainLayout() {
         </header>
 
         <main className="container">
-          <nav>
+          <Outlet />
+
+          {/* Temporary placeholder nav */}
+          <nav className="mt-5">
             <ul style={{ listStyle: "none" }}>
               <li>
                 <Link to={`/`}>Home page</Link>
@@ -36,8 +39,6 @@ export default function MainLayout() {
               </li>
             </ul>
           </nav>
-
-          <Outlet />
         </main>
 
         <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">

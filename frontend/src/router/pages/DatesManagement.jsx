@@ -5,7 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 function DatesManagement() {
   return (
     <div className="page dates-management">
-      <header>
+      <header className="page-header">
         <h1>Dates management</h1>
       </header>
 
