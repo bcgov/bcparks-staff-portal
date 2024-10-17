@@ -12,6 +12,12 @@ header.page-header {
   padding-inline: var(--layout-padding-large);
   padding-block: var(--layout-padding-medium);
   margin-bottom: var(--layout-padding-xlarge);
+
+  &.internal {
+    background: none;
+    padding-inline: 0;
+    border-bottom: 1px solid var(--surface-color-border-default);
+  }
 }
 
 // append search icon appended
@@ -29,4 +35,9 @@ header.page-header {
     top: 0.75rem;
     pointer-events: none;
   }
+}
+
+// custom bootstrap button style: "text"
+.btn-text-primary {
+  --bs-btn-color: var(--theme-primary-blue);
 }
