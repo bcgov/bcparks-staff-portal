@@ -1,6 +1,12 @@
 .sub-area {
   & > h2 {
     margin-bottom: var(--layout-margin-xlarge);
+    display: flex;
+    gap: var(--layout-margin-medium);
+
+    .sub-area-icon {
+      height: 1.25em;
+    }
   }
 }
 
@@ -28,10 +34,10 @@
       align-items: center;
       gap: var(--layout-margin-medium);
       padding: var(--layout-padding-large);
-    }
 
-    > h3 {
-      margin: 0;
+      > h3 {
+        margin: 0;
+      }
     }
 
     .expand-toggle {
