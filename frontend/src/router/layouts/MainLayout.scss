@@ -3,7 +3,11 @@
   flex-direction: column;
   min-height: 100vh;
 
-  & > .container {
+  & > header {
+    border-bottom: 2px solid var(--theme-primary-gold);
+  }
+
+  & > main {
     flex: 1;
   }
 

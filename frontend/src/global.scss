@@ -5,3 +5,28 @@
 // Design tokens
 // https://www2.gov.bc.ca/gov/content/digital/design-system/foundations/design-tokens
 @import "@bcgov/design-tokens/css/variables.css";
+
+// Custom styles
+header.page-header {
+  background-color: var(--surface-color-background-light-blue);
+  padding-inline: var(--layout-padding-large);
+  padding-block: var(--layout-padding-medium);
+  margin-bottom: var(--layout-padding-xlarge);
+}
+
+// append search icon appended
+// same spacing as the "success" state
+.input-with-append {
+  position: relative;
+
+  input {
+    padding-right: calc(1.5em + 0.75rem);
+  }
+
+  .append-content {
+    position: absolute;
+    right: 0.75rem;
+    top: 0.75rem;
+    pointer-events: none;
+  }
+}
