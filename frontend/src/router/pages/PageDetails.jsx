@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import walkInCamping from "../../assets/icons/walk-in-camping.svg";
 
 import "./PageDetails.scss";
 
@@ -14,7 +15,10 @@ function PageDetails() {
       </header>
 
       <section className="sub-area">
-        <h2>[@TODO: ICON] Frontcountry Camping</h2>
+        <h2>
+          <img src={walkInCamping} className="sub-area-icon" /> Frontcountry
+          Camping
+        </h2>
 
         <div className="season">
           <div className="details">
