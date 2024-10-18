@@ -42,6 +42,15 @@ header.page-header {
   --bs-btn-color: var(--theme-primary-blue);
 }
 
+// custom bootstrap button style: "link"
+.text-link {
+  color: var(--typography-color-link);
+
+  &:hover {
+    color: var(--bs-link-hover-color);
+  }
+}
+
 // custom bootstrap alert style: "contact" call-to-action
 .alert-cta-contact {
   background-color: var(--theme-blue-20);

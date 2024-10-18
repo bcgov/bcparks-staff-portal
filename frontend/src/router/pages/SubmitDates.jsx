@@ -94,7 +94,7 @@ function SubmitDates() {
             </div>
 
             <p>
-              <button className="btn btn-text-primary">
+              <button className="btn btn-text-primary text-link">
                 + Add more operating dates
               </button>
             </p>
@@ -146,7 +146,7 @@ function SubmitDates() {
             </div>
 
             <p>
-              <button className="btn btn-text-primary">
+              <button className="btn btn-text-primary text-link">
                 + Add more reservation dates
               </button>
             </p>
