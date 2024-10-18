@@ -1,0 +1,42 @@
+.page.submit-dates {
+  h2 {
+    margin-bottom: var(--layout-margin-xlarge);
+    display: flex;
+    gap: var(--layout-margin-medium);
+
+    .sub-area-icon {
+      height: 1.25em;
+    }
+  }
+
+  .sub-area {
+    margin-bottom: var(--layout-margin-large);
+    padding-block: var(--layout-padding-medium);
+
+    // alternating background color
+    &:nth-child(odd) {
+      background-color: var(--surface-color-background-light-gray);
+    }
+
+    h3 {
+      margin-bottom: var(--layout-margin-large);
+    }
+
+    .dates-row {
+      margin-bottom: var(--layout-margin-large);
+
+      .form-control {
+        margin-bottom: var(--layout-margin-medium);
+
+        // "lg" breakpoint
+        @media (min-width: 992px) {
+          margin-bottom: 0;
+        }
+      }
+    }
+  }
+
+  .controls {
+    gap: var(--layout-margin-medium);
+  }
+}
