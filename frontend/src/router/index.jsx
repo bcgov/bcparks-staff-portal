@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import ApiTest from "./pages/ApiTest";
 import DatesManagement from "./pages/DatesManagement";
 import PageDetails from "./pages/PageDetails";
+import SubmitDates from "./pages/SubmitDates";
 import MainLayout from "./layouts/MainLayout";
 import ErrorPage from "./pages/Error";
 import ProtectedRoute from "./ProtectedRoute";
@@ -35,7 +36,7 @@ const RouterConfig = createBrowserRouter(
         // edit/submit dates for a season
         {
           path: "/park/:parkId/edit/:seasonId",
-          element: <div>Edit/submit dates for a season</div>,
+          element: <SubmitDates />,
         },
 
         // review changes
