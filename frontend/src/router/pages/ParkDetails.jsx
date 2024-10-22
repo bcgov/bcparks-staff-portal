@@ -2,14 +2,14 @@ import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import walkInCamping from "../../assets/icons/walk-in-camping.svg";
 
-import "./PageDetails.scss";
+import "./ParkDetails.scss";
 
-function PageDetails() {
+function ParkDetails() {
   // @TODO: fetch park name + details
   const { parkId } = useParams();
 
   return (
-    <div className="page page-details">
+    <div className="page park-details">
       <header className="page-header internal">
         <h1>Elk Falls Park #{parkId}</h1>
       </header>
@@ -128,4 +128,4 @@ function PageDetails() {
   );
 }
 
-export default PageDetails;
+export default ParkDetails;

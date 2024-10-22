@@ -3,7 +3,7 @@ import ApiTest from "./pages/ApiTest";
 import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
-import PageDetails from "./pages/PageDetails";
+import ParkDetails from "./pages/ParkDetails";
 import SubmitDates from "./pages/SubmitDates";
 import MainLayout from "./layouts/MainLayout";
 import LandingPageTabs from "./layouts/LandingPageTabs";
@@ -50,7 +50,7 @@ const RouterConfig = createBrowserRouter(
         // view park details
         {
           path: "/park/:parkId",
-          element: <PageDetails />,
+          element: <ParkDetails />,
         },
 
         // edit/submit dates for a season
