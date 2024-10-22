@@ -50,6 +50,8 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-postgres-secret
+            - secretRef:
+                name: {{ .Release.Name }}-adminjs-secret
           readinessProbe:
             httpGet:
               path: /

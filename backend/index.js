@@ -4,13 +4,14 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import RateLimit from "express-rate-limit";
-import checkJwt from "./middleware/checkJwt.js";
 
+import checkJwt from "./middleware/checkJwt.js";
+import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
 import helloRoute from "./routes/nested-path-example/hello.js";
 import ormTestRoutes from "./routes/nested-path-example/orm.js";
 
-if (!process.env.POSTGRES_SERVER) {
+if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
 }
 
@@ -26,7 +27,12 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 // Helmet security middleware
-app.use(helmet());
+app.use(
+  helmet({
+    // disable CSP for AdminJS
+    contentSecurityPolicy: false,
+  }),
+);
 
 // Compression middleware
 app.use(compression());
@@ -39,12 +45,18 @@ const limiter = RateLimit({
 
 app.use(limiter);
 
+// Session store middleware (for AdminJS)
+app.use(sessionMiddleware);
+
 // Public routes
 app.use("/", homeRoutes); // example stuff for testing
 
 // Routes with JWT check middleware
 app.use("/nested-path-example/", checkJwt, ormTestRoutes); // example stuff for testing
 app.use("/nested-path-example/", checkJwt, helloRoute); // example stuff for testing
+
+// AdminJS routes
+app.use(admin.options.rootPath, adminRouter);
 
 // error handling middleware
 // eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware
