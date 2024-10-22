@@ -63,3 +63,8 @@ header.page-header {
   color: var(--theme-primary-blue);
   border-color: var(--surface-color-border-active);
 }
+
+// override bootstrap theme styles: don't shrink radio/checkbox labels
+label.form-check-label {
+  font-size: var(--typography-regular-body) !important;
+}
