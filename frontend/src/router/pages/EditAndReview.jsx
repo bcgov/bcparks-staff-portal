@@ -1,12 +1,8 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-function DatesManagement() {
+function EditAndReview() {
   return (
     <div className="page dates-management">
-      <header className="page-header">
-        <h1>Dates management</h1>
-      </header>
-
       <div className="table-filters row mb-4">
         <div className="col-lg-3 col-md-6 col-12">
           <label htmlFor="parkName" className="form-label">
@@ -53,7 +49,7 @@ function DatesManagement() {
       </div>
 
       <div className="table-responsive">
-        <table className="table table-striped table-hover">
+        <table className="table table-striped">
           <thead>
             <tr>
               <th scope="col">Park name</th>
@@ -97,4 +93,4 @@ function DatesManagement() {
   );
 }
 
-export default DatesManagement;
+export default EditAndReview;
