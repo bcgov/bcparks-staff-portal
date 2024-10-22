@@ -67,7 +67,7 @@ function PageDetails() {
             <div className="details-content">
               <h4>Alouette Campground</h4>
 
-              <table className="table table-striped table-hover sub-area-dates">
+              <table className="table table-striped sub-area-dates">
                 <tbody>
                   <tr>
                     <th scope="row">Operating dates</th>
@@ -85,7 +85,7 @@ function PageDetails() {
 
               <h4>Gold Creek Campground</h4>
 
-              <table className="table table-striped table-hover sub-area-dates">
+              <table className="table table-striped sub-area-dates">
                 <tbody>
                   <tr>
                     <th scope="row">Operating dates</th>

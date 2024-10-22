@@ -1,9 +1,12 @@
 import { createBrowserRouter } from "react-router-dom";
 import ApiTest from "./pages/ApiTest";
-import DatesManagement from "./pages/DatesManagement";
+import EditAndReview from "./pages/EditAndReview";
+import PublishPage from "./pages/PublishPage";
+import ExportPage from "./pages/ExportPage";
 import PageDetails from "./pages/PageDetails";
 import SubmitDates from "./pages/SubmitDates";
 import MainLayout from "./layouts/MainLayout";
+import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -15,10 +18,27 @@ const RouterConfig = createBrowserRouter(
       element: <ProtectedRoute component={MainLayout} />,
       errorElement: <ErrorPage />,
       children: [
-        // dates management table / landing page
         {
           path: "/",
-          element: <DatesManagement />,
+          // Tabbed navigation for the landing page
+          element: <LandingPageTabs />,
+          children: [
+            // Edit & Review table / landing page
+            {
+              path: "",
+              element: <EditAndReview />,
+            },
+            // Export
+            {
+              path: "export",
+              element: <ExportPage />,
+            },
+            // Publish
+            {
+              path: "publish",
+              element: <PublishPage />,
+            },
+          ],
         },
 
         // API endpoint test page
@@ -43,18 +63,6 @@ const RouterConfig = createBrowserRouter(
         {
           path: "/park/:parkId/edit/:seasonId/review",
           element: <div>Review changes page</div>,
-        },
-
-        // publish
-        {
-          path: "/publish",
-          element: <div>Publish page</div>,
-        },
-
-        // export
-        {
-          path: "/export",
-          element: <div>Export page</div>,
         },
       ],
     },

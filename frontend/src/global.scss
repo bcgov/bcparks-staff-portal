@@ -8,16 +8,9 @@
 
 // Custom styles
 header.page-header {
-  background-color: var(--surface-color-background-light-blue);
-  padding-inline: var(--layout-padding-large);
   padding-block: var(--layout-padding-medium);
   margin-bottom: var(--layout-padding-xlarge);
-
-  &.internal {
-    background: none;
-    padding-inline: 0;
-    border-bottom: 1px solid var(--surface-color-border-default);
-  }
+  border-bottom: 1px solid var(--surface-color-border-default);
 }
 
 // append search icon appended
@@ -29,11 +22,24 @@ header.page-header {
     padding-right: calc(1.5em + 0.75rem);
   }
 
+  select {
+    // remove the arrow icon added by bootstrap
+    background-image: none;
+  }
+
   .append-content {
     position: absolute;
     right: 0.75rem;
     top: 0.75rem;
     pointer-events: none;
+  }
+}
+
+// required field label
+.append-required {
+  &::after {
+    content: "*";
+    color: var(--typography-color-danger);
   }
 }
 
