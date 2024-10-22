@@ -14,14 +14,13 @@ export default function LandingPageTabs() {
             </NavLink>
           </li>
           <li className="nav-item">
-            <NavLink className="nav-link" to="/export">
-              Export
-            </NavLink>
-          </li>
-          <li className="nav-item"></li>
-          <li className="nav-item">
             <NavLink className="nav-link" to="/publish">
               Publish
+            </NavLink>
+          </li>
+          <li className="nav-item">
+            <NavLink className="nav-link" to="/export">
+              Export
             </NavLink>
           </li>
         </ul>
