@@ -44,7 +44,7 @@ function ExportPage() {
               <select id="year" className="form-select"></select>
               <FontAwesomeIcon
                 className="append-content"
-                icon="fa-solid fa-magnifying-glass"
+                icon="fa-regular fa-calendar-check"
               />
             </div>
           </fieldset>
