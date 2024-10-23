@@ -8,6 +8,7 @@
     "dev": "dotenvx run -f .env.local --overload -- nodemon index.js",
     "start": "node index.js",
     "lint": "eslint .",
+    "migrate": "sequelize-cli db:migrate",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
