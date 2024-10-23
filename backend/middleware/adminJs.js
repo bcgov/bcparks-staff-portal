@@ -6,6 +6,22 @@ import session from "express-session";
 
 // our example sequelize model: "DB Row"
 import DbRow from "../db/models/DbRow.js";
+import {
+  ParkOperator,
+  User,
+  Bundle,
+  Park,
+  Campground,
+  CampsiteGrouping,
+  Campsite,
+  FeatureType,
+  Season,
+  ParkFeature,
+  DateType,
+  ParkDate,
+  FeatureDate,
+} from "../models/index.js";
+
 import { connectionString } from "../db/connection.js";
 
 AdminJS.registerAdapter({
@@ -28,7 +44,22 @@ async function authenticate(email, password) {
 
 const adminOptions = {
   // We pass Category to `resources`
-  resources: [DbRow],
+  resources: [
+    DbRow,
+    Bundle,
+    Park,
+    ParkOperator,
+    User,
+    Campground,
+    CampsiteGrouping,
+    Campsite,
+    FeatureType,
+    Season,
+    ParkFeature,
+    DateType,
+    ParkDate,
+    FeatureDate,
+  ],
 };
 
 // AdminJS plugin
