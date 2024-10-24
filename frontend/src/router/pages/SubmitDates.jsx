@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import NavBack from "../../components/NavBack";
 import groupCamping from "../../assets/icons/group-camping.svg";
 
 import "./SubmitDates.scss";
@@ -158,6 +159,8 @@ function SubmitDates() {
 
   return (
     <div className="page submit-dates">
+      <NavBack routePath={"/"}>Back to Elk Falls dates</NavBack>
+
       <header className="page-header internal">
         <h1>
           Elk Falls Park #{parkId} / {seasonId} dates

@@ -5,6 +5,7 @@ import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
 import ParkDetails from "./pages/ParkDetails";
 import SubmitDates from "./pages/SubmitDates";
+import ReviewChanges from "./pages/ReviewChanges";
 import MainLayout from "./layouts/MainLayout";
 import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
@@ -62,7 +63,7 @@ const RouterConfig = createBrowserRouter(
         // review changes
         {
           path: "/park/:parkId/edit/:seasonId/review",
-          element: <div>Review changes page</div>,
+          element: <ReviewChanges />,
         },
       ],
     },

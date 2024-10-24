@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import NavBack from "../../components/NavBack";
 import walkInCamping from "../../assets/icons/walk-in-camping.svg";
 
 import "./ParkDetails.scss";
@@ -10,6 +11,8 @@ function ParkDetails() {
 
   return (
     <div className="page park-details">
+      <NavBack routePath={"/"}>Back to Dates management</NavBack>
+
       <header className="page-header internal">
         <h1>Elk Falls Park #{parkId}</h1>
       </header>
