@@ -1,12 +1,11 @@
 import { Sequelize } from "sequelize";
+import config from "./config.js";
 
-const user = process.env.POSTGRES_USER;
-const password = process.env.POSTGRES_PASSWORD;
-const db = process.env.POSTGRES_DB;
-const port = process.env.POSTGRES_PORT;
-const server = process.env.POSTGRES_SERVER;
+const env = process.env.NODE_ENV || "development";
+const connectionConfig = config[env];
+const { username, password, database, host, port } = connectionConfig;
 
-export const connectionString = `postgres://${user}:${password}@${server}:${port}/${db}`;
+export const connectionString = `postgres://${username}:${password}@${host}:${port}/${database}`;
 
 const sequelize = new Sequelize(connectionString);
 
