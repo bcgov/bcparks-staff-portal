@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import NavBack from "../../components/NavBack";
 import walkInCamping from "../../assets/icons/walk-in-camping.svg";
 
 import "./ReviewChanges.scss";
@@ -9,6 +10,8 @@ function ReviewChanges() {
 
   return (
     <div className="page review-changes">
+      <NavBack routePath={"/"}>Back to Elk Falls dates</NavBack>
+
       <header className="page-header internal">
         <h1>
           {parkId} {seasonId} season dates preview
