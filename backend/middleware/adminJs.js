@@ -4,8 +4,6 @@ import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
 
-// our example sequelize model: "DB Row"
-import DbRow from "../db/models/DbRow.js";
 import {
   ParkOperator,
   User,
@@ -45,7 +43,6 @@ async function authenticate(email, password) {
 const adminOptions = {
   // We pass Category to `resources`
   resources: [
-    DbRow,
     Bundle,
     Park,
     ParkOperator,
