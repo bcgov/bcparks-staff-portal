@@ -57,6 +57,9 @@ spec:
               value: {{ .Values.frontend.env.externalUrl }}/v2/
             - name: VITE_OIDC_LOGOUT_REDIRECT
               value: {{ .Values.frontend.env.externalUrl }}
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-fontawesome-secret
           readinessProbe:
             httpGet:
               path: /
