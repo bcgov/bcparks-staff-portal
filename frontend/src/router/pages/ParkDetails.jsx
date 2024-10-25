@@ -1,4 +1,10 @@
 import { useParams } from "react-router-dom";
+import {
+  faChevronDown,
+  faPen,
+  faChevronUp,
+} from "@awesome.me/kit-c1c3245051/icons/classic/solid";
+import { faCircleExclamation } from "@awesome.me/kit-c1c3245051/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "../../components/NavBack";
 import walkInCamping from "../../assets/icons/walk-in-camping.svg";
@@ -34,7 +40,7 @@ function ParkDetails() {
                 <span>Last updated: Never</span>
                 <FontAwesomeIcon
                   className="append-content ms-2"
-                  icon="fa-solid fa-chevron-down"
+                  icon={faChevronDown}
                 />
               </button>
             </header>
@@ -42,10 +48,7 @@ function ParkDetails() {
 
           <div className="controls">
             <button className="btn btn-text-primary">
-              <FontAwesomeIcon
-                className="append-content me-2"
-                icon="fa-solid fa-pen"
-              />
+              <FontAwesomeIcon className="append-content me-2" icon={faPen} />
               <span>Edit</span>
             </button>
           </div>
@@ -62,7 +65,7 @@ function ParkDetails() {
                 <span>Last updated: Never</span>
                 <FontAwesomeIcon
                   className="append-content ms-2"
-                  icon="fa-solid fa-chevron-up"
+                  icon={faChevronUp}
                 />
               </button>
             </header>
@@ -108,10 +111,7 @@ function ParkDetails() {
 
           <div className="controls">
             <button className="btn btn-text-primary">
-              <FontAwesomeIcon
-                className="append-content me-2"
-                icon="fa-solid fa-pen"
-              />
+              <FontAwesomeIcon className="append-content me-2" icon={faPen} />
               <span>Edit</span>
             </button>
 
@@ -120,7 +120,7 @@ function ParkDetails() {
             <button className="btn btn-text-primary">
               <FontAwesomeIcon
                 className="append-content me-2"
-                icon="fa-solid fa-circle-exclamation"
+                icon={faCircleExclamation}
               />
               <span>Preview</span>
             </button>

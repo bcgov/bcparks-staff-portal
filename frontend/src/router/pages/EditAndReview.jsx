@@ -1,4 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@awesome.me/kit-c1c3245051/icons/classic/solid";
 
 function EditAndReview() {
   return (
@@ -18,7 +19,7 @@ function EditAndReview() {
             />
             <FontAwesomeIcon
               className="append-content"
-              icon="fa-solid fa-magnifying-glass"
+              icon={faMagnifyingGlass}
             />
           </div>
         </div>

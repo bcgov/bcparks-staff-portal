@@ -1,3 +1,4 @@
+import { faCalendarCheck } from "@awesome.me/kit-c1c3245051/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function ExportPage() {
@@ -44,7 +45,7 @@ function ExportPage() {
               <select id="year" className="form-select"></select>
               <FontAwesomeIcon
                 className="append-content"
-                icon="fa-regular fa-calendar-check"
+                icon={faCalendarCheck}
               />
             </div>
           </fieldset>
