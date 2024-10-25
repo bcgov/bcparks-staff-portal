@@ -1,4 +1,4 @@
-import { faCalendarCheck } from "@awesome.me/kit-c1c3245051/icons/classic/regular";
+import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function ExportPage() {

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@awesome.me/kit-c1c3245051/icons/classic/solid";
+import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import PropTypes from "prop-types";
 
 import "./NavBack.scss";

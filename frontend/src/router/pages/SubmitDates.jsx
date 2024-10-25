@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import { faCircleInfo } from "@awesome.me/kit-c1c3245051/icons/classic/regular";
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "../../components/NavBack";
 import groupCamping from "../../assets/icons/group-camping.svg";

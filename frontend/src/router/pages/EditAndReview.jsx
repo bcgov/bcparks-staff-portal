@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@awesome.me/kit-c1c3245051/icons/classic/solid";
+import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
 
 function EditAndReview() {
   return (

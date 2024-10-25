@@ -1,10 +1,6 @@
 import { useParams } from "react-router-dom";
-import {
-  faChevronDown,
-  faPen,
-  faChevronUp,
-} from "@awesome.me/kit-c1c3245051/icons/classic/solid";
-import { faCircleExclamation } from "@awesome.me/kit-c1c3245051/icons/classic/regular";
+import { faChevronDown, faPen, faChevronUp } from "@fa-kit/icons/classic/solid";
+import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "../../components/NavBack";
 import walkInCamping from "../../assets/icons/walk-in-camping.svg";
