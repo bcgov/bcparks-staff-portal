@@ -1,50 +1,35 @@
 import sequelize from "../db/connection.js";
 
-import ParkOperatorModel from "./parkOperator.js";
-import UserModel from "./user.js";
-import BundleModel from "./bundle.js";
+import DateableModel from "./dateable.js";
 import ParkModel from "./park.js";
+import UserModel from "./user.js";
 import CampgroundModel from "./campground.js";
-import CampsiteGroupingModel from "./campsitegrouping.js";
-import CampsiteModel from "./campsite.js";
-import FeatureTypeModel from "./featureType.js";
-import SeasonModel from "./season.js";
-import ParkFeatureModel from "./parkfeature.js";
+import FeatureTypeModel from "./featuretype.js";
+import FeatureModel from "./feature.js";
 import DateTypeModel from "./datetype.js";
-import ParkDateModel from "./parkDate.js";
-import FeatureDateModel from "./featureDate.js";
-import SeasonChangeLogModel from "./seasonChangeLog.js";
+import SeasonModel from "./season.js";
+import DateRangeModel from "./daterange.js";
 
-const ParkOperator = ParkOperatorModel(sequelize);
-const User = UserModel(sequelize);
-const Bundle = BundleModel(sequelize);
+const Dateable = DateableModel(sequelize);
 const Park = ParkModel(sequelize);
+const User = UserModel(sequelize);
 const Campground = CampgroundModel(sequelize);
-const CampsiteGrouping = CampsiteGroupingModel(sequelize);
-const Campsite = CampsiteModel(sequelize);
 const FeatureType = FeatureTypeModel(sequelize);
-const Season = SeasonModel(sequelize);
-const ParkFeature = ParkFeatureModel(sequelize);
+const Feature = FeatureModel(sequelize);
 const DateType = DateTypeModel(sequelize);
-const ParkDate = ParkDateModel(sequelize);
-const FeatureDate = FeatureDateModel(sequelize);
-const SeasonChangeLog = SeasonChangeLogModel(sequelize);
+const Season = SeasonModel(sequelize);
+const DateRange = DateRangeModel(sequelize);
 
 const models = {
-  ParkOperator,
-  User,
-  Bundle,
+  Dateable,
   Park,
+  User,
   Campground,
-  CampsiteGrouping,
-  Campsite,
   FeatureType,
-  Season,
-  ParkFeature,
+  Feature,
   DateType,
-  ParkDate,
-  FeatureDate,
-  SeasonChangeLog,
+  Season,
+  DateRange,
 };
 
 Object.values(models).forEach((model) => {
@@ -54,18 +39,13 @@ Object.values(models).forEach((model) => {
 });
 
 export {
-  Bundle,
-  ParkOperator,
-  User,
+  Dateable,
   Park,
+  User,
   Campground,
-  CampsiteGrouping,
-  Campsite,
   FeatureType,
-  Season,
-  ParkFeature,
+  Feature,
   DateType,
-  ParkDate,
-  FeatureDate,
-  SeasonChangeLog,
+  Season,
+  DateRange,
 };

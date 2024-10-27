@@ -1,7 +1,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Campsites", {
+    await queryInterface.createTable("FeatureTypes", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -10,19 +10,6 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: true,
-      },
-      campsiteNumber: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-      },
-      campsiteGroupingId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "CampsiteGroupings",
-          key: "id",
-        },
       },
       createdAt: {
         allowNull: false,
@@ -35,6 +22,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Campsites");
+    await queryInterface.dropTable("FeatureTypes");
   },
 };

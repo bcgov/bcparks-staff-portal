@@ -1,29 +1,25 @@
-import { Model, DataTypes } from "sequelize";
+import { Model } from "sequelize";
 
 export default (sequelize) => {
-  class DateType extends Model {
+  class Dateable extends Model {
     // Helper method for defining associations.
     // This method is not a part of Sequelize lifecycle.
     // The `models/index` file will call this method automatically.
     // @param models
     static associate(models) {
       // define association here
-      DateType.hasMany(models.DateRange, {
-        foreignKey: "dateTypeId",
+      Dateable.hasMany(models.DateRange, {
+        foreignKey: "dateableId",
         as: "dateRanges",
       });
     }
   }
-  DateType.init(
-    {
-      name: DataTypes.STRING,
-      startDateLabel: DataTypes.STRING,
-      endDateLabel: DataTypes.STRING,
-    },
+  Dateable.init(
+    {},
     {
       sequelize,
-      modelName: "DateType",
+      modelName: "Dateable",
     },
   );
-  return DateType;
+  return Dateable;
 };

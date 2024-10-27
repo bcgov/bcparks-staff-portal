@@ -10,15 +10,14 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: false,
       },
-      startLabel: {
-        type: Sequelize.STRING,
+      startDateLabel: {
         allowNull: true,
+        type: Sequelize.STRING,
       },
-      endLabel: {
-        type: Sequelize.STRING,
+      endDateLabel: {
         allowNull: true,
+        type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: false,

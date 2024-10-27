@@ -1,7 +1,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("FeatureDates", {
+    await queryInterface.createTable("Seasons", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -10,35 +10,23 @@ module.exports = {
       },
       operatingYear: {
         type: Sequelize.INTEGER,
-        allowNull: false,
       },
-      startDate: {
-        type: Sequelize.DATEONLY,
-        allowNull: true,
-      },
-      endDate: {
-        type: Sequelize.DATEONLY,
-        allowNull: true,
-      },
-      isDateRangeAnnual: {
-        type: Sequelize.BOOLEAN,
-        defaultValue: false,
-      },
-      parkFeatureId: {
+      parkId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         references: {
-          model: "ParkFeatures",
+          model: "Parks",
           key: "id",
         },
       },
-      dateTypeId: {
+      featureTypeId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
         references: {
-          model: "DateTypes",
+          model: "FeatureTypes",
           key: "id",
         },
+      },
+      status: {
+        type: Sequelize.STRING,
       },
       createdAt: {
         allowNull: false,
@@ -51,6 +39,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("FeatureDates");
+    await queryInterface.dropTable("Seasons");
   },
 };

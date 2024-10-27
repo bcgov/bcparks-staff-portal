@@ -1,7 +1,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("ParkFeatures", {
+    await queryInterface.createTable("Features", {
       id: {
         allowNull: false,
         autoIncrement: true,
@@ -10,43 +10,43 @@ module.exports = {
       },
       name: {
         type: Sequelize.STRING,
-        allowNull: false,
+      },
+      parkId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "Parks",
+          key: "id",
+        },
+      },
+      featureTypeId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "FeatureTypes",
+          key: "id",
+        },
+      },
+      dateableId: {
+        type: Sequelize.INTEGER,
+        references: {
+          model: "Dateables",
+          key: "id",
+        },
       },
       hasReservations: {
         type: Sequelize.BOOLEAN,
         defaultValue: false,
       },
-      orcs: {
-        type: Sequelize.STRING,
-        allowNull: false,
-      },
-      parkId: {
+      campgroundId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
-          model: "Parks",
+          model: "Campgrounds",
           key: "id",
         },
       },
       active: {
         type: Sequelize.BOOLEAN,
         defaultValue: true,
-      },
-      featureTypeId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "FeatureTypes",
-          key: "id",
-        },
-      },
-      campsiteGroupingId: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: "CampsiteGroupings",
-          key: "id",
-        },
       },
       createdAt: {
         allowNull: false,
@@ -59,6 +59,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("ParkFeatures");
+    await queryInterface.dropTable("Features");
   },
 };

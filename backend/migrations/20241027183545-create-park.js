@@ -1,38 +1,24 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("Seasons", {
+    await queryInterface.createTable("Parks", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      year: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-      },
-      status: {
+      name: {
         type: Sequelize.STRING,
-        allowNull: true,
       },
       orcs: {
         type: Sequelize.STRING,
-        allowNull: false,
       },
-      parkId: {
+      dateableId: {
         type: Sequelize.INTEGER,
-        allowNull: false,
+        allowNull: true,
         references: {
-          model: "Parks",
-          key: "id",
-        },
-      },
-      featureTypeId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "FeatureTypes",
+          model: "Dateables",
           key: "id",
         },
       },
@@ -47,6 +33,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Seasons");
+    await queryInterface.dropTable("Parks");
   },
 };

@@ -1,34 +1,45 @@
 import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
-  class Season extends Model {
+  class Feature extends Model {
     // Helper method for defining associations.
     // This method is not a part of Sequelize lifecycle.
     // The `models/index` file will call this method automatically.
     // @param models
     static associate(models) {
       // define association here
-      Season.belongsTo(models.Park, {
+      Feature.belongsTo(models.Park, {
         foreignKey: "parkId",
         as: "park",
       });
-      Season.belongsTo(models.FeatureType, {
+      Feature.belongsTo(models.FeatureType, {
         foreignKey: "featureTypeId",
         as: "featureType",
       });
+      Feature.belongsTo(models.Campground, {
+        foreignKey: "campgroundId",
+        as: "campground",
+      });
+      Feature.belongsTo(models.Dateable, {
+        foreignKey: "dateableId",
+        as: "dateable",
+      });
     }
   }
-  Season.init(
+  Feature.init(
     {
-      operatingYear: DataTypes.INTEGER,
+      name: DataTypes.STRING,
       parkId: DataTypes.INTEGER,
       featureTypeId: DataTypes.INTEGER,
-      status: DataTypes.STRING,
+      dateableId: DataTypes.INTEGER,
+      hasReservations: DataTypes.BOOLEAN,
+      campgroundId: DataTypes.INTEGER,
+      active: DataTypes.BOOLEAN,
     },
     {
       sequelize,
-      modelName: "Season",
+      modelName: "Feature",
     },
   );
-  return Season;
+  return Feature;
 };

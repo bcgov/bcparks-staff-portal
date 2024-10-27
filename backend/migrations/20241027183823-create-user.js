@@ -1,24 +1,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("CampsiteGroupings", {
+    await queryInterface.createTable("Users", {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      siteRangeDescription: {
+      name: {
         type: Sequelize.STRING,
-        allowNull: true,
       },
-      campgroundId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-          model: "Campgrounds",
-          key: "id",
-        },
+      email: {
+        type: Sequelize.STRING,
+      },
+      staff: {
+        type: Sequelize.BOOLEAN,
+        defaultValue: false,
       },
       createdAt: {
         allowNull: false,
@@ -31,6 +29,6 @@ module.exports = {
     });
   },
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("CampsiteGroupings");
+    await queryInterface.dropTable("Users");
   },
 };

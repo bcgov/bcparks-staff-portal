@@ -5,19 +5,15 @@ import Connect from "connect-pg-simple";
 import session from "express-session";
 
 import {
-  ParkOperator,
-  User,
-  Bundle,
+  Dateable,
   Park,
+  User,
   Campground,
-  CampsiteGrouping,
-  Campsite,
   FeatureType,
-  Season,
-  ParkFeature,
+  Feature,
   DateType,
-  ParkDate,
-  FeatureDate,
+  Season,
+  DateRange,
 } from "../models/index.js";
 
 import { connectionString } from "../db/connection.js";
@@ -43,19 +39,15 @@ async function authenticate(email, password) {
 const adminOptions = {
   // We pass Category to `resources`
   resources: [
-    Bundle,
+    Dateable,
     Park,
-    ParkOperator,
     User,
     Campground,
-    CampsiteGrouping,
-    Campsite,
     FeatureType,
-    Season,
-    ParkFeature,
+    Feature,
     DateType,
-    ParkDate,
-    FeatureDate,
+    Season,
+    DateRange,
   ],
 };
 
