@@ -1,0 +1,88 @@
+/** @type {import('sequelize-cli').Migration} */
+module.exports = {
+  async up(queryInterface, Sequelize) {
+    return queryInterface.bulkInsert("Features", [
+      {
+        name: "Campsites 1-15",
+        parkId: 1,
+        featureTypeId: 1,
+        dateableId: 1,
+        hasReservations: true,
+        campgroundId: 1,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Campsites 16-30",
+        parkId: 1,
+        featureTypeId: 1,
+        dateableId: 2,
+        hasReservations: true,
+        campgroundId: 1,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Campsites 31-45",
+        parkId: 1,
+        featureTypeId: 1,
+        dateableId: 3,
+        hasReservations: true,
+        campgroundId: 1,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Woodlands Campsites",
+        parkId: 1,
+        featureTypeId: 2,
+        dateableId: 4,
+        hasReservations: true,
+        campgroundId: 2,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Monashee Campsites",
+        parkId: 2,
+        featureTypeId: 2,
+        dateableId: 5,
+        hasReservations: true,
+        campgroundId: 3,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Taylor Creek Campsites",
+        parkId: 2,
+        featureTypeId: 2,
+        dateableId: 6,
+        hasReservations: true,
+        campgroundId: 4,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: "Trinity Campsites",
+        parkId: 2,
+        featureTypeId: 2,
+        dateableId: 7,
+        hasReservations: true,
+        campgroundId: 5,
+        active: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+  },
+
+  async down(queryInterface, Sequelize) {
+    return queryInterface.bulkDelete("Features", null, {});
+  },
+};

@@ -19,6 +19,7 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       startDateLabel: DataTypes.STRING,
       endDateLabel: DataTypes.STRING,
+      description: DataTypes.STRING,
     },
     {
       sequelize,
