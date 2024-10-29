@@ -71,7 +71,7 @@ router.get(
     }));
 
     // Return all rows
-    res.json({ parks: output });
+    res.json(output);
   }),
 );
 
