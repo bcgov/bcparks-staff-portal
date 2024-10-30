@@ -11,4 +11,10 @@ export default defineConfig({
     host: true,
     port: 8101,
   },
+
+  resolve: {
+    alias: {
+      "@fa-kit": "@awesome.me/kit-c1c3245051",
+    },
+  },
 });

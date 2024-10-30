@@ -1,0 +1,47 @@
+.page.review-changes {
+  .sub-area {
+    margin-bottom: var(--layout-margin-large);
+    padding-block: var(--layout-padding-medium);
+
+    & > h2 {
+      margin-bottom: var(--layout-margin-xlarge);
+      display: flex;
+      gap: var(--layout-margin-medium);
+
+      .sub-area-icon {
+        height: 1.25em;
+      }
+    }
+  }
+
+  .date-range {
+    display: flex;
+    justify-content: space-between;
+    width: fit-content;
+
+    .date {
+      min-width: 6em;
+      max-width: fit-content;
+    }
+
+    .separator {
+      margin-inline: 1em;
+    }
+  }
+
+  // spacing between date range values
+  td:not(:last-child) .date-range {
+    margin-right: 1em;
+  }
+
+  .notes {
+    .note-metadata {
+      color: var(--typography-color-secondary);
+      filter: brightness(1.5); // muted font color, lighter than color-secondary
+    }
+
+    .controls {
+      gap: var(--layout-margin-medium);
+    }
+  }
+}
