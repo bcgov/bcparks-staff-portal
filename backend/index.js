@@ -9,7 +9,6 @@ import checkJwt from "./middleware/checkJwt.js";
 import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
 import helloRoute from "./routes/nested-path-example/hello.js";
-import ormTestRoutes from "./routes/nested-path-example/orm.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
@@ -52,7 +51,6 @@ app.use(sessionMiddleware);
 app.use("/", homeRoutes); // example stuff for testing
 
 // Routes with JWT check middleware
-app.use("/nested-path-example/", checkJwt, ormTestRoutes); // example stuff for testing
 app.use("/nested-path-example/", checkJwt, helloRoute); // example stuff for testing
 
 // AdminJS routes

@@ -4,8 +4,18 @@ import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
 
-// our example sequelize model: "DB Row"
-import DbRow from "../db/models/DbRow.js";
+import {
+  Dateable,
+  Park,
+  User,
+  Campground,
+  FeatureType,
+  Feature,
+  DateType,
+  Season,
+  DateRange,
+} from "../models/index.js";
+
 import { connectionString } from "../db/connection.js";
 
 AdminJS.registerAdapter({
@@ -28,7 +38,17 @@ async function authenticate(email, password) {
 
 const adminOptions = {
   // We pass Category to `resources`
-  resources: [DbRow],
+  resources: [
+    Dateable,
+    Park,
+    User,
+    Campground,
+    FeatureType,
+    Feature,
+    DateType,
+    Season,
+    DateRange,
+  ],
 };
 
 // AdminJS plugin
