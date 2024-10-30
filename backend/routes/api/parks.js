@@ -56,9 +56,7 @@ router.get(
       ],
     });
 
-    const parks = parksWithBundlesAndSeasons.map((park) =>
-      park.get({ plain: true }),
-    );
+    const parks = parksWithBundlesAndSeasons.map((park) => park.toJSON());
 
     const output = parks.map((park) => ({
       id: park.id,
@@ -100,10 +98,13 @@ router.get(
     });
 
     if (!park) {
-      throw new Error(`Park not found: ${orcs}`);
+      const error = new Error(`Park not found: ${orcs}`);
+
+      error.status = 404;
+      throw error;
     }
 
-    const output = park.get({ plain: true });
+    const output = park.toJSON();
 
     res.json(output);
   }),

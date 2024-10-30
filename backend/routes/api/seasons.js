@@ -34,11 +34,13 @@ router.get(
     });
 
     if (!seasonModel) {
-      res.status(404);
-      throw new Error("Season not found");
+      const error = new Error("Season not found");
+
+      error.status = 404;
+      throw error;
     }
 
-    const season = seasonModel.get({ plain: true });
+    const season = seasonModel.toJSON();
 
     const parkFeatures = await Feature.findAll({
       where: {
@@ -71,9 +73,7 @@ router.get(
       ],
     });
 
-    const features = parkFeatures.map((feature) =>
-      feature.get({ plain: true }),
-    );
+    const features = parkFeatures.map((feature) => feature.toJSON());
 
     const output = {
       ...season,
