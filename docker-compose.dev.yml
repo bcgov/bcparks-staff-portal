@@ -5,6 +5,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
+    environment:
+      FONTAWESOME_PACKAGE_TOKEN: ${FONTAWESOME_PACKAGE_TOKEN}
     ports:
       - "8101:8101"
     volumes:

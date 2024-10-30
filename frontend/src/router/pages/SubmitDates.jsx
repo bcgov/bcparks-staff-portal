@@ -1,4 +1,5 @@
 import { useParams } from "react-router-dom";
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "../../components/NavBack";
 import groupCamping from "../../assets/icons/group-camping.svg";
@@ -19,8 +20,8 @@ function SubmitDates() {
             <p>
               Operating dates{" "}
               <FontAwesomeIcon
-                className="append-content"
-                icon="fa-solid fa-circle-info"
+                className="append-content ms-1"
+                icon={faCircleInfo}
               />
             </p>
 
@@ -105,8 +106,8 @@ function SubmitDates() {
             <p>
               Reservation dates{" "}
               <FontAwesomeIcon
-                className="append-content"
-                icon="fa-solid fa-circle-info"
+                className="append-content ms-1"
+                icon={faCircleInfo}
               />
             </p>
 
