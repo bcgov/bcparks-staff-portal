@@ -49,7 +49,7 @@ jobs:
 
       - name: Docker build
         run: |
-          docker build -t ${{ env.IMAGE_NAME }} -f frontend/Dockerfile.prod .
+          FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }} docker build --secret id=FONTAWESOME_PACKAGE_TOKEN -t ${{ env.IMAGE_NAME }} -f frontend/Dockerfile.prod .
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:latest
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
 

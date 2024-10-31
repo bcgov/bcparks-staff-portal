@@ -4,8 +4,9 @@ FROM node:20.17 AS build
 WORKDIR /app
 
 # Install dependencies
-COPY frontend/package*.json ./
-RUN npm install --production
+COPY frontend/package*.json frontend/.npmrc ./
+RUN --mount=type=secret,id=FONTAWESOME_PACKAGE_TOKEN,env=FONTAWESOME_PACKAGE_TOKEN \
+    npm install --production
 
 # Copy the rest of the files and build the app
 COPY ./frontend .
@@ -13,7 +14,7 @@ RUN npm run build
 
 # Stage 2: Serve the React app with Caddy
 # anything newer than 2.6.2 causes an OpenShift error
-FROM caddy:2.6.2-alpine 
+FROM caddy:2.6.2-alpine
 
 RUN apk add --no-cache ca-certificates
 
