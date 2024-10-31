@@ -24,8 +24,8 @@ export default (sequelize) => {
   }
   DateRange.init(
     {
-      startDate: DataTypes.DATE,
-      endDate: DataTypes.DATE,
+      startDate: DataTypes.DATEONLY,
+      endDate: DataTypes.DATEONLY,
       dateTypeId: DataTypes.INTEGER,
       dateableId: DataTypes.INTEGER,
       seasonId: DataTypes.INTEGER,
