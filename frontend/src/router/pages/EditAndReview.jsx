@@ -3,18 +3,29 @@ import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import { useState } from "react";
+import orderBy from "lodash/orderBy";
 
 function EditAndReview() {
   const { data, loading } = useApiGet("/parks");
 
+  // table filter state
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [bundleFilter, setBundleFilter] = useState("");
+
+  // table sorting state
+  const [sortColumn, setSortColumn] = useState("parkName");
+  const [sortOrder, setSortOrder] = useState("asc");
 
   function resetFilters() {
     setNameFilter("");
     setStatusFilter("");
     setBundleFilter("");
+  }
+
+  function updateSort(column, order) {
+    setSortColumn(column);
+    setSortOrder(order);
   }
 
   // add bundle and status values to parks
@@ -53,6 +64,20 @@ function EditAndReview() {
 
     return true;
   });
+
+  // returns sorted and filtered parks array
+  function getSortedParks() {
+    if (sortColumn === "parkName") {
+      return orderBy(
+        filteredParks,
+        [(item) => item.name.toLowerCase()],
+        [sortOrder === "asc" ? "asc" : "desc"],
+      );
+    }
+
+    return filteredParks;
+  }
+  const sortedParks = getSortedParks();
 
   return (
     <div className="page dates-management">
@@ -133,7 +158,12 @@ function EditAndReview() {
       {loading ? (
         <p>Loading...</p>
       ) : (
-        <EditAndReviewTable data={filteredParks} />
+        <EditAndReviewTable
+          data={sortedParks}
+          onSort={updateSort}
+          sortOrder={sortOrder}
+          sortColumn={sortColumn}
+        />
       )}
     </div>
   );

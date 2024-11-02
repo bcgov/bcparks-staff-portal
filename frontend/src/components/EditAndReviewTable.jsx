@@ -1,5 +1,8 @@
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
+import classNames from "classnames"; // Optional utility library for handling class names
+import { faSort, faSortUp, faSortDown } from "@fa-kit/icons/classic/solid";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function TableRow(park) {
   const navigate = useNavigate();
@@ -29,13 +32,55 @@ function TableRow(park) {
   );
 }
 
-export default function EditAndReviewTable({ data }) {
+export default function EditAndReviewTable({
+  data,
+  onSort,
+  sortOrder,
+  sortColumn,
+}) {
+  function getSortClasses(columnId) {
+    return classNames({
+      sortable: true,
+      sorting: sortColumn === columnId,
+      "sort-asc": sortOrder === columnId,
+    });
+  }
+
+  // updates the table sort column, or toggles the sort order
+  function updateSort(columnId) {
+    if (sortColumn === columnId) {
+      onSort(columnId, sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      onSort(columnId, "asc");
+    }
+  }
+
+  // returns the column sort icon, based on table sorting state
+  function getSortIcon(columnId) {
+    if (sortColumn === columnId) {
+      return sortOrder === "asc" ? faSortUp : faSortDown;
+    }
+
+    return faSort;
+  }
+
   return (
     <div className="table-responsive">
       <table className="table table-striped table-hover">
         <thead>
           <tr>
-            <th scope="col">Park name</th>
+            <th
+              scope="col"
+              className={getSortClasses("parkName")}
+              role="button"
+              onClick={() => updateSort("parkName")}
+            >
+              Park name{" "}
+              <FontAwesomeIcon
+                className="ms-1"
+                icon={getSortIcon("parkName")}
+              />
+            </th>
             <th scope="col">Status</th>
             <th scope="col">Bundle</th>
           </tr>
@@ -55,10 +100,13 @@ export default function EditAndReviewTable({ data }) {
 EditAndReviewTable.propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      status: PropTypes.string.isRequired,
-      bundle: PropTypes.string.isRequired,
+      id: PropTypes.number,
+      name: PropTypes.string,
+      status: PropTypes.string,
+      bundle: PropTypes.string,
     }),
-  ).isRequired,
+  ),
+  onSort: PropTypes.func,
+  sortOrder: PropTypes.string,
+  sortColumn: PropTypes.string,
 };
