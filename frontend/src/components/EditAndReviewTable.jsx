@@ -27,7 +27,6 @@ function TableRow(park) {
           {park.status}
         </span>
       </td>
-      <td>{park.bundle}</td>
     </tr>
   );
 }
@@ -82,7 +81,6 @@ export default function EditAndReviewTable({
               />
             </th>
             <th scope="col">Status</th>
-            <th scope="col">Bundle</th>
           </tr>
         </thead>
 
@@ -103,7 +101,6 @@ EditAndReviewTable.propTypes = {
       id: PropTypes.number,
       name: PropTypes.string,
       status: PropTypes.string,
-      bundle: PropTypes.string,
     }),
   ),
   onSort: PropTypes.func,

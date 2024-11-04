@@ -11,7 +11,6 @@ function EditAndReview() {
   // table filter state
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
-  const [bundleFilter, setBundleFilter] = useState("");
 
   // table sorting state
   const [sortColumn, setSortColumn] = useState("parkName");
@@ -20,7 +19,6 @@ function EditAndReview() {
   function resetFilters() {
     setNameFilter("");
     setStatusFilter("");
-    setBundleFilter("");
   }
 
   function updateSort(column, order) {
@@ -28,22 +26,17 @@ function EditAndReview() {
     setSortOrder(order);
   }
 
-  // add bundle and status values to parks
+  // add status values to parks
   const parks =
     data?.map((park) => ({
       ...park,
-      bundle: `TODO: Bundle ${park.id}`,
       status: `TODO: Active ${park.id}`,
     })) || [];
 
-  // unique values for status and bundle
+  // unique values for filter dropdowns
   const statusValues =
     parks
       .map((park) => park.status)
-      .filter((value, index, self) => self.indexOf(value) === index) || [];
-  const bundleValues =
-    parks
-      .map((park) => park.bundle)
       .filter((value, index, self) => self.indexOf(value) === index) || [];
 
   const filteredParks = parks.filter((park) => {
@@ -55,10 +48,6 @@ function EditAndReview() {
     }
 
     if (statusFilter && park.status !== statusFilter) {
-      return false;
-    }
-
-    if (bundleFilter && park.bundle !== bundleFilter) {
       return false;
     }
 
@@ -119,27 +108,6 @@ function EditAndReview() {
             {statusValues.map((status) => (
               <option key={status} value={status}>
                 {status}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="col-lg-3 col-md-6 col-12">
-          <label htmlFor="bundle" className="form-label">
-            Bundle
-          </label>
-
-          <select
-            id="bundle"
-            className="form-select"
-            value={bundleFilter}
-            onChange={(e) => setBundleFilter(e.target.value)}
-          >
-            <option value="">All</option>
-
-            {bundleValues.map((bundle) => (
-              <option key={bundle} value={bundle}>
-                {bundle}
               </option>
             ))}
           </select>
