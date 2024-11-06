@@ -1,7 +1,12 @@
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
 import classNames from "classnames"; // Optional utility library for handling class names
-import { faSort, faSortUp, faSortDown } from "@fa-kit/icons/classic/solid";
+import {
+  faSort,
+  faSortUp,
+  faSortDown,
+  faChevronRight,
+} from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function TableRow(park) {
@@ -18,14 +23,22 @@ function TableRow(park) {
 
   return (
     <tr onClick={navigateToPark} role="button">
-      <th scope="row">
-        <Link to={getParkLink()}>{park.name}</Link>
-      </th>
+      <th scope="row">{park.name}</th>
       <td>
         {/* TODO: status pill component */}
         <span className={`badge rounded-pill text-bg-warning`}>
           {park.status}
         </span>
+      </td>
+      <td className="text-end">
+        <Link to={getParkLink()} aria-label={`View ${park.name} park details`}>
+          <FontAwesomeIcon
+            className="me-2"
+            icon={faChevronRight}
+            aria-hidden="true"
+          />
+          <span className="visually-hidden">View park details</span>
+        </Link>
       </td>
     </tr>
   );
@@ -81,7 +94,9 @@ export default function EditAndReviewTable({
                 icon={getSortIcon("parkName")}
               />
             </th>
-            <th scope="col">Status</th>
+            <th scope="col" colSpan="2">
+              Status
+            </th>
           </tr>
         </thead>
 
