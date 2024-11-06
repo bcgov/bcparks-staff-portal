@@ -34,6 +34,7 @@ function TableRow(park) {
 export default function EditAndReviewTable({
   data,
   onSort,
+  onResetFilters,
   sortOrder,
   sortColumn,
 }) {
@@ -90,6 +91,17 @@ export default function EditAndReviewTable({
           ))}
         </tbody>
       </table>
+
+      {data.length === 0 && (
+        <div className="text-center">
+          <p>No records match your filters. </p>
+          <p>
+            <button onClick={onResetFilters} className="btn btn-primary">
+              Reset filters to show all records
+            </button>
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -104,6 +116,7 @@ EditAndReviewTable.propTypes = {
     }),
   ),
   onSort: PropTypes.func,
+  onResetFilters: PropTypes.func,
   sortOrder: PropTypes.string,
   sortColumn: PropTypes.string,
 };

@@ -129,6 +129,7 @@ function EditAndReview() {
         <EditAndReviewTable
           data={sortedParks}
           onSort={updateSort}
+          onResetFilters={resetFilters}
           sortOrder={sortOrder}
           sortColumn={sortColumn}
         />
