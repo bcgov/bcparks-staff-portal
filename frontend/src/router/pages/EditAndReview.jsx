@@ -2,11 +2,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
+import LoadingBar from "@/components/LoadingBar";
 import { useState } from "react";
 import orderBy from "lodash/orderBy";
 
 function EditAndReview() {
-  const { data, loading } = useApiGet("/parks");
+  const { data, loading, error } = useApiGet("/parks");
 
   // table filter state
   const [nameFilter, setNameFilter] = useState("");
@@ -68,6 +69,26 @@ function EditAndReview() {
   }
   const sortedParks = getSortedParks();
 
+  function renderTable() {
+    if (loading) {
+      return <LoadingBar />;
+    }
+
+    if (error) {
+      return <p>Error loading parks data: {error.message}</p>;
+    }
+
+    return (
+      <EditAndReviewTable
+        data={sortedParks}
+        onSort={updateSort}
+        onResetFilters={resetFilters}
+        sortOrder={sortOrder}
+        sortColumn={sortColumn}
+      />
+    );
+  }
+
   return (
     <div className="page dates-management">
       <div className="table-filters row mb-4">
@@ -123,17 +144,7 @@ function EditAndReview() {
         </div>
       </div>
 
-      {loading ? (
-        <p>Loading...</p>
-      ) : (
-        <EditAndReviewTable
-          data={sortedParks}
-          onSort={updateSort}
-          onResetFilters={resetFilters}
-          sortOrder={sortOrder}
-          sortColumn={sortColumn}
-        />
-      )}
+      {renderTable()}
     </div>
   );
 }
