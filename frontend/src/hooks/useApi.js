@@ -11,7 +11,7 @@ export function useApiGet(endpoint, params = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const isFetching = useRef(false);
+  const requestSent = useRef(false);
 
   // Convert the params object to a string to compare changes
   const paramsString = JSON.stringify(params);
@@ -19,7 +19,7 @@ export function useApiGet(endpoint, params = {}) {
   useEffect(() => {
     async function fetchData() {
       try {
-        isFetching.current = true;
+        requestSent.current = true;
         const response = await axiosInstance.get(endpoint, { params });
 
         setData(response.data);
@@ -30,7 +30,8 @@ export function useApiGet(endpoint, params = {}) {
       }
     }
 
-    if (!isFetching.current) {
+    // Prevent sending multiple requests
+    if (!requestSent.current) {
       fetchData();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- paramsString is a stringified object
