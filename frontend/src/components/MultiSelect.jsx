@@ -83,4 +83,5 @@ MultiSelect.propTypes = {
   ).isRequired,
   onInput: PropTypes.func.isRequired,
   value: PropTypes.arrayOf(PropTypes.string),
+  children: PropTypes.node,
 };
