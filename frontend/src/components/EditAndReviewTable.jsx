@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 import { Link, useNavigate } from "react-router-dom";
-import classNames from "classnames"; // Optional utility library for handling class names
+import classNames from "classnames";
 import {
   faSort,
   faSortUp,
