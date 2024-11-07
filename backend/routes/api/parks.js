@@ -1,4 +1,5 @@
 import { Router } from "express";
+import _ from "lodash";
 import { Park, Season, FeatureType, Feature } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
@@ -104,9 +105,17 @@ router.get(
       throw error;
     }
 
-    const output = park.toJSON();
+    const parkJson = park.toJSON();
 
-    res.json(output);
+    const subAreas = _.mapValues(
+      // group seasons by feature type
+      _.groupBy(parkJson.seasons, (s) => s.featureType.name),
+
+      // sort by year
+      (group) => _.orderBy(group, ["operatingYear"], ["desc"]),
+    );
+
+    res.json({ ...parkJson, subAreas });
   }),
 );
 

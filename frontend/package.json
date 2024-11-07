@@ -19,6 +19,7 @@
     "@vitejs/plugin-react-swc": "^3.5.0",
     "axios": "^1.7.5",
     "classnames": "^2.5.1",
+    "date-fns": "^4.1.0",
     "lodash": "^4.17.21",
     "oidc-client-ts": "^3.0.1",
     "prop-types": "^15.8.1",

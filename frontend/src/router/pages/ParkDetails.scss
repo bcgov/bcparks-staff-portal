@@ -1,7 +1,11 @@
 .page.park-details {
   .sub-area {
+    &:not(:last-of-type) {
+      margin-bottom: var(--layout-margin-xxlarge);
+    }
+
     & > h2 {
-      margin-bottom: var(--layout-margin-xlarge);
+      margin-bottom: var(--layout-margin-large);
       display: flex;
       gap: var(--layout-margin-medium);
 

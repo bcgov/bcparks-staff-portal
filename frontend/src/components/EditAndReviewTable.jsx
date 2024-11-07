@@ -8,6 +8,7 @@ import {
   faChevronRight,
 } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import StatusBadge from "@/components/StatusBadge";
 
 function TableRow(park) {
   const navigate = useNavigate();
@@ -25,10 +26,7 @@ function TableRow(park) {
     <tr onClick={navigateToPark} role="button">
       <th scope="row">{park.name}</th>
       <td>
-        {/* TODO: status pill component */}
-        <span className={`badge rounded-pill text-bg-warning`}>
-          {park.status}
-        </span>
+        <StatusBadge status={park.status} />
       </td>
       <td className="text-end">
         <Link to={getParkLink()} aria-label={`View ${park.name} park details`}>
