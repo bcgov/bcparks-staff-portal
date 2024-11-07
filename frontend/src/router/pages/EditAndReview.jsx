@@ -3,15 +3,25 @@ import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
+import MultiSelect from "@/components/MultiSelect";
 import { useState } from "react";
 import orderBy from "lodash/orderBy";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
+  const parks = data || [];
+
+  const statusOptions = [
+    { value: "under review", label: "Under review" },
+    { value: "requested", label: "Requested" },
+    { value: "approved", label: "Approved" },
+    { value: "published", label: "Published" },
+  ];
+  const statusValues = statusOptions.map((option) => option.value);
 
   // table filter state
   const [nameFilter, setNameFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState([...statusValues]);
 
   // table sorting state
   const [sortColumn, setSortColumn] = useState("parkName");
@@ -19,26 +29,13 @@ function EditAndReview() {
 
   function resetFilters() {
     setNameFilter("");
-    setStatusFilter("");
+    setStatusFilter([...statusValues]);
   }
 
   function updateSort(column, order) {
     setSortColumn(column);
     setSortOrder(order);
   }
-
-  // add status values to parks
-  const parks =
-    data?.map((park) => ({
-      ...park,
-      status: `TODO: Active ${park.id}`,
-    })) || [];
-
-  // unique values for filter dropdowns
-  const statusValues =
-    parks
-      .map((park) => park.status)
-      .filter((value, index, self) => self.indexOf(value) === index) || [];
 
   const filteredParks = parks.filter((park) => {
     if (
@@ -48,7 +45,10 @@ function EditAndReview() {
       return false;
     }
 
-    if (statusFilter && park.status !== statusFilter) {
+    if (
+      statusFilter.length !== statusValues.length &&
+      !statusFilter.includes(park.status)
+    ) {
       return false;
     }
 
@@ -118,20 +118,13 @@ function EditAndReview() {
             Status
           </label>
 
-          <select
-            id="status"
-            className="form-select"
+          <MultiSelect
+            options={statusOptions}
+            onInput={setStatusFilter}
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
           >
-            <option value="">All</option>
-
-            {statusValues.map((status) => (
-              <option key={status} value={status}>
-                {status}
-              </option>
-            ))}
-          </select>
+            Filter by status
+          </MultiSelect>
         </div>
 
         <div className="col-lg-3 col-md-6 col-12 d-flex">
