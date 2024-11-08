@@ -9,6 +9,17 @@
     }
   }
 
+  .campground {
+    // margin-bottom: var(--layout-margin-large);
+    //padding-block: var(--layout-padding-medium);
+    // padding: var(--layout-padding-medium);
+
+    // alternating background color
+    &:nth-child(even) {
+      background-color: var(--surface-color-background-light-gray);
+    }
+  }
+
   .sub-area {
     margin-bottom: var(--layout-margin-large);
     padding-block: var(--layout-padding-medium);
@@ -38,5 +49,56 @@
 
   .controls {
     gap: var(--layout-margin-medium);
+  }
+
+  .tooltip-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .tooltip-text {
+    visibility: hidden;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Arrow at the bottom of tooltip */
+  .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #333 transparent transparent transparent;
+  }
+
+  .has-error {
+    textarea {
+      border: 1px solid red;
+    }
+  }
+
+  .error-message {
+    color: red;
+  }
+
+  /* Show tooltip on hover */
+  .tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
   }
 }
