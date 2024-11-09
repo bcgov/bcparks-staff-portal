@@ -20,6 +20,10 @@ export default (sequelize) => {
         foreignKey: "dateableId",
         as: "dateable",
       });
+      DateRange.hasMany(models.DateChangeLog, {
+        foreignKey: "dateRangeId",
+        as: "dateChangeLogs",
+      });
     }
   }
   DateRange.init(

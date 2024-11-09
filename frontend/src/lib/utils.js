@@ -4,10 +4,12 @@ export function formatDate(date) {
     month: "short",
     day: "numeric",
     weekday: "short",
+    timeZone: "UTC",
   };
 
   return new Date(date).toLocaleDateString("en-US", options);
 }
+
 export function formatDateRange(dateRange) {
   const startDate = formatDate(dateRange.startDate);
   const endDate = formatDate(dateRange.endDate);

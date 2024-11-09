@@ -39,3 +39,10 @@ export function useApiGet(endpoint, params = {}) {
 
   return { data, loading, error };
 }
+
+export async function post(endpoint, data) {
+  // send POST request
+  const response = await axiosInstance.post(endpoint, data);
+
+  return response.data;
+}
