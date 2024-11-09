@@ -8,11 +8,17 @@ import {
   DateRange,
   Dateable,
   Campground,
+  SeasonChangeLog,
+  DateChangeLog,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 
 const router = Router();
+
+function getNewStatusForSeason(season, user) {
+  return season.status;
+}
 
 router.get(
   "/seasons/:seasonId",
@@ -387,20 +393,21 @@ router.get(
 // - save draft (staff)
 // - approve (staff)
 
-// publish (staff)
-// export to csv (staff)
-
 // save draft (role determined by user)
 router.post(
-  "seasons/:seasonId/save",
+  "/seasons/:seasonId/save/",
   asyncHandler(async (req, res) => {
     const { seasonId } = req.params;
-    const { notes, dates } = req.body;
+    const { notes, dates, readyToPublish } = req.body;
 
     // check that this user has permission to edit this season
     // staff or operator that has access to this park
 
     // create change log (user, timestamp, notes, )
+
+    console.log(seasonId);
+    console.log(notes);
+    // console.log(dates);
 
     const season = await Season.findByPk(seasonId, {
       include: [
@@ -419,8 +426,47 @@ router.post(
       throw error;
     }
 
-    dates.forEach((date) => {
-      if (date.id) {
+    const newStatus = getNewStatusForSeason(season, null);
+
+    // create season change log
+    const seasonChangeLog = await SeasonChangeLog.create({
+      seasonId,
+      userId: 1,
+      notes,
+      statusOldValue: season.status,
+      statusNewValue: newStatus,
+      readyToPublishOldValue: season.readyToPublish,
+      readyToPublishNewValue: readyToPublish,
+    });
+
+    // update season
+    Season.update(
+      {
+        readyToPublish,
+        status: newStatus,
+      },
+      {
+        where: {
+          id: seasonId,
+        },
+      },
+    );
+
+    dates.forEach(async (date) => {
+      if (date.id && date.changed) {
+        // get dateRange
+        const dateRange = await DateRange.findByPk(date.id);
+
+        // create date change log
+        DateChangeLog.create({
+          dateRangeId: date.id,
+          seasonChangeLogId: seasonChangeLog.id,
+          startDateOldValue: dateRange.startDate,
+          startDateNewValue: date.startDate,
+          endDateOldValue: dateRange.endDate,
+          endDateNewValue: date.endDate,
+        });
+
         // update
         DateRange.update(
           {
@@ -433,7 +479,7 @@ router.post(
             },
           },
         );
-      } else {
+      } else if (!date.id) {
         // create
         DateRange.create({
           seasonId,
@@ -444,6 +490,8 @@ router.post(
         });
       }
     });
+
+    res.send("ok");
   }),
 );
 

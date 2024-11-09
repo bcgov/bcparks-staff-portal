@@ -53,3 +53,10 @@ export function useApiGet(endpoint, options = {}) {
   // Return fetchData so it can be called externally
   return { data, loading, error, fetchData };
 }
+
+export async function post(endpoint, data) {
+  // send POST request
+  const response = await axiosInstance.post(endpoint, data);
+
+  return response.data;
+}

@@ -9,6 +9,8 @@ import FeatureModel from "./feature.js";
 import DateTypeModel from "./datetype.js";
 import SeasonModel from "./season.js";
 import DateRangeModel from "./daterange.js";
+import SeasonChangeLogModel from "./seasonchangelog.js";
+import DateChangeLogModel from "./datechangelog.js";
 
 const Dateable = DateableModel(sequelize);
 const Park = ParkModel(sequelize);
@@ -19,6 +21,8 @@ const Feature = FeatureModel(sequelize);
 const DateType = DateTypeModel(sequelize);
 const Season = SeasonModel(sequelize);
 const DateRange = DateRangeModel(sequelize);
+const SeasonChangeLog = SeasonChangeLogModel(sequelize);
+const DateChangeLog = DateChangeLogModel(sequelize);
 
 const models = {
   Dateable,
@@ -30,6 +34,8 @@ const models = {
   DateType,
   Season,
   DateRange,
+  SeasonChangeLog,
+  DateChangeLog,
 };
 
 Object.values(models).forEach((model) => {
@@ -48,4 +54,6 @@ export {
   DateType,
   Season,
   DateRange,
+  SeasonChangeLog,
+  DateChangeLog,
 };

@@ -16,6 +16,10 @@ export default (sequelize) => {
         foreignKey: "featureTypeId",
         as: "featureType",
       });
+      Season.hasMany(models.SeasonChangeLog, {
+        foreignKey: "seasonId",
+        as: "changeLogs",
+      });
     }
   }
   Season.init(
@@ -24,6 +28,11 @@ export default (sequelize) => {
       parkId: DataTypes.INTEGER,
       featureTypeId: DataTypes.INTEGER,
       status: DataTypes.STRING,
+      readyToPublish: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

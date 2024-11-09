@@ -5,7 +5,12 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "../../components/NavBack";
 import groupCamping from "../../assets/icons/group-camping.svg";
 import { formatDateRange, formatDate } from "../../lib/utils";
+import LoadingBar from "@/components/LoadingBar";
+import SlideToggle from "@/components/SlideToggle";
 
+import PropTypes from "prop-types";
+
+import { useApiGet, post } from "@/hooks/useApi";
 import "./SubmitDates.scss";
 
 function SubmitDates() {
@@ -14,202 +19,57 @@ function SubmitDates() {
   const [season, setSeason] = useState(null);
   const [dates, setDates] = useState([]);
   const [notes, setNotes] = useState("");
-  const [error, setError] = useState(null);
+  const [validationError, setValidationError] = useState(null);
+  const [readyToPublish, setReadyToPublish] = useState(false);
 
-  function submit() {
-    if (!notes) {
-      setError("Please provide notes");
+  async function submit() {
+    if (!notes && ["approved", "published"].includes(season.status)) {
+      setValidationError("Please provide notes");
     }
 
-    const endpoint = `/api/seasons/${seasonId}/save/`;
+    const endpoint = `/seasons/${seasonId}/save/`;
     const data = {
       notes,
+      readyToPublish,
       dates: Object.values(dates).reduce(
         (acc, dateType) => acc.concat(dateType.Operation, dateType.Reservation),
         [],
       ),
     };
 
-    console.log("submitting", data);
-    console.log("to", endpoint);
+    const response = await post(endpoint, data);
+
+    console.log("response", response);
   }
 
+  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
+
   useEffect(() => {
-    const x = {
-      id: 5,
-      operatingYear: 2024,
-      status: "under_review",
-      featureType: {
-        id: 2,
-        name: "Group Camping",
-      },
-      park: {
-        id: 2,
-        name: "Mable Lake",
-        orcs: "2",
-      },
-      dateTypes: {
-        Operation: {
-          id: 1,
-          name: "Operation",
-        },
-        Reservation: {
-          id: 2,
-          name: "Reservation",
-        },
-      },
-      campgrounds: [
-        {
-          id: 3,
-          name: "Monashee",
-          features: [
-            {
-              id: 5,
-              name: "Monashee Campsites",
-              hasReservations: true,
-              campground: {
-                id: 3,
-                name: "Monashee",
-              },
-              dateable: {
-                id: 5,
-                currentSeasonDates: [
-                  {
-                    id: 17,
-                    seasonId: 5,
-                    startDate: "2022-05-01",
-                    endDate: "2022-09-30",
-                    dateType: {
-                      id: 1,
-                      name: "Operation",
-                    },
-                  },
-                  {
-                    id: 18,
-                    seasonId: 5,
-                    startDate: "2022-05-01",
-                    endDate: "2022-09-30",
-                    dateType: {
-                      id: 2,
-                      name: "Reservation",
-                    },
-                  },
-                ],
-                previousSeasonDates: [],
-              },
-            },
-          ],
-        },
-        {
-          id: 4,
-          name: "Taylor Creek",
-          features: [
-            {
-              id: 6,
-              name: "Taylor Creek Campsites",
-              hasReservations: true,
-              campground: {
-                id: 4,
-                name: "Taylor Creek",
-              },
-              dateable: {
-                id: 6,
-                currentSeasonDates: [
-                  {
-                    id: 21,
-                    seasonId: 5,
-                    startDate: "2022-05-01",
-                    endDate: "2022-09-30",
-                    dateType: {
-                      id: 1,
-                      name: "Operation",
-                    },
-                  },
-                  {
-                    id: 22,
-                    seasonId: 5,
-                    startDate: "2022-05-01",
-                    endDate: "2022-09-30",
-                    dateType: {
-                      id: 2,
-                      name: "Reservation",
-                    },
-                  },
-                ],
-                previousSeasonDates: [],
-              },
-            },
-          ],
-        },
-        {
-          id: 5,
-          name: "Trinity",
-          features: [
-            {
-              id: 7,
-              name: "Trinity Campsites",
-              hasReservations: true,
-              campground: {
-                id: 5,
-                name: "Trinity",
-              },
-              dateable: {
-                id: 7,
-                currentSeasonDates: [
-                  {
-                    id: 25,
-                    seasonId: 5,
-                    startDate: "2022-05-01",
-                    endDate: "2022-09-30",
-                    dateType: {
-                      id: 1,
-                      name: "Operation",
-                    },
-                  },
-                  {
-                    id: 26,
-                    seasonId: 5,
-                    startDate: "2022-05-01",
-                    endDate: "2022-09-30",
-                    dateType: {
-                      id: 2,
-                      name: "Reservation",
-                    },
-                  },
-                ],
-                previousSeasonDates: [],
-              },
-            },
-          ],
-        },
-      ],
-      features: [],
-    };
+    if (data) {
+      const currentSeasonDates = {};
 
-    const currentSeasonDates = {};
-    /**
-     * {
-     *    [dateableId]: {
-     *      Operation: [
-     *         {
-     *            id: 1,
-     *            seasonId: 3,
-     *            startDate: "2022-05-01",
-     *            endDate: "2022-09-30",
-     *            dateableId: 1,
-     *            dateType: {
-     *              id: 1,
-     *              name: "Operation",
-     *            },
-     *         }
-     *      ],
-     *      Reservation: [],
-     *    }
-     * }
-     */
+      data.campgrounds.forEach((campground) => {
+        campground.features.forEach((feature) => {
+          currentSeasonDates[feature.dateable.id] = {
+            Operation: [],
+            Reservation: [],
+          };
+          feature.dateable.currentSeasonDates.forEach((dateRange) => {
+            currentSeasonDates[feature.dateable.id][
+              dateRange.dateType.name
+            ].push({
+              ...dateRange,
+              dateableId: feature.dateable.id,
+              inputType: "text",
+              changed: false,
+            });
+          });
 
-    x.campgrounds.forEach((campground) => {
-      campground.features.forEach((feature) => {
+          // delete feature.dateable.currentSeasonDates;
+        });
+      });
+
+      data.features.forEach((feature) => {
         currentSeasonDates[feature.dateable.id] = {
           Operation: [],
           Reservation: [],
@@ -219,35 +79,22 @@ function SubmitDates() {
             {
               ...dateRange,
               dateableId: feature.dateable.id,
+              inputType: "text",
+              changed: false,
             },
           );
         });
 
-        delete feature.dateable.currentSeasonDates;
-      });
-    });
-
-    x.features.forEach((feature) => {
-      currentSeasonDates[feature.dateable.id] = {
-        Operation: [],
-        Reservation: [],
-      };
-      feature.dateable.currentSeasonDates.forEach((dateRange) => {
-        currentSeasonDates[feature.dateable.id][dateRange.dateType.name].push({
-          ...dateRange,
-          dateableId: feature.dateable.id,
-        });
+        // delete feature.dateable.currentSeasonDates;
       });
 
-      delete feature.dateable.currentSeasonDates;
-    });
-
-    setSeason(x);
-    setDates(currentSeasonDates);
-  }, []);
+      setSeason(data);
+      setDates(currentSeasonDates);
+    }
+  }, [data]);
 
   useEffect(() => {
-    setError(null);
+    setValidationError(null);
   }, [notes]);
 
   function addDateRange(dateType, dateableId) {
@@ -275,21 +122,23 @@ function SubmitDates() {
       [dateableId]: {
         ...dates[dateableId],
         [dateType]: dates[dateableId][dateType].map((dateRange, i) =>
-          i === index ? { ...dateRange, [key]: value } : dateRange,
+          i === index
+            ? { ...dateRange, [key]: value, changed: true }
+            : dateRange,
         ),
       },
     });
   }
 
-  function removeDateRange(dateType, dateableId, index) {
-    setDates({
-      ...dates,
-      [dateableId]: {
-        ...dates[dateableId],
-        [dateType]: dates[dateableId][dateType].filter((_, i) => i !== index),
-      },
-    });
-  }
+  // function removeDateRange(dateType, dateableId, index) {
+  //   setDates({
+  //     ...dates,
+  //     [dateableId]: {
+  //       ...dates[dateableId],
+  //       [dateType]: dates[dateableId][dateType].filter((_, i) => i !== index),
+  //     },
+  //   });
+  // }
 
   function Campground({ campground }) {
     return (
@@ -303,8 +152,12 @@ function SubmitDates() {
   }
 
   function DateRange({ dateRange, index }) {
-    const [displayValue, setDisplayValue] = useState(
+    const [startDateDisplayValue, setStartDateDisplayValue] = useState(
       formatDate(dateRange.startDate),
+    );
+
+    const [endDateDisplayValue, setEndDateDisplayValue] = useState(
+      formatDate(dateRange.endDate),
     );
 
     return (
@@ -315,26 +168,34 @@ function SubmitDates() {
               Start date
             </label>
             <input
-              type="date"
+              type={dateRange.inputType}
               className="form-control"
               id="startDate0"
               name="startDate0"
+              value={startDateDisplayValue}
               min={`${season.operatingYear}-01-01`}
               max={`${season.operatingYear}-12-31`}
-              value={displayValue}
-              onFocus={() => setDisplayValue(dateRange.startDate)} // switch to actual date on focus
-              onBlur={() => setDisplayValue(formatDate(dateRange.startDate))}
               onChange={(ev) => {
                 const newDate = ev.target.value;
 
-                setDisplayValue(newDate);
+                setStartDateDisplayValue(newDate);
                 updateDateRange(
                   dateRange.dateableId,
                   dateRange.dateType.name,
                   index,
                   "startDate",
-                  ev.target.value,
+                  newDate,
                 );
+              }}
+              onFocus={(e) => {
+                e.target.type = "date";
+                setStartDateDisplayValue(dateRange.startDate);
+              }}
+              onBlur={(e) => {
+                e.target.type = "text";
+                if (dateRange.startDate) {
+                  setStartDateDisplayValue(formatDate(dateRange.startDate));
+                }
               }}
             />
           </div>
@@ -350,22 +211,35 @@ function SubmitDates() {
               End date
             </label>
             <input
-              type="date"
+              type={dateRange.inputType}
               className="form-control"
               id="endDate0"
               name="endDate0"
-              value={dateRange.endDate}
+              value={endDateDisplayValue}
               min={`${season.operatingYear}-01-01`}
               max={`${season.operatingYear}-12-31`}
-              onChange={(ev) =>
+              onChange={(ev) => {
+                const newDate = ev.target.value;
+
+                setEndDateDisplayValue(newDate);
                 updateDateRange(
                   dateRange.dateableId,
                   dateRange.dateType.name,
                   index,
                   "endDate",
-                  ev.target.value,
-                )
-              }
+                  newDate,
+                );
+              }}
+              onFocus={(e) => {
+                e.target.type = "date";
+                setEndDateDisplayValue(dateRange.endDate);
+              }}
+              onBlur={(e) => {
+                e.target.type = "text";
+                if (dateRange.endDate) {
+                  setEndDateDisplayValue(formatDate(dateRange.endDate));
+                }
+              }}
             />
           </div>
         </div>
@@ -448,10 +322,7 @@ function SubmitDates() {
                   {feature.dateable.previousSeasonDates
                     .filter((date) => date.dateType.name === "Reservation")
                     .map((dateRange, index) => (
-                      <div
-                        key={formatDateRange(dateRange)}
-                        className={index > 0 ? "my-2" : "mb-2"}
-                      >
+                      <div key={index} className={index > 0 ? "my-2" : "mb-2"}>
                         {formatDateRange(dateRange)}
                       </div>
                     ))}
@@ -483,6 +354,14 @@ function SubmitDates() {
         </div>
       </section>
     );
+  }
+
+  if (loading) {
+    return <LoadingBar />;
+  }
+
+  if (error) {
+    return <p>Error loading season data: {error.message}</p>;
   }
 
   return (
@@ -528,7 +407,9 @@ function SubmitDates() {
             information, please provide information on what has changed.
           </p>
 
-          <div className={`form-group mb-4 ${error ? "has-error" : ""}`}>
+          <div
+            className={`form-group mb-4 ${validationError ? "has-error" : ""}`}
+          >
             <textarea
               className="form-control"
               id="notes"
@@ -537,7 +418,9 @@ function SubmitDates() {
               value={notes}
               onChange={(ev) => setNotes(ev.target.value)}
             ></textarea>
-            {error && <div className="error-message mt-2">{error}</div>}
+            {validationError && (
+              <div className="error-message mt-2">{validationError}</div>
+            )}
           </div>
 
           <div className="alert alert-cta-contact mb-4" role="alert">
@@ -562,9 +445,15 @@ function SubmitDates() {
               held in the ‘Approved’ state until it is marked ‘Ready to
               publish’. Approved dates are included in exported files.
             </p>
+
+            <SlideToggle
+              value={readyToPublish}
+              setValue={setReadyToPublish}
+              label="Ready to publish"
+            />
           </div>
 
-          <div className="controls d-flex">
+          <div className="controls d-flex mt-4">
             <button type="button" className="btn btn-outline-primary">
               Back
             </button>
@@ -588,3 +477,9 @@ function SubmitDates() {
 }
 
 export default SubmitDates;
+
+SubmitDates.propTypes = {
+  parkId: PropTypes.string,
+  seasonId: PropTypes.string,
+  Campground: PropTypes.func,
+};
