@@ -1,0 +1,16 @@
+.date-range {
+  display: flex;
+  justify-content: space-between;
+  width: fit-content;
+
+  .date {
+    @media (min-width: 576px) {
+      min-width: 6em;
+    }
+    max-width: fit-content;
+  }
+
+  .separator {
+    margin-inline: 1em;
+  }
+}

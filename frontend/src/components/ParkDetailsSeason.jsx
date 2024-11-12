@@ -7,12 +7,24 @@ import PropTypes from "prop-types";
 import { useNavigate, useParams } from "react-router-dom";
 import StatusBadge from "@/components/StatusBadge";
 import useDate from "@/hooks/useDate";
+import { useApiGet } from "@/hooks/useApi";
+import LoadingBar from "@/components/LoadingBar";
+import SeasonDates from "@/components/ParkDetailsSeasonDates";
 
 export default function ParkSeason({ season }) {
   const { parkId } = useParams();
   const navigate = useNavigate();
 
   const [expanded, setExpanded] = useState(false);
+
+  const {
+    data: datesData,
+    loading,
+    error,
+    fetchData,
+  } = useApiGet(`/seasons/${season.id}`, {
+    instant: false,
+  });
 
   // Returns a chevron icon based on the expansion state
   function getExpandIcon() {
@@ -21,51 +33,30 @@ export default function ParkSeason({ season }) {
 
   // @TODO: get real details data from the API
   function expandableContent() {
-    if (!expanded) return <div></div>;
+    if (!expanded) return null;
 
-    return (
-      <div className="details-content">
-        {/* TODO: render real data when available */}
-        <h4>TODO: Alouette Campground</h4>
+    if (loading)
+      return (
+        <div className="p-3 pt-0">
+          <LoadingBar />
+        </div>
+      );
 
-        <table className="table table-striped sub-area-dates">
-          <tbody>
-            <tr>
-              <th scope="row">Operating dates</th>
-              <td>Mon, Mar 28 - Wed, Oct 15</td>
-            </tr>
-            <tr>
-              <th scope="row">Reservation dates</th>
-              <td>
-                Tue, Mar 28 - Wed, Apr 1<br />
-                Mon, May 1 - Wed, Oct 14
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    if (error)
+      return <p className="px-3">Error loading dates: {error.message}</p>;
 
-        <h4>Gold Creek Campground</h4>
-
-        <table className="table table-striped sub-area-dates">
-          <tbody>
-            <tr>
-              <th scope="row">Operating dates</th>
-              <td>Mon, Mar 28 - Wed, Oct 15</td>
-            </tr>
-            <tr>
-              <th scope="row">Reservation dates</th>
-              <td>
-                Tue, Mar 28 - Wed, Apr 1<br />
-                Mon, May 1 - Wed, Oct 14
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    );
+    return <SeasonDates data={datesData} />;
   }
 
-  function toggleExpand() {
+  function toggleExpand(event) {
+    // Prevent button click events from bubbling up to the clickable parent
+    event.stopPropagation();
+
+    // If the panel is about to expand, fetch the data
+    if (!expanded && datesData === null) {
+      fetchData();
+    }
+
     setExpanded(!expanded);
   }
 

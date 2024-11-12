@@ -14,22 +14,7 @@
     }
   }
 
-  .date-range {
-    display: flex;
-    justify-content: space-between;
-    width: fit-content;
-
-    .date {
-      min-width: 6em;
-      max-width: fit-content;
-    }
-
-    .separator {
-      margin-inline: 1em;
-    }
-  }
-
-  // spacing between date range values
+  // spacing between DateRange components
   td:not(:last-child) .date-range {
     margin-right: 1em;
   }
