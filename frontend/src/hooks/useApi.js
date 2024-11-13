@@ -37,12 +37,26 @@ export function useApiGet(endpoint, params = {}) {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- paramsString is a stringified object
   }, [endpoint, paramsString]);
 
-  return { data, loading, error };
+  async function refetchData(newParams = {}) {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get(endpoint, { params: newParams });
+
+      setData(response.data);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return { data, loading, error, refetchData };
 }
 
 export async function post(endpoint, data) {
   // send POST request
   const response = await axiosInstance.post(endpoint, data);
 
-  return response.data;
+  return response;
 }

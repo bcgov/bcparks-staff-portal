@@ -9,6 +9,29 @@
     }
   }
 
+  .react-datepicker-wrapper {
+    width: 100% !important;
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 0.375rem 0.75rem;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #2d2d2d;
+      appearance: none;
+      width: 100%;
+      background-color: var(--bs-body-bg);
+      background-clip: padding-box;
+      border: var(--bs-border-width) solid #d8d8d8;
+      border-radius: var(--bs-border-radius);
+      transition:
+        border-color 0.15s ease-in-out,
+        box-shadow 0.15s ease-in-out;
+    }
+  }
+
   .campground {
     // margin-bottom: var(--layout-margin-large);
     //padding-block: var(--layout-padding-medium);
@@ -94,6 +117,17 @@
 
   .error-message {
     color: red;
+  }
+
+  .notes {
+    .note-metadata {
+      color: var(--typography-color-secondary);
+      filter: brightness(1.5); // muted font color, lighter than color-secondary
+    }
+
+    .controls {
+      gap: var(--layout-margin-medium);
+    }
   }
 
   /* Show tooltip on hover */
