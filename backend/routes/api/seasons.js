@@ -10,6 +10,7 @@ import {
   Campground,
   SeasonChangeLog,
   DateChangeLog,
+  User,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
@@ -264,6 +265,19 @@ router.get(
           model: Park,
           as: "park",
           attributes: ["id", "name", "orcs"],
+        },
+        {
+          model: SeasonChangeLog,
+          as: "changeLogs",
+          attributes: ["id", "notes", "createdAt"],
+          order: [["createdAt", "DESC"]],
+          include: [
+            {
+              model: User,
+              as: "user",
+              attributes: ["id", "name"],
+            },
+          ],
         },
       ],
     });

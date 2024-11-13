@@ -1,0 +1,69 @@
+// FlashMessage.scss
+.flash-message {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 1000;
+  max-width: 30vw;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: 16px;
+  border-radius: 6px;
+  color: white;
+  animation: slideIn 0.3s ease-out;
+
+  &.success {
+    background-color: #2e7d32; // Dark green similar to the image
+  }
+
+  &.info {
+    background-color: #1976d2; // Blue variant
+  }
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+  }
+
+  &__title {
+    font-weight: 500;
+  }
+
+  &__subtitle {
+    font-size: 14px;
+    opacity: 0.9;
+  }
+
+  &__close {
+    margin-left: 24px;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 24px;
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

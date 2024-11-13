@@ -4,9 +4,18 @@ import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "../../components/NavBack";
 import groupCamping from "../../assets/icons/group-camping.svg";
-import { formatDateRange, formatDate } from "../../lib/utils";
+import {
+  formatDateRange,
+  formatTimestamp,
+  formatDatetoISO,
+} from "../../lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import SlideToggle from "@/components/SlideToggle";
+import FlashMessage from "@/components/FlashMessage";
+import { useNavigate } from "react-router-dom";
+
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 import PropTypes from "prop-types";
 
@@ -22,13 +31,23 @@ function SubmitDates() {
   const [validationError, setValidationError] = useState(null);
   const [readyToPublish, setReadyToPublish] = useState(false);
 
-  async function submit() {
+  // const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
+  const [showFlash, setShowFlash] = useState(false);
+
+  const { data, loading, error, refetchData } = useApiGet(
+    `/seasons/${seasonId}`,
+  );
+
+  const navigate = useNavigate();
+
+  async function submitChanges() {
     if (!notes && ["approved", "published"].includes(season.status)) {
-      setValidationError("Please provide notes");
+      setValidationError("Required when updating previously approved dates");
+      throw new Error("Validation error");
     }
 
     const endpoint = `/seasons/${seasonId}/save/`;
-    const data = {
+    const payload = {
       notes,
       readyToPublish,
       dates: Object.values(dates).reduce(
@@ -37,12 +56,46 @@ function SubmitDates() {
       ),
     };
 
-    const response = await post(endpoint, data);
+    const response = await post(endpoint, payload);
 
-    console.log("response", response);
+    return response;
   }
 
-  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
+  // are there changes to save?
+  function hasChanges() {
+    const datesChanged = Object.values(dates).some((dateType) =>
+      dateType.Operation.concat(dateType.Reservation).some(
+        (dateRange) => dateRange.changed,
+      ),
+    );
+
+    return datesChanged || notes;
+  }
+
+  async function continueToPreview() {
+    try {
+      if (hasChanges()) {
+        await submitChanges();
+      }
+      // window.scrollTo(0, 0);
+      navigate(`/park/${parkId}/edit/${seasonId}/review`);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function saveAsDraft() {
+    try {
+      if (hasChanges()) {
+        await submitChanges();
+        setNotes("");
+        refetchData();
+        setShowFlash(true);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   useEffect(() => {
     if (data) {
@@ -64,8 +117,6 @@ function SubmitDates() {
               changed: false,
             });
           });
-
-          // delete feature.dateable.currentSeasonDates;
         });
       });
 
@@ -84,8 +135,6 @@ function SubmitDates() {
             },
           );
         });
-
-        // delete feature.dateable.currentSeasonDates;
       });
 
       setSeason(data);
@@ -123,7 +172,7 @@ function SubmitDates() {
         ...dates[dateableId],
         [dateType]: dates[dateableId][dateType].map((dateRange, i) =>
           i === index
-            ? { ...dateRange, [key]: value, changed: true }
+            ? { ...dateRange, [key]: formatDatetoISO(value), changed: true }
             : dateRange,
         ),
       },
@@ -152,14 +201,6 @@ function SubmitDates() {
   }
 
   function DateRange({ dateRange, index }) {
-    const [startDateDisplayValue, setStartDateDisplayValue] = useState(
-      formatDate(dateRange.startDate),
-    );
-
-    const [endDateDisplayValue, setEndDateDisplayValue] = useState(
-      formatDate(dateRange.endDate),
-    );
-
     return (
       <div className="row dates-row operating-dates">
         <div className="col-lg-5">
@@ -167,36 +208,18 @@ function SubmitDates() {
             <label htmlFor="startDate0" className="form-label d-lg-none">
               Start date
             </label>
-            <input
-              type={dateRange.inputType}
-              className="form-control"
-              id="startDate0"
-              name="startDate0"
-              value={startDateDisplayValue}
-              min={`${season.operatingYear}-01-01`}
-              max={`${season.operatingYear}-12-31`}
-              onChange={(ev) => {
-                const newDate = ev.target.value;
-
-                setStartDateDisplayValue(newDate);
+            <DatePicker
+              selected={dateRange.startDate}
+              onChange={(date) => {
                 updateDateRange(
                   dateRange.dateableId,
                   dateRange.dateType.name,
                   index,
                   "startDate",
-                  newDate,
+                  date,
                 );
               }}
-              onFocus={(e) => {
-                e.target.type = "date";
-                setStartDateDisplayValue(dateRange.startDate);
-              }}
-              onBlur={(e) => {
-                e.target.type = "text";
-                if (dateRange.startDate) {
-                  setStartDateDisplayValue(formatDate(dateRange.startDate));
-                }
-              }}
+              dateFormat="EEE, MMM d, yyyy"
             />
           </div>
         </div>
@@ -210,36 +233,18 @@ function SubmitDates() {
             <label htmlFor="endDate0" className="form-label d-lg-none">
               End date
             </label>
-            <input
-              type={dateRange.inputType}
-              className="form-control"
-              id="endDate0"
-              name="endDate0"
-              value={endDateDisplayValue}
-              min={`${season.operatingYear}-01-01`}
-              max={`${season.operatingYear}-12-31`}
-              onChange={(ev) => {
-                const newDate = ev.target.value;
-
-                setEndDateDisplayValue(newDate);
+            <DatePicker
+              selected={dateRange.endDate}
+              onChange={(date) => {
                 updateDateRange(
                   dateRange.dateableId,
                   dateRange.dateType.name,
                   index,
                   "endDate",
-                  newDate,
+                  date,
                 );
               }}
-              onFocus={(e) => {
-                e.target.type = "date";
-                setEndDateDisplayValue(dateRange.endDate);
-              }}
-              onBlur={(e) => {
-                e.target.type = "text";
-                if (dateRange.endDate) {
-                  setEndDateDisplayValue(formatDate(dateRange.endDate));
-                }
-              }}
+              dateFormat="EEE, MMM d, yyyy"
             />
           </div>
         </div>
@@ -366,6 +371,13 @@ function SubmitDates() {
 
   return (
     <div className="page submit-dates">
+      <FlashMessage
+        title="Dates saved as draft"
+        message={`${season?.operatingYear} season dates saved`}
+        isVisible={showFlash}
+        onClose={() => setShowFlash(false)}
+        duration={3000}
+      />
       <NavBack routePath={`/park/${parkId}`}>
         Back to {season?.park.name} season dates
       </NavBack>
@@ -398,7 +410,7 @@ function SubmitDates() {
         <Feature key={feature.id} feature={feature} />
       ))}
 
-      <div className="row">
+      <div className="row notes">
         <div className="col-lg-6">
           <h2 className="mb-4">Notes</h2>
 
@@ -406,6 +418,21 @@ function SubmitDates() {
             If there is a change from previous years or updated date
             information, please provide information on what has changed.
           </p>
+
+          {season?.changeLogs.map((changeLog) => (
+            <p key={changeLog.id}>
+              {changeLog.notes && (
+                <span>
+                  {changeLog.notes}
+                  <br />
+                </span>
+              )}
+              <span className="note-metadata">
+                {changeLog.notes ? "" : "Submitted "}
+                {formatTimestamp(changeLog.createdAt)} by {changeLog.user.name}
+              </span>
+            </p>
+          ))}
 
           <div
             className={`form-group mb-4 ${validationError ? "has-error" : ""}`}
@@ -461,12 +488,16 @@ function SubmitDates() {
             <button
               type="button"
               className="btn btn-outline-primary"
-              onClick={submit}
+              onClick={saveAsDraft}
             >
               Save draft
             </button>
 
-            <button type="button" className="btn btn-primary">
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={continueToPreview}
+            >
               Continue to preview
             </button>
           </div>

@@ -58,5 +58,5 @@ export async function post(endpoint, data) {
   // send POST request
   const response = await axiosInstance.post(endpoint, data);
 
-  return response.data;
+  return response;
 }
