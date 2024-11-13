@@ -11,6 +11,12 @@ RUN npm install --production
 
 COPY . .
 
+# Set permissions for OpenShift:
+# Grant group ownership to root and enable group write access
+RUN mkdir -p /app/.adminjs && \
+    chgrp -R 0 /app && \
+    chmod -R g=u /app
+
 EXPOSE 8100
 
 # Command to run the application
