@@ -2,6 +2,7 @@ cluster:
   ssoAuthUrl: https://test.loginproxy.gov.bc.ca/auth
   cmsUrl: https://alpha-test-cms.bcparks.ca
 
+images:
   frontend:
     name: image-registry.openshift-image-registry.svc:5000/a7dd13-tools/frontend-alpha
     tag: test
