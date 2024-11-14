@@ -414,14 +414,8 @@ router.post(
     const { seasonId } = req.params;
     const { notes, dates, readyToPublish } = req.body;
 
-    // check that this user has permission to edit this season
+    // when we add roles: we need to check that this user has permission to edit this season
     // staff or operator that has access to this park
-
-    // create change log (user, timestamp, notes, )
-
-    console.log(seasonId);
-    console.log(notes);
-    // console.log(dates);
 
     const season = await Season.findByPk(seasonId, {
       include: [
@@ -440,6 +434,8 @@ router.post(
       throw error;
     }
 
+    // this will depend on the user's role
+    // rn we're just passing null for the user and returning the same status
     const newStatus = getNewStatusForSeason(season, null);
 
     // create season change log
@@ -494,7 +490,7 @@ router.post(
           },
         );
       } else if (!date.id) {
-        // create
+        // if date doesn't have ID, it's a new date
         DateRange.create({
           seasonId,
           dateableId: date.dateableId,
@@ -505,7 +501,7 @@ router.post(
       }
     });
 
-    res.send("ok");
+    res.sendStatus(200);
   }),
 );
 

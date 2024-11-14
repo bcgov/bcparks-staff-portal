@@ -179,6 +179,7 @@ function SubmitDates() {
     });
   }
 
+  // The wireframes don't show the option to remove a date, but if we need it, we can add it here
   // function removeDateRange(dateType, dateableId, index) {
   //   setDates({
   //     ...dates,
