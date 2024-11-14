@@ -78,7 +78,7 @@ function SubmitDates() {
         await submitChanges();
       }
       // window.scrollTo(0, 0);
-      navigate(`/park/${parkId}/edit/${seasonId}/review`);
+      navigate(`/park/${parkId}/edit/${seasonId}/preview`);
     } catch (err) {
       console.error(err);
     }
