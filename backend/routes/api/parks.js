@@ -115,6 +115,9 @@ router.get(
       (group) => _.orderBy(group, ["operatingYear"], ["desc"]),
     );
 
+    // remove unused season key
+    delete parkJson.seasons;
+
     res.json({ ...parkJson, subAreas });
   }),
 );
