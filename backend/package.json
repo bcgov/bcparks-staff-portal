@@ -20,8 +20,7 @@
     "eslint-config-prettier": "^9.1.0",
     "globals": "^15.9.0",
     "nodemon": "^3.1.4",
-    "prettier": "3.3.3",
-    "sequelize-cli": "^6.6.2"
+    "prettier": "3.3.3"
   },
   "dependencies": {
     "@adminjs/express": "^6.1.0",
@@ -42,6 +41,7 @@
     "pg": "^8.12.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.3",
+    "sequelize-cli": "^6.6.2",
     "tslib": "^2.7.0"
   },
   "engines": {
