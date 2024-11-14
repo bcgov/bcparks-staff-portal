@@ -66,6 +66,26 @@ router.get(
                       },
                     },
                     {
+                      id: 104,
+                      seasonId: 3,
+                      startDate: "2022-11-01",
+                      endDate: "2022-11-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                    {
+                      id: 105,
+                      seasonId: 3,
+                      startDate: "2022-12-05",
+                      endDate: "2022-12-15",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                    {
                       id: 3,
                       seasonId: 3,
                       startDate: "2022-05-01",
