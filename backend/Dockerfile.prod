@@ -15,9 +15,10 @@ COPY . .
 # Grant group ownership to root and enable group write access
 RUN mkdir -p /app/.adminjs && \
     chgrp -R 0 /app && \
-    chmod -R g=u /app
+    chmod -R g=u /app && \
+    chmod +x /app/entrypoint.sh
 
 EXPOSE 8100
 
 # Command to run the application
-CMD ["npm", "run", "start"]
+ENTRYPOINT ["./entrypoint.sh"]
