@@ -3,6 +3,7 @@ Dockerfile.*
 .adminjs
 
 .*
+!/.sequelizerc
 
 *.log
 *.tmp
