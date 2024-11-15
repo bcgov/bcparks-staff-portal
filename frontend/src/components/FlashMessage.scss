@@ -1,8 +1,8 @@
 // FlashMessage.scss
 .flash-message {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: var(--layout-margin-medium);
+  right: var(--layout-margin-medium);
   z-index: 1000;
   max-width: 30vw;
 
@@ -10,17 +10,17 @@
   align-items: center;
   gap: 12px;
 
-  padding: 16px;
-  border-radius: 6px;
-  color: white;
+  padding: var(--layout-padding-medium);
+  border-radius: var(--layout-borderRadius-large);
+  color: var(--typography-color-primaryInvert);
   animation: slideIn 0.3s ease-out;
 
   &.success {
-    background-color: #2e7d32; // Dark green similar to the image
+    background-color: var(--support-borderColor-success);
   }
 
   &.info {
-    background-color: #1976d2; // Blue variant
+    background-color: var(--support-borderColor-info);
   }
 
   &__icon {
@@ -37,16 +37,16 @@
   }
 
   &__subtitle {
-    font-size: 14px;
+    font-size: var(--typography-regular-smallBody);
     opacity: 0.9;
   }
 
   &__close {
-    margin-left: 24px;
+    margin-left: var(--layout-margin-large);
     background: none;
     border: none;
-    color: white;
-    font-size: 24px;
+    color: var(--typography-color-primaryInvert);
+    font-size: var(--typography-regular-H4);
     opacity: 0.7;
     cursor: pointer;
     padding: 0;

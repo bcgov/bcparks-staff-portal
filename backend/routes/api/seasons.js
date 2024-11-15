@@ -18,6 +18,18 @@ import { Op } from "sequelize";
 const router = Router();
 
 function getNewStatusForSeason(season, user) {
+  // this will depend on the user's role
+  // rn we're just passing null for the user and returning the same status
+  // For staff
+  //   requested -- > requested
+  //   under review -- > under review
+  //   approved -- > under review
+  //   published --> under review
+  // For operator
+  //   requested -- > requested
+  //   under review -- > requested
+  //   approved -- > requested
+  //   published --> requested
   return season.status;
 }
 
@@ -80,6 +92,8 @@ router.get(
       seasonIds.push(prevSeason.id);
     }
 
+    // we fetch features separetely
+    // later assign each feature's date ranges to the respective season
     const parkFeatures = await Feature.findAll({
       where: {
         parkId: season.park.id,
@@ -98,6 +112,7 @@ router.get(
           as: "dateable",
           attributes: ["id"],
           include: [
+            // get all the dateRanges for this feature for this season and previous season
             {
               model: DateRange,
               as: "dateRanges",
@@ -120,11 +135,15 @@ router.get(
       ],
     });
 
+    // we want to get all the date types for this season
     const dateTypes = {};
 
     const features = parkFeatures.map((featureObj) => {
       const feature = featureObj.toJSON();
 
+      // each feature will have an array of date ranges for the current season and the previous season
+      // we'll remove the dateRanges array and add currentSeasonDates and previousSeasonDates arrays
+      // so that the client can easily sort them
       feature.dateable.currentSeasonDates = [];
       feature.dateable.previousSeasonDates = [];
 
@@ -147,6 +166,8 @@ router.get(
 
     const campgroundsMap = {};
 
+    // some features are grouped by campgrounds
+    // we want to assign each feature to the respective campground if it exists
     features.forEach((feature) => {
       if (feature.campground) {
         if (!campgroundsMap[feature.campground.id]) {
@@ -167,6 +188,7 @@ router.get(
       ...season,
       dateTypes,
       campgrounds,
+      // we want to send only the features that are not grouped by campgrounds
       features: features.filter((feature) => !feature.campground),
     };
 

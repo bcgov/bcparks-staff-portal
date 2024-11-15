@@ -10,7 +10,6 @@ import {
   formatDatetoISO,
 } from "../../lib/utils";
 import LoadingBar from "@/components/LoadingBar";
-import SlideToggle from "@/components/SlideToggle";
 import FlashMessage from "@/components/FlashMessage";
 import { useNavigate } from "react-router-dom";
 
@@ -75,7 +74,6 @@ function SubmitDates() {
       if (hasChanges()) {
         await submitChanges();
       }
-      // window.scrollTo(0, 0);
       navigate(`/park/${parkId}/edit/${seasonId}/review`);
     } catch (err) {
       console.error(err);
@@ -472,11 +470,19 @@ function SubmitDates() {
               publish’. Approved dates are included in exported files.
             </p>
 
-            <SlideToggle
-              value={readyToPublish}
-              setValue={setReadyToPublish}
-              label="Ready to publish"
-            />
+            <div className="form-check form-switch mb-4">
+              <input
+                value={readyToPublish}
+                onChange={() => setReadyToPublish(!readyToPublish)}
+                className="form-check-input"
+                type="checkbox"
+                role="switch"
+                id="ready-to-publish"
+              />
+              <label className="form-check-label" htmlFor="ready-to-publish">
+                Ready to publish
+              </label>
+            </div>
           </div>
 
           <div className="controls d-flex mt-4">

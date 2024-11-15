@@ -33,10 +33,6 @@
   }
 
   .campground {
-    // margin-bottom: var(--layout-margin-large);
-    //padding-block: var(--layout-padding-medium);
-    // padding: var(--layout-padding-medium);
-
     // alternating background color
     &:nth-child(even) {
       background-color: var(--surface-color-background-light-gray);
@@ -81,11 +77,11 @@
 
   .tooltip-text {
     visibility: hidden;
-    background-color: #333;
-    color: white;
+    background-color: var(--surface-color-border-dark);
+    color: (--typography-color-primaryInvert);
     text-align: center;
-    padding: 5px 10px;
-    border-radius: 6px;
+    padding: var(--layout-padding-xsmall) var(--layout-padding-small);
+    border-radius: var(--layout-borderRadius-large);
     position: absolute;
     z-index: 1;
     bottom: 125%; /* Position above the icon */
@@ -104,19 +100,20 @@
     top: 100%;
     left: 50%;
     margin-left: -5px;
-    border-width: 5px;
+    border-width: var(--layout-borderWidth-large);
     border-style: solid;
-    border-color: #333 transparent transparent transparent;
+    border-color: var(--surface-color-border-dark) transparent transparent
+      transparent;
   }
 
   .has-error {
     textarea {
-      border: 1px solid red;
+      border: 1px solid var(--support-borderColor-danger);
     }
   }
 
   .error-message {
-    color: red;
+    color: var(--support-borderColor-danger);
   }
 
   .notes {
