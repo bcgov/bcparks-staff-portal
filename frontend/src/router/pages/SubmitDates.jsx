@@ -206,7 +206,7 @@ function SubmitDates() {
       name: PropTypes.string.isRequired,
       features: PropTypes.arrayOf(
         PropTypes.shape({
-          id: PropTypes.string.isRequired,
+          id: PropTypes.number.isRequired,
         }),
       ),
     }),
@@ -266,7 +266,7 @@ function SubmitDates() {
 
   DateRange.propTypes = {
     dateRange: PropTypes.shape({
-      id: PropTypes.string.isRequired,
+      id: PropTypes.number,
       startDate: PropTypes.string.isRequired,
       endDate: PropTypes.string.isRequired,
       dateableId: PropTypes.number.isRequired,
