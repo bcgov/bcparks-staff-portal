@@ -34,9 +34,7 @@ function SubmitDates() {
   // const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
 
-  const { data, loading, error, refetchData } = useApiGet(
-    `/seasons/${seasonId}`,
-  );
+  const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
 
   const navigate = useNavigate();
 
@@ -89,7 +87,7 @@ function SubmitDates() {
       if (hasChanges()) {
         await submitChanges();
         setNotes("");
-        refetchData();
+        fetchData();
         setShowFlash(true);
       }
     } catch (err) {
