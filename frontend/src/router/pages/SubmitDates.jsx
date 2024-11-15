@@ -201,6 +201,17 @@ function SubmitDates() {
     );
   }
 
+  Campground.propTypes = {
+    campground: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      features: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.string.isRequired,
+        }),
+      ),
+    }),
+  };
+
   function DateRange({ dateRange, index }) {
     return (
       <div className="row dates-row operating-dates">
@@ -252,6 +263,20 @@ function SubmitDates() {
       </div>
     );
   }
+
+  DateRange.propTypes = {
+    dateRange: PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      startDate: PropTypes.string.isRequired,
+      endDate: PropTypes.string.isRequired,
+      dateableId: PropTypes.number.isRequired,
+      dateType: PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+    }).isRequired,
+    index: PropTypes.number.isRequired,
+  };
 
   function Feature({ feature }) {
     return (
@@ -361,6 +386,27 @@ function SubmitDates() {
       </section>
     );
   }
+
+  Feature.propTypes = {
+    feature: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      dateable: PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        previousSeasonDates: PropTypes.arrayOf(
+          PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            startDate: PropTypes.string.isRequired,
+            endDate: PropTypes.string.isRequired,
+            dateType: PropTypes.shape({
+              id: PropTypes.number.isRequired,
+              name: PropTypes.string.isRequired,
+            }),
+          }),
+        ),
+      }),
+      hasReservations: PropTypes.bool.isRequired,
+    }),
+  };
 
   if (loading) {
     return <LoadingBar />;
@@ -528,5 +574,4 @@ export default SubmitDates;
 SubmitDates.propTypes = {
   parkId: PropTypes.string,
   seasonId: PropTypes.string,
-  Campground: PropTypes.func,
 };

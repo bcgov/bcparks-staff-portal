@@ -1,5 +1,6 @@
 // FlashMessage.jsx
 import { useEffect } from "react";
+import PropTypes from "prop-types";
 import "./FlashMessage.scss";
 
 function FlashMessage({
@@ -40,3 +41,14 @@ function FlashMessage({
 }
 
 export default FlashMessage;
+
+// add propTypes for FlashMessage
+FlashMessage.propTypes = {
+  title: PropTypes.string.isRequired,
+  message: PropTypes.string.isRequired,
+  isVisible: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  duration: PropTypes.number,
+  icon: PropTypes.string,
+  variant: PropTypes.oneOf(["success", "error"]),
+};
