@@ -267,8 +267,8 @@ function SubmitDates() {
   DateRange.propTypes = {
     dateRange: PropTypes.shape({
       id: PropTypes.number,
-      startDate: PropTypes.string.isRequired,
-      endDate: PropTypes.string.isRequired,
+      startDate: PropTypes.string,
+      endDate: PropTypes.string,
       dateableId: PropTypes.number.isRequired,
       dateType: PropTypes.shape({
         id: PropTypes.number.isRequired,
@@ -315,11 +315,7 @@ function SubmitDates() {
             </div>
 
             {dates[feature.dateable.id]?.Operation.map((dateRange, index) => (
-              <DateRange
-                key={dateRange.id}
-                dateRange={dateRange}
-                index={index}
-              />
+              <DateRange key={index} dateRange={dateRange} index={index} />
             ))}
 
             <p>
@@ -362,11 +358,7 @@ function SubmitDates() {
 
               {dates[feature.dateable.id]?.Reservation.map(
                 (dateRange, index) => (
-                  <DateRange
-                    key={dateRange.id}
-                    dateRange={dateRange}
-                    index={index}
-                  />
+                  <DateRange key={index} dateRange={dateRange} index={index} />
                 ),
               )}
 
