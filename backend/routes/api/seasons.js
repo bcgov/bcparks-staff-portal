@@ -121,7 +121,7 @@ router.get(
                 {
                   model: DateType,
                   as: "dateType",
-                  attributes: ["id", "name"],
+                  attributes: ["id", "name", "description"],
                 },
               ],
               where: {
