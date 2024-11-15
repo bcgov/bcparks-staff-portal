@@ -1,128 +1,44 @@
 import { useParams } from "react-router-dom";
-import { faChevronDown, faPen, faChevronUp } from "@fa-kit/icons/classic/solid";
-import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import NavBack from "../../components/NavBack";
-import walkInCamping from "../../assets/icons/walk-in-camping.svg";
-
+import { useApiGet } from "@/hooks/useApi";
+import NavBack from "@/components/NavBack";
+import LoadingBar from "@/components/LoadingBar";
+import SubArea from "@/components/ParkDetailsSubArea";
 import "./ParkDetails.scss";
 
+// Returns an array of sub-area components
+function getSubAreas(park) {
+  if (!park) return [];
+
+  return Object.entries(park.subAreas).map(([title, subArea]) => (
+    <SubArea key={title} title={title} data={subArea} />
+  ));
+}
+
 function ParkDetails() {
-  // @TODO: fetch park name + details
   const { parkId } = useParams();
+  const { data: park, loading, error } = useApiGet(`/parks/${parkId}`);
+
+  function renderSubAreas() {
+    if (loading) {
+      return <LoadingBar />;
+    }
+
+    if (error) {
+      return <p>Error loading parks data: {error.message}</p>;
+    }
+
+    return getSubAreas(park);
+  }
 
   return (
     <div className="page park-details">
       <NavBack routePath={"/"}>Back to Dates management</NavBack>
 
       <header className="page-header internal">
-        <h1>Elk Falls Park #{parkId}</h1>
+        <h1>{park?.name}</h1>
       </header>
 
-      <section className="sub-area">
-        <h2>
-          <img src={walkInCamping} className="sub-area-icon" /> Frontcountry
-          Camping
-        </h2>
-
-        <div className="season">
-          <div className="details">
-            <header>
-              <h3>2025 season</h3>
-              <span className="badge rounded-pill text-bg-warning">
-                Requested
-              </span>
-              <button className="btn btn-text-primary expand-toggle">
-                <span>Last updated: Never</span>
-                <FontAwesomeIcon
-                  className="append-content ms-2"
-                  icon={faChevronDown}
-                />
-              </button>
-            </header>
-          </div>
-
-          <div className="controls">
-            <button className="btn btn-text-primary">
-              <FontAwesomeIcon className="append-content me-2" icon={faPen} />
-              <span>Edit</span>
-            </button>
-          </div>
-        </div>
-
-        <div className="season expanded">
-          <div className="details expanded">
-            <header>
-              <h3>2024 season</h3>
-              <span className="badge rounded-pill text-bg-success">
-                Published
-              </span>
-              <button className="btn btn-text-primary expand-toggle">
-                <span>Last updated: Never</span>
-                <FontAwesomeIcon
-                  className="append-content ms-2"
-                  icon={faChevronUp}
-                />
-              </button>
-            </header>
-
-            <div className="details-content">
-              <h4>Alouette Campground</h4>
-
-              <table className="table table-striped sub-area-dates">
-                <tbody>
-                  <tr>
-                    <th scope="row">Operating dates</th>
-                    <td>Mon, Mar 28 - Wed, Oct 15</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Reservation dates</th>
-                    <td>
-                      Tue, Mar 28 - Wed, Apr 1<br />
-                      Mon, May 1 - Wed, Oct 14
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-
-              <h4>Gold Creek Campground</h4>
-
-              <table className="table table-striped sub-area-dates">
-                <tbody>
-                  <tr>
-                    <th scope="row">Operating dates</th>
-                    <td>Mon, Mar 28 - Wed, Oct 15</td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Reservation dates</th>
-                    <td>
-                      Tue, Mar 28 - Wed, Apr 1<br />
-                      Mon, May 1 - Wed, Oct 14
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <div className="controls">
-            <button className="btn btn-text-primary">
-              <FontAwesomeIcon className="append-content me-2" icon={faPen} />
-              <span>Edit</span>
-            </button>
-
-            <div className="divider"></div>
-
-            <button className="btn btn-text-primary">
-              <FontAwesomeIcon
-                className="append-content me-2"
-                icon={faCircleExclamation}
-              />
-              <span>Preview</span>
-            </button>
-          </div>
-        </div>
-      </section>
+      {renderSubAreas()}
     </div>
   );
 }

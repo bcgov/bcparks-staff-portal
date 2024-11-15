@@ -1,7 +1,11 @@
 .page.park-details {
   .sub-area {
+    &:not(:last-of-type) {
+      margin-bottom: var(--layout-margin-xxlarge);
+    }
+
     & > h2 {
-      margin-bottom: var(--layout-margin-xlarge);
+      margin-bottom: var(--layout-margin-large);
       display: flex;
       gap: var(--layout-margin-medium);
 
@@ -66,14 +70,15 @@
       .details-content {
         padding: 0 var(--layout-padding-large) var(--layout-padding-large);
 
+        .feature {
+          &:not(:last-of-type) {
+            margin-bottom: var(--layout-margin-large);
+          }
+        }
+
         .sub-area-dates {
           border-top: var(--layout-border-width-medium) solid
             var(--surface-color-border-dark);
-          margin-bottom: var(--layout-margin-large);
-
-          &:last-child {
-            margin-bottom: 0;
-          }
         }
       }
     }
@@ -92,6 +97,7 @@
         border-left: none;
         border-radius: 0 var(--layout-border-radius-medium)
           var(--layout-border-radius-medium) 0;
+        min-height: 5.5rem;
       }
 
       .divider {

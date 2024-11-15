@@ -15,6 +15,233 @@ const router = Router();
 router.get(
   "/seasons/:seasonId",
   asyncHandler(async (req, res) => {
+    if (!req.params.sendRealData) {
+      const data = {
+        id: 3,
+        operatingYear: 2025,
+        status: "not started",
+        featureType: {
+          id: 1,
+          name: "Frontcountry Camping",
+        },
+        park: {
+          id: 1,
+          name: "Golen Ears",
+          orcs: "1",
+        },
+        dateTypes: {
+          Reservation: {
+            id: 2,
+            name: "Reservation",
+          },
+          Operation: {
+            id: 1,
+            name: "Operation",
+          },
+        },
+        campgrounds: [
+          {
+            id: 1,
+            name: "Alouette Campground",
+            features: [
+              {
+                id: 1,
+                name: "Campsites 1-15",
+                hasReservations: true,
+                campground: {
+                  id: 1,
+                  name: "Alouette Campground",
+                },
+                dateable: {
+                  id: 1,
+                  currentSeasonDates: [
+                    {
+                      id: 4,
+                      seasonId: 3,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                    {
+                      id: 104,
+                      seasonId: 3,
+                      startDate: "2022-11-01",
+                      endDate: "2022-11-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                    {
+                      id: 105,
+                      seasonId: 3,
+                      startDate: "2022-12-05",
+                      endDate: "2022-12-15",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                    {
+                      id: 3,
+                      seasonId: 3,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 1,
+                        name: "Operation",
+                      },
+                    },
+                  ],
+                  previousSeasonDates: [
+                    {
+                      id: 2,
+                      seasonId: 1,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                    {
+                      id: 1,
+                      seasonId: 1,
+                      startDate: "2022-04-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 1,
+                        name: "Operation",
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                id: 2,
+                name: "Campsites 16-30",
+                hasReservations: true,
+                campground: {
+                  id: 1,
+                  name: "Alouette Campground",
+                },
+                dateable: {
+                  id: 2,
+                  currentSeasonDates: [
+                    {
+                      id: 8,
+                      seasonId: 3,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                    {
+                      id: 7,
+                      seasonId: 3,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 1,
+                        name: "Operation",
+                      },
+                    },
+                  ],
+                  previousSeasonDates: [
+                    {
+                      id: 5,
+                      seasonId: 1,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 1,
+                        name: "Operation",
+                      },
+                    },
+                    {
+                      id: 6,
+                      seasonId: 1,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                  ],
+                },
+              },
+              {
+                id: 3,
+                name: "Campsites 31-45",
+                hasReservations: true,
+                campground: {
+                  id: 1,
+                  name: "Alouette Campground",
+                },
+                dateable: {
+                  id: 3,
+                  currentSeasonDates: [
+                    {
+                      id: 11,
+                      seasonId: 3,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 1,
+                        name: "Operation",
+                      },
+                    },
+                    {
+                      id: 12,
+                      seasonId: 3,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                  ],
+                  previousSeasonDates: [
+                    {
+                      id: 9,
+                      seasonId: 1,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 1,
+                        name: "Operation",
+                      },
+                    },
+                    {
+                      id: 10,
+                      seasonId: 1,
+                      startDate: "2022-05-01",
+                      endDate: "2022-09-30",
+                      dateType: {
+                        id: 2,
+                        name: "Reservation",
+                      },
+                    },
+                  ],
+                },
+              },
+            ],
+          },
+        ],
+        features: [],
+      };
+
+      res.json(data);
+      return;
+    }
+
     const { seasonId } = req.params;
 
     const seasonModel = await Season.findByPk(seasonId, {
