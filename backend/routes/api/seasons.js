@@ -92,7 +92,7 @@ router.get(
       seasonIds.push(prevSeason.id);
     }
 
-    // we fetch features separetely
+    // we fetch features separately
     // later assign each feature's date ranges to the respective season
     const parkFeatures = await Feature.findAll({
       where: {

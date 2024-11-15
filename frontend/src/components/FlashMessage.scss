@@ -11,16 +11,16 @@
   gap: 12px;
 
   padding: var(--layout-padding-medium);
-  border-radius: var(--layout-borderRadius-large);
-  color: var(--typography-color-primaryInvert);
+  border-radius: var(--layout-border-radius-large);
+  color: var(--typography-color-primary-invert);
   animation: slideIn 0.3s ease-out;
 
   &.success {
-    background-color: var(--support-borderColor-success);
+    background-color: var(--support-border-color-success);
   }
 
   &.info {
-    background-color: var(--support-borderColor-info);
+    background-color: var(--support-border-color-info);
   }
 
   &__icon {
@@ -37,7 +37,7 @@
   }
 
   &__subtitle {
-    font-size: var(--typography-regular-smallBody);
+    font-size: var(--typography-font-size-small-body);
     opacity: 0.9;
   }
 
@@ -45,8 +45,8 @@
     margin-left: var(--layout-margin-large);
     background: none;
     border: none;
-    color: var(--typography-color-primaryInvert);
-    font-size: var(--typography-regular-H4);
+    color: var(--typography-color-primary-invert);
+    font-size: var(--typography-font-size-h4);
     opacity: 0.7;
     cursor: pointer;
     padding: 0;
