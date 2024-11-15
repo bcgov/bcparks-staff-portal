@@ -79,7 +79,7 @@
   .tooltip-text {
     visibility: hidden;
     background-color: var(--surface-color-border-dark);
-    color: (--typography-color-primaryInvert);
+    color: var(--typography-color-primary-invert);
     text-align: center;
     padding: var(--layout-padding-xsmall) var(--layout-padding-small);
     border-radius: var(--layout-borderRadius-large);
