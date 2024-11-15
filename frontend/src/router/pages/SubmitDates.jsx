@@ -193,7 +193,7 @@ function SubmitDates() {
   function Campground({ campground }) {
     return (
       <section className="campground">
-        <h2>{campground.name}</h2>
+        <h2 className="campground-name">{campground.name}</h2>
         {campground.features.map((feature) => (
           <Feature key={feature.id} feature={feature} />
         ))}
@@ -435,7 +435,7 @@ function SubmitDates() {
         </h1>
       </header>
 
-      <h2>
+      <h2 className="sub-area-name">
         <img src={groupCamping} className="sub-area-icon" />{" "}
         {season?.featureType.name}
       </h2>

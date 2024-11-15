@@ -1,5 +1,6 @@
 .page.submit-dates {
-  h2 {
+  h2.sub-area-name,
+  h2.campground-name {
     margin-bottom: var(--layout-margin-xlarge);
     display: flex;
     gap: var(--layout-margin-medium);

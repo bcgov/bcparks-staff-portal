@@ -66,5 +66,14 @@ header.page-header {
 
 // override bootstrap theme styles: don't shrink radio/checkbox labels
 label.form-check-label {
-  font-size: var(--typography-regular-body) !important;
+  font-size: var(--typography-font-size-body) !important;
+}
+
+// overrides for the datepicker component package
+.react-datepicker {
+  // prevent the bootstrap theme from making the month name huge
+  h2 {
+    font-size: var(--typography-font-size-body) !important;
+    display: block !important;
+  }
 }
