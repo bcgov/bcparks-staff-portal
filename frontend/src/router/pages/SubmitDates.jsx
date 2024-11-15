@@ -18,7 +18,7 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import PropTypes from "prop-types";
 
-import { useApiGet, post } from "@/hooks/useApi";
+import { useApiGet, useApiPost } from "@/hooks/useApi";
 import "./SubmitDates.scss";
 
 function SubmitDates() {
@@ -34,6 +34,11 @@ function SubmitDates() {
   const [showFlash, setShowFlash] = useState(false);
 
   const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
+  const {
+    sendData,
+    // error: saveError, // @TODO: handle save errors
+    loading: saving,
+  } = useApiPost(`/seasons/${seasonId}/save/`);
 
   const navigate = useNavigate();
 
@@ -43,7 +48,6 @@ function SubmitDates() {
       throw new Error("Validation error");
     }
 
-    const endpoint = `/seasons/${seasonId}/save/`;
     const payload = {
       notes,
       readyToPublish,
@@ -53,7 +57,7 @@ function SubmitDates() {
       ),
     };
 
-    const response = await post(endpoint, payload);
+    const response = await sendData(payload);
 
     return response;
   }
@@ -505,6 +509,13 @@ function SubmitDates() {
             >
               Continue to preview
             </button>
+
+            {saving && (
+              <span
+                className="spinner-border text-primary align-self-center me-2"
+                aria-hidden="true"
+              ></span>
+            )}
           </div>
         </div>
       </div>
