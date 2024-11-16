@@ -28,6 +28,7 @@ export function useApiGet(endpoint, options = {}) {
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
+
     try {
       requestSent.current = true;
 
@@ -52,4 +53,32 @@ export function useApiGet(endpoint, options = {}) {
 
   // Return fetchData so it can be called externally
   return { data, loading, error, fetchData };
+}
+
+export function useApiPost(endpoint) {
+  const [responseData, setResponseData] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const sendData = useCallback(
+    async (payload) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axiosInstance.post(endpoint, payload);
+
+        setResponseData(response.data);
+        return response.data;
+      } catch (err) {
+        setError(err);
+        throw err;
+      } finally {
+        setLoading(false);
+      }
+    },
+    [endpoint],
+  );
+
+  return { responseData, loading, error, sendData };
 }

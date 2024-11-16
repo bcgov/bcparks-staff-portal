@@ -1,11 +1,42 @@
 .page.submit-dates {
-  h2 {
+  h2.sub-area-name,
+  h2.campground-name {
     margin-bottom: var(--layout-margin-xlarge);
     display: flex;
     gap: var(--layout-margin-medium);
 
     .sub-area-icon {
       height: 1.25em;
+    }
+  }
+
+  .react-datepicker-wrapper {
+    width: 100% !important;
+
+    input {
+      display: block;
+      width: 100%;
+      padding: 0.375rem 0.75rem;
+      font-size: 1rem;
+      font-weight: 400;
+      line-height: 1.5;
+      color: #2d2d2d;
+      appearance: none;
+      width: 100%;
+      background-color: var(--bs-body-bg);
+      background-clip: padding-box;
+      border: var(--bs-border-width) solid #d8d8d8;
+      border-radius: var(--bs-border-radius);
+      transition:
+        border-color 0.15s ease-in-out,
+        box-shadow 0.15s ease-in-out;
+    }
+  }
+
+  .campground {
+    // alternating background color
+    &:nth-child(even) {
+      background-color: var(--surface-color-background-light-gray);
     }
   }
 
@@ -38,5 +69,68 @@
 
   .controls {
     gap: var(--layout-margin-medium);
+  }
+
+  .tooltip-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .tooltip-text {
+    visibility: hidden;
+    background-color: var(--surface-color-border-dark);
+    color: var(--typography-color-primary-invert);
+    text-align: center;
+    padding: var(--layout-padding-xsmall) var(--layout-padding-small);
+    border-radius: var(--layout-border-radius-large);
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position above the icon */
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 14px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Arrow at the bottom of tooltip */
+  .tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: var(--layout-border-width-large);
+    border-style: solid;
+    border-color: var(--surface-color-border-dark) transparent transparent
+      transparent;
+  }
+
+  .has-error {
+    textarea {
+      border: 1px solid var(--support-border-color-danger);
+    }
+  }
+
+  .error-message {
+    color: var(--support-border-color-danger);
+  }
+
+  .notes {
+    .note-metadata {
+      color: var(--typography-color-secondary);
+      filter: brightness(1.5); // muted font color, lighter than color-secondary
+    }
+
+    .controls {
+      gap: var(--layout-margin-medium);
+    }
+  }
+
+  /* Show tooltip on hover */
+  .tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
   }
 }

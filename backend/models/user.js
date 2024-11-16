@@ -8,6 +8,10 @@ export default (sequelize) => {
     // @param models
     static associate(models) {
       // define association here
+      User.hasMany(models.SeasonChangeLog, {
+        foreignKey: "userId",
+        as: "changeLogs",
+      });
     }
   }
   User.init(
