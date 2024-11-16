@@ -14,6 +14,16 @@
     }
   }
 
+  .type-column {
+    min-width: 5rem;
+    width: 5rem;
+  }
+
+  .date-column {
+    min-width: 9rem;
+    width: 9rem;
+  }
+
   // spacing between DateRange components
   td:not(:last-child) .date-range {
     margin-right: 1em;

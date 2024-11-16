@@ -17,10 +17,10 @@ function getParkStatus(seasons) {
     return "requested";
   }
 
-  const underReview = seasons.some((s) => s.status === "under_review");
+  const underReview = seasons.some((s) => s.status === "under review");
 
   if (underReview) {
-    return "under_review";
+    return "under review";
   }
 
   const approved = seasons.some((s) => s.status === "approved");

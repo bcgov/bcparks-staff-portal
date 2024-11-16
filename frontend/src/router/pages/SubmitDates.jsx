@@ -2,13 +2,11 @@ import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import NavBack from "../../components/NavBack";
-import groupCamping from "../../assets/icons/group-camping.svg";
-import {
-  formatDateRange,
-  formatTimestamp,
-  formatDatetoISO,
-} from "../../lib/utils";
+import NavBack from "@/components/NavBack";
+import ContactBox from "@/components/ContactBox";
+import ReadyToPublishBox from "@/components/ReadyToPublishBox";
+import groupCamping from "@/assets/icons/group-camping.svg";
+import { formatDateRange, formatTimestamp, formatDatetoISO } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import { useNavigate } from "react-router-dom";
@@ -78,7 +76,7 @@ function SubmitDates() {
       if (hasChanges()) {
         await submitChanges();
       }
-      navigate(`/park/${parkId}/edit/${seasonId}/review`);
+      navigate(`/park/${parkId}/edit/${seasonId}/preview`);
     } catch (err) {
       console.error(err);
     }
@@ -453,11 +451,6 @@ function SubmitDates() {
         <div className="col-lg-6">
           <h2 className="mb-4">Notes</h2>
 
-          <p>
-            If there is a change from previous years or updated date
-            information, please provide information on what has changed.
-          </p>
-
           {season?.changeLogs.map((changeLog) => (
             <p key={changeLog.id}>
               {changeLog.notes && (
@@ -472,6 +465,12 @@ function SubmitDates() {
               </span>
             </p>
           ))}
+
+          <p>
+            If you are updating the current year’s dates, provide an explanation
+            for why dates have changed. Provide any other notes about these
+            dates if needed.
+          </p>
 
           <div
             className={`form-group mb-4 ${validationError ? "has-error" : ""}`}
@@ -489,43 +488,12 @@ function SubmitDates() {
             )}
           </div>
 
-          <div className="alert alert-cta-contact mb-4" role="alert">
-            <p>
-              <b>Questions?</b>
-            </p>
+          <ContactBox />
 
-            <p className="mb-0">
-              Missing an area or it needs adjustment?
-              <br />
-              For any question, please contact{" "}
-              <a href="mailto:parksweb@bcparks.ca">parksweb@bcparks.ca</a>
-            </p>
-          </div>
-
-          <div className="mb-12">
-            <h2 className="mb-4">Ready to publish?</h2>
-
-            <p>
-              Are these dates ready to be made available to the public the next
-              time dates are published? When turned off, it will be flagged and
-              held in the ‘Approved’ state until it is marked ‘Ready to
-              publish’. Approved dates are included in exported files.
-            </p>
-
-            <div className="form-check form-switch mb-4">
-              <input
-                value={readyToPublish}
-                onChange={() => setReadyToPublish(!readyToPublish)}
-                className="form-check-input"
-                type="checkbox"
-                role="switch"
-                id="ready-to-publish"
-              />
-              <label className="form-check-label" htmlFor="ready-to-publish">
-                Ready to publish
-              </label>
-            </div>
-          </div>
+          <ReadyToPublishBox
+            readyToPublish={readyToPublish}
+            setReadyToPublish={setReadyToPublish}
+          />
 
           <div className="controls d-flex mt-4">
             <button type="button" className="btn btn-outline-primary">
