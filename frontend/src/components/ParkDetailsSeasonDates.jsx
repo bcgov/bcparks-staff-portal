@@ -72,8 +72,8 @@ export default function SeasonDates({ data }) {
 // prop validation
 const dateRangePropShape = PropTypes.shape({
   id: PropTypes.number.isRequired,
-  startDate: PropTypes.string.isRequired,
-  endDate: PropTypes.string.isRequired,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
   dateType: PropTypes.shape({
     name: PropTypes.string.isRequired,
   }).isRequired,

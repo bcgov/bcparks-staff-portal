@@ -1,13 +1,32 @@
-export function formatDate(date) {
-  const options = {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    weekday: "short",
-    timeZone: "UTC",
-  };
+import { format, parseISO, formatISO } from "date-fns";
 
-  return new Date(date).toLocaleDateString("en-US", options);
+// Month, day, year
+const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
+// Abbreviated day of the week, abbreviated month, day
+const DATE_FORMAT_SHORT = "EEE, MMM d";
+// Abbreviated month, day, year, time
+const DATE_FORMAT_TIMESTAMP = "MMM d, yyyy, h:mm a";
+
+/**
+ * Formats an ISO date string into a human-readable string
+ * @param {string} isoString ISO date string
+ * @param {string} formatString date-fns formatting string
+ * @returns {string} The formatted date string
+ */
+function isoToFormattedString(isoString, formatString) {
+  if (!isoString) return "";
+
+  const date = parseISO(isoString);
+
+  return format(date, formatString);
+}
+
+export function formatDate(date) {
+  return isoToFormattedString(date, DATE_FORMAT_DEFAULT);
+}
+
+export function formatDateShort(date) {
+  return isoToFormattedString(date, DATE_FORMAT_SHORT);
 }
 
 export function formatDateRange(dateRange) {
@@ -18,25 +37,11 @@ export function formatDateRange(dateRange) {
 }
 
 export function formatTimestamp(timestamp) {
-  // Parse the timestamp into a Date object
-  const date = new Date(timestamp);
-
-  // Get the options for formatting the date and time
-  const options = {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "America/Vancouver",
-    hour12: true,
-    hour: "numeric",
-    minute: "numeric",
-  };
-
-  // Format the date and time using the options
-  return date.toLocaleString("en-US", options);
+  return isoToFormattedString(timestamp, DATE_FORMAT_TIMESTAMP);
 }
 
 export function formatDatetoISO(date) {
   if (!date) return "";
-  return date.toISOString().split("T")[0];
+
+  return formatISO(date, { representation: "date" });
 }

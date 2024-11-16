@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import PropTypes from "prop-types";
 import { useNavigate, useParams } from "react-router-dom";
 import StatusBadge from "@/components/StatusBadge";
-import useDate from "@/hooks/useDate";
+import { formatDate } from "@/lib/utils";
 import { useApiGet } from "@/hooks/useApi";
 import LoadingBar from "@/components/LoadingBar";
 import SeasonDates from "@/components/ParkDetailsSeasonDates";
@@ -73,7 +73,7 @@ export default function ParkSeason({ season }) {
   // @TODO: implement logic to show/hide preview button
   const showPreviewButton = true;
 
-  const updateDate = useDate(season.updatedAt);
+  const updateDate = formatDate(season.updatedAt);
 
   function navigateToEdit() {
     navigate(`/park/${parkId}/edit/${season.id}`);
@@ -95,7 +95,7 @@ export default function ParkSeason({ season }) {
             onClick={toggleExpand}
             className="btn btn-text-primary expand-toggle"
           >
-            <span>Last updated: {updateDate.formatted()}</span>
+            <span>Last updated: {updateDate}</span>
             <FontAwesomeIcon
               className="append-content ms-2"
               icon={getExpandIcon()}
