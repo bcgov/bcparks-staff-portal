@@ -100,7 +100,7 @@ router.get(
         active: true,
         featureTypeId: season.featureType.id,
       },
-      attributes: ["id", "name", "hasReservations"],
+      attributes: ["id", "name", "hasReservations", "active"],
       include: [
         {
           model: Campground,

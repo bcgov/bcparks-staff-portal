@@ -1,14 +1,19 @@
-import { useParams } from "react-router-dom";
+import PropTypes from "prop-types";
+import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { formatDate, formatTimestamp } from "@/lib/utils";
+import { formatTimestamp } from "@/lib/utils";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 
-import NavBack from "../../components/NavBack";
-import walkInCamping from "../../assets/icons/walk-in-camping.svg";
+import { faPen } from "@fa-kit/icons/classic/solid";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import NavBack from "@/components/NavBack";
+import walkInCamping from "@/assets/icons/walk-in-camping.svg";
 import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import FlashMessage from "@/components/FlashMessage";
+import DateRange from "@/components/DateRange";
 
 import { Link } from "react-router-dom";
 
@@ -16,6 +21,7 @@ import "./PreviewChanges.scss";
 
 function PreviewChanges() {
   const { parkId, seasonId } = useParams();
+  const navigate = useNavigate();
 
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
@@ -32,6 +38,72 @@ function PreviewChanges() {
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
+
+  function navigateToEdit() {
+    navigate(`/park/${parkId}/edit/${seasonId}`);
+  }
+
+  function getPrevSeasonOperatingDates(feature) {
+    const dates = feature.dateable.previousSeasonDates.filter(
+      (dateRange) => dateRange.dateType.name === "Operation",
+    );
+
+    if (dates.length === 0) {
+      return "Not available";
+    }
+    return dates.map((date) => (
+      <DateRange key={date.id} start={date.startDate} end={date.endDate} />
+    ));
+  }
+
+  function getPrevSeasonReservationDates(feature) {
+    const dates = feature.dateable.previousSeasonDates.filter(
+      (dateRange) => dateRange.dateType.name === "Reservation",
+    );
+
+    if (dates.length === 0) {
+      return "Not available";
+    }
+    return dates.map((date) => (
+      <DateRange key={date.id} start={date.startDate} end={date.endDate} />
+    ));
+  }
+
+  function getCurrentSeasoOperationDates(feature) {
+    if (!feature.active) {
+      return "Not requested";
+    }
+
+    const dates = feature.dateable.currentSeasonDates.filter(
+      (dateRange) => dateRange.dateType.name === "Operation",
+    );
+
+    return dates.map((dateRange) => (
+      <DateRange
+        key={dateRange.id}
+        start={dateRange.startDate}
+        end={dateRange.endDate}
+      />
+    ));
+  }
+
+  function getCurrentSeasonReservationDates(feature) {
+    if (!feature.active) {
+      return "Not requested";
+    }
+
+    const dates = feature.dateable.currentSeasonDates.filter(
+      (dateRange) => dateRange.dateType.name === "Reservation",
+    );
+
+    return dates.map((dateRange) => (
+      <DateRange
+        key={dateRange.id}
+        start={dateRange.startDate}
+        end={dateRange.endDate}
+      />
+    ));
+  }
 
   async function savePreview() {
     await saveData({
@@ -66,79 +138,48 @@ function PreviewChanges() {
                 <th scope="col" className="type-column">
                   Type of date
                 </th>
-                <th scope="col" className="date-column">
+                <th scope="col" className="prev-date-column">
                   {data?.operatingYear - 1}
                 </th>
-                <th scope="col" className="date-column">
+                <th scope="col" className="current-date-column">
                   {data?.operatingYear}
                 </th>
+                <th scope="col" className="actions-column"></th>
               </tr>
             </thead>
             <tbody>
               <tr>
                 <td>Operating</td>
+                <td>{getPrevSeasonOperatingDates(feature)}</td>
+                <td>{getCurrentSeasoOperationDates(feature)}</td>
                 <td>
-                  {feature.dateable.previousSeasonDates
-                    .filter(
-                      (dateRange) => dateRange.dateType.name === "Operation",
-                    )
-                    .map((date) => (
-                      <div className="date-range" key={date.id}>
-                        <span className="date">
-                          {formatDate(date.startDate)}
-                        </span>
-                        <span className="separator">–</span>
-                        <span className="date">{formatDate(date.endDate)}</span>
-                      </div>
-                    ))}
-                </td>
-                <td>
-                  {feature.dateable.currentSeasonDates
-                    .filter(
-                      (dateRange) => dateRange.dateType.name === "Operation",
-                    )
-                    .map((date) => (
-                      <div className="date-range" key={date.id}>
-                        <span className="date">
-                          {formatDate(date.startDate)}
-                        </span>
-                        <span className="separator">–</span>
-                        <span className="date">{formatDate(date.endDate)}</span>
-                      </div>
-                    ))}
+                  <button
+                    onClick={navigateToEdit}
+                    className="btn btn-text-primary"
+                  >
+                    <FontAwesomeIcon
+                      className="append-content me-2"
+                      icon={faPen}
+                    />
+                    <span>Edit</span>
+                  </button>
                 </td>
               </tr>
               <tr>
                 <td>Reservation</td>
+                <td>{getPrevSeasonReservationDates(feature)}</td>
+                <td>{getCurrentSeasonReservationDates(feature)}</td>
                 <td>
-                  {feature.dateable.previousSeasonDates
-                    .filter(
-                      (dateRange) => dateRange.dateType.name === "Reservation",
-                    )
-                    .map((date) => (
-                      <div className="date-range" key={date.id}>
-                        <span className="date">
-                          {formatDate(date.startDate)}
-                        </span>
-                        <span className="separator">–</span>
-                        <span className="date">{formatDate(date.endDate)}</span>
-                      </div>
-                    ))}
-                </td>
-                <td>
-                  {feature.dateable.currentSeasonDates
-                    .filter(
-                      (dateRange) => dateRange.dateType.name === "Operation",
-                    )
-                    .map((date) => (
-                      <div className="date-range" key={date.id}>
-                        <span className="date">
-                          {formatDate(date.startDate)}
-                        </span>
-                        <span className="separator">–</span>
-                        <span className="date">{formatDate(date.endDate)}</span>
-                      </div>
-                    ))}
+                  <button
+                    onClick={navigateToEdit}
+                    className="btn btn-text-primary"
+                  >
+                    <FontAwesomeIcon
+                      className="append-content me-2"
+                      icon={faPen}
+                    />
+                    <span>Edit</span>
+                  </button>
                 </td>
               </tr>
             </tbody>
@@ -147,6 +188,10 @@ function PreviewChanges() {
       </div>
     );
   }
+
+  Feature.propTypes = {
+    feature: PropTypes.object,
+  };
 
   function Campground({ campground }) {
     return (
@@ -159,6 +204,15 @@ function PreviewChanges() {
       </div>
     );
   }
+
+  // add proptypes with shape
+  Campground.propTypes = {
+    campground: PropTypes.shape({
+      id: PropTypes.number,
+      name: PropTypes.string,
+      features: PropTypes.arrayOf(PropTypes.object),
+    }),
+  };
 
   useEffect(() => {
     if (!data) {

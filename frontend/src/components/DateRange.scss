@@ -5,10 +5,6 @@
 
   .date {
     max-width: fit-content;
-
-    @media (min-width: 576px) {
-      min-width: 6em;
-    }
   }
 
   .separator {

@@ -14,14 +14,22 @@
     }
   }
 
-  .type-column {
-    min-width: 5rem;
-    width: 5rem;
+  .type-column,
+  .prev-date-column {
+    width: 33.33%;
   }
 
-  .date-column {
-    min-width: 9rem;
-    width: 9rem;
+  .current-date-column {
+    width: 25%;
+  }
+
+  .actions-column {
+    width: 8.33%;
+  }
+
+  .table th,
+  .table td {
+    vertical-align: middle;
   }
 
   // spacing between DateRange components

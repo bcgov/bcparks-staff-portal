@@ -6,7 +6,7 @@ import "./DateRange.scss";
 // Displays a date range in a table cell
 export default function DateRange({ start, end }) {
   if (!start || !end) {
-    return null;
+    return "Not submitted";
   }
 
   const startDate = formatDateShort(start);
