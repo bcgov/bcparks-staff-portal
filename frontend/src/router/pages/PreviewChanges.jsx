@@ -43,22 +43,9 @@ function PreviewChanges() {
     navigate(`/park/${parkId}/edit/${seasonId}`);
   }
 
-  function getPrevSeasonOperatingDates(feature) {
+  function getPrevSeasonDates(feature, dateType) {
     const dates = feature.dateable.previousSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === "Operation",
-    );
-
-    if (dates.length === 0) {
-      return "Not available";
-    }
-    return dates.map((date) => (
-      <DateRange key={date.id} start={date.startDate} end={date.endDate} />
-    ));
-  }
-
-  function getPrevSeasonReservationDates(feature) {
-    const dates = feature.dateable.previousSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === "Reservation",
+      (dateRange) => dateRange.dateType.name === dateType,
     );
 
     if (dates.length === 0) {
@@ -132,7 +119,7 @@ function PreviewChanges() {
             <tbody>
               <tr>
                 <td>Operating</td>
-                <td>{getPrevSeasonOperatingDates(feature)}</td>
+                <td>{getPrevSeasonDates(feature, "Operation")}</td>
                 <td>{getCurrentSeasonDates(feature, "Operation")}</td>
                 <td>
                   <button
@@ -149,7 +136,7 @@ function PreviewChanges() {
               </tr>
               <tr>
                 <td>Reservation</td>
-                <td>{getPrevSeasonReservationDates(feature)}</td>
+                <td>{getPrevSeasonDates(feature, "Reservation")}</td>
                 <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
                 <td>
                   <button
