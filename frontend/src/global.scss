@@ -43,6 +43,16 @@ header.page-header {
   }
 }
 
+// override bootstrap theme's text hover color
+:root {
+  --bs-link-hover-color: var(--surface-color-primary-hover);
+  --bs-btn-hover-color: var(--surface-color-primary-hover);
+}
+a:hover,
+a:not(.btn):focus {
+  color: var(--surface-color-primary-hover);
+}
+
 // custom bootstrap button style: "text"
 .btn-text-primary {
   --bs-btn-color: var(--theme-primary-blue);
