@@ -69,31 +69,13 @@ function PreviewChanges() {
     ));
   }
 
-  function getCurrentSeasoOperationDates(feature) {
+  function getCurrentSeasonDates(feature, dateType) {
     if (!feature.active) {
       return "Not requested";
     }
 
     const dates = feature.dateable.currentSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === "Operation",
-    );
-
-    return dates.map((dateRange) => (
-      <DateRange
-        key={dateRange.id}
-        start={dateRange.startDate}
-        end={dateRange.endDate}
-      />
-    ));
-  }
-
-  function getCurrentSeasonReservationDates(feature) {
-    if (!feature.active) {
-      return "Not requested";
-    }
-
-    const dates = feature.dateable.currentSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === "Reservation",
+      (dateRange) => dateRange.dateType.name === dateType,
     );
 
     return dates.map((dateRange) => (
@@ -151,7 +133,7 @@ function PreviewChanges() {
               <tr>
                 <td>Operating</td>
                 <td>{getPrevSeasonOperatingDates(feature)}</td>
-                <td>{getCurrentSeasoOperationDates(feature)}</td>
+                <td>{getCurrentSeasonDates(feature, "Operation")}</td>
                 <td>
                   <button
                     onClick={navigateToEdit}
@@ -168,7 +150,7 @@ function PreviewChanges() {
               <tr>
                 <td>Reservation</td>
                 <td>{getPrevSeasonReservationDates(feature)}</td>
-                <td>{getCurrentSeasonReservationDates(feature)}</td>
+                <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
                 <td>
                   <button
                     onClick={navigateToEdit}
