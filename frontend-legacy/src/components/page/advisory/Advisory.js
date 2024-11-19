@@ -316,7 +316,7 @@ export default function Advisory({
                 selNaturalResourceDistricts.push(naturalResourceDistricts.find((l) => l.value === f.id));
               });
               setSelectedNaturalResourceDistricts([...selNaturalResourceDistricts]);
-            }            
+            }
             const links = advisoryData.links;
             if (links.length > 0) {
               links.forEach((l) => {
@@ -1101,7 +1101,7 @@ export default function Advisory({
                     setToBack();
                     sessionStorage.clear();
                   }}>
-                  <ArrowBackIcon className="mr-1" />
+                  <ArrowBackIcon className="me-1" />
                   Back to {mode === "create" ? "public advisories" : "advisory preview"}
                 </button>
                 <h2 className="mt-5 mb-0">

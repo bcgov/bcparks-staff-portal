@@ -1181,7 +1181,7 @@ export default function AdvisoryForm({
               <div className="col-lg-7 col-md-8 col-sm-12">
                 <div className="d-flex field-bg-blue">
                   <WarningIcon className="warningIcon" />
-                  <div className="ml-3">
+                  <div className="ms-3">
                     <p>
                       <b>This is an after-hours advisory</b><br />
                       The web team's business hours are<br />
@@ -1196,7 +1196,7 @@ export default function AdvisoryForm({
                         value="Publish"
                         name="after-hour-submission"
                         inputProps={{ "aria-label": "Publish immediately" }}
-                        className="mr-2"
+                        className="me-2"
                       />
                       <p><b className="required">Urgent/safety-related advisory.</b> Publish immediately.</p>
                     </div>
@@ -1211,7 +1211,7 @@ export default function AdvisoryForm({
                         inputProps={{
                           "aria-label": "Submit for web team review",
                         }}
-                        className="mr-2"
+                        className="me-2"
                       />
                       <p><b>Advisory is not urgent.</b> Submit for web team review.</p>
                     </div>

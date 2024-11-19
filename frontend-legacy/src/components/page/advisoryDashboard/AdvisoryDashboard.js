@@ -555,7 +555,7 @@ export default function AdvisoryDashboard({
           <div className="col-lg-6 col-md-4 col-sm-12">
             <h2 className="float-left">Public Advisories</h2>
           </div>
-          <div className="col-lg-6 col-md-4 col-sm-12 text-right">
+          <div className="col-lg-6 col-md-4 col-sm-12 text-end">
             <Button
               label="Create a new Advisory"
               styling="bcgov-normal-yellow btn"
@@ -607,7 +607,7 @@ export default function AdvisoryDashboard({
             />
           </div>
           <div className="col-xl-3 col-md-4 col-sm-12">
-            <FormControlLabel className="ml-1" control={
+            <FormControlLabel className="ms-1" control={
               <Checkbox
                 checked={showArchived}
                 onChange={(e) => {
@@ -624,9 +624,9 @@ export default function AdvisoryDashboard({
                 </small>
                 <LightTooltip
                   arrow
-                  title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this 
+                  title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this
                    box to include inactive advisories modified in the past 18 months. Older advisories are available in Strapi.">
-                  <HelpIcon className="helpIcon ml-1" />
+                  <HelpIcon className="helpIcon ms-1" />
                 </LightTooltip>
               </>
             } />

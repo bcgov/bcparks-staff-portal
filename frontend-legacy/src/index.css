@@ -26,7 +26,7 @@ main {
 }
 
 h1, h2 {
-  color: var(--color-blue);
+  color: var(--color-blue) !important;
 }
 
 a {
