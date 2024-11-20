@@ -12,19 +12,19 @@
 
 ### Dev
 
-```
+```sh
 helm -n a7dd13-dev install crunchy . -f values-dev.yaml
 ```
 
 ### Test
 
-```
+```sh
 helm -n a7dd13-test install crunchy . -f values-test.yaml
 ```
 
 ### Prod
 
-```
+```sh
 helm -n a7dd13-prod install crunchy . -f values-prod.yaml
 ```
 
@@ -32,7 +32,7 @@ helm -n a7dd13-prod install crunchy . -f values-prod.yaml
 
 The crunchy pods need a network policy that allows them to talk to each other. The policy below works, but something more secure might be possible.
 
-```
+```sh
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
@@ -54,19 +54,19 @@ Alpha environments share the crunchy-postgres infrastructure with the main envir
 
 ### Dev
 
-```
+```sh
 helm -n a7dd13-dev upgrade crunchy . -f values-dev.yaml
 ```
 
 ### Test
 
-```
+```sh
 helm -n a7dd13-test upgrade crunchy . -f values-test.yaml
 ```
 
 ### Prod
 
-```
+```sh
 helm -n a7dd13-prod upgrade crunchy . -f values-prod.yaml
 ```
 
@@ -76,13 +76,13 @@ Don't run `uninstall crunchy` unless you really want to lose all your data!
 
 ### Dev
 
-```
+```sh
 helm -n a7dd13-dev uninstall crunchy
 ```
 
 ### Test
 
-```
+```sh
 helm -n a7dd13-test uninstall crunchy
 ```
 
