@@ -14,6 +14,24 @@
     }
   }
 
+  .type-column,
+  .prev-date-column {
+    width: 33.33%;
+  }
+
+  .current-date-column {
+    width: 25%;
+  }
+
+  .actions-column {
+    width: 8.33%;
+  }
+
+  .table th,
+  .table td {
+    vertical-align: middle;
+  }
+
   // spacing between DateRange components
   td:not(:last-child) .date-range {
     margin-right: 1em;

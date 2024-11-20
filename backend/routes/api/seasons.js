@@ -39,7 +39,7 @@ router.get(
     const { seasonId } = req.params;
 
     const seasonModel = await Season.findByPk(seasonId, {
-      attributes: ["id", "operatingYear", "status"],
+      attributes: ["id", "operatingYear", "status", "readyToPublish"],
       include: [
         {
           model: FeatureType,
@@ -100,7 +100,7 @@ router.get(
         active: true,
         featureTypeId: season.featureType.id,
       },
-      attributes: ["id", "name", "hasReservations"],
+      attributes: ["id", "name", "hasReservations", "active"],
       include: [
         {
           model: Campground,
@@ -295,6 +295,50 @@ router.post(
         });
       }
     });
+
+    res.sendStatus(200);
+  }),
+);
+
+// approve
+router.post(
+  "/seasons/:seasonId/approve/",
+  asyncHandler(async (req, res) => {
+    const { seasonId } = req.params;
+    const { notes, readyToPublish } = req.body;
+
+    const season = await Season.findByPk(seasonId);
+
+    if (!season) {
+      const error = new Error("Season not found");
+
+      error.status = 404;
+      throw error;
+    }
+
+    // create season change log
+    await SeasonChangeLog.create({
+      seasonId,
+      userId: 1,
+      notes,
+      statusOldValue: season.status,
+      statusNewValue: "approved",
+      readyToPublishOldValue: season.readyToPublish,
+      readyToPublishNewValue: readyToPublish,
+    });
+
+    // update season
+    Season.update(
+      {
+        readyToPublish: true,
+        status: "approved",
+      },
+      {
+        where: {
+          id: seasonId,
+        },
+      },
+    );
 
     res.sendStatus(200);
   }),

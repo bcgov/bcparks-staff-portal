@@ -80,7 +80,7 @@ export default function ParkSeason({ season }) {
   }
 
   function navigateToPreview() {
-    navigate(`/park/${parkId}/edit/${season.id}/review`);
+    navigate(`/park/${parkId}/edit/${season.id}/preview`);
   }
 
   return (
