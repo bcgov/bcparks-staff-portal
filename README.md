@@ -6,6 +6,10 @@ Expanding and modernizing the BC Parks Dates of Operation tool.
 
 This project consists of a REST API server in `backend/` and a React JS frontend in `frontend/`. For more details, refer to the specific [backend README](./backend/README.md) and [frontend README](./frontend/README.md) files.
 
+The "Legacy frontend" is located in `frontend-legacy/` and communicates with the external Strapi CMS.
+
+Openshift Helm charts are located in `helm/`.
+
 ## Requirements
 
 This project is intended to be developed in VS Code Dev Containers. You will need VS Code and Docker installed on your host machine.
