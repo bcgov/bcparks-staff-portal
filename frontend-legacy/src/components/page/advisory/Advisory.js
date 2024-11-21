@@ -1104,9 +1104,9 @@ export default function Advisory({
                   <ArrowBackIcon className="me-1" />
                   Back to {mode === "create" ? "public advisories" : "advisory preview"}
                 </button>
-                <h2 className="mt-5 mb-0">
+                <h4 className="mt-5 mb-0">
                   {mode === "create" ? "Create a new" : "Edit"} advisory
-                </h2>
+                </h4>
                 <small className="small-text">
                   <span className="required">*</span> indicates a required field
                 </small>

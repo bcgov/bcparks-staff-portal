@@ -42,7 +42,7 @@ export default function Home({ page: { setError } }) {
       <div className="Home" data-testid="Home">
         <div className="container hm-container">
           <h1>Staff web portal</h1>
-          <h3>Please log in to continue</h3>
+          <h5>Please log in to continue</h5>
           <div className="row">
             <div className="col-lg-4"></div>
             <div className="col-lg-4">

@@ -553,7 +553,7 @@ export default function AdvisoryDashboard({
       <div className="container-fluid">
         <div className="row ad-row">
           <div className="col-lg-6 col-md-4 col-sm-12">
-            <h2 className="float-left">Public Advisories</h2>
+            <h4 className="float-left">Public Advisories</h4>
           </div>
           <div className="col-lg-6 col-md-4 col-sm-12 text-end">
             <Button
