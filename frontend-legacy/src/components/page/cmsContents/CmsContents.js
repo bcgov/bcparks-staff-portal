@@ -57,7 +57,7 @@ export default function CmsContents() {
             <tr>
               <th scope="col">Content Type</th>
               <th scope="col">Notes</th>
-              <th scope="col" className="text-right">
+              <th scope="col" className="text-end">
                 Record Count
               </th>
             </tr>

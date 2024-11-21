@@ -280,7 +280,7 @@ export default function AdvisorySummary({
                       <div className="row title">
                         <div className="col-md-8 col-12">
                           <p>Advisory #{advisory.advisoryNumber}</p>
-                          <h2>{advisory.title}</h2>
+                          <h4>{advisory.title}</h4>
                         </div>
                         <div className="col-md-4 col-12 d-flex align-items-center justify-content-end">
                           <Button
