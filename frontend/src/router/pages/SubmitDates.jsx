@@ -1,15 +1,23 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import {
+  omit,
+  mapValues,
+  maxBy,
+  minBy,
+  cloneDeep,
+  set as lodashSet,
+} from "lodash";
+import { differenceInCalendarDays } from "date-fns";
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange, formatTimestamp, formatDatetoISO } from "@/lib/utils";
+import { formatDateRange, formatTimestamp } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
-import { useNavigate } from "react-router-dom";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -23,12 +31,287 @@ function SubmitDates() {
   const { parkId, seasonId } = useParams();
 
   const [season, setSeason] = useState(null);
-  const [dates, setDates] = useState([]);
+  const [dates, setDates] = useState({});
   const [notes, setNotes] = useState("");
-  const [validationError, setValidationError] = useState(null);
   const [readyToPublish, setReadyToPublish] = useState(false);
 
   const [showFlash, setShowFlash] = useState(false);
+
+  // Validation errors
+  const [errors, setErrors] = useState({});
+  // @TODO: Track if the form has been submitted, and validate on change after that
+  const [formSubmitted, setFormSubmitted] = useState(false);
+
+  function addError(fieldId, message) {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [fieldId]: message,
+    }));
+    return false;
+  }
+
+  // Remove field key from errors
+  function clearError(fieldId) {
+    setErrors((prevErrors) => omit(prevErrors, fieldId));
+  }
+
+  // Returns true if innerStart and innerEnd are within outerStart and outerEnd
+  function checkWithinRange(outerStart, outerEnd, innerStart, innerEnd) {
+    return outerStart <= innerStart && outerEnd >= innerEnd;
+  }
+
+  // Calculates the extents of each date type for each campsite grouping
+  function getDateExtents(datesObj = dates) {
+    const mapped = mapValues(datesObj, (campsiteDates) =>
+      mapValues(campsiteDates, (dateTypeDates) => {
+        // Get the dateRange with the earliest start date for this campground & date type
+        const minDateRange = minBy(
+          dateTypeDates,
+          (dateRange) => new Date(dateRange.startDate),
+        );
+        const minDate = minDateRange?.startDate
+          ? new Date(minDateRange?.startDate)
+          : null;
+
+        // Get the dateRange with the latest end date for this campground & date type
+        const maxDateRange = maxBy(
+          dateTypeDates,
+          (dateRange) => new Date(dateRange.endDate),
+        );
+        const maxDate = maxDateRange?.endDate
+          ? new Date(maxDateRange.endDate)
+          : null;
+
+        return { minDate, maxDate };
+      }),
+    );
+
+    return mapped;
+  }
+
+  // @TODO: import from an external module
+  const validate = {
+    notes(value = notes) {
+      clearError("notes");
+
+      if (!value && ["approved", "published"].includes(season.status)) {
+        return addError(
+          "notes",
+          "Required when updating previously approved dates",
+        );
+      }
+
+      return true;
+    },
+
+    dateRange({
+      dateRange,
+      start,
+      startDateId,
+      end,
+      endDateId,
+      datesObj = dates,
+    }) {
+      clearError(startDateId);
+      clearError(endDateId);
+
+      // If both dates are blank, ignore the range
+      if (!start && !end) {
+        return true;
+      }
+
+      // Both dates are required if one is set
+      if (!start) {
+        return addError(startDateId, "Enter a start date");
+      }
+
+      if (!end) {
+        return addError(endDateId, "Enter an end date");
+      }
+
+      // Parse date strings
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+
+      // Check if the start date is before the end date
+      if (startDate > endDate) {
+        return addError(
+          endDateId,
+          "Enter an end date that comes after the start date",
+        );
+      }
+
+      const operatingYear = season.operatingYear;
+
+      // Date must be within the year for that form
+      if (
+        startDate.getFullYear() !== operatingYear ||
+        endDate.getFullYear() !== operatingYear
+      ) {
+        // startDate =< endDate check happens first, so the end date will never fail this check
+        return addError(startDateId, `Enter dates for ${operatingYear} only`);
+      }
+
+      const dateType = dateRange.dateType.name;
+      const { dateableId } = dateRange;
+
+      const dateExtents = getDateExtents(datesObj);
+
+      // Get the extent of dates for each type
+      const operationExtent = dateExtents[dateableId].Operation;
+      const reservationExtent = dateExtents[dateableId].Reservation;
+
+      // Check if the reservation dates are within the operating dates
+      // @TODO: Check for gaps if operating dates is non-contiguous
+      const withinRange = checkWithinRange(
+        operationExtent.minDate,
+        operationExtent.maxDate,
+        reservationExtent.minDate,
+        reservationExtent.maxDate,
+      );
+
+      // Validate rules specific to Reservation dates
+      if (dateType === "Reservation") {
+        // Date selected is within the operating dates
+        if (!withinRange) {
+          return addError(
+            endDateId,
+            "Enter reservation dates that fall within the operating dates selected.",
+          );
+        }
+      }
+
+      // Validate rules specific to Operation dates
+      if (dateType === "Operation") {
+        // Date selected encompasses reservation dates
+        if (!withinRange) {
+          // @TODO: Highlight the latest extent instead of the one being changed
+          return addError(
+            endDateId,
+            "Enter operating dates that are the same or longer than the reservation dates selected.",
+          );
+        }
+      }
+
+      // End date is one or more days after reservation end date
+      const daysBetween = differenceInCalendarDays(
+        operationExtent.maxDate,
+        reservationExtent.maxDate,
+      );
+
+      // The "within range" check above will ensure that the operation end date
+      // is after the reservation end date, so we only need to check the number of days between the them
+
+      if (dateType === "Operation") {
+        if (daysBetween < 1) {
+          return addError(
+            endDateId,
+            "Operating end date must be one or more days after reservation end date.",
+          );
+        }
+      }
+
+      if (dateType === "Reservation") {
+        if (daysBetween < 1) {
+          return addError(
+            endDateId,
+            "Reservation end date must be one or more days before the operating end date.",
+          );
+        }
+      }
+
+      return true;
+    },
+  };
+
+  // Validates all date ranges for a dateable feature from `dates`
+  function validateFeatureDates(dateableId, datesObj = dates) {
+    const dateableFeature = datesObj[dateableId];
+
+    const dateTypeGroups = Object.values(dateableFeature);
+
+    // Clear all errors for this dateable feature:
+    // Build a list of all field IDs to clear from `errors`
+    const fieldIds = dateTypeGroups.flatMap((dateRanges) =>
+      dateRanges.flatMap((dateRange, index) => {
+        const dateRangeId = `${dateRange.dateableId}-${dateRange.dateType.id}-${index}`;
+
+        return [`start-date-${dateRangeId}`, `end-date-${dateRangeId}`];
+      }),
+    );
+
+    // Remove any errors for this dateable feature before revalidating
+    setErrors((prevErrors) => omit(prevErrors, fieldIds));
+
+    const dateTypeGroupsValid = dateTypeGroups.every((dateRanges) =>
+      // Loop over date ranges for the date type
+      dateRanges.every((dateRange, index) =>
+        validate.dateRange({
+          dateRange,
+          start: dateRange.startDate,
+          startDateId: `start-date-${dateRange.dateableId}-${dateRange.dateType.id}-${index}`,
+          end: dateRange.endDate,
+          endDateId: `end-date-${dateRange.dateableId}-${dateRange.dateType.id}-${index}`,
+          datesObj,
+        }),
+      ),
+    );
+
+    return dateTypeGroupsValid;
+  }
+
+  function validateForm() {
+    // Clear errors from previous validation
+    setErrors({});
+
+    // Validate notes
+    if (!validate.notes()) return false;
+
+    // Validate all dates:
+    // Loop over dateable features from `dates` (campsite groupings)
+    const dateableIds = Object.keys(dates);
+    const validDates = dateableIds.every((dateableId) =>
+      validateFeatureDates(dateableId),
+    );
+
+    // @TODO: Scroll the first error into view
+
+    return validDates;
+  }
+
+  // Validates a date range, then its parent dateable feature
+  function onUpdateDateRange({
+    dateRange,
+    start,
+    startDateId,
+    end,
+    endDateId,
+    // Allow overriding dates during state updates
+    datesObj = dates,
+  }) {
+    const { dateableId } = dateRange;
+
+    // Validate the date range that changed
+    const rangeValid = validate.dateRange({
+      dateRange,
+      start,
+      startDateId,
+      end,
+      endDateId,
+      datesObj,
+    });
+
+    // If the changed dateRange is invalid, don't validate anything else
+    if (!rangeValid) return false;
+
+    // If the changed dateRange is valid, validate the whole campsite grouping feature
+    // to resolve any inter-dependent date range validations.
+
+    // @TODO: This unnecessarily validates the changed dateRange twice;
+    // Consider refactoring to validate once, but only show relevant errors.
+
+    return validateFeatureDates(dateableId, datesObj);
+  }
 
   const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
   const {
@@ -40,9 +323,18 @@ function SubmitDates() {
   const navigate = useNavigate();
 
   async function submitChanges() {
-    if (!notes && ["approved", "published"].includes(season.status)) {
-      setValidationError("Required when updating previously approved dates");
-      throw new Error("Validation error");
+    setFormSubmitted(true);
+
+    // Validate form state before saving
+    if (!validateForm()) {
+      console.error("Form validation failed!", errors);
+      throw new Error("Form validation failed");
+    }
+
+    if (notes !== "foo") {
+      throw new Error(
+        "validation passed, but returning false for debugging anyway",
+      );
     }
 
     const payload = {
@@ -61,6 +353,10 @@ function SubmitDates() {
 
   // are there changes to save?
   function hasChanges() {
+    if (formSubmitted) {
+      return true;
+    }
+
     const datesChanged = Object.values(dates).some((dateType) =>
       dateType.Operation.concat(dateType.Reservation).some(
         (dateRange) => dateRange.changed,
@@ -83,12 +379,10 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      if (hasChanges()) {
-        await submitChanges();
-        setNotes("");
-        fetchData();
-        setShowFlash(true);
-      }
+      await submitChanges();
+      setNotes("");
+      fetchData();
+      setShowFlash(true);
     } catch (err) {
       console.error(err);
     }
@@ -140,17 +434,13 @@ function SubmitDates() {
     }
   }, [data]);
 
-  useEffect(() => {
-    setValidationError(null);
-  }, [notes]);
-
   function addDateRange(dateType, dateableId) {
-    setDates({
-      ...dates,
+    setDates((prevDates) => ({
+      ...prevDates,
       [dateableId]: {
-        ...dates[dateableId],
+        ...prevDates[dateableId],
         [dateType]: [
-          ...dates[dateableId][dateType],
+          ...prevDates[dateableId][dateType],
           {
             seasonId: season.id,
             startDate: null,
@@ -160,32 +450,44 @@ function SubmitDates() {
           },
         ],
       },
-    });
+    }));
   }
 
-  function updateDateRange(dateableId, dateType, index, key, value) {
-    setDates({
-      ...dates,
-      [dateableId]: {
-        ...dates[dateableId],
-        [dateType]: dates[dateableId][dateType].map((dateRange, i) =>
-          i === index
-            ? { ...dateRange, [key]: formatDatetoISO(value), changed: true }
-            : dateRange,
-        ),
-      },
+  function updateDateRange(
+    dateableId,
+    dateType,
+    index,
+    key,
+    value,
+    callback = null,
+  ) {
+    const newValue = value ? value.toISOString() : null;
+
+    setDates((prevDates) => {
+      const updatedDates = cloneDeep(prevDates); // Create a deep clone to avoid mutations
+
+      lodashSet(updatedDates, [dateableId, dateType, index, key], newValue);
+
+      // Mark the date range as changed
+      lodashSet(updatedDates, [dateableId, dateType, index, "changed"], true);
+
+      if (callback) {
+        callback(updatedDates);
+      }
+
+      return updatedDates;
     });
   }
 
   // The wireframes don't show the option to remove a date, but if we need it, we can add it here
   // function removeDateRange(dateType, dateableId, index) {
-  //   setDates({
-  //     ...dates,
+  //   setDates((prevDates) => ({
+  //     ...prevDates,
   //     [dateableId]: {
-  //       ...dates[dateableId],
-  //       [dateType]: dates[dateableId][dateType].filter((_, i) => i !== index),
+  //       ...prevDates[dateableId],
+  //       [dateType]: prevDates[dateableId][dateType].filter((_, i) => i !== index),
   //     },
-  //   });
+  //   }));
   // }
 
   function Campground({ campground }) {
@@ -211,14 +513,19 @@ function SubmitDates() {
   };
 
   function DateRange({ dateRange, index }) {
+    const dateRangeId = `${dateRange.dateableId}-${dateRange.dateType.id}-${index}`;
+    const startDateId = `start-date-${dateRangeId}`;
+    const endDateId = `end-date-${dateRangeId}`;
+
     return (
       <div className="row dates-row operating-dates">
         <div className="col-lg-5">
           <div className="form-group">
-            <label htmlFor="startDate0" className="form-label d-lg-none">
+            <label htmlFor={startDateId} className="form-label d-lg-none">
               Start date
             </label>
             <DatePicker
+              id={startDateId}
               selected={dateRange.startDate}
               onChange={(date) => {
                 updateDateRange(
@@ -227,10 +534,24 @@ function SubmitDates() {
                   index,
                   "startDate",
                   date,
+                  (updatedDates) => {
+                    onUpdateDateRange({
+                      dateRange,
+                      start: date,
+                      startDateId,
+                      end: dateRange.endDate,
+                      endDateId,
+                      datesObj: updatedDates,
+                    });
+                  },
                 );
               }}
               dateFormat="EEE, MMM d, yyyy"
             />
+
+            {errors?.[startDateId] && (
+              <div className="error-message mt-2">{errors?.[startDateId]}</div>
+            )}
           </div>
         </div>
 
@@ -240,10 +561,11 @@ function SubmitDates() {
 
         <div className="col-lg-5">
           <div className="form-group">
-            <label htmlFor="endDate0" className="form-label d-lg-none">
+            <label htmlFor={endDateId} className="form-label d-lg-none">
               End date
             </label>
             <DatePicker
+              id={endDateId}
               selected={dateRange.endDate}
               onChange={(date) => {
                 updateDateRange(
@@ -252,10 +574,24 @@ function SubmitDates() {
                   index,
                   "endDate",
                   date,
+                  (updatedDates) => {
+                    onUpdateDateRange({
+                      dateRange,
+                      start: dateRange.startDate,
+                      startDateId,
+                      end: date,
+                      endDateId,
+                      datesObj: updatedDates,
+                    });
+                  },
                 );
               }}
               dateFormat="EEE, MMM d, yyyy"
             />
+
+            {errors?.[endDateId] && (
+              <div className="error-message mt-2">{errors?.[endDateId]}</div>
+            )}
           </div>
         </div>
       </div>
@@ -473,7 +809,7 @@ function SubmitDates() {
           </p>
 
           <div
-            className={`form-group mb-4 ${validationError ? "has-error" : ""}`}
+            className={`form-group mb-4 ${errors?.notes ? "has-error" : ""}`}
           >
             <textarea
               className="form-control"
@@ -481,10 +817,13 @@ function SubmitDates() {
               name="notes"
               rows="5"
               value={notes}
-              onChange={(ev) => setNotes(ev.target.value)}
+              onChange={(ev) => {
+                setNotes(ev.target.value);
+                validate.notes(ev.target.value);
+              }}
             ></textarea>
-            {validationError && (
-              <div className="error-message mt-2">{validationError}</div>
+            {errors?.notes && (
+              <div className="error-message mt-2">{errors?.notes}</div>
             )}
           </div>
 
@@ -504,6 +843,7 @@ function SubmitDates() {
               type="button"
               className="btn btn-outline-primary"
               onClick={saveAsDraft}
+              disabled={!hasChanges()}
             >
               Save draft
             </button>
@@ -512,6 +852,7 @@ function SubmitDates() {
               type="button"
               className="btn btn-primary"
               onClick={continueToPreview}
+              disabled={!hasChanges()}
             >
               Continue to preview
             </button>
