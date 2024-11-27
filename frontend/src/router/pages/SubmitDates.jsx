@@ -19,6 +19,7 @@ import PropTypes from "prop-types";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import "./SubmitDates.scss";
+import classNames from "classnames";
 
 function SubmitDates() {
   const { parkId, seasonId } = useParams();
@@ -240,6 +241,10 @@ function SubmitDates() {
             </label>
             <DatePicker
               id={startDateId}
+              className={classNames({
+                "form-control": true,
+                "is-invalid": errors?.[startDateId],
+              })}
               selected={dateRange.startDate}
               onChange={(date) => {
                 updateDateRange(
@@ -281,6 +286,10 @@ function SubmitDates() {
             </label>
             <DatePicker
               id={endDateId}
+              className={classNames({
+                "form-control": true,
+                "is-invalid": errors?.[endDateId],
+              })}
               selected={dateRange.endDate}
               onChange={(date) => {
                 updateDateRange(
@@ -528,7 +537,10 @@ function SubmitDates() {
             className={`form-group mb-4 ${errors?.notes ? "has-error" : ""}`}
           >
             <textarea
-              className="form-control"
+              className={classNames({
+                "form-control": true,
+                "is-invalid": errors?.notes,
+              })}
               id="notes"
               name="notes"
               rows="5"

@@ -10,29 +10,6 @@
     }
   }
 
-  .react-datepicker-wrapper {
-    width: 100% !important;
-
-    input {
-      display: block;
-      width: 100%;
-      padding: 0.375rem 0.75rem;
-      font-size: 1rem;
-      font-weight: 400;
-      line-height: 1.5;
-      color: #2d2d2d;
-      appearance: none;
-      width: 100%;
-      background-color: var(--bs-body-bg);
-      background-clip: padding-box;
-      border: var(--bs-border-width) solid #d8d8d8;
-      border-radius: var(--bs-border-radius);
-      transition:
-        border-color 0.15s ease-in-out,
-        box-shadow 0.15s ease-in-out;
-    }
-  }
-
   .campground {
     // alternating background color
     &:nth-child(even) {
@@ -106,14 +83,9 @@
       transparent;
   }
 
-  .has-error {
-    textarea {
-      border: 1px solid var(--support-border-color-danger);
-    }
-  }
-
   .error-message {
     color: var(--support-border-color-danger);
+    font-size: 0.875em;
   }
 
   .notes {
