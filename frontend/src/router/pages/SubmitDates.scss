@@ -33,6 +33,10 @@
     .dates-row {
       margin-bottom: var(--layout-margin-large);
 
+      .form-label {
+        display: block;
+      }
+
       .form-control {
         margin-bottom: var(--layout-margin-medium);
 
