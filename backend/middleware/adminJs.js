@@ -18,7 +18,7 @@ import {
   DateChangeLog,
 } from "../models/index.js";
 
-import { connectionString } from "../db/connection.js";
+import { connectionConfig } from "../db/connection.js";
 
 AdminJS.registerAdapter({
   Resource: AdminJSSequelize.Resource,
@@ -61,7 +61,7 @@ export const admin = new AdminJS(adminOptions);
 const ConnectSession = Connect(session);
 const sessionStore = new ConnectSession({
   conObject: {
-    connectionString,
+    ...connectionConfig,
     ssl: process.env.NODE_ENV === "production",
   },
   tableName: "session",
