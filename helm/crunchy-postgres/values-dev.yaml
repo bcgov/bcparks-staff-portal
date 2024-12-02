@@ -1,9 +1,9 @@
-fullnameOverride: crunchy-postgres-dev
+fullnameOverride: crunchy-postgres
 
 crunchyImage: # it's not necessary to specify an image as the images specified in the Crunchy Postgres Operator will be pulled by default
-
+#crunchyImage: artifacts.developer.gov.bc.ca/bcgov-docker-local/crunchy-postgres-gis:ubi8-15.2-3.3-0 # use this image for POSTGIS
 postgresVersion: 15
-
+#postGISVersion: '3.3' # use this version of POSTGIS. both crunchyImage and this property needs to have valid values for POSTGIS to be enabled.
 imagePullPolicy: IfNotPresent
 
 # enable to bootstrap a standby cluster from backup. Then disable to promote this standby to primary
@@ -16,13 +16,13 @@ instances:
   name: ha # high availability
   replicas: 1
   dataVolumeClaimSpec:
-    storage: 5Gi
+    storage: 480Mi
     storageClassName: netapp-block-standard
   requests:
-    cpu: 100m
+    cpu: 1m
     memory: 256Mi
   limits:
-    cpu: 250m
+    cpu: 100m
     memory: 512Mi
   replicaCertCopy:
     requests:
@@ -59,7 +59,7 @@ pgBackRest:
       incremental: 0 0,4,12,16,20 * * *
     volume:
       accessModes: "ReadWriteOnce"
-      storage: 500Mi
+      storage: 64Mi
       storageClassName: netapp-file-backup
   repoHost:
     requests:
