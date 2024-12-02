@@ -30,9 +30,7 @@ export async function getItemByAttributes(model, attributes) {
     });
 
     if (!item) {
-      throw new Error(
-        `Item with attributes ${JSON.stringify(attributes)} not found`,
-      );
+      return null;
     }
     return item;
   } catch (error) {

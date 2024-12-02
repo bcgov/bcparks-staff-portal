@@ -1,4 +1,4 @@
-import { Model } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 
 export default (sequelize) => {
   class Dateable extends Model {
@@ -15,7 +15,14 @@ export default (sequelize) => {
     }
   }
   Dateable.init(
-    {},
+    {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false,
+      },
+    },
     {
       sequelize,
       modelName: "Dateable",
