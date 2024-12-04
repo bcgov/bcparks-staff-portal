@@ -6,7 +6,7 @@ import { differenceInCalendarDays, parseISO, isBefore, max } from "date-fns";
 export default function useValidation(dates, notes, season) {
   // Validation errors
   const [errors, setErrors] = useState({});
-  // @TODO: Track if the form has been submitted, and validate on change after that
+  // Track if the form has been submitted, and validate on change after that
   const [formSubmitted, setFormSubmitted] = useState(false);
 
   // Add field key and error message to `errors`
@@ -296,6 +296,9 @@ export default function useValidation(dates, notes, season) {
     // Allow overriding dates during state updates
     datesObj = dates,
   }) {
+    // Don't validate until the form has been submitted
+    if (!formSubmitted) return true;
+
     const { dateableId } = dateRange;
 
     // Validate the date range that changed
