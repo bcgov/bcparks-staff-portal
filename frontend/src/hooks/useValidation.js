@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { omit, mapValues, minBy, maxBy } from "lodash";
-import { differenceInCalendarDays } from "date-fns";
+import { omit, mapValues, minBy, maxBy, orderBy } from "lodash";
+import { differenceInCalendarDays, parseISO, isBefore, max } from "date-fns";
 
 // Validation functions for the SubmitForm component
 export default function useValidation(dates, notes, season) {
@@ -71,7 +71,59 @@ export default function useValidation(dates, notes, season) {
     return true;
   }
 
-  // validates the start and end datepicker fields in a date range
+  // Returns a chronological list of date ranges with overlapping ranges combined
+  function consolidateRanges(ranges) {
+    // Parse ISO date strings (and filter out any missing values)
+    const parsedRanges = ranges
+      .filter((range) => range.startDate && range.endDate)
+      .map((range) => ({
+        startDate: parseISO(range.startDate),
+        endDate: parseISO(range.endDate),
+      }));
+
+    // Sort ranges by start date
+    const sorted = orderBy(parsedRanges, ["startDate"]);
+
+    // Combine overlapping ranges
+    const consolidated = sorted.reduce((merged, current) => {
+      const lastRange = merged.at(-1);
+
+      // If the start date of the current range is before the end date of the last range,
+      // combine the ranges
+      if (lastRange && isBefore(current.startDate, lastRange.endDate)) {
+        lastRange.endDate = max([lastRange.endDate, current.endDate]);
+      } else {
+        merged.push(current);
+      }
+
+      return merged;
+    }, []);
+
+    return consolidated;
+  }
+
+  // Returns true if all reservation date ranges are within the operating date ranges
+  function validateReservationDates(dateableFeature) {
+    // Consolidate any overlapping date ranges for comparison
+    const operatingRanges = consolidateRanges(dateableFeature.Operation);
+    const reservationRanges = consolidateRanges(dateableFeature.Reservation);
+
+    // Check if each reservation ranges is within an operating range
+    const withinRange = reservationRanges.every((reservationRange) =>
+      operatingRanges.some((operatingRange) =>
+        checkWithinRange(
+          operatingRange.startDate,
+          operatingRange.endDate,
+          reservationRange.startDate,
+          reservationRange.endDate,
+        ),
+      ),
+    );
+
+    return withinRange;
+  }
+
+  // Validates the start and end datepicker fields in a date range
   function validateDateRange({
     dateRange,
     start,
@@ -123,43 +175,31 @@ export default function useValidation(dates, notes, season) {
     const dateType = dateRange.dateType.name;
     const { dateableId } = dateRange;
 
-    const dateExtents = getDateExtents(datesObj);
+    // Check if the reservation dates are all within the operating dates
+    const dateableFeature = datesObj[dateableId];
+    const reservationDatesValid = validateReservationDates(dateableFeature);
 
-    // Get the extent of dates for each type
-    const operationExtent = dateExtents[dateableId].Operation;
-    const reservationExtent = dateExtents[dateableId].Reservation;
-
-    // Check if the reservation dates are within the operating dates
-    // @TODO: Check for gaps if operating dates is non-contiguous
-    const withinRange = checkWithinRange(
-      operationExtent.minDate,
-      operationExtent.maxDate,
-      reservationExtent.minDate,
-      reservationExtent.maxDate,
-    );
-
-    // Validate rules specific to Reservation dates
-    if (dateType === "Reservation") {
-      // Date selected is within the operating dates
-      if (!withinRange) {
+    if (!reservationDatesValid) {
+      if (dateType === "Reservation") {
         return addError(
           endDateId,
           "Enter reservation dates that fall within the operating dates selected.",
         );
       }
-    }
 
-    // Validate rules specific to Operation dates
-    if (dateType === "Operation") {
-      // Date selected encompasses reservation dates
-      if (!withinRange) {
-        // @TODO: Highlight the latest extent instead of the one being changed
+      if (dateType === "Operation") {
+        // @TODO: Highlight the entire feature, not just one date
         return addError(
           endDateId,
           "Enter operating dates that are the same or longer than the reservation dates selected.",
         );
       }
     }
+
+    // Get the extent of dates for each type
+    const dateExtents = getDateExtents(datesObj);
+    const operationExtent = dateExtents[dateableId].Operation;
+    const reservationExtent = dateExtents[dateableId].Reservation;
 
     // End date is one or more days after reservation end date
     const daysBetween = differenceInCalendarDays(
