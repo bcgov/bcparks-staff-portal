@@ -70,7 +70,7 @@ export default function Header({ handleTabChange }) {
               onKeyDown={(e) => goHome(e, history)}
               tabIndex={0}
             >
-              Staff web portal
+              Staff web portal v2
             </div>
           </div>
           {windowWidth > 768 ?
