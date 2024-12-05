@@ -17,21 +17,21 @@ import { Op } from "sequelize";
 
 const router = Router();
 
-function getNewStatusForSeason(season, user) {
-  // this will depend on the user's role
-  // rn we're just passing null for the user and returning the same status
-  // For staff
-  //   requested -- > requested
-  //   under review -- > under review
-  //   approved -- > under review
-  //   published --> under review
-  // For operator
-  //   requested -- > requested
-  //   under review -- > requested
-  //   approved -- > requested
-  //   published --> requested
-  return season.status;
-}
+// function getNewStatusForSeason(season, user) {
+//   // this will depend on the user's role
+//   // rn we're just setting everything to requested
+//   // For staff
+//   //   requested -- > requested
+//   //   under review -- > under review
+//   //   approved -- > under review
+//   //   published --> under review
+//   // For operator
+//   //   requested -- > requested
+//   //   under review -- > requested
+//   //   approved -- > requested
+//   //   published --> requested
+//   return season.status;
+// }
 
 router.get(
   "/seasons/:seasonId",
@@ -230,8 +230,8 @@ router.post(
     }
 
     // this will depend on the user's role
-    // rn we're just passing null for the user and returning the same status
-    const newStatus = getNewStatusForSeason(season, null);
+    // right now we're just setting everything to requested
+    // const newStatus = getNewStatusForSeason(season, null);
 
     // create season change log
     const seasonChangeLog = await SeasonChangeLog.create({
@@ -239,7 +239,7 @@ router.post(
       userId: 1,
       notes,
       statusOldValue: season.status,
-      statusNewValue: newStatus,
+      statusNewValue: "requested",
       readyToPublishOldValue: season.readyToPublish,
       readyToPublishNewValue: readyToPublish,
     });
@@ -248,7 +248,7 @@ router.post(
     Season.update(
       {
         readyToPublish,
-        status: newStatus,
+        status: "requested",
       },
       {
         where: {
@@ -330,7 +330,7 @@ router.post(
     // update season
     Season.update(
       {
-        readyToPublish: true,
+        readyToPublish,
         status: "approved",
       },
       {

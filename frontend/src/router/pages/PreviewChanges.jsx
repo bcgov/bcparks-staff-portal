@@ -294,7 +294,7 @@ function PreviewChanges() {
             </button>
 
             <button type="button" className="btn btn-primary" onClick={approve}>
-              Mark as approved
+              Mark approved
             </button>
 
             {(saving || savingApproval) && (

@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/utils";
 import { useApiGet } from "@/hooks/useApi";
 import LoadingBar from "@/components/LoadingBar";
 import SeasonDates from "@/components/ParkDetailsSeasonDates";
+import NotReadyFlag from "@/components/NotReadyFlag";
 
 export default function ParkSeason({ season }) {
   const { parkId } = useParams();
@@ -90,6 +91,7 @@ export default function ParkSeason({ season }) {
           <h3>{season.operatingYear} season</h3>
 
           <StatusBadge status={season.status} />
+          <NotReadyFlag show={!season.readyToPublish} />
 
           <button
             onClick={toggleExpand}
@@ -140,5 +142,6 @@ ParkSeason.propTypes = {
     operatingYear: PropTypes.number.isRequired,
     status: PropTypes.string.isRequired,
     updatedAt: PropTypes.string.isRequired,
+    readyToPublish: PropTypes.bool.isRequired,
   }),
 };
