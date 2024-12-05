@@ -6,7 +6,7 @@
   .date {
     max-width: fit-content;
 
-    @media (min-width: 576px) {
+    @include from-sm {
       min-width: 6em;
     }
   }
