@@ -48,6 +48,10 @@ header.page-header {
   --bs-link-hover-color: var(--surface-color-primary-hover);
   --bs-btn-hover-color: var(--surface-color-primary-hover);
 }
+a:hover {
+  text-decoration: underline;
+}
+
 a:hover,
 a:not(.btn):focus {
   color: var(--surface-color-primary-hover);
@@ -62,8 +66,10 @@ a:not(.btn):focus {
 .text-link {
   color: var(--typography-color-link);
 
-  &:hover {
+  &:hover,
+  &:focus {
     color: var(--bs-link-hover-color);
+    text-decoration: underline;
   }
 }
 
