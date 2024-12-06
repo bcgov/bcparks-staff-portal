@@ -1,0 +1,57 @@
+// Bootstrap grid breakpoints - manually defined for use with the Bootstrap theme package
+
+// SCSS Mixin definitions for each breakpoint
+@mixin from-sm {
+  @media (min-width: 576px) {
+    @content;
+  }
+}
+
+@mixin from-md {
+  @media (min-width: 768px) {
+    @content;
+  }
+}
+
+@mixin from-lg {
+  @media (min-width: 992px) {
+    @content;
+  }
+}
+
+@mixin from-xl {
+  @media (min-width: 1200px) {
+    @content;
+  }
+}
+
+@mixin from-xxl {
+  @media (min-width: 1400px) {
+    @content;
+  }
+}
+
+/*
+  Examples:
+
+  // Style rules for viewports >= 576px wide
+  .my-component {
+    display: block;
+
+    @include from-small {
+      display: flex;
+      background: transparent;
+    }
+  }
+
+  // Style rules for viewports >= 768px wide
+  @include from-medium {
+    .container {
+      max-width: 100%;
+    }
+
+    .some-element {
+      display: none;
+    }
+  }
+*/

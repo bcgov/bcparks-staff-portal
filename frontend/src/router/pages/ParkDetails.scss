@@ -21,7 +21,7 @@
     margin-bottom: var(--layout-margin-medium);
 
     // show horizontally on large screens
-    @media (min-width: 576px) {
+    @include from-sm {
       flex-direction: row;
 
       &.expanded {
@@ -41,7 +41,7 @@
       flex: 1;
 
       // seamless borders on larger screens
-      @media (min-width: 576px) {
+      @include from-sm {
         border-radius: var(--layout-border-radius-medium) 0
           var(--layout-border-radius-medium) var(--layout-border-radius-medium);
         border-width: var(--layout-border-width-small);
@@ -93,7 +93,7 @@
       padding: var(--layout-padding-medium);
 
       // seamless borders on larger screens
-      @media (min-width: 576px) {
+      @include from-sm {
         border-left: none;
         border-radius: 0 var(--layout-border-radius-medium)
           var(--layout-border-radius-medium) 0;

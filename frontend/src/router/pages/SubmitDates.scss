@@ -59,8 +59,7 @@
       .form-control {
         margin-bottom: var(--layout-margin-medium);
 
-        // "lg" breakpoint
-        @media (min-width: 992px) {
+        @include from-lg {
           margin-bottom: 0;
         }
       }

@@ -8,7 +8,7 @@ import { AuthProvider } from "react-oidc-context";
 import oidcConfig from "./config/keycloak.js";
 
 // include global styles
-import "./global.scss";
+import "@/styles/global.scss";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
