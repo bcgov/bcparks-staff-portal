@@ -15,10 +15,15 @@ import {
 } from "../models/index.js";
 import { Op } from "sequelize";
 
+/**
+ * Gets data for specific page number
+ * @param {string} url paginated URL
+ * @returns {Array} list of items for that page
+ */
 async function getPageData(url) {
   try {
     const response = await get(url);
-    const data = await response.json();
+    const data = response.data;
 
     return data.data;
   } catch (error) {
@@ -28,36 +33,33 @@ async function getPageData(url) {
   }
 }
 
+/**
+ * Gets data for all pages for a specific model
+ * @param {string} url root URL with endpoint for that model
+ * @param {URLSearchParams} queryParams optional fields that need to be populated
+ * @returns {Array} list of items
+ */
 export async function getData(url, queryParams) {
-  const items = [];
-
   try {
-    let currentUrl = url;
+    const currentUrl = queryParams.toString()
+      ? `${url}?${queryParams.toString()}`
+      : url;
 
-    if (queryParams) {
-      currentUrl = `${currentUrl}?${queryParams}`;
-    }
+    const data = await get(currentUrl);
 
-    const response = await get(currentUrl);
-    const data = await response.json();
     const pagination = data.meta.pagination;
 
-    items.push(...data.data);
+    const items = data.data;
 
-    let page = 1;
-
-    while (page < pagination.pageCount) {
+    for (let page = 2; page <= pagination.pageCount; page++) {
+      // wait 1 second per request to not overload the server
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      page += 1;
 
-      let paginatedUrl = currentUrl;
+      const params = new URLSearchParams(queryParams);
 
-      if (queryParams) {
-        paginatedUrl = `${paginatedUrl}&pagination[page]=${page}`;
-      } else {
-        paginatedUrl = `${paginatedUrl}?pagination[page]=${page}`;
-      }
+      params.append("pagination[page]", page);
 
+      const paginatedUrl = `${url}?${params.toString()}`;
       const pageData = await getPageData(paginatedUrl);
 
       items.push(...pageData);
@@ -70,6 +72,10 @@ export async function getData(url, queryParams) {
   }
 }
 
+/**
+ * Fetches data for all the models of interest asynchrously
+ * @returns {Array} list of all models with thier name, endpoint, and items
+ */
 export async function fetchAllModels() {
   const url = "https://cms.bcparks.ca/api";
 
@@ -116,40 +122,30 @@ export async function fetchAllModels() {
       fields: ["protectedArea"],
       items: [],
     },
-    {
-      endpoint: "/park-operation-sub-area-dates",
-      model: "park-operation-sub-area-date",
-      fields: ["parkOperationSubArea"],
-      items: [],
-    },
   ];
 
   await Promise.all(
     strapiData.map(async (item) => {
       const currentUrl = url + item.endpoint;
-      let qpString = null;
+      const params = new URLSearchParams();
 
       if (item.fields) {
-        const queryParams = [];
-
         for (const field of item.fields) {
-          const param = `populate[${field}][fields]=id`;
-
-          queryParams.push(param);
+          params.append(`populate[${field}][fields]`, "id");
         }
-
-        qpString = queryParams.join("&");
       }
-
-      const temp = getData(currentUrl, qpString);
-
-      item.items = temp;
+      item.items = getData(currentUrl, params);
     }),
   );
 
   return strapiData;
 }
 
+/**
+ * For the park in strapi, create a new park or update its corresponding existing park
+ * @param {Object} item park data from strapi
+ * @returns {Park} park model
+ */
 export async function createOrUpdatePark(item) {
   // get park on our DB by strapi ID
   let dbItem = await getItemByAttributes(Park, { strapiId: item.id });
@@ -171,14 +167,22 @@ export async function createOrUpdatePark(item) {
   return dbItem;
 }
 
+/**
+ * Syncs parks from strapi to our database
+ * @param {Object} parkData park data from strapi with items to sync
+ * @returns {Promise[Object]} resolves when all parks have been synced
+ */
 export async function syncParks(parkData) {
   const items = parkData.items;
 
-  items.forEach(async (item) => {
-    await createOrUpdatePark(item);
-  });
+  await Promise.all(items.map((item) => createOrUpdatePark(item)));
 }
 
+/**
+ * For the featureType in strapi, create a new featureType or update its corresponding existing featureType
+ * @param {Object} item featureType data from Strapi
+ * @returns {FeatureType} featureType model
+ */
 export async function createOrUpdateFeatureType(item) {
   let dbItem = await getItemByAttributes(FeatureType, { strapiId: item.id });
 
@@ -197,14 +201,22 @@ export async function createOrUpdateFeatureType(item) {
   return dbItem;
 }
 
+/**
+ * Sync featureTypes from strapi to our database
+ * @param {Object} featureTypeData  featureType data from strapi with items to sync
+ * @returns {Promise[Object]} resolves when all featureTypes have been synced
+ */
 export async function syncFeatureTypes(featureTypeData) {
   const items = featureTypeData.items;
 
-  items.forEach(async (item) => {
-    await createOrUpdateFeatureType(item);
-  });
+  await Promise.all(items.map((item) => createOrUpdateFeatureType(item)));
 }
 
+/**
+ * These are not associated with any specific model in Strapi
+ * We will create these manually once
+ * @returns {Promise[Object]} resolves when all dateTypes have been created
+ */
 export async function createDateTypes() {
   const data = [
     {
@@ -227,11 +239,14 @@ export async function createDateTypes() {
     },
   ];
 
-  data.forEach(async (item) => {
-    await createModel(DateType, item);
-  });
+  await Promise.all(data.map((item) => createModel(DateType, item)));
 }
 
+/**
+ * For the feature in strapi, create a new feature or update its corresponding existing feature
+ * @param {Object} item For the feature in strapi, create a new feature or update its corresponding existing feature
+ * @returns {Feature} feature model
+ */
 export async function createOrUpdateFeature(item) {
   let dbItem = await getItemByAttributes(Feature, { strapiId: item.id });
 
@@ -269,20 +284,30 @@ export async function createOrUpdateFeature(item) {
   return dbItem;
 }
 
+/**
+ * sync features from strapi to our database
+ * @param {Object} featureData feature data from strapi with items to sync
+ * @returns {Promise[Object]} resolves when all features have been synced
+ */
 export async function syncFeatures(featureData) {
-  const items = featureData.items.slice(400, 700);
+  const items = featureData.items;
 
-  items.forEach(async (item) => {
-    await createOrUpdateFeature(item);
-  });
+  await Promise.all(items.map((item) => createOrUpdateFeature(item)));
 }
 
+/**
+ * This method will only run once to import existing dates in Strapi.
+ * Additionally, this will be used to create the seasons needed to group the dates
+ * @param {Object} datesData strapi data for park operation sub area dates
+ * @returns {Promise[Object]} resolves when all dates and seasons have been created
+ */
 export async function createDatesAndSeasons(datesData) {
   const items = datesData.items;
 
   const seasonMap = new Map();
   const dateTypeMap = {};
 
+  // map to quickly get dateType by name
   const dateTypes = await DateType.findAll();
 
   dateTypes.forEach((dateType) => {
@@ -291,6 +316,7 @@ export async function createDatesAndSeasons(datesData) {
 
   await Promise.all(
     items.map(async (item) => {
+      // if there is no subAreaId, we can't create a date range the date is orphaned
       const subAreaId = item.attributes.parkOperationSubArea?.data?.id;
 
       if (!subAreaId) {
@@ -306,6 +332,8 @@ export async function createDatesAndSeasons(datesData) {
         const parkId = feature.parkId;
         const operatingYear = item.attributes.operatingYear;
 
+        // a season is defined by the park, featureType, and operatingYear
+        // this key will be used later to create season objects if they don't exist
         const key = `${parkId}-${featureTypeId}-${operatingYear}`;
 
         if (!seasonMap.has(key)) {
@@ -320,6 +348,7 @@ export async function createDatesAndSeasons(datesData) {
   for (const [key, seasonDates] of seasonMap) {
     const [parkId, featureTypeId, operatingYear] = key.split("-");
 
+    // Try to get the season by parkId, featureTypeId, and operatingYear
     const attrs = {
       parkId,
       featureTypeId,
@@ -328,6 +357,7 @@ export async function createDatesAndSeasons(datesData) {
     let season = await getItemByAttributes(Season, attrs);
 
     if (!season) {
+      // create season if a season matching those 3 attributes doesn't exist
       const data = {
         status: "requested",
         readyToPublish: true,
@@ -335,13 +365,16 @@ export async function createDatesAndSeasons(datesData) {
       };
 
       season = await createModel(Season, data);
-      console.log("inside: ", season);
     }
+
     seasonDates.forEach(async (date) => {
+      // for each date in the season, we create 1+ date ranges
       const feature = await getItemByAttributes(Feature, {
         strapiId: date.attributes.parkOperationSubArea.data.id,
       });
 
+      // a single date in strapi can map to multiple date ranges in our DB
+      // we create separate instances with its own dateType
       if (date.attributes.serviceStartDate || date.attributes.serviceEndDate) {
         const dateObj = {
           startDate: date.attributes.serviceStartDate,
@@ -351,7 +384,6 @@ export async function createDatesAndSeasons(datesData) {
           seasonId: season.id,
         };
 
-        // console.log(dateObj);
         await createModel(DateRange, dateObj);
       }
       if (
@@ -366,23 +398,17 @@ export async function createDatesAndSeasons(datesData) {
           seasonId: season.id,
         };
 
-        // console.log(dateObj);
         await createModel(DateRange, dateObj);
       }
     });
   }
 }
 
-export async function cleanDateables() {
-  await FeatureType.destroy({
-    where: {
-      id: {
-        [Op.notIn]: [1, 2],
-      },
-    },
-  });
-}
-
+/**
+ * Syncs data from Strapi to our database
+ * Focuses on parks, featureTypes, and features
+ * @returns {Promise[Object]} resolves when all data has been synced
+ */
 export async function syncData() {
   const strapiData = await fetchAllModels();
 
@@ -393,12 +419,38 @@ export async function syncData() {
   );
   const featureData = getStrapiModelData(strapiData, "park-operation-sub-area");
 
-  // const datesData = getStrapiModelData(strapiData, "park-operation-sub-area-date");
-
   await syncParks(parkData);
   await syncFeatureTypes(featureTypeData);
   await syncFeatures(featureData);
+}
 
-  // should only run once
-  // await createDatesAndSeasons(datesData);
+/**
+ * Syncs dates data from Strapi to our database
+ * Only runs one time to import existing dates in Strapi
+ * @returns {Promise[Object]} resolves when all dates and seasons have been created
+ */
+export async function oneTimeDataImport() {
+  // only meant to run once - not needed for regular sync
+  const url = "https://cms.bcparks.ca/api";
+
+  const datesData = {
+    endpoint: "/park-operation-sub-area-dates",
+    model: "park-operation-sub-area-date",
+    fields: ["parkOperationSubArea"],
+    items: [],
+  };
+
+  const currentUrl = url + datesData.endpoint;
+
+  const params = new URLSearchParams();
+
+  if (datesData.fields) {
+    for (const field of datesData.fields) {
+      params.append(`populate[${field}][fields]`, "id");
+    }
+  }
+
+  datesData.items = await getData(currentUrl, params);
+
+  await createDatesAndSeasons(datesData);
 }

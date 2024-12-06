@@ -130,7 +130,6 @@ function SubmitDates() {
               dateableId: feature.dateable.id,
               inputType: "text",
               changed: false,
-              validationError: null,
             },
           );
         });
