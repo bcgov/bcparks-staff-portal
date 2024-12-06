@@ -60,6 +60,11 @@ a:not(.btn):focus {
 // custom bootstrap button style: "text"
 .btn-text-primary {
   --bs-btn-color: var(--theme-primary-blue);
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
 }
 
 // custom bootstrap button style: "link"
