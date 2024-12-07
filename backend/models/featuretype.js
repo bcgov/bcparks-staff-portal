@@ -23,6 +23,7 @@ export default (sequelize) => {
     {
       name: DataTypes.STRING,
       strapiId: DataTypes.INTEGER,
+      icon: DataTypes.STRING,
     },
     {
       sequelize,

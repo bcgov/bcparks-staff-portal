@@ -3,6 +3,7 @@ import {
   getItemByAttributes,
   createModel,
   getStrapiModelData,
+  getFeatureTypeIcon,
 } from "./utils.js";
 import {
   Park,
@@ -13,7 +14,6 @@ import {
   Season,
   DateRange,
 } from "../models/index.js";
-import { Op } from "sequelize";
 
 /**
  * Gets data for specific page number
@@ -73,7 +73,7 @@ export async function getData(url, queryParams) {
 }
 
 /**
- * Fetches data for all the models of interest asynchrously
+ * Fetches data for all the models of interest asynchronously
  * @returns {Array} list of all models with thier name, endpoint, and items
  */
 export async function fetchAllModels() {
@@ -180,19 +180,24 @@ export async function syncParks(parkData) {
 
 /**
  * For the featureType in strapi, create a new featureType or update its corresponding existing featureType
+ * @param {Array} strapiData all strapi data
  * @param {Object} item featureType data from Strapi
  * @returns {FeatureType} featureType model
  */
-export async function createOrUpdateFeatureType(item) {
+export async function createOrUpdateFeatureType(strapiData, item) {
   let dbItem = await getItemByAttributes(FeatureType, { strapiId: item.id });
+
+  const icon = getFeatureTypeIcon(strapiData, item);
 
   if (dbItem) {
     dbItem.name = item.attributes.subAreaType;
+    dbItem.icon = icon;
   } else {
     const data = {
       name: item.attributes.subAreaType,
       strapiId: item.id,
       isCampingType: item.attributes.campingType.data !== null,
+      icon,
     };
 
     dbItem = await createModel(FeatureType, data);
@@ -203,13 +208,16 @@ export async function createOrUpdateFeatureType(item) {
 
 /**
  * Sync featureTypes from strapi to our database
+ * @param {Object} strapiData all strapi data
  * @param {Object} featureTypeData  featureType data from strapi with items to sync
  * @returns {Promise[Object]} resolves when all featureTypes have been synced
  */
-export async function syncFeatureTypes(featureTypeData) {
+export async function syncFeatureTypes(strapiData, featureTypeData) {
   const items = featureTypeData.items;
 
-  await Promise.all(items.map((item) => createOrUpdateFeatureType(item)));
+  await Promise.all(
+    items.map((item) => createOrUpdateFeatureType(strapiData, item)),
+  );
 }
 
 /**
@@ -244,7 +252,7 @@ export async function createDateTypes() {
 
 /**
  * For the feature in strapi, create a new feature or update its corresponding existing feature
- * @param {Object} item For the feature in strapi, create a new feature or update its corresponding existing feature
+ * @param {Object} item feature data from Strapi
  * @returns {Feature} feature model
  */
 export async function createOrUpdateFeature(item) {
@@ -316,7 +324,7 @@ export async function createDatesAndSeasons(datesData) {
 
   await Promise.all(
     items.map(async (item) => {
-      // if there is no subAreaId, we can't create a date range the date is orphaned
+      // if there is no subAreaId, we can't create a date range because the date is orphaned
       const subAreaId = item.attributes.parkOperationSubArea?.data?.id;
 
       if (!subAreaId) {
@@ -420,7 +428,8 @@ export async function syncData() {
   const featureData = getStrapiModelData(strapiData, "park-operation-sub-area");
 
   await syncParks(parkData);
-  await syncFeatureTypes(featureTypeData);
+  // featureTypes need other strapi data to get the icon from campingType or facilityType
+  await syncFeatureTypes(strapiData, featureTypeData);
   await syncFeatures(featureData);
 }
 

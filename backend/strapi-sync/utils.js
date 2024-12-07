@@ -9,6 +9,35 @@ export function getStrapiModelData(strapiData, modelName) {
   return strapiData.find((item) => item.model === modelName);
 }
 
+export function getStrapiModelDataById(strapiData, modelName, id) {
+  const modelData = getStrapiModelData(strapiData, modelName);
+
+  if (!modelData) {
+    return null;
+  }
+
+  return modelData.items.find((item) => item.id === id);
+}
+
+export function getFeatureTypeIcon(strapiData, featureType) {
+  if (featureType.attributes.campingType.data !== null) {
+    const campingType = getStrapiModelDataById(
+      strapiData,
+      "camping-type",
+      featureType.attributes.campingType.data.id,
+    );
+
+    return campingType?.attributes.icon;
+  }
+  const facilityType = getStrapiModelDataById(
+    strapiData,
+    "facility-type",
+    featureType.attributes.facilityType.data.id,
+  );
+
+  return facilityType?.attributes.icon;
+}
+
 export async function getItemById(model, id) {
   try {
     const item = await model.findByPk(id);
