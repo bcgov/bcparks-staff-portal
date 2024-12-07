@@ -14,7 +14,7 @@ const router = Router();
 
 function getParkStatus(seasons) {
   // if any season has status==requested, return requested
-  // else if any season has status==under_review, return under_review
+  // else if any season has status==under review, return under review
   // else if any season has status==approved, return approved
   // if all seasons have status==published, return published
 

@@ -19,6 +19,9 @@ import "react-datepicker/dist/react-datepicker.css";
 import PropTypes from "prop-types";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useConfirmation } from "@/hooks/useConfirmation";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+
 import "./SubmitDates.scss";
 import classNames from "classnames";
 
@@ -38,6 +41,16 @@ function SubmitDates() {
     onUpdateDateRange,
   } = useValidation(dates, notes, season);
 
+  const {
+    title,
+    message,
+    confirmationDialogNotes,
+    openConfirmation,
+    handleConfirm,
+    handleCancel,
+    isConfirmationOpen,
+  } = useConfirmation();
+
   const [showFlash, setShowFlash] = useState(false);
 
   const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
@@ -49,7 +62,7 @@ function SubmitDates() {
 
   const navigate = useNavigate();
 
-  async function submitChanges() {
+  async function saveChanges(savingDraft) {
     setFormSubmitted(true);
 
     // Validate form state before saving
@@ -69,7 +82,44 @@ function SubmitDates() {
 
     const response = await sendData(payload);
 
+    if (savingDraft) {
+      setNotes("");
+      fetchData();
+      setShowFlash(true);
+    }
+
     return response;
+  }
+
+  function hasMissingDates() {
+    return Object.values(dates).some((dateType) =>
+      dateType.Operation.concat(dateType.Reservation).some(
+        (dateRange) => !dateRange.startDate && !dateRange.endDate,
+      ),
+    );
+  }
+
+  async function submitChanges(savingDraft = false) {
+    if (["under review", "approved", "published"].includes(season.status)) {
+      openConfirmation(
+        "Move back to draft?",
+        "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+        () => {
+          saveChanges(savingDraft);
+        },
+        "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
+      );
+    }
+
+    if (hasMissingDates()) {
+      openConfirmation(
+        "Submit with missing dates?",
+        "The dates will be moved back to draft and need to be submitted again to be reviewed. If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
+        () => {
+          saveChanges(savingDraft);
+        },
+      );
+    }
   }
 
   // are there changes to save?
@@ -96,10 +146,10 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      await submitChanges();
       setNotes("");
       fetchData();
       setShowFlash(true);
+      await submitChanges(true);
     } catch (err) {
       console.error(err);
     }
@@ -164,6 +214,7 @@ function SubmitDates() {
             endDate: null,
             dateableId,
             dateType: season.dateTypes[dateType],
+            changed: true,
           },
         ],
       },
@@ -484,6 +535,14 @@ function SubmitDates() {
         isVisible={showFlash}
         onClose={() => setShowFlash(false)}
         duration={3000}
+      />
+      <ConfirmationDialog
+        title={title}
+        message={message}
+        notes={confirmationDialogNotes}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+        isOpen={isConfirmationOpen}
       />
       <NavBack routePath={`/park/${parkId}`}>
         Back to {season?.park.name} season dates

@@ -12,6 +12,9 @@ import LoadingBar from "@/components/LoadingBar";
 import SeasonDates from "@/components/ParkDetailsSeasonDates";
 import NotReadyFlag from "@/components/NotReadyFlag";
 
+import { useConfirmation } from "@/hooks/useConfirmation";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+
 export default function ParkSeason({ season }) {
   const { parkId } = useParams();
   const navigate = useNavigate();
@@ -26,6 +29,15 @@ export default function ParkSeason({ season }) {
   } = useApiGet(`/seasons/${season.id}`, {
     instant: false,
   });
+
+  const {
+    title,
+    message,
+    openConfirmation,
+    handleConfirm,
+    handleCancel,
+    isConfirmationOpen,
+  } = useConfirmation();
 
   // Returns a chevron icon based on the expansion state
   function getExpandIcon() {
@@ -80,7 +92,33 @@ export default function ParkSeason({ season }) {
   const updateDate = formatDate(season.updatedAt);
 
   function navigateToEdit() {
-    navigate(`/park/${parkId}/edit/${season.id}`);
+    if (season.status === "under review") {
+      openConfirmation(
+        "Edit submitted dates?",
+        "A review may already be in progress and all dates will need to be reviewed again.",
+        () => {
+          navigate(`/park/${parkId}/edit/${season.id}`);
+        },
+      );
+    } else if (season.status === "approved") {
+      openConfirmation(
+        "Edit approved dates?",
+        "Dates will need to be reviewed again to be approved.",
+        () => {
+          navigate(`/park/${parkId}/edit/${season.id}`);
+        },
+      );
+    } else if (season.status === "published") {
+      openConfirmation(
+        "Edit published dates?",
+        "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
+        () => {
+          navigate(`/park/${parkId}/edit/${season.id}`);
+        },
+      );
+    } else {
+      navigate(`/park/${parkId}/edit/${season.id}`);
+    }
   }
 
   function navigateToPreview() {
@@ -89,6 +127,14 @@ export default function ParkSeason({ season }) {
 
   return (
     <div className={seasonClasses}>
+      <ConfirmationDialog
+        title={title}
+        message={message}
+        notes=""
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+        isOpen={isConfirmationOpen}
+      />
       <div className={detailsClasses}>
         <header role="button" onClick={toggleExpand}>
           <h3>{season.operatingYear} season</h3>
