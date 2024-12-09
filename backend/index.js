@@ -54,8 +54,14 @@ app.use("/", homeRoutes); // example stuff for testing
 
 // Routes with JWT check middleware
 app.use("/nested-path-example/", checkJwt, helloRoute); // example stuff for testing
-app.use("/api/", parkRoutes);
-app.use("/api/", seasonRoutes);
+
+// API routes
+const apiRouter = express.Router();
+
+apiRouter.use("/parks", parkRoutes);
+apiRouter.use("/seasons", seasonRoutes);
+
+app.use("/api", apiRouter);
 
 // AdminJS routes
 app.use(admin.options.rootPath, adminRouter);
