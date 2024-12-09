@@ -1,3 +1,9 @@
+/**
+ * Creates model in our local DB
+ * @param {Model} model Sequelize model
+ * @param {Object} data Data to create model with
+ * @returns {Promise<Model>} - Created model
+ */
 export async function createModel(model, data) {
   if (data) {
     return model.create(data);
@@ -5,10 +11,23 @@ export async function createModel(model, data) {
   return model.create();
 }
 
+/**
+ * Gets the data for a specific model that we recently fetched from strapi
+ * @param {Array} strapiData data for every model from strapi
+ * @param {string} modelName the name of the model we want to retrieve from
+ * @returns {Object} the data for the model we're looking for
+ */
 export function getStrapiModelData(strapiData, modelName) {
   return strapiData.find((item) => item.model === modelName);
 }
 
+/**
+ * Gets the data for a specific model by id that we recently fetched from strapi
+ * @param {Object} strapiData data for every model from strapi
+ * @param {string} modelName the name of the model we want to retrieve from
+ * @param {number} id the id of the model we want to retrieve
+ * @returns {Object} the data for the specific model instance we're looking for
+ */
 export function getStrapiModelDataById(strapiData, modelName, id) {
   const modelData = getStrapiModelData(strapiData, modelName);
 
@@ -19,6 +38,12 @@ export function getStrapiModelDataById(strapiData, modelName, id) {
   return modelData.items.find((item) => item.id === id);
 }
 
+/**
+ * Gets the icon for the feature type based on the camping type or facility type
+ * @param {Array} strapiData data for every model from strapi
+ * @param {Object} featureType the feature type we want to get the icon for
+ * @returns {string} the icon for the feature type
+ */
 export function getFeatureTypeIcon(strapiData, featureType) {
   if (featureType.attributes.campingType.data !== null) {
     const campingType = getStrapiModelDataById(
@@ -38,6 +63,12 @@ export function getFeatureTypeIcon(strapiData, featureType) {
   return facilityType?.attributes.icon;
 }
 
+/**
+ * Gets an items from the local DB by id
+ * @param {Object} model Sequelize model
+ * @param {number} id id of the item to get from DB
+ * @returns {Promise<Model>} - Item with the given id
+ */
 export async function getItemById(model, id) {
   try {
     const item = await model.findByPk(id);
@@ -52,6 +83,12 @@ export async function getItemById(model, id) {
   }
 }
 
+/**
+ * Gets an item from the local DB by attributes
+ * @param {Object} model Sequelize model
+ * @param {Object} attributes attributes to search for (key-value pairs)
+ * @returns {Promise<Model>} - Item with the given attributes
+ */
 export async function getItemByAttributes(model, attributes) {
   try {
     const item = await model.findOne({
