@@ -54,7 +54,7 @@ router.get(
         {
           model: Season,
           as: "seasons",
-          attributes: ["id", "status"],
+          attributes: ["id", "status", "readyToPublish"],
         },
         {
           model: Feature,
@@ -92,6 +92,7 @@ router.get(
         hasReservations: park.features.some(
           (feature) => feature.hasReservations && feature.active,
         ),
+        readyToPublish: park.seasons.every((s) => s.readyToPublish),
       }));
 
     // Return all rows

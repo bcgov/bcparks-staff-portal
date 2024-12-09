@@ -9,6 +9,7 @@ import {
 } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
+import NotReadyFlag from "@/components/NotReadyFlag";
 
 function TableRow(park) {
   const navigate = useNavigate();
@@ -27,6 +28,7 @@ function TableRow(park) {
       <th scope="row">{park.name}</th>
       <td>
         <StatusBadge status={park.status} />
+        <NotReadyFlag show={!park.readyToPublish} />
       </td>
       <td className="text-end">
         <Link to={getParkLink()} aria-label={`View ${park.name} park details`}>
