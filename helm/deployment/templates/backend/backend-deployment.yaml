@@ -38,18 +38,35 @@ spec:
             - name: NODE_ENV
               value: {{ .Values.backend.env.nodeEnv }}
             - name: POSTGRES_SERVER
-              value: {{ .Values.backend.env.dbServer }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.postgresSecret }}
+                  key: host
             - name: POSTGRES_PORT
-              value: {{ .Values.backend.env.dbPort | quote }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.postgresSecret }}
+                  key: port
             - name: POSTGRES_DB
-              value: staff-portal-{{ .Release.Name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.postgresSecret }}
+                  key: dbname
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.postgresSecret }}
+                  key: user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.backend.postgresSecret }}
+                  key: password
             - name: JWKS_URI
               value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}/protocol/openid-connect/certs
             - name: JWT_ISSUER
               value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}
           envFrom:
-            - secretRef:
-                name: {{ .Release.Name }}-postgres-secret
             - secretRef:
                 name: {{ .Release.Name }}-adminjs-secret
           readinessProbe:

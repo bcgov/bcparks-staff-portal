@@ -16,3 +16,4 @@ frontend:
 backend:
   env:
     externalUrl: https://test-staff-api.bcparks.ca
+  postgresSecret: crunchy-postgres-pguser-postgres
