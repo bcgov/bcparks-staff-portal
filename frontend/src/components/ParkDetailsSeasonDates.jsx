@@ -49,7 +49,7 @@ function CampGroundFeature({ feature }) {
 // Campgrounds contain one or more dateable features
 function CampGround({ campground }) {
   return (
-    <div className="campground">
+    <div className="campground mb-4">
       <h4>{campground.name}</h4>
 
       {campground.features.map((feature) => (
@@ -62,8 +62,13 @@ function CampGround({ campground }) {
 export default function SeasonDates({ data }) {
   return (
     <div className="details-content">
-      {data.campgrounds.map((campground) => (
-        <CampGround key={campground.id} campground={campground} />
+      <div className={data.campgrounds.length > 0 ? "mb-4" : ""}>
+        {data.campgrounds.map((campground) => (
+          <CampGround key={campground.id} campground={campground} />
+        ))}
+      </div>
+      {data.features.map((feature) => (
+        <CampGroundFeature key={feature.id} feature={feature} />
       ))}
     </div>
   );
@@ -96,6 +101,7 @@ const campgroundPropShape = PropTypes.shape({
 SeasonDates.propTypes = {
   data: PropTypes.shape({
     campgrounds: PropTypes.arrayOf(campgroundPropShape),
+    features: PropTypes.arrayOf(campgroundFeaturePropShape),
   }),
 };
 
