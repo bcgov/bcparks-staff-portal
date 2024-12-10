@@ -29,6 +29,7 @@
   "dependencies": {
     "@adminjs/express": "^6.1.0",
     "@adminjs/sequelize": "^4.1.1",
+    "@fast-csv/format": "^5.0.2",
     "adminjs": "^7.8.13",
     "axios": "^1.7.8",
     "compression": "^1.7.4",
