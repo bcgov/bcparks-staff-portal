@@ -1,9 +1,32 @@
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+import FlashMessage from "@/components/FlashMessage";
 
 function ExportPage() {
+  const {
+    flashTitle,
+    flashMessage,
+    openFlashMessage,
+    handleFlashClose,
+    isFlashOpen,
+  } = useFlashMessage();
+
+  function exportDates() {
+    openFlashMessage(
+      "Export complete",
+      "Check your Downloads for the Excel document.",
+    );
+  }
+
   return (
     <div className="page export">
+      <FlashMessage
+        title={flashTitle}
+        message={flashMessage}
+        isVisible={isFlashOpen}
+        onClose={handleFlashClose}
+      />
       <p>Select the format of your export:</p>
 
       <div className="row">
@@ -151,7 +174,9 @@ function ExportPage() {
           </fieldset>
 
           <fieldset>
-            <button className="btn btn-primary">Export report</button>
+            <button className="btn btn-primary" onClick={exportDates}>
+              Export report
+            </button>
           </fieldset>
         </div>
       </div>

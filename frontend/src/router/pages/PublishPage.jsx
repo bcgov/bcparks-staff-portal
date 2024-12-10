@@ -1,5 +1,8 @@
 import { useConfirmation } from "@/hooks/useConfirmation";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import FlashMessage from "@/components/FlashMessage";
 
 function PublishPage() {
   const {
@@ -12,12 +15,23 @@ function PublishPage() {
     isConfirmationOpen,
   } = useConfirmation();
 
+  const {
+    flashTitle,
+    flashMessage,
+    openFlashMessage,
+    handleFlashClose,
+    isFlashOpen,
+  } = useFlashMessage();
+
   function publishToApi() {
     openConfirmation(
       "Publish dates to API?",
       "All parks that are not flagged will be made public. This cannot be undone.",
       () => {
-        console.log("Publishing to API");
+        openFlashMessage(
+          "Dates publishing to API",
+          "Approved dates publishing may take up to one hour.",
+        );
       },
       "Publishing may take up to one hour.",
     );
@@ -25,6 +39,12 @@ function PublishPage() {
 
   return (
     <div className="page publish">
+      <FlashMessage
+        title={flashTitle}
+        message={flashMessage}
+        isVisible={isFlashOpen}
+        onClose={handleFlashClose}
+      />
       <ConfirmationDialog
         isOpen={isConfirmationOpen}
         onConfirm={handleConfirm}

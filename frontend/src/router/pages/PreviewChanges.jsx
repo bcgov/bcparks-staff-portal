@@ -2,6 +2,9 @@ import PropTypes from "prop-types";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
+import { useConfirmation } from "@/hooks/useConfirmation";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,6 +17,7 @@ import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import FlashMessage from "@/components/FlashMessage";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { Link } from "react-router-dom";
 
@@ -25,7 +29,14 @@ function PreviewChanges() {
 
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
-  const [showFlash, setShowFlash] = useState(false);
+
+  const {
+    flashTitle,
+    flashMessage,
+    openFlashMessage,
+    handleFlashClose,
+    isFlashOpen,
+  } = useFlashMessage();
 
   const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
 
@@ -38,6 +49,22 @@ function PreviewChanges() {
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
+
+  const {
+    title,
+    message,
+    confirmationDialogNotes,
+    openConfirmation,
+    handleConfirm,
+    handleCancel,
+    isConfirmationOpen,
+  } = useConfirmation();
+
+  function hasChanges() {
+    return notes !== "";
+  }
+
+  useNavigationGuard(hasChanges, openConfirmation);
 
   function navigateToEdit() {
     navigate(`/park/${parkId}/edit/${seasonId}`);
@@ -82,7 +109,10 @@ function PreviewChanges() {
     });
     setNotes("");
     fetchData();
-    setShowFlash(true);
+    openFlashMessage(
+      "Dates saved as draft",
+      `${data?.park.name} ${data?.featureType.name} ${data?.operatingYear} season details saved`,
+    );
   }
 
   async function approve() {
@@ -92,7 +122,10 @@ function PreviewChanges() {
     });
     setNotes("");
     fetchData();
-    setShowFlash(true);
+    openFlashMessage(
+      "Dates approved",
+      `${data?.park.name} ${data?.featureType.name} ${data?.operatingYear} season dates mark approved`,
+    );
   }
 
   function Feature({ feature }) {
@@ -202,11 +235,19 @@ function PreviewChanges() {
   return (
     <div className="page review-changes">
       <FlashMessage
-        title="Saved"
-        message={`${data?.park.name} ${data?.operatingYear} season details saved`}
-        isVisible={showFlash}
-        onClose={() => setShowFlash(false)}
-        duration={3000}
+        title={flashTitle}
+        message={flashMessage}
+        isVisible={isFlashOpen}
+        onClose={handleFlashClose}
+      />
+
+      <ConfirmationDialog
+        title={title}
+        message={message}
+        notes={confirmationDialogNotes}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+        isOpen={isConfirmationOpen}
       />
 
       <NavBack routePath={`/park/${parkId}/edit/${seasonId}`}>

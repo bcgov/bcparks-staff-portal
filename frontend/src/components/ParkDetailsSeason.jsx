@@ -91,31 +91,34 @@ export default function ParkSeason({ season }) {
 
   const updateDate = formatDate(season.updatedAt);
 
-  function navigateToEdit() {
+  async function navigateToEdit() {
     if (season.status === "under review") {
-      openConfirmation(
+      const confirm = await openConfirmation(
         "Edit submitted dates?",
         "A review may already be in progress and all dates will need to be reviewed again.",
-        () => {
-          navigate(`/park/${parkId}/edit/${season.id}`);
-        },
       );
+
+      if (confirm) {
+        navigate(`/park/${parkId}/edit/${season.id}`);
+      }
     } else if (season.status === "approved") {
-      openConfirmation(
+      const confirm = await openConfirmation(
         "Edit approved dates?",
         "Dates will need to be reviewed again to be approved.",
-        () => {
-          navigate(`/park/${parkId}/edit/${season.id}`);
-        },
       );
+
+      if (confirm) {
+        navigate(`/park/${parkId}/edit/${season.id}`);
+      }
     } else if (season.status === "published") {
-      openConfirmation(
+      const confirm = openConfirmation(
         "Edit published dates?",
         "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
-        () => {
-          navigate(`/park/${parkId}/edit/${season.id}`);
-        },
       );
+
+      if (confirm) {
+        navigate(`/park/${parkId}/edit/${season.id}`);
+      }
     } else {
       navigate(`/park/${parkId}/edit/${season.id}`);
     }

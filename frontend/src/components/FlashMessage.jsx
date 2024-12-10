@@ -1,5 +1,4 @@
 // FlashMessage.jsx
-import { useEffect } from "react";
 import PropTypes from "prop-types";
 import "./FlashMessage.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -10,22 +9,9 @@ function FlashMessage({
   message,
   isVisible,
   onClose,
-  duration = 3000,
   icon = faCheck,
   variant = "success",
 }) {
-  useEffect(() => {
-    if (isVisible && duration) {
-      const timer = setTimeout(() => {
-        onClose();
-      }, duration);
-
-      return () => clearTimeout(timer);
-    }
-
-    return () => {};
-  }, [isVisible, duration, onClose]);
-
   if (!isVisible) return null;
 
   return (
@@ -54,7 +40,6 @@ FlashMessage.propTypes = {
   message: PropTypes.string.isRequired,
   isVisible: PropTypes.bool.isRequired,
   onClose: PropTypes.func.isRequired,
-  duration: PropTypes.number,
   icon: PropTypes.string,
   variant: PropTypes.oneOf(["success", "error"]),
 };

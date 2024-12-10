@@ -12,6 +12,7 @@ import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import useValidation from "@/hooks/useValidation";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -20,7 +21,8 @@ import PropTypes from "prop-types";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import { useConfirmation } from "@/hooks/useConfirmation";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 
 import "./SubmitDates.scss";
 import classNames from "classnames";
@@ -51,7 +53,13 @@ function SubmitDates() {
     isConfirmationOpen,
   } = useConfirmation();
 
-  const [showFlash, setShowFlash] = useState(false);
+  const {
+    flashTitle,
+    flashMessage,
+    openFlashMessage,
+    handleFlashClose,
+    isFlashOpen,
+  } = useFlashMessage();
 
   const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
   const {
@@ -85,18 +93,13 @@ function SubmitDates() {
     if (savingDraft) {
       setNotes("");
       fetchData();
-      setShowFlash(true);
+      openFlashMessage(
+        "Dates saved as draft",
+        `${season?.park.name} ${season?.featureType.name} ${season?.operatingYear} season details saved`,
+      );
     }
 
     return response;
-  }
-
-  function hasMissingDates() {
-    return Object.values(dates).some((dateType) =>
-      dateType.Operation.concat(dateType.Reservation).some(
-        (dateRange) => !dateRange.startDate && !dateRange.endDate,
-      ),
-    );
   }
 
   async function submitChanges(savingDraft = false) {
@@ -109,16 +112,8 @@ function SubmitDates() {
         },
         "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
       );
-    }
-
-    if (hasMissingDates()) {
-      openConfirmation(
-        "Submit with missing dates?",
-        "The dates will be moved back to draft and need to be submitted again to be reviewed. If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
-        () => {
-          saveChanges(savingDraft);
-        },
-      );
+    } else {
+      saveChanges(savingDraft);
     }
   }
 
@@ -132,6 +127,8 @@ function SubmitDates() {
 
     return datesChanged || notes;
   }
+
+  useNavigationGuard(hasChanges, openConfirmation);
 
   async function continueToPreview() {
     try {
@@ -530,11 +527,10 @@ function SubmitDates() {
   return (
     <div className="page submit-dates">
       <FlashMessage
-        title="Dates saved as draft"
-        message={`${season?.operatingYear} season dates saved`}
-        isVisible={showFlash}
-        onClose={() => setShowFlash(false)}
-        duration={3000}
+        title={flashTitle}
+        message={flashMessage}
+        isVisible={isFlashOpen}
+        onClose={handleFlashClose}
       />
       <ConfirmationDialog
         title={title}
