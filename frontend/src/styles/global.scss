@@ -48,6 +48,10 @@ header.page-header {
   --bs-link-hover-color: var(--surface-color-primary-hover);
   --bs-btn-hover-color: var(--surface-color-primary-hover);
 }
+a:hover {
+  text-decoration: underline;
+}
+
 a:hover,
 a:not(.btn):focus {
   color: var(--surface-color-primary-hover);
@@ -56,14 +60,21 @@ a:not(.btn):focus {
 // custom bootstrap button style: "text"
 .btn-text-primary {
   --bs-btn-color: var(--theme-primary-blue);
+
+  &:hover,
+  &:focus {
+    text-decoration: underline;
+  }
 }
 
 // custom bootstrap button style: "link"
 .text-link {
   color: var(--typography-color-link);
 
-  &:hover {
+  &:hover,
+  &:focus {
     color: var(--bs-link-hover-color);
+    text-decoration: underline;
   }
 }
 
