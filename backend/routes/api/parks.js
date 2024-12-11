@@ -163,4 +163,56 @@ router.get(
   }),
 );
 
+router.get(
+  "parks/ready-to-publish",
+  asyncHandler(async (req, res) => {
+    // const features = await Feature.findAll({
+    //   attributes: ["id", "name"],
+    //   include: [
+    //     {
+    //       model: Park,
+    //       as: "park",
+    //       attributes: ["id", "orcs", "name"],
+    //       include: [
+    //         {
+    //           model: Season,
+    //           as: "seasons",
+    //           attributes: ["id", "status", "readyToPublish"],
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // });
+
+    // every date range that is approved
+    // feature - park pairs
+    // every dateRange in
+
+    const seasons = await Season.findAll({
+      attributes: ["id", "status", "readyToPublish"],
+      include: [
+        {
+          model: Park,
+          as: "park",
+          attributes: ["id", "orcs", "name"],
+        },
+        {
+          model: FeatureType,
+          as: "featureType",
+          attributes: ["id", "name"],
+        },
+        {
+          model: Date,
+        },
+      ],
+      where: {
+        readyToPublish: true,
+        status: "approved",
+      },
+    });
+
+    res.send("hello");
+  }),
+);
+
 export default router;
