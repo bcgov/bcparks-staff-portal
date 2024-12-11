@@ -1,6 +1,13 @@
 import { Router } from "express";
 import _ from "lodash";
-import { Park, Season, FeatureType, Feature } from "../../models/index.js";
+import {
+  Park,
+  Season,
+  FeatureType,
+  Feature,
+  Dateable,
+  DateRange,
+} from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
 const router = Router();
@@ -47,27 +54,46 @@ router.get(
         {
           model: Season,
           as: "seasons",
-          attributes: ["id", "status"],
+          attributes: ["id", "status", "readyToPublish"],
         },
         {
           model: Feature,
           as: "features",
           attributes: ["id", "hasReservations"],
+          include: [
+            {
+              model: Dateable,
+              as: "dateable",
+              attributes: ["id"],
+              include: [
+                {
+                  model: DateRange,
+                  as: "dateRanges",
+                  attributes: ["id"],
+                },
+              ],
+            },
+          ],
         },
       ],
     });
 
     const parks = parksWithBundlesAndSeasons.map((park) => park.toJSON());
 
-    const output = parks.map((park) => ({
-      id: park.id,
-      name: park.name,
-      orcs: park.orcs,
-      status: getParkStatus(park.seasons),
-      hasReservations: park.features.some(
-        (feature) => feature.hasReservations && feature.active,
-      ),
-    }));
+    const output = parks
+      .filter((item) =>
+        item.features.some((feature) => feature.dateable.dateRanges.length > 0),
+      )
+      .map((park) => ({
+        id: park.id,
+        name: park.name,
+        orcs: park.orcs,
+        status: getParkStatus(park.seasons),
+        hasReservations: park.features.some(
+          (feature) => feature.hasReservations && feature.active,
+        ),
+        readyToPublish: park.seasons.every((s) => s.readyToPublish),
+      }));
 
     // Return all rows
     res.json(output);
@@ -86,7 +112,13 @@ router.get(
         {
           model: Season,
           as: "seasons",
-          attributes: ["id", "operatingYear", "status", "updatedAt"],
+          attributes: [
+            "id",
+            "operatingYear",
+            "status",
+            "updatedAt",
+            "readyToPublish",
+          ],
           include: [
             {
               model: FeatureType,

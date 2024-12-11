@@ -28,7 +28,6 @@ function SubmitDates() {
   const [validationError, setValidationError] = useState(null);
   const [readyToPublish, setReadyToPublish] = useState(false);
 
-  // const [showConfirmationDialog, setShowConfirmationDialog] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
 
   const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
@@ -137,6 +136,7 @@ function SubmitDates() {
 
       setSeason(data);
       setDates(currentSeasonDates);
+      setReadyToPublish(data.readyToPublish);
     }
   }, [data]);
 
