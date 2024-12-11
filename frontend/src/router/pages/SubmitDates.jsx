@@ -257,10 +257,6 @@ function SubmitDates() {
                   (updatedDates) => {
                     onUpdateDateRange({
                       dateRange,
-                      start: date,
-                      startDateId,
-                      end: dateRange.endDate,
-                      endDateId,
                       datesObj: updatedDates,
                     });
                   },
@@ -269,6 +265,7 @@ function SubmitDates() {
               dateFormat="EEE, MMM d, yyyy"
             />
 
+            {/* Show validation errors for the startDate field */}
             {errors?.[startDateId] && (
               <div className="error-message mt-2">{errors?.[startDateId]}</div>
             )}
@@ -302,10 +299,6 @@ function SubmitDates() {
                   (updatedDates) => {
                     onUpdateDateRange({
                       dateRange,
-                      start: dateRange.startDate,
-                      startDateId,
-                      end: date,
-                      endDateId,
                       datesObj: updatedDates,
                     });
                   },
@@ -314,11 +307,17 @@ function SubmitDates() {
               dateFormat="EEE, MMM d, yyyy"
             />
 
+            {/* Show validation errors for the endDate field */}
             {errors?.[endDateId] && (
               <div className="error-message mt-2">{errors?.[endDateId]}</div>
             )}
           </div>
         </div>
+
+        {/* Show validation errors for the date range */}
+        {errors?.[dateRangeId] && (
+          <div className="error-message mt-2">{errors?.[dateRangeId]}</div>
+        )}
       </div>
     );
   }
@@ -433,6 +432,11 @@ function SubmitDates() {
               </p>
             </div>
           )}
+
+          {/* Show validation errors for the whole dateable feature */}
+          <div className="error-message mt-2">
+            {errors?.[feature.dateable.id]}
+          </div>
         </div>
       </section>
     );
@@ -446,8 +450,8 @@ function SubmitDates() {
         previousSeasonDates: PropTypes.arrayOf(
           PropTypes.shape({
             id: PropTypes.number.isRequired,
-            startDate: PropTypes.string.isRequired,
-            endDate: PropTypes.string.isRequired,
+            startDate: PropTypes.string,
+            endDate: PropTypes.string,
             dateType: PropTypes.shape({
               id: PropTypes.number.isRequired,
               name: PropTypes.string.isRequired,

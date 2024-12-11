@@ -130,16 +130,8 @@ export default function useValidation(dates, notes, season) {
     startDateId,
     end,
     endDateId,
-    datesObj = dates,
+    dateRangeId,
   }) {
-    clearError(startDateId);
-    clearError(endDateId);
-
-    // If both dates are blank, ignore the range
-    if (!start && !end) {
-      return true;
-    }
-
     // Both dates are required if one is set
     if (!start) {
       return addError(startDateId, "Enter a start date");
@@ -169,63 +161,7 @@ export default function useValidation(dates, notes, season) {
       endDate.getFullYear() !== operatingYear
     ) {
       // startDate =< endDate check happens first, so the end date will never fail this check
-      return addError(startDateId, `Enter dates for ${operatingYear} only`);
-    }
-
-    const dateType = dateRange.dateType.name;
-    const { dateableId } = dateRange;
-
-    // Check if the reservation dates are all within the operating dates
-    const dateableFeature = datesObj[dateableId];
-    const reservationDatesValid = validateReservationDates(dateableFeature);
-
-    if (!reservationDatesValid) {
-      if (dateType === "Reservation") {
-        return addError(
-          endDateId,
-          "Enter reservation dates that fall within the operating dates selected.",
-        );
-      }
-
-      if (dateType === "Operation") {
-        // @TODO: Highlight the entire feature, not just one date
-        return addError(
-          endDateId,
-          "Enter operating dates that are the same or longer than the reservation dates selected.",
-        );
-      }
-    }
-
-    // Get the extent of dates for each type
-    const dateExtents = getDateExtents(datesObj);
-    const operationExtent = dateExtents[dateableId].Operation;
-    const reservationExtent = dateExtents[dateableId].Reservation;
-
-    // End date is one or more days after reservation end date
-    const daysBetween = differenceInCalendarDays(
-      operationExtent.maxDate,
-      reservationExtent.maxDate,
-    );
-
-    // The "within range" check above will ensure that the operation end date
-    // is after the reservation end date, so we only need to check the number of days between the them
-
-    if (dateType === "Operation") {
-      if (daysBetween < 1) {
-        return addError(
-          endDateId,
-          "Operating end date must be one or more days after reservation end date.",
-        );
-      }
-    }
-
-    if (dateType === "Reservation") {
-      if (daysBetween < 1) {
-        return addError(
-          endDateId,
-          "Reservation end date must be one or more days before the operating end date.",
-        );
-      }
+      return addError(dateRangeId, `Enter dates for ${operatingYear} only`);
     }
 
     return true;
@@ -243,13 +179,19 @@ export default function useValidation(dates, notes, season) {
       dateRanges.flatMap((dateRange, index) => {
         const dateRangeId = `${dateRange.dateableId}-${dateRange.dateType.id}-${index}`;
 
-        return [`start-date-${dateRangeId}`, `end-date-${dateRangeId}`];
+        return [
+          dateRange.dateableId,
+          dateRangeId,
+          `start-date-${dateRangeId}`,
+          `end-date-${dateRangeId}`,
+        ];
       }),
     );
 
     // Remove any errors for this dateable feature before revalidating
     setErrors((prevErrors) => omit(prevErrors, fieldIds));
 
+    // Validate rules for individual dates and ranges
     const dateTypeGroupsValid = dateTypeGroups.every((dateRanges) =>
       // Loop over date ranges for the date type
       dateRanges.every((dateRange, index) =>
@@ -259,12 +201,46 @@ export default function useValidation(dates, notes, season) {
           startDateId: `start-date-${dateRange.dateableId}-${dateRange.dateType.id}-${index}`,
           end: dateRange.endDate,
           endDateId: `end-date-${dateRange.dateableId}-${dateRange.dateType.id}-${index}`,
-          datesObj,
+          dateRangeId: `${dateRange.dateableId}-${dateRange.dateType.id}-${index}`,
         }),
       ),
     );
 
-    return dateTypeGroupsValid;
+    // If any date range is invalid, return and don't validate anything further
+    if (!dateTypeGroupsValid) return false;
+
+    // Validate rules rules that involve the entire feature
+
+    // Check if the reservation dates are all within the operating dates
+    if (!validateReservationDates(dateableFeature)) {
+      return addError(
+        dateableId,
+        "Enter reservation dates that fall within the operating dates selected.",
+      );
+    }
+
+    // Get the extent of dates for each type
+    const dateExtents = getDateExtents(datesObj);
+    const operationExtent = dateExtents[dateableId].Operation;
+    const reservationExtent = dateExtents[dateableId].Reservation;
+
+    // End date is one or more days after reservation end date
+    const daysBetween = differenceInCalendarDays(
+      operationExtent.maxDate,
+      reservationExtent.maxDate,
+    );
+
+    // The "within range" checks earlier will ensure that the operation end date
+    // is after the reservation end date, so we only need to check the number of days between the them
+
+    if (daysBetween < 1) {
+      return addError(
+        dateableFeature,
+        "Reservation end date must be one or more days before the operating end date.",
+      );
+    }
+
+    return true;
   }
 
   function validateForm() {
@@ -286,13 +262,9 @@ export default function useValidation(dates, notes, season) {
     return validDates;
   }
 
-  // Validates a date range, then its parent dateable feature
+  // Validates a dateable feature after a date range has been updated
   function onUpdateDateRange({
     dateRange,
-    start,
-    startDateId,
-    end,
-    endDateId,
     // Allow overriding dates during state updates
     datesObj = dates,
   }) {
@@ -301,25 +273,8 @@ export default function useValidation(dates, notes, season) {
 
     const { dateableId } = dateRange;
 
-    // Validate the date range that changed
-    const rangeValid = validateDateRange({
-      dateRange,
-      start,
-      startDateId,
-      end,
-      endDateId,
-      datesObj,
-    });
-
-    // If the changed dateRange is invalid, don't validate anything else
-    if (!rangeValid) return false;
-
-    // If the changed dateRange is valid, validate the whole campsite grouping feature
+    // Validate the whole campsite grouping feature
     // to resolve any inter-dependent date range validations.
-
-    // @TODO: This unnecessarily validates the changed dateRange twice;
-    // Consider refactoring to validate once, but only show relevant errors.
-
     return validateFeatureDates(dateableId, datesObj);
   }
 
