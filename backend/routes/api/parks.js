@@ -194,7 +194,14 @@ router.get(
         {
           model: Park,
           as: "park",
-          attributes: ["id", "orcs", "name"],
+          attributes: ["id", "orcs", "name", "strapiId"],
+          include: [
+            {
+              model: Feature,
+              as: "features",
+              attributes: ["id", "name", "strapiId"],
+            },
+          ],
         },
         {
           model: FeatureType,
