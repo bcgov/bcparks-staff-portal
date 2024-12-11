@@ -125,7 +125,6 @@ export default function useValidation(dates, notes, season) {
 
   // Validates the start and end datepicker fields in a date range
   function validateDateRange({
-    dateRange,
     start,
     startDateId,
     end,
@@ -196,7 +195,6 @@ export default function useValidation(dates, notes, season) {
       // Loop over date ranges for the date type
       dateRanges.every((dateRange, index) =>
         validateDateRange({
-          dateRange,
           start: dateRange.startDate,
           startDateId: `start-date-${dateRange.dateableId}-${dateRange.dateType.id}-${index}`,
           end: dateRange.endDate,
