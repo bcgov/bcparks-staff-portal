@@ -44,7 +44,7 @@ router.get(
         {
           model: FeatureType,
           as: "featureType",
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "icon"],
         },
         {
           model: Park,

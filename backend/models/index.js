@@ -13,14 +13,18 @@ import SeasonChangeLogModel from "./seasonchangelog.js";
 import DateChangeLogModel from "./datechangelog.js";
 
 const Dateable = DateableModel(sequelize);
+
 const Park = ParkModel(sequelize);
+
 const User = UserModel(sequelize);
+
 const Campground = CampgroundModel(sequelize);
 const FeatureType = FeatureTypeModel(sequelize);
 const Feature = FeatureModel(sequelize);
 const DateType = DateTypeModel(sequelize);
 const Season = SeasonModel(sequelize);
 const DateRange = DateRangeModel(sequelize);
+
 const SeasonChangeLog = SeasonChangeLogModel(sequelize);
 const DateChangeLog = DateChangeLogModel(sequelize);
 
@@ -45,15 +49,15 @@ Object.values(models).forEach((model) => {
 });
 
 export {
-  Dateable,
+  Dateable, // not needed
   Park,
-  User,
+  User, // not needed
   Campground,
   FeatureType,
   Feature,
   DateType,
   Season,
   DateRange,
-  SeasonChangeLog,
-  DateChangeLog,
+  SeasonChangeLog, // not needed
+  DateChangeLog, // not needed
 };

@@ -31,6 +31,7 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       orcs: DataTypes.STRING,
       dateableId: DataTypes.INTEGER,
+      strapiId: DataTypes.INTEGER,
     },
     {
       sequelize,
