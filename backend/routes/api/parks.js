@@ -5,8 +5,9 @@ import {
   Season,
   FeatureType,
   Feature,
-  Dateable,
   DateRange,
+  DateType,
+  Dateable,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
@@ -155,26 +156,8 @@ router.get(
 );
 
 router.get(
-  "parks/ready-to-publish",
+  "/ready-to-publish/",
   asyncHandler(async (req, res) => {
-    // const features = await Feature.findAll({
-    //   attributes: ["id", "name"],
-    //   include: [
-    //     {
-    //       model: Park,
-    //       as: "park",
-    //       attributes: ["id", "orcs", "name"],
-    //       include: [
-    //         {
-    //           model: Season,
-    //           as: "seasons",
-    //           attributes: ["id", "status", "readyToPublish"],
-    //         },
-    //       ],
-    //     },
-    //   ],
-    // });
-
     // every date range that is approved
     // feature - park pairs
     // every dateRange in
@@ -186,13 +169,6 @@ router.get(
           model: Park,
           as: "park",
           attributes: ["id", "orcs", "name", "strapiId"],
-          include: [
-            {
-              model: Feature,
-              as: "features",
-              attributes: ["id", "name", "strapiId"],
-            },
-          ],
         },
         {
           model: FeatureType,
@@ -200,7 +176,28 @@ router.get(
           attributes: ["id", "name"],
         },
         {
-          model: Date,
+          model: DateRange,
+          as: "dateRanges",
+          attributes: ["id", "startDate", "endDate"],
+          include: [
+            {
+              model: DateType,
+              as: "dateType",
+              attributes: ["id", "name"],
+            },
+            {
+              model: Dateable,
+              as: "dateable",
+              attributes: ["id"],
+              include: [
+                {
+                  model: Feature,
+                  as: "feature",
+                  attributes: ["id", "name"],
+                },
+              ],
+            },
+          ],
         },
       ],
       where: {
@@ -209,7 +206,9 @@ router.get(
       },
     });
 
-    res.send("hello");
+    const output = seasons.map((season) => season.toJSON());
+
+    res.send(output);
   }),
 );
 
