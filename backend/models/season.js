@@ -20,6 +20,10 @@ export default (sequelize) => {
         foreignKey: "seasonId",
         as: "changeLogs",
       });
+      Season.hasMany(models.DateRange, {
+        foreignKey: "seasonId",
+        as: "dateRanges",
+      });
     }
   }
   Season.init(
