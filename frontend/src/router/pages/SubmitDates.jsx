@@ -1,15 +1,16 @@
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { cloneDeep, set as lodashSet } from "lodash";
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange, formatTimestamp, formatDatetoISO } from "@/lib/utils";
+import { formatDateRange, formatTimestamp } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
-import { useNavigate } from "react-router-dom";
+import useValidation from "@/hooks/useValidation";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -18,15 +19,23 @@ import PropTypes from "prop-types";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import "./SubmitDates.scss";
+import classNames from "classnames";
 
 function SubmitDates() {
   const { parkId, seasonId } = useParams();
 
   const [season, setSeason] = useState(null);
-  const [dates, setDates] = useState([]);
+  const [dates, setDates] = useState({});
   const [notes, setNotes] = useState("");
-  const [validationError, setValidationError] = useState(null);
   const [readyToPublish, setReadyToPublish] = useState(false);
+
+  const {
+    errors,
+    setFormSubmitted,
+    validateNotes,
+    validateForm,
+    onUpdateDateRange,
+  } = useValidation(dates, notes, season);
 
   const [showFlash, setShowFlash] = useState(false);
 
@@ -40,9 +49,12 @@ function SubmitDates() {
   const navigate = useNavigate();
 
   async function submitChanges() {
-    if (!notes && ["approved", "published"].includes(season.status)) {
-      setValidationError("Required when updating previously approved dates");
-      throw new Error("Validation error");
+    setFormSubmitted(true);
+
+    // Validate form state before saving
+    if (!validateForm()) {
+      console.error("Form validation failed!", errors);
+      throw new Error("Form validation failed");
     }
 
     const payload = {
@@ -83,12 +95,10 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      if (hasChanges()) {
-        await submitChanges();
-        setNotes("");
-        fetchData();
-        setShowFlash(true);
-      }
+      await submitChanges();
+      setNotes("");
+      fetchData();
+      setShowFlash(true);
     } catch (err) {
       console.error(err);
     }
@@ -140,17 +150,13 @@ function SubmitDates() {
     }
   }, [data]);
 
-  useEffect(() => {
-    setValidationError(null);
-  }, [notes]);
-
   function addDateRange(dateType, dateableId) {
-    setDates({
-      ...dates,
+    setDates((prevDates) => ({
+      ...prevDates,
       [dateableId]: {
-        ...dates[dateableId],
+        ...prevDates[dateableId],
         [dateType]: [
-          ...dates[dateableId][dateType],
+          ...prevDates[dateableId][dateType],
           {
             seasonId: season.id,
             startDate: null,
@@ -160,32 +166,43 @@ function SubmitDates() {
           },
         ],
       },
-    });
+    }));
   }
 
-  function updateDateRange(dateableId, dateType, index, key, value) {
-    setDates({
-      ...dates,
-      [dateableId]: {
-        ...dates[dateableId],
-        [dateType]: dates[dateableId][dateType].map((dateRange, i) =>
-          i === index
-            ? { ...dateRange, [key]: formatDatetoISO(value), changed: true }
-            : dateRange,
-        ),
-      },
+  function updateDateRange(
+    dateableId,
+    dateType,
+    index,
+    key,
+    value,
+    callback = null,
+  ) {
+    const newValue = value ? value.toISOString() : null;
+
+    setDates((prevDates) => {
+      const updatedDates = cloneDeep(prevDates);
+
+      // Update the date value and mark the date range as changed
+      lodashSet(updatedDates, [dateableId, dateType, index, key], newValue);
+      lodashSet(updatedDates, [dateableId, dateType, index, "changed"], true);
+
+      if (callback) {
+        callback(updatedDates);
+      }
+
+      return updatedDates;
     });
   }
 
   // The wireframes don't show the option to remove a date, but if we need it, we can add it here
   // function removeDateRange(dateType, dateableId, index) {
-  //   setDates({
-  //     ...dates,
+  //   setDates((prevDates) => ({
+  //     ...prevDates,
   //     [dateableId]: {
-  //       ...dates[dateableId],
-  //       [dateType]: dates[dateableId][dateType].filter((_, i) => i !== index),
+  //       ...prevDates[dateableId],
+  //       [dateType]: prevDates[dateableId][dateType].filter((_, i) => i !== index),
   //     },
-  //   });
+  //   }));
   // }
 
   function Campground({ campground }) {
@@ -211,14 +228,23 @@ function SubmitDates() {
   };
 
   function DateRange({ dateRange, index }) {
+    const dateRangeId = `${dateRange.dateableId}-${dateRange.dateType.id}-${index}`;
+    const startDateId = `start-date-${dateRangeId}`;
+    const endDateId = `end-date-${dateRangeId}`;
+
     return (
       <div className="row dates-row operating-dates">
         <div className="col-lg-5">
           <div className="form-group">
-            <label htmlFor="startDate0" className="form-label d-lg-none">
+            <label htmlFor={startDateId} className="form-label d-lg-none">
               Start date
             </label>
             <DatePicker
+              id={startDateId}
+              className={classNames({
+                "form-control": true,
+                "is-invalid": errors?.[startDateId],
+              })}
               selected={dateRange.startDate}
               onChange={(date) => {
                 updateDateRange(
@@ -227,10 +253,22 @@ function SubmitDates() {
                   index,
                   "startDate",
                   date,
+                  // Callback to validate the new value
+                  (updatedDates) => {
+                    onUpdateDateRange({
+                      dateRange,
+                      datesObj: updatedDates,
+                    });
+                  },
                 );
               }}
               dateFormat="EEE, MMM d, yyyy"
             />
+
+            {/* Show validation errors for the startDate field */}
+            {errors?.[startDateId] && (
+              <div className="error-message mt-2">{errors?.[startDateId]}</div>
+            )}
           </div>
         </div>
 
@@ -240,10 +278,15 @@ function SubmitDates() {
 
         <div className="col-lg-5">
           <div className="form-group">
-            <label htmlFor="endDate0" className="form-label d-lg-none">
+            <label htmlFor={endDateId} className="form-label d-lg-none">
               End date
             </label>
             <DatePicker
+              id={endDateId}
+              className={classNames({
+                "form-control": true,
+                "is-invalid": errors?.[endDateId],
+              })}
               selected={dateRange.endDate}
               onChange={(date) => {
                 updateDateRange(
@@ -252,12 +295,29 @@ function SubmitDates() {
                   index,
                   "endDate",
                   date,
+                  // Callback to validate the new value
+                  (updatedDates) => {
+                    onUpdateDateRange({
+                      dateRange,
+                      datesObj: updatedDates,
+                    });
+                  },
                 );
               }}
               dateFormat="EEE, MMM d, yyyy"
             />
+
+            {/* Show validation errors for the endDate field */}
+            {errors?.[endDateId] && (
+              <div className="error-message mt-2">{errors?.[endDateId]}</div>
+            )}
           </div>
         </div>
+
+        {/* Show validation errors for the date range */}
+        {errors?.[dateRangeId] && (
+          <div className="error-message mt-2">{errors?.[dateRangeId]}</div>
+        )}
       </div>
     );
   }
@@ -372,6 +432,11 @@ function SubmitDates() {
               </p>
             </div>
           )}
+
+          {/* Show validation errors for the whole dateable feature */}
+          <div className="error-message mt-2">
+            {errors?.[feature.dateable.id]}
+          </div>
         </div>
       </section>
     );
@@ -385,8 +450,8 @@ function SubmitDates() {
         previousSeasonDates: PropTypes.arrayOf(
           PropTypes.shape({
             id: PropTypes.number.isRequired,
-            startDate: PropTypes.string.isRequired,
-            endDate: PropTypes.string.isRequired,
+            startDate: PropTypes.string,
+            endDate: PropTypes.string,
             dateType: PropTypes.shape({
               id: PropTypes.number.isRequired,
               name: PropTypes.string.isRequired,
@@ -473,18 +538,24 @@ function SubmitDates() {
           </p>
 
           <div
-            className={`form-group mb-4 ${validationError ? "has-error" : ""}`}
+            className={`form-group mb-4 ${errors?.notes ? "has-error" : ""}`}
           >
             <textarea
-              className="form-control"
+              className={classNames({
+                "form-control": true,
+                "is-invalid": errors?.notes,
+              })}
               id="notes"
               name="notes"
               rows="5"
               value={notes}
-              onChange={(ev) => setNotes(ev.target.value)}
+              onChange={(ev) => {
+                setNotes(ev.target.value);
+                validateNotes(ev.target.value);
+              }}
             ></textarea>
-            {validationError && (
-              <div className="error-message mt-2">{validationError}</div>
+            {errors?.notes && (
+              <div className="error-message mt-2">{errors?.notes}</div>
             )}
           </div>
 
@@ -504,6 +575,7 @@ function SubmitDates() {
               type="button"
               className="btn btn-outline-primary"
               onClick={saveAsDraft}
+              disabled={!hasChanges()}
             >
               Save draft
             </button>
@@ -512,6 +584,7 @@ function SubmitDates() {
               type="button"
               className="btn btn-primary"
               onClick={continueToPreview}
+              disabled={!hasChanges()}
             >
               Continue to preview
             </button>
