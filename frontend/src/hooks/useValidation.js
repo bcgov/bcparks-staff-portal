@@ -147,7 +147,7 @@ export default function useValidation(dates, notes, season) {
     // Check if the start date is before the end date
     if (startDate > endDate) {
       return addError(
-        endDateId,
+        dateRangeId,
         "Enter an end date that comes after the start date",
       );
     }
@@ -160,7 +160,7 @@ export default function useValidation(dates, notes, season) {
       endDate.getFullYear() !== operatingYear
     ) {
       // startDate =< endDate check happens first, so the end date will never fail this check
-      return addError(dateRangeId, `Enter dates for ${operatingYear} only`);
+      return addError(startDateId, `Enter dates for ${operatingYear} only`);
     }
 
     return true;
@@ -233,7 +233,7 @@ export default function useValidation(dates, notes, season) {
 
     if (daysBetween < 1) {
       return addError(
-        dateableFeature,
+        dateableId,
         "Reservation end date must be one or more days before the operating end date.",
       );
     }
