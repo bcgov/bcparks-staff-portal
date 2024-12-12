@@ -65,6 +65,11 @@ a:not(.btn):focus {
   &:focus {
     text-decoration: underline;
   }
+
+  &:disabled,
+  &.disabled {
+    border-color: transparent;
+  }
 }
 
 // custom bootstrap button style: "link"

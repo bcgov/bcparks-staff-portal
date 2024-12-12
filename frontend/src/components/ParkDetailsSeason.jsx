@@ -74,6 +74,9 @@ export default function ParkSeason({ season }) {
   // @TODO: implement logic to show/hide preview button
   const showPreviewButton = true;
 
+  // @TODO: implement logic to disable preview button
+  const disablePreviewButton = true;
+
   const updateDate = formatDate(season.updatedAt);
 
   function navigateToEdit() {
@@ -121,12 +124,13 @@ export default function ParkSeason({ season }) {
             <button
               onClick={navigateToPreview}
               className="btn btn-text-primary"
+              disabled={disablePreviewButton}
             >
               <FontAwesomeIcon
                 className="append-content me-2"
                 icon={faCircleExclamation}
               />
-              <span>Preview</span>
+              <span>Review</span>
             </button>
           </>
         )}
