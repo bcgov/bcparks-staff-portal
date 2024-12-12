@@ -103,3 +103,15 @@ label.form-check-label {
     display: block !important;
   }
 }
+
+// custom style for validation error alert
+.alert-validation-error {
+  display: flex;
+  gap: 0.5em;
+  color: var(--typography-color-primary);
+  width: fit-content;
+
+  .icon {
+    color: var(--icons-color-danger);
+  }
+}

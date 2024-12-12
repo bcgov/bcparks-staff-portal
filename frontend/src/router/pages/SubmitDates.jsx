@@ -1,7 +1,10 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cloneDeep, set as lodashSet } from "lodash";
-import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+import {
+  faCircleInfo,
+  faTriangleExclamation,
+} from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
@@ -372,7 +375,10 @@ function SubmitDates() {
 
         {/* Show validation errors for the date range */}
         {errors?.[dateRangeId] && (
-          <div className="error-message mt-2">{errors?.[dateRangeId]}</div>
+          <div className="error-message mt-2">
+            <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
+            {errors?.[dateRangeId]}
+          </div>
         )}
       </div>
     );
@@ -492,12 +498,21 @@ function SubmitDates() {
               </p>
             </div>
           )}
-
-          {/* Show validation errors for the whole dateable feature */}
-          <div className="error-message mt-2">
-            {errors?.[feature.dateable.id]}
-          </div>
         </div>
+
+        {/* Show validation errors for the whole dateable feature */}
+        {errors?.[feature.dateable.id] && (
+          <div
+            className="alert alert-danger alert-validation-error mt-2"
+            role="alert"
+          >
+            <div className="icon">
+              <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
+            </div>
+
+            <div className="content">{errors?.[feature.dateable.id]}</div>
+          </div>
+        )}
       </section>
     );
   }
