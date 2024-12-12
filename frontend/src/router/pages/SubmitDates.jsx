@@ -581,7 +581,12 @@ function SubmitDates() {
 
       <div className="row notes">
         <div className="col-lg-6">
-          <h2 className="mb-4">Notes</h2>
+          <h2 className="mb-4">
+            Notes
+            {["approved", "published"].includes(season?.status) && (
+              <span className="text-danger">*</span>
+            )}
+          </h2>
 
           <ChangeLogsList changeLogs={season?.changeLogs} />
 
