@@ -64,7 +64,7 @@ export default function useValidation(dates, notes, season) {
     if (!value && ["approved", "published"].includes(season.status)) {
       return addError(
         "notes",
-        "Required when updating previously approved dates",
+        "The dates you are editing have already been Approved or Published. Please provide a note explaining the reason for this update.",
       );
     }
 
@@ -169,6 +169,14 @@ export default function useValidation(dates, notes, season) {
   // Validates all date ranges for a dateable feature from `dates`
   function validateFeatureDates(dateableId, datesObj = dates) {
     const dateableFeature = datesObj[dateableId];
+
+    // If the feature has no dates, skip validation
+    if (
+      dateableFeature.Operation.length === 0 &&
+      dateableFeature.Reservation.length === 0
+    ) {
+      return true;
+    }
 
     const dateTypeGroups = Object.values(dateableFeature);
 
