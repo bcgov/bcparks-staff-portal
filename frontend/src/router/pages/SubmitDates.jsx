@@ -4,6 +4,7 @@ import { cloneDeep, set as lodashSet } from "lodash";
 import {
   faCircleInfo,
   faTriangleExclamation,
+  faCalendarCheck,
 } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "@/components/NavBack";
@@ -293,6 +294,8 @@ function SubmitDates() {
 
     // Track validation errors for the whole range, or the whole dateable feature
     const groupErrors = errors?.[dateRangeId] || errors?.[dateRange.dateableId];
+    const startErrors = errors?.[startDateId] || groupErrors;
+    const endErrors = errors?.[endDateId] || groupErrors;
 
     return (
       <div className="row dates-row operating-dates">
@@ -301,31 +304,42 @@ function SubmitDates() {
             <label htmlFor={startDateId} className="form-label d-lg-none">
               Start date
             </label>
-            <DatePicker
-              id={startDateId}
-              className={classNames({
-                "form-control": true,
-                "is-invalid": errors?.[startDateId] || groupErrors,
-              })}
-              selected={dateRange.startDate}
-              onChange={(date) => {
-                updateDateRange(
-                  dateRange.dateableId,
-                  dateRange.dateType.name,
-                  index,
-                  "startDate",
-                  date,
-                  // Callback to validate the new value
-                  (updatedDates) => {
-                    onUpdateDateRange({
-                      dateRange,
-                      datesObj: updatedDates,
-                    });
-                  },
-                );
-              }}
-              dateFormat="EEE, MMM d, yyyy"
-            />
+
+            <div className="input-with-append">
+              <DatePicker
+                id={startDateId}
+                className={classNames({
+                  "form-control": true,
+                  "is-invalid": startErrors,
+                })}
+                selected={dateRange.startDate}
+                onChange={(date) => {
+                  updateDateRange(
+                    dateRange.dateableId,
+                    dateRange.dateType.name,
+                    index,
+                    "startDate",
+                    date,
+                    // Callback to validate the new value
+                    (updatedDates) => {
+                      onUpdateDateRange({
+                        dateRange,
+                        datesObj: updatedDates,
+                      });
+                    },
+                  );
+                }}
+                dateFormat="EEE, MMM d, yyyy"
+              />
+
+              {/* Show the calendar icon unless the error icon is showing */}
+              {!startErrors && (
+                <FontAwesomeIcon
+                  className="append-content"
+                  icon={faCalendarCheck}
+                />
+              )}
+            </div>
 
             {/* Show validation errors for the startDate field */}
             {errors?.[startDateId] && (
@@ -343,31 +357,42 @@ function SubmitDates() {
             <label htmlFor={endDateId} className="form-label d-lg-none">
               End date
             </label>
-            <DatePicker
-              id={endDateId}
-              className={classNames({
-                "form-control": true,
-                "is-invalid": errors?.[endDateId] || groupErrors,
-              })}
-              selected={dateRange.endDate}
-              onChange={(date) => {
-                updateDateRange(
-                  dateRange.dateableId,
-                  dateRange.dateType.name,
-                  index,
-                  "endDate",
-                  date,
-                  // Callback to validate the new value
-                  (updatedDates) => {
-                    onUpdateDateRange({
-                      dateRange,
-                      datesObj: updatedDates,
-                    });
-                  },
-                );
-              }}
-              dateFormat="EEE, MMM d, yyyy"
-            />
+
+            <div className="input-with-append">
+              <DatePicker
+                id={endDateId}
+                className={classNames({
+                  "form-control": true,
+                  "is-invalid": endErrors,
+                })}
+                selected={dateRange.endDate}
+                onChange={(date) => {
+                  updateDateRange(
+                    dateRange.dateableId,
+                    dateRange.dateType.name,
+                    index,
+                    "endDate",
+                    date,
+                    // Callback to validate the new value
+                    (updatedDates) => {
+                      onUpdateDateRange({
+                        dateRange,
+                        datesObj: updatedDates,
+                      });
+                    },
+                  );
+                }}
+                dateFormat="EEE, MMM d, yyyy"
+              />
+
+              {/* Show the calendar icon unless the error icon is showing */}
+              {!endErrors && (
+                <FontAwesomeIcon
+                  className="append-content"
+                  icon={faCalendarCheck}
+                />
+              )}
+            </div>
 
             {/* Show validation errors for the endDate field */}
             {errors?.[endDateId] && (
