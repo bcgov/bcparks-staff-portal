@@ -291,6 +291,9 @@ function SubmitDates() {
     const startDateId = `start-date-${dateRangeId}`;
     const endDateId = `end-date-${dateRangeId}`;
 
+    // Track validation errors for the whole range, or the whole dateable feature
+    const groupErrors = errors?.[dateRangeId] || errors?.[dateRange.dateableId];
+
     return (
       <div className="row dates-row operating-dates">
         <div className="col-lg-5">
@@ -302,7 +305,7 @@ function SubmitDates() {
               id={startDateId}
               className={classNames({
                 "form-control": true,
-                "is-invalid": errors?.[startDateId],
+                "is-invalid": errors?.[startDateId] || groupErrors,
               })}
               selected={dateRange.startDate}
               onChange={(date) => {
@@ -344,7 +347,7 @@ function SubmitDates() {
               id={endDateId}
               className={classNames({
                 "form-control": true,
-                "is-invalid": errors?.[endDateId],
+                "is-invalid": errors?.[endDateId] || groupErrors,
               })}
               selected={dateRange.endDate}
               onChange={(date) => {
