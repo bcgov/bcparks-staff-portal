@@ -23,18 +23,19 @@ function PublishPage() {
     isFlashOpen,
   } = useFlashMessage();
 
-  function publishToApi() {
-    openConfirmation(
+  async function publishToApi() {
+    const confirm = await openConfirmation(
       "Publish dates to API?",
       "All parks that are not flagged will be made public. This cannot be undone.",
-      () => {
-        openFlashMessage(
-          "Dates publishing to API",
-          "Approved dates publishing may take up to one hour.",
-        );
-      },
       "Publishing may take up to one hour.",
     );
+
+    if (confirm) {
+      openFlashMessage(
+        "Dates publishing to API",
+        "Approved dates publishing may take up to one hour.",
+      );
+    }
   }
 
   return (
