@@ -9,7 +9,9 @@
     "start": "node index.js",
     "lint": "eslint .",
     "migrate": "sequelize-cli db:migrate",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "sync-data": "node strapi-sync/syncData.js",
+    "one-time-data-import": "node strapi-sync/oneTimeDataImport.js"
   },
   "author": "",
   "license": "ISC",
