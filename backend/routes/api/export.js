@@ -12,6 +12,8 @@ import {
   DateType,
   DateRange,
   Dateable,
+  SeasonChangeLog,
+  User,
 } from "../../models/index.js";
 
 const router = Router();
@@ -44,6 +46,14 @@ router.get(
   }),
 );
 
+function formatChangeLog(changeLog) {
+  const user = changeLog.user;
+  const notes = changeLog.notes;
+  const formatted = `${user.name} (${user.email}): ${notes}`;
+
+  return formatted;
+}
+
 // Export to csv
 router.get(
   "/csv",
@@ -64,7 +74,7 @@ router.get(
 
     const featuresData = await Feature.findAll({
       where: featuresWhere,
-      attributes: ["id", "name", "hasReservations"],
+      attributes: ["id", "name", "hasReservations", "strapiId"],
       include: [
         {
           model: Park,
@@ -94,10 +104,36 @@ router.get(
                 {
                   model: Season,
                   as: "season",
-                  attributes: ["id", "operatingYear"],
+                  attributes: [
+                    "id",
+                    "operatingYear",
+                    "readyToPublish",
+                    "status",
+                  ],
                   where: {
                     operatingYear,
                   },
+                  required: true,
+                  include: [
+                    {
+                      model: SeasonChangeLog,
+                      as: "changeLogs",
+                      attributes: ["id", "notes", "createdAt"],
+                      where: {
+                        // Ignore empty notes
+                        notes: {
+                          [Op.ne]: "",
+                        },
+                      },
+                      include: [
+                        {
+                          model: User,
+                          as: "user",
+                          attributes: ["id", "name", "email"],
+                        },
+                      ],
+                    },
+                  ],
                 },
                 {
                   model: DateType,
@@ -114,18 +150,21 @@ router.get(
     // Flatten data for CSV row format
     const flattened = featuresData.flatMap((feature) =>
       feature.dateable.dateRanges.map((dateRange) => ({
-        // featureId: feature.id,
-        Park: feature.park.name,
-        // parkId: feature.park.id,
-        // parkOrcs: feature.park.orcs,
-        Feature: feature.name,
-        "Feature Type": feature.featureType.name,
-        // featureTypeId: feature.featureType.id,
-        "Date Type": dateRange.dateType.name,
-        // dateTypeId: dateRange.dateType.id,
-        "Start Date": dateRange.startDate?.toISOString(),
-        "End Date": dateRange.endDate?.toISOString(),
-        Reservations: feature.hasReservations,
+        Section: "@TODO: map Park to section values from Strapi",
+        "Management Area": "@TODO: map Park to Mgmt Area values from Strapi",
+        ORCS: feature.park.orcs,
+        "Park Name": feature.park.name,
+        "psa.id (Park sub area ID)": feature.strapiId, // for "IS" only
+        "psad.id  (Park sub area date ID)": "@TODO: find this value in Strapi", // for "IS" only
+        "Sub-Area": feature.name,
+        "Sub-Area Type (Park feature)": feature.featureType.name,
+        "Operating Year": dateRange.season.operatingYear,
+        "Type of date": dateRange.dateType.name,
+        "Start date": dateRange.startDate?.toISOString(),
+        "End date": dateRange.endDate?.toISOString(),
+        Status: dateRange.season.status,
+        "Ready to publish": dateRange.season.readyToPublish,
+        Notes: dateRange.season.changeLogs.map(formatChangeLog).join("\n"),
       })),
     );
 
