@@ -23,13 +23,12 @@ import {
 async function getPageData(url) {
   try {
     const response = await get(url);
-    const data = response.data;
 
-    return data.data;
+    return response.data;
   } catch (error) {
     console.error(error);
 
-    return error;
+    return [];
   }
 }
 
@@ -134,7 +133,7 @@ export async function fetchAllModels() {
           params.append(`populate[${field}][fields]`, "id");
         }
       }
-      item.items = getData(currentUrl, params);
+      item.items = await getData(currentUrl, params);
     }),
   );
 
@@ -229,21 +228,21 @@ export async function createDateTypes() {
   const data = [
     {
       name: "Operation",
-      startDateLabel: "",
-      endDateLabel: "",
-      description: "",
+      startDateLabel: "Service Start Date",
+      endDateLabel: "Service End Date",
+      description: "Dates of Operation",
     },
     {
       name: "Reservation",
-      startDateLabel: "",
-      endDateLabel: "",
-      description: "",
+      startDateLabel: "Reservation Start Date",
+      endDateLabel: "Reservation End Date",
+      description: "Dates for Reservations",
     },
     {
       name: "Off Season",
-      startDateLabel: "",
-      endDateLabel: "",
-      description: "",
+      startDateLabel: "Winter start date",
+      endDateLabel: "Winter end date",
+      description: "Winter dates",
     },
   ];
 
@@ -459,7 +458,12 @@ export async function oneTimeDataImport() {
     }
   }
 
+  await createDateTypes();
+
   datesData.items = await getData(currentUrl, params);
 
   await createDatesAndSeasons(datesData);
 }
+
+// syncData();
+// oneTimeDataImport();
