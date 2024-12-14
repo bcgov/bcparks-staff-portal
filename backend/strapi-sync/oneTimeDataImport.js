@@ -1,3 +1,3 @@
-import { oneTimeDataImport } from "./sync";
+import { oneTimeDataImport } from "./sync.js";
 
 oneTimeDataImport();
