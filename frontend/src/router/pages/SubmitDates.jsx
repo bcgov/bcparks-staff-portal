@@ -7,12 +7,17 @@ import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange } from "@/lib/utils";
+import { formatDateRange, formatTimestamp } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import useValidation from "@/hooks/useValidation";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+
+import useValidation from "@/hooks/useValidation";
+import { useConfirmation } from "@/hooks/useConfirmation";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -20,10 +25,6 @@ import "react-datepicker/dist/react-datepicker.css";
 import PropTypes from "prop-types";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useConfirmation } from "@/hooks/useConfirmation";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-
 import "./SubmitDates.scss";
 import classNames from "classnames";
 
@@ -70,6 +71,17 @@ function SubmitDates() {
 
   const navigate = useNavigate();
 
+  // are there changes to save?
+  function hasChanges() {
+    const datesChanged = Object.values(dates).some((dateType) =>
+      dateType.Operation.concat(dateType.Reservation).some(
+        (dateRange) => dateRange.changed,
+      ),
+    );
+
+    return datesChanged || notes;
+  }
+
   async function saveChanges(savingDraft) {
     setFormSubmitted(true);
 
@@ -103,33 +115,27 @@ function SubmitDates() {
   }
 
   async function submitChanges(savingDraft = false) {
+    setFormSubmitted(true);
+
+    // Validate form state before saving
+    if (!validateForm()) {
+      console.error("Form validation failed!", errors);
+      throw new Error("Form validation failed");
+    }
+
     if (["under review", "approved", "published"].includes(season.status)) {
-      const confirm = await openConfirmation(
+      openConfirmation(
         "Move back to draft?",
         "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+        () => {
+          saveChanges(savingDraft);
+        },
         "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
       );
-
-      if (confirm) {
-        saveChanges(savingDraft);
-      }
     } else {
       saveChanges(savingDraft);
     }
   }
-
-  // are there changes to save?
-  function hasChanges() {
-    const datesChanged = Object.values(dates).some((dateType) =>
-      dateType.Operation.concat(dateType.Reservation).some(
-        (dateRange) => dateRange.changed,
-      ),
-    );
-
-    return datesChanged || notes;
-  }
-
-  useNavigationGuard(hasChanges, openConfirmation);
 
   async function continueToPreview() {
     try {
@@ -152,6 +158,8 @@ function SubmitDates() {
       console.error(err);
     }
   }
+
+  useNavigationGuard(hasChanges, openConfirmation);
 
   useEffect(() => {
     if (data) {
