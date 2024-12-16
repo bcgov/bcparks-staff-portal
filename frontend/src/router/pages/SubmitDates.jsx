@@ -345,15 +345,17 @@ function SubmitDates() {
           <div className="col-md-6">
             <div>
               Operating dates{" "}
-              <div className="tooltip-container">
-                <FontAwesomeIcon
-                  className="append-content ms-1"
-                  icon={faCircleInfo}
-                />
-                <span className="tooltip-text">
-                  {season?.dateTypes.Operation.description}
-                </span>
-              </div>
+              {season?.dateTypes?.Operation?.description && (
+                <div className="tooltip-container">
+                  <FontAwesomeIcon
+                    className="append-content ms-1"
+                    icon={faCircleInfo}
+                  />
+                  <span className="tooltip-text">
+                    {season.dateTypes.Operation.description}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="row">
@@ -390,15 +392,17 @@ function SubmitDates() {
             <div className="col-md-6">
               <div>
                 Reservation dates{" "}
-                <div className="tooltip-container">
-                  <FontAwesomeIcon
-                    className="append-content ms-1"
-                    icon={faCircleInfo}
-                  />
-                  <span className="tooltip-text">
-                    {season?.dateTypes.Reservation.description}
-                  </span>
-                </div>
+                {season?.dateTypes?.Reservation?.description && (
+                  <div className="tooltip-container">
+                    <FontAwesomeIcon
+                      className="append-content ms-1"
+                      icon={faCircleInfo}
+                    />
+                    <span className="tooltip-text">
+                      {season.dateTypes.Reservation.description}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="row">
