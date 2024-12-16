@@ -11,7 +11,9 @@
     "migrate": "sequelize-cli db:migrate",
     "test": "echo \"Error: no test specified\" && exit 1",
     "sync-data": "node strapi-sync/syncData.js",
-    "one-time-data-import": "node strapi-sync/oneTimeDataImport.js"
+    "one-time-data-import": "node strapi-sync/oneTimeDataImport.js",
+    "create-single-item-campgrounds": "node strapi-sync/create-single-item-campgrounds.js",
+    "create-multiple-item-campgrounds": "node strapi-sync/create-multiple-item-campgrounds.js"
   },
   "author": "",
   "license": "ISC",

@@ -258,7 +258,13 @@ export async function createOrUpdateFeature(item) {
   let dbItem = await getItemByAttributes(Feature, { strapiId: item.id });
 
   if (dbItem) {
-    dbItem.name = item.attributes.parkSubArea;
+    // if dbItems has campgroundId, don't update the name
+    // there is a script to create campgrounds and assign features to them
+    // this script will rename the feature to fit within the campground
+    if (!dbItem.campgroundId) {
+      dbItem.name = item.attributes.parkSubArea;
+    }
+
     const featureType = await getItemByAttributes(FeatureType, {
       strapiId: item.attributes.parkSubAreaType.data.id,
     });

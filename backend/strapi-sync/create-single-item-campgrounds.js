@@ -1,4 +1,4 @@
-import { Campground, Feature } from "../models/index.js";
+import { Campground, Feature, Park } from "../models/index.js";
 
 import { getItemByAttributes, createModel } from "./utils.js";
 
@@ -1817,10 +1817,14 @@ const campgrounds = [
 ];
 
 async function createCampground(item) {
+  const park = await getItemByAttributes(Park, {
+    strapiId: parseInt(item.parkId, 10),
+  });
+
   // create campground with FK to Park
   const data = {
     name: item.campgroundName,
-    parkId: parseInt(item.parkId, 10),
+    parkId: park.id,
   };
 
   const campground = await createModel(Campground, data);
@@ -1836,7 +1840,7 @@ async function createCampground(item) {
 }
 
 async function createSingleItemsCampgrounds(items) {
-  await Promise.all(items.map((item) => createCampground(item)));
+  await Promise.all(items.map(async (item) => await createCampground(item)));
 }
 
 createSingleItemsCampgrounds(campgrounds);
