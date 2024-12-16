@@ -1,4 +1,8 @@
-const items = [
+import { Campground, Feature } from "../models/index.js";
+
+import { getItemByAttributes, createModel } from "./utils.js";
+
+const campgrounds = [
   {
     parkId: 6,
     campgroundName: "Alice Lake Campground",
@@ -393,3 +397,36 @@ const items = [
     ],
   },
 ];
+
+async function updateFeature(item, campgroundId) {
+  // get feature by strapiID
+  const feature = await getItemByAttributes(Feature, {
+    strapiId: item.strapiId,
+  });
+
+  // set campgroundId and name
+  feature.campgroundId = campgroundId;
+  feature.name = item.newName;
+
+  await feature.save();
+}
+
+async function createCampground(item) {
+  // create campground with FK to Park
+  const data = {
+    name: item.campgroundName,
+    parkId: item.parkId,
+  };
+
+  const campground = await createModel(Campground, data);
+
+  await Promise.all(
+    item.items.map((feature) => updateFeature(feature, campground.id)),
+  );
+}
+
+async function createCampgrounds(items) {
+  await Promise.all(items.map((item) => createCampground(item)));
+}
+
+createCampgrounds(campgrounds);
