@@ -89,6 +89,11 @@ jobs:
     runs-on: ubuntu-24.04
     needs: [build-frontend, build-backend]
     steps:
+      - name: Install OpenShift CLI tools
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "4.14"
+
       - name: Login OpenShift
         uses: redhat-actions/oc-login@v1
         with:
