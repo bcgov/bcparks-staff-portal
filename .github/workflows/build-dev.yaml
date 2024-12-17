@@ -12,7 +12,7 @@ concurrency:
 
 jobs:
   build-frontend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       IMAGE_NAME: frontend-${{ github.ref_name }}
     steps:
@@ -57,7 +57,7 @@ jobs:
         run: docker push --all-tags ${{ env.REGISTRY_IMAGE }}
 
   build-backend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       IMAGE_NAME: backend-${{ github.ref_name }}
     steps:
@@ -86,7 +86,7 @@ jobs:
       - name: Push Docker image
         run: docker push --all-tags ${{ env.REGISTRY_IMAGE }}
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [build-frontend, build-backend]
     steps:
       - name: Login OpenShift
