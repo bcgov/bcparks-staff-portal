@@ -45,10 +45,7 @@ function EditAndReview() {
       return false;
     }
 
-    if (
-      statusFilter.length !== statusValues.length &&
-      !statusFilter.includes(park.status)
-    ) {
+    if (!statusFilter.includes(park.status)) {
       return false;
     }
 
