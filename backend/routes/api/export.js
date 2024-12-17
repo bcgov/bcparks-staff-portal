@@ -154,8 +154,6 @@ router.get(
         "Management Area": "@TODO: map Park to Mgmt Area values from Strapi",
         ORCS: feature.park.orcs,
         "Park Name": feature.park.name,
-        "psa.id (Park sub area ID)": feature.strapiId, // for "IS" only
-        "psad.id  (Park sub area date ID)": "@TODO: find this value in Strapi", // for "IS" only
         "Sub-Area": feature.name,
         "Sub-Area Type (Park feature)": feature.featureType.name,
         "Operating Year": dateRange.season.operatingYear,
