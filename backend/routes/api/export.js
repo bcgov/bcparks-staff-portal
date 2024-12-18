@@ -79,7 +79,7 @@ router.get(
         {
           model: Park,
           as: "park",
-          attributes: ["id", "name", "orcs"],
+          attributes: ["id", "name", "orcs", "managementAreas"],
         },
         {
           model: FeatureType,
@@ -150,8 +150,13 @@ router.get(
     // Flatten data for CSV row format
     const flattened = featuresData.flatMap((feature) =>
       feature.dateable.dateRanges.map((dateRange) => ({
-        Section: "@TODO: map Park to section values from Strapi",
-        "Management Area": "@TODO: map Park to Mgmt Area values from Strapi",
+        // get park management area and section names from jsonb field
+        Section: feature.park.managementAreas
+          .map((m) => m.section.name)
+          .join(", "),
+        "Management Area": feature.park.managementAreas
+          .map((m) => m.mgmtArea.name)
+          .join(", "),
         ORCS: feature.park.orcs,
         "Park Name": feature.park.name,
         "Sub-Area": feature.name,

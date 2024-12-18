@@ -94,7 +94,7 @@ export async function fetchAllModels() {
     {
       endpoint: "/protected-areas",
       model: "protected-area",
-      fields: ["parkFacilities", "parkOperations"],
+      fields: ["parkFacilities", "parkOperations", "managementAreas"],
       items: [],
     },
     {
@@ -119,6 +119,18 @@ export async function fetchAllModels() {
       endpoint: "/park-operation-dates",
       model: "park-operation-date",
       fields: ["protectedArea"],
+      items: [],
+    },
+    {
+      endpoint: "/sections",
+      model: "section",
+      fields: null,
+      items: [],
+    },
+    {
+      endpoint: "/management-areas",
+      model: "management-area",
+      fields: ["section"],
       items: [],
     },
   ];
@@ -151,6 +163,7 @@ export async function createOrUpdatePark(item) {
 
   if (dbItem) {
     dbItem.name = item.attributes.protectedAreaName;
+    dbItem.managementAreas = item.mgmtAreaAndSection;
 
     await dbItem.save();
   } else {
@@ -160,6 +173,7 @@ export async function createOrUpdatePark(item) {
       orcs: item.attributes.orcs,
       dateableId: dateable.id,
       strapiId: item.id,
+      managementAreas: item.mgmtAreaAndSection,
     };
 
     dbItem = await createModel(Park, data);
@@ -433,6 +447,39 @@ export async function syncData() {
   const strapiData = await fetchAllModels();
 
   const parkData = getStrapiModelData(strapiData, "protected-area");
+  const mgmtAreaData = getStrapiModelData(strapiData, "management-area");
+  const sectionData = getStrapiModelData(strapiData, "section");
+
+  // Add mgmt area and section data to parkData
+  parkData.items = parkData.items.map((park) => {
+    // Get management area and section data for the JSONB column
+    const mgmtAreaAndSection = park.attributes.managementAreas.data.map((m) => {
+      const mgmtAreaJson = mgmtAreaData.items.find(
+        (mgmtArea) => mgmtArea.id === m.id,
+      );
+
+      const sectionJson = sectionData.items.find(
+        (section) => section.id === mgmtAreaJson.section.id,
+      );
+
+      return {
+        mgmtArea: {
+          strapiId: mgmtAreaJson.id,
+          name: mgmtAreaJson.managementAreaName,
+        },
+        section: {
+          strapiId: sectionJson.id,
+          name: sectionJson.sectionName,
+        },
+      };
+    });
+
+    return {
+      ...park,
+      mgmtAreaAndSection,
+    };
+  });
+
   const featureTypeData = getStrapiModelData(
     strapiData,
     "park-operation-sub-area-type",
