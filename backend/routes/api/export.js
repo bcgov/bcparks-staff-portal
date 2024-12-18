@@ -119,12 +119,13 @@ router.get(
                       model: SeasonChangeLog,
                       as: "changeLogs",
                       attributes: ["id", "notes", "createdAt"],
+                      // Filter out empty notes
                       where: {
-                        // Ignore empty notes
                         notes: {
                           [Op.ne]: "",
                         },
                       },
+                      required: false,
                       include: [
                         {
                           model: User,
