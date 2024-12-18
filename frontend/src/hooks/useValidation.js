@@ -131,6 +131,11 @@ export default function useValidation(dates, notes, season) {
     endDateId,
     dateRangeId,
   }) {
+    // Skip validation for empty ranges
+    if (!start && !end) {
+      return true;
+    }
+
     // Both dates are required if one is set
     if (!start) {
       return addError(startDateId, "Enter a start date");
