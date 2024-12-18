@@ -30,4 +30,26 @@ export default [
       "new-cap": "off",
     },
   },
+
+  // Limit linting in seeders/migrations directories
+  {
+    files: ["migrations/**/*.js", "seeders/**/*.js"],
+
+    languageOptions: {
+      globals: { ...globals.node },
+
+      parserOptions: {
+        sourceType: "script", // Auto-generated files are CJS modules
+      },
+    },
+
+    rules: {
+      "no-unused-vars": "off", // Ignore parameters added by Sequelize
+    },
+  },
+
+  // Ignore Admin JS bundle directory
+  {
+    ignores: [".adminjs/"],
+  },
 ];
