@@ -69,18 +69,12 @@ function PublishPage() {
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>Golden Ears</td>
-              <td className="fw-bold">Alouette Campground</td>
-            </tr>
-            <tr>
-              <td>Golden Ears</td>
-              <td className="fw-bold">Gold Creek Campground</td>
-            </tr>
-            <tr>
-              <td>Golden Ears</td>
-              <td className="fw-bold">North Beach Campground</td>
-            </tr>
+            {data?.features.map((feature) => (
+              <tr key={feature.id}>
+                <td>{feature.park.name}</td>
+                <td>{feature.name}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>

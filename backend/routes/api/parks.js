@@ -8,8 +8,10 @@ import {
   DateRange,
   DateType,
   Dateable,
+  Campground,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
+import { Op } from "sequelize";
 
 const router = Router();
 
@@ -158,23 +160,70 @@ router.get(
 router.get(
   "/ready-to-publish/",
   asyncHandler(async (req, res) => {
-    // every date range that is approved
-    // feature - park pairs
-    // every dateRange in
+    const approvedSeasons = await Season.findAll({
+      where: {
+        status: "approved",
+        readyToPublish: true,
+      },
+      attributes: ["id", "parkId", "featureTypeId"],
+      raw: true,
+    });
 
-    const seasons = await Season.findAll({
-      attributes: ["id", "status", "readyToPublish"],
+    const parkFeaturePairs = [
+      ...new Map(
+        approvedSeasons.map((season) => [
+          `${season.parkId}-${season.featureTypeId}`, // Unique key for the pair
+          { parkId: season.parkId, featureTypeId: season.featureTypeId }, // Original object
+        ]),
+      ).values(),
+    ];
+
+    const matchingFeatures = await Feature.findAll({
+      where: {
+        [Op.or]: parkFeaturePairs,
+      },
+      attributes: ["id", "name"],
       include: [
         {
           model: Park,
           as: "park",
-          attributes: ["id", "orcs", "name", "strapiId"],
+          attributes: ["id", "orcs", "name"],
         },
         {
-          model: FeatureType,
-          as: "featureType",
+          model: Campground,
+          as: "campground",
           attributes: ["id", "name"],
         },
+      ],
+    });
+
+    const features = matchingFeatures.map((feature) => feature.toJSON());
+
+    // if feature has a campground prepend feature name with campground name
+    const output = features.map((feature) => {
+      if (feature.campground) {
+        feature.name = `${feature.campground.name} - ${feature.name}`;
+      }
+
+      return feature;
+    });
+
+    res.send({ features: output });
+  }),
+);
+
+// TODO: make it a post request
+// - send data to the API
+router.get(
+  "/publish-to-api/",
+  asyncHandler(async (req, res) => {
+    const approvedSeasons = await Season.findAll({
+      where: {
+        status: "approved",
+        readyToPublish: true,
+      },
+      attributes: ["id", "parkId", "featureTypeId", "operatingYear"],
+      include: [
         {
           model: DateRange,
           as: "dateRanges",
@@ -193,22 +242,97 @@ router.get(
                 {
                   model: Feature,
                   as: "feature",
-                  attributes: ["id", "name"],
+                  attributes: ["id", "name", "strapiId"],
                 },
               ],
             },
           ],
         },
       ],
-      where: {
-        readyToPublish: true,
-        status: "approved",
-      },
     });
 
-    const output = seasons.map((season) => season.toJSON());
+    const seasons = approvedSeasons.map((season) => season.toJSON());
 
-    res.send(output);
+    const table = {};
+
+    seasons.forEach((season) => {
+      const { operatingYear } = season;
+
+      if (!table[operatingYear]) {
+        table[operatingYear] = {};
+      }
+
+      const { dateRanges } = season;
+
+      dateRanges.forEach((dateRange) => {
+        const { dateable } = dateRange;
+        const { feature } = dateable;
+
+        console.log(feature);
+        const strapiId = feature[0].strapiId;
+
+        if (!table[operatingYear][strapiId]) {
+          console.log(strapiId);
+          table[operatingYear][strapiId] = [];
+        }
+
+        table[operatingYear][strapiId].push(dateRange);
+      });
+    });
+
+    const datesToPublish = [];
+
+    console.log(table);
+
+    Object.entries(table).forEach(([operatingYear, features]) => {
+      Object.entries(features).forEach(([featureId, dateRanges]) => {
+        const operatingDates = dateRanges
+          .filter((dateRange) => dateRange.dateType.name === "Operation")
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+        const reservationDates = dateRanges
+          .filter((dateRange) => dateRange.dateType.name === "Reservation")
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
+        const maxIndex = Math.max(
+          operatingDates.length,
+          reservationDates.length,
+        );
+
+        for (let i = 0; i < maxIndex; i++) {
+          const obj = {
+            operatingYear,
+            parkOperationSubArea: featureId,
+            isActive: true,
+            openDate: null,
+            closeDate: null,
+            serviceStartDate: null,
+            serviceEndDate: null,
+            reservationStartDate: null,
+            reservationEndDate: null,
+            offSeasonStartDate: null,
+            offSeasonEndDate: null,
+            adminNote: null,
+          };
+
+          const operatingDate = operatingDates[i];
+          const reservationDate = reservationDates[i];
+
+          if (operatingDate) {
+            obj.serviceStartDate = operatingDate.startDate;
+            obj.serviceEndDate = operatingDate.endDate;
+          }
+
+          if (reservationDate) {
+            obj.reservationStartDate = reservationDate.startDate;
+            obj.reservationEndDate = reservationDate.endDate;
+          }
+          datesToPublish.push(obj);
+        }
+      });
+    });
+
+    res.json(datesToPublish);
   }),
 );
 
