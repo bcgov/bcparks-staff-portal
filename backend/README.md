@@ -6,9 +6,9 @@ This directory contains the code for the backend REST API server built with Expr
 
 - `index.js`: The entry point of the server.
 - `routes/`: Directory containing endpoint route handlers. The API endpoints are inside the `api/` directory.
-- `db/`: directory that contains DB connection and config
+- `db/`: Directory that contains DB connection and config
 - `models/`: Directory for Sequelize models.
-- `migrations/`: list of DB migrations. Each file represents a change to the DB schema. The name of the file starts with a timestamp. So that they are sorted by the time they were created.
+- `migrations/`: List of DB migrations. Each file represents a change to the DB schema. The name of the file starts with a timestamp. So that they are sorted by the time they were created.
 -
 
 ## Setup
