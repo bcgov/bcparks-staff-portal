@@ -230,19 +230,20 @@ export async function createDateTypes() {
       name: "Operation",
       startDateLabel: "Service Start Date",
       endDateLabel: "Service End Date",
-      description: "Dates of Operation",
+      description:
+        "All nights where the area is open by the operator. Fees and service levels can vary depending on the time of year.",
     },
     {
       name: "Reservation",
       startDateLabel: "Reservation Start Date",
       endDateLabel: "Reservation End Date",
-      description: "Dates for Reservations",
+      description: "Dates where reservations are available.",
     },
     {
       name: "Off Season",
       startDateLabel: "Winter start date",
       endDateLabel: "Winter end date",
-      description: "Winter dates",
+      description: "Reduced services and reduced legislated winter fees.",
     },
   ];
 

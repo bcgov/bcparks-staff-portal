@@ -14,6 +14,7 @@ import groupCamping from "@/assets/icons/group-camping.svg";
 import { formatDateRange } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
@@ -250,6 +251,26 @@ function SubmitDates() {
     });
   }
 
+  /**
+   * Returns an override for the Operating Dates description text if the
+   * feature type has a specific description.
+   * Otherwise, returns the general description from the db.
+   * @param {string} featureType Feature Type name from the db
+   * @returns {string} Operating dates tooltip text
+   */
+  function getOperatingDatesTooltip(featureType) {
+    if (featureType === "Frontcountry campground") {
+      return "All nights where the site is open for camping by the operator. Fees and service levels can vary depending on the time of year.";
+    }
+
+    if (featureType === "Backcountry") {
+      return "All nights where camping is allowed. Fees and service levels can vary depending on the time of year.";
+    }
+
+    // Default: general operating dates tooltip
+    return season.dateTypes.Operation.description;
+  }
+
   // The wireframes don't show the option to remove a date, but if we need it, we can add it here
   // function removeDateRange(dateType, dateableId, index) {
   //   setDates((prevDates) => ({
@@ -430,17 +451,17 @@ function SubmitDates() {
         <div className="row">
           <div className="col-md-6">
             <div>
-              Operating dates{" "}
+              <span className="me-1">Operating dates</span>
               {season?.dateTypes?.Operation?.description && (
-                <div className="tooltip-container">
+                <TooltipWrapper
+                  placement="top"
+                  content={getOperatingDatesTooltip(season.featureType.name)}
+                >
                   <FontAwesomeIcon
-                    className="append-content ms-1"
+                    className="append-content "
                     icon={faCircleInfo}
                   />
-                  <span className="tooltip-text">
-                    {season.dateTypes.Operation.description}
-                  </span>
-                </div>
+                </TooltipWrapper>
               )}
             </div>
 
@@ -477,17 +498,17 @@ function SubmitDates() {
           {feature.hasReservations && (
             <div className="col-md-6">
               <div>
-                Reservation dates{" "}
+                <span className="me-1">Reservation dates</span>
                 {season?.dateTypes?.Reservation?.description && (
-                  <div className="tooltip-container">
+                  <TooltipWrapper
+                    placement="top"
+                    content={season.dateTypes.Reservation.description}
+                  >
                     <FontAwesomeIcon
-                      className="append-content ms-1"
+                      className="append-content "
                       icon={faCircleInfo}
                     />
-                    <span className="tooltip-text">
-                      {season.dateTypes.Reservation.description}
-                    </span>
-                  </div>
+                  </TooltipWrapper>
                 )}
               </div>
 

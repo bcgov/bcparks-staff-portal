@@ -55,29 +55,6 @@
     gap: var(--layout-margin-medium);
   }
 
-  .tooltip-container {
-    position: relative;
-    display: inline-block;
-  }
-
-  .tooltip-text {
-    visibility: hidden;
-    background-color: var(--surface-color-border-dark);
-    color: var(--typography-color-primary-invert);
-    text-align: center;
-    padding: var(--layout-padding-xsmall) var(--layout-padding-small);
-    border-radius: var(--layout-border-radius-large);
-    position: absolute;
-    z-index: 1;
-    bottom: 125%; /* Position above the icon */
-    left: 50%;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    font-size: 14px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-
   /* Arrow at the bottom of tooltip */
   .tooltip-text::after {
     content: "";
@@ -100,11 +77,5 @@
     .controls {
       gap: var(--layout-margin-medium);
     }
-  }
-
-  /* Show tooltip on hover */
-  .tooltip-container:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
   }
 }
