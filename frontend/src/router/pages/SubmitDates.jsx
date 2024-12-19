@@ -11,7 +11,12 @@ import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange } from "@/lib/utils";
+import {
+  formatDateRange,
+  formatTimestamp,
+  normalizeToUTCDate,
+  formatDate,
+} from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import TooltipWrapper from "@/components/TooltipWrapper";
@@ -234,7 +239,13 @@ function SubmitDates() {
     value,
     callback = null,
   ) {
-    const newValue = value ? value.toISOString() : null;
+    let newValue = null;
+
+    if (value) {
+      const date = normalizeToUTCDate(value);
+
+      newValue = date.toISOString();
+    }
 
     setDates((prevDates) => {
       const updatedDates = cloneDeep(prevDates);
@@ -330,6 +341,7 @@ function SubmitDates() {
                   "is-invalid": startErrors,
                 })}
                 selected={dateRange.startDate}
+                selected={formatDate(dateRange.startDate)}
                 onChange={(date) => {
                   updateDateRange(
                     dateRange.dateableId,
@@ -382,7 +394,7 @@ function SubmitDates() {
                   "form-control": true,
                   "is-invalid": endErrors,
                 })}
-                selected={dateRange.endDate}
+                selected={formatDate(dateRange.endDate)}
                 onChange={(date) => {
                   updateDateRange(
                     dateRange.dateableId,
