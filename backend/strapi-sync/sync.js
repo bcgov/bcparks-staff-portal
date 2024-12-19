@@ -151,6 +151,8 @@ export async function createOrUpdatePark(item) {
 
   if (dbItem) {
     dbItem.name = item.attributes.protectedAreaName;
+
+    await dbItem.save();
   } else {
     const dateable = await createModel(Dateable);
     const data = {
@@ -191,6 +193,8 @@ export async function createOrUpdateFeatureType(strapiData, item) {
   if (dbItem) {
     dbItem.name = item.attributes.subAreaType;
     dbItem.icon = icon;
+
+    await dbItem.save();
   } else {
     const data = {
       name: item.attributes.subAreaType,
@@ -272,6 +276,8 @@ export async function createOrUpdateFeature(item) {
     dbItem.featureTypeId = featureType.id;
     dbItem.hasReservations = item.attributes.hasReservations;
     dbItem.active = item.attributes.isActive;
+
+    await dbItem.save();
   } else {
     const dateable = await createModel(Dateable);
     const park = await getItemByAttributes(Park, {

@@ -1840,7 +1840,7 @@ async function createCampground(item) {
 }
 
 async function createSingleItemsCampgrounds(items) {
-  await Promise.all(items.map(async (item) => await createCampground(item)));
+  await Promise.all(items.map(async (item) => createCampground(item)));
 }
 
 createSingleItemsCampgrounds(campgrounds);

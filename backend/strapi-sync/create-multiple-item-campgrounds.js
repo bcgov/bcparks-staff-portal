@@ -425,14 +425,12 @@ async function createCampground(item) {
   const campground = await createModel(Campground, data);
 
   await Promise.all(
-    item.items.map(
-      async (feature) => await updateFeature(feature, campground.id),
-    ),
+    item.items.map(async (feature) => updateFeature(feature, campground.id)),
   );
 }
 
 async function createCampgrounds(items) {
-  await Promise.all(items.map(async (item) => await createCampground(item)));
+  await Promise.all(items.map(async (item) => createCampground(item)));
 }
 
 createCampgrounds(campgrounds);
