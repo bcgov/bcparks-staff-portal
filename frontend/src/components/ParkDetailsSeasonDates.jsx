@@ -1,6 +1,9 @@
 import groupBy from "lodash/groupBy";
 import DateRange from "@/components/DateRange";
 import PropTypes from "prop-types";
+import ChangeLogs from "./ChangeLogs";
+
+import "./ParkDetailsSeasonDates.scss";
 
 function DateTypeRow({ dateTypeName, dateRanges }) {
   return (
@@ -29,7 +32,7 @@ function CampGroundFeature({ feature }) {
 
   return (
     <div className="feature">
-      <h5>{feature.name}</h5>
+      <h4>{feature.name}</h4>
 
       <table className="table table-striped sub-area-dates mb-0">
         <tbody>
@@ -61,15 +64,29 @@ function CampGround({ campground }) {
 
 export default function SeasonDates({ data }) {
   return (
-    <div className="details-content">
-      <div className={data.campgrounds.length > 0 ? "mb-4" : ""}>
-        {data.campgrounds.map((campground) => (
-          <CampGround key={campground.id} campground={campground} />
-        ))}
-      </div>
-      {data.features.map((feature) => (
-        <CampGroundFeature key={feature.id} feature={feature} />
-      ))}
+    <div className="park-details-season-dates details-content">
+      {data.campgrounds.length > 0 && (
+        <div className="campgrounds">
+          {data.campgrounds.map((campground) => (
+            <CampGround key={campground.id} campground={campground} />
+          ))}
+        </div>
+      )}
+
+      {data.features.length > 0 && (
+        <div className="features">
+          {data.features.map((feature) => (
+            <CampGroundFeature key={feature.id} feature={feature} />
+          ))}
+        </div>
+      )}
+
+      {data.changeLogs.length > 0 && (
+        <div className="notes">
+          <h4>Notes</h4>
+          <ChangeLogs changeLogs={data.changeLogs} />
+        </div>
+      )}
     </div>
   );
 }
@@ -102,6 +119,7 @@ SeasonDates.propTypes = {
   data: PropTypes.shape({
     campgrounds: PropTypes.arrayOf(campgroundPropShape),
     features: PropTypes.arrayOf(campgroundFeaturePropShape),
+    changeLogs: PropTypes.array.isRequired,
   }),
 };
 

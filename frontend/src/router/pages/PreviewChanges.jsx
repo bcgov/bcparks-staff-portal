@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { formatTimestamp } from "@/lib/utils";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
@@ -14,6 +13,7 @@ import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import FlashMessage from "@/components/FlashMessage";
 import DateRange from "@/components/DateRange";
+import ChangeLogs from "@/components/ChangeLogs";
 
 import { Link } from "react-router-dom";
 
@@ -238,20 +238,7 @@ function PreviewChanges() {
         <div className="col-lg-6">
           <h2 className="mb-4">Notes</h2>
 
-          {data?.changeLogs.map((changeLog) => (
-            <p key={changeLog.id}>
-              {changeLog.notes && (
-                <span>
-                  {changeLog.notes}
-                  <br />
-                </span>
-              )}
-              <span className="note-metadata">
-                {changeLog.notes ? "" : "Submitted "}
-                {formatTimestamp(changeLog.createdAt)} by {changeLog.user.name}
-              </span>
-            </p>
-          ))}
+          <ChangeLogs changeLogs={data?.changeLogs} />
 
           <p>
             If you are updating the current year’s dates, provide an explanation

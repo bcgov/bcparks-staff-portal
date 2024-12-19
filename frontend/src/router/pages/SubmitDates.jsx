@@ -7,9 +7,10 @@ import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange, formatTimestamp } from "@/lib/utils";
+import { formatDateRange } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
+import ChangeLogs from "@/components/ChangeLogs";
 import useValidation from "@/hooks/useValidation";
 
 import DatePicker from "react-datepicker";
@@ -520,20 +521,7 @@ function SubmitDates() {
         <div className="col-lg-6">
           <h2 className="mb-4">Notes</h2>
 
-          {season?.changeLogs.map((changeLog) => (
-            <p key={changeLog.id}>
-              {changeLog.notes && (
-                <span>
-                  {changeLog.notes}
-                  <br />
-                </span>
-              )}
-              <span className="note-metadata">
-                {changeLog.notes ? "" : "Submitted "}
-                {formatTimestamp(changeLog.createdAt)} by {changeLog.user.name}
-              </span>
-            </p>
-          ))}
+          <ChangeLogs changeLogs={season?.changeLogs} />
 
           <p>
             If you are updating the current year’s dates, provide an explanation
