@@ -1,7 +1,7 @@
 import groupBy from "lodash/groupBy";
-import DateRange from "@/components/DateRange";
 import PropTypes from "prop-types";
-import ChangeLogs from "./ChangeLogs";
+import DateRange from "@/components/DateRange";
+import ChangeLogsList from "@/components/ChangeLogsList.jsx";
 
 import "./ParkDetailsSeasonDates.scss";
 
@@ -84,7 +84,7 @@ export default function SeasonDates({ data }) {
       {data.changeLogs.length > 0 && (
         <div className="notes">
           <h4>Notes</h4>
-          <ChangeLogs changeLogs={data.changeLogs} />
+          <ChangeLogsList changeLogs={data.changeLogs} />
         </div>
       )}
     </div>

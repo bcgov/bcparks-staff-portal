@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { formatTimestamp } from "@/lib/utils";
 
 // Displays season date changelogs (aka "notes")
-export default function ChangeLogs({ changeLogs = [] }) {
+export default function ChangeLogsList({ changeLogs = [] }) {
   return (
     <>
       {changeLogs.map((changeLog) => (
@@ -24,6 +24,6 @@ export default function ChangeLogs({ changeLogs = [] }) {
 }
 
 // Prop validation
-ChangeLogs.propTypes = {
+ChangeLogsList.propTypes = {
   changeLogs: PropTypes.array,
 };

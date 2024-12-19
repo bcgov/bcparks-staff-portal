@@ -13,7 +13,7 @@ import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import FlashMessage from "@/components/FlashMessage";
 import DateRange from "@/components/DateRange";
-import ChangeLogs from "@/components/ChangeLogs";
+import ChangeLogsList from "@/components/ChangeLogsList";
 
 import { Link } from "react-router-dom";
 
@@ -238,7 +238,7 @@ function PreviewChanges() {
         <div className="col-lg-6">
           <h2 className="mb-4">Notes</h2>
 
-          <ChangeLogs changeLogs={data?.changeLogs} />
+          <ChangeLogsList changeLogs={data?.changeLogs} />
 
           <p>
             If you are updating the current year’s dates, provide an explanation
