@@ -124,14 +124,15 @@ function SubmitDates() {
     }
 
     if (["under review", "approved", "published"].includes(season.status)) {
-      openConfirmation(
+      const confirm = await openConfirmation(
         "Move back to draft?",
         "The dates will be moved back to draft and need to be submitted again to be reviewed.",
-        () => {
-          saveChanges(savingDraft);
-        },
         "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
       );
+
+      if (confirm) {
+        saveChanges(savingDraft);
+      }
     } else {
       saveChanges(savingDraft);
     }
