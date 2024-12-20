@@ -46,7 +46,7 @@ function getParkStatus(seasons) {
 }
 
 router.get(
-  "/parks/",
+  "/",
   asyncHandler(async (req, res) => {
     const parksWithBundlesAndSeasons = await Park.findAll({
       attributes: ["id", "orcs", "name"],
@@ -101,7 +101,7 @@ router.get(
 );
 
 router.get(
-  "/parks/:orcs",
+  "/:orcs",
   asyncHandler(async (req, res) => {
     const { orcs } = req.params;
 

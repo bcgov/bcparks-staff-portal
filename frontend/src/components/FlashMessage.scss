@@ -4,7 +4,7 @@
   top: var(--layout-margin-medium);
   right: var(--layout-margin-medium);
   z-index: 1000;
-  max-width: 30vw;
+  max-width: 75vw;
 
   display: flex;
   align-items: center;
@@ -14,6 +14,10 @@
   border-radius: var(--layout-border-radius-large);
   color: var(--typography-color-primary-invert);
   animation: slideIn 0.3s ease-out;
+
+  @include from-md {
+    max-width: 40vw;
+  }
 
   &.success {
     background-color: var(--support-border-color-success);

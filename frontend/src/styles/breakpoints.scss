@@ -38,14 +38,14 @@
   .my-component {
     display: block;
 
-    @include from-small {
+    @include from-sm {
       display: flex;
       background: transparent;
     }
   }
 
   // Style rules for viewports >= 768px wide
-  @include from-medium {
+  @include from-md {
     .container {
       max-width: 100%;
     }
