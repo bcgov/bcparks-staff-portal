@@ -97,7 +97,6 @@ router.get(
     const parkFeatures = await Feature.findAll({
       where: {
         parkId: season.park.id,
-        active: true,
         featureTypeId: season.featureType.id,
       },
       attributes: ["id", "name", "hasReservations", "active"],
