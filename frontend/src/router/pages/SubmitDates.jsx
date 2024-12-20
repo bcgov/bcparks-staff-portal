@@ -118,14 +118,6 @@ function SubmitDates() {
   }
 
   async function submitChanges(savingDraft = false) {
-    setFormSubmitted(true);
-
-    // Validate form state before saving
-    if (!validateForm()) {
-      console.error("Form validation failed!", errors);
-      throw new Error("Form validation failed");
-    }
-
     if (["under review", "approved", "published"].includes(season.status)) {
       const confirm = await openConfirmation(
         "Move back to draft?",
