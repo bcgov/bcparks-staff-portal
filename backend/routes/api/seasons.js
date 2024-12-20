@@ -111,11 +111,13 @@ router.get(
           model: Dateable,
           as: "dateable",
           attributes: ["id"],
+          required: false,
           include: [
             // get all the dateRanges for this feature for this season and previous season
             {
               model: DateRange,
               as: "dateRanges",
+              required: false,
               attributes: ["id", "seasonId", "startDate", "endDate"],
               include: [
                 {
