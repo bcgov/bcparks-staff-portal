@@ -126,19 +126,24 @@ function SubmitDates() {
       );
 
       if (confirm) {
-        saveChanges(savingDraft);
+        await saveChanges(savingDraft);
+        return true;
       }
     } else {
-      saveChanges(savingDraft);
+      await saveChanges(savingDraft);
+      return true;
     }
+
+    return false;
   }
 
   async function continueToPreview() {
     try {
-      if (hasChanges()) {
-        await submitChanges();
+      const submitOk = await submitChanges();
+
+      if (submitOk) {
+        navigate(`/park/${parkId}/edit/${seasonId}/preview`);
       }
-      navigate(`/park/${parkId}/edit/${seasonId}/preview`);
     } catch (err) {
       console.error(err);
     }
@@ -146,7 +151,6 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      fetchData();
       await submitChanges(true);
     } catch (err) {
       console.error(err);
