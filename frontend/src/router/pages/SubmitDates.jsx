@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cloneDeep, set as lodashSet } from "lodash";
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
@@ -559,9 +559,13 @@ function SubmitDates() {
           />
 
           <div className="controls d-flex mt-4">
-            <button type="button" className="btn btn-outline-primary">
+            <Link
+              to={`/park/${parkId}`}
+              type="button"
+              className="btn btn-outline-primary"
+            >
               Back
-            </button>
+            </Link>
 
             <button
               type="button"
