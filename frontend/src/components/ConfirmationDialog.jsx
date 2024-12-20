@@ -1,4 +1,6 @@
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClose } from "@fa-kit/icons/classic/regular";
 import "./ConfirmationDialog.scss";
 
 function ConfirmationDialog({
@@ -13,17 +15,26 @@ function ConfirmationDialog({
 
   return (
     <div className="confirmation-dialog-overlay">
-      <div className="confirmation-dialog-container">
-        <h3 className="confirmation-dialog-title">{title}</h3>
-        <p className="confirmation-dialog-message">{message}</p>
-        <p className="confirmation-dialog-message">{notes}</p>
-        <div className="confirmation-dialog-actions">
-          <button className="btn btn-outline-primary" onClick={onCancel}>
-            Cancel
-          </button>
-          <button className="btn btn-primary" onClick={onConfirm}>
-            Confirm
-          </button>
+      <div className="confirmation-dialog-outer">
+        <div className="confirmation-dialog-left-warning-column"></div>
+        <div className="confirmation-dialog-container">
+          <div className="confirmation-dialog-header">
+            <h3 className="confirmation-dialog-title">{title}</h3>
+            <button onClick={onCancel} className="confirmation-dialog-close">
+              <FontAwesomeIcon icon={faClose} />
+            </button>
+          </div>
+
+          <p className="confirmation-dialog-message">{message}</p>
+          <p className="confirmation-dialog-message">{notes}</p>
+          <div className="confirmation-dialog-actions">
+            <button className="btn btn-outline-primary" onClick={onCancel}>
+              Cancel
+            </button>
+            <button className="btn btn-primary" onClick={onConfirm}>
+              Confirm
+            </button>
+          </div>
         </div>
       </div>
     </div>
