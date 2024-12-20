@@ -1,7 +1,11 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cloneDeep, set as lodashSet } from "lodash";
-import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+import {
+  faCircleInfo,
+  faTriangleExclamation,
+  faCalendarCheck,
+} from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
@@ -114,14 +118,6 @@ function SubmitDates() {
   }
 
   async function submitChanges(savingDraft = false) {
-    setFormSubmitted(true);
-
-    // Validate form state before saving
-    if (!validateForm()) {
-      console.error("Form validation failed!", errors);
-      throw new Error("Form validation failed");
-    }
-
     if (["under review", "approved", "published"].includes(season.status)) {
       const confirm = await openConfirmation(
         "Move back to draft?",
@@ -130,19 +126,24 @@ function SubmitDates() {
       );
 
       if (confirm) {
-        saveChanges(savingDraft);
+        await saveChanges(savingDraft);
+        return true;
       }
     } else {
-      saveChanges(savingDraft);
+      await saveChanges(savingDraft);
+      return true;
     }
+
+    return false;
   }
 
   async function continueToPreview() {
     try {
-      if (hasChanges()) {
-        await submitChanges();
+      const submitOk = await submitChanges();
+
+      if (submitOk) {
+        navigate(`/park/${parkId}/edit/${seasonId}/preview`);
       }
-      navigate(`/park/${parkId}/edit/${seasonId}/preview`);
     } catch (err) {
       console.error(err);
     }
@@ -150,7 +151,6 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      fetchData();
       await submitChanges(true);
     } catch (err) {
       console.error(err);
@@ -288,6 +288,11 @@ function SubmitDates() {
     const startDateId = `start-date-${dateRangeId}`;
     const endDateId = `end-date-${dateRangeId}`;
 
+    // Track validation errors for the whole range, or the whole dateable feature
+    const groupErrors = errors?.[dateRangeId] || errors?.[dateRange.dateableId];
+    const startErrors = errors?.[startDateId] || groupErrors;
+    const endErrors = errors?.[endDateId] || groupErrors;
+
     return (
       <div className="row dates-row operating-dates">
         <div className="col-lg-5">
@@ -295,31 +300,42 @@ function SubmitDates() {
             <label htmlFor={startDateId} className="form-label d-lg-none">
               Start date
             </label>
-            <DatePicker
-              id={startDateId}
-              className={classNames({
-                "form-control": true,
-                "is-invalid": errors?.[startDateId],
-              })}
-              selected={dateRange.startDate}
-              onChange={(date) => {
-                updateDateRange(
-                  dateRange.dateableId,
-                  dateRange.dateType.name,
-                  index,
-                  "startDate",
-                  date,
-                  // Callback to validate the new value
-                  (updatedDates) => {
-                    onUpdateDateRange({
-                      dateRange,
-                      datesObj: updatedDates,
-                    });
-                  },
-                );
-              }}
-              dateFormat="EEE, MMM d, yyyy"
-            />
+
+            <div className="input-with-append">
+              <DatePicker
+                id={startDateId}
+                className={classNames({
+                  "form-control": true,
+                  "is-invalid": startErrors,
+                })}
+                selected={dateRange.startDate}
+                onChange={(date) => {
+                  updateDateRange(
+                    dateRange.dateableId,
+                    dateRange.dateType.name,
+                    index,
+                    "startDate",
+                    date,
+                    // Callback to validate the new value
+                    (updatedDates) => {
+                      onUpdateDateRange({
+                        dateRange,
+                        datesObj: updatedDates,
+                      });
+                    },
+                  );
+                }}
+                dateFormat="EEE, MMM d, yyyy"
+              />
+
+              {/* Show the calendar icon unless the error icon is showing */}
+              {!startErrors && (
+                <FontAwesomeIcon
+                  className="append-content"
+                  icon={faCalendarCheck}
+                />
+              )}
+            </div>
 
             {/* Show validation errors for the startDate field */}
             {errors?.[startDateId] && (
@@ -337,31 +353,42 @@ function SubmitDates() {
             <label htmlFor={endDateId} className="form-label d-lg-none">
               End date
             </label>
-            <DatePicker
-              id={endDateId}
-              className={classNames({
-                "form-control": true,
-                "is-invalid": errors?.[endDateId],
-              })}
-              selected={dateRange.endDate}
-              onChange={(date) => {
-                updateDateRange(
-                  dateRange.dateableId,
-                  dateRange.dateType.name,
-                  index,
-                  "endDate",
-                  date,
-                  // Callback to validate the new value
-                  (updatedDates) => {
-                    onUpdateDateRange({
-                      dateRange,
-                      datesObj: updatedDates,
-                    });
-                  },
-                );
-              }}
-              dateFormat="EEE, MMM d, yyyy"
-            />
+
+            <div className="input-with-append">
+              <DatePicker
+                id={endDateId}
+                className={classNames({
+                  "form-control": true,
+                  "is-invalid": endErrors,
+                })}
+                selected={dateRange.endDate}
+                onChange={(date) => {
+                  updateDateRange(
+                    dateRange.dateableId,
+                    dateRange.dateType.name,
+                    index,
+                    "endDate",
+                    date,
+                    // Callback to validate the new value
+                    (updatedDates) => {
+                      onUpdateDateRange({
+                        dateRange,
+                        datesObj: updatedDates,
+                      });
+                    },
+                  );
+                }}
+                dateFormat="EEE, MMM d, yyyy"
+              />
+
+              {/* Show the calendar icon unless the error icon is showing */}
+              {!endErrors && (
+                <FontAwesomeIcon
+                  className="append-content"
+                  icon={faCalendarCheck}
+                />
+              )}
+            </div>
 
             {/* Show validation errors for the endDate field */}
             {errors?.[endDateId] && (
@@ -372,7 +399,10 @@ function SubmitDates() {
 
         {/* Show validation errors for the date range */}
         {errors?.[dateRangeId] && (
-          <div className="error-message mt-2">{errors?.[dateRangeId]}</div>
+          <div className="error-message mt-2">
+            <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
+            {errors?.[dateRangeId]}
+          </div>
         )}
       </div>
     );
@@ -492,12 +522,21 @@ function SubmitDates() {
               </p>
             </div>
           )}
-
-          {/* Show validation errors for the whole dateable feature */}
-          <div className="error-message mt-2">
-            {errors?.[feature.dateable.id]}
-          </div>
         </div>
+
+        {/* Show validation errors for the whole dateable feature */}
+        {errors?.[feature.dateable.id] && (
+          <div
+            className="alert alert-danger alert-validation-error mt-2"
+            role="alert"
+          >
+            <div className="icon">
+              <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
+            </div>
+
+            <div className="content">{errors?.[feature.dateable.id]}</div>
+          </div>
+        )}
       </section>
     );
   }
@@ -581,7 +620,12 @@ function SubmitDates() {
 
       <div className="row notes">
         <div className="col-lg-6">
-          <h2 className="mb-4">Notes</h2>
+          <h2 className="mb-4">
+            Notes
+            {["approved", "published"].includes(season?.status) && (
+              <span className="text-danger">*</span>
+            )}
+          </h2>
 
           <ChangeLogsList changeLogs={season?.changeLogs} />
 
