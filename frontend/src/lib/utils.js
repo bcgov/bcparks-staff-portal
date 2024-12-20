@@ -45,3 +45,11 @@ export function formatDatetoISO(date) {
 
   return formatISO(date, { representation: "date" });
 }
+
+// used to properly compare paths
+export function removeTrailingSlash(str) {
+  if (str.endsWith("/")) {
+    return str.slice(0, -1);
+  }
+  return str;
+}

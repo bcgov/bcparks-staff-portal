@@ -11,7 +11,12 @@ import { formatDateRange } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import ChangeLogsList from "@/components/ChangeLogsList";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+
 import useValidation from "@/hooks/useValidation";
+import { useConfirmation } from "@/hooks/useConfirmation";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -38,7 +43,23 @@ function SubmitDates() {
     onUpdateDateRange,
   } = useValidation(dates, notes, season);
 
-  const [showFlash, setShowFlash] = useState(false);
+  const {
+    title,
+    message,
+    confirmationDialogNotes,
+    openConfirmation,
+    handleConfirm,
+    handleCancel,
+    isConfirmationOpen,
+  } = useConfirmation();
+
+  const {
+    flashTitle,
+    flashMessage,
+    openFlashMessage,
+    handleFlashClose,
+    isFlashOpen,
+  } = useFlashMessage();
 
   const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
   const {
@@ -49,7 +70,18 @@ function SubmitDates() {
 
   const navigate = useNavigate();
 
-  async function submitChanges() {
+  // are there changes to save?
+  function hasChanges() {
+    const datesChanged = Object.values(dates).some((dateType) =>
+      dateType.Operation.concat(dateType.Reservation).some(
+        (dateRange) => dateRange.changed,
+      ),
+    );
+
+    return datesChanged || notes;
+  }
+
+  async function saveChanges(savingDraft) {
     setFormSubmitted(true);
 
     // Validate form state before saving
@@ -69,18 +101,40 @@ function SubmitDates() {
 
     const response = await sendData(payload);
 
+    if (savingDraft) {
+      setNotes("");
+      fetchData();
+      openFlashMessage(
+        "Dates saved as draft",
+        `${season?.park.name} ${season?.featureType.name} ${season?.operatingYear} season details saved`,
+      );
+    }
+
     return response;
   }
 
-  // are there changes to save?
-  function hasChanges() {
-    const datesChanged = Object.values(dates).some((dateType) =>
-      dateType.Operation.concat(dateType.Reservation).some(
-        (dateRange) => dateRange.changed,
-      ),
-    );
+  async function submitChanges(savingDraft = false) {
+    setFormSubmitted(true);
 
-    return datesChanged || notes;
+    // Validate form state before saving
+    if (!validateForm()) {
+      console.error("Form validation failed!", errors);
+      throw new Error("Form validation failed");
+    }
+
+    if (["under review", "approved", "published"].includes(season.status)) {
+      const confirm = await openConfirmation(
+        "Move back to draft?",
+        "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+        "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
+      );
+
+      if (confirm) {
+        saveChanges(savingDraft);
+      }
+    } else {
+      saveChanges(savingDraft);
+    }
   }
 
   async function continueToPreview() {
@@ -96,14 +150,14 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      await submitChanges();
-      setNotes("");
       fetchData();
-      setShowFlash(true);
+      await submitChanges(true);
     } catch (err) {
       console.error(err);
     }
   }
+
+  useNavigationGuard(hasChanges, openConfirmation);
 
   useEffect(() => {
     if (data) {
@@ -164,6 +218,7 @@ function SubmitDates() {
             endDate: null,
             dateableId,
             dateType: season.dateTypes[dateType],
+            changed: true,
           },
         ],
       },
@@ -479,11 +534,18 @@ function SubmitDates() {
   return (
     <div className="page submit-dates">
       <FlashMessage
-        title="Dates saved as draft"
-        message={`${season?.operatingYear} season dates saved`}
-        isVisible={showFlash}
-        onClose={() => setShowFlash(false)}
-        duration={3000}
+        title={flashTitle}
+        message={flashMessage}
+        isVisible={isFlashOpen}
+        onClose={handleFlashClose}
+      />
+      <ConfirmationDialog
+        title={title}
+        message={message}
+        notes={confirmationDialogNotes}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+        isOpen={isConfirmationOpen}
       />
       <NavBack routePath={`/park/${parkId}`}>
         Back to {season?.park.name} season dates
