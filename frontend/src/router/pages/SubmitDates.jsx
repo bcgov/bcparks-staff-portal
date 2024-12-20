@@ -7,11 +7,10 @@ import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange, formatTimestamp } from "@/lib/utils";
+import { formatDateRange } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import ChangeLogsList from "@/components/ChangeLogsList";
-import useValidation from "@/hooks/useValidation";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import useValidation from "@/hooks/useValidation";
@@ -151,9 +150,7 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      setNotes("");
       fetchData();
-      setShowFlash(true);
       await submitChanges(true);
     } catch (err) {
       console.error(err);
