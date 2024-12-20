@@ -1,4 +1,5 @@
-import { format, parseISO, formatISO } from "date-fns";
+import { parseISO, formatISO } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 
 // Month, day, year
 const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
@@ -6,6 +7,16 @@ const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
 const DATE_FORMAT_SHORT = "EEE, MMM d";
 // Abbreviated month, day, year, time
 const DATE_FORMAT_TIMESTAMP = "MMM d, yyyy, h:mm a";
+
+export function normalizeToUTCDate(dateObject) {
+  return new Date(
+    Date.UTC(
+      dateObject.getFullYear(),
+      dateObject.getMonth(),
+      dateObject.getDate(),
+    ),
+  );
+}
 
 /**
  * Formats an ISO date string into a human-readable string
@@ -18,7 +29,7 @@ function isoToFormattedString(isoString, formatString) {
 
   const date = parseISO(isoString);
 
-  return format(date, formatString);
+  return formatInTimeZone(date, "UTC", formatString);
 }
 
 export function formatDate(date) {

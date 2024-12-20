@@ -160,11 +160,11 @@ export default function useValidation(dates, notes, season) {
     const operatingYear = season.operatingYear;
 
     // Date must be within the year for that form
-    if (startDate.getFullYear() !== operatingYear) {
+    if (startDate.getUTCFullYear() !== operatingYear) {
       return addError(startDateId, `Enter dates for ${operatingYear} only`);
     }
 
-    if (endDate.getFullYear() !== operatingYear) {
+    if (endDate.getUTCFullYear() !== operatingYear) {
       return addError(endDateId, `Enter dates for ${operatingYear} only`);
     }
 
