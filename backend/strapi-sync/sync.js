@@ -334,7 +334,7 @@ export async function createDatesAndSeasons(datesData) {
         strapiId: subAreaId,
       });
 
-      if (feature) {
+      if (feature && feature.active) {
         const featureTypeId = feature.featureTypeId;
         const parkId = feature.parkId;
         const operatingYear = item.attributes.operatingYear;
