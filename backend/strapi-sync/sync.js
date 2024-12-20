@@ -151,6 +151,8 @@ export async function createOrUpdatePark(item) {
 
   if (dbItem) {
     dbItem.name = item.attributes.protectedAreaName;
+
+    await dbItem.save();
   } else {
     const dateable = await createModel(Dateable);
     const data = {
@@ -191,6 +193,8 @@ export async function createOrUpdateFeatureType(strapiData, item) {
   if (dbItem) {
     dbItem.name = item.attributes.subAreaType;
     dbItem.icon = icon;
+
+    await dbItem.save();
   } else {
     const data = {
       name: item.attributes.subAreaType,
@@ -259,7 +263,13 @@ export async function createOrUpdateFeature(item) {
   let dbItem = await getItemByAttributes(Feature, { strapiId: item.id });
 
   if (dbItem) {
-    dbItem.name = item.attributes.parkSubArea;
+    // if dbItems has campgroundId, don't update the name
+    // there is a script to create campgrounds and assign features to them
+    // this script will rename the feature to fit within the campground
+    if (!dbItem.campgroundId) {
+      dbItem.name = item.attributes.parkSubArea;
+    }
+
     const featureType = await getItemByAttributes(FeatureType, {
       strapiId: item.attributes.parkSubAreaType.data.id,
     });
@@ -267,6 +277,8 @@ export async function createOrUpdateFeature(item) {
     dbItem.featureTypeId = featureType.id;
     dbItem.hasReservations = item.attributes.hasReservations;
     dbItem.active = item.attributes.isActive;
+
+    await dbItem.save();
   } else {
     const dateable = await createModel(Dateable);
     const park = await getItemByAttributes(Park, {
