@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { omit, mapValues, minBy, maxBy, orderBy } from "lodash";
 import { differenceInCalendarDays, parseISO, isBefore, max } from "date-fns";
-import { normalizeToUTCDate } from "@/lib/utils";
 
 // Validation functions for the SubmitForm component
 export default function useValidation(dates, notes, season) {
@@ -34,19 +33,21 @@ export default function useValidation(dates, notes, season) {
     const mapped = mapValues(datesObj, (campsiteDates) =>
       mapValues(campsiteDates, (dateTypeDates) => {
         // Get the dateRange with the earliest start date for this campground & date type
-        const minDateRange = minBy(dateTypeDates, (dateRange) =>
-          normalizeToUTCDate(new Date(dateRange.startDate)),
+        const minDateRange = minBy(
+          dateTypeDates,
+          (dateRange) => new Date(dateRange.startDate),
         );
         const minDate = minDateRange?.startDate
-          ? normalizeToUTCDate(new Date(minDateRange?.startDate))
+          ? new Date(minDateRange?.startDate)
           : null;
 
         // Get the dateRange with the latest end date for this campground & date type
-        const maxDateRange = maxBy(dateTypeDates, (dateRange) =>
-          normalizeToUTCDate(new Date(dateRange.endDate)),
+        const maxDateRange = maxBy(
+          dateTypeDates,
+          (dateRange) => new Date(dateRange.endDate),
         );
         const maxDate = maxDateRange?.endDate
-          ? normalizeToUTCDate(new Date(maxDateRange.endDate))
+          ? new Date(maxDateRange.endDate)
           : null;
 
         return { minDate, maxDate };
@@ -145,8 +146,8 @@ export default function useValidation(dates, notes, season) {
     }
 
     // Parse date strings
-    const startDate = normalizeToUTCDate(new Date(start));
-    const endDate = normalizeToUTCDate(new Date(end));
+    const startDate = new Date(start);
+    const endDate = new Date(end);
 
     // Check if the start date is before the end date
     if (startDate > endDate) {
@@ -159,11 +160,11 @@ export default function useValidation(dates, notes, season) {
     const operatingYear = season.operatingYear;
 
     // Date must be within the year for that form
-    if (startDate.getFullYear() !== operatingYear) {
+    if (startDate.getUTCFullYear() !== operatingYear) {
       return addError(startDateId, `Enter dates for ${operatingYear} only`);
     }
 
-    if (endDate.getFullYear() !== operatingYear) {
+    if (endDate.getUTCFullYear() !== operatingYear) {
       return addError(endDateId, `Enter dates for ${operatingYear} only`);
     }
 
