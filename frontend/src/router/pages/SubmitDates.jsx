@@ -11,12 +11,7 @@ import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import groupCamping from "@/assets/icons/group-camping.svg";
-import {
-  formatDateRange,
-  formatTimestamp,
-  normalizeToUTCDate,
-  formatDate,
-} from "@/lib/utils";
+import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import TooltipWrapper from "@/components/TooltipWrapper";
@@ -340,7 +335,6 @@ function SubmitDates() {
                   "form-control": true,
                   "is-invalid": startErrors,
                 })}
-                selected={dateRange.startDate}
                 selected={formatDate(dateRange.startDate)}
                 onChange={(date) => {
                   updateDateRange(
