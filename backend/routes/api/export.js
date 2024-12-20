@@ -3,6 +3,7 @@ import { Op, Sequelize } from "sequelize";
 import asyncHandler from "express-async-handler";
 import { writeToString } from "@fast-csv/format";
 import _ from "lodash";
+import { format } from "date-fns-tz";
 
 import {
   Park,
@@ -46,12 +47,22 @@ router.get(
   }),
 );
 
+// Returns a string with the note, author and email address
 function formatChangeLog(changeLog) {
   const user = changeLog.user;
   const notes = changeLog.notes;
   const formatted = `${user.name} (${user.email}): ${notes}`;
 
   return formatted;
+}
+
+/**
+ * Formats a UTC date string as "Weekday, Month Day, Year"
+ * @param {string} ISODate UTC date in ISO format
+ * @returns {string} - Formatted date string
+ */
+function formatDate(ISODate) {
+  return format(new Date(ISODate), "EEEE, MMMM d, yyyy", { timeZone: "UTC" });
 }
 
 // Export to csv
@@ -164,8 +175,8 @@ router.get(
         "Sub-Area Type (Park feature)": feature.featureType.name,
         "Operating Year": dateRange.season.operatingYear,
         "Type of date": dateRange.dateType.name,
-        "Start date": dateRange.startDate?.toISOString(),
-        "End date": dateRange.endDate?.toISOString(),
+        "Start date": formatDate(dateRange.startDate),
+        "End date": formatDate(dateRange.endDate),
         Status: dateRange.season.status,
         "Ready to publish": dateRange.season.readyToPublish,
         Notes: dateRange.season.changeLogs.map(formatChangeLog).join("\n"),
