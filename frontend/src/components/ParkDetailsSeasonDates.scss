@@ -1,0 +1,13 @@
+.park-details-season-dates {
+  &.details-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+
+    .notes {
+      p:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}

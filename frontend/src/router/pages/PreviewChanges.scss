@@ -38,11 +38,6 @@
   }
 
   .notes {
-    .note-metadata {
-      color: var(--typography-color-secondary);
-      filter: brightness(1.5); // muted font color, lighter than color-secondary
-    }
-
     .controls {
       gap: var(--layout-margin-medium);
     }
