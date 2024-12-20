@@ -1,10 +1,12 @@
 import PropTypes from "prop-types";
 import { formatTimestamp } from "@/lib/utils";
 
+import "./ChangeLogsList.scss";
+
 // Displays season date changelogs (aka "notes")
 export default function ChangeLogsList({ changeLogs = [] }) {
   return (
-    <>
+    <div className="change-logs-list">
       {changeLogs.map((changeLog) => (
         <p key={changeLog.id}>
           {changeLog.notes && (
@@ -19,7 +21,7 @@ export default function ChangeLogsList({ changeLogs = [] }) {
           </span>
         </p>
       ))}
-    </>
+    </div>
   );
 }
 
