@@ -1,6 +1,7 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cloneDeep, set as lodashSet } from "lodash";
+import { isValid, parse } from "date-fns";
 import {
   faCircleInfo,
   faTriangleExclamation,
@@ -347,22 +348,11 @@ function SubmitDates() {
                 maxDate={maxDate}
                 openToDate={openDateStart}
                 selected={formatDate(dateRange.startDate)}
-                onChange={(date) => {
-                  updateDateRange(
-                    dateRange.dateableId,
-                    dateRange.dateType.name,
-                    index,
-                    "startDate",
-                    date,
-                    // Callback to validate the new value
-                    (updatedDates) => {
-                      onUpdateDateRange({
-                        dateRange,
-                        datesObj: updatedDates,
-                      });
-                    },
-                  );
+                onChange={() => {
+                  // Required prop, but handled by onSelect/onKeyDown
                 }}
+                onKeyDown={(event) => onKeyDown(event, "startDate")}
+                onSelect={(date) => onSelect(date, "startDate")}
                 dateFormat="EEE, MMM d, yyyy"
               />
 
@@ -403,22 +393,11 @@ function SubmitDates() {
                 maxDate={maxDate}
                 openToDate={openDateEnd}
                 selected={formatDate(dateRange.endDate)}
-                onChange={(date) => {
-                  updateDateRange(
-                    dateRange.dateableId,
-                    dateRange.dateType.name,
-                    index,
-                    "endDate",
-                    date,
-                    // Callback to validate the new value
-                    (updatedDates) => {
-                      onUpdateDateRange({
-                        dateRange,
-                        datesObj: updatedDates,
-                      });
-                    },
-                  );
+                onChange={() => {
+                  // Required prop, but handled by onSelect/onKeyDown
                 }}
+                onKeyDown={(event) => onKeyDown(event, "endDate")}
+                onSelect={(date) => onSelect(date, "endDate")}
                 dateFormat="EEE, MMM d, yyyy"
               />
 
