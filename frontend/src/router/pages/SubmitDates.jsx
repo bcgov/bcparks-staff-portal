@@ -397,8 +397,11 @@ function SubmitDates() {
                 maxDate={maxDate}
                 openToDate={openDateStart}
                 selected={formatDate(dateRange.startDate)}
-                onChange={() => {
-                  // Required prop, but handled by onSelect/onKeyDown
+                onChange={(date) => {
+                  // Set null if the field has been cleared
+                  if (date === null) {
+                    onSelect(null, "startDate");
+                  }
                 }}
                 onKeyDown={(event) => onKeyDown(event, "startDate")}
                 onSelect={(date) => onSelect(date, "startDate")}
@@ -442,8 +445,11 @@ function SubmitDates() {
                 maxDate={maxDate}
                 openToDate={openDateEnd}
                 selected={formatDate(dateRange.endDate)}
-                onChange={() => {
-                  // Required prop, but handled by onSelect/onKeyDown
+                onChange={(date) => {
+                  // Set null if the field has been cleared
+                  if (date === null) {
+                    onSelect(null, "endDate");
+                  }
                 }}
                 onKeyDown={(event) => onKeyDown(event, "endDate")}
                 onSelect={(date) => onSelect(date, "endDate")}
