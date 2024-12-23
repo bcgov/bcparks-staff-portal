@@ -320,6 +320,14 @@ function SubmitDates() {
     const startErrors = errors?.[startDateId] || groupErrors;
     const endErrors = errors?.[endDateId] || groupErrors;
 
+    // Limit the date range to the operating year
+    const minDate = new Date(season.operatingYear, 0, 1);
+    const maxDate = new Date(season.operatingYear, 11, 31);
+
+    // Open the calendar to Jan 1 of the operating year if no date is set
+    const openDateStart = formatDate(dateRange.startDate) || minDate;
+    const openDateEnd = formatDate(dateRange.endDate) || minDate;
+
     return (
       <div className="row dates-row operating-dates">
         <div className="col-lg-5">
@@ -335,8 +343,9 @@ function SubmitDates() {
                   "form-control": true,
                   "is-invalid": startErrors,
                 })}
-                minDate={new Date(season.operatingYear, 0, 1)}
-                maxDate={new Date(season.operatingYear, 11, 31)}
+                minDate={minDate}
+                maxDate={maxDate}
+                openToDate={openDateStart}
                 selected={formatDate(dateRange.startDate)}
                 onChange={(date) => {
                   updateDateRange(
@@ -390,8 +399,9 @@ function SubmitDates() {
                   "form-control": true,
                   "is-invalid": endErrors,
                 })}
-                minDate={new Date(season.operatingYear, 0, 1)}
-                maxDate={new Date(season.operatingYear, 11, 31)}
+                minDate={minDate}
+                maxDate={maxDate}
+                openToDate={openDateEnd}
                 selected={formatDate(dateRange.endDate)}
                 onChange={(date) => {
                   updateDateRange(
