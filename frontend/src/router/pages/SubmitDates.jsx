@@ -335,6 +335,8 @@ function SubmitDates() {
                   "form-control": true,
                   "is-invalid": startErrors,
                 })}
+                minDate={new Date(season.operatingYear, 0, 1)}
+                maxDate={new Date(season.operatingYear, 11, 31)}
                 selected={formatDate(dateRange.startDate)}
                 onChange={(date) => {
                   updateDateRange(
@@ -388,6 +390,8 @@ function SubmitDates() {
                   "form-control": true,
                   "is-invalid": endErrors,
                 })}
+                minDate={new Date(season.operatingYear, 0, 1)}
+                maxDate={new Date(season.operatingYear, 11, 31)}
                 selected={formatDate(dateRange.endDate)}
                 onChange={(date) => {
                   updateDateRange(
