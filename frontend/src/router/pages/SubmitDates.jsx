@@ -8,30 +8,30 @@ import {
   faCalendarCheck,
 } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import PropTypes from "prop-types";
+import classNames from "classnames";
+
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
+import groupCamping from "@/assets/icons/group-camping.svg";
+import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
+
 import useValidation from "@/hooks/useValidation";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-
-import PropTypes from "prop-types";
-
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+
 import "./SubmitDates.scss";
-import classNames from "classnames";
 
 function SubmitDates() {
   const { parkId, seasonId } = useParams();
@@ -328,6 +328,55 @@ function SubmitDates() {
     // Open the calendar to Jan 1 of the operating year if no date is set
     const openDateStart = formatDate(dateRange.startDate) || minDate;
     const openDateEnd = formatDate(dateRange.endDate) || minDate;
+
+    /**
+     * Calls updateDateRange with a new date value.
+     * @param {Date} date new date value
+     * @param {string} dateField "startDate" or "endDate"
+     * @returns {void}
+     */
+    function onSelect(date, dateField) {
+      updateDateRange(
+        dateRange.dateableId,
+        dateRange.dateType.name,
+        index,
+        dateField,
+        date,
+        // Callback to validate the new value
+        (updatedDates) => {
+          onUpdateDateRange({
+            dateRange,
+            datesObj: updatedDates,
+          });
+        },
+      );
+    }
+
+    /**
+     * Parses the date input if Enter is pressed.
+     * @param {KeyboardEvent} event keydown event
+     * @param {string} dateField "startDate" or "endDate"
+     * @returns {void}
+     */
+    function onKeyDown(event, dateField) {
+      // If the input is in the text field and Enter is pressed,
+      // try parsing the date. Otherwise allow keyboard navigation as usual.
+      if (!event.target.value || event.key !== "Enter") return;
+
+      // Try parsing date as YYYY-MM-DD first, and correct for time zone
+      // because JS treats it as UTC time but other strings as local time.
+      let date = parse(event.target.value, "yyyy-MM-dd", new Date());
+
+      // Try parsing any other date string if parsing YYYY-MM-DD fails
+      if (!isValid(date)) {
+        date = new Date(event.target.value);
+
+        // Don't set the time if it can't be parsed
+        if (!isValid(date)) return;
+
+        onSelect(date, dateField);
+      }
+    }
 
     return (
       <div className="row dates-row operating-dates">
