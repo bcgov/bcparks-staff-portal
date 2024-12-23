@@ -1,15 +1,12 @@
 export default function ContactBox() {
   return (
     <div className="alert alert-cta-contact mb-4" role="alert">
-      <p>
-        <b>Questions?</b>
-      </p>
-
       <p className="mb-0">
-        Missing an area or it needs adjustment?
+        <b>Questions?</b>
         <br />
-        For any question, please contact{" "}
-        <a href="mailto:parksweb@bcparks.ca">parksweb@bcparks.ca</a>
+        Missing an area or need to adjust an area title?
+        <br />
+        Contact <a href="mailto:parksweb@gov.bc.ca">parksweb@gov.bc.ca</a>.
       </p>
     </div>
   );
