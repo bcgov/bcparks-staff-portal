@@ -10,7 +10,7 @@ import { faPen } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import NavBack from "@/components/NavBack";
-import walkInCamping from "@/assets/icons/walk-in-camping.svg";
+import FeatureIcon from "@/components/FeatureIcon";
 import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
@@ -262,7 +262,7 @@ function PreviewChanges() {
 
       <section className="sub-area">
         <h2>
-          <img src={walkInCamping} className="sub-area-icon" />{" "}
+          <FeatureIcon iconName={data?.featureType.icon} />
           {data?.featureType.name}
         </h2>
 

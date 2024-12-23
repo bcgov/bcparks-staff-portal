@@ -9,8 +9,8 @@ import "./ParkDetails.scss";
 function getSubAreas(park) {
   if (!park) return [];
 
-  return Object.entries(park.subAreas).map(([title, subArea]) => (
-    <SubArea key={title} title={title} data={subArea} />
+  return Object.entries(park.subAreas).map(([title, subAreaSeason]) => (
+    <SubArea key={title} title={title} seasons={subAreaSeason} />
   ));
 }
 
