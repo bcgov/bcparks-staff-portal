@@ -5,6 +5,7 @@ import { formatInTimeZone } from "date-fns-tz";
 const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
 // Abbreviated day of the week, abbreviated month, day
 const DATE_FORMAT_SHORT = "EEE, MMM d";
+const DATE_FORMAT_SHORT_WITH_YEAR = "EEE, MMM d, yyyy";
 // Abbreviated month, day, year, time
 const DATE_FORMAT_TIMESTAMP = "MMM d, yyyy, h:mm a";
 
@@ -40,9 +41,20 @@ export function formatDateShort(date) {
   return isoToFormattedString(date, DATE_FORMAT_SHORT);
 }
 
+/**
+ * Returns a string with the dates formatted "Weekday, Month Day, Year"
+ * @param {Object} dateRange object with startDate and endDate
+ * @returns {string} formatted date range
+ */
 export function formatDateRange(dateRange) {
-  const startDate = formatDate(dateRange.startDate);
-  const endDate = formatDate(dateRange.endDate);
+  const startDate = isoToFormattedString(
+    dateRange.startDate,
+    DATE_FORMAT_SHORT_WITH_YEAR,
+  );
+  const endDate = isoToFormattedString(
+    dateRange.endDate,
+    DATE_FORMAT_SHORT_WITH_YEAR,
+  );
 
   return `${startDate} - ${endDate}`;
 }
