@@ -10,9 +10,9 @@ export default function ReadyToPublishBox({
 
       <p>
         Are these dates ready to be made available to the public the next time
-        dates are published? When turned off, it will be flagged and held in the
-        ‘Approved’ state until it is marked ‘Ready to publish’. Approved dates
-        are included in exported files.
+        dates are published? When turned off, they will be flagged and held in
+        the ‘Approved’ state until it is marked ‘Ready to publish’. Approved
+        dates are included in exported files.
       </p>
 
       <div className="form-check form-switch mb-4">
