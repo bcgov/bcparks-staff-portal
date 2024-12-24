@@ -95,13 +95,22 @@ function SubmitDates() {
       throw new Error("Form validation failed");
     }
 
+    // Build a list of date ranges of all date types
+    const allDates = Object.values(dates)
+      .reduce(
+        (acc, dateType) => acc.concat(dateType.Operation, dateType.Reservation),
+        [],
+      )
+      // Filter out any blank ranges
+      .filter(
+        (dateRange) =>
+          dateRange.startDate !== null && dateRange.endDate !== null,
+      );
+
     const payload = {
       notes,
       readyToPublish,
-      dates: Object.values(dates).reduce(
-        (acc, dateType) => acc.concat(dateType.Operation, dateType.Reservation),
-        [],
-      ),
+      dates: allDates,
     };
 
     const response = await sendData(payload);

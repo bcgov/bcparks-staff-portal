@@ -288,6 +288,9 @@ router.post(
           },
         );
       } else if (!date.id) {
+        // Skip creating empty date ranges
+        if (date.startDate === null && date.endDate === null) return;
+
         // if date doesn't have ID, it's a new date
         DateRange.create({
           seasonId,
