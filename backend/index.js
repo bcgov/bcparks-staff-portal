@@ -59,7 +59,7 @@ apiRouter.use("/parks", parkRoutes);
 apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
 
-app.use("/api", apiRouter);
+app.use("/api", checkJwt, apiRouter);
 
 // AdminJS routes
 app.use(admin.options.rootPath, adminRouter);

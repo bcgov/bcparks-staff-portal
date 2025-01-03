@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import axios from "axios";
+import { useAuth } from "react-oidc-context";
 import getEnv from "../config/getEnv";
 
 // Create an Axios instance for the API server
@@ -12,11 +13,15 @@ export function useApiGet(endpoint, options = {}) {
   const [error, setError] = useState(null);
   const requestSent = useRef(false);
 
+  const auth = useAuth();
+
   // Parse options:
   // URL parameters
   const params = options.params ?? {};
   // Instantly start the request. Set false to call fetchData manually
   const instant = options.instant ?? true;
+  // Include Keycloak access token in the request
+  const includeToken = options.includeToken ?? true;
 
   // If instant is true, the request will be sent immediately
   const [loading, setLoading] = useState(instant);
@@ -32,7 +37,17 @@ export function useApiGet(endpoint, options = {}) {
     try {
       requestSent.current = true;
 
-      const response = await axiosInstance.get(endpoint, { params });
+      // Build request configuration object
+      const config = { params };
+
+      // Add the Keycloak token to the request headers
+      if (includeToken) {
+        config.headers = {
+          Authorization: `Bearer ${auth?.user?.access_token}`,
+        };
+      }
+
+      const response = await axiosInstance.get(endpoint, config);
 
       setData(response.data);
     } catch (err) {
@@ -42,7 +57,7 @@ export function useApiGet(endpoint, options = {}) {
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps -- paramsString is a stringified object
-  }, [endpoint, paramsString]);
+  }, [endpoint, paramsString, includeToken]);
 
   useEffect(() => {
     // Prevent sending multiple requests
@@ -55,10 +70,16 @@ export function useApiGet(endpoint, options = {}) {
   return { data, loading, error, fetchData };
 }
 
-export function useApiPost(endpoint) {
+export function useApiPost(endpoint, options = {}) {
   const [responseData, setResponseData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  const auth = useAuth();
+
+  // Parse options:
+  // Include Keycloak access token in the request
+  const includeToken = options.includeToken ?? true;
 
   const sendData = useCallback(
     async (payload) => {
@@ -66,7 +87,17 @@ export function useApiPost(endpoint) {
       setError(null);
 
       try {
-        const response = await axiosInstance.post(endpoint, payload);
+        // Build request configuration object
+        const config = {};
+
+        // Add the Keycloak token to the request headers
+        if (includeToken) {
+          config.headers = {
+            Authorization: `Bearer ${auth?.user?.access_token}`,
+          };
+        }
+
+        const response = await axiosInstance.post(endpoint, payload, config);
 
         setResponseData(response.data);
         return response.data;
@@ -77,7 +108,7 @@ export function useApiPost(endpoint) {
         setLoading(false);
       }
     },
-    [endpoint],
+    [endpoint, includeToken, auth?.user?.access_token],
   );
 
   return { responseData, loading, error, sendData };
