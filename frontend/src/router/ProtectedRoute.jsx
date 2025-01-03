@@ -1,5 +1,6 @@
-import { withAuthenticationRequired } from "react-oidc-context";
+import { useAuth, withAuthenticationRequired } from "react-oidc-context";
 import PropTypes from "prop-types";
+import { AccessProvider } from "@/router/AccessContext";
 
 // Higher-order component that wraps a route component for authentication
 // Wrap a "layout" component in this component to protect all of its children
@@ -11,11 +12,17 @@ export default function ProtectedRoute({
     throw new Error("Component prop is required");
   }
 
+  const auth = useAuth();
+
   const ComponentWithAuth = withAuthenticationRequired(Component, {
-    onRedirecting: () => <div>Redirecting you to log in...</div>,
+    onRedirecting: () => <div>Redirecting...</div>,
   });
 
-  return <ComponentWithAuth {...otherProps} />;
+  return (
+    <AccessProvider auth={auth}>
+      <ComponentWithAuth {...otherProps} />
+    </AccessProvider>
+  );
 }
 
 // Define prop types for ProtectedRoute
