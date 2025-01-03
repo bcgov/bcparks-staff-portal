@@ -8,7 +8,6 @@ import RateLimit from "express-rate-limit";
 import checkJwt from "./middleware/checkJwt.js";
 import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
-import helloRoute from "./routes/nested-path-example/hello.js";
 import parkRoutes from "./routes/api/parks.js";
 import seasonRoutes from "./routes/api/seasons.js";
 import exportRoutes from "./routes/api/export.js";
@@ -51,10 +50,7 @@ app.use(limiter);
 app.use(sessionMiddleware);
 
 // Public routes
-app.use("/", homeRoutes); // example stuff for testing
-
-// Routes with JWT check middleware
-app.use("/nested-path-example/", checkJwt, helloRoute); // example stuff for testing
+app.use("/", homeRoutes); // Health check route(s)
 
 // API routes
 const apiRouter = express.Router();
