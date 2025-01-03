@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { createContext } from "react";
 import getEnv from "@/config/getEnv";
+import { ROLES } from "@/config/permissions";
 
 export const AccessContext = createContext();
 
@@ -19,9 +20,17 @@ export function AccessProvider({ children, auth }) {
     roles.push(...payloadRoles);
   }
 
+  // @TODO: implement fine-grained permission checks here
+  function checkAccess(requiredRole) {
+    // Super admin can access everything
+    if (roles.includes(ROLES.SUPER_ADMIN)) return true;
+
+    return roles.includes(requiredRole);
+  }
+
   // Provide the context value to child components
   return (
-    <AccessContext.Provider value={{ roles }}>
+    <AccessContext.Provider value={{ roles, checkAccess }}>
       {children}
     </AccessContext.Provider>
   );
