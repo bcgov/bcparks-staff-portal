@@ -11,6 +11,7 @@ import homeRoutes from "./routes/home.js";
 import parkRoutes from "./routes/api/parks.js";
 import seasonRoutes from "./routes/api/seasons.js";
 import exportRoutes from "./routes/api/export.js";
+import PublishRoutes from "./routes/api/publish.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
@@ -58,6 +59,7 @@ const apiRouter = express.Router();
 apiRouter.use("/parks", parkRoutes);
 apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
+apiRouter.use("/publish", PublishRoutes);
 
 app.use("/api", checkJwt, apiRouter);
 
