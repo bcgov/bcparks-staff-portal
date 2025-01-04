@@ -92,7 +92,7 @@ export default function ParkSeason({ season }) {
   const updateDate = formatDate(season.updatedAt);
 
   async function navigateToEdit() {
-    if (season.status === "under review") {
+    if (season.status === "pending review") {
       const confirm = await openConfirmation(
         "Edit submitted dates?",
         "A review may already be in progress and all dates will need to be reviewed again.",

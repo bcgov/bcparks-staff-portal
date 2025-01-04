@@ -22,12 +22,12 @@ const router = Router();
 //   // rn we're just setting everything to requested
 //   // For staff
 //   //   requested -- > requested
-//   //   under review -- > under review
-//   //   approved -- > under review
-//   //   published --> under review
+//   //   pending review -- > pending review
+//   //   approved -- > pending review
+//   //   published --> pending review
 //   // For operator
 //   //   requested -- > requested
-//   //   under review -- > requested
+//   //   pending review -- > requested
 //   //   approved -- > requested
 //   //   published --> requested
 //   return season.status;
