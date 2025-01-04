@@ -1,8 +1,10 @@
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { useApiGet } from "@/hooks/useAPI";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
+import LoadingBar from "@/components/LoadingBar";
 
 function PublishPage() {
   const {
@@ -22,6 +24,16 @@ function PublishPage() {
     handleFlashClose,
     isFlashOpen,
   } = useFlashMessage();
+
+  const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
+
+  if (loading) {
+    return <LoadingBar />;
+  }
+
+  if (error) {
+    return <div>Error: {error.message}</div>;
+  }
 
   async function publishToApi() {
     const confirm = await openConfirmation(
