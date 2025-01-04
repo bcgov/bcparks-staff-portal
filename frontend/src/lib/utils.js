@@ -6,8 +6,6 @@ const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
 // Abbreviated day of the week, abbreviated month, day
 const DATE_FORMAT_SHORT = "EEE, MMM d";
 const DATE_FORMAT_SHORT_WITH_YEAR = "EEE, MMM d, yyyy";
-// Abbreviated month, day, year, time
-const DATE_FORMAT_TIMESTAMP = "MMM d, yyyy, h:mm a";
 
 export function normalizeToUTCDate(dateObject) {
   return new Date(
@@ -57,10 +55,6 @@ export function formatDateRange(dateRange) {
   );
 
   return `${startDate} - ${endDate}`;
-}
-
-export function formatTimestamp(timestamp) {
-  return isoToFormattedString(timestamp, DATE_FORMAT_TIMESTAMP);
 }
 
 export function formatDatetoISO(date) {

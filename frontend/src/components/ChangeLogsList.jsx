@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { formatTimestamp } from "@/lib/utils";
+import { formatDate } from "@/lib/utils";
 
 import "./ChangeLogsList.scss";
 
@@ -17,7 +17,7 @@ export default function ChangeLogsList({ changeLogs = [] }) {
           )}
           <span className="note-metadata">
             {changeLog.notes ? "" : "Submitted "}
-            {formatTimestamp(changeLog.createdAt)} by {changeLog.user.name}
+            {formatDate(changeLog.createdAt)} by {changeLog.user.name}
           </span>
         </p>
       ))}
