@@ -114,21 +114,6 @@ const campgrounds = [
     items: [{ featureStrapiId: 19, featureName: "All sites" }],
   },
   {
-    parkId: "613",
-    campgroundName: "Berg Lake Trail",
-    items: [{ featureStrapiId: 20, featureName: "All sites" }],
-  },
-  {
-    parkId: "613",
-    campgroundName: "Berg Lake Trail - Kinney Lake Campground",
-    items: [{ featureStrapiId: 23, featureName: "All sites" }],
-  },
-  {
-    parkId: "613",
-    campgroundName: "Berg Lake Trail - Whitehorn Campground",
-    items: [{ featureStrapiId: 27, featureName: "All sites" }],
-  },
-  {
     parkId: "128",
     campgroundName: "Bert's Cabin (includes three tent pads)",
     items: [{ featureStrapiId: 28, featureName: "All sites" }],
@@ -137,16 +122,6 @@ const campgrounds = [
     parkId: "55",
     campgroundName: "Big Bunsby marine-accessible camping",
     items: [{ featureStrapiId: 532, featureName: "All sites" }],
-  },
-  {
-    parkId: "60",
-    campgroundName: "Birkenhead Campground",
-    items: [{ featureStrapiId: 34, featureName: "All sites" }],
-  },
-  {
-    parkId: "60",
-    campgroundName: "Birkenhead high-density campground",
-    items: [{ featureStrapiId: 35, featureName: "All sites" }],
   },
   {
     parkId: "803",
@@ -220,11 +195,6 @@ const campgrounds = [
   },
   {
     parkId: "92",
-    campgroundName: "Bromley Rock Campground",
-    items: [{ featureStrapiId: 923, featureName: "All sites" }],
-  },
-  {
-    parkId: "92",
     campgroundName: "Bromley Rock Campground sites 1-17",
     items: [{ featureStrapiId: 538, featureName: "All sites" }],
   },
@@ -277,16 +247,6 @@ const campgrounds = [
     parkId: "128",
     campgroundName: "Carp Lake (Kettle Bay) Campground",
     items: [{ featureStrapiId: 64, featureName: "All sites" }],
-  },
-  {
-    parkId: "133",
-    campgroundName: "Cathedral backcountry",
-    items: [{ featureStrapiId: 65, featureName: "All sites" }],
-  },
-  {
-    parkId: "133",
-    campgroundName: "Cathedral core area",
-    items: [{ featureStrapiId: 66, featureName: "All sites" }],
   },
   {
     parkId: "1013",
@@ -979,11 +939,6 @@ const campgrounds = [
     items: [{ featureStrapiId: 363, featureName: "All sites" }],
   },
   {
-    parkId: "565",
-    campgroundName: "McDonald Creek Campground first come, first served sites",
-    items: [{ featureStrapiId: 124, featureName: "All sites" }],
-  },
-  {
     parkId: "792",
     campgroundName: "Mermaid Cove Campground",
     items: [{ featureStrapiId: 277, featureName: "All sites" }],
@@ -1411,16 +1366,6 @@ const campgrounds = [
   },
   {
     parkId: "613",
-    campgroundName: "Robson River Campground",
-    items: [{ featureStrapiId: 367, featureName: "All sites" }],
-  },
-  {
-    parkId: "613",
-    campgroundName: "Robson River Campground electrified sites",
-    items: [{ featureStrapiId: 368, featureName: "All sites" }],
-  },
-  {
-    parkId: "613",
     campgroundName: "Robson Meadows groupsite",
     items: [{ featureStrapiId: 366, featureName: "All sites" }],
   },
@@ -1803,16 +1748,6 @@ const campgrounds = [
     parkId: "1036",
     campgroundName: "sx\u030c\u02b7\u0259x\u030c\u02b7nitk\u02b7 Campground",
     items: [{ featureStrapiId: 446, featureName: "All sites" }],
-  },
-  {
-    parkId: "1035",
-    campgroundName: "s\u1e83i\u1e83s Campground",
-    items: [{ featureStrapiId: 380, featureName: "All sites" }],
-  },
-  {
-    parkId: 1035,
-    campgroundName: "s\u1e83i\u1e83s overflow camping",
-    items: [{ featureStrapiId: 319, featureName: "All sites" }],
   },
 ];
 

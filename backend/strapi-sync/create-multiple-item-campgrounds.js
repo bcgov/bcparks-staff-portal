@@ -36,6 +36,22 @@ const campgrounds = [
     ],
   },
   {
+    parkId: 613,
+    campgroundName: "Berg Lake Trail",
+    items: [
+      {
+        strapiId: 23,
+        strapiName: "Berg Lake Trail - Kinney Lake Campground",
+        newName: "Kinney Lake Campground",
+      },
+      {
+        strapiId: 27,
+        strapiName: "Berg Lake Trail - Whitehorn Campground",
+        newName: "Whitehorn Campground",
+      },
+    ],
+  },
+  {
     parkId: 53,
     campgroundName: "Big Bar Lake Campground",
     items: [
@@ -56,14 +72,51 @@ const campgrounds = [
     campgroundName: "Bighorn Campground",
     items: [
       {
-        strapiName: "Bighorn Campground RV sites",
-        newName: "RV Sites",
+        strapiName: "Bighorn Campground electrified sites 62-70",
+        newName: "Electrified sites 62-70",
         strapiId: 31,
       },
       {
         strapiName: "Bighorn Campground sites 71-86",
         newName: "Sites 71-86",
         strapiId: 32,
+      },
+    ],
+  },
+  {
+    parkId: 60,
+    campgroundName: "Birkenhead Campground",
+    items: [
+      {
+        strapiName: "Birkenhead Campground sites 1-78",
+        newName: "Sites 1-78",
+        strapiId: 34,
+      },
+      {
+        strapiName: "Birkenhead Campground high-density sites",
+        newName: "High-density campsites",
+        strapiId: 35,
+      },
+    ],
+  },
+  {
+    parkId: 133,
+    campgroundName: "Cathedral backcountry",
+    items: [
+      {
+        strapiName: "Cathedral other backcountry",
+        newName: "Other backcountry",
+        strapiId: 65,
+      },
+      {
+        strapiName: "Cathedral core area backcountry",
+        newName: "Core area",
+        strapiId: 66,
+      },
+      {
+        strapiName: "Ashnola Forest Service Road",
+        newName: "Ashnola Forest Service Road",
+        strapiId: 11,
       },
     ],
   },
@@ -189,11 +242,6 @@ const campgrounds = [
         strapiId: 922,
       },
       {
-        strapiName: "Miracle Beach Campground sites 1-10",
-        newName: "Sites 1-10",
-        strapiId: 282,
-      },
-      {
         strapiName: "Miracle Beach Campground sites 1-25",
         newName: "Sites 1-25",
         strapiId: 915,
@@ -280,6 +328,22 @@ const campgrounds = [
     ],
   },
   {
+    parkId: 613,
+    campgroundName: "Robson River Campground",
+    items: [
+      {
+        strapiName: "Robson River Campground 1-20",
+        newName: "Sites 1-20",
+        strapiId: 367,
+      },
+      {
+        strapiName: "Robson River Campground electrified sites 21-40",
+        newName: "Electrified sites 21-40",
+        strapiId: 368,
+      },
+    ],
+  },
+  {
     parkId: 773,
     campgroundName: "Roche Lake Campground",
     items: [
@@ -349,12 +413,28 @@ const campgrounds = [
     ],
   },
   {
+    parkId: 1035,
+    campgroundName: "s\u1e83i\u1e83s Campground",
+    items: [
+      {
+        strapiName: "sẃiẃs Campground sites 1-41",
+        newName: "Sites 1-41",
+        strapiId: 380,
+      },
+      {
+        strapiName: "sẃiẃs Campground overflow sites",
+        newName: "Overflow sites",
+        strapiId: 319,
+      },
+    ],
+  },
+  {
     parkId: 340,
     campgroundName: "Texas Creek Campground",
     items: [
       {
         strapiName: "Texas Creek Campground site 1-10 and 35-63",
-        newName: "Site 1-10 and 35-63",
+        newName: "Sites 1-10 and 35-63",
         strapiId: 451,
       },
       {
@@ -386,12 +466,12 @@ const campgrounds = [
     items: [
       {
         strapiName: "White Spruce Island North",
-        newName: "Island North",
+        newName: "North",
         strapiId: 489,
       },
       {
         strapiName: "White Spruce Island South",
-        newName: "Island South",
+        newName: "South",
         strapiId: 490,
       },
     ],
