@@ -12,7 +12,7 @@ function EditAndReview() {
   const parks = data || [];
 
   const statusOptions = [
-    { value: "under review", label: "Under review" },
+    { value: "pending review", label: "Pending review" },
     { value: "requested", label: "Requested" },
     { value: "approved", label: "Approved" },
     { value: "published", label: "Published" },

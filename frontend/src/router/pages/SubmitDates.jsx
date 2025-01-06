@@ -128,7 +128,7 @@ function SubmitDates() {
   }
 
   async function submitChanges(savingDraft = false) {
-    if (["under review", "approved", "published"].includes(season.status)) {
+    if (["pending review", "approved", "published"].includes(season.status)) {
       const confirm = await openConfirmation(
         "Move back to draft?",
         "The dates will be moved back to draft and need to be submitted again to be reviewed.",

@@ -14,7 +14,7 @@ const router = Router();
 
 function getParkStatus(seasons) {
   // if any season has status==requested, return requested
-  // else if any season has status==under review, return under review
+  // else if any season has status==pending review, return pending review
   // else if any season has status==approved, return approved
   // if all seasons have status==published, return published
 
@@ -24,10 +24,10 @@ function getParkStatus(seasons) {
     return "requested";
   }
 
-  const underReview = seasons.some((s) => s.status === "under review");
+  const pendingReview = seasons.some((s) => s.status === "pending review");
 
-  if (underReview) {
-    return "under review";
+  if (pendingReview) {
+    return "pending review";
   }
 
   const approved = seasons.some((s) => s.status === "approved");
