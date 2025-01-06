@@ -336,7 +336,7 @@ export async function syncFeatures(featureData) {
  * @returns {Promise[Object]} resolves when all dates and seasons have been created
  */
 export async function createDatesAndSeasons(datesData) {
-  const items = datesData.items;
+  const items = datesData.items.filter((item) => item.attributes.isActive);
 
   const seasonMap = new Map();
   const dateTypeMap = {};
