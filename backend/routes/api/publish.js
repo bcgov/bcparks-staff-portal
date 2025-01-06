@@ -65,6 +65,7 @@ router.get(
 
     // if feature has a campground prepend feature name with campground name
     // some features' names only make sense in the context of a campground
+    // e.g. Alice Lake Campground - Campsites 1-55
     const output = features
       .map((feature) => {
         if (feature.campground) {
@@ -255,7 +256,7 @@ async function publishToAPI(table) {
 }
 
 // - send data to the API
-router.get(
+router.post(
   "/publish-to-api/",
   asyncHandler(async (req, res) => {
     // get all seasons that are approved and ready to be published
@@ -325,7 +326,8 @@ router.get(
       });
     });
 
-    // will send the data to the API asynchronously - we don't need to wait for the response
+    // will send the data to the API asynchronously
+    // we don't wait for the response because it can take a while
     publishToAPI(table);
 
     // send 200 OK response with empty body
