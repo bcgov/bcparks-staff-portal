@@ -21,18 +21,19 @@ export function normalizeToUTCDate(dateObject) {
  * Formats an ISO date string into a human-readable string
  * @param {string} isoString ISO date string
  * @param {string} formatString date-fns formatting string
+ * @param {string} timezone timezone to format the date in
  * @returns {string} The formatted date string
  */
-function isoToFormattedString(isoString, formatString) {
+function isoToFormattedString(isoString, formatString, timezone = "UTC") {
   if (!isoString) return "";
 
   const date = parseISO(isoString);
 
-  return formatInTimeZone(date, "UTC", formatString);
+  return formatInTimeZone(date, timezone, formatString);
 }
 
-export function formatDate(date) {
-  return isoToFormattedString(date, DATE_FORMAT_DEFAULT);
+export function formatDate(date, timezone = "UTC") {
+  return isoToFormattedString(date, DATE_FORMAT_DEFAULT, timezone);
 }
 
 export function formatDateShort(date) {
