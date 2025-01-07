@@ -16,7 +16,6 @@ import classNames from "classnames";
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import TooltipWrapper from "@/components/TooltipWrapper";
@@ -24,14 +23,12 @@ import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FeatureIcon from "@/components/FeatureIcon";
 
-import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
-
 import useValidation from "@/hooks/useValidation";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
 
 import "./SubmitDates.scss";
 
