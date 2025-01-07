@@ -361,15 +361,18 @@ function SubmitDates() {
     }
 
     /**
-     * Parses the date input if Enter is pressed.
-     * @param {KeyboardEvent} event keydown event
+     * Parses the date input if Enter is pressed or the field is blurred.
+     * @param {Event} event keydown or blur event
      * @param {string} dateField "startDate" or "endDate"
      * @returns {void}
      */
-    function onKeyDown(event, dateField) {
-      // If the input is in the text field and Enter is pressed,
+    function parseDateInput(event, dateField) {
+      // Don't parse if the field is empty, or the event is outside the input
+      if (!event.target.value || event.target.tagName !== "INPUT") return;
+
+      // If Enter is pressed in the input field, or the field is blurred,
       // try parsing the date. Otherwise allow keyboard navigation as usual.
-      if (!event.target.value || event.key !== "Enter") return;
+      if (event.type !== "blur" && event.key !== "Enter") return;
 
       // Try parsing date as YYYY-MM-DD first, and correct for time zone
       // because JS treats it as UTC time but other strings as local time.
@@ -412,7 +415,8 @@ function SubmitDates() {
                     onSelect(null, "startDate");
                   }
                 }}
-                onKeyDown={(event) => onKeyDown(event, "startDate")}
+                onKeyDown={(event) => parseDateInput(event, "startDate")}
+                onBlur={(event) => parseDateInput(event, "startDate")}
                 onSelect={(date) => onSelect(date, "startDate")}
                 dateFormat="EEE, MMM d, yyyy"
               />
@@ -460,7 +464,8 @@ function SubmitDates() {
                     onSelect(null, "endDate");
                   }
                 }}
-                onKeyDown={(event) => onKeyDown(event, "endDate")}
+                onKeyDown={(event) => parseDateInput(event, "endDate")}
+                onBlur={(event) => parseDateInput(event, "endDate")}
                 onSelect={(date) => onSelect(date, "endDate")}
                 dateFormat="EEE, MMM d, yyyy"
               />
