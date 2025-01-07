@@ -373,9 +373,10 @@ function SubmitDates() {
 
         // Don't set the time if it can't be parsed
         if (!isValid(date)) return;
-
-        onSelect(date, dateField);
       }
+
+      // Update the selected date value
+      onSelect(date, dateField);
     }
 
     return (
