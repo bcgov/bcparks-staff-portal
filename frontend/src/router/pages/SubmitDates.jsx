@@ -21,15 +21,14 @@ import FlashMessage from "@/components/FlashMessage";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-
-import groupCamping from "@/assets/icons/group-camping.svg";
-import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
+import FeatureIcon from "@/components/FeatureIcon";
 
 import useValidation from "@/hooks/useValidation";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
 
 import "./SubmitDates.scss";
 
@@ -681,10 +680,12 @@ function SubmitDates() {
         </h1>
       </header>
 
-      <h2 className="sub-area-name">
-        <img src={groupCamping} className="sub-area-icon" />{" "}
-        {season?.featureType.name}
-      </h2>
+      {season && (
+        <h2 className="sub-area-name">
+          <FeatureIcon iconName={season.featureType.icon} />
+          {season.featureType.name}
+        </h2>
+      )}
 
       <p className="mb-5">
         <a

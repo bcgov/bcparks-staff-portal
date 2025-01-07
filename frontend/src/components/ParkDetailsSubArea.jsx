@@ -1,16 +1,19 @@
-import ParkSeason from "@/components/ParkDetailsSeason";
-// @TODO: map icons to feature types
-import walkInCamping from "@/assets/icons/walk-in-camping.svg";
 import PropTypes from "prop-types";
+import ParkSeason from "@/components/ParkDetailsSeason";
+import FeatureIcon from "@/components/FeatureIcon";
 
-export default function SubArea({ title, data }) {
+export default function SubArea({ title, seasons }) {
+  // Get the icon from the first season in the list (most recent)
+  const icon = seasons[0].featureType.icon;
+
   return (
     <section className="sub-area">
       <h2>
-        <img src={walkInCamping} className="sub-area-icon" /> {title}
+        <FeatureIcon iconName={icon} />
+        {title}
       </h2>
 
-      {data.map((season) => (
+      {seasons.map((season) => (
         <ParkSeason key={season.id} season={season} />
       ))}
     </section>
@@ -19,11 +22,16 @@ export default function SubArea({ title, data }) {
 
 SubArea.propTypes = {
   title: PropTypes.string.isRequired,
-  data: PropTypes.arrayOf(
+  seasons: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       operatingYear: PropTypes.number.isRequired,
       status: PropTypes.string.isRequired,
+      featureType: PropTypes.shape({
+        id: PropTypes.number,
+        name: PropTypes.string,
+        icon: PropTypes.string.isRequired,
+      }).isRequired,
     }),
   ).isRequired,
 };
