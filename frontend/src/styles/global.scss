@@ -1,10 +1,10 @@
 // Bootstrap theme
 // https://digitalspace.github.io/bcparks-bootstrap-theme/
-@import "@digitalspace/bcparks-bootstrap-theme";
+@use "@digitalspace/bcparks-bootstrap-theme" as *;
 
 // Design tokens
 // https://www2.gov.bc.ca/gov/content/digital/design-system/foundations/design-tokens
-@import "@bcgov/design-tokens/css/variables.css";
+@use "@bcgov/design-tokens/css/variables.css" as *;
 
 // Custom styles
 header.page-header {
