@@ -1,13 +1,12 @@
-import { useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { useParams, useSearchParams } from "react-router-dom";
 import { useApiGet } from "@/hooks/useApi";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
-import { useSearchParams } from "react-router-dom";
 import NavBack from "@/components/NavBack";
 import LoadingBar from "@/components/LoadingBar";
 import SubArea from "@/components/ParkDetailsSubArea";
 import FlashMessage from "@/components/FlashMessage";
 import "./ParkDetails.scss";
-import { useEffect } from "react";
 
 // Returns an array of sub-area components
 function getSubAreas(park) {
