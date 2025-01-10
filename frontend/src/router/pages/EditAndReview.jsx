@@ -4,8 +4,9 @@ import { useApiGet } from "@/hooks/useApi";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import orderBy from "lodash/orderBy";
+import PaginationBar from "./PaginationBar";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
@@ -19,6 +20,10 @@ function EditAndReview() {
   ];
   const statusValues = statusOptions.map((option) => option.value);
 
+  // table pagination
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
+
   // table filter state
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState([...statusValues]);
@@ -28,11 +33,13 @@ function EditAndReview() {
   const [sortOrder, setSortOrder] = useState("asc");
 
   function resetFilters() {
+    setPage(1);
     setNameFilter("");
     setStatusFilter([...statusValues]);
   }
 
   function updateSort(column, order) {
+    setPage(1);
     setSortColumn(column);
     setSortOrder(order);
   }
@@ -66,6 +73,15 @@ function EditAndReview() {
   }
   const sortedParks = getSortedParks();
 
+  // Slice the sorted/filtered list of parks for pagination
+  const totalPages = Math.ceil(sortedParks.length / pageSize);
+  const pageData = useMemo(() => {
+    const start = pageSize * (page - 1);
+    const end = start + pageSize;
+
+    return sortedParks.slice(start, end);
+  }, [sortedParks, page, pageSize]);
+
   function renderTable() {
     if (loading) {
       return <LoadingBar />;
@@ -76,13 +92,25 @@ function EditAndReview() {
     }
 
     return (
-      <EditAndReviewTable
-        data={sortedParks}
-        onSort={updateSort}
-        onResetFilters={resetFilters}
-        sortOrder={sortOrder}
-        sortColumn={sortColumn}
-      />
+      <div className="paginated-table">
+        <div className="mb-3">
+          <EditAndReviewTable
+            data={pageData}
+            onSort={updateSort}
+            onResetFilters={resetFilters}
+            sortOrder={sortOrder}
+            sortColumn={sortColumn}
+          />
+        </div>
+
+        <div className="d-flex justify-content-end">
+          <PaginationBar
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+          />
+        </div>
+      </div>
     );
   }
 
@@ -101,7 +129,10 @@ function EditAndReview() {
               id="parkName"
               placeholder="Search by park name"
               value={nameFilter}
-              onChange={(e) => setNameFilter(e.target.value)}
+              onChange={(e) => {
+                setPage(1);
+                setNameFilter(e.target.value);
+              }}
             />
             <FontAwesomeIcon
               className="append-content"
@@ -117,7 +148,10 @@ function EditAndReview() {
 
           <MultiSelect
             options={statusOptions}
-            onInput={setStatusFilter}
+            onInput={(value) => {
+              setPage(1);
+              setStatusFilter(value);
+            }}
             value={statusFilter}
           >
             Filter by status
