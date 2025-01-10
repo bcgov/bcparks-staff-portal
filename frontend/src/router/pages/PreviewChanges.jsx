@@ -120,12 +120,8 @@ function PreviewChanges() {
       notes,
       readyToPublish,
     });
-    setNotes("");
-    fetchData();
-    openFlashMessage(
-      "Dates approved",
-      `${data?.park.name} ${data?.featureType.name} ${data?.operatingYear} season dates mark approved`,
-    );
+
+    navigate(`/park/${parkId}?approved=${data.id}`);
   }
 
   function Feature({ feature }) {
