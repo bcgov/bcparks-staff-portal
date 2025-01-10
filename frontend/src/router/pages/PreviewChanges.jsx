@@ -167,23 +167,26 @@ function PreviewChanges() {
                   </button>
                 </td>
               </tr>
+
+              {feature.hasReservations && (
               <tr>
                 <td>Reservation</td>
                 <td>{getPrevSeasonDates(feature, "Reservation")}</td>
                 <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
                 <td>
-                  <button
-                    onClick={navigateToEdit}
-                    className="btn btn-text-primary"
-                  >
-                    <FontAwesomeIcon
-                      className="append-content me-2"
-                      icon={faPen}
-                    />
-                    <span>Edit</span>
-                  </button>
-                </td>
-              </tr>
+                    <button
+                      onClick={navigateToEdit}
+                      className="btn btn-text-primary"
+                    >
+                      <FontAwesomeIcon
+                        className="append-content me-2"
+                        icon={faPen}
+                      />
+                      <span>Edit</span>
+                    </button>
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
