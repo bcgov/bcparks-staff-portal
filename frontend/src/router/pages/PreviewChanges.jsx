@@ -121,6 +121,8 @@ function PreviewChanges() {
       readyToPublish,
     });
 
+    // Redirect back to the Park Details page on success.
+    // Use the "approved" query param to show a flash message.
     navigate(`/park/${parkId}?approved=${data.id}`);
   }
 
