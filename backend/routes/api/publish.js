@@ -160,99 +160,104 @@ async function markFeatureDatesInactive(dates) {
 }
 
 /**
- * Get all the dates for each feature-year pair and mark them as inactive
- * @param {Array<Object>} featureYearPairs list of featureId-operatingYear pairs
- * @returns {Promise<any>} Promise that resolves when all the dates are marked as inactive
+ * Marking the season as published in our DB
+ * @param {number} seasonId the id of the season to mark as published
+ * @returns {void}
  */
-async function markCurrentDatesInactive(featureYearPairs) {
-  // get all the dates for each feature-year pair
-  // for each pair send a request to the API to mark the dates as inactive
+async function markSeasonPublished(seasonId) {
+  const season = await Season.findByPk(seasonId);
 
-  return Promise.all(
-    featureYearPairs.map(async (pair) => {
-      const { featureId, operatingYear } = pair;
-
-      const dates = await getFeatureStrapiDates(featureId, operatingYear);
-
-      await markFeatureDatesInactive(dates);
-    }),
-  );
+  season.status = "published";
+  season.save();
 }
 
 /**
  * Mark all the current dates for each feature-year pair as inactive and create new records in the Strapi API
- * @param {Object} table table of dates grouped by operating year and feature
+ * @param {Object} seasonTable table of dates grouped by operating year and feature
  * @returns {void}
  */
-async function publishToAPI(table) {
-  const datesToPublish = [];
+async function publishToAPI(seasonTable) {
+  // using this instead of Object.entries because we want to only update the data of one season at a time
+  // to not overload the Strapi API and to make sure that a each season either succeeds or not
+  for (const [seasonId, { operatingYear, features }] of Object.entries(
+    seasonTable,
+  )) {
+    // everything inside this loop iteration is related to a single season
+    await Promise.all(
+      Object.entries(features).map(async ([featureId, dateRanges]) => {
+        // everything in this loop iteration is related to a single feature in a season
 
-  Object.entries(table).forEach(([operatingYear, features]) => {
-    Object.entries(features).forEach(([featureId, dateRanges]) => {
-      // sort operating and reservation dates by start date
-      const operatingDates = dateRanges
-        .filter((dateRange) => dateRange.dateType.name === "Operation")
-        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        // mark all the dates for this feature-year pair as inactive in Strapi
+        const dates = await getFeatureStrapiDates(featureId, operatingYear);
 
-      const reservationDates = dateRanges
-        .filter((dateRange) => dateRange.dateType.name === "Reservation")
-        .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+        await markFeatureDatesInactive(dates.data);
 
-      // Since in Strapi, a single date object contains both operating and reservation dates
-      // we will create an object in Strapi for each pair of operating and reservation dates
-      // if there are any dates that can't be grouped, they will their own object with null values for the other date types
-      const maxIndex = Math.max(operatingDates.length, reservationDates.length);
+        // The date object in strapi contains both the operating and reservation date s for a feature - operatingYear pair
+        // we'll group all the date ranges by feature and operating year and then we'll group them if possible
+        // If there are remaining dates, we'll create a new date object with the remaining dates
+        const operatingDates = dateRanges
+          .filter((dateRange) => dateRange.dateType.name === "Operation")
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-      for (let i = 0; i < maxIndex; i++) {
-        const obj = {
-          operatingYear,
-          parkOperationSubArea: featureId,
-          isActive: true,
-          openDate: null,
-          closeDate: null,
-          serviceStartDate: null,
-          serviceEndDate: null,
-          reservationStartDate: null,
-          reservationEndDate: null,
-          offSeasonStartDate: null,
-          offSeasonEndDate: null,
-          adminNote: null,
-        };
+        const reservationDates = dateRanges
+          .filter((dateRange) => dateRange.dateType.name === "Reservation")
+          .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
-        const operatingDate = operatingDates[i];
-        const reservationDate = reservationDates[i];
+        // determine how many date objects we need to create
+        const maxIndex = Math.max(
+          operatingDates.length,
+          reservationDates.length,
+        );
+        const groupedSeasonDates = [];
 
-        if (operatingDate) {
-          obj.serviceStartDate = operatingDate.startDate;
-          obj.serviceEndDate = operatingDate.endDate;
+        for (let i = 0; i < maxIndex; i++) {
+          const obj = {
+            operatingYear,
+            parkOperationSubArea: featureId,
+            isActive: true,
+            openDate: null,
+            closeDate: null,
+            serviceStartDate: null,
+            serviceEndDate: null,
+            reservationStartDate: null,
+            reservationEndDate: null,
+            offSeasonStartDate: null,
+            offSeasonEndDate: null,
+            adminNote: null,
+          };
+
+          const operatingDate = operatingDates[i];
+          const reservationDate = reservationDates[i];
+
+          if (operatingDate) {
+            obj.serviceStartDate = new Date(operatingDate.startDate)
+              .toISOString()
+              .split("T")[0];
+            obj.serviceEndDate = new Date(operatingDate.endDate)
+              .toISOString()
+              .split("T")[0];
+          }
+
+          if (reservationDate) {
+            obj.reservationStartDate = new Date(reservationDate.startDate)
+              .toISOString()
+              .split("T")[0];
+            obj.reservationEndDate = new Date(reservationDate.endDate)
+              .toISOString()
+              .split("T")[0];
+          }
+
+          groupedSeasonDates.push(obj);
         }
 
-        if (reservationDate) {
-          obj.reservationStartDate = reservationDate.startDate;
-          obj.reservationEndDate = reservationDate.endDate;
-        }
-        datesToPublish.push(obj);
-      }
-    });
-  });
+        // add all the dates for this feature in Strapi
+        await createRecordsInStrapi(groupedSeasonDates);
 
-  // get all the feature-year pairs from table -- > [ { featureId, operatingYear }, ... ]
-  const featureYearPairs = Object.entries(table).reduce(
-    (acc, [operatingYear, features]) => [
-      ...acc,
-      ...Object.keys(features).map((featureId) => ({
-        featureId,
-        operatingYear,
-      })),
-    ],
-    [],
-  );
-
-  // mark all the current dates for each feature-year pair as inactive
-  await markCurrentDatesInactive(featureYearPairs);
-
-  // create new records in the strapi API
-  await createRecordsInStrapi(datesToPublish);
+        // mark this season as published when everything related to it is done
+        markSeasonPublished(seasonId);
+      }),
+    );
+  }
 }
 
 // - send data to the API
@@ -297,17 +302,27 @@ router.post(
 
     const seasons = approvedSeasons.map((season) => season.toJSON());
 
-    // we need to group dateranges by operating year and feature
-    // The date object in strapi contains both the operating and reservation dates for a feature - operatingYear pair
-    // we'll group all the date ranges by feature and operating year and then we'll group them if possible
-    const table = {};
+    // we need to group dateranges by season and then feature
+    // we'll create a table that looks
+    // {
+    //   seasonId: {
+    //     operatingYear: 2024,
+    //     features: {
+    //       1: [dateRange, dateRange],
+    //       2: [dateRange, dateRange],
+    //     },
+    //   }
+    // }
+
+    const seasonTable = {};
 
     seasons.forEach((season) => {
       const { operatingYear } = season;
 
-      if (!table[operatingYear]) {
-        table[operatingYear] = {};
-      }
+      seasonTable[season.id] = {
+        operatingYear,
+        features: {},
+      };
 
       const { dateRanges } = season;
 
@@ -315,20 +330,18 @@ router.post(
         const { dateable } = dateRange;
         const { feature } = dateable;
 
-        // feature is a list of one element
+        // feature is always an array with one element
         const strapiId = feature[0].strapiId;
 
-        if (!table[operatingYear][strapiId]) {
-          table[operatingYear][strapiId] = [];
+        if (!seasonTable[season.id].features[strapiId]) {
+          seasonTable[season.id].features[strapiId] = [];
         }
 
-        table[operatingYear][strapiId].push(dateRange);
+        seasonTable[season.id].features[strapiId].push(dateRange);
       });
     });
 
-    // will send the data to the API asynchronously
-    // we don't wait for the response because it can take a while
-    publishToAPI(table);
+    publishToAPI(seasonTable);
 
     // send 200 OK response with empty body
     res.send();
