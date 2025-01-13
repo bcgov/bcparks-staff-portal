@@ -120,12 +120,10 @@ function PreviewChanges() {
       notes,
       readyToPublish,
     });
-    setNotes("");
-    fetchData();
-    openFlashMessage(
-      "Dates approved",
-      `${data?.park.name} ${data?.featureType.name} ${data?.operatingYear} season dates mark approved`,
-    );
+
+    // Redirect back to the Park Details page on success.
+    // Use the "approved" query param to show a flash message.
+    navigate(`/park/${parkId}?approved=${data.id}`);
   }
 
   function Feature({ feature }) {

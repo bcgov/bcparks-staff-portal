@@ -7,7 +7,11 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
     const currentPath = currentLocation.pathname;
     const nextPath = removeTrailingSlash(nextLocation.pathname);
 
-    if (`${currentPath}/preview` === nextPath) {
+    // Get query string from nextPath
+    const queryString = new URLSearchParams(nextLocation.search);
+
+    // Bypass the blocker when saving or approving
+    if (nextPath === `${currentPath}/preview` || queryString.has("approved")) {
       return false;
     }
     return hasChanges();
