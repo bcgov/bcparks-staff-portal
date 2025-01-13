@@ -68,7 +68,7 @@ function ParkDetails() {
       "Dates approved",
       `${park.name} ${approvedFeature.featureType.name} ${approvedFeature.operatingYear} season dates marked approved`,
     );
-  });
+  }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
 
   return (
     <div className="page park-details">
