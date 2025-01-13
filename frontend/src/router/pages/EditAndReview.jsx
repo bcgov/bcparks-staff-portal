@@ -103,7 +103,7 @@ function EditAndReview() {
           />
         </div>
 
-        <div className="d-flex justify-content-end">
+        <div className="d-flex justify-content-center">
           <PaginationBar
             currentPage={page}
             totalPages={totalPages}
