@@ -22,7 +22,7 @@ function EditAndReview() {
 
   // table pagination
   const [page, setPage] = useState(1);
-  const pageSize = 20;
+  const pageSize = 25;
 
   // table filter state
   const [nameFilter, setNameFilter] = useState("");
