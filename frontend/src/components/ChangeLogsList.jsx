@@ -16,7 +16,6 @@ export default function ChangeLogsList({ changeLogs = [] }) {
             </span>
           )}
           <span className="note-metadata">
-            {changeLog.notes ? "" : "Submitted "}
             {formatDate(changeLog.createdAt, "America/Vancouver")} by{" "}
             {changeLog.user.name}
           </span>
