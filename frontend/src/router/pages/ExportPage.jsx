@@ -29,13 +29,16 @@ function ExportPage() {
     if (options?.years) {
       setExportYear(options.years.at(-1));
     }
+  }, [options]);
 
-    // Initially select all feature types
+  // Selects every feature type's ID
+  function selectAllFeatures() {
     if (options?.featureTypes?.length) {
       setExportFeatures(options.featureTypes.map((feature) => feature.id));
     }
-  }, [options]);
+  }
 
+  // Adds or removes a feature ID from the selection array
   function onExportFeaturesChange(event) {
     const { checked } = event.target;
     const value = +event.target.value;
@@ -140,6 +143,25 @@ function ExportPage() {
           </fieldset>
           <fieldset className="section-spaced">
             <legend className="append-required">Park features</legend>
+
+            <div className="mb-2">
+              <button
+                onClick={selectAllFeatures}
+                type="button"
+                className="btn btn-text-primary"
+              >
+                Select all
+              </button>
+              |
+              <button
+                onClick={() => setExportFeatures([])}
+                type="button"
+                className="btn btn-text-primary"
+              >
+                Clear all
+              </button>
+            </div>
+
             {options.featureTypes.map((feature) => (
               <div className="form-check" key={feature.id}>
                 <input
