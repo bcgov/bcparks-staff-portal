@@ -4,7 +4,7 @@ const router = Router();
 
 // http://0.0.0.0:8100/
 router.get("/", (req, res) => {
-  res.json({ msg: "this is the home route" });
+  res.json({ msg: "Dates of Operation Tool" });
 });
 
 // http://0.0.0.0:8100/time
