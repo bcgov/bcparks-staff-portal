@@ -89,7 +89,7 @@ export default function ParkSeason({ season }) {
   // @TODO: implement logic to disable preview button
   const disablePreviewButton = true;
 
-  const updateDate = formatDate(season.updatedAt);
+  const updateDate = formatDate(season.updatedAt, "America/Vancouver");
 
   async function navigateToEdit() {
     if (season.status === "pending review") {
