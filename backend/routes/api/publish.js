@@ -167,7 +167,7 @@ async function markFeatureDatesInactive(dates) {
 async function markSeasonPublished(seasonId) {
   const season = await Season.findByPk(seasonId);
 
-  season.status = "published";
+  season.status = "on API";
   season.save();
 }
 
@@ -192,7 +192,7 @@ async function publishToAPI(seasonTable) {
 
         await markFeatureDatesInactive(dates.data);
 
-        // The date object in strapi contains both the operating and reservation date s for a feature - operatingYear pair
+        // The date object in strapi contains both the operating and reservation dates for a feature - operatingYear pair
         // we'll group all the date ranges by feature and operating year and then we'll group them if possible
         // If there are remaining dates, we'll create a new date object with the remaining dates
         const operatingDates = dateRanges
