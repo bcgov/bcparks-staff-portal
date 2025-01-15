@@ -5,8 +5,8 @@ import {
   Season,
   FeatureType,
   Feature,
-  DateRange,
   Dateable,
+  DateRange,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
@@ -16,7 +16,7 @@ function getParkStatus(seasons) {
   // if any season has status==requested, return requested
   // else if any season has status==pending review, return pending review
   // else if any season has status==approved, return approved
-  // if all seasons have status==published, return published
+  // if all seasons have status==on API, return on API
 
   const requested = seasons.some((s) => s.status === "requested");
 
@@ -36,10 +36,10 @@ function getParkStatus(seasons) {
     return "approved";
   }
 
-  const published = seasons.every((s) => s.status === "published");
+  const onAPI = seasons.every((s) => s.status === "on API");
 
-  if (published) {
-    return "published";
+  if (onAPI) {
+    return "on API";
   }
 
   return null;
