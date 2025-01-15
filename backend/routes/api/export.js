@@ -25,6 +25,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const featureTypes = FeatureType.findAll({
       attributes: ["id", "name"],
+      order: [["name", "ASC"]],
     });
 
     const years = (
@@ -198,7 +199,9 @@ router.get(
     // Build filename
     const displayType =
       exportType === "bcp-only" ? "BCP reservations only" : "All";
-    const filename = `${operatingYear} season - ${displayType} dates.csv`;
+    const dateTypes = "All date types"; // @TODO: Make this dynamic when the date type selection is implemented
+    // (CMS-622: "Operating", "Reservations", "Winter fees", "All date types")
+    const filename = `${operatingYear} season - ${displayType} dates - ${dateTypes}.csv`;
 
     // Send CSV string as response
     res.setHeader("Content-Type", "text/csv");
