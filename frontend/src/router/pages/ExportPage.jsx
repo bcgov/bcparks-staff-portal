@@ -8,6 +8,8 @@ import getEnv from "@/config/getEnv";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import FlashMessage from "@/components/FlashMessage";
 
+import "./ExportPage.scss";
+
 function ExportPage() {
   const {
     flashTitle,
@@ -93,7 +95,7 @@ function ExportPage() {
 
       <div className="row">
         <div className="col-md-6 col-lg-5">
-          <fieldset className="mb-3">
+          <fieldset className="section-spaced">
             <legend className="append-required">Export type</legend>
             {exportTypes.map((option) => (
               <div className="form-check" key={option.value}>
@@ -115,7 +117,7 @@ function ExportPage() {
               </div>
             ))}
           </fieldset>
-          <fieldset className="mb-3">
+          <fieldset className="section-spaced">
             <legend className="append-required">Year</legend>
             <div className="input-with-append col-8 col-sm-6">
               <select
@@ -136,7 +138,7 @@ function ExportPage() {
               />
             </div>
           </fieldset>
-          <fieldset className="mb-3">
+          <fieldset className="section-spaced">
             <legend className="append-required">Park features</legend>
             {options.featureTypes.map((feature) => (
               <div className="form-check" key={feature.id}>
