@@ -198,10 +198,10 @@ router.get(
 
     // Build filename
     const displayType =
-      exportType === "bcp-only" ? "BCP reservations only" : "All";
-    const dateTypes = "All date types"; // @TODO: Make this dynamic when the date type selection is implemented
-    // (CMS-622: "Operating", "Reservations", "Winter fees", "All date types")
-    const filename = `${operatingYear} season - ${displayType} dates - ${dateTypes}.csv`;
+      exportType === "bcp-only" ? "BCP reservations only" : "All dates";
+    const dateTypes = "All types"; // @TODO: Make this dynamic when the date type selection is implemented
+    // (CMS-622: "Operating", "Reservations", "Winter fees", "All types")
+    const filename = `${operatingYear} season - ${displayType} - ${dateTypes}.csv`;
 
     // Send CSV string as response
     res.setHeader("Content-Type", "text/csv");
