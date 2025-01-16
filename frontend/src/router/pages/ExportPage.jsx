@@ -79,8 +79,16 @@ function ExportPage() {
       // Build filename
       const displayType =
         exportType === "bcp-only" ? "BCP reservations only" : "All dates";
-      const dateTypes = "All types"; // @TODO: Make this dynamic when the date type selection is implemented
-      // (CMS-622: "Operating", "Reservations", "Winter fees", "All types")
+
+      let dateTypes = "All types";
+
+      // If any date types are unselected, display a list
+      if (exportDateTypes.length < options.dateTypes.length) {
+        dateTypes = exportDateTypes
+          .map((id) => options.dateTypes.find((t) => t.id === id).name)
+          .join(", ");
+      }
+
       const filename = `${exportYear} season - ${displayType} - ${dateTypes}.csv`;
 
       // Convert CSV string to blob and save in the browser
