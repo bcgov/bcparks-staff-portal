@@ -1,7 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { cloneDeep, set as lodashSet } from "lodash";
-import { isValid, parse } from "date-fns";
 import {
   faCircleInfo,
   faTriangleExclamation,
@@ -28,7 +27,11 @@ import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { formatDateRange, normalizeToUTCDate, formatDate } from "@/lib/utils";
+import {
+  formatDateRange,
+  normalizeToUTCDate,
+  normalizeToLocalDate,
+} from "@/lib/utils";
 
 import "./SubmitDates.scss";
 
@@ -333,17 +336,46 @@ function SubmitDates() {
     const minDate = new Date(season.operatingYear, 0, 1);
     const maxDate = new Date(season.operatingYear, 11, 31);
 
+    // Keep local state until the field is blurred or Enter is pressed
+    const [localDateRange, setLocalDateRange] = useState(dateRange);
+
+    // Updates the local date ranges to control the DatePickers
+    function onDateChange(dateField, dateObj) {
+      // Store as UTC time
+      const utcDateObj = normalizeToUTCDate(dateObj);
+
+      const updatedRange = {
+        ...localDateRange,
+        [dateField]: utcDateObj?.toISOString() ?? null,
+      };
+
+      setLocalDateRange(updatedRange);
+    }
+
+    /**
+     * Returns a local date object from a UTC-zoned ISO string, or null
+     * @param {string|null} dateString ISO date string from localDateRange
+     * @returns {Date|null} parsed local Date
+     */
+    function parseInputDate(dateString) {
+      // Allow null dates to pass through
+      if (!dateString) return null;
+
+      // Parse as local time
+      return normalizeToLocalDate(new Date(dateString));
+    }
+
     // Open the calendar to Jan 1 of the operating year if no date is set
-    const openDateStart = formatDate(dateRange.startDate) || minDate;
-    const openDateEnd = formatDate(dateRange.endDate) || minDate;
+    const openDateStart = parseInputDate(localDateRange.startDate) || minDate;
+    const openDateEnd = parseInputDate(localDateRange.endDate) || minDate;
 
     /**
      * Calls updateDateRange with a new date value.
-     * @param {Date} date new date value
      * @param {string} dateField "startDate" or "endDate"
+     * @param {Date} date new date value
      * @returns {void}
      */
-    function onSelect(date, dateField) {
+    function onSelect(dateField, date) {
       updateDateRange(
         dateRange.dateableId,
         dateRange.dateType.name,
@@ -358,33 +390,6 @@ function SubmitDates() {
           });
         },
       );
-    }
-
-    /**
-     * Parses the date input if Enter is pressed.
-     * @param {KeyboardEvent} event keydown event
-     * @param {string} dateField "startDate" or "endDate"
-     * @returns {void}
-     */
-    function onKeyDown(event, dateField) {
-      // If the input is in the text field and Enter is pressed,
-      // try parsing the date. Otherwise allow keyboard navigation as usual.
-      if (!event.target.value || event.key !== "Enter") return;
-
-      // Try parsing date as YYYY-MM-DD first, and correct for time zone
-      // because JS treats it as UTC time but other strings as local time.
-      let date = parse(event.target.value, "yyyy-MM-dd", new Date());
-
-      // Try parsing any other date string if parsing YYYY-MM-DD fails
-      if (!isValid(date)) {
-        date = new Date(event.target.value);
-
-        // Don't set the time if it can't be parsed
-        if (!isValid(date)) return;
-      }
-
-      // Update the selected date value
-      onSelect(date, dateField);
     }
 
     return (
@@ -405,15 +410,27 @@ function SubmitDates() {
                 minDate={minDate}
                 maxDate={maxDate}
                 openToDate={openDateStart}
-                selected={formatDate(dateRange.startDate)}
-                onChange={(date) => {
-                  // Set null if the field has been cleared
-                  if (date === null) {
-                    onSelect(null, "startDate");
+                selected={parseInputDate(localDateRange.startDate)}
+                onChange={(date) => onDateChange("startDate", date)}
+                onBlur={() => {
+                  // Update the `dates` object on blur
+                  onSelect(
+                    "startDate",
+                    parseInputDate(localDateRange.startDate),
+                  );
+                }}
+                onKeyDown={(event) => {
+                  // Update the `dates` object on Enter
+                  if (
+                    event.key === "Enter" &&
+                    event.target.tagName === "INPUT"
+                  ) {
+                    onSelect(
+                      "startDate",
+                      parseInputDate(localDateRange.startDate),
+                    );
                   }
                 }}
-                onKeyDown={(event) => onKeyDown(event, "startDate")}
-                onSelect={(date) => onSelect(date, "startDate")}
                 dateFormat="EEE, MMM d, yyyy"
               />
 
@@ -453,15 +470,21 @@ function SubmitDates() {
                 minDate={minDate}
                 maxDate={maxDate}
                 openToDate={openDateEnd}
-                selected={formatDate(dateRange.endDate)}
-                onChange={(date) => {
-                  // Set null if the field has been cleared
-                  if (date === null) {
-                    onSelect(null, "endDate");
+                selected={parseInputDate(localDateRange.endDate)}
+                onChange={(date) => onDateChange("endDate", date)}
+                onBlur={() => {
+                  // Update the `dates` object on blur
+                  onSelect("endDate", parseInputDate(localDateRange.endDate));
+                }}
+                onKeyDown={(event) => {
+                  // Update the `dates` object on Enter
+                  if (
+                    event.key === "Enter" &&
+                    event.target.tagName === "INPUT"
+                  ) {
+                    onSelect("endDate", parseInputDate(localDateRange.endDate));
                   }
                 }}
-                onKeyDown={(event) => onKeyDown(event, "endDate")}
-                onSelect={(date) => onSelect(date, "endDate")}
                 dateFormat="EEE, MMM d, yyyy"
               />
 
