@@ -76,7 +76,7 @@ export async function getData(url, queryParams) {
  * @returns {Array} list of all models with thier name, endpoint, and items
  */
 export async function fetchAllModels() {
-  const url = `${process.env.STRAPI_TOKEN}/api`;
+  const url = `${process.env.STRAPI_URL}/api`;
 
   const strapiData = [
     {
@@ -499,7 +499,7 @@ export async function syncData() {
  */
 export async function oneTimeDataImport() {
   // only meant to run once - not needed for regular sync
-  const url = `${process.env.STRAPI_TOKEN}/api`;
+  const url = `${process.env.STRAPI_URL}/api`;
 
   const datesData = {
     endpoint: "/park-operation-sub-area-dates",
