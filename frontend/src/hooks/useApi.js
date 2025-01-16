@@ -50,8 +50,13 @@ export function useApiGet(endpoint, options = {}) {
       const response = await axiosInstance.get(endpoint, config);
 
       setData(response.data);
+
+      // Return the response (to use with instant=false)
+      return response.data;
     } catch (err) {
       setError(err);
+
+      throw err;
     } finally {
       setLoading(false);
     }
@@ -62,7 +67,7 @@ export function useApiGet(endpoint, options = {}) {
   useEffect(() => {
     // Prevent sending multiple requests
     if (instant && !requestSent.current) {
-      fetchData();
+      fetchData().catch((err) => console.error("fetchData error", err));
     }
   }, [fetchData, instant]);
 
