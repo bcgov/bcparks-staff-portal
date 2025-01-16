@@ -55,7 +55,6 @@ export function useApiGet(endpoint, options = {}) {
       return response.data;
     } catch (err) {
       setError(err);
-
       throw err;
     } finally {
       setLoading(false);
