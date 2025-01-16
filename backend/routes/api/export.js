@@ -196,16 +196,8 @@ router.get(
     // Convert to CSV string
     const csv = await writeToString(sorted, { headers: true });
 
-    // Build filename
-    const displayType =
-      exportType === "bcp-only" ? "BCP reservations only" : "All dates";
-    const dateTypes = "All types"; // @TODO: Make this dynamic when the date type selection is implemented
-    // (CMS-622: "Operating", "Reservations", "Winter fees", "All types")
-    const filename = `${operatingYear} season - ${displayType} - ${dateTypes}.csv`;
-
     // Send CSV string as response
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.setHeader("Content-Length", Buffer.byteLength(csv));
     res.send(csv);
   }),

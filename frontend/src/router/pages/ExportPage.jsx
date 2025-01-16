@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames";
+import { saveAs } from "file-saver";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useApiGet } from "@/hooks/useApi";
 import LoadingBar from "@/components/LoadingBar";
-import getEnv from "@/config/getEnv";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import FlashMessage from "@/components/FlashMessage";
 
@@ -22,6 +22,20 @@ function ExportPage() {
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
   const [exportFeatures, setExportFeatures] = useState([]);
+  const exportTypes = [
+    { value: "all", label: "All dates" },
+    { value: "bcp-only", label: "BCP reservations only" },
+  ];
+  const [exportType, setExportType] = useState("all");
+
+  const { generating, fetchData: fetchCsv } = useApiGet("/export/csv", {
+    instant: false,
+    params: {
+      type: exportType,
+      year: exportYear,
+      "features[]": exportFeatures,
+    },
+  });
 
   // Set the initial values when options are loaded
   useEffect(() => {
@@ -52,27 +66,30 @@ function ExportPage() {
     });
   }
 
-  const exportTypes = [
-    { value: "all", label: "All dates" },
-    { value: "bcp-only", label: "BCP reservations only" },
-  ];
-  const [exportType, setExportType] = useState("all");
+  // Fetches the CSV as plain text, and then saves it as a file.
+  async function getCsv() {
+    try {
+      const csvData = await fetchCsv();
 
-  function getExportUrl() {
-    const url = new URL(getEnv("VITE_API_BASE_URL"));
-    const params = new URLSearchParams();
+      // Build filename
+      const displayType =
+        exportType === "bcp-only" ? "BCP reservations only" : "All dates";
+      const dateTypes = "All types"; // @TODO: Make this dynamic when the date type selection is implemented
+      // (CMS-622: "Operating", "Reservations", "Winter fees", "All types")
+      const filename = `${exportYear} season - ${displayType} - ${dateTypes}.csv`;
 
-    url.pathname += "/export/csv";
+      // Convert CSV string to blob and save in the browser
+      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
 
-    params.append("type", exportType);
-    params.append("year", exportYear);
-    exportFeatures.forEach((featureId) => {
-      params.append("features[]", featureId);
-    });
+      saveAs(blob, filename);
 
-    url.search = params.toString();
-
-    return url;
+      openFlashMessage(
+        "Export complete",
+        "Check your Downloads for the Excel document.",
+      );
+    } catch (csvError) {
+      console.error("Error generating CSV", csvError);
+    }
   }
 
   if (error) {
@@ -182,30 +199,23 @@ function ExportPage() {
               </div>
             ))}
           </fieldset>
-          <fieldset>
-            <a
-              href={getExportUrl()}
-              target="_blank"
-              rel="noopener"
-              className={classNames({
-                btn: true,
-                "btn-primary": true,
+          <fieldset className="d-flex">
+            <button
+              role="button"
+              className={classNames("btn btn-primary", {
                 disabled: exportFeatures.length === 0,
               })}
-              onClick={(ev) => {
-                if (exportFeatures.length === 0) {
-                  ev.preventDefault();
-                } else {
-                  // Show success flash message
-                  openFlashMessage(
-                    "Export complete",
-                    "Check your Downloads for the Excel document.",
-                  );
-                }
-              }}
+              onClick={getCsv}
             >
               Export report
-            </a>
+            </button>
+
+            {generating && (
+              <span
+                className="spinner-border text-primary align-self-center ms-2"
+                aria-hidden="true"
+              ></span>
+            )}
           </fieldset>
         </div>
       </div>
