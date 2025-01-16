@@ -80,6 +80,7 @@ router.get(
     // Cast query param values as numbers
     const operatingYear = +req.query.year;
     const featureTypeIds = req.query.features?.map((id) => +id) ?? [];
+    const dateTypeIds = req.query.dateTypes?.map((id) => +id) ?? [];
 
     // Update WHERE clause based on query parameters
     const featuresWhere = {
@@ -158,6 +159,12 @@ router.get(
                   model: DateType,
                   as: "dateType",
                   attributes: ["id", "name"],
+                  where: {
+                    id: {
+                      [Op.in]: dateTypeIds,
+                    },
+                  },
+                  required: true,
                 },
               ],
             },
