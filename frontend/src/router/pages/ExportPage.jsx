@@ -26,6 +26,7 @@ function ExportPage() {
     { value: "all", label: "All dates" },
     { value: "bcp-only", label: "BCP reservations only" },
   ];
+  const [exportDateTypes, setExportDateTypes] = useState([]);
   const [exportType, setExportType] = useState("all");
 
   const { generating, fetchData: fetchCsv } = useApiGet("/export/csv", {
@@ -34,6 +35,7 @@ function ExportPage() {
       type: exportType,
       year: exportYear,
       "features[]": exportFeatures,
+      "dateTypes[]": exportDateTypes,
     },
   });
 
@@ -63,6 +65,19 @@ function ExportPage() {
       }
 
       return prevFeatures.filter((feature) => feature !== value);
+    });
+  }
+  // Adds or removes a date type ID from the selection array
+  function onExportDateTypesChange(event) {
+    const { checked } = event.target;
+    const value = +event.target.value;
+
+    setExportDateTypes((prevTypes) => {
+      if (checked) {
+        return [...prevTypes, value];
+      }
+
+      return prevTypes.filter((feature) => feature !== value);
     });
   }
 
@@ -195,6 +210,29 @@ function ExportPage() {
                   htmlFor={`features-${feature.id}`}
                 >
                   {feature.name}
+                </label>
+              </div>
+            ))}
+          </fieldset>
+          <fieldset className="section-spaced">
+            <legend className="append-required">Type of date</legend>
+
+            {options.dateTypes.map((dateType) => (
+              <div className="form-check" key={dateType.id}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="features"
+                  id={`date-types-${dateType.id}`}
+                  value={dateType.id}
+                  checked={exportDateTypes.includes(dateType.id)}
+                  onChange={onExportDateTypesChange}
+                />
+                <label
+                  className="form-check-label"
+                  htmlFor={`date-types-${dateType.id}`}
+                >
+                  {dateType.name}
                 </label>
               </div>
             ))}

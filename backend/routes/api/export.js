@@ -28,6 +28,11 @@ router.get(
       order: [["name", "ASC"]],
     });
 
+    const dateTypes = DateType.findAll({
+      attributes: ["id", "name"],
+      order: [["name", "ASC"]],
+    });
+
     const years = (
       await Season.findAll({
         attributes: [
@@ -44,6 +49,7 @@ router.get(
     res.json({
       years,
       featureTypes: await featureTypes,
+      dateTypes: await dateTypes,
     });
   }),
 );
