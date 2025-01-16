@@ -1,3 +1,4 @@
+import "../env.js";
 import { get } from "./axios.js";
 import {
   getItemByAttributes,

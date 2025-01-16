@@ -5,6 +5,7 @@ import helmet from "helmet";
 import compression from "compression";
 import RateLimit from "express-rate-limit";
 
+import "./env.js";
 import checkJwt from "./middleware/checkJwt.js";
 import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
