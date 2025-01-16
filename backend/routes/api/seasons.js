@@ -24,9 +24,9 @@ const router = Router();
 //   // rn we're just setting everything to requested
 //   // For staff
 //   //   requested -- > requested
-//   //   under review -- > under review
-//   //   approved -- > under review
-//   //   on API --> under review
+//   //   pending review -- > pending review
+//   //   approved -- > pending review
+//   //   on API --> pending review
 //   // For operator
 //   //   requested -- > requested
 //   //   pending review -- > requested
