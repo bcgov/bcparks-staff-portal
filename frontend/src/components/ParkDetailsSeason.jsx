@@ -110,7 +110,7 @@ export default function ParkSeason({ season }) {
       if (confirm) {
         navigate(`/park/${parkId}/edit/${season.id}`);
       }
-    } else if (season.status === "published") {
+    } else if (season.status === "on API") {
       const confirm = openConfirmation(
         "Edit published dates?",
         "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
