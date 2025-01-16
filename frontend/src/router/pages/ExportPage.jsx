@@ -54,31 +54,21 @@ function ExportPage() {
     }
   }
 
-  // Adds or removes a feature ID from the selection array
-  function onExportFeaturesChange(event) {
-    const { checked } = event.target;
-    const value = +event.target.value;
+  // Returns a function to handle checkbox group changes
+  function onCheckboxGroupChange(setter) {
+    // Adds or removes an value from the selection array
+    return function (event) {
+      const { checked } = event.target;
+      const value = +event.target.value;
 
-    setExportFeatures((prevFeatures) => {
-      if (checked) {
-        return [...prevFeatures, value];
-      }
+      setter((previousValues) => {
+        if (checked) {
+          return [...previousValues, value];
+        }
 
-      return prevFeatures.filter((feature) => feature !== value);
-    });
-  }
-  // Adds or removes a date type ID from the selection array
-  function onExportDateTypesChange(event) {
-    const { checked } = event.target;
-    const value = +event.target.value;
-
-    setExportDateTypes((prevTypes) => {
-      if (checked) {
-        return [...prevTypes, value];
-      }
-
-      return prevTypes.filter((feature) => feature !== value);
-    });
+        return previousValues.filter((feature) => feature !== value);
+      });
+    };
   }
 
   // Fetches the CSV as plain text, and then saves it as a file.
@@ -117,6 +107,9 @@ function ExportPage() {
         <LoadingBar />
       </div>
     );
+
+  const disableButton =
+    exportFeatures.length === 0 || exportDateTypes.length === 0 || generating;
 
   return (
     <div className="page export">
@@ -203,7 +196,7 @@ function ExportPage() {
                   id={`features-${feature.id}`}
                   value={feature.id}
                   checked={exportFeatures.includes(feature.id)}
-                  onChange={onExportFeaturesChange}
+                  onChange={onCheckboxGroupChange(setExportFeatures)}
                 />
                 <label
                   className="form-check-label"
@@ -226,7 +219,7 @@ function ExportPage() {
                   id={`date-types-${dateType.id}`}
                   value={dateType.id}
                   checked={exportDateTypes.includes(dateType.id)}
-                  onChange={onExportDateTypesChange}
+                  onChange={onCheckboxGroupChange(setExportDateTypes)}
                 />
                 <label
                   className="form-check-label"
@@ -241,7 +234,7 @@ function ExportPage() {
             <button
               role="button"
               className={classNames("btn btn-primary", {
-                disabled: exportFeatures.length === 0,
+                disabled: disableButton,
               })}
               onClick={getCsv}
             >
