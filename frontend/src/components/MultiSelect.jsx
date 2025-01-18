@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 
 export default function MultiSelect({
@@ -46,12 +46,41 @@ export default function MultiSelect({
   };
 
   const [expanded, setExpanded] = useState(false);
+  const dropdownRef = useRef(null);
 
-  function toggleExpanded() {
+  // Bind event listener to close the dropdown when clicking outside
+  useEffect(() => {
+    // Closes the dropdown menu if the click event happened anywhere else on the page.
+    function handleClickOutside(event) {
+      if (!dropdownRef.current) return;
+
+      // Check if the click event happened inside the dropdown or on the checkbox.
+      // The checkboxes re-render a lot, so we can only check their immediate parent.
+      const clickInside =
+        dropdownRef.current.contains(event.target) ||
+        event.target.closest("div.form-check");
+
+      if (!clickInside) {
+        setExpanded(false);
+      }
+    }
+
+    // Add event listener when the dropdown is expanded
+    if (expanded) {
+      document.addEventListener("click", handleClickOutside);
+    }
+
+    // Cleanup the event listener
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [expanded]);
+
+  function toggleExpanded(event) {
+    // Prevent the click event from bubbling up to the document
+    event.stopPropagation();
     setExpanded(!expanded);
   }
-
-  const contentClasses = classNames("dropdown-menu", "p-4", { show: expanded });
 
   return (
     <div className="dropdown">
@@ -64,7 +93,10 @@ export default function MultiSelect({
         {children}
       </button>
 
-      <div className={contentClasses}>
+      <div
+        className={classNames("dropdown-menu", "p-4", { show: expanded })}
+        ref={dropdownRef}
+      >
         {options.map((o) => (
           <OptionCheckbox key={o.value} option={o} />
         ))}
