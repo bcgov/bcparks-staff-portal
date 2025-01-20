@@ -154,7 +154,7 @@ function EditAndReview() {
             }}
             value={statusFilter}
           >
-            Filter by status
+            Filter by status ({statusFilter.length})
           </MultiSelect>
         </div>
 
