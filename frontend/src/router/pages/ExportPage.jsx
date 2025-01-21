@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import classNames from "classnames";
+import { saveAs } from "file-saver";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useApiGet } from "@/hooks/useApi";
 import LoadingBar from "@/components/LoadingBar";
-import getEnv from "@/config/getEnv";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import FlashMessage from "@/components/FlashMessage";
 
@@ -22,6 +22,22 @@ function ExportPage() {
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
   const [exportFeatures, setExportFeatures] = useState([]);
+  const exportTypes = [
+    { value: "all", label: "All dates" },
+    { value: "bcp-only", label: "BCP reservations only" },
+  ];
+  const [exportDateTypes, setExportDateTypes] = useState([]);
+  const [exportType, setExportType] = useState("all");
+
+  const { generating, fetchData: fetchCsv } = useApiGet("/export/csv", {
+    instant: false,
+    params: {
+      type: exportType,
+      year: exportYear,
+      "features[]": exportFeatures,
+      "dateTypes[]": exportDateTypes,
+    },
+  });
 
   // Set the initial values when options are loaded
   useEffect(() => {
@@ -29,47 +45,64 @@ function ExportPage() {
     if (options?.years) {
       setExportYear(options.years.at(-1));
     }
+  }, [options]);
 
-    // Initially select all feature types
+  // Selects every feature type's ID
+  function selectAllFeatures() {
     if (options?.featureTypes?.length) {
       setExportFeatures(options.featureTypes.map((feature) => feature.id));
     }
-  }, [options]);
-
-  function onExportFeaturesChange(event) {
-    const { checked } = event.target;
-    const value = +event.target.value;
-
-    setExportFeatures((prevFeatures) => {
-      if (checked) {
-        return [...prevFeatures, value];
-      }
-
-      return prevFeatures.filter((feature) => feature !== value);
-    });
   }
 
-  const exportTypes = [
-    { value: "all", label: "All dates" },
-    { value: "bcp-only", label: "BCP reservations only" },
-  ];
-  const [exportType, setExportType] = useState("all");
+  // Returns a function to handle checkbox group changes
+  function onCheckboxGroupChange(setter) {
+    // Adds or removes an value from the selection array
+    return function (event) {
+      const { checked } = event.target;
+      const value = +event.target.value;
 
-  function getExportUrl() {
-    const url = new URL(getEnv("VITE_API_BASE_URL"));
-    const params = new URLSearchParams();
+      setter((previousValues) => {
+        if (checked) {
+          return [...previousValues, value];
+        }
 
-    url.pathname += "/export/csv";
+        return previousValues.filter((feature) => feature !== value);
+      });
+    };
+  }
 
-    params.append("type", exportType);
-    params.append("year", exportYear);
-    exportFeatures.forEach((featureId) => {
-      params.append("features[]", featureId);
-    });
+  // Fetches the CSV as plain text, and then saves it as a file.
+  async function getCsv() {
+    try {
+      const csvData = await fetchCsv();
 
-    url.search = params.toString();
+      // Build filename
+      const displayType =
+        exportType === "bcp-only" ? "BCP reservations only" : "All dates";
 
-    return url;
+      let dateTypes = "All types";
+
+      // If any date types are unselected, display a list
+      if (exportDateTypes.length < options.dateTypes.length) {
+        dateTypes = exportDateTypes
+          .map((id) => options.dateTypes.find((t) => t.id === id).name)
+          .join(", ");
+      }
+
+      const filename = `${exportYear} season - ${displayType} - ${dateTypes}.csv`;
+
+      // Convert CSV string to blob and save in the browser
+      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
+
+      saveAs(blob, filename);
+
+      openFlashMessage(
+        "Export complete",
+        "Check your Downloads for the Excel document.",
+      );
+    } catch (csvError) {
+      console.error("Error generating CSV", csvError);
+    }
   }
 
   if (error) {
@@ -82,6 +115,9 @@ function ExportPage() {
         <LoadingBar />
       </div>
     );
+
+  const disableButton =
+    exportFeatures.length === 0 || exportDateTypes.length === 0 || generating;
 
   return (
     <div className="page export">
@@ -140,6 +176,25 @@ function ExportPage() {
           </fieldset>
           <fieldset className="section-spaced">
             <legend className="append-required">Park features</legend>
+
+            <div className="mb-2">
+              <button
+                onClick={selectAllFeatures}
+                type="button"
+                className="btn btn-text-primary"
+              >
+                Select all
+              </button>
+              |
+              <button
+                onClick={() => setExportFeatures([])}
+                type="button"
+                className="btn btn-text-primary"
+              >
+                Clear all
+              </button>
+            </div>
+
             {options.featureTypes.map((feature) => (
               <div className="form-check" key={feature.id}>
                 <input
@@ -149,7 +204,7 @@ function ExportPage() {
                   id={`features-${feature.id}`}
                   value={feature.id}
                   checked={exportFeatures.includes(feature.id)}
-                  onChange={onExportFeaturesChange}
+                  onChange={onCheckboxGroupChange(setExportFeatures)}
                 />
                 <label
                   className="form-check-label"
@@ -160,30 +215,46 @@ function ExportPage() {
               </div>
             ))}
           </fieldset>
-          <fieldset>
-            <a
-              href={getExportUrl()}
-              target="_blank"
-              rel="noopener"
-              className={classNames({
-                btn: true,
-                "btn-primary": true,
-                disabled: exportFeatures.length === 0,
+          <fieldset className="section-spaced">
+            <legend className="append-required">Type of date</legend>
+
+            {options.dateTypes.map((dateType) => (
+              <div className="form-check" key={dateType.id}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  name="features"
+                  id={`date-types-${dateType.id}`}
+                  value={dateType.id}
+                  checked={exportDateTypes.includes(dateType.id)}
+                  onChange={onCheckboxGroupChange(setExportDateTypes)}
+                />
+                <label
+                  className="form-check-label"
+                  htmlFor={`date-types-${dateType.id}`}
+                >
+                  {dateType.name}
+                </label>
+              </div>
+            ))}
+          </fieldset>
+          <fieldset className="d-flex">
+            <button
+              role="button"
+              className={classNames("btn btn-primary", {
+                disabled: disableButton,
               })}
-              onClick={(ev) => {
-                if (exportFeatures.length === 0) {
-                  ev.preventDefault();
-                } else {
-                  // Show success flash message
-                  openFlashMessage(
-                    "Export complete",
-                    "Check your Downloads for the Excel document.",
-                  );
-                }
-              }}
+              onClick={getCsv}
             >
               Export report
-            </a>
+            </button>
+
+            {generating && (
+              <span
+                className="spinner-border text-primary align-self-center ms-2"
+                aria-hidden="true"
+              ></span>
+            )}
           </fieldset>
         </div>
       </div>

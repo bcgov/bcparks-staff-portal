@@ -28,6 +28,11 @@ router.get(
       order: [["name", "ASC"]],
     });
 
+    const dateTypes = DateType.findAll({
+      attributes: ["id", "name"],
+      order: [["name", "ASC"]],
+    });
+
     const years = (
       await Season.findAll({
         attributes: [
@@ -44,6 +49,7 @@ router.get(
     res.json({
       years,
       featureTypes: await featureTypes,
+      dateTypes: await dateTypes,
     });
   }),
 );
@@ -74,6 +80,7 @@ router.get(
     // Cast query param values as numbers
     const operatingYear = +req.query.year;
     const featureTypeIds = req.query.features?.map((id) => +id) ?? [];
+    const dateTypeIds = req.query.dateTypes?.map((id) => +id) ?? [];
 
     // Update WHERE clause based on query parameters
     const featuresWhere = {
@@ -152,6 +159,12 @@ router.get(
                   model: DateType,
                   as: "dateType",
                   attributes: ["id", "name"],
+                  where: {
+                    id: {
+                      [Op.in]: dateTypeIds,
+                    },
+                  },
+                  required: true,
                 },
               ],
             },
@@ -196,16 +209,8 @@ router.get(
     // Convert to CSV string
     const csv = await writeToString(sorted, { headers: true });
 
-    // Build filename
-    const displayType =
-      exportType === "bcp-only" ? "BCP reservations only" : "All dates";
-    const dateTypes = "All types"; // @TODO: Make this dynamic when the date type selection is implemented
-    // (CMS-622: "Operating", "Reservations", "Winter fees", "All types")
-    const filename = `${operatingYear} season - ${displayType} - ${dateTypes}.csv`;
-
     // Send CSV string as response
     res.setHeader("Content-Type", "text/csv");
-    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
     res.setHeader("Content-Length", Buffer.byteLength(csv));
     res.send(csv);
   }),
