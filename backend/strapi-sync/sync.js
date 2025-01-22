@@ -258,7 +258,7 @@ export async function createDateTypes() {
       description: "Dates where reservations are available.",
     },
     {
-      name: "Off Season",
+      name: "Winter fees",
       startDateLabel: "Winter start date",
       endDateLabel: "Winter end date",
       description: "Reduced services and reduced legislated winter fees.",
