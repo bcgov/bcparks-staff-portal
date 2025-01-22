@@ -51,14 +51,9 @@ export default function AdvisorySummary({
             setCurrentAdvisory(advisoryData);
             const parkUrlInfo = [];
             const siteUrlInfo = [];
-            const isAdvisoryPublished =
-              advisoryData.advisoryStatus.code === "PUB";
             advisoryData.protectedAreas.map((p) => {
               if (p.url) {
-                const url = isAdvisoryPublished
-                  ? p.url
-                  : p.url.replace("bcparks", "www.bcparks");
-                return parkUrlInfo.push(url);
+                return parkUrlInfo.push(p.url);
               } else {
                 return parkUrlInfo.push(p.protectedAreaName);
               }
@@ -67,10 +62,7 @@ export default function AdvisorySummary({
             setCurrentParkUrls(parkUrlText);
             advisoryData.sites.map((s) => {
               if (s.url) {
-                const url = isAdvisoryPublished
-                  ? s.url
-                  : s.url.replace("bcparks", "www.bcparks");
-                return siteUrlInfo.push(url);
+                return siteUrlInfo.push(s.url);
               } else {
                 return siteUrlInfo.push(s.siteName);
               }
@@ -115,10 +107,7 @@ export default function AdvisorySummary({
             advisoryData.advisoryStatus.code === "PUB";
           advisoryData.protectedAreas.map((p) => {
             if (p.url) {
-              const url = isAdvisoryPublished
-                ? p.url
-                : p.url.replace("bcparks", "www.bcparks");
-              return parkUrlInfo.push(url);
+              return parkUrlInfo.push(p.url);
             } else {
               return parkUrlInfo.push(p.protectedAreaName);
             }
@@ -128,10 +117,7 @@ export default function AdvisorySummary({
           setIsPublished(isAdvisoryPublished);
           advisoryData.sites.map((s) => {
             if (s.url) {
-              const url = isAdvisoryPublished
-                ? s.url
-                : s.url.replace("bcparks", "www.bcparks");
-              return siteUrlInfo.push(url);
+              return siteUrlInfo.push(s.url);
             } else {
               return siteUrlInfo.push(s.siteName);
             }
