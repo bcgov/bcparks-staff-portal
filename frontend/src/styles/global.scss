@@ -115,3 +115,11 @@ label.form-check-label {
     color: var(--icons-color-danger);
   }
 }
+
+// custom style for bootstrap dropdowns
+.dropdown-toggle {
+  // flip the arrow icon when the dropdown is open
+  &[aria-expanded="true"]:after {
+    transform: rotate(180deg);
+  }
+}
