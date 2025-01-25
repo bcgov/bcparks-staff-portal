@@ -19,6 +19,17 @@ import {
 
 const router = Router();
 
+// Map date type names to a different name for display
+const dateTypeDisplayNames = new Map([
+  ["Operation", "Operating"],
+  // "Reservation" displays as-is
+]);
+
+// Returns a display string for a date type
+function getDateTypeDisplay(dateType) {
+  return dateTypeDisplayNames.get(dateType) ?? dateType;
+}
+
 // Get options for the export form
 router.get(
   "/options",
@@ -31,7 +42,13 @@ router.get(
     const dateTypes = DateType.findAll({
       attributes: ["id", "name"],
       order: [["name", "ASC"]],
-    });
+    }).then((dateTypesArray) =>
+      // Update display names for date types
+      dateTypesArray.map((dateType) => ({
+        id: dateType.id,
+        name: getDateTypeDisplay(dateType.name),
+      })),
+    );
 
     const years = (
       await Season.findAll({
@@ -188,7 +205,7 @@ router.get(
         "Sub-Area": feature.name,
         "Sub-Area Type (Park feature)": feature.featureType.name,
         "Operating Year": dateRange.season.operatingYear,
-        "Type of date": dateRange.dateType.name,
+        "Type of date": getDateTypeDisplay(dateRange.dateType.name),
         "Start date": formatDate(dateRange.startDate),
         "End date": formatDate(dateRange.endDate),
         Status: dateRange.season.status,
