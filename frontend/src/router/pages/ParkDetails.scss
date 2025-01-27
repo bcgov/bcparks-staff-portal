@@ -1,5 +1,6 @@
 .page.park-details {
-  .sub-area {
+  .sub-area,
+  .winter-fees {
     &:not(:last-of-type) {
       margin-bottom: var(--layout-margin-xxlarge);
     }
@@ -15,7 +16,7 @@
     }
   }
 
-  .season {
+  .expandable {
     display: flex;
     flex-direction: column-reverse;
     margin-bottom: var(--layout-margin-medium);
