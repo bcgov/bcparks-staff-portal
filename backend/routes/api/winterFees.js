@@ -119,7 +119,7 @@ router.get(
     });
 
     // Split the season IDs into winter and non-winter
-    const { winterSeasons, nonWinterSeasons } = _.groupBy(
+    const { winterSeasons = [], nonWinterSeasons = [] } = _.groupBy(
       seasonIdRows,
       (row) =>
         row.featureType.id === winterFeeFeatureTypeId
@@ -128,7 +128,7 @@ router.get(
     );
 
     // Split the non-winter season Ids into current and previous years
-    const { currentSeasons, previousSeasons } = _.groupBy(
+    const { currentSeasons = [], previousSeasons = [] } = _.groupBy(
       nonWinterSeasons,
       (row) =>
         row.operatingYear === currentYear
@@ -172,8 +172,6 @@ router.get(
 
     // Organize the features into the FeatureType->Campground->Feature hierarchy
     const featureTypes = currentSeasons.map((season) => {
-      console.log("\n\nseason", season.toJSON());
-
       // Attach date ranges to features
       const features = season.featureType.features.map((feature) => {
         const featureDateRanges = dateRanges.filter(
@@ -195,7 +193,13 @@ router.get(
 
         return {
           ...feature.toJSON(),
-          dateRanges: groupedSeasonDates,
+
+          // Make sure the grouped dates object has both keys
+          dateRanges: {
+            currentSeasonDates: [],
+            previousSeasonDates: [],
+            ...groupedSeasonDates,
+          },
         };
       });
 
@@ -210,7 +214,6 @@ router.get(
         name: season.featureType.name,
         icon: season.featureType.icon,
         campgrounds,
-        // features,
       };
     });
 
