@@ -798,6 +798,32 @@ async function getEnvDataToUpdate(
   return result;
 }
 
+async function addGlobalIdToProdSubareas(envs) {
+  // for prod, we don't need any cross env comparisons
+  const prodData = envs.prod.data;
+
+  const subareas = getModelData(prodData, "park-operation-sub-area").items;
+
+  // loop through all subareas in prod
+  for (const subarea of subareas) {
+    const attrs = { ...subarea.attributes };
+
+    const payload = removeKeysFromPayload(attrs);
+
+    const park = getModelDataById(
+      prodData,
+      "protected-area",
+      getParkId(subarea),
+    );
+
+    // add a global ID to the payload - this will be shared across envs
+    // we use its own ID as part of the global ID - prod is the source of truth
+    payload.globalId = `${park.attributes.orcs}_${subarea.id}`;
+
+    await updateStrapiSubarea(envs, "prod", subarea.id, payload);
+  }
+}
+
 export async function run() {
   const envs = {
     prod: {
@@ -837,6 +863,9 @@ export async function run() {
     getItemsToCreate(envNameDifferences, subareasMap);
     getItemsToMarkInactive(envNameDifferences, subareasMap, envName);
   }
+
+  // Add global ID to prod subareas
+  addGlobalIdToProdSubareas(envs);
 
   const envNames = ["dev", "test", "alphaDev", "alphaTest"];
 
