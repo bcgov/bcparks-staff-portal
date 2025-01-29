@@ -20,7 +20,7 @@ function DateTypeRow({ dateTypeName, dateRanges }) {
 }
 
 // "Dateable" features: Campsite groupings, etc.
-function CampGroundFeature({ feature }) {
+function CampGroundFeature({ feature, campgroundName }) {
   const currentSeasonDates = feature?.dateRanges?.currentSeasonDates;
 
   if (!currentSeasonDates) return null;
@@ -36,9 +36,19 @@ function CampGroundFeature({ feature }) {
 
   if (!winterFeesDates) return null;
 
+  let headerText = "";
+
+  if (campgroundName !== "All sites" && feature.name !== "All sites") {
+    headerText = `${campgroundName}: ${feature.name}`;
+  } else if (campgroundName !== "All sites") {
+    headerText = campgroundName;
+  } else if (feature.name !== "All sites") {
+    headerText = feature.name;
+  }
+
   return (
     <div className="feature">
-      <h5>{feature.name}</h5>
+      <h4>{headerText}</h4>
 
       <table className="table table-striped sub-area-dates mb-0">
         <tbody>
@@ -65,10 +75,12 @@ export default function SeasonDates({ data }) {
             {Object.entries(featureType.campgrounds).map(
               ([campgroundName, features]) => (
                 <div key={campgroundName} className="campground mb-4">
-                  {campgroundName !== "All sites" && <h4>{campgroundName}</h4>}
-
                   {features.map((feature) => (
-                    <CampGroundFeature key={feature.id} feature={feature} />
+                    <CampGroundFeature
+                      key={feature.id}
+                      campgroundName={campgroundName}
+                      feature={feature}
+                    />
                   ))}
                 </div>
               ),
@@ -122,6 +134,7 @@ SeasonDates.propTypes = {
 };
 
 CampGroundFeature.propTypes = {
+  campgroundName: PropTypes.string.isRequired,
   feature: campgroundFeaturePropShape,
 };
 
