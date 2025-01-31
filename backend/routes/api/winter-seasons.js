@@ -141,6 +141,8 @@ router.get(
     // Map to group features by featureType
     const featureTypeMap = {};
 
+    let winterFeeDateType = null;
+
     features.forEach((feature) => {
       const featureType = feature.featureType;
 
@@ -176,6 +178,10 @@ router.get(
           } else {
             featureData.previousWinterDates.push(dateRangeItem);
           }
+
+          if (!winterFeeDateType) {
+            winterFeeDateType = dateRange.dateType;
+          }
         } else if (
           dateRange.dateType.name === "Reservation" &&
           dateRange.season.operatingYear === operatingYear
@@ -191,6 +197,8 @@ router.get(
 
     const payload = {
       ...winterSeason,
+      name: `${operatingYear} - ${operatingYear + 1}`,
+      winterFeeDateType,
       featureTypes: featureTypeList,
     };
 
