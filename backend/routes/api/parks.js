@@ -151,9 +151,9 @@ router.get(
 
     // move winter fees to the root object
     // so the frontend can treat it differently
-    if ("Winter fees" in subAreas) {
-      winterFees.push(...subAreas["Winter fees"]);
-      delete subAreas["Winter fees"];
+    if ("Winter fee" in subAreas) {
+      winterFees.push(...subAreas["Winter fee"]);
+      delete subAreas["Winter fee"];
     }
 
     // remove unused season key

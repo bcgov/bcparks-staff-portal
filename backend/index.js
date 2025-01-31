@@ -12,7 +12,6 @@ import parkRoutes from "./routes/api/parks.js";
 import seasonRoutes from "./routes/api/seasons.js";
 import winterSeasonRoutes from "./routes/api/winter-seasons.js";
 import exportRoutes from "./routes/api/export.js";
-import winterFeesRoutes from "./routes/api/winterFees.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
