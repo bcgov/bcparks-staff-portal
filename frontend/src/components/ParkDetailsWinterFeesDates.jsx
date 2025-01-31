@@ -1,4 +1,3 @@
-import groupBy from "lodash/groupBy";
 import PropTypes from "prop-types";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList.jsx";
@@ -6,10 +5,10 @@ import FeatureIcon from "@/components/FeatureIcon";
 
 import "./ParkDetailsWinterFeesDates.scss";
 
-function DateTypeRow({ dateTypeName, dateRanges }) {
+function DateTypeRow({ dateRanges }) {
   return (
     <tr>
-      <td>{dateTypeName} dates</td>
+      <td>Winter fee dates</td>
       <td>
         {dateRanges.map((date) => (
           <DateRange key={date.id} start={date.startDate} end={date.endDate} />
@@ -20,42 +19,18 @@ function DateTypeRow({ dateTypeName, dateRanges }) {
 }
 
 // "Dateable" features: Campsite groupings, etc.
-function CampGroundFeature({ feature, campgroundName }) {
-  const currentSeasonDates = feature?.dateRanges?.currentSeasonDates;
+function CampGroundFeature({ feature }) {
+  const { currentWinterDates } = feature;
 
-  if (!currentSeasonDates) return null;
-
-  // Group current season dates by date type
-  const groupedDates = groupBy(
-    currentSeasonDates,
-    (dateType) => dateType.dateType.name,
-  );
-
-  // Show only winter fees dates
-  const winterFeesDates = groupedDates?.["Winter fees"];
-
-  if (!winterFeesDates) return null;
-
-  let headerText = "";
-
-  if (campgroundName !== "All sites" && feature.name !== "All sites") {
-    headerText = `${campgroundName}: ${feature.name}`;
-  } else if (campgroundName !== "All sites") {
-    headerText = campgroundName;
-  } else if (feature.name !== "All sites") {
-    headerText = feature.name;
-  }
+  if (!currentWinterDates) return null;
 
   return (
     <div className="feature">
-      <h4>{headerText}</h4>
+      <h4>{feature.name}</h4>
 
       <table className="table table-striped sub-area-dates mb-0">
         <tbody>
-          <DateTypeRow
-            dateTypeName="Winter fees"
-            dateRanges={winterFeesDates}
-          />
+          <DateTypeRow dateRanges={currentWinterDates} />
         </tbody>
       </table>
     </div>
@@ -72,19 +47,12 @@ export default function SeasonDates({ data }) {
               <FeatureIcon iconName={featureType.icon} />
               {featureType.name}
             </h3>
-            {Object.entries(featureType.campgrounds).map(
-              ([campgroundName, features]) => (
-                <div key={campgroundName} className="campground mb-4">
-                  {features.map((feature) => (
-                    <CampGroundFeature
-                      key={feature.id}
-                      campgroundName={campgroundName}
-                      feature={feature}
-                    />
-                  ))}
-                </div>
-              ),
-            )}
+
+            <div key={featureType.id} className="campground mb-4">
+              {featureType.features.map((feature) => (
+                <CampGroundFeature key={feature.id} feature={feature} />
+              ))}
+            </div>
           </div>
         ))}
       </div>
@@ -100,45 +68,20 @@ export default function SeasonDates({ data }) {
 }
 
 // prop validation
-const dateRangePropShape = PropTypes.shape({
-  id: PropTypes.number.isRequired,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
-  dateType: PropTypes.shape({
-    name: PropTypes.string.isRequired,
-  }).isRequired,
-});
-
-const campgroundFeaturePropShape = PropTypes.shape({
-  id: PropTypes.number.isRequired,
-  name: PropTypes.string.isRequired,
-  dateRanges: PropTypes.shape({
-    currentSeasonDates: PropTypes.arrayOf(dateRangePropShape),
-  }),
-});
+DateTypeRow.propTypes = {
+  dateRanges: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      startDate: PropTypes.string.isRequired,
+      endDate: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+};
 
 SeasonDates.propTypes = {
-  data: PropTypes.shape({
-    featureTypes: PropTypes.arrayOf(
-      PropTypes.shape({
-        id: PropTypes.number.isRequired,
-        name: PropTypes.string.isRequired,
-        icon: PropTypes.string.isRequired,
-        campgrounds: PropTypes.objectOf(
-          PropTypes.arrayOf(campgroundFeaturePropShape),
-        ).isRequired,
-      }),
-    ).isRequired,
-    changeLogs: PropTypes.array.isRequired,
-  }),
+  data: PropTypes.object.isRequired,
 };
 
 CampGroundFeature.propTypes = {
-  campgroundName: PropTypes.string.isRequired,
-  feature: campgroundFeaturePropShape,
-};
-
-DateTypeRow.propTypes = {
-  dateTypeName: PropTypes.string.isRequired,
-  dateRanges: PropTypes.arrayOf(dateRangePropShape),
+  feature: PropTypes.object.isRequired,
 };
