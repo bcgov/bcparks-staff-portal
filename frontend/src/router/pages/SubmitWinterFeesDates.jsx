@@ -2,7 +2,6 @@ import { useEffect, useState, createContext, useContext } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import groupBy from "lodash/groupBy";
 import cloneDeep from "lodash/cloneDeep";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -36,7 +35,7 @@ const datesContext = createContext();
 // Context to provide the data to all the child components
 const dataContext = createContext();
 
-function DateRange({ dateRange, index, updateDateRange }) {
+function DateRange({ dateableId, dateRange, index, updateDateRange }) {
   const data = useContext(dataContext);
 
   // Keep local state until the field is blurred or Enter is pressed
@@ -91,7 +90,7 @@ function DateRange({ dateRange, index, updateDateRange }) {
 
   // Use an index based on the dateableId and index,
   // because new ranges won't have a DB ID yet
-  const dateRangeId = `${dateRange.dateableId}-${index}`;
+  const dateRangeId = `${dateableId}-${index}`;
   const startDateId = `start-date-${dateRangeId}`;
   const endDateId = `end-date-${dateRangeId}`;
 
@@ -222,62 +221,27 @@ function DateRange({ dateRange, index, updateDateRange }) {
   );
 }
 
-function CampgroundFeature({ featureData, campgroundName }) {
+function CampgroundFeature({ featureData }) {
   const { seasonId } = useParams();
-
-  let headerText = "";
-
-  if (campgroundName !== "All sites" && featureData.name !== "All sites") {
-    headerText = `${campgroundName}: ${featureData.name}`;
-  } else if (campgroundName !== "All sites") {
-    headerText = campgroundName;
-  } else if (featureData.name !== "All sites") {
-    headerText = featureData.name;
-  }
 
   // Inject dates object from the root component
   const { dates, setDates } = useContext(datesContext);
   const dateableId = featureData.dateableId;
-  const { currentSeasonDates = [], previousSeasonDates = [] } =
-    dates[dateableId] ?? {};
+  const featureDates = dates[dateableId];
 
   // Get DateType info for the tooltip from the API data
-  const { dateTypes } = useContext(dataContext);
-  const winterDateType = dateTypes.find(
-    (dateType) => dateType.name === "Winter fees",
-  );
-
-  // Add the index from currentSeasonDates to each date range before splitting them up
-  // (This won't be necessary when we re-structure the data in the API)
-  const currentSeasonDatesIndexed = currentSeasonDates.map(
-    (dateRange, index) => ({
-      ...dateRange,
-      index,
-    }),
-  );
-
-  // Group dates by type
-  const currentDatesByType = groupBy(
-    currentSeasonDatesIndexed,
-    "dateType.name",
-  );
-  const currentWinterDates = currentDatesByType?.["Winter fees"] ?? [];
-  const currentReservationDates = currentDatesByType?.Reservation ?? [];
-
-  const previousDatesByType = groupBy(previousSeasonDates, "dateType.name");
-  const previousWinterDates = previousDatesByType?.["Winter fees"] ?? [];
+  const { winterFeeDateType } = useContext(dataContext);
 
   function addDateRange() {
     setDates((prevDates) => {
       const updatedDates = cloneDeep(prevDates);
 
       // Add a new blank date range to the season object
-      updatedDates[dateableId].currentSeasonDates.push({
+      updatedDates[dateableId].push({
         seasonId,
         startDate: null,
         endDate: null,
         dateableId,
-        dateType: winterDateType,
         changed: true,
       });
 
@@ -287,7 +251,7 @@ function CampgroundFeature({ featureData, campgroundName }) {
 
   /**
    * Updates the date range in the `dates` object.
-   * @param {number} index the index of the date range in `currentSeasonDates`
+   * @param {number} index the index of the date range in `dates[dateableId]`
    * @param {string} key key in the DateRange object to update (startDate or endDate)
    * @param {string} value new date value as a UTC ISO string
    * @param {Function} [callback] validation callback to run after updating the date
@@ -306,8 +270,8 @@ function CampgroundFeature({ featureData, campgroundName }) {
       const updatedDates = cloneDeep(prevDates);
 
       // Update the date value and mark the date range as changed
-      updatedDates[dateableId].currentSeasonDates[index][key] = newValue;
-      updatedDates[dateableId].currentSeasonDates[index].changed = true;
+      updatedDates[dateableId][index][key] = newValue;
+      updatedDates[dateableId][index].changed = true;
 
       if (callback) {
         callback(updatedDates);
@@ -319,40 +283,43 @@ function CampgroundFeature({ featureData, campgroundName }) {
 
   return (
     <section className="feature sub-area mb-4">
-      <h4>{headerText}</h4>
+      <h4>{featureData.name}</h4>
 
       <div className="row">
         <div className="col-md-6">
           <div className="date-type-header me-1 mb-2">
             Winter fee dates{" "}
-            {winterDateType && (
+            {
               <TooltipWrapper
                 placement="top"
-                content={winterDateType.description}
+                content={winterFeeDateType.description}
               >
                 <FontAwesomeIcon
                   className="append-content "
                   icon={faCircleInfo}
                 />
               </TooltipWrapper>
-            )}
+            }
           </div>
 
           <div className="related-dates">
             Previous winter:{" "}
-            {previousWinterDates.map(formatDateRange).join("; ")}
+            {featureData.previousWinterDates.map(formatDateRange).join("; ")}
           </div>
 
           <div className="related-dates mb-2">
             Reservations:{" "}
-            {currentReservationDates.map(formatDateRange).join("; ")}
+            {featureData.currentReservationDates
+              .map(formatDateRange)
+              .join("; ")}
           </div>
 
-          {currentWinterDates.map((dateRange) => (
+          {featureDates.map((dateRange, index) => (
             <DateRange
-              key={dateRange.index}
+              key={index}
+              dateableId={dateableId}
               dateRange={dateRange}
-              index={dateRange.index}
+              index={index}
               updateDateRange={updateDateRange}
             />
           ))}
@@ -371,23 +338,7 @@ function CampgroundFeature({ featureData, campgroundName }) {
   );
 }
 
-function Campground({ name, features }) {
-  return (
-    <div className="campground mb-5">
-      {features.map((feature) => (
-        <CampgroundFeature
-          key={feature.id}
-          featureData={feature}
-          campgroundName={name}
-        />
-      ))}
-    </div>
-  );
-}
-
 function FeatureType({ featureTypeData }) {
-  const campgrounds = Object.entries(featureTypeData.campgrounds);
-
   return (
     <div className="feature-type mb-5">
       <h3 className="header-with-icon mb-4">
@@ -395,12 +346,8 @@ function FeatureType({ featureTypeData }) {
         {featureTypeData.name}
       </h3>
 
-      {campgrounds.map(([campgroundName, campgroundData]) => (
-        <Campground
-          key={campgroundName}
-          name={campgroundName}
-          features={campgroundData}
-        />
+      {featureTypeData.features.map((feature) => (
+        <CampgroundFeature key={feature.id} featureData={feature} />
       ))}
     </div>
   );
@@ -425,21 +372,21 @@ export default function SubmitWinterFeesDates() {
     loading: saving,
   } = useApiPost(`/winter-fees/${seasonId}/save/`);
 
-  // @TODO: validation
+  // @TODO: Implement validation
   const errors = {};
 
   function validateNotes() {}
 
-  // @TODO: implement hasChanges
+  // Are there changes to save?
   function hasChanges() {
-    if (notes) return true;
+    const datesChanged = Object.values(dates).some((dateRanges) =>
+      dateRanges.some((dateRange) => dateRange.changed),
+    );
 
-    // @TODO: loop through all the dates and return true if any have changed=true
-
-    return false;
+    return datesChanged || notes;
   }
 
-  // @TODO: implement save functions
+  // @TODO: Implement save functions
   function saveAsDraft() {
     console.log("save as draft:", dates, notes, readyToPublish);
   }
@@ -447,23 +394,17 @@ export default function SubmitWinterFeesDates() {
     console.log("continue to preview:", dates, notes, readyToPublish);
   }
 
-  // @TODO: maybe this isn't needed?
   useEffect(() => {
     if (!data) return;
 
     // Format the data for the page state: flatten the features
-    const dateEntries = data.featureTypes.flatMap((featureType) => {
-      // Flatten and format the feature objects
-      const features = Object.values(featureType.campgrounds).flat();
-
-      // return object entries
-      const groupedDates = features.map((feature) => [
+    const dateEntries = data.featureTypes.flatMap((featureType) =>
+      // Create object entries with the dateable ID and date ranges
+      featureType.features.map((feature) => [
         feature.dateableId,
-        feature.dateRanges,
-      ]);
-
-      return groupedDates;
-    });
+        feature.currentWinterDates,
+      ]),
+    );
 
     // Group by dateable IDs
     const dateableGroups = Object.fromEntries(dateEntries);
@@ -596,12 +537,14 @@ export default function SubmitWinterFeesDates() {
 }
 
 // prop validation
+const dateRangeShape = PropTypes.shape({
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
+});
+
 DateRange.propTypes = {
-  dateRange: PropTypes.shape({
-    dateableId: PropTypes.number.isRequired,
-    startDate: PropTypes.string,
-    endDate: PropTypes.string,
-  }).isRequired,
+  dateableId: PropTypes.number.isRequired,
+  dateRange: dateRangeShape.isRequired,
   index: PropTypes.number.isRequired,
   updateDateRange: PropTypes.func.isRequired,
 };
@@ -610,19 +553,15 @@ CampgroundFeature.propTypes = {
   featureData: PropTypes.shape({
     dateableId: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
+    previousWinterDates: PropTypes.arrayOf(dateRangeShape).isRequired,
+    currentReservationDates: PropTypes.arrayOf(dateRangeShape).isRequired,
   }).isRequired,
-  campgroundName: PropTypes.string.isRequired,
-};
-
-Campground.propTypes = {
-  name: PropTypes.string.isRequired,
-  features: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 FeatureType.propTypes = {
   featureTypeData: PropTypes.shape({
     icon: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
-    campgrounds: PropTypes.object.isRequired,
+    features: PropTypes.arrayOf(PropTypes.object).isRequired,
   }).isRequired,
 };
