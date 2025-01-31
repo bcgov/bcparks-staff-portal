@@ -217,6 +217,9 @@ router.get(
       };
     });
 
+    // Get date types to include in the response
+    const dateTypes = await DateType.findAll();
+
     res.json({
       name: `${currentYear} – ${currentYear + 1}`,
       id: currentWinterSeasonId,
@@ -226,6 +229,7 @@ router.get(
       park: winterSeasonDetails.park,
       status: winterSeasonDetails.status,
       readyToPublish: winterSeasonDetails.readyToPublish,
+      dateTypes,
     });
   }),
 );
