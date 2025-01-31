@@ -53,6 +53,8 @@ function PreviewChanges() {
   const {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     confirmationDialogNotes,
     openConfirmation,
     handleConfirm,
@@ -244,6 +246,8 @@ function PreviewChanges() {
       <ConfirmationDialog
         title={title}
         message={message}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         notes={confirmationDialogNotes}
         onCancel={handleCancel}
         onConfirm={handleConfirm}

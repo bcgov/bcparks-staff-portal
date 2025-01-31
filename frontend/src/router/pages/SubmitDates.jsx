@@ -54,6 +54,8 @@ function SubmitDates() {
   const {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     confirmationDialogNotes,
     openConfirmation,
     handleConfirm,
@@ -145,6 +147,8 @@ function SubmitDates() {
       const confirm = await openConfirmation(
         "Move back to draft?",
         "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+        "Move to draft",
+        "Cancel",
         "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
       );
 
@@ -696,6 +700,8 @@ function SubmitDates() {
       <ConfirmationDialog
         title={title}
         message={message}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         notes={confirmationDialogNotes}
         onCancel={handleCancel}
         onConfirm={handleConfirm}

@@ -23,6 +23,8 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
         const proceed = await openConfirmation(
           "Discard changes?",
           "Discarded changes will be permanently deleted.",
+          "Discard changes",
+          "Continue editing",
         );
 
         if (proceed) {

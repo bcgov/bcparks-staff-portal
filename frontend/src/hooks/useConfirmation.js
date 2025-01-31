@@ -5,17 +5,23 @@ export function useConfirmation() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
   const [notes, setNotes] = useState("");
+  const [confirmButtonText, setConfirmButtonText] = useState("");
+  const [cancelButtonText, setCancelButtonText] = useState("");
   const [resolvePromise, setResolvePromise] = useState(null);
 
   function openConfirmation(
     confirmationTitle,
     confirmationMessage,
+    confirmText = "Confirm",
+    cancelText = "Cancel",
     notesParam = "",
   ) {
     return new Promise((resolve) => {
       setTitle(confirmationTitle);
       setMessage(confirmationMessage);
       setNotes(notesParam);
+      setConfirmButtonText(confirmText);
+      setCancelButtonText(cancelText);
       setResolvePromise(() => resolve); // Store the resolve function
       setIsOpen(true);
     });
@@ -38,6 +44,8 @@ export function useConfirmation() {
   return {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     confirmationDialogNotes: notes,
     openConfirmation,
     handleConfirm,

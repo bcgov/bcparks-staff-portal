@@ -48,7 +48,7 @@ function ParkDetails() {
 
     openFlashMessage(
       "Dates approved",
-      `${park.name} ${approvedSeason.featureType.name} ${approvedSeason.operatingYear} season dates marked approved`,
+      `${park.name} ${approvedSeason.featureType.name} ${approvedSeason.operatingYear} season dates marked as approved`,
     );
   }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
 
