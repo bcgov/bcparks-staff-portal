@@ -65,6 +65,9 @@ export function formatDate(date, timezone = "UTC") {
 export function formatDateShort(date) {
   return isoToFormattedString(date, DATE_FORMAT_SHORT);
 }
+export function formatDateShortWithYear(date) {
+  return isoToFormattedString(date, DATE_FORMAT_SHORT_WITH_YEAR);
+}
 
 /**
  * Returns a string with the dates formatted "Weekday, Month Day, Year"

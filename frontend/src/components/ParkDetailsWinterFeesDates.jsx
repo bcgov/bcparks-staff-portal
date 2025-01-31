@@ -11,7 +11,12 @@ function DateTypeRow({ dateRanges }) {
       <td>Winter fee dates</td>
       <td>
         {dateRanges.map((date) => (
-          <DateRange key={date.id} start={date.startDate} end={date.endDate} />
+          <DateRange
+            key={date.id}
+            start={date.startDate}
+            end={date.endDate}
+            formatWithYear={true}
+          />
         ))}
       </td>
     </tr>
