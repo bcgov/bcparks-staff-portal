@@ -19,8 +19,13 @@ import FeatureIcon from "@/components/FeatureIcon";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
+import FlashMessage from "@/components/FlashMessage";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { useConfirmation } from "@/hooks/useConfirmation";
+
 import {
   formatDateRange,
   normalizeToUTCDate,
@@ -222,8 +227,6 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
 }
 
 function CampgroundFeature({ featureData }) {
-  const { seasonId } = useParams();
-
   // Inject dates object from the root component
   const { dates, setDates } = useContext(datesContext);
   const dateableId = featureData.dateableId;
@@ -238,10 +241,8 @@ function CampgroundFeature({ featureData }) {
 
       // Add a new blank date range to the season object
       updatedDates[dateableId].push({
-        seasonId,
         startDate: null,
         endDate: null,
-        dateableId,
         changed: true,
       });
 
@@ -372,6 +373,26 @@ export default function SubmitWinterFeesDates() {
     loading: saving,
   } = useApiPost(`/winter-fees/${seasonId}/save/`);
 
+  const {
+    flashTitle,
+    flashMessage,
+    openFlashMessage,
+    handleFlashClose,
+    isFlashOpen,
+  } = useFlashMessage();
+
+  const {
+    title,
+    message,
+    confirmationDialogNotes,
+    openConfirmation,
+    handleConfirm,
+    handleCancel,
+    isConfirmationOpen,
+  } = useConfirmation();
+
+  const navigate = useNavigate();
+
   // @TODO: Implement validation
   const errors = {};
 
@@ -386,12 +407,88 @@ export default function SubmitWinterFeesDates() {
     return datesChanged || notes;
   }
 
-  // @TODO: Implement save functions
-  function saveAsDraft() {
-    console.log("save as draft:", dates, notes, readyToPublish);
+  async function saveChanges(savingDraft) {
+    // @TODO: Validate form state before saving
+
+    // Turn the `dates` structure into a flat array of date ranges
+    const flattenedDates = Object.entries(dates).flatMap(
+      ([dateableId, dateRanges]) =>
+        // Add the dateable ID to each date range
+        dateRanges.map((dateRange) => ({
+          ...dateRange,
+          dateableId: Number(dateableId),
+        })),
+    );
+
+    // Filter out unchanged or empty date ranges
+    const changedDates = flattenedDates.filter((dateRange) => {
+      // if either date is null, skip this range
+      if (dateRange.startDate === null || dateRange.endDate === null) {
+        return false;
+      }
+
+      // if the range is unchanged, skip this range
+      return dateRange.changed;
+    });
+
+    const payload = {
+      notes,
+      readyToPublish,
+      dates: changedDates,
+    };
+
+    const response = await sendData(payload);
+
+    if (savingDraft) {
+      setNotes("");
+      fetchData();
+      openFlashMessage(
+        "Dates saved as draft",
+        `${season.park.name} ${season.name} winter fee season details saved`,
+      );
+    }
+
+    return response;
   }
-  function continueToPreview() {
-    console.log("continue to preview:", dates, notes, readyToPublish);
+
+  async function submitChanges(savingDraft = false) {
+    if (["pending review", "approved", "published"].includes(season.status)) {
+      const confirm = await openConfirmation(
+        "Move back to draft?",
+        "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+        "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
+      );
+
+      if (confirm) {
+        await saveChanges(savingDraft);
+        return true;
+      }
+    } else {
+      await saveChanges(savingDraft);
+      return true;
+    }
+
+    return false;
+  }
+
+  async function saveAsDraft() {
+    try {
+      await submitChanges(true);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  async function continueToPreview() {
+    try {
+      const submitOk = await submitChanges();
+
+      if (submitOk) {
+        navigate(`/park/{parkId}/winter-fees/${seasonId}/preview`);
+      }
+    } catch (err) {
+      console.error(err);
+    }
   }
 
   useEffect(() => {
@@ -424,6 +521,22 @@ export default function SubmitWinterFeesDates() {
 
   return (
     <div className="page submit-winter-fees-dates">
+      <FlashMessage
+        title={flashTitle}
+        message={flashMessage}
+        isVisible={isFlashOpen}
+        onClose={handleFlashClose}
+      />
+
+      <ConfirmationDialog
+        title={title}
+        message={message}
+        notes={confirmationDialogNotes}
+        onCancel={handleCancel}
+        onConfirm={handleConfirm}
+        isOpen={isConfirmationOpen}
+      />
+
       <NavBack routePath={`/park/${parkId}`}>
         Back to {season.park.name} season dates
       </NavBack>
