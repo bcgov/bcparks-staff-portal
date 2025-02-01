@@ -413,11 +413,12 @@ export default function SubmitWinterFeesDates() {
     // Turn the `dates` structure into a flat array of date ranges
     const flattenedDates = Object.entries(dates).flatMap(
       ([dateableId, dateRanges]) =>
-        // Add the dateable ID and winter date type ID to each date range
+        // Add foreign keys to the date ranges
         dateRanges.map((dateRange) => ({
           ...dateRange,
           dateableId: Number(dateableId),
           dateTypeId: season.winterFeeDateType.id,
+          seasonId,
         })),
     );
 
