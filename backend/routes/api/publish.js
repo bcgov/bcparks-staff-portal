@@ -10,11 +10,27 @@ import {
   DateType,
   Dateable,
   Campground,
+  FeatureType,
 } from "../../models/index.js";
 
 import { get, post, put } from "./strapi-api.js";
 
 const router = Router();
+
+export function getFeatureName(feature) {
+  // if feature has a campground, and feature.name is "All sites", return campground name
+  // if feature has a campground, and feature.name is not "All sites", return "campgroundName: feature.name"
+  // if feature does not have a campground, return feature.name
+  const { campground, name } = feature;
+
+  if (campground) {
+    return name === "All sites"
+      ? campground.name
+      : `${campground.name}: ${name}`;
+  }
+
+  return name;
+}
 
 router.get(
   "/ready-to-publish",
@@ -25,28 +41,47 @@ router.get(
         status: "approved",
         readyToPublish: true,
       },
-      attributes: ["id", "parkId", "featureTypeId"],
-      raw: true,
+      attributes: ["id", "parkId", "operatingYear"],
+      include: [
+        {
+          model: FeatureType,
+          as: "featureType",
+          attributes: ["id", "name"],
+        },
+      ],
     });
 
-    // The frontend needs to display every park-feature pair only once
-    // even if there are multiple seasons for that pair that are approved and ready to be published
-    // here we are filtering out duplicates
-    const parkFeaturePairs = [
-      ...new Map(
-        approvedSeasons.map((season) => [
-          `${season.parkId}-${season.featureTypeId}`, // Unique key for the pair
-          { parkId: season.parkId, featureTypeId: season.featureTypeId }, // Original object
-        ]),
-      ).values(),
-    ];
+    const seasonMap = {};
+
+    approvedSeasons.forEach((season) => {
+      const key = `${season.parkId}-${season.featureType.id}`;
+
+      if (!seasonMap[key]) {
+        seasonMap[key] = {
+          fetchConditions: {
+            parkId: season.parkId,
+            featureTypeId: season.featureType.id,
+          },
+          seasons: [],
+        };
+
+        seasonMap[key].seasons.push({
+          operatingYear: season.operatingYear,
+          featureTypeName: season.featureType.name,
+        });
+      }
+    });
+
+    const parkFeaturePairs = Object.values(seasonMap).map(
+      (season) => season.fetchConditions,
+    );
 
     // get all features that are part of the approved and ready to be published seasons
     const matchingFeatures = await Feature.findAll({
       where: {
         [Op.or]: parkFeaturePairs,
       },
-      attributes: ["id", "name", "strapiId"],
+      attributes: ["id", "name", "strapiId", "featureTypeId"],
       include: [
         {
           model: Park,
@@ -63,18 +98,23 @@ router.get(
 
     const features = matchingFeatures.map((feature) => feature.toJSON());
 
-    // if feature has a campground prepend feature name with campground name
-    // some features' names only make sense in the context of a campground
-    // e.g. Alice Lake Campground - Campsites 1-55
-    const output = features
-      .map((feature) => {
-        if (feature.campground) {
-          feature.name = `${feature.campground.name} - ${feature.name}`;
-        }
+    const output = [];
 
-        return feature;
-      })
-      .sort((a, b) => a.name.localeCompare(b.name));
+    features.forEach((feature) => {
+      const { featureTypeId } = feature;
+      const parkId = feature.park.id;
+
+      const key = `${parkId}-${featureTypeId}`;
+      const seasonData = seasonMap[key];
+      const featuresToAdd = seasonData.seasons.map((season) => ({
+        ...feature,
+        name: getFeatureName(feature),
+        season: season.operatingYear,
+        featureTypeName: season.featureTypeName,
+      }));
+
+      output.push(...featuresToAdd);
+    });
 
     res.send({ features: output });
   }),
