@@ -36,6 +36,7 @@ export default (sequelize) => {
       campgroundId: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
       strapiId: DataTypes.INTEGER,
+      hasWinterFeeDates: DataTypes.BOOLEAN,
     },
     {
       sequelize,

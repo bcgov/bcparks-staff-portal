@@ -13,6 +13,7 @@ import {
   DateType,
   Season,
   DateRange,
+  User,
 } from "../models/index.js";
 
 /**
@@ -258,7 +259,7 @@ export async function createDateTypes() {
       description: "Dates where reservations are available.",
     },
     {
-      name: "Winter fees",
+      name: "Winter fee",
       startDateLabel: "Winter start date",
       endDateLabel: "Winter end date",
       description: "Reduced services and reduced legislated winter fees.",
@@ -338,14 +339,23 @@ export async function syncFeatures(featureData) {
 export async function createDatesAndSeasons(datesData) {
   const items = datesData.items.filter((item) => item.attributes.isActive);
 
+  const winterSeasonMap = new Map();
   const seasonMap = new Map();
+
   const dateTypeMap = {};
+  const featureTypeMap = {};
 
   // map to quickly get dateType by name
   const dateTypes = await DateType.findAll();
 
   dateTypes.forEach((dateType) => {
     dateTypeMap[dateType.name] = dateType;
+  });
+
+  const featureTypes = await FeatureType.findAll();
+
+  featureTypes.forEach((featureType) => {
+    featureTypeMap[featureType.name] = featureType;
   });
 
   await Promise.all(
@@ -375,6 +385,23 @@ export async function createDatesAndSeasons(datesData) {
         }
 
         seasonMap.get(key).push(item);
+
+        // if the date has offseason dates, and feature is a frontcountry campground
+        // create winter season
+        if (
+          feature.featureTypeId ===
+            featureTypeMap["Frontcountry campground"].id &&
+          (item.attributes.offSeasonStartDate ||
+            item.attributes.offSeasonEndDate)
+        ) {
+          const winterSeasonKey = `${parkId}-${operatingYear}`;
+
+          if (!winterSeasonMap.has(winterSeasonKey)) {
+            winterSeasonMap.set(winterSeasonKey, []);
+          }
+
+          winterSeasonMap.get(winterSeasonKey).push(item);
+        }
       }
     }),
   );
@@ -436,6 +463,54 @@ export async function createDatesAndSeasons(datesData) {
       }
     });
   }
+
+  for (const [key, seasonDates] of winterSeasonMap) {
+    const [parkId, operatingYear] = key.split("-");
+
+    console.log("key: ", key);
+    console.log("operatingYear: ", operatingYear);
+    console.log("");
+
+    const featureTypeId = featureTypeMap["Winter fee"].id;
+
+    // Try to get the season by parkId, winterFeatureType.id, and operatingYear
+    const attrs = {
+      parkId,
+      featureTypeId,
+      operatingYear,
+    };
+    let season = await getItemByAttributes(Season, attrs);
+
+    if (!season) {
+      // create season if a season matching those 3 attributes doesn't exist
+      const data = {
+        status: "requested",
+        readyToPublish: true,
+        ...attrs,
+      };
+
+      season = await createModel(Season, data);
+    }
+
+    seasonDates.forEach(async (date) => {
+      // for each date in the season, we create 1+ date ranges
+      const feature = await getItemByAttributes(Feature, {
+        strapiId: date.attributes.parkOperationSubArea.data.id,
+      });
+
+      const dateObj = {
+        startDate: date.attributes.offSeasonStartDate,
+        endDate: date.attributes.offSeasonEndDate,
+        dateTypeId: dateTypeMap["Winter fee"].id,
+        dateableId: feature.dateableId,
+        seasonId: season.id,
+      };
+
+      await createModel(DateRange, dateObj);
+      feature.hasWinterFeeDates = true;
+      await feature.save();
+    });
+  }
 }
 
 /**
@@ -493,6 +568,30 @@ export async function syncData() {
 }
 
 /**
+ * Create a new featureType for winter fees that doesn't exist in Strapi
+ * @returns {Promise[Object]} resolves when the featureType has been created
+ */
+async function createWinterFeatureType() {
+  const data = {
+    name: "Winter fee",
+    strapiId: null,
+    icon: "winter-recreation",
+  };
+
+  await createModel(FeatureType, data);
+}
+
+async function createTestUser() {
+  const data = {
+    name: "Test User",
+    email: "test@oxd.com",
+    staff: true,
+  };
+
+  await createModel(User, data);
+}
+
+/**
  * Syncs dates data from Strapi to our database
  * Only runs one time to import existing dates in Strapi
  * @returns {Promise[Object]} resolves when all dates and seasons have been created
@@ -519,6 +618,10 @@ export async function oneTimeDataImport() {
   }
 
   await createDateTypes();
+
+  await createWinterFeatureType();
+
+  await createTestUser();
 
   datesData.items = await getData(currentUrl, params);
 

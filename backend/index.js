@@ -10,6 +10,7 @@ import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
 import parkRoutes from "./routes/api/parks.js";
 import seasonRoutes from "./routes/api/seasons.js";
+import winterSeasonRoutes from "./routes/api/winter-seasons.js";
 import exportRoutes from "./routes/api/export.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
@@ -58,6 +59,7 @@ const apiRouter = express.Router();
 apiRouter.use("/parks", parkRoutes);
 apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
+apiRouter.use("/winter-fees", winterSeasonRoutes);
 
 app.use("/api", checkJwt, apiRouter);
 
