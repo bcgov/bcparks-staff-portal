@@ -78,6 +78,7 @@ function PublishPage() {
             <tr>
               <th scope="col">Park name</th>
               <th scope="col">Feature</th>
+              <th scope="col">Season</th>
             </tr>
           </thead>
           <tbody>
@@ -85,6 +86,7 @@ function PublishPage() {
               <tr key={feature.id}>
                 <td>{feature.park.name}</td>
                 <td>{feature.name}</td>
+                <td>{feature.season}</td>
               </tr>
             ))}
           </tbody>
