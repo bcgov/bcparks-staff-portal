@@ -39,9 +39,8 @@ router.get(
     const approvedSeasons = await Season.findAll({
       where: {
         status: "approved",
-        readyToPublish: true,
       },
-      attributes: ["id", "parkId", "operatingYear"],
+      attributes: ["id", "parkId", "operatingYear", "readyToPublish"],
       include: [
         {
           model: FeatureType,
@@ -67,7 +66,7 @@ router.get(
 
         seasonMap[key].seasons.push({
           operatingYear: season.operatingYear,
-          featureTypeName: season.featureType.name,
+          readyToPublish: season.readyToPublish,
         });
       }
     });
@@ -110,7 +109,7 @@ router.get(
         ...feature,
         name: getFeatureName(feature),
         season: season.operatingYear,
-        featureTypeName: season.featureTypeName,
+        readyToPublish: season.readyToPublish,
       }));
 
       output.push(...featuresToAdd);

@@ -5,6 +5,7 @@ import { useApiGet } from "@/hooks/useAPI";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
+import NotReadyFlag from "@/components/NotReadyFlag";
 
 function PublishPage() {
   const {
@@ -86,7 +87,10 @@ function PublishPage() {
               <tr key={feature.id}>
                 <td>{feature.park.name}</td>
                 <td>{feature.name}</td>
-                <td>{feature.season}</td>
+                <td>
+                  {feature.season}
+                  <NotReadyFlag show={!feature.readyToPublish} />
+                </td>
               </tr>
             ))}
           </tbody>
