@@ -9,10 +9,11 @@ import {
   Feature,
   DateType,
   DateRange,
-  SeasonChangeLog,
-  User,
-  Campground,
   Dateable,
+  Campground,
+  SeasonChangeLog,
+  DateChangeLog,
+  User,
 } from "../../models/index.js";
 
 function getFeatureName(feature) {
@@ -206,10 +207,103 @@ router.get(
   }),
 );
 
+// save draft (role determined by user)
 router.post(
   "/:seasonId/save/",
   asyncHandler(async (req, res) => {
-    console.log("save endpoint hit");
+    const seasonId = Number(req.params.seasonId);
+    const { notes, dates, readyToPublish } = req.body;
+
+    // when we add roles: we need to check that this user has permission to edit this season
+    // staff or operator that has access to this park
+
+    const season = await Season.findByPk(seasonId, {
+      include: [
+        {
+          model: Park,
+          as: "park",
+          attributes: ["id"],
+        },
+      ],
+    });
+
+    if (!season) {
+      const error = new Error("Season not found");
+
+      error.status = 404;
+      throw error;
+    }
+
+    // this will depend on the user's role
+    // right now we're just setting everything to requested
+    // const newStatus = getNewStatusForSeason(season, null);
+
+    // create season change log
+    const seasonChangeLog = await SeasonChangeLog.create({
+      seasonId,
+      // TODO: get real user ID from session
+      userId: 1,
+      notes,
+      statusOldValue: season.status,
+      statusNewValue: "requested",
+      readyToPublishOldValue: season.readyToPublish,
+      readyToPublishNewValue: readyToPublish,
+    });
+
+    // update season
+    Season.update(
+      {
+        readyToPublish,
+        status: "requested",
+      },
+      {
+        where: {
+          id: seasonId,
+        },
+      },
+    );
+
+    dates.forEach(async (date) => {
+      if (date.id && date.changed) {
+        // get dateRange
+        const dateRange = await DateRange.findByPk(date.id);
+
+        // create date change log
+        DateChangeLog.create({
+          dateRangeId: date.id,
+          seasonChangeLogId: seasonChangeLog.id,
+          startDateOldValue: dateRange.startDate,
+          startDateNewValue: date.startDate,
+          endDateOldValue: dateRange.endDate,
+          endDateNewValue: date.endDate,
+        });
+
+        // update
+        DateRange.update(
+          {
+            startDate: date.startDate,
+            endDate: date.endDate,
+          },
+          {
+            where: {
+              id: date.id,
+            },
+          },
+        );
+      } else if (!date.id) {
+        // Skip creating empty date ranges
+        if (date.startDate === null && date.endDate === null) return;
+
+        // if date doesn't have ID, it's a new date
+        DateRange.create({
+          seasonId,
+          dateableId: date.dateableId,
+          dateTypeId: date.dateTypeId,
+          startDate: date.startDate,
+          endDate: date.endDate,
+        });
+      }
+    });
 
     res.sendStatus(200);
   }),
