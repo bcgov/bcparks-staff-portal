@@ -1,7 +1,6 @@
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
-import _ from "lodash";
 
 import {
   Park,
@@ -13,7 +12,6 @@ import {
   Dateable,
   Campground,
   SeasonChangeLog,
-  DateChangeLog,
   User,
 } from "../../models/index.js";
 
@@ -205,93 +203,6 @@ router.get(
     };
 
     res.json(payload);
-  }),
-);
-
-// save draft (role determined by user)
-router.post(
-  "/:seasonId/save/",
-  asyncHandler(async (req, res) => {
-    const seasonId = Number(req.params.seasonId);
-    const { notes, dates, readyToPublish } = req.body;
-
-    // when we add roles: we need to check that this user has permission to edit this season
-    // staff or operator that has access to this park
-
-    const season = await Season.findByPk(seasonId, {
-      include: [
-        {
-          model: Park,
-          as: "park",
-          attributes: ["id"],
-        },
-      ],
-    });
-
-    if (!season) {
-      const error = new Error("Season not found");
-
-      error.status = 404;
-      throw error;
-    }
-
-    // this will depend on the user's role
-    // right now we're just setting everything to requested
-    // const newStatus = getNewStatusForSeason(season, null);
-
-    // create season change log
-    const seasonChangeLog = await SeasonChangeLog.create({
-      seasonId,
-      // TODO: get real user ID from session
-      userId: 1,
-      notes,
-      statusOldValue: season.status,
-      statusNewValue: "requested",
-      readyToPublishOldValue: season.readyToPublish,
-      readyToPublishNewValue: readyToPublish,
-    });
-
-    // Update season
-    season.readyToPublish = readyToPublish;
-    season.status = "requested";
-    const saveSeason = season.save();
-
-    // Create date change logs for updated dateRanges
-    const existingDateIds = dates
-      .filter((date) => date.id)
-      .map((date) => date.id);
-    const existingDateRows = await DateRange.findAll({
-      where: {
-        id: {
-          [Op.in]: existingDateIds,
-        },
-      },
-    });
-
-    const datesToUpdateByid = _.keyBy(dates, "id");
-    const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
-      const newDateRange = datesToUpdateByid[oldDateRange.id];
-
-      return {
-        dateRangeId: oldDateRange.id,
-        seasonChangeLogId: seasonChangeLog.id,
-        startDateOldValue: oldDateRange.startDate,
-        startDateNewValue: newDateRange.startDate,
-        endDateOldValue: oldDateRange.endDate,
-        endDateNewValue: newDateRange.endDate,
-      };
-    });
-
-    const createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate);
-
-    // Update or create dateRanges
-    const updateDates = DateRange.bulkCreate(dates, {
-      updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
-    });
-
-    await Promise.all([saveSeason, updateDates, createChangeLogs]);
-
-    res.sendStatus(200);
   }),
 );
 

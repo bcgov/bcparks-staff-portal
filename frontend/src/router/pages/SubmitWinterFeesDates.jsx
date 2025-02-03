@@ -371,7 +371,7 @@ export default function SubmitWinterFeesDates() {
     sendData,
     // error: saveError, // @TODO: handle save errors
     loading: saving,
-  } = useApiPost(`/winter-fees/${seasonId}/save/`);
+  } = useApiPost(`/seasons/${seasonId}/save/`);
 
   const {
     flashTitle,
