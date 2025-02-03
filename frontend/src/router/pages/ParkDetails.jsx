@@ -5,17 +5,9 @@ import { useFlashMessage } from "@/hooks/useFlashMessage";
 import NavBack from "@/components/NavBack";
 import LoadingBar from "@/components/LoadingBar";
 import SubArea from "@/components/ParkDetailsSubArea";
+import WinterFees from "@/components/ParkDetailsWinterFees";
 import FlashMessage from "@/components/FlashMessage";
 import "./ParkDetails.scss";
-
-// Returns an array of sub-area components
-function getSubAreas(park) {
-  if (!park) return [];
-
-  return Object.entries(park.subAreas).map(([title, subAreaSeason]) => (
-    <SubArea key={title} title={title} seasons={subAreaSeason} />
-  ));
-}
 
 function ParkDetails() {
   const { parkId } = useParams();
@@ -30,18 +22,6 @@ function ParkDetails() {
     handleFlashClose,
     isFlashOpen,
   } = useFlashMessage();
-
-  function renderSubAreas() {
-    if (loading) {
-      return <LoadingBar />;
-    }
-
-    if (error) {
-      return <p>Error loading parks data: {error.message}</p>;
-    }
-
-    return getSubAreas(park);
-  }
 
   // Show a flash message if the user just approved dates
   useEffect(() => {
@@ -70,6 +50,14 @@ function ParkDetails() {
     );
   }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
 
+  if (loading) {
+    return <LoadingBar />;
+  }
+
+  if (error) {
+    return <p>Error loading parks data: {error.message}</p>;
+  }
+
   return (
     <div className="page park-details">
       <FlashMessage
@@ -85,7 +73,11 @@ function ParkDetails() {
         <h1>{park?.name}</h1>
       </header>
 
-      {renderSubAreas()}
+      {Object.entries(park.subAreas).map(([title, subAreaSeasons]) => (
+        <SubArea key={title} title={title} seasons={subAreaSeasons} />
+      ))}
+
+      <WinterFees data={park.winterFees} />
     </div>
   );
 }

@@ -147,10 +147,19 @@ router.get(
       (group) => _.orderBy(group, ["operatingYear"], ["desc"]),
     );
 
+    const winterFees = [];
+
+    // move winter fees to the root object
+    // so the frontend can treat it differently
+    if ("Winter fee" in subAreas) {
+      winterFees.push(...subAreas["Winter fee"]);
+      delete subAreas["Winter fee"];
+    }
+
     // remove unused season key
     delete parkJson.seasons;
 
-    res.json({ ...parkJson, subAreas });
+    res.json({ ...parkJson, subAreas, winterFees });
   }),
 );
 

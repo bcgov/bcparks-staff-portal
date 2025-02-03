@@ -1,17 +1,21 @@
 import PropTypes from "prop-types";
-import { formatDateShort } from "@/lib/utils";
+import { formatDateShort, formatDateShortWithYear } from "@/lib/utils";
 
 import "./DateRange.scss";
 
 // Displays a date range in a table cell
-export default function DateRange({ start, end }) {
+export default function DateRange({ start, end, formatWithYear = false }) {
   if (!start || !end) {
     return "Not submitted";
   }
 
-  const startDate = formatDateShort(start);
+  const formatFunction = formatWithYear
+    ? formatDateShortWithYear
+    : formatDateShort;
 
-  const endDate = formatDateShort(end);
+  const startDate = formatFunction(start);
+
+  const endDate = formatFunction(end);
 
   return (
     <div className="date-range">
@@ -25,4 +29,5 @@ export default function DateRange({ start, end }) {
 DateRange.propTypes = {
   start: PropTypes.string,
   end: PropTypes.string,
+  formatWithYear: PropTypes.bool,
 };

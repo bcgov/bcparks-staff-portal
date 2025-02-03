@@ -123,3 +123,10 @@ label.form-check-label {
     transform: rotate(180deg);
   }
 }
+
+// styles for header elements with icons
+.header-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
