@@ -1,0 +1,34 @@
+.page.submit-winter-fees-dates {
+  h4 {
+    margin-bottom: var(--layout-margin-large);
+  }
+
+  .date-type-header {
+    font: var(--typography-regular-large-body); // "BC Sans"
+    font-family: var(--bs-font-sans-serif); // "BCSans"
+  }
+
+  .dates-row {
+    margin-bottom: var(--layout-margin-large);
+
+    .form-label {
+      display: block;
+    }
+
+    .react-datepicker-wrapper {
+      width: 100%;
+    }
+
+    .form-control {
+      margin-bottom: var(--layout-margin-medium);
+
+      @include from-lg {
+        margin-bottom: 0;
+      }
+    }
+  }
+
+  .controls {
+    gap: var(--layout-margin-medium);
+  }
+}
