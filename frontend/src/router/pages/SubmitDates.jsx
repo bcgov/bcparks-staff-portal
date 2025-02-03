@@ -104,11 +104,21 @@ function SubmitDates() {
         (acc, dateType) => acc.concat(dateType.Operation, dateType.Reservation),
         [],
       )
-      // Filter out any blank ranges
-      .filter(
-        (dateRange) =>
-          dateRange.startDate !== null && dateRange.endDate !== null,
-      );
+      // Filter out any blank ranges or unchanged dates
+      .filter((dateRange) => {
+        // if either date is null, skip this range
+        if (dateRange.startDate === null || dateRange.endDate === null) {
+          return false;
+        }
+
+        // if the range is unchanged, skip this range
+        return dateRange.changed;
+      })
+      // Add dateTypeId to the date ranges
+      .map((dateRange) => ({
+        ...dateRange,
+        dateTypeId: dateRange.dateType.id,
+      }));
 
     const payload = {
       notes,

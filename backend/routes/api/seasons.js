@@ -1,4 +1,8 @@
 import { Router } from "express";
+import _ from "lodash";
+import asyncHandler from "express-async-handler";
+import { Op } from "sequelize";
+
 import {
   Park,
   Season,
@@ -12,8 +16,6 @@ import {
   DateChangeLog,
   User,
 } from "../../models/index.js";
-import asyncHandler from "express-async-handler";
-import { Op } from "sequelize";
 
 const router = Router();
 
@@ -215,7 +217,7 @@ router.get(
 router.post(
   "/:seasonId/save/",
   asyncHandler(async (req, res) => {
-    const { seasonId } = req.params;
+    const seasonId = Number(req.params.seasonId);
     const { notes, dates, readyToPublish } = req.body;
 
     // when we add roles: we need to check that this user has permission to edit this season
@@ -254,60 +256,45 @@ router.post(
       readyToPublishNewValue: readyToPublish,
     });
 
-    // update season
-    Season.update(
-      {
-        readyToPublish,
-        status: "requested",
-      },
-      {
-        where: {
-          id: seasonId,
+    // Update season
+    season.readyToPublish = readyToPublish;
+    season.status = "requested";
+    const saveSeason = season.save();
+
+    // Create date change logs for updated dateRanges
+    const existingDateIds = dates
+      .filter((date) => date.id)
+      .map((date) => date.id);
+    const existingDateRows = await DateRange.findAll({
+      where: {
+        id: {
+          [Op.in]: existingDateIds,
         },
       },
-    );
-
-    dates.forEach(async (date) => {
-      if (date.id && date.changed) {
-        // get dateRange
-        const dateRange = await DateRange.findByPk(date.id);
-
-        // create date change log
-        DateChangeLog.create({
-          dateRangeId: date.id,
-          seasonChangeLogId: seasonChangeLog.id,
-          startDateOldValue: dateRange.startDate,
-          startDateNewValue: date.startDate,
-          endDateOldValue: dateRange.endDate,
-          endDateNewValue: date.endDate,
-        });
-
-        // update
-        DateRange.update(
-          {
-            startDate: date.startDate,
-            endDate: date.endDate,
-          },
-          {
-            where: {
-              id: date.id,
-            },
-          },
-        );
-      } else if (!date.id) {
-        // Skip creating empty date ranges
-        if (date.startDate === null && date.endDate === null) return;
-
-        // if date doesn't have ID, it's a new date
-        DateRange.create({
-          seasonId,
-          dateableId: date.dateableId,
-          dateTypeId: date.dateType.id,
-          startDate: date.startDate,
-          endDate: date.endDate,
-        });
-      }
     });
+
+    const datesToUpdateByid = _.keyBy(dates, "id");
+    const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
+      const newDateRange = datesToUpdateByid[oldDateRange.id];
+
+      return {
+        dateRangeId: oldDateRange.id,
+        seasonChangeLogId: seasonChangeLog.id,
+        startDateOldValue: oldDateRange.startDate,
+        startDateNewValue: newDateRange.startDate,
+        endDateOldValue: oldDateRange.endDate,
+        endDateNewValue: newDateRange.endDate,
+      };
+    });
+
+    const createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate);
+
+    // Update or create dateRanges
+    const updateDates = DateRange.bulkCreate(dates, {
+      updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
+    });
+
+    await Promise.all([saveSeason, updateDates, createChangeLogs]);
 
     res.sendStatus(200);
   }),
