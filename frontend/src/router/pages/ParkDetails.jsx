@@ -38,7 +38,10 @@ function ParkDetails() {
     setSearchParams(searchParams);
 
     // Find the feature in the park data by its ID
-    const allFeatures = Object.values(park.featureTypes).flat();
+    const allFeatures = [
+      ...Object.values(park.featureTypes).flat(),
+      ...park.winterFees,
+    ];
     const approvedFeature = allFeatures.find(
       (feature) => feature.id === featureId,
     );
