@@ -79,7 +79,7 @@ router.get(
     const parkId = winterSeason.park.id;
 
     const featureList = await Feature.findAll({
-      attributes: ["id", "name", "active"],
+      attributes: ["id", "name", "hasReservations", "active"],
       where: {
         parkId,
         active: true,
@@ -157,11 +157,13 @@ router.get(
       //
       const featureData = {
         id: feature.id,
+        hasReservations: feature.hasReservations,
         name: getFeatureName(feature),
         dateableId: feature.dateable.id,
         currentWinterDates: [],
         previousWinterDates: [],
         currentReservationDates: [],
+        previousReservationDates: [],
       };
 
       // group dateRanges by operatingYear and type
@@ -182,11 +184,12 @@ router.get(
           if (!winterFeeDateType) {
             winterFeeDateType = dateRange.dateType;
           }
-        } else if (
-          dateRange.dateType.name === "Reservation" &&
-          dateRange.season.operatingYear === operatingYear
-        ) {
-          featureData.currentReservationDates.push(dateRangeItem);
+        } else if (dateRange.dateType.name === "Reservation") {
+          if (dateRange.season.operatingYear === operatingYear) {
+            featureData.currentReservationDates.push(dateRangeItem);
+          } else {
+            featureData.previousReservationDates.push(dateRangeItem);
+          }
         }
       });
 
@@ -197,7 +200,8 @@ router.get(
 
     const payload = {
       ...winterSeason,
-      name: `${operatingYear} - ${operatingYear + 1}`,
+      name: `${operatingYear} – ${operatingYear + 1}`,
+      previousSeasonName: `${operatingYear - 1} – ${operatingYear}`,
       winterFeeDateType,
       featureTypes: featureTypeList,
     };

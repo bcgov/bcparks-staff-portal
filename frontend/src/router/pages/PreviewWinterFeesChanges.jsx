@@ -38,7 +38,9 @@ function PreviewChanges() {
     isFlashOpen,
   } = useFlashMessage();
 
-  const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
+  const { data, loading, error, fetchData } = useApiGet(
+    `/winter-fees/${seasonId}`,
+  );
 
   const {
     sendData: saveData,
@@ -67,37 +69,15 @@ function PreviewChanges() {
   useNavigationGuard(hasChanges, openConfirmation);
 
   function navigateToEdit() {
-    navigate(`/park/${parkId}/edit/${seasonId}`);
+    navigate(`/park/${parkId}/winter-fees/${seasonId}/edit`);
   }
 
-  function getPrevSeasonDates(feature, dateType) {
-    const dates = feature.dateable.previousSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === dateType,
-    );
-
+  function getDates(dates) {
     if (dates.length === 0) {
       return "Not available";
     }
     return dates.map((date) => (
       <DateRange key={date.id} start={date.startDate} end={date.endDate} />
-    ));
-  }
-
-  function getCurrentSeasonDates(feature, dateType) {
-    if (!feature.active) {
-      return "Not requested";
-    }
-
-    const dates = feature.dateable.currentSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === dateType,
-    );
-
-    return dates.map((dateRange) => (
-      <DateRange
-        key={dateRange.id}
-        start={dateRange.startDate}
-        end={dateRange.endDate}
-      />
     ));
   }
 
@@ -139,19 +119,19 @@ function PreviewChanges() {
                   Type of date
                 </th>
                 <th scope="col" className="prev-date-column">
-                  {data?.operatingYear - 1}
+                  {data.previousSeasonName}
                 </th>
                 <th scope="col" className="current-date-column">
-                  {data?.operatingYear}
+                  {data.name}
                 </th>
                 <th scope="col" className="actions-column"></th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>Operating</td>
-                <td>{getPrevSeasonDates(feature, "Operation")}</td>
-                <td>{getCurrentSeasonDates(feature, "Operation")}</td>
+                <td>Winter fee</td>
+                <td>{getDates(feature.previousWinterDates)}</td>
+                <td>{getDates(feature.currentWinterDates)}</td>
                 <td>
                   <button
                     onClick={navigateToEdit}
@@ -169,20 +149,9 @@ function PreviewChanges() {
               {feature.hasReservations && (
                 <tr>
                   <td>Reservation</td>
-                  <td>{getPrevSeasonDates(feature, "Reservation")}</td>
-                  <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
-                  <td>
-                    <button
-                      onClick={navigateToEdit}
-                      className="btn btn-text-primary"
-                    >
-                      <FontAwesomeIcon
-                        className="append-content me-2"
-                        icon={faPen}
-                      />
-                      <span>Edit</span>
-                    </button>
-                  </td>
+                  <td>{getDates(feature.previousReservationDates)}</td>
+                  <td>{getDates(feature.currentReservationDates)}</td>
+                  <td>{/* Don't show edit link for reservation dates */}</td>
                 </tr>
               )}
             </tbody>
@@ -194,27 +163,6 @@ function PreviewChanges() {
 
   Feature.propTypes = {
     feature: PropTypes.object,
-  };
-
-  function Campground({ campground }) {
-    return (
-      <div>
-        <h4>{campground.name}</h4>
-
-        {campground.features.map((feature) => (
-          <Feature key={feature.id} feature={feature} />
-        ))}
-      </div>
-    );
-  }
-
-  // add proptypes with shape
-  Campground.propTypes = {
-    campground: PropTypes.shape({
-      id: PropTypes.number,
-      name: PropTypes.string,
-      features: PropTypes.arrayOf(PropTypes.object),
-    }),
   };
 
   useEffect(() => {
@@ -251,30 +199,30 @@ function PreviewChanges() {
         isOpen={isConfirmationOpen}
       />
 
-      <NavBack routePath={`/park/${parkId}/edit/${seasonId}`}>
+      <NavBack routePath={`/park/${parkId}`}>
         Back to {data?.park.name} dates
       </NavBack>
 
       <header className="page-header internal">
-        <h1>
-          {data?.park.name} {data?.operatingYear} season dates preview
+        <h1 className="header-with-icon">
+          <FeatureIcon iconName="winter-recreation" />
+          {data.park.name} winter fee
         </h1>
+        <h2>Preview {data.name}</h2>
       </header>
 
-      <section className="feature-type">
-        <h2 className="header-with-icon">
-          <FeatureIcon iconName={data?.featureType.icon} />
-          {data?.featureType.name}
-        </h2>
+      {data?.featureTypes.map((featureType) => (
+        <section key={featureType.id} className="feature-type">
+          <h3 className="header-with-icon">
+            <FeatureIcon iconName={featureType.icon} />
+            {featureType.name}
+          </h3>
 
-        {data?.campgrounds.map((campground) => (
-          <Campground key={campground.id} campground={campground} />
-        ))}
-
-        {data?.features.map((feature) => (
-          <Feature key={feature.id} feature={feature} />
-        ))}
-      </section>
+          {featureType.features.map((feature) => (
+            <Feature key={feature.id} feature={feature} />
+          ))}
+        </section>
+      ))}
 
       <div className="row notes">
         <div className="col-lg-6">
@@ -307,7 +255,7 @@ function PreviewChanges() {
 
           <div className="controls d-flex mt-4">
             <Link
-              to={`/park/${parkId}/edit/${seasonId}`}
+              to={`/park/${parkId}/winter-fees/${seasonId}/edit`}
               type="button"
               className="btn btn-outline-primary"
             >
