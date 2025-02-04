@@ -1,9 +1,6 @@
 .page.submit-dates {
-  h2.sub-area-name,
-  h2.campground-name {
+  h2 {
     margin-bottom: var(--layout-margin-xlarge);
-    display: flex;
-    gap: var(--layout-margin-medium);
 
     .feature-icon {
       height: 1.25em;
@@ -17,7 +14,7 @@
     }
   }
 
-  .sub-area {
+  .feature {
     margin-bottom: var(--layout-margin-large);
     padding-block: var(--layout-padding-medium);
 

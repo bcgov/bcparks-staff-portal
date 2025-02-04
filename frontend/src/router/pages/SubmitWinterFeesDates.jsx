@@ -283,7 +283,7 @@ function CampgroundFeature({ featureData }) {
   }
 
   return (
-    <section className="feature sub-area mb-4">
+    <section className="feature mb-4">
       <h4>{featureData.name}</h4>
 
       <div className="row">
@@ -486,7 +486,7 @@ export default function SubmitWinterFeesDates() {
       const submitOk = await submitChanges();
 
       if (submitOk) {
-        navigate(`/park/{parkId}/winter-fees/${seasonId}/preview`);
+        navigate(`/park/${parkId}/winter-fees/${seasonId}/preview`);
       }
     } catch (err) {
       console.error(err);
@@ -546,7 +546,7 @@ export default function SubmitWinterFeesDates() {
       <header className="page-header internal">
         <h1 className="header-with-icon">
           <FeatureIcon iconName="winter-recreation" />
-          {season.park.name} winter fees
+          {season.park.name} winter fee
         </h1>
         <h2>Edit {season.name}</h2>
       </header>

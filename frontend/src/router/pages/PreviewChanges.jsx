@@ -167,11 +167,11 @@ function PreviewChanges() {
               </tr>
 
               {feature.hasReservations && (
-              <tr>
-                <td>Reservation</td>
-                <td>{getPrevSeasonDates(feature, "Reservation")}</td>
-                <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
-                <td>
+                <tr>
+                  <td>Reservation</td>
+                  <td>{getPrevSeasonDates(feature, "Reservation")}</td>
+                  <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
+                  <td>
                     <button
                       onClick={navigateToEdit}
                       className="btn btn-text-primary"
@@ -261,8 +261,8 @@ function PreviewChanges() {
         </h1>
       </header>
 
-      <section className="sub-area">
-        <h2>
+      <section className="feature-type">
+        <h2 className="header-with-icon">
           <FeatureIcon iconName={data?.featureType.icon} />
           {data?.featureType.name}
         </h2>

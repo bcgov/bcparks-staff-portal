@@ -34,7 +34,7 @@ function CampGroundFeature({ feature }) {
     <div className="feature">
       <h4>{feature.name}</h4>
 
-      <table className="table table-striped sub-area-dates mb-0">
+      <table className="table table-striped dates mb-0">
         <tbody>
           {Object.entries(groupedDates).map(([dateTypeName, dateRanges]) => (
             <DateTypeRow
@@ -120,7 +120,7 @@ SeasonDates.propTypes = {
     campgrounds: PropTypes.arrayOf(campgroundPropShape),
     features: PropTypes.arrayOf(campgroundFeaturePropShape),
     changeLogs: PropTypes.array.isRequired,
-  }),
+  }).isRequired,
 };
 
 CampGround.propTypes = {
