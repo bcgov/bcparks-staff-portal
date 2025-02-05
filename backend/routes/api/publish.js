@@ -341,7 +341,7 @@ router.post(
 
     Promise.all(
       approvedSeasons.map(async (season) => {
-        season.status = "published";
+        season.status = "on API";
         await season.save();
 
         console.log(season.status);
