@@ -1,6 +1,6 @@
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
-import { useApiGet, useApiPost } from "@/hooks/useAPI";
+import { useApiGet, useApiPost } from "@/hooks/useApi";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
