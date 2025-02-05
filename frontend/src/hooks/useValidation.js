@@ -61,7 +61,7 @@ export default function useValidation(dates, notes, season) {
   function validateNotes(value = notes) {
     clearError("notes");
 
-    if (!value && ["approved", "published"].includes(season.status)) {
+    if (!value && ["approved", "on API"].includes(season.status)) {
       return addError(
         "notes",
         "The dates you are editing have already been Approved or Published. Please provide a note explaining the reason for this update.",

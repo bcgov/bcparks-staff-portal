@@ -16,7 +16,7 @@ function EditAndReview() {
     { value: "pending review", label: "Pending review" },
     { value: "requested", label: "Requested" },
     { value: "approved", label: "Approved" },
-    { value: "published", label: "Published" },
+    { value: "on API", label: "On API" },
   ];
   const statusValues = statusOptions.map((option) => option.value);
 

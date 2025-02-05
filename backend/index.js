@@ -5,6 +5,7 @@ import helmet from "helmet";
 import compression from "compression";
 import RateLimit from "express-rate-limit";
 
+import "./env.js";
 import checkJwt from "./middleware/checkJwt.js";
 import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
@@ -12,6 +13,7 @@ import parkRoutes from "./routes/api/parks.js";
 import seasonRoutes from "./routes/api/seasons.js";
 import winterSeasonRoutes from "./routes/api/winter-seasons.js";
 import exportRoutes from "./routes/api/export.js";
+import publishRoutes from "./routes/api/publish.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
@@ -60,6 +62,7 @@ apiRouter.use("/parks", parkRoutes);
 apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
 apiRouter.use("/winter-fees", winterSeasonRoutes);
+apiRouter.use("/publish", publishRoutes);
 
 app.use("/api", checkJwt, apiRouter);
 
