@@ -77,7 +77,12 @@ function PreviewChanges() {
       return "Not available";
     }
     return dates.map((date) => (
-      <DateRange key={date.id} start={date.startDate} end={date.endDate} />
+      <DateRange
+        key={date.id}
+        formatWithYear={true}
+        start={date.startDate}
+        end={date.endDate}
+      />
     ));
   }
 
