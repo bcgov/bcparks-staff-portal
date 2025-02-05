@@ -78,6 +78,7 @@ router.get(
     // get all features that are part of the approved and ready to be published seasons
     const matchingFeatures = await Feature.findAll({
       where: {
+        active: true,
         [Op.or]: parkFeaturePairs,
       },
       attributes: ["id", "name", "strapiId", "featureTypeId"],

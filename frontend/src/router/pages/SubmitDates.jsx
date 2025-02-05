@@ -542,7 +542,8 @@ function SubmitDates() {
   function Feature({ feature }) {
     return (
       <section className="feature">
-        <h3>{feature.name}</h3>
+        {/* <h3>{feature.name}</h3> */}
+        {feature.name !== "All sites" && <h3>{feature.name}</h3>}
 
         <div className="row">
           <div className="col-md-6">

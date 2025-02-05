@@ -284,7 +284,8 @@ function CampgroundFeature({ featureData }) {
 
   return (
     <section className="feature mb-4">
-      <h4>{featureData.name}</h4>
+      {/* <h4>{featureData.name}</h4> */}
+      {featureData.name !== "All sites" && <h4>{featureData.name}</h4>}
 
       <div className="row">
         <div className="col-md-6">
