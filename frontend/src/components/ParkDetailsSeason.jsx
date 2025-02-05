@@ -84,7 +84,7 @@ export default function ParkSeason({
         navigate(getEditRoutePath(season.id));
       }
     } else if (season.status === "published") {
-      const confirm = openConfirmation(
+      const confirm = await openConfirmation(
         "Edit published dates?",
         "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
       );
