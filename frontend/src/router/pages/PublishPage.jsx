@@ -1,6 +1,6 @@
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
-import { useApiGet } from "@/hooks/useAPI";
+import { useApiGet, useApiPost } from "@/hooks/useAPI";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
@@ -28,6 +28,12 @@ function PublishPage() {
 
   const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
 
+  const {
+    sendData: publishData,
+    // error: saveError, // @TODO: handle save errors
+    loading: saving,
+  } = useApiPost("/publish/publish-to-api/");
+
   if (loading) {
     return <LoadingBar />;
   }
@@ -44,6 +50,8 @@ function PublishPage() {
     );
 
     if (confirm) {
+      await publishData();
+
       openFlashMessage(
         "Dates publishing to API",
         "Approved dates publishing may take up to one hour.",
@@ -71,6 +79,12 @@ function PublishPage() {
         <button className="btn btn-primary" onClick={publishToApi}>
           Publish to API
         </button>
+        {saving && (
+          <span
+            className="spinner-border text-primary align-self-center me-2"
+            aria-hidden="true"
+          ></span>
+        )}
       </div>
 
       <div className="table-responsive">
