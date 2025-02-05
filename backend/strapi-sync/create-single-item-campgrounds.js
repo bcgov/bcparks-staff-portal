@@ -1,3 +1,4 @@
+import "../env.js";
 import { Campground, Feature, Park } from "../models/index.js";
 
 import { getItemByAttributes, createModel } from "./utils.js";

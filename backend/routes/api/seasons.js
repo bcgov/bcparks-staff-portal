@@ -26,12 +26,12 @@ const router = Router();
 //   //   requested -- > requested
 //   //   pending review -- > pending review
 //   //   approved -- > pending review
-//   //   published --> pending review
+//   //   on API --> pending review
 //   // For operator
 //   //   requested -- > requested
 //   //   pending review -- > requested
 //   //   approved -- > requested
-//   //   published --> requested
+//   //   on API --> requested
 //   return season.status;
 // }
 
