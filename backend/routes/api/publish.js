@@ -63,12 +63,12 @@ router.get(
           },
           seasons: [],
         };
-
-        seasonMap[key].seasons.push({
-          operatingYear: season.operatingYear,
-          readyToPublish: season.readyToPublish,
-        });
       }
+
+      seasonMap[key].seasons.push({
+        operatingYear: season.operatingYear,
+        readyToPublish: season.readyToPublish,
+      });
     });
 
     const parkFeaturePairs = Object.values(seasonMap).map(
