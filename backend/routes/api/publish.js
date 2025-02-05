@@ -291,11 +291,11 @@ async function publishToAPI(seasonTable) {
 
         // add all the dates for this feature in Strapi
         await createRecordsInStrapi(groupedSeasonDates);
-
-        // mark this season as published when everything related to it is done
-        markSeasonPublished(seasonId);
       }),
     );
+
+    // mark this season as published when everything related to it is done
+    markSeasonPublished(seasonId);
   }
 }
 
@@ -339,8 +339,16 @@ router.post(
       ],
     });
 
-    const seasons = approvedSeasons.map((season) => season.toJSON());
+    Promise.all(
+      approvedSeasons.map(async (season) => {
+        season.status = "published";
+        await season.save();
 
+        console.log(season.status);
+      }),
+    );
+
+    // TODO: commenting out the code below to not update strapi until new strucutre is in place
     // we need to group dateranges by season and then feature
     // we'll create a table that looks
     // {
@@ -353,34 +361,34 @@ router.post(
     //   }
     // }
 
-    const seasonTable = {};
+    // const seasonTable = {};
 
-    seasons.forEach((season) => {
-      const { operatingYear } = season;
+    // seasons.forEach((season) => {
+    //   const { operatingYear } = season;
 
-      seasonTable[season.id] = {
-        operatingYear,
-        features: {},
-      };
+    //   seasonTable[season.id] = {
+    //     operatingYear,
+    //     features: {},
+    //   };
 
-      const { dateRanges } = season;
+    //   const { dateRanges } = season;
 
-      dateRanges.forEach((dateRange) => {
-        const { dateable } = dateRange;
-        const { feature } = dateable;
+    //   dateRanges.forEach((dateRange) => {
+    //     const { dateable } = dateRange;
+    //     const { feature } = dateable;
 
-        // feature is always an array with one element
-        const strapiId = feature[0].strapiId;
+    //     // feature is always an array with one element
+    //     const strapiId = feature[0].strapiId;
 
-        if (!seasonTable[season.id].features[strapiId]) {
-          seasonTable[season.id].features[strapiId] = [];
-        }
+    //     if (!seasonTable[season.id].features[strapiId]) {
+    //       seasonTable[season.id].features[strapiId] = [];
+    //     }
 
-        seasonTable[season.id].features[strapiId].push(dateRange);
-      });
-    });
+    //     seasonTable[season.id].features[strapiId].push(dateRange);
+    //   });
+    // });
 
-    publishToAPI(seasonTable);
+    // publishToAPI(seasonTable);
 
     // send 200 OK response with empty body
     res.send();
