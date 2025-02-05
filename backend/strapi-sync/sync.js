@@ -78,7 +78,8 @@ export async function getData(url, queryParams) {
  * @returns {Array} list of all models with thier name, endpoint, and items
  */
 export async function fetchAllModels() {
-  const url = `${process.env.STRAPI_URL}/api`;
+  // const url = `${process.env.STRAPI_URL}/api`;
+  const url = "https://cms.bcparks.ca/api";
 
   const strapiData = [
     {
@@ -599,7 +600,8 @@ async function createTestUser() {
  */
 export async function oneTimeDataImport() {
   // only meant to run once - not needed for regular sync
-  const url = `${process.env.STRAPI_URL}/api`;
+  // const url = `${process.env.STRAPI_URL}/api`;
+  const url = "https://cms.bcparks.ca/api";
 
   const datesData = {
     endpoint: "/park-operation-sub-area-dates",
