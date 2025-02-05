@@ -1,12 +1,10 @@
 .page.review-changes {
-  .sub-area {
+  .feature-type {
     margin-bottom: var(--layout-margin-large);
     padding-block: var(--layout-padding-medium);
 
     & > h2 {
       margin-bottom: var(--layout-margin-xlarge);
-      display: flex;
-      gap: var(--layout-margin-medium);
 
       .feature-icon {
         height: 1.25em;

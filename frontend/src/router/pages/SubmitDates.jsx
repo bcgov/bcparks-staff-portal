@@ -541,7 +541,7 @@ function SubmitDates() {
 
   function Feature({ feature }) {
     return (
-      <section className="sub-area">
+      <section className="feature">
         <h3>{feature.name}</h3>
 
         <div className="row">
@@ -714,7 +714,7 @@ function SubmitDates() {
       </header>
 
       {season && (
-        <h2 className="sub-area-name">
+        <h2 className="feature-type-name header-with-icon">
           <FeatureIcon iconName={season.featureType.icon} />
           {season.featureType.name}
         </h2>

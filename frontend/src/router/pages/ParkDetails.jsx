@@ -4,9 +4,10 @@ import { useApiGet } from "@/hooks/useApi";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import NavBack from "@/components/NavBack";
 import LoadingBar from "@/components/LoadingBar";
-import SubArea from "@/components/ParkDetailsSubArea";
-import WinterFees from "@/components/ParkDetailsWinterFees";
+import FeatureType from "@/components/ParkDetailsFeatureType";
 import FlashMessage from "@/components/FlashMessage";
+import SeasonDates from "@/components/ParkDetailsSeasonDates";
+import WinterFeesDates from "@/components/ParkDetailsWinterFeesDates";
 import "./ParkDetails.scss";
 
 function ParkDetails() {
@@ -37,7 +38,7 @@ function ParkDetails() {
     setSearchParams(searchParams);
 
     // Find the feature in the park data by its ID
-    const allFeatures = Object.values(park.subAreas).flat();
+    const allFeatures = Object.values(park.featureTypes).flat();
     const approvedFeature = allFeatures.find(
       (feature) => feature.id === featureId,
     );
@@ -73,11 +74,40 @@ function ParkDetails() {
         <h1>{park?.name}</h1>
       </header>
 
-      {Object.entries(park.subAreas).map(([title, subAreaSeasons]) => (
-        <SubArea key={title} title={title} seasons={subAreaSeasons} />
+      {Object.entries(park.featureTypes).map(([title, seasons]) => (
+        <FeatureType
+          key={title}
+          title={title}
+          icon={seasons[0].featureType.icon}
+          seasons={seasons}
+          seasonProps={{
+            getDataEndpoint: (seasonId) => `/seasons/${seasonId}`,
+            getEditRoutePath: (seasonId) => `/park/${parkId}/edit/${seasonId}`,
+            getPreviewRoutePath: (seasonId) =>
+              `/park/${parkId}/edit/${seasonId}/preview`,
+            getTitle: (season) => `${season.operatingYear} season`,
+            DetailsComponent: SeasonDates,
+          }}
+        />
       ))}
 
-      <WinterFees data={park.winterFees} />
+      {/* Render Winter fee seasons separately from "regular" seasons
+          and use a specific season component */}
+      <FeatureType
+        title="Winter fee"
+        icon="winter-recreation"
+        seasons={park.winterFees}
+        seasonProps={{
+          getDataEndpoint: (seasonId) => `/winter-fees/${seasonId}`,
+          getEditRoutePath: (seasonId) =>
+            `/park/${parkId}/winter-fees/${seasonId}/edit`,
+          getPreviewRoutePath: (seasonId) =>
+            `/park/${parkId}/winter-fees/${seasonId}/preview`,
+          getTitle: (season) =>
+            `${season.operatingYear} – ${season.operatingYear + 1}`,
+          DetailsComponent: WinterFeesDates,
+        }}
+      />
     </div>
   );
 }

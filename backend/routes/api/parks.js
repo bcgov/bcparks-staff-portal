@@ -139,7 +139,7 @@ router.get(
 
     const parkJson = park.toJSON();
 
-    const subAreas = _.mapValues(
+    const featureTypes = _.mapValues(
       // group seasons by feature type
       _.groupBy(parkJson.seasons, (s) => s.featureType.name),
 
@@ -151,15 +151,15 @@ router.get(
 
     // move winter fees to the root object
     // so the frontend can treat it differently
-    if ("Winter fee" in subAreas) {
-      winterFees.push(...subAreas["Winter fee"]);
-      delete subAreas["Winter fee"];
+    if ("Winter fee" in featureTypes) {
+      winterFees.push(...featureTypes["Winter fee"]);
+      delete featureTypes["Winter fee"];
     }
 
     // remove unused season key
     delete parkJson.seasons;
 
-    res.json({ ...parkJson, subAreas, winterFees });
+    res.json({ ...parkJson, featureTypes, winterFees });
   }),
 );
 

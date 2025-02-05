@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import { faChevronDown, faPen, faChevronUp } from "@fa-kit/icons/classic/solid";
@@ -9,14 +9,19 @@ import { formatDate } from "@/lib/utils";
 import { useApiGet } from "@/hooks/useApi";
 import ExpandableContent from "@/components/ExpandableContent";
 import NotReadyFlag from "@/components/NotReadyFlag";
-import SeasonDates from "@/components/ParkDetailsSeasonDates";
 import StatusBadge from "@/components/StatusBadge";
 
 import { useConfirmation } from "@/hooks/useConfirmation";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
-export default function ParkSeason({ season }) {
-  const { parkId } = useParams();
+export default function ParkSeason({
+  season,
+  getDataEndpoint,
+  getEditRoutePath,
+  getPreviewRoutePath,
+  getTitle,
+  DetailsComponent,
+}) {
   const navigate = useNavigate();
 
   const [expanded, setExpanded] = useState(false);
@@ -26,7 +31,7 @@ export default function ParkSeason({ season }) {
     loading,
     error,
     fetchData,
-  } = useApiGet(`/seasons/${season.id}`, {
+  } = useApiGet(getDataEndpoint(season.id), {
     instant: false,
   });
 
@@ -67,7 +72,7 @@ export default function ParkSeason({ season }) {
       );
 
       if (confirm) {
-        navigate(`/park/${parkId}/edit/${season.id}`);
+        navigate(getEditRoutePath(season.id));
       }
     } else if (season.status === "approved") {
       const confirm = await openConfirmation(
@@ -76,7 +81,7 @@ export default function ParkSeason({ season }) {
       );
 
       if (confirm) {
-        navigate(`/park/${parkId}/edit/${season.id}`);
+        navigate(getEditRoutePath(season.id));
       }
     } else if (season.status === "published") {
       const confirm = openConfirmation(
@@ -85,15 +90,15 @@ export default function ParkSeason({ season }) {
       );
 
       if (confirm) {
-        navigate(`/park/${parkId}/edit/${season.id}`);
+        navigate(getEditRoutePath(season.id));
       }
     } else {
-      navigate(`/park/${parkId}/edit/${season.id}`);
+      navigate(getEditRoutePath(season.id));
     }
   }
 
   function navigateToPreview() {
-    navigate(`/park/${parkId}/edit/${season.id}/preview`);
+    navigate(getPreviewRoutePath(season.id));
   }
 
   return (
@@ -108,7 +113,7 @@ export default function ParkSeason({ season }) {
       />
       <div className={classNames("details", { expanded })}>
         <header role="button" onClick={toggleExpand}>
-          <h3>{season.operatingYear} season</h3>
+          <h3>{getTitle(season)}</h3>
 
           <StatusBadge status={season.status} />
           <NotReadyFlag show={!season.readyToPublish} />
@@ -126,7 +131,8 @@ export default function ParkSeason({ season }) {
         </header>
 
         <ExpandableContent expanded={expanded} loading={loading} error={error}>
-          <SeasonDates data={datesData} />
+          {/* Render season dates when the box is expanded */}
+          {datesData && <DetailsComponent data={datesData} />}
         </ExpandableContent>
       </div>
 
@@ -167,4 +173,10 @@ ParkSeason.propTypes = {
     updatedAt: PropTypes.string.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
   }),
+
+  getDataEndpoint: PropTypes.func.isRequired,
+  getEditRoutePath: PropTypes.func.isRequired,
+  getPreviewRoutePath: PropTypes.func.isRequired,
+  getTitle: PropTypes.func.isRequired,
+  DetailsComponent: PropTypes.elementType.isRequired,
 };

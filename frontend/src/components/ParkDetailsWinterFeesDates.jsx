@@ -33,7 +33,7 @@ function CampGroundFeature({ feature }) {
     <div className="feature">
       <h4>{feature.name}</h4>
 
-      <table className="table table-striped sub-area-dates mb-0">
+      <table className="table table-striped dates mb-0">
         <tbody>
           <DateTypeRow dateRanges={currentWinterDates} />
         </tbody>
@@ -84,7 +84,10 @@ DateTypeRow.propTypes = {
 };
 
 SeasonDates.propTypes = {
-  data: PropTypes.object.isRequired,
+  data: PropTypes.shape({
+    featureTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+    changeLogs: PropTypes.arrayOf(PropTypes.object).isRequired,
+  }).isRequired,
 };
 
 CampGroundFeature.propTypes = {
