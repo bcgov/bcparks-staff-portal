@@ -28,29 +28,27 @@ function ParkDetails() {
   useEffect(() => {
     if (isFlashOpen) return;
 
-    let featureId = searchParams.get("approved");
+    let seasonId = searchParams.get("approved");
 
-    if (!park || featureId === null) return;
-    featureId = Number(featureId);
+    if (!park || seasonId === null) return;
+    seasonId = Number(seasonId);
 
     // Remove the query string so the flash message won't show again
     searchParams.delete("approved");
     setSearchParams(searchParams);
 
-    // Find the feature in the park data by its ID
-    const allFeatures = [
+    // Find the season in the park data by its ID
+    const allSeasons = [
       ...Object.values(park.featureTypes).flat(),
       ...park.winterFees,
     ];
-    const approvedFeature = allFeatures.find(
-      (feature) => feature.id === featureId,
-    );
+    const approvedSeason = allSeasons.find((season) => season.id === seasonId);
 
-    if (!approvedFeature) return;
+    if (!approvedSeason) return;
 
     openFlashMessage(
       "Dates approved",
-      `${park.name} ${approvedFeature.featureType.name} ${approvedFeature.operatingYear} season dates marked approved`,
+      `${park.name} ${approvedSeason.featureType.name} ${approvedSeason.operatingYear} season dates marked approved`,
     );
   }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
 
