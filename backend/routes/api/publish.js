@@ -63,12 +63,12 @@ router.get(
           },
           seasons: [],
         };
-
-        seasonMap[key].seasons.push({
-          operatingYear: season.operatingYear,
-          readyToPublish: season.readyToPublish,
-        });
       }
+
+      seasonMap[key].seasons.push({
+        operatingYear: season.operatingYear,
+        readyToPublish: season.readyToPublish,
+      });
     });
 
     const parkFeaturePairs = Object.values(seasonMap).map(
@@ -341,7 +341,7 @@ router.post(
 
     Promise.all(
       approvedSeasons.map(async (season) => {
-        season.status = "published";
+        season.status = "on API";
         await season.save();
 
         console.log(season.status);
