@@ -129,8 +129,7 @@ function PreviewChanges() {
   function Feature({ feature }) {
     return (
       <div>
-        <h5>{feature.name}</h5>
-
+        {feature.name !== "" && <h5>{feature.name}</h5>}
         <div className="table-responsive">
           <table className="table table-striped">
             <thead>

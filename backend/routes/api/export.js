@@ -10,6 +10,7 @@ import {
   Season,
   FeatureType,
   Feature,
+  Campground,
   DateType,
   DateRange,
   Dateable,
@@ -18,6 +19,21 @@ import {
 } from "../../models/index.js";
 
 const router = Router();
+
+function getFeatureName(feature) {
+  // if feature has a campground, and feature.name is "All sites", return campground name
+  // if feature has a campground, and feature.name is not "All sites", return "campgroundName: feature.name"
+  // if feature does not have a campground, return feature.name
+  const { campground, name } = feature;
+
+  if (campground) {
+    return name === "All sites"
+      ? campground.name
+      : `${campground.name}: ${name}`;
+  }
+
+  return name;
+}
 
 // Map date type names to a different name for display
 const dateTypeDisplayNames = new Map([
@@ -128,6 +144,12 @@ router.get(
           },
         },
         {
+          model: Campground,
+          as: "campground",
+          required: false,
+          attributes: ["id", "name"],
+        },
+        {
           model: Dateable,
           as: "dateable",
           attributes: ["id"],
@@ -202,7 +224,7 @@ router.get(
           .join(", "),
         ORCS: feature.park.orcs,
         "Park Name": feature.park.name,
-        "Sub-Area": feature.name,
+        "Sub-Area": getFeatureName(feature),
         "Sub-Area Type (Park feature)": feature.featureType.name,
         "Operating Year": dateRange.season.operatingYear,
         "Type of date": getDateTypeDisplay(dateRange.dateType.name),

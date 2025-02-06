@@ -32,8 +32,7 @@ function CampGroundFeature({ feature }) {
 
   return (
     <div className="feature">
-      <h4>{feature.name}</h4>
-
+      {feature.name !== "" && <h4>{feature.name}</h4>}
       <table className="table table-striped dates mb-0">
         <tbody>
           {Object.entries(groupedDates).map(([dateTypeName, dateRanges]) => (

@@ -189,7 +189,10 @@ router.get(
           };
         }
 
-        campgroundsMap[feature.campground.id].features.push(feature);
+        campgroundsMap[feature.campground.id].features.push({
+          ...feature,
+          name: feature.name === "All sites" ? "" : feature.name,
+        });
       }
     });
 
