@@ -6,11 +6,21 @@
 // https://www2.gov.bc.ca/gov/content/digital/design-system/foundations/design-tokens
 @use "@bcgov/design-tokens/css/variables.css" as *;
 
+// Break inside words on when nevessary on top-level headings
+h1 {
+  overflow-wrap: break-word;
+}
+
 // Custom styles
 header.page-header {
   padding-block: var(--layout-padding-medium);
   margin-bottom: var(--layout-padding-xlarge);
   border-bottom: 1px solid var(--surface-color-border-default);
+}
+
+// Increase bootstrap x-padding for containers to 16px
+.container {
+  --bs-gutter-x: 2rem;
 }
 
 // append search icon appended
