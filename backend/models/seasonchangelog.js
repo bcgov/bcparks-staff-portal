@@ -31,6 +31,7 @@ export default (sequelize) => {
       statusNewValue: DataTypes.STRING,
       readyToPublishOldValue: DataTypes.BOOLEAN,
       readyToPublishNewValue: DataTypes.BOOLEAN,
+      userName: DataTypes.STRING,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
     },

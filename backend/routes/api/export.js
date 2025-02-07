@@ -89,6 +89,7 @@ router.get(
 
 // Returns a string with the note, author and email address
 function formatChangeLog(changeLog) {
+  // TODO: update
   const user = changeLog.user;
   const notes = changeLog.notes;
   const formatted = `${user.name} (${user.email}): ${notes}`;
