@@ -542,8 +542,7 @@ function SubmitDates() {
   function Feature({ feature }) {
     return (
       <section className="feature">
-        <h3>{feature.name}</h3>
-
+        {feature.name && <h3>{feature.name}</h3>}
         <div className="row">
           <div className="col-md-6">
             <div>
@@ -640,7 +639,6 @@ function SubmitDates() {
             </div>
           )}
         </div>
-
         {/* Show validation errors for the whole dateable feature */}
         {errors?.[feature.dateable.id] && (
           <div
