@@ -17,7 +17,7 @@ export default function ChangeLogsList({ changeLogs = [] }) {
           )}
           <span className="note-metadata">
             {formatDate(changeLog.createdAt, "America/Vancouver")} by{" "}
-            {changeLog.userName}
+            {changeLog.user.name}
           </span>
         </p>
       ))}

@@ -247,14 +247,10 @@ router.post(
     // right now we're just setting everything to requested
     // const newStatus = getNewStatusForSeason(season, null);
 
-    const { auth } = req;
-
     // create season change log
     const seasonChangeLog = await SeasonChangeLog.create({
       seasonId,
-      // TODO: update to use name from keycloak
-      // userId: 1,
-      userName: auth.name,
+      userId: req.user.id,
       notes,
       statusOldValue: season.status,
       statusNewValue: "requested",
@@ -322,16 +318,10 @@ router.post(
       throw error;
     }
 
-    const { auth } = req;
-
-    console.log(auth);
-
     // create season change log
     await SeasonChangeLog.create({
       seasonId,
-      // TODO: update to use name from keycloak
-      // userId: 1,
-      userName: auth.name,
+      userId: req.user.id,
       notes,
       statusOldValue: season.status,
       statusNewValue: "approved",
