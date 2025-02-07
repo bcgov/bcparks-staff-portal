@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import ApiTest from "./pages/ApiTest";
 import LogOut from "./pages/LogOut";
 import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
@@ -43,12 +42,6 @@ const RouterConfig = createBrowserRouter(
               element: <PublishPage />,
             },
           ],
-        },
-
-        // API endpoint test page
-        {
-          path: "/test",
-          element: <ApiTest />,
         },
 
         // Log out of Keycloak (and show the OIDC login page again)
