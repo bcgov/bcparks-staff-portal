@@ -9,7 +9,11 @@
 ### Dev
 
 ```sh
+# dev:
 helm -n a7dd13-dev install crunchy . -f values-dev.yaml
+
+# alpha dev:
+helm -n a7dd13-dev install crunchy-alpha . -f values-alpha-dev.yaml
 ```
 
 ### Test
