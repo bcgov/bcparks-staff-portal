@@ -48,10 +48,6 @@
     }
   }
 
-  .controls {
-    gap: var(--layout-margin-medium);
-  }
-
   /* Arrow at the bottom of tooltip */
   .tooltip-text::after {
     content: "";
@@ -68,11 +64,5 @@
   .error-message {
     color: var(--support-border-color-danger);
     font-size: 0.875em;
-  }
-
-  .notes {
-    .controls {
-      gap: var(--layout-margin-medium);
-    }
   }
 }

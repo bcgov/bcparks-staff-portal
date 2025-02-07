@@ -304,7 +304,7 @@ function PreviewChanges() {
             setReadyToPublish={setReadyToPublish}
           />
 
-          <div className="controls d-flex mt-4">
+          <div className="controls d-flex flex-column flex-sm-row gap-2">
             <Link
               to={`/park/${parkId}/edit/${seasonId}`}
               type="button"

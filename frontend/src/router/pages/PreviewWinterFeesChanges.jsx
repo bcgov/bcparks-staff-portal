@@ -187,7 +187,7 @@ function PreviewChanges() {
   }
 
   return (
-    <div className="page review-changes">
+    <div className="page review-winter-fees-changes">
       <FlashMessage
         title={flashTitle}
         message={flashMessage}
@@ -258,7 +258,7 @@ function PreviewChanges() {
             setReadyToPublish={setReadyToPublish}
           />
 
-          <div className="controls d-flex mt-4">
+          <div className="controls d-flex flex-column flex-sm-row gap-2">
             <Link
               to={`/park/${parkId}/winter-fees/${seasonId}/edit`}
               type="button"
