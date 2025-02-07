@@ -1,6 +1,6 @@
 import { useAuth, withAuthenticationRequired } from "react-oidc-context";
 import PropTypes from "prop-types";
-import { AccessProvider } from "@/router/AccessContext";
+import AccessProvider from "@/router/AccessProvider";
 
 // Higher-order component that wraps a route component for authentication
 // Wrap a "layout" component in this component to protect all of its children
