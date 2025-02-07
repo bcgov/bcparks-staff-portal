@@ -5,7 +5,7 @@ export default function ReadyToPublishBox({
   setReadyToPublish,
 }) {
   return (
-    <div className="mb-12">
+    <div className="mb-4">
       <h2 className="mb-4">Ready to publish?</h2>
 
       <p>
@@ -15,7 +15,7 @@ export default function ReadyToPublishBox({
         dates are included in exported files.
       </p>
 
-      <div className="form-check form-switch mb-4">
+      <div className="form-check form-switch">
         <input
           checked={readyToPublish}
           onChange={() => setReadyToPublish(!readyToPublish)}
