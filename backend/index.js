@@ -7,6 +7,7 @@ import RateLimit from "express-rate-limit";
 
 import "./env.js";
 import checkJwt from "./middleware/checkJwt.js";
+import usersMiddleware from "./middleware/users.js";
 import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
 import parkRoutes from "./routes/api/parks.js";
@@ -58,13 +59,16 @@ app.use("/", homeRoutes); // Health check route(s)
 // API routes
 const apiRouter = express.Router();
 
+apiRouter.use(checkJwt);
+apiRouter.use(usersMiddleware);
+
 apiRouter.use("/parks", parkRoutes);
 apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
 apiRouter.use("/winter-fees", winterSeasonRoutes);
 apiRouter.use("/publish", publishRoutes);
 
-app.use("/api", checkJwt, apiRouter);
+app.use("/api", apiRouter);
 
 // AdminJS routes
 app.use(admin.options.rootPath, adminRouter);

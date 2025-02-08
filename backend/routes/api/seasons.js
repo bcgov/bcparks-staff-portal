@@ -250,8 +250,7 @@ router.post(
     // create season change log
     const seasonChangeLog = await SeasonChangeLog.create({
       seasonId,
-      // TODO: get real user ID from session
-      userId: 1,
+      userId: req.user.id,
       notes,
       statusOldValue: season.status,
       statusNewValue: "requested",
@@ -322,7 +321,7 @@ router.post(
     // create season change log
     await SeasonChangeLog.create({
       seasonId,
-      userId: 1,
+      userId: req.user.id,
       notes,
       statusOldValue: season.status,
       statusNewValue: "approved",
