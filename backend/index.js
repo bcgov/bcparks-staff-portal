@@ -59,6 +59,7 @@ app.use("/", homeRoutes); // Health check route(s)
 // API routes
 const apiRouter = express.Router();
 
+apiRouter.use(checkJwt);
 apiRouter.use(usersMiddleware);
 
 apiRouter.use("/parks", parkRoutes);
@@ -67,7 +68,7 @@ apiRouter.use("/export", exportRoutes);
 apiRouter.use("/winter-fees", winterSeasonRoutes);
 apiRouter.use("/publish", publishRoutes);
 
-app.use("/api", checkJwt, apiRouter);
+app.use("/api", apiRouter);
 
 // AdminJS routes
 app.use(admin.options.rootPath, adminRouter);
