@@ -1,11 +1,10 @@
 import PropTypes from "prop-types";
-import { createContext } from "react";
 import getEnv from "@/config/getEnv";
 import { ROLES } from "@/config/permissions";
 
-export const AccessContext = createContext();
+import AccessContext from "@/contexts/AccessContext";
 
-export function AccessProvider({ children, auth }) {
+export default function AccessProvider({ children, auth }) {
   // Decode the token to get the user's roles
   const roles = [];
   const accessToken = auth?.user?.access_token;

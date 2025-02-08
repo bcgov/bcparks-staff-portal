@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import { AccessContext } from "@/router/AccessContext";
+import AccessContext from "@/contexts/AccessContext";
 import { ROLES } from "@/config/permissions";
 
 export function useAccess() {
