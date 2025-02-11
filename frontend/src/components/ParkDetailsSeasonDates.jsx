@@ -1,4 +1,5 @@
 import groupBy from "lodash/groupBy";
+import orderBy from "lodash/orderBy";
 import PropTypes from "prop-types";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList.jsx";
@@ -26,8 +27,11 @@ function CampGroundFeature({ feature }) {
 
   // Group current season dates by date type
   const groupedDates = groupBy(
-    currentSeasonDates,
-    (dateType) => dateType.dateType.name,
+    // Sort by date type name
+    orderBy(currentSeasonDates, "dateType.name"),
+
+    // Group by date type name
+    "dateType.name",
   );
 
   return (
