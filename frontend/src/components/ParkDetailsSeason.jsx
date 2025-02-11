@@ -118,13 +118,14 @@ export default function ParkSeason({
           <StatusBadge status={season.status} />
           <NotReadyFlag show={!season.readyToPublish} />
 
+          <span className="ms-auto">Last updated: {updateDate}</span>
+
           <button
             onClick={toggleExpand}
             className="btn btn-text-primary expand-toggle"
           >
-            <span>Last updated: {updateDate}</span>
             <FontAwesomeIcon
-              className="append-content ms-2"
+              className="append-content"
               icon={expanded ? faChevronUp : faChevronDown}
             />
           </button>
