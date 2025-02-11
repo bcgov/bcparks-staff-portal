@@ -26,7 +26,7 @@ frontend:
       cpu: 100m
       memory: 100Mi
     requests:
-      cpu: 50m
+      cpu: 25m
       memory: 50Mi
 
   service:
@@ -40,7 +40,7 @@ backend:
 
   resources:
     limits:
-      cpu: 100m
+      cpu: 250m
       memory: 500Mi
     requests:
       cpu: 75m

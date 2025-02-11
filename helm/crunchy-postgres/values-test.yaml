@@ -22,7 +22,7 @@ instances:
     cpu: 100m
     memory: 256Mi
   limits:
-    cpu: 250m
+    cpu: 400m
     memory: 512Mi
   replicaCertCopy:
     requests:

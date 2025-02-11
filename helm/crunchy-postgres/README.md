@@ -19,7 +19,11 @@ helm -n a7dd13-dev install crunchy-alpha . -f values-alpha-dev.yaml
 ### Test
 
 ```sh
+# test
 helm -n a7dd13-test install crunchy . -f values-test.yaml
+
+# alpha test:
+helm -n a7dd13-test install crunchy-alpha . -f values-alpha-test.yaml
 ```
 
 ### Prod
