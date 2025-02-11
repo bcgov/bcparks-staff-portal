@@ -567,7 +567,7 @@ function SubmitDates() {
                   .filter((date) => date.dateType.name === "Operation")
                   .map((dateRange, index) => (
                     <div
-                      key={formatDateRange(dateRange)}
+                      key={dateRange.id}
                       className={index > 0 ? "my-2" : "mb-2"}
                     >
                       {formatDateRange(dateRange)}
@@ -613,7 +613,10 @@ function SubmitDates() {
                   {feature.dateable.previousSeasonDates
                     .filter((date) => date.dateType.name === "Reservation")
                     .map((dateRange, index) => (
-                      <div key={index} className={index > 0 ? "my-2" : "mb-2"}>
+                      <div
+                        key={dateRange.id}
+                        className={index > 0 ? "my-2" : "mb-2"}
+                      >
                         {formatDateRange(dateRange)}
                       </div>
                     ))}
