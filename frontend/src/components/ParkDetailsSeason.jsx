@@ -89,7 +89,7 @@ export default function ParkSeason({
       }
     } else if (season.status === "on API") {
       const confirm = await openConfirmation(
-        "Edit published dates?",
+        "Edit public dates on API?",
         "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
         "Edit",
       );

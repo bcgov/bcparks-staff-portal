@@ -2,7 +2,6 @@ import PropTypes from "prop-types";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useConfirmation } from "@/hooks/useConfirmation";
 
@@ -14,7 +13,6 @@ import FeatureIcon from "@/components/FeatureIcon";
 import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import FlashMessage from "@/components/FlashMessage";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -29,14 +27,6 @@ function PreviewChanges() {
 
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
-
-  const {
-    flashTitle,
-    flashMessage,
-    openFlashMessage,
-    handleFlashClose,
-    isFlashOpen,
-  } = useFlashMessage();
 
   const { data, loading, error, fetchData } = useApiGet(
     `/winter-fees/${seasonId}`,
@@ -92,12 +82,8 @@ function PreviewChanges() {
       dates: [],
       readyToPublish,
     });
-    setNotes("");
-    fetchData();
-    openFlashMessage(
-      "Dates saved as draft",
-      `${data?.park.name} ${data?.featureType.name} ${data?.operatingYear} season details saved`,
-    );
+
+    navigate(`/park/${parkId}?saved=${data.id}`);
   }
 
   async function approve() {
@@ -188,13 +174,6 @@ function PreviewChanges() {
 
   return (
     <div className="page review-winter-fees-changes">
-      <FlashMessage
-        title={flashTitle}
-        message={flashMessage}
-        isVisible={isFlashOpen}
-        onClose={handleFlashClose}
-      />
-
       <ConfirmationDialog
         title={title}
         message={message}

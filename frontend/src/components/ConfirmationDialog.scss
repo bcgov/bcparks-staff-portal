@@ -48,6 +48,10 @@
   margin-bottom: var(--layout-margin-large);
 }
 
+.missing-dates-confirmation-dialog-message {
+  margin-bottom: var(--layout-margin-small);
+}
+
 .confirmation-dialog-actions {
   display: flex;
   justify-content: space-between;

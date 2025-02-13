@@ -6,6 +6,8 @@ import "./ConfirmationDialog.scss";
 function ConfirmationDialog({
   title,
   message,
+  confirmButtonText,
+  cancelButtonText,
   notes,
   onCancel,
   onConfirm,
@@ -27,10 +29,10 @@ function ConfirmationDialog({
         <p className="confirmation-dialog-message">{notes}</p>
         <div className="confirmation-dialog-actions">
           <button className="btn btn-outline-primary" onClick={onCancel}>
-            Cancel
+            {cancelButtonText}
           </button>
           <button className="btn btn-primary" onClick={onConfirm}>
-            Confirm
+            {confirmButtonText}
           </button>
         </div>
       </div>
@@ -41,6 +43,8 @@ function ConfirmationDialog({
 ConfirmationDialog.propTypes = {
   title: PropTypes.string.isRequired,
   message: PropTypes.string.isRequired,
+  confirmButtonText: PropTypes.string.isRequired,
+  cancelButtonText: PropTypes.string.isRequired,
   notes: PropTypes.string.isRequired,
   onCancel: PropTypes.func.isRequired,
   onConfirm: PropTypes.func.isRequired,

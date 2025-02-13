@@ -318,15 +318,18 @@ router.post(
       throw error;
     }
 
-    // create season change log
-    await SeasonChangeLog.create({
-      seasonId,
-      userId: req.user.id,
-      notes,
-      statusOldValue: season.status,
-      statusNewValue: "approved",
-      readyToPublishOldValue: season.readyToPublish,
-      readyToPublishNewValue: readyToPublish,
+    // Approving a season can have more than one note
+    // if the approved season has some empty dates
+    notes.forEach((note) => {
+      SeasonChangeLog.create({
+        seasonId,
+        userId: req.user.id,
+        notes: note,
+        statusOldValue: season.status,
+        statusNewValue: "approved",
+        readyToPublishOldValue: season.readyToPublish,
+        readyToPublishNewValue: readyToPublish,
+      });
     });
 
     // update season

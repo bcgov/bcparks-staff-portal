@@ -11,7 +11,11 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
     const queryString = new URLSearchParams(nextLocation.search);
 
     // Bypass the blocker when saving or approving
-    if (nextPath === `${currentPath}/preview` || queryString.has("approved")) {
+    if (
+      nextPath === `${currentPath}/preview` ||
+      queryString.has("approved") ||
+      queryString.has("saved")
+    ) {
       return false;
     }
     return hasChanges();
