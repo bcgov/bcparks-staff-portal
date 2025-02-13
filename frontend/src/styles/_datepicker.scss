@@ -1,8 +1,6 @@
 // Overrides for the react-datepicker component package
-
-// overrides for the datepicker component package
 .react-datepicker {
-  // prevent the bootstrap theme from making the month name huge
+  // Prevent the bootstrap theme from making the month name huge
   h2 {
     font-size: var(--typography-font-size-body) !important;
   }
