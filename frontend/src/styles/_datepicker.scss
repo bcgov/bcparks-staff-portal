@@ -1,0 +1,32 @@
+// Overrides for the react-datepicker component package
+
+// overrides for the datepicker component package
+.react-datepicker {
+  // prevent the bootstrap theme from making the month name huge
+  h2 {
+    font-size: var(--typography-font-size-body) !important;
+  }
+}
+
+// For datepickers with the month selection,
+// hide the month name header and just show the dropdown
+.react-datepicker:has(.react-datepicker__current-month--hasMonthYearDropdown) {
+  .react-datepicker__header {
+    .react-datepicker__current-month {
+      display: none;
+    }
+
+    .react-datepicker__header__dropdown {
+      // Prevent the dropdown from being hidden on click
+      .react-datepicker__month-year-read-view {
+        visibility: visible !important;
+      }
+
+      // Make the dropdown styles bigger to show as a header
+      .react-datepicker__month-year-read-view--selected-month-year {
+        font-size: var(--typography-font-size-body) !important;
+        font-weight: bold;
+      }
+    }
+  }
+}

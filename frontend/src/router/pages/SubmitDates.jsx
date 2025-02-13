@@ -442,6 +442,7 @@ function SubmitDates() {
                   }
                 }}
                 dateFormat="EEE, MMM d, yyyy"
+                showMonthYearDropdown
               />
 
               {/* Show the calendar icon unless the error icon is showing */}
@@ -496,6 +497,7 @@ function SubmitDates() {
                   }
                 }}
                 dateFormat="EEE, MMM d, yyyy"
+                showMonthYearDropdown
               />
 
               {/* Show the calendar icon unless the error icon is showing */}

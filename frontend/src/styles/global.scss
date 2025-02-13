@@ -6,6 +6,9 @@
 // https://www2.gov.bc.ca/gov/content/digital/design-system/foundations/design-tokens
 @use "@bcgov/design-tokens/css/variables.css" as *;
 
+// DatePicker component custom styles
+@use "datepicker";
+
 // Break inside words on when nevessary on top-level headings
 h1 {
   overflow-wrap: break-word;
@@ -103,15 +106,6 @@ a:not(.btn):focus {
 // override bootstrap theme styles: don't shrink radio/checkbox labels
 label.form-check-label {
   font-size: var(--typography-font-size-body) !important;
-}
-
-// overrides for the datepicker component package
-.react-datepicker {
-  // prevent the bootstrap theme from making the month name huge
-  h2 {
-    font-size: var(--typography-font-size-body) !important;
-    display: block !important;
-  }
 }
 
 // custom style for validation error alert
