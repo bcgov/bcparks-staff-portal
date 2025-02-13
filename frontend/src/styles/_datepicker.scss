@@ -28,5 +28,31 @@
         font-weight: bold;
       }
     }
+
+    // Make the dropdown and options bigger
+    .react-datepicker__month-year-dropdown {
+      $width: 10rem;
+      width: $width;
+      left: calc(50% - $width/2);
+      padding: 0.4em;
+      font-size: 1rem;
+
+      // Make the dropdown options bigger
+      .react-datepicker__month-year-option,
+      .react-datepicker__month-year-option--selected_month-year {
+        line-height: 1.5;
+        white-space: nowrap;
+        border-radius: 0.3rem;
+      }
+
+      // Highlight the selected option and hide the checkmark icon
+      .react-datepicker__month-year-option--selected_month-year {
+        font-weight: bold;
+
+        .react-datepicker__month-year-option--selected {
+          display: none;
+        }
+      }
+    }
   }
 }
