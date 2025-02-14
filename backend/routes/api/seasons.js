@@ -320,8 +320,9 @@ router.post(
 
     // Approving a season can have more than one note
     // if the approved season has some empty dates
-    notes.forEach((note) => {
-      SeasonChangeLog.create({
+    const notesToCreate = notes
+      .filter((n) => n !== "")
+      .map((note) => ({
         seasonId,
         userId: req.user.id,
         notes: note,
@@ -329,8 +330,10 @@ router.post(
         statusNewValue: "approved",
         readyToPublishOldValue: season.readyToPublish,
         readyToPublishNewValue: readyToPublish,
-      });
-    });
+      }));
+
+    // bulk create season change logs
+    SeasonChangeLog.bulkCreate(notesToCreate);
 
     // update season
     Season.update(

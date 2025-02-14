@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useConfirmation } from "@/hooks/useConfirmation";
+import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -16,6 +17,7 @@ import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmationDialog";
 
 import { Link } from "react-router-dom";
 
@@ -28,9 +30,7 @@ function PreviewChanges() {
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
 
-  const { data, loading, error, fetchData } = useApiGet(
-    `/winter-fees/${seasonId}`,
-  );
+  const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
 
   const {
     sendData: saveData,
@@ -46,11 +46,15 @@ function PreviewChanges() {
     title,
     message,
     confirmationDialogNotes,
+    confirmButtonText,
+    cancelButtonText,
     openConfirmation,
     handleConfirm,
     handleCancel,
     isConfirmationOpen,
   } = useConfirmation();
+
+  const missingDatesConfirmation = useMissingDatesConfirmation();
 
   function hasChanges() {
     return notes !== "";
@@ -86,15 +90,45 @@ function PreviewChanges() {
     navigate(`/park/${parkId}?saved=${data.id}`);
   }
 
-  async function approve() {
-    await approveData({
-      notes,
-      readyToPublish,
-    });
+  function getFeaturesWithMissingDates() {
+    const features = data.featureTypes.flatMap((featureType) =>
+      featureType.features.filter(
+        (feature) => feature.currentWinterDates.length === 0,
+      ),
+    );
 
-    // Redirect back to the Park Details page on success.
-    // Use the "approved" query param to show a flash message.
-    navigate(`/park/${parkId}?approved=${data.id}`);
+    return features.map((feature) => feature.name);
+  }
+
+  async function approve() {
+    const featuresWithMissingDates = getFeaturesWithMissingDates();
+
+    if (featuresWithMissingDates.length > 0) {
+      const { confirm, confirmationMessage } =
+        await missingDatesConfirmation.openConfirmation(
+          featuresWithMissingDates,
+        );
+
+      if (confirm) {
+        await approveData({
+          notes: [notes, confirmationMessage],
+          readyToPublish,
+        });
+
+        missingDatesConfirmation.setInputMessage("");
+        // Redirect back to the Park Details page on success.
+        // Use the "approved" query param to show a flash message.
+        navigate(`/park/${parkId}?approved=${data.id}`);
+      }
+    } else {
+      await approveData({
+        notes: [notes],
+        readyToPublish,
+      });
+      // Redirect back to the Park Details page on success.
+      // Use the "approved" query param to show a flash message.
+      navigate(`/park/${parkId}?approved=${data.id}`);
+    }
   }
 
   function Feature({ feature }) {
@@ -178,9 +212,20 @@ function PreviewChanges() {
         title={title}
         message={message}
         notes={confirmationDialogNotes}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         onCancel={handleCancel}
         onConfirm={handleConfirm}
         isOpen={isConfirmationOpen}
+      />
+
+      <MissingDatesConfirmationDialog
+        featureNames={missingDatesConfirmation.featureNames}
+        inputMessage={missingDatesConfirmation.inputMessage}
+        setInputMessage={missingDatesConfirmation.setInputMessage}
+        isOpen={missingDatesConfirmation.isOpen}
+        onCancel={missingDatesConfirmation.handleCancel}
+        onConfirm={missingDatesConfirmation.handleConfirm}
       />
 
       <NavBack routePath={`/park/${parkId}`}>

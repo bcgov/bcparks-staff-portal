@@ -61,7 +61,7 @@ function SubmitDates() {
     isConfirmationOpen,
   } = useConfirmation();
 
-  const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
+  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
   const {
     sendData,
     // error: saveError, // @TODO: handle save errors

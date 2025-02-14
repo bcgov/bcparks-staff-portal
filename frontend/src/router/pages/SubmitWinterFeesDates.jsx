@@ -362,9 +362,7 @@ export default function SubmitWinterFeesDates() {
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
 
-  const { data, loading, error, fetchData } = useApiGet(
-    `/winter-fees/${seasonId}`,
-  );
+  const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
 
   const {
     sendData,

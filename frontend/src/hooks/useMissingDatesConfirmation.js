@@ -1,4 +1,3 @@
-import { set } from "lodash";
 import { useState } from "react";
 
 export function useMissingDatesConfirmation() {
@@ -7,7 +6,7 @@ export function useMissingDatesConfirmation() {
   const [inputMessage, setInputMessage] = useState("");
   const [resolvePromise, setResolvePromise] = useState(null);
 
-  function openMisingDatesConfirmation(featureNameList) {
+  function openConfirmation(featureNameList) {
     return new Promise((resolve) => {
       setFeatureNames(featureNameList);
       setResolvePromise(() => resolve); // Store the resolve function
@@ -15,14 +14,14 @@ export function useMissingDatesConfirmation() {
     });
   }
 
-  function handleMissingDatesConfirm() {
+  function handleConfirm() {
     if (resolvePromise) {
       resolvePromise({ confirm: true, confirmationMessage: inputMessage }); // Resolve with true
     }
     setIsOpen(false);
   }
 
-  function handleMissingDatesCancel() {
+  function handleCancel() {
     if (resolvePromise) {
       resolvePromise({ confirm: false, confirmationMessage: inputMessage }); // Resolve with false
     }
@@ -35,9 +34,9 @@ export function useMissingDatesConfirmation() {
     inputMessage,
     setInputMessage,
 
-    openMisingDatesConfirmation,
-    handleMissingDatesConfirm,
-    handleMissingDatesCancel,
-    isMissingDatesConfirmationOpen: isOpen,
+    openConfirmation,
+    handleConfirm,
+    handleCancel,
+    isOpen,
   };
 }

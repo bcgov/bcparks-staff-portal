@@ -30,7 +30,7 @@ function PreviewChanges() {
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
 
-  const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
+  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
 
   const {
     sendData: saveData,
@@ -54,16 +54,7 @@ function PreviewChanges() {
     isConfirmationOpen,
   } = useConfirmation();
 
-  const {
-    featureNames,
-    inputMessage,
-    setInputMessage,
-
-    openMisingDatesConfirmation,
-    handleMissingDatesConfirm,
-    handleMissingDatesCancel,
-    isMissingDatesConfirmationOpen,
-  } = useMissingDatesConfirmation();
+  const missingDatesConfirmation = useMissingDatesConfirmation();
 
   function hasChanges() {
     return notes !== "";
@@ -187,7 +178,7 @@ function PreviewChanges() {
       }
     });
 
-    return featureNames;
+    return featureNameList;
   }
 
   async function approve() {
@@ -195,7 +186,9 @@ function PreviewChanges() {
 
     if (featuresWithMissingDates.length > 0) {
       const { confirm, confirmationMessage } =
-        await openMisingDatesConfirmation(featuresWithMissingDates);
+        await missingDatesConfirmation.openConfirmation(
+          featuresWithMissingDates,
+        );
 
       if (confirm) {
         await approveData({
@@ -203,7 +196,7 @@ function PreviewChanges() {
           readyToPublish,
         });
 
-        setInputMessage("");
+        missingDatesConfirmation.setInputMessage("");
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
         navigate(`/park/${parkId}?approved=${data.id}`);
@@ -339,12 +332,12 @@ function PreviewChanges() {
       />
 
       <MissingDatesConfirmationDialog
-        featureNames={featureNames}
-        inputMessage={inputMessage}
-        setInputMessage={setInputMessage}
-        isOpen={isMissingDatesConfirmationOpen}
-        onCancel={handleMissingDatesCancel}
-        onConfirm={handleMissingDatesConfirm}
+        featureNames={missingDatesConfirmation.featureNames}
+        inputMessage={missingDatesConfirmation.inputMessage}
+        setInputMessage={missingDatesConfirmation.setInputMessage}
+        isOpen={missingDatesConfirmation.isOpen}
+        onCancel={missingDatesConfirmation.handleCancel}
+        onConfirm={missingDatesConfirmation.handleConfirm}
       />
       <NavBack routePath={`/park/${parkId}/edit/${seasonId}`}>
         Back to {data?.park.name} dates

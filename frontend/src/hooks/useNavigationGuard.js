@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useBlocker } from "react-router-dom";
 import { removeTrailingSlash } from "@/lib/utils";
 
@@ -13,6 +13,7 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
     // Bypass the blocker when saving or approving
     if (
       nextPath === `${currentPath}/preview` ||
+      nextPath === `${currentPath.replace("edit", "preview")}` ||
       queryString.has("approved") ||
       queryString.has("saved")
     ) {
@@ -42,17 +43,19 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
     handleBlocker();
   }, [blocker, openConfirmation]);
 
-  useEffect(() => {
-    async function handleBeforeUnload(e) {
+  const handleBeforeUnload = useCallback(
+    async (e) => {
       if (hasChanges()) {
         e.preventDefault();
       }
-    }
+    },
+    [hasChanges],
+  );
 
+  useEffect(() => {
     window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [hasChanges, openConfirmation]);
+  }, [handleBeforeUnload]);
 }
