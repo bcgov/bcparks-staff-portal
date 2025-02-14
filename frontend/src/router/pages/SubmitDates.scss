@@ -1,5 +1,5 @@
 .page.submit-dates {
-  h2 {
+  h2:not(.react-datepicker h2) {
     margin-bottom: var(--layout-margin-xlarge);
 
     .feature-icon {

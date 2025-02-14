@@ -146,6 +146,7 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
                 }
               }}
               dateFormat="EEE, MMM d, yyyy"
+              showMonthYearDropdown
             />
 
             {/* Show the calendar icon unless the error icon is showing */}
@@ -197,6 +198,7 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
                 }
               }}
               dateFormat="EEE, MMM d, yyyy"
+              showMonthYearDropdown
             />
 
             {/* Show the calendar icon unless the error icon is showing */}
