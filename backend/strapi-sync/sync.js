@@ -294,6 +294,7 @@ export async function createOrUpdateFeature(item) {
     dbItem.featureTypeId = featureType.id;
     dbItem.hasReservations = item.attributes.hasReservations;
     dbItem.active = item.attributes.isActive;
+    dbItem.strapiFeatureId = item.attributes.featureId;
 
     await dbItem.save();
   } else {
@@ -313,6 +314,7 @@ export async function createOrUpdateFeature(item) {
       hasReservations: item.attributes.hasReservations,
       active: item.attributes.isActive,
       strapiId: item.id,
+      strapiFeatureId: item.attributes.featureId,
     };
 
     dbItem = await createModel(Feature, data);
