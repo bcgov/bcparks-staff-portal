@@ -79,6 +79,11 @@ a:not(.btn):focus {
   &:disabled,
   &.disabled {
     border-color: transparent;
+
+    &:hover,
+    &:focus {
+      text-decoration: none;
+    }
   }
 }
 
@@ -90,6 +95,25 @@ a:not(.btn):focus {
   &:focus {
     color: var(--bs-link-hover-color);
     text-decoration: underline;
+  }
+}
+
+// override bootstrap button disabled styles
+.btn:disabled {
+  // allow pointer events so the cursor can change
+  pointer-events: inherit;
+  cursor: not-allowed;
+  border-color: transparent;
+
+  &:hover,
+  &:active {
+    border-color: transparent;
+  }
+
+  // override background color (not for text style buttons)
+  &:not(.btn-text-primary) {
+    background-color: var(--surface-color-primary-button-disabled);
+    color: var(--typography-color-disabled);
   }
 }
 
