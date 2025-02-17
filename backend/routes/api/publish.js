@@ -32,6 +32,23 @@ export function getFeatureName(feature) {
   return name;
 }
 
+function getSeasonName(season) {
+  if (season.isWinterSeason) {
+    return `${season.operatingYear} - ${season.operatingYear + 1}`;
+  }
+
+  return season.operatingYear;
+}
+
+function getSeasonKey(season) {
+  // winter fee seasons are grouped by parkId only
+  if (season.featureType.name === "Winter fee") {
+    return season.parkId;
+  }
+
+  return `${season.parkId}-${season.featureType.id}`;
+}
+
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
@@ -53,21 +70,36 @@ router.get(
     const seasonMap = {};
 
     approvedSeasons.forEach((season) => {
-      const key = `${season.parkId}-${season.featureType.id}`;
+      // winter seasons are grouped by parkId, regular seasons by parkId and featureTypeId
+      const key = getSeasonKey(season);
 
       if (!seasonMap[key]) {
-        seasonMap[key] = {
-          fetchConditions: {
-            parkId: season.parkId,
-            featureTypeId: season.featureType.id,
-          },
-          seasons: [],
-        };
+        // fetch conditions are different for winter seasons
+        // we use the `hasWinterFeeDates` flag instead of the `featureTypeId`
+        if (season.featureType.name === "Winter fee") {
+          seasonMap[key] = {
+            fetchConditions: {
+              parkId: season.parkId,
+              hasWinterFeeDates: true,
+            },
+            seasons: [],
+          };
+        } else {
+          seasonMap[key] = {
+            fetchConditions: {
+              parkId: season.parkId,
+              featureTypeId: season.featureType.id,
+            },
+            seasons: [],
+          };
+        }
       }
 
+      // each park-featureType pair can have multiple seasons
       seasonMap[key].seasons.push({
         operatingYear: season.operatingYear,
         readyToPublish: season.readyToPublish,
+        isWinterSeason: season.featureType.name === "Winter fee",
       });
     });
 
@@ -80,7 +112,13 @@ router.get(
       where: {
         [Op.or]: parkFeaturePairs,
       },
-      attributes: ["id", "name", "strapiId", "featureTypeId"],
+      attributes: [
+        "id",
+        "name",
+        "strapiId",
+        "featureTypeId",
+        "hasWinterFeeDates",
+      ],
       include: [
         {
           model: Park,
@@ -105,14 +143,32 @@ router.get(
 
       const key = `${parkId}-${featureTypeId}`;
       const seasonData = seasonMap[key];
-      const featuresToAdd = seasonData.seasons.map((season) => ({
-        ...feature,
-        name: getFeatureName(feature),
-        season: season.operatingYear,
-        readyToPublish: season.readyToPublish,
-      }));
 
-      output.push(...featuresToAdd);
+      // for this feature, try to add a row for every regular season that has it
+      if (seasonData) {
+        seasonData.seasons.forEach((season) => {
+          output.push({
+            ...feature,
+            name: getFeatureName(feature),
+            season: getSeasonName(season),
+            readyToPublish: season.readyToPublish,
+          });
+        });
+      }
+
+      // if this feature has winter fee dates, add a row for every winter season that has it
+      if (feature.hasWinterFeeDates) {
+        const winterFeeSeasons = seasonMap[parkId].seasons;
+
+        winterFeeSeasons.forEach((season) => {
+          output.push({
+            ...feature,
+            name: getFeatureName(feature),
+            season: getSeasonName(season),
+            readyToPublish: season.readyToPublish,
+          });
+        });
+      }
     });
 
     res.send({ features: output });
