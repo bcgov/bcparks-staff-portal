@@ -16,7 +16,6 @@ import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import LoadingBar from "@/components/LoadingBar";
-import FlashMessage from "@/components/FlashMessage";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -24,7 +23,6 @@ import FeatureIcon from "@/components/FeatureIcon";
 
 import useValidation from "@/hooks/useValidation";
 import { useConfirmation } from "@/hooks/useConfirmation";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import {
@@ -54,6 +52,8 @@ function SubmitDates() {
   const {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     confirmationDialogNotes,
     openConfirmation,
     handleConfirm,
@@ -61,15 +61,7 @@ function SubmitDates() {
     isConfirmationOpen,
   } = useConfirmation();
 
-  const {
-    flashTitle,
-    flashMessage,
-    openFlashMessage,
-    handleFlashClose,
-    isFlashOpen,
-  } = useFlashMessage();
-
-  const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
+  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
   const {
     sendData,
     // error: saveError, // @TODO: handle save errors
@@ -129,12 +121,7 @@ function SubmitDates() {
     const response = await sendData(payload);
 
     if (savingDraft) {
-      setNotes("");
-      fetchData();
-      openFlashMessage(
-        "Dates saved as draft",
-        `${season?.park.name} ${season?.featureType.name} ${season?.operatingYear} season details saved`,
-      );
+      navigate(`/park/${parkId}?saved=${data.id}`);
     }
 
     return response;
@@ -145,6 +132,8 @@ function SubmitDates() {
       const confirm = await openConfirmation(
         "Move back to draft?",
         "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+        "Move to draft",
+        "Cancel",
         "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
       );
 
@@ -692,15 +681,11 @@ function SubmitDates() {
 
   return (
     <div className="page submit-dates">
-      <FlashMessage
-        title={flashTitle}
-        message={flashMessage}
-        isVisible={isFlashOpen}
-        onClose={handleFlashClose}
-      />
       <ConfirmationDialog
         title={title}
         message={message}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         notes={confirmationDialogNotes}
         onCancel={handleCancel}
         onConfirm={handleConfirm}
@@ -810,7 +795,7 @@ function SubmitDates() {
               onClick={continueToPreview}
               disabled={!hasChanges()}
             >
-              Continue to preview
+              Save and continue to preview
             </button>
 
             {saving && (

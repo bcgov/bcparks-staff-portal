@@ -19,12 +19,11 @@ import FeatureIcon from "@/components/FeatureIcon";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import FlashMessage from "@/components/FlashMessage";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useConfirmation } from "@/hooks/useConfirmation";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 
 import {
   formatDateRange,
@@ -365,9 +364,7 @@ export default function SubmitWinterFeesDates() {
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
 
-  const { data, loading, error, fetchData } = useApiGet(
-    `/winter-fees/${seasonId}`,
-  );
+  const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
 
   const {
     sendData,
@@ -376,16 +373,10 @@ export default function SubmitWinterFeesDates() {
   } = useApiPost(`/seasons/${seasonId}/save/`);
 
   const {
-    flashTitle,
-    flashMessage,
-    openFlashMessage,
-    handleFlashClose,
-    isFlashOpen,
-  } = useFlashMessage();
-
-  const {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     confirmationDialogNotes,
     openConfirmation,
     handleConfirm,
@@ -408,6 +399,8 @@ export default function SubmitWinterFeesDates() {
 
     return datesChanged || notes;
   }
+
+  useNavigationGuard(hasChanges, openConfirmation);
 
   async function saveChanges(savingDraft) {
     // @TODO: Validate form state before saving
@@ -444,12 +437,7 @@ export default function SubmitWinterFeesDates() {
     const response = await sendData(payload);
 
     if (savingDraft) {
-      setNotes("");
-      fetchData();
-      openFlashMessage(
-        "Dates saved as draft",
-        `${season.park.name} ${season.name} winter fee season details saved`,
-      );
+      navigate(`/park/${parkId}?saved=${data.id}`);
     }
 
     return response;
@@ -460,6 +448,8 @@ export default function SubmitWinterFeesDates() {
       const confirm = await openConfirmation(
         "Move back to draft?",
         "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+        "Move to draft",
+        "Cancel",
         "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
       );
 
@@ -525,16 +515,11 @@ export default function SubmitWinterFeesDates() {
 
   return (
     <div className="page submit-winter-fees-dates">
-      <FlashMessage
-        title={flashTitle}
-        message={flashMessage}
-        isVisible={isFlashOpen}
-        onClose={handleFlashClose}
-      />
-
       <ConfirmationDialog
         title={title}
         message={message}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         notes={confirmationDialogNotes}
         onCancel={handleCancel}
         onConfirm={handleConfirm}
@@ -637,7 +622,7 @@ export default function SubmitWinterFeesDates() {
               onClick={continueToPreview}
               disabled={!hasChanges()}
             >
-              Continue to preview
+              Save and continue to preview
             </button>
 
             {saving && (

@@ -38,6 +38,8 @@ export default function ParkSeason({
   const {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     openConfirmation,
     handleConfirm,
     handleCancel,
@@ -69,6 +71,7 @@ export default function ParkSeason({
       const confirm = await openConfirmation(
         "Edit submitted dates?",
         "A review may already be in progress and all dates will need to be reviewed again.",
+        "Edit",
       );
 
       if (confirm) {
@@ -78,6 +81,7 @@ export default function ParkSeason({
       const confirm = await openConfirmation(
         "Edit approved dates?",
         "Dates will need to be reviewed again to be approved.",
+        "Edit",
       );
 
       if (confirm) {
@@ -85,8 +89,9 @@ export default function ParkSeason({
       }
     } else if (season.status === "on API") {
       const confirm = await openConfirmation(
-        "Edit published dates?",
+        "Edit public dates on API?",
         "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
+        "Edit",
       );
 
       if (confirm) {
@@ -106,6 +111,8 @@ export default function ParkSeason({
       <ConfirmationDialog
         title={title}
         message={message}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         notes=""
         onCancel={handleCancel}
         onConfirm={handleConfirm}

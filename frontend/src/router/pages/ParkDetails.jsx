@@ -28,13 +28,23 @@ function ParkDetails() {
   useEffect(() => {
     if (isFlashOpen) return;
 
-    let seasonId = searchParams.get("approved");
+    const approvedSeasonId = searchParams.get("approved");
+    const savedSeasonId = searchParams.get("saved");
+
+    let seasonId = null;
+
+    if (approvedSeasonId !== null) {
+      seasonId = approvedSeasonId;
+    } else if (savedSeasonId !== null) {
+      seasonId = savedSeasonId;
+    }
 
     if (!park || seasonId === null) return;
     seasonId = Number(seasonId);
 
     // Remove the query string so the flash message won't show again
     searchParams.delete("approved");
+    searchParams.delete("saved");
     setSearchParams(searchParams);
 
     // Find the season in the park data by its ID
@@ -42,14 +52,21 @@ function ParkDetails() {
       ...Object.values(park.featureTypes).flat(),
       ...park.winterFees,
     ];
-    const approvedSeason = allSeasons.find((season) => season.id === seasonId);
+    const season = allSeasons.find((item) => item.id === seasonId);
 
-    if (!approvedSeason) return;
+    if (!season) return;
 
-    openFlashMessage(
-      "Dates approved",
-      `${park.name} ${approvedSeason.featureType.name} ${approvedSeason.operatingYear} season dates marked approved`,
-    );
+    if (approvedSeasonId !== null) {
+      openFlashMessage(
+        "Dates approved",
+        `${park.name} ${season.featureType.name} ${season.operatingYear} season dates marked as approved`,
+      );
+    } else if (savedSeasonId !== null) {
+      openFlashMessage(
+        "Dates saved as draft",
+        `${park.name} ${season.featureType.name} ${season.operatingYear} season details saved`,
+      );
+    }
   }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
 
   if (loading) {

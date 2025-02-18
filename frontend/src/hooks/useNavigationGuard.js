@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useCallback } from "react";
 import { useBlocker } from "react-router-dom";
 import { removeTrailingSlash } from "@/lib/utils";
 
@@ -11,7 +11,12 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
     const queryString = new URLSearchParams(nextLocation.search);
 
     // Bypass the blocker when saving or approving
-    if (nextPath === `${currentPath}/preview` || queryString.has("approved")) {
+    if (
+      nextPath === `${currentPath}/preview` ||
+      nextPath === `${currentPath.replace("edit", "preview")}` ||
+      queryString.has("approved") ||
+      queryString.has("saved")
+    ) {
       return false;
     }
     return hasChanges();
@@ -23,6 +28,8 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
         const proceed = await openConfirmation(
           "Discard changes?",
           "Discarded changes will be permanently deleted.",
+          "Discard changes",
+          "Continue editing",
         );
 
         if (proceed) {
@@ -36,17 +43,19 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
     handleBlocker();
   }, [blocker, openConfirmation]);
 
-  useEffect(() => {
-    async function handleBeforeUnload(e) {
+  const handleBeforeUnload = useCallback(
+    async (e) => {
       if (hasChanges()) {
         e.preventDefault();
       }
-    }
+    },
+    [hasChanges],
+  );
 
+  useEffect(() => {
     window.addEventListener("beforeunload", handleBeforeUnload);
-
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [hasChanges, openConfirmation]);
+  }, [handleBeforeUnload]);
 }

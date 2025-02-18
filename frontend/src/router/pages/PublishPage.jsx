@@ -11,6 +11,8 @@ function PublishPage() {
   const {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     confirmationDialogNotes,
     openConfirmation,
     handleConfirm,
@@ -46,6 +48,8 @@ function PublishPage() {
     const confirm = await openConfirmation(
       "Publish dates to API?",
       "All parks that are not flagged will be made public. This cannot be undone.",
+      "Publish",
+      "Cancel",
       "Publishing may take up to one hour.",
     );
 
@@ -73,6 +77,8 @@ function PublishPage() {
         onCancel={handleCancel}
         title={title}
         message={message}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         notes={confirmationDialogNotes}
       />
       <div className="d-flex justify-content-end mb-2">

@@ -2,9 +2,9 @@ import PropTypes from "prop-types";
 import { useNavigate, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useConfirmation } from "@/hooks/useConfirmation";
+import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,10 +14,10 @@ import FeatureIcon from "@/components/FeatureIcon";
 import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import FlashMessage from "@/components/FlashMessage";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmationDialog";
 
 import { Link } from "react-router-dom";
 
@@ -30,15 +30,7 @@ function PreviewChanges() {
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
 
-  const {
-    flashTitle,
-    flashMessage,
-    openFlashMessage,
-    handleFlashClose,
-    isFlashOpen,
-  } = useFlashMessage();
-
-  const { data, loading, error, fetchData } = useApiGet(`/seasons/${seasonId}`);
+  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
 
   const {
     sendData: saveData,
@@ -53,12 +45,16 @@ function PreviewChanges() {
   const {
     title,
     message,
+    confirmButtonText,
+    cancelButtonText,
     confirmationDialogNotes,
     openConfirmation,
     handleConfirm,
     handleCancel,
     isConfirmationOpen,
   } = useConfirmation();
+
+  const missingDatesConfirmation = useMissingDatesConfirmation();
 
   function hasChanges() {
     return notes !== "";
@@ -107,23 +103,113 @@ function PreviewChanges() {
       dates: [],
       readyToPublish,
     });
-    setNotes("");
-    fetchData();
-    openFlashMessage(
-      "Dates saved as draft",
-      `${data?.park.name} ${data?.featureType.name} ${data?.operatingYear} season details saved`,
-    );
+
+    navigate(`/park/${parkId}?saved=${data.id}`);
+  }
+
+  function getFeaturesWithMissingDates() {
+    const featureNameList = [];
+
+    data?.campgrounds.forEach((campground) => {
+      campground.features.forEach((feature) => {
+        if (feature.active) {
+          const operatingDates = feature.dateable.currentSeasonDates.filter(
+            (dateRange) =>
+              dateRange.dateType.name === "Operation" &&
+              dateRange.startDate &&
+              dateRange.endDate,
+          );
+
+          if (operatingDates.length === 0) {
+            const name =
+              feature.name === "All sites"
+                ? campground.name
+                : `${campground.name}: ${feature.name}`;
+
+            featureNameList.push(name);
+          }
+
+          if (feature.hasReservations) {
+            const reservationDates = feature.dateable.currentSeasonDates.filter(
+              (dateRange) =>
+                dateRange.dateType.name === "Reservation" &&
+                dateRange.startDate &&
+                dateRange.endDate,
+            );
+
+            if (reservationDates.length === 0) {
+              const name =
+                feature.name === "All sites"
+                  ? campground.name
+                  : `${campground.name}: ${feature.name}`;
+
+              featureNameList.push(name);
+            }
+          }
+        }
+      });
+    });
+
+    data?.features.forEach((feature) => {
+      if (feature.active) {
+        const operatingDates = feature.dateable.currentSeasonDates.filter(
+          (dateRange) =>
+            dateRange.dateType.name === "Operation" &&
+            dateRange.startDate &&
+            dateRange.endDate,
+        );
+
+        if (operatingDates.length === 0) {
+          featureNameList.push(feature.name);
+        }
+
+        if (feature.hasReservations) {
+          const reservationDates = feature.dateable.currentSeasonDates.filter(
+            (dateRange) =>
+              dateRange.dateType.name === "Reservation" &&
+              dateRange.startDate &&
+              dateRange.endDate,
+          );
+
+          if (reservationDates.length === 0) {
+            featureNameList.push(feature.name);
+          }
+        }
+      }
+    });
+
+    return featureNameList;
   }
 
   async function approve() {
-    await approveData({
-      notes,
-      readyToPublish,
-    });
+    const featuresWithMissingDates = getFeaturesWithMissingDates();
 
-    // Redirect back to the Park Details page on success.
-    // Use the "approved" query param to show a flash message.
-    navigate(`/park/${parkId}?approved=${data.id}`);
+    if (featuresWithMissingDates.length > 0) {
+      const { confirm, confirmationMessage } =
+        await missingDatesConfirmation.openConfirmation(
+          featuresWithMissingDates,
+        );
+
+      if (confirm) {
+        await approveData({
+          notes: [notes, confirmationMessage],
+          readyToPublish,
+        });
+
+        missingDatesConfirmation.setInputMessage("");
+        // Redirect back to the Park Details page on success.
+        // Use the "approved" query param to show a flash message.
+        navigate(`/park/${parkId}?approved=${data.id}`);
+      }
+    } else {
+      await approveData({
+        notes: [notes],
+        readyToPublish,
+      });
+      // Redirect back to the Park Details page on success.
+      // Use the "approved" query param to show a flash message.
+      navigate(`/park/${parkId}?approved=${data.id}`);
+    }
   }
 
   function Feature({ feature }) {
@@ -234,22 +320,25 @@ function PreviewChanges() {
 
   return (
     <div className="page review-changes">
-      <FlashMessage
-        title={flashTitle}
-        message={flashMessage}
-        isVisible={isFlashOpen}
-        onClose={handleFlashClose}
-      />
-
       <ConfirmationDialog
         title={title}
         message={message}
+        confirmButtonText={confirmButtonText}
+        cancelButtonText={cancelButtonText}
         notes={confirmationDialogNotes}
         onCancel={handleCancel}
         onConfirm={handleConfirm}
         isOpen={isConfirmationOpen}
       />
 
+      <MissingDatesConfirmationDialog
+        featureNames={missingDatesConfirmation.featureNames}
+        inputMessage={missingDatesConfirmation.inputMessage}
+        setInputMessage={missingDatesConfirmation.setInputMessage}
+        isOpen={missingDatesConfirmation.isOpen}
+        onCancel={missingDatesConfirmation.handleCancel}
+        onConfirm={missingDatesConfirmation.handleConfirm}
+      />
       <NavBack routePath={`/park/${parkId}/edit/${seasonId}`}>
         Back to {data?.park.name} dates
       </NavBack>
