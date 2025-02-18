@@ -16,6 +16,7 @@ import {
   DateRange,
   User,
 } from "../models/index.js";
+import { Op } from "sequelize";
 
 /**
  * Gets data for specific page number
@@ -347,6 +348,37 @@ export async function syncFeatures(featureData) {
 export async function createDatesAndSeasons(datesData) {
   const items = datesData.items.filter((item) => item.attributes.isActive);
 
+  const subareaIds = [
+    ...new Set(
+      items.map((item) => item.attributes.parkOperationSubArea?.data?.id),
+    ),
+  ];
+
+  // create feature map
+  const features = await Feature.findAll(
+    {
+      where: {
+        strapiId: {
+          [Op.in]: subareaIds,
+        },
+      },
+      attributes: [
+        "id",
+        "strapiId",
+        "dateableId",
+        "featureTypeId",
+        "parkId",
+        "active",
+      ],
+    },
+    { raw: true },
+  );
+  const featureMap = new Map();
+
+  features.forEach((feature) => {
+    featureMap.set(feature.strapiId, feature);
+  });
+
   const winterSeasonMap = new Map();
   const seasonMap = new Map();
 
@@ -375,9 +407,7 @@ export async function createDatesAndSeasons(datesData) {
         return;
       }
 
-      const feature = await getItemByAttributes(Feature, {
-        strapiId: subAreaId,
-      });
+      const feature = featureMap.get(subAreaId);
 
       if (feature && feature.active) {
         const featureTypeId = feature.featureTypeId;
@@ -414,6 +444,9 @@ export async function createDatesAndSeasons(datesData) {
     }),
   );
 
+  const featuresWithReservations = new Set();
+  const datesToCreate = [];
+
   for (const [key, seasonDates] of seasonMap) {
     const [parkId, featureTypeId, operatingYear] = key.split("-");
 
@@ -438,9 +471,9 @@ export async function createDatesAndSeasons(datesData) {
 
     seasonDates.forEach(async (date) => {
       // for each date in the season, we create 1+ date ranges
-      const feature = await getItemByAttributes(Feature, {
-        strapiId: date.attributes.parkOperationSubArea.data.id,
-      });
+      const feature = featureMap.get(
+        date.attributes.parkOperationSubArea.data.id,
+      );
 
       // a single date in strapi can map to multiple date ranges in our DB
       // we create separate instances with its own dateType
@@ -453,7 +486,7 @@ export async function createDatesAndSeasons(datesData) {
           seasonId: season.id,
         };
 
-        await createModel(DateRange, dateObj);
+        datesToCreate.push(dateObj);
       }
       if (
         date.attributes.reservationStartDate ||
@@ -467,20 +500,32 @@ export async function createDatesAndSeasons(datesData) {
           seasonId: season.id,
         };
 
-        await createModel(DateRange, dateObj);
+        datesToCreate.push(dateObj);
 
-        feature.hasReservations = true;
-        await feature.save();
+        featuresWithReservations.add(feature.id);
       }
     });
   }
 
+  await DateRange.bulkCreate(datesToCreate);
+  await Feature.update(
+    {
+      hasReservations: true,
+    },
+    {
+      where: {
+        id: {
+          [Op.in]: Array.from(featuresWithReservations),
+        },
+      },
+    },
+  );
+
+  const winterDatesToCreate = [];
+  const featuresWithWinterFees = new Set();
+
   for (const [key, seasonDates] of winterSeasonMap) {
     const [parkId, operatingYear] = key.split("-");
-
-    console.log("key: ", key);
-    console.log("operatingYear: ", operatingYear);
-    console.log("");
 
     const featureTypeId = featureTypeMap["Winter fee"].id;
 
@@ -490,10 +535,12 @@ export async function createDatesAndSeasons(datesData) {
       featureTypeId,
       operatingYear,
     };
+
     let season = await getItemByAttributes(Season, attrs);
 
     if (!season) {
       // create season if a season matching those 3 attributes doesn't exist
+      // needs to be created before creating date ranges, because date ranges need a seasonId
       const data = {
         status: "requested",
         readyToPublish: true,
@@ -517,11 +564,24 @@ export async function createDatesAndSeasons(datesData) {
         seasonId: season.id,
       };
 
-      await createModel(DateRange, dateObj);
-      feature.hasWinterFeeDates = true;
-      await feature.save();
+      winterDatesToCreate.push(dateObj);
+      featuresWithWinterFees.add(feature.id);
     });
   }
+
+  await DateRange.bulkCreate(winterDatesToCreate);
+  await Feature.update(
+    {
+      hasWinterFees: true,
+    },
+    {
+      where: {
+        id: {
+          [Op.in]: Array.from(featuresWithWinterFees),
+        },
+      },
+    },
+  );
 }
 
 /**
