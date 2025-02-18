@@ -292,9 +292,11 @@ export async function createOrUpdateFeature(item) {
     });
 
     dbItem.featureTypeId = featureType.id;
-    dbItem.hasReservations = item.attributes.hasReservations;
     dbItem.active = item.attributes.isActive;
     dbItem.strapiFeatureId = item.attributes.featureId;
+
+    // TODO: uncomment when hasReservation flag has been cleaned up in Strapi
+    // dbItem.hasReservations = item.attributes.hasReservations;
 
     await dbItem.save();
   } else {
@@ -306,12 +308,14 @@ export async function createOrUpdateFeature(item) {
       strapiId: item.attributes.parkSubAreaType.data.id,
     });
 
+    // TODO: change when hasReservation flag has been cleaned up in Strapi
     const data = {
       name: item.attributes.parkSubArea,
       parkId: park.id,
       featureTypeId: featureType.id,
       dateableId: dateable.id,
-      hasReservations: item.attributes.hasReservations,
+      hasReservations: false,
+      // hasReservations: item.attributes.hasReservations,
       active: item.attributes.isActive,
       strapiId: item.id,
       strapiFeatureId: item.attributes.featureId,
@@ -464,6 +468,9 @@ export async function createDatesAndSeasons(datesData) {
         };
 
         await createModel(DateRange, dateObj);
+
+        feature.hasReservations = true;
+        await feature.save();
       }
     });
   }
