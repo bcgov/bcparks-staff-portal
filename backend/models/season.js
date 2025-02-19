@@ -37,10 +37,20 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      createdAt: DataTypes.DATE,
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: true,
+      },
     },
     {
       sequelize,
       modelName: "Season",
+      hooks: {
+        beforeCreate(season) {
+          season.updatedAt = null;
+        },
+      },
     },
   );
   return Season;
