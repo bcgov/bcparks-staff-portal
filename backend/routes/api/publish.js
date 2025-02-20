@@ -157,7 +157,7 @@ router.get(
       }
 
       // if this feature has winter fee dates, add a row for every winter season that has it
-      if (feature.hasWinterFeeDates) {
+      if (feature.hasWinterFeeDates && seasonMap[parkId]) {
         const winterFeeSeasons = seasonMap[parkId].seasons;
 
         winterFeeSeasons.forEach((season) => {
