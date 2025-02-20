@@ -530,6 +530,22 @@ function SubmitDates() {
     index: PropTypes.number.isRequired,
   };
 
+  function getPreviousDates(feature, dateType) {
+    const previousDates = feature.dateable.previousSeasonDates.filter(
+      (date) => date.dateType.name === dateType,
+    );
+
+    if (previousDates.length === 0) {
+      return "Not available";
+    }
+
+    return previousDates.map((dateRange, index) => (
+      <div key={dateRange.id} className={index > 0 ? "my-2" : "mb-2"}>
+        {formatDateRange(dateRange)}
+      </div>
+    ));
+  }
+
   function Feature({ feature }) {
     return (
       <section className="feature">
@@ -554,16 +570,7 @@ function SubmitDates() {
             <div className="row">
               <div className="col-auto">Previous:</div>
               <div className="col">
-                {feature.dateable.previousSeasonDates
-                  .filter((date) => date.dateType.name === "Operation")
-                  .map((dateRange, index) => (
-                    <div
-                      key={dateRange.id}
-                      className={index > 0 ? "my-2" : "mb-2"}
-                    >
-                      {formatDateRange(dateRange)}
-                    </div>
-                  ))}
+                {getPreviousDates(feature, "Operation")}
               </div>
             </div>
 
@@ -601,16 +608,7 @@ function SubmitDates() {
               <div className="row">
                 <div className="col-auto">Previous:</div>
                 <div className="col">
-                  {feature.dateable.previousSeasonDates
-                    .filter((date) => date.dateType.name === "Reservation")
-                    .map((dateRange, index) => (
-                      <div
-                        key={dateRange.id}
-                        className={index > 0 ? "my-2" : "mb-2"}
-                      >
-                        {formatDateRange(dateRange)}
-                      </div>
-                    ))}
+                  {getPreviousDates(feature, "Reservation")}
                 </div>
               </div>
 
