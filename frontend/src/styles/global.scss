@@ -102,7 +102,8 @@ a:not(.btn):focus {
 }
 
 // override bootstrap button disabled styles
-.btn:disabled {
+.btn:disabled,
+.btn.disabled {
   // allow pointer events so the cursor can change
   pointer-events: inherit;
   cursor: not-allowed;
