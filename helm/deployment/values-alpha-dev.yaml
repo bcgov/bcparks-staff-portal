@@ -18,4 +18,5 @@ frontend:
 backend:
   env:
     externalUrl: https://alpha-dev-staff-api.bcparks.ca
+    devTestMode: "true"
   postgresSecret: crunchy-postgres-alpha-pguser-postgres

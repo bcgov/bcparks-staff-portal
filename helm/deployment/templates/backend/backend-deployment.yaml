@@ -37,6 +37,8 @@ spec:
           env:
             - name: NODE_ENV
               value: {{ .Values.backend.env.nodeEnv }}
+            - name: DEV_TEST_MODE
+              value: {{ .Values.backend.env.devTestMode | quote }}
             - name: POSTGRES_SERVER
               valueFrom:
                 secretKeyRef:
