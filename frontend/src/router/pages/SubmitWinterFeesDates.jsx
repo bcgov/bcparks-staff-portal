@@ -227,6 +227,22 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
   );
 }
 
+function getPreviousWinterDatesText(featureData) {
+  if (featureData.previousWinterDates.length === 0) {
+    return "Not available";
+  }
+
+  return featureData.previousWinterDates.map(formatDateRange).join("; ");
+}
+
+function getReservationDatesText(featureData) {
+  if (featureData.currentReservationDates.length === 0) {
+    return "Not available";
+  }
+
+  return featureData.currentReservationDates.map(formatDateRange).join("; ");
+}
+
 function CampgroundFeature({ featureData }) {
   // Inject dates object from the root component
   const { dates, setDates } = useContext(datesContext);
@@ -305,15 +321,11 @@ function CampgroundFeature({ featureData }) {
           </div>
 
           <div className="related-dates">
-            Previous winter:{" "}
-            {featureData.previousWinterDates.map(formatDateRange).join("; ")}
+            Previous winter: {getPreviousWinterDatesText(featureData)}
           </div>
 
           <div className="related-dates mb-2">
-            Reservations:{" "}
-            {featureData.currentReservationDates
-              .map(formatDateRange)
-              .join("; ")}
+            Reservations: {getReservationDatesText(featureData)}
           </div>
 
           {featureDates.map((dateRange, index) => (
