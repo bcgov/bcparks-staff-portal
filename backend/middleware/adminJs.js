@@ -131,10 +131,10 @@ const SeasonResource = {
 };
 
 function getSeasonResource() {
-  if (process.env.NODE_ENV === "production") {
-    return Season;
+  if (process.env.DEV_TEST_MODE === "true") {
+    return SeasonResource;
   }
-  return SeasonResource;
+  return Season;
 }
 
 const componentLoader = new ComponentLoader();
