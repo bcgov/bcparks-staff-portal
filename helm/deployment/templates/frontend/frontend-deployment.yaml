@@ -57,6 +57,8 @@ spec:
               value: {{ .Values.frontend.env.externalUrl }}/v2/
             - name: VITE_OIDC_LOGOUT_REDIRECT
               value: {{ .Values.frontend.env.externalUrl }}
+            - name: VITE_API_BASE_URL
+              value: {{ .Values.backend.env.externalUrl }}/api
           readinessProbe:
             httpGet:
               path: /
