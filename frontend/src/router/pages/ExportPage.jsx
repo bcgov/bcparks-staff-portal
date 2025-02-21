@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import classNames from "classnames";
 import { saveAs } from "file-saver";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -241,9 +240,8 @@ function ExportPage() {
           <fieldset className="d-flex">
             <button
               role="button"
-              className={classNames("btn btn-primary", {
-                disabled: disableButton,
-              })}
+              className="btn btn-primary"
+              disabled={disableButton}
               onClick={getCsv}
             >
               Export report
