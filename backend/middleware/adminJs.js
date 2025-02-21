@@ -1,8 +1,10 @@
 import AdminJSExpress from "@adminjs/express";
 import AdminJS from "adminjs";
+import { ComponentLoader } from "adminjs";
 import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
+import { Op } from "sequelize";
 
 import {
   Dateable,
@@ -38,8 +40,108 @@ async function authenticate(email, password) {
   return null;
 }
 
+const SeasonResource = {
+  resource: Season,
+
+  options: {
+    actions: {
+      resetData: {
+        actionType: "bulk",
+        icon: "RefreshCw",
+        label: "Reset dates data",
+        component: false,
+        async handler(request, response, context) {
+          const { records } = context;
+
+          for (const record of records) {
+            const seasonId = record.params.id;
+
+            // set status to requested for this season
+            await Season.update(
+              {
+                status: "requested",
+              },
+              {
+                where: {
+                  id: seasonId,
+                },
+              },
+            );
+
+            // set startDate and endDate to null for every daterange in this season
+            await DateRange.update(
+              {
+                startDate: null,
+                endDate: null,
+              },
+              {
+                where: {
+                  seasonId,
+                },
+              },
+            );
+
+            // get all seasonChangeLogs in this season
+            const seasonChangeLogs = await SeasonChangeLog.findAll({
+              where: {
+                seasonId,
+              },
+              attributes: ["id"],
+            });
+
+            const seasonChangeLogIds = seasonChangeLogs.map((log) => log.id);
+
+            // delete every dateChangeLog in this season
+            await DateChangeLog.destroy({
+              where: {
+                seasonChangeLogId: {
+                  [Op.in]: seasonChangeLogIds,
+                },
+              },
+            });
+
+            // delete every seasonChangeLog in this season
+            await SeasonChangeLog.destroy({
+              where: {
+                seasonId,
+              },
+            });
+          }
+
+          try {
+            return {
+              records: records.map((record) => record.toJSON()),
+              notice: {
+                message: "Successfully reset dates data",
+                type: "success",
+              },
+            };
+          } catch (error) {
+            return {
+              notice: {
+                message: error.toString(),
+                type: "error",
+              },
+            };
+          }
+        },
+      },
+    },
+  },
+};
+
+function getSeasonResource() {
+  if (process.env.DEV_TEST_MODE === "true") {
+    return SeasonResource;
+  }
+  return Season;
+}
+
+const componentLoader = new ComponentLoader();
+
 const adminOptions = {
   // We pass Category to `resources`
+  componentLoader,
   resources: [
     Dateable,
     Park,
@@ -48,7 +150,7 @@ const adminOptions = {
     FeatureType,
     Feature,
     DateType,
-    Season,
+    getSeasonResource(),
     DateRange,
     SeasonChangeLog,
     DateChangeLog,

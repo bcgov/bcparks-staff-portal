@@ -48,6 +48,7 @@ backend:
 
   env:
     nodeEnv: production
+    devTestMode: "false"
     dbServer: crunchy-postgres-pgbouncer
     dbPort: 5432
 
