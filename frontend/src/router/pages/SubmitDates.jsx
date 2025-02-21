@@ -78,7 +78,9 @@ function SubmitDates() {
       ),
     );
 
-    return datesChanged || notes;
+    const readyChanged = readyToPublish !== data.readyToPublish;
+
+    return datesChanged || notes || readyChanged;
   }
 
   async function saveChanges(savingDraft) {
