@@ -1754,7 +1754,7 @@ const campgrounds = [
 
 async function createCampground(item) {
   const park = await getItemByAttributes(Park, {
-    orcs: item.orcs,
+    orcs: item.orcs.toString(),
   });
 
   // create campground with FK to Park
@@ -1765,8 +1765,13 @@ async function createCampground(item) {
 
   const campground = await createModel(Campground, data);
 
+  // const feature = await getItemByAttributes(Feature, {
+  //   strapiFeatureId: item.items[0].featureId,
+  // });
+  const strapiId = parseInt(item.items[0].featureId.split("_")[1], 10);
+
   const feature = await getItemByAttributes(Feature, {
-    strapiFeatureId: item.items[0].featureId,
+    strapiId,
   });
 
   feature.campgroundId = campground.id;

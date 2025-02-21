@@ -480,9 +480,15 @@ const campgrounds = [
 ];
 
 async function updateFeature(item, campgroundId) {
+  const strapiId = parseInt(item.featureId.split("_")[1], 10);
+
   // get feature by featureId
+  // const feature = await getItemByAttributes(Feature, {
+  //   strapiFeatureId: item.featureId,
+  // });
+
   const feature = await getItemByAttributes(Feature, {
-    strapiFeatureId: item.featureId,
+    strapiId,
   });
 
   // set campgroundId and name
@@ -495,7 +501,7 @@ async function updateFeature(item, campgroundId) {
 async function createCampground(item) {
   // get park by orcs
   const park = await getItemByAttributes(Park, {
-    orcs: item.orcs,
+    orcs: item.orcs.toString(),
   });
 
   // create campground with FK to Park
