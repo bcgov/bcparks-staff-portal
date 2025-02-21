@@ -48,7 +48,7 @@ export default function SeasonDates({ data }) {
       <div className="winter-fee-seasons">
         {data.featureTypes.map((featureType) => (
           <div key={featureType.id} className="winter-fees-season mb-4">
-            <h3 className="header-with-icon">
+            <h3 className="header-with-icon mb-4">
               <FeatureIcon iconName={featureType.icon} />
               {featureType.name}
             </h3>
