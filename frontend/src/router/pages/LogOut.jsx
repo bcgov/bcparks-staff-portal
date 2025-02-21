@@ -7,6 +7,7 @@ function App() {
 
   function logOut() {
     auth.stopSilentRenew();
+    auth.clearStaleState();
     auth.signoutRedirect();
   }
 
