@@ -1754,7 +1754,7 @@ const campgrounds = [
 
 async function createCampground(item) {
   const park = await getItemByAttributes(Park, {
-    orcs: item.orcs,
+    orcs: item.orcs.toString(),
   });
 
   // create campground with FK to Park

@@ -501,7 +501,7 @@ async function updateFeature(item, campgroundId) {
 async function createCampground(item) {
   // get park by orcs
   const park = await getItemByAttributes(Park, {
-    orcs: item.orcs,
+    orcs: item.orcs.toString(),
   });
 
   // create campground with FK to Park
