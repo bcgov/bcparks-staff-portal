@@ -572,7 +572,7 @@ export async function createDatesAndSeasons(datesData) {
   await DateRange.bulkCreate(winterDatesToCreate);
   await Feature.update(
     {
-      hasWinterFees: true,
+      hasWinterFeeDates: true,
     },
     {
       where: {
