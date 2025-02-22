@@ -57,7 +57,7 @@ function PreviewChanges() {
   const missingDatesConfirmation = useMissingDatesConfirmation();
 
   function hasChanges() {
-    return notes !== "";
+    return notes !== "" || data.readyToPublish !== readyToPublish;
   }
 
   useNavigationGuard(hasChanges, openConfirmation);

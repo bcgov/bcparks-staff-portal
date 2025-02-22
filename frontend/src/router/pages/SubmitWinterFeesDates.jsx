@@ -409,7 +409,9 @@ export default function SubmitWinterFeesDates() {
       dateRanges.some((dateRange) => dateRange.changed),
     );
 
-    return datesChanged || notes;
+    const readyChanged = readyToPublish !== data.readyToPublish;
+
+    return datesChanged || notes || readyChanged;
   }
 
   useNavigationGuard(hasChanges, openConfirmation);
