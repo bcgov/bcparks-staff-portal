@@ -26,6 +26,7 @@ export default (sequelize) => {
       });
     }
   }
+
   Season.init(
     {
       operatingYear: DataTypes.INTEGER,
@@ -46,9 +47,15 @@ export default (sequelize) => {
     {
       sequelize,
       modelName: "Season",
+      timestamps: false,
       hooks: {
         beforeCreate(season) {
           season.updatedAt = null;
+          season.createdAt = new Date();
+        },
+        beforeBulkUpdate(seasons) {
+          // set updatedAt to current date
+          seasons.attributes.updatedAt = new Date();
         },
       },
     },
