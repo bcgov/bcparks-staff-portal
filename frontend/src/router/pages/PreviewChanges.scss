@@ -13,17 +13,14 @@
     }
   }
 
-  .type-column,
+  .current-date-column,
   .prev-date-column {
-    width: 33.33%;
-  }
-
-  .current-date-column {
-    width: 25%;
+    width: 32%;
+    min-width: 14em;
   }
 
   .actions-column {
-    width: 8.33%;
+    width: 7rem;
   }
 
   .table th,
