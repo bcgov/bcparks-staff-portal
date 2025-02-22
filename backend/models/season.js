@@ -55,6 +55,9 @@ export default (sequelize) => {
         },
         beforeBulkUpdate(seasons) {
           // set updatedAt to current date
+          // updatedAt timeStamp will only be updated with bulkUpdate
+          // we need to use individual save() for when we want to set it to null
+          seasons.fields.push("updatedAt");
           seasons.attributes.updatedAt = new Date();
         },
       },

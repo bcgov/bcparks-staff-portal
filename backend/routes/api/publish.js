@@ -260,10 +260,16 @@ async function markFeatureDatesInactive(dates) {
  * @returns {void}
  */
 async function markSeasonPublished(seasonId) {
-  const season = await Season.findByPk(seasonId);
-
-  season.status = "on API";
-  season.save();
+  Season.update(
+    {
+      status: "on API",
+    },
+    {
+      where: {
+        id: seasonId,
+      },
+    },
+  );
 }
 
 /**
@@ -395,13 +401,19 @@ router.post(
       ],
     });
 
-    Promise.all(
-      approvedSeasons.map(async (season) => {
-        season.status = "on API";
-        await season.save();
+    const seasonIds = approvedSeasons.map((season) => season.id);
 
-        console.log(season.status);
-      }),
+    Season.update(
+      {
+        status: "on API",
+      },
+      {
+        where: {
+          id: {
+            [Op.in]: seasonIds,
+          },
+        },
+      },
     );
 
     // TODO: commenting out the code below to not update strapi until new strucutre is in place
