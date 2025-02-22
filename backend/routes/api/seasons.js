@@ -149,6 +149,20 @@ router.get(
     // we want to get all the date types for this season
     const dateTypes = {};
 
+    // add datetypes from the db to map
+    const dateTypesFromDb = await DateType.findAll({
+      attributes: ["id", "name", "description"],
+      where: {
+        name: {
+          [Op.in]: ["Operation", "Reservation"],
+        },
+      },
+    });
+
+    dateTypesFromDb.forEach((dateType) => {
+      dateTypes[dateType.name] = dateType.toJSON();
+    });
+
     const features = parkFeatures.map((featureObj) => {
       const feature = featureObj.toJSON();
 
@@ -159,10 +173,6 @@ router.get(
       feature.dateable.previousSeasonDates = [];
 
       feature.dateable.dateRanges.forEach((dateRange) => {
-        if (!dateTypes[dateRange.dateType.name]) {
-          dateTypes[dateRange.dateType.name] = dateRange.dateType;
-        }
-
         if (dateRange.seasonId === season.id) {
           feature.dateable.currentSeasonDates.push(dateRange);
         }
@@ -259,9 +269,17 @@ router.post(
     });
 
     // Update season
-    season.readyToPublish = readyToPublish;
-    season.status = "requested";
-    const saveSeason = season.save();
+    const saveSeason = Season.update(
+      {
+        readyToPublish,
+        status: "requested",
+      },
+      {
+        where: {
+          id: seasonId,
+        },
+      },
+    );
 
     // Create date change logs for updated dateRanges
     const existingDateIds = dates
