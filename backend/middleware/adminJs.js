@@ -57,16 +57,16 @@ const SeasonResource = {
             const seasonId = record.params.id;
 
             // set status to requested for this season
-            await Season.update(
-              {
-                status: "requested",
-              },
-              {
-                where: {
-                  id: seasonId,
-                },
-              },
-            );
+            const season = await Season.findByPk(seasonId);
+
+            season.status = "requested";
+            season.readyToPublish = true;
+            season.updatedAt = null;
+
+            // updatedAt can only be set to null if we call save(), not with bulkUpdate
+            await season.save({
+              fields: ["status", "readyToPublish", "updatedAt"],
+            });
 
             // set startDate and endDate to null for every daterange in this season
             await DateRange.update(

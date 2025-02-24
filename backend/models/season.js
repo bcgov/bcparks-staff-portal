@@ -26,6 +26,7 @@ export default (sequelize) => {
       });
     }
   }
+
   Season.init(
     {
       operatingYear: DataTypes.INTEGER,
@@ -46,9 +47,18 @@ export default (sequelize) => {
     {
       sequelize,
       modelName: "Season",
+      timestamps: false,
       hooks: {
         beforeCreate(season) {
           season.updatedAt = null;
+          season.createdAt = new Date();
+        },
+        beforeBulkUpdate(seasons) {
+          // set updatedAt to current date
+          // updatedAt timeStamp will only be updated with bulkUpdate
+          // we need to use individual save() for when we want to set it to null
+          seasons.fields.push("updatedAt");
+          seasons.attributes.updatedAt = new Date();
         },
       },
     },
