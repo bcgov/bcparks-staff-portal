@@ -9,6 +9,6 @@ export default expressjwt({
     jwksUri: process.env.JWKS_URI,
   }),
 
-  algorithms: ["RS256"],
+  algorithms: ["RS256", "ES256"],
   issuer: process.env.JWT_ISSUER,
 });

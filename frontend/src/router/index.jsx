@@ -11,14 +11,13 @@ import PreviewWinterFeesChanges from "./pages/PreviewWinterFeesChanges";
 import MainLayout from "./layouts/MainLayout";
 import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
-import ProtectedRoute from "./ProtectedRoute";
 
 const RouterConfig = createBrowserRouter(
   [
     {
       path: "/",
       // Protect the entire app with the AuthProvider
-      element: <ProtectedRoute component={MainLayout} />,
+      element: <MainLayout />,
       errorElement: <ErrorPage />,
       children: [
         {
