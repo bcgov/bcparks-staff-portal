@@ -12,6 +12,9 @@ export const oidcConfig = {
   automaticSilentRenew: true,
   // Allow cross-tab login/logout detection
   monitorSession: true,
+
+  // Add offline access to the token scope, for long-lived refresh tokens
+  scope: "openid offline_access",
 };
 
 // Strips OIDC parameters from the URL after redirecting back to the app
