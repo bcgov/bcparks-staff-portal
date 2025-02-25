@@ -163,7 +163,7 @@ router.get(
       dateTypes[dateType.name] = dateType.toJSON();
     });
 
-    const features = parkFeatures.map((featureObj) => {
+    let features = parkFeatures.map((featureObj) => {
       const feature = featureObj.toJSON();
 
       // each feature will have an array of date ranges for the current season and the previous season
@@ -184,6 +184,9 @@ router.get(
       delete feature.dateable.dateRanges;
       return feature;
     });
+
+    // Order features alphabetically before grouping by campground
+    features = _.orderBy(features, ["name"], ["asc"]);
 
     const campgroundsMap = {};
 

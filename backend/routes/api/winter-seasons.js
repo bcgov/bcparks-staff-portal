@@ -1,4 +1,5 @@
 import { Router } from "express";
+import _ from "lodash";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 
@@ -136,7 +137,10 @@ router.get(
       ],
     });
 
-    const features = featureList.map((feature) => feature.toJSON());
+    let features = featureList.map((feature) => feature.toJSON());
+
+    // Order features alphabetically before grouping by campground
+    features = _.orderBy(features, ["name"], ["asc"]);
 
     // Map to group features by featureType
     const featureTypeMap = {};
