@@ -23,6 +23,7 @@ function FlashMessage({
     ["error", faOctagonExclamation],
   ]);
 
+  // Allow custom icons, or use the variant / default
   const displayIcon = icon ?? variantIcons.get(variant) ?? faCheck;
 
   return (
