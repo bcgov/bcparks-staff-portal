@@ -10,9 +10,11 @@ import { useApiGet } from "@/hooks/useApi";
 import ExpandableContent from "@/components/ExpandableContent";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import StatusBadge from "@/components/StatusBadge";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
+import FlashMessage from "@/components/FlashMessage";
 
 import { useConfirmation } from "@/hooks/useConfirmation";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
 
 export default function ParkSeason({
   season,
@@ -23,6 +25,8 @@ export default function ParkSeason({
   DetailsComponent,
 }) {
   const navigate = useNavigate();
+
+  const errorFlashMessage = useFlashMessage();
 
   const [expanded, setExpanded] = useState(false);
 
@@ -52,7 +56,16 @@ export default function ParkSeason({
 
     // If the panel is about to expand, fetch the data
     if (!expanded && datesData === null) {
-      fetchData();
+      fetchData().catch((expandFetchError) => {
+        console.error("Failed to fetch season dates", expandFetchError);
+
+        errorFlashMessage.openFlashMessage(
+          "Failed to fetch season dates",
+          "There was a problem loading the data. Please try again.",
+        );
+
+        setExpanded(false);
+      });
     }
 
     setExpanded(!expanded);
@@ -110,6 +123,14 @@ export default function ParkSeason({
 
   return (
     <div className={classNames("season expandable", { expanded })}>
+      <FlashMessage
+        title={errorFlashMessage.flashTitle}
+        message={errorFlashMessage.flashMessage}
+        isVisible={errorFlashMessage.isFlashOpen}
+        onClose={errorFlashMessage.handleFlashClose}
+        variant="error"
+      />
+
       <ConfirmationDialog
         title={title}
         message={message}
