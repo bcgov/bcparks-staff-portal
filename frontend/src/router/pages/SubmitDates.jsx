@@ -20,11 +20,13 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FeatureIcon from "@/components/FeatureIcon";
+import FlashMessage from "@/components/FlashMessage";
 
 import useValidation from "@/hooks/useValidation";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
 import {
   formatDateRange,
   normalizeToUTCDate,
@@ -41,12 +43,15 @@ function SubmitDates() {
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
 
+  const errorFlashMessage = useFlashMessage();
+
   const {
     errors,
     setFormSubmitted,
     validateNotes,
     validateForm,
     onUpdateDateRange,
+    ValidationError,
   } = useValidation(dates, notes, season);
 
   const {
@@ -62,11 +67,9 @@ function SubmitDates() {
   } = useConfirmation();
 
   const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
-  const {
-    sendData,
-    // error: saveError, // @TODO: handle save errors
-    loading: saving,
-  } = useApiPost(`/seasons/${seasonId}/save/`);
+  const { sendData, loading: saving } = useApiPost(
+    `/seasons/${seasonId}/save/`,
+  );
 
   const navigate = useNavigate();
 
@@ -88,8 +91,7 @@ function SubmitDates() {
 
     // Validate form state before saving
     if (!validateForm()) {
-      console.error("Form validation failed!", errors);
-      throw new Error("Form validation failed");
+      throw new ValidationError("Form validation failed");
     }
 
     // Build a list of date ranges of all date types
@@ -151,6 +153,13 @@ function SubmitDates() {
     return false;
   }
 
+  function showErrorFlash() {
+    errorFlashMessage.openFlashMessage(
+      "Unable to save changes",
+      "There was a problem saving these changes. Please try again.",
+    );
+  }
+
   async function continueToPreview() {
     try {
       const submitOk = await submitChanges();
@@ -160,6 +169,14 @@ function SubmitDates() {
       }
     } catch (err) {
       console.error(err);
+
+      if (err instanceof ValidationError) {
+        // @TODO: Handle validation errors
+        console.error(errors);
+      } else {
+        // Show a flash message for fatal server errors
+        showErrorFlash();
+      }
     }
   }
 
@@ -168,6 +185,14 @@ function SubmitDates() {
       await submitChanges(true);
     } catch (err) {
       console.error(err);
+
+      if (err instanceof ValidationError) {
+        // @TODO: Handle validation errors
+        console.error(errors);
+      } else {
+        // Show a flash message for fatal server errors
+        showErrorFlash();
+      }
     }
   }
 
@@ -691,6 +716,15 @@ function SubmitDates() {
         onConfirm={handleConfirm}
         isOpen={isConfirmationOpen}
       />
+
+      <FlashMessage
+        title={errorFlashMessage.flashTitle}
+        message={errorFlashMessage.flashMessage}
+        isVisible={errorFlashMessage.isFlashOpen}
+        onClose={errorFlashMessage.handleFlashClose}
+        variant="error"
+      />
+
       <NavBack routePath={`/park/${parkId}`}>
         Back to {season?.park.name} season dates
       </NavBack>

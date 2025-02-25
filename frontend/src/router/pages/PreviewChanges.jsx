@@ -5,6 +5,7 @@ import { useApiGet, useApiPost } from "@/hooks/useApi";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -18,6 +19,7 @@ import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmationDialog";
+import FlashMessage from "@/components/FlashMessage";
 
 import { Link } from "react-router-dom";
 
@@ -32,15 +34,15 @@ function PreviewChanges() {
 
   const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
 
-  const {
-    sendData: saveData,
-    // error: saveError, // @TODO: handle save errors
-    loading: saving,
-  } = useApiPost(`/seasons/${seasonId}/save/`);
+  const { sendData: saveData, loading: saving } = useApiPost(
+    `/seasons/${seasonId}/save/`,
+  );
 
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
+
+  const errorFlashMessage = useFlashMessage();
 
   const {
     title,
@@ -97,14 +99,27 @@ function PreviewChanges() {
     ));
   }
 
-  async function savePreview() {
-    await saveData({
-      notes,
-      dates: [],
-      readyToPublish,
-    });
+  function showErrorFlash() {
+    errorFlashMessage.openFlashMessage(
+      "Unable to save changes",
+      "There was a problem saving these changes. Please try again.",
+    );
+  }
 
-    navigate(`/park/${parkId}?saved=${data.id}`);
+  async function savePreview() {
+    try {
+      await saveData({
+        notes,
+        dates: [],
+        readyToPublish,
+      });
+
+      navigate(`/park/${parkId}?saved=${data.id}`);
+    } catch (err) {
+      console.error("Error saving preview", err);
+
+      showErrorFlash();
+    }
   }
 
   function getFeaturesWithMissingDates() {
@@ -184,31 +199,37 @@ function PreviewChanges() {
   async function approve() {
     const featuresWithMissingDates = getFeaturesWithMissingDates();
 
-    if (featuresWithMissingDates.length > 0) {
-      const { confirm, confirmationMessage } =
-        await missingDatesConfirmation.openConfirmation(
-          featuresWithMissingDates,
-        );
+    try {
+      if (featuresWithMissingDates.length > 0) {
+        const { confirm, confirmationMessage } =
+          await missingDatesConfirmation.openConfirmation(
+            featuresWithMissingDates,
+          );
 
-      if (confirm) {
+        if (confirm) {
+          await approveData({
+            notes: [notes, confirmationMessage],
+            readyToPublish,
+          });
+
+          missingDatesConfirmation.setInputMessage("");
+          // Redirect back to the Park Details page on success.
+          // Use the "approved" query param to show a flash message.
+          navigate(`/park/${parkId}?approved=${data.id}`);
+        }
+      } else {
         await approveData({
-          notes: [notes, confirmationMessage],
+          notes: [notes],
           readyToPublish,
         });
-
-        missingDatesConfirmation.setInputMessage("");
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
         navigate(`/park/${parkId}?approved=${data.id}`);
       }
-    } else {
-      await approveData({
-        notes: [notes],
-        readyToPublish,
-      });
-      // Redirect back to the Park Details page on success.
-      // Use the "approved" query param to show a flash message.
-      navigate(`/park/${parkId}?approved=${data.id}`);
+    } catch (err) {
+      console.error("Error approving preview", err);
+
+      showErrorFlash();
     }
   }
 
@@ -320,6 +341,14 @@ function PreviewChanges() {
 
   return (
     <div className="page review-changes">
+      <FlashMessage
+        title={errorFlashMessage.flashTitle}
+        message={errorFlashMessage.flashMessage}
+        isVisible={errorFlashMessage.isFlashOpen}
+        onClose={errorFlashMessage.handleFlashClose}
+        variant="error"
+      />
+
       <ConfirmationDialog
         title={title}
         message={message}

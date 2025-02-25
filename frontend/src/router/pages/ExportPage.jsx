@@ -10,13 +10,8 @@ import FlashMessage from "@/components/FlashMessage";
 import "./ExportPage.scss";
 
 function ExportPage() {
-  const {
-    flashTitle,
-    flashMessage,
-    openFlashMessage,
-    handleFlashClose,
-    isFlashOpen,
-  } = useFlashMessage();
+  const successFlash = useFlashMessage();
+  const errorFlash = useFlashMessage();
 
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
@@ -95,12 +90,17 @@ function ExportPage() {
 
       saveAs(blob, filename);
 
-      openFlashMessage(
+      successFlash.openFlashMessage(
         "Export complete",
         "Check your Downloads for the Excel document.",
       );
     } catch (csvError) {
       console.error("Error generating CSV", csvError);
+
+      errorFlash.openFlashMessage(
+        "Export failed",
+        "There was an error generating the Excel document. Please try again.",
+      );
     }
   }
 
@@ -121,10 +121,18 @@ function ExportPage() {
   return (
     <div className="page export">
       <FlashMessage
-        title={flashTitle}
-        message={flashMessage}
-        isVisible={isFlashOpen}
-        onClose={handleFlashClose}
+        title={successFlash.flashTitle}
+        message={successFlash.flashMessage}
+        isVisible={successFlash.isFlashOpen}
+        onClose={successFlash.handleFlashClose}
+      />
+
+      <FlashMessage
+        title={errorFlash.flashTitle}
+        message={errorFlash.flashMessage}
+        isVisible={errorFlash.isFlashOpen}
+        onClose={errorFlash.handleFlashClose}
+        variant="error"
       />
       <p>Select the format of your export:</p>
 

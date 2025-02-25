@@ -23,6 +23,10 @@
     background-color: var(--support-border-color-success);
   }
 
+  &.error {
+    background-color: var(--support-border-color-danger);
+  }
+
   &.info {
     background-color: var(--support-border-color-info);
   }

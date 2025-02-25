@@ -20,10 +20,12 @@ import ChangeLogsList from "@/components/ChangeLogsList";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import FlashMessage from "@/components/FlashMessage";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
 
 import {
   formatDateRange,
@@ -378,11 +380,11 @@ export default function SubmitWinterFeesDates() {
 
   const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
 
-  const {
-    sendData,
-    // error: saveError, // @TODO: handle save errors
-    loading: saving,
-  } = useApiPost(`/seasons/${seasonId}/save/`);
+  const { sendData, loading: saving } = useApiPost(
+    `/seasons/${seasonId}/save/`,
+  );
+
+  const errorFlashMessage = useFlashMessage();
 
   const {
     title,
@@ -400,6 +402,8 @@ export default function SubmitWinterFeesDates() {
 
   // @TODO: Implement validation
   const errors = {};
+
+  class ValidationError extends Error {}
 
   function validateNotes() {}
 
@@ -479,11 +483,26 @@ export default function SubmitWinterFeesDates() {
     return false;
   }
 
+  function showErrorFlash() {
+    errorFlashMessage.openFlashMessage(
+      "Unable to save changes",
+      "There was a problem saving these changes. Please try again.",
+    );
+  }
+
   async function saveAsDraft() {
     try {
       await submitChanges(true);
     } catch (err) {
       console.error(err);
+
+      if (err instanceof ValidationError) {
+        // @TODO: Handle validation errors
+        console.error(errors);
+      } else {
+        // Show a flash message for fatal server errors
+        showErrorFlash();
+      }
     }
   }
 
@@ -496,6 +515,14 @@ export default function SubmitWinterFeesDates() {
       }
     } catch (err) {
       console.error(err);
+
+      if (err instanceof ValidationError) {
+        // @TODO: Handle validation errors
+        console.error(errors);
+      } else {
+        // Show a flash message for fatal server errors
+        showErrorFlash();
+      }
     }
   }
 
@@ -529,6 +556,14 @@ export default function SubmitWinterFeesDates() {
 
   return (
     <div className="page submit-winter-fees-dates">
+      <FlashMessage
+        title={errorFlashMessage.flashTitle}
+        message={errorFlashMessage.flashMessage}
+        isVisible={errorFlashMessage.isFlashOpen}
+        onClose={errorFlashMessage.handleFlashClose}
+        variant="error"
+      />
+
       <ConfirmationDialog
         title={title}
         message={message}

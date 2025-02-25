@@ -289,6 +289,9 @@ export default function useValidation(dates, notes, season) {
     return validateFeatureDates(dateableId, datesObj);
   }
 
+  // Export a special non-fatal error for handling validation errors
+  class ValidationError extends Error {}
+
   return {
     errors,
     setErrors,
@@ -303,5 +306,6 @@ export default function useValidation(dates, notes, season) {
     validateFeatureDates,
     validateForm,
     onUpdateDateRange,
+    ValidationError,
   };
 }
