@@ -10,7 +10,7 @@ import PaginationBar from "./PaginationBar";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
-  const parks = data || [];
+  const parks = useMemo(() => data || [], [data]);
 
   const statusOptions = [
     { value: "pending review", label: "Pending review" },
@@ -18,7 +18,6 @@ function EditAndReview() {
     { value: "approved", label: "Approved" },
     { value: "on API", label: "On API" },
   ];
-  const statusValues = statusOptions.map((option) => option.value);
 
   // table pagination
   const [page, setPage] = useState(1);
@@ -26,7 +25,7 @@ function EditAndReview() {
 
   // table filter state
   const [nameFilter, setNameFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState([...statusValues]);
+  const [statusFilter, setStatusFilter] = useState([]);
 
   // table sorting state
   const [sortColumn, setSortColumn] = useState("parkName");
@@ -35,7 +34,7 @@ function EditAndReview() {
   function resetFilters() {
     setPage(1);
     setNameFilter("");
-    setStatusFilter([...statusValues]);
+    setStatusFilter([]);
   }
 
   function updateSort(column, order) {
@@ -44,20 +43,28 @@ function EditAndReview() {
     setSortOrder(order);
   }
 
-  const filteredParks = parks.filter((park) => {
-    if (
-      nameFilter &&
-      !park.name.toLocaleLowerCase().includes(nameFilter.toLocaleLowerCase())
-    ) {
-      return false;
-    }
+  const filteredParks = useMemo(
+    () =>
+      parks.filter((park) => {
+        // If a name filter is set, filter out parks that don't match
+        if (
+          nameFilter.length > 0 &&
+          !park.name
+            .toLocaleLowerCase()
+            .includes(nameFilter.toLocaleLowerCase())
+        ) {
+          return false;
+        }
 
-    if (!statusFilter.includes(park.status)) {
-      return false;
-    }
+        // If status filters are set, filter out unselected statuses
+        if (statusFilter.length > 0 && !statusFilter.includes(park.status)) {
+          return false;
+        }
 
-    return true;
-  });
+        return true;
+      }),
+    [parks, nameFilter, statusFilter],
+  );
 
   // returns sorted and filtered parks array
   function getSortedParks() {
@@ -154,7 +161,8 @@ function EditAndReview() {
             }}
             value={statusFilter}
           >
-            Filter by status ({statusFilter.length})
+            Filter by status{" "}
+            {statusFilter.length > 0 && `(${statusFilter.length})`}
           </MultiSelect>
         </div>
 
