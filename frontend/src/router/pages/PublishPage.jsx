@@ -104,7 +104,7 @@ function PublishPage() {
           </thead>
           <tbody>
             {data?.features.map((feature) => (
-              <tr key={feature.id}>
+              <tr key={`${feature.id}-${feature.season}`}>
                 <td>{feature.park.name}</td>
                 <td>{feature.name}</td>
                 <td>
