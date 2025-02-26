@@ -23,7 +23,7 @@ export default function FeatureType({ title, icon, seasons, seasonProps }) {
 
 FeatureType.propTypes = {
   title: PropTypes.string.isRequired,
-  icon: PropTypes.string.isRequired,
+  icon: PropTypes.string,
   seasons: PropTypes.arrayOf(PropTypes.object).isRequired,
 
   // Props to pass to the ParkSeason child component
