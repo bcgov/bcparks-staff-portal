@@ -141,5 +141,5 @@ export default function FeatureIcon({ iconName }) {
 
 // props validation
 FeatureIcon.propTypes = {
-  iconName: PropTypes.string.isRequired,
+  iconName: PropTypes.string,
 };
