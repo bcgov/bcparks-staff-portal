@@ -7,6 +7,11 @@ export default function PaginationBar({
   totalPages,
   onPageChange,
 }) {
+  // Hide the control if there are no results
+  if (totalPages === 0) {
+    return null;
+  }
+
   const isFirstPage = currentPage === 1;
   const isLastPage = currentPage === totalPages;
   const pageRange = range(1, totalPages + 1);
