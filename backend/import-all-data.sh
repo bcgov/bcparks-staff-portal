@@ -11,5 +11,6 @@ npm run sync-data
 npm run one-time-data-import
 npm run create-single-item-campgrounds
 npm run create-multiple-item-campgrounds
+npm run create-missing-dates-and-seasons
 
 echo "All commands executed successfully."

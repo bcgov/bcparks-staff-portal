@@ -6,7 +6,11 @@ import "./DateRange.scss";
 // Displays a date range in a table cell
 export default function DateRange({ start, end, formatWithYear = false }) {
   if (!start || !end) {
-    return "Not submitted";
+    return (
+      <div className="date-range">
+        <span className="date">Not submitted</span>
+      </div>
+    );
   }
 
   const formatFunction = formatWithYear
