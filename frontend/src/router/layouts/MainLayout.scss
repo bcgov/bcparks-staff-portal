@@ -6,10 +6,10 @@
   & > header {
     border-bottom: 2px solid var(--theme-primary-gold);
 
-    // Align the title text with the logo
     .app-title {
       white-space: nowrap;
 
+      // Align the title text with the logo
       @include from-md {
         margin-bottom: 6px;
       }
