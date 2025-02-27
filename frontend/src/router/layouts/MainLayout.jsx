@@ -1,7 +1,6 @@
 import { Outlet, Link } from "react-router-dom";
 import "./MainLayout.scss";
 import bcParksLogo from "../../assets/bc-parks-logo.svg";
-import bcParksWordmark from "../../assets/bc-parks-wordmark.svg";
 import useAccess from "@/hooks/useAccess";
 import { useAuth } from "react-oidc-context";
 
