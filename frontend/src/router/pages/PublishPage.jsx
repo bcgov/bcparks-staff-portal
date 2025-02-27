@@ -20,28 +20,21 @@ function PublishPage() {
     isConfirmationOpen,
   } = useConfirmation();
 
-  const {
-    flashTitle,
-    flashMessage,
-    openFlashMessage,
-    handleFlashClose,
-    isFlashOpen,
-  } = useFlashMessage();
+  const successFlash = useFlashMessage();
+  const errorFlash = useFlashMessage();
 
   const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
 
-  const {
-    sendData: publishData,
-    // error: saveError, // @TODO: handle save errors
-    loading: saving,
-  } = useApiPost("/publish/publish-to-api/");
+  const { sendData: publishData, loading: saving } = useApiPost(
+    "/publish/publish-to-api/",
+  );
 
   if (loading) {
     return <LoadingBar />;
   }
 
   if (error) {
-    return <div>Error: {error.message}</div>;
+    return <div>Error loading data: {error.message}</div>;
   }
 
   async function publishToApi() {
@@ -54,23 +47,41 @@ function PublishPage() {
     );
 
     if (confirm) {
-      await publishData();
+      try {
+        await publishData();
 
-      openFlashMessage(
-        "Dates publishing to API",
-        "Approved dates publishing may take up to one hour.",
-      );
+        successFlash.openFlashMessage(
+          "Dates publishing to API",
+          "Approved dates publishing may take up to one hour.",
+        );
+      } catch (publishError) {
+        console.error("Error publishing to API", publishError);
+
+        errorFlash.openFlashMessage(
+          "Publishing failed",
+          "There was an error publishing data to the API. Please try again.",
+        );
+      }
     }
   }
 
   return (
     <div className="page publish">
       <FlashMessage
-        title={flashTitle}
-        message={flashMessage}
-        isVisible={isFlashOpen}
-        onClose={handleFlashClose}
+        title={successFlash.flashTitle}
+        message={successFlash.flashMessage}
+        isVisible={successFlash.isFlashOpen}
+        onClose={successFlash.handleFlashClose}
       />
+
+      <FlashMessage
+        title={errorFlash.flashTitle}
+        message={errorFlash.flashMessage}
+        isVisible={errorFlash.isFlashOpen}
+        onClose={errorFlash.handleFlashClose}
+        variant="error"
+      />
+
       <ConfirmationDialog
         isOpen={isConfirmationOpen}
         onConfirm={handleConfirm}
