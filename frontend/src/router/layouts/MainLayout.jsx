@@ -1,16 +1,25 @@
+import { useMemo } from "react";
 import { Outlet, Link } from "react-router-dom";
 import "./MainLayout.scss";
 import bcParksLogo from "../../assets/bc-parks-logo.svg";
 import useAccess from "@/hooks/useAccess";
-import { useAuth } from "react-oidc-context";
+import { useApiGet } from "@/hooks/useApi";
 
 export default function MainLayout() {
   const { logOut } = useAccess();
-  const auth = useAuth();
+
+  // Fetch the user name to display in the header
+  const userDetails = useApiGet("/user");
+
+  const userName = useMemo(() => {
+    if (userDetails.loading || userDetails.error) return "";
+
+    return userDetails.data.name;
+  }, [userDetails]);
 
   return (
     <div className="layout main">
-      <header className="bcparks-global d-flex flex-column flex-md-row align-items-md-center container-fluid py-1 bg-primary-nav">
+      <header className="bcparks-global d-flex align-items-center container-fluid py-1 bg-primary-nav">
         <Link
           to={`/`}
           className="d-inline-block d-flex align-items-end"
@@ -22,7 +31,7 @@ export default function MainLayout() {
         </Link>
 
         <div className="user-controls text-white d-flex align-items-center ms-auto me-2">
-          <div className="user-name me-3">{auth.user.profile.name}</div>
+          <div className="d-none d-md-block user-name me-3">{userName}</div>
 
           <button
             type="button"
