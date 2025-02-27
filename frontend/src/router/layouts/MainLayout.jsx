@@ -3,9 +3,11 @@ import "./MainLayout.scss";
 import bcParksLogo from "../../assets/bc-parks-logo.svg";
 import bcParksWordmark from "../../assets/bc-parks-wordmark.svg";
 import useAccess from "@/hooks/useAccess";
+import { useAuth } from "react-oidc-context";
 
 export default function MainLayout() {
   const { logOut } = useAccess();
+  const auth = useAuth();
 
   return (
     <div className="layout main">
@@ -15,25 +17,13 @@ export default function MainLayout() {
           className="d-inline-block d-flex align-items-end"
           href="/"
         >
-          <img
-            className="d-block d-md-none"
-            src={bcParksWordmark}
-            height="60"
-            alt="BC Parks logo"
-          />
-          {/* swap logo images on larger screens */}
-          <img
-            className="d-none d-md-block"
-            src={bcParksLogo}
-            height="60"
-            alt="BC Parks logo"
-          />
+          <img src={bcParksLogo} height="60" alt="BC Parks logo" />
 
-          <div className="app-title text-white">Staff web portal</div>
+          <div className="app-title text-white mx-1">Staff web portal</div>
         </Link>
 
         <div className="user-controls text-white d-flex align-items-center ms-auto me-2">
-          <div className="user-name me-3">Duncan MacKenzie</div>
+          <div className="user-name me-3">{auth.user.profile.name}</div>
 
           <button
             type="button"

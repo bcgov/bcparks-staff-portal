@@ -8,12 +8,8 @@
 
     // Align the title text with the BC Parks wordmark
     .app-title {
-      margin-inline-start: 0.25em;
-      margin-bottom: 11px;
-
-      @include from-md {
-        margin-bottom: 6px;
-      }
+      margin-bottom: 6px;
+      white-space: nowrap;
     }
   }
 
