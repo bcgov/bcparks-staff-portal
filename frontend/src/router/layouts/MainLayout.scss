@@ -8,8 +8,11 @@
 
     // Align the title text with the logo
     .app-title {
-      margin-bottom: 6px;
       white-space: nowrap;
+
+      @include from-md {
+        margin-bottom: 6px;
+      }
     }
   }
 
