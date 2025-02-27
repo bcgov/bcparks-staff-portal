@@ -27,9 +27,16 @@ export default function AccessProvider({ children, auth }) {
     return roles.includes(requiredRole);
   }
 
+  // Log out of Keycloak (and show the login page again)
+  async function logOut() {
+    auth.stopSilentRenew();
+    await auth.clearStaleState();
+    await auth.signoutRedirect();
+  }
+
   // Provide the context value to child components
   return (
-    <AccessContext.Provider value={{ roles, checkAccess }}>
+    <AccessContext.Provider value={{ roles, checkAccess, logOut }}>
       {children}
     </AccessContext.Provider>
   );
