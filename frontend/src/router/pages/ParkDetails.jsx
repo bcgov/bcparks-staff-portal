@@ -45,7 +45,7 @@ function ParkDetails() {
     // Remove the query string so the flash message won't show again
     searchParams.delete("approved");
     searchParams.delete("saved");
-    setSearchParams(searchParams);
+    setSearchParams(searchParams, { replace: true });
 
     // Find the season in the park data by its ID
     const allSeasons = [
