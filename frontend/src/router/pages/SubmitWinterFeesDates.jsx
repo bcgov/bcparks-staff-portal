@@ -342,7 +342,7 @@ function CampgroundFeature({ featureData }) {
 
           <p>
             <button
-              className="btn btn-text-primary text-link"
+              className="btn btn-text text-link"
               onClick={() => addDateRange()}
             >
               + Add more winter fee dates

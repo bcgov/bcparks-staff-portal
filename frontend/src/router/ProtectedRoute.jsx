@@ -43,11 +43,11 @@ export default function ProtectedRoute({ children }) {
     return <div>Redirecting...</div>;
   }
 
-  if (auth.isAuthenticated) {
-    return <AccessProvider auth={auth}>{children}</AccessProvider>;
+  if (!auth.isAuthenticated) {
+    return <div>Authentication error: Unable to sign in</div>;
   }
 
-  return <div>Authentication error: Unable to sign in</div>;
+  return <AccessProvider auth={auth}>{children}</AccessProvider>;
 }
 
 // Define prop types for ProtectedRoute

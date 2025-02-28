@@ -188,7 +188,7 @@ function ExportPage() {
               <button
                 onClick={selectAllFeatures}
                 type="button"
-                className="btn btn-text-primary"
+                className="btn btn-text text-primary"
               >
                 Select all
               </button>
@@ -196,7 +196,7 @@ function ExportPage() {
               <button
                 onClick={() => setExportFeatures([])}
                 type="button"
-                className="btn btn-text-primary"
+                className="btn btn-text text-primary"
               >
                 Clear all
               </button>

@@ -1,5 +1,4 @@
 import { createBrowserRouter } from "react-router-dom";
-import LogOut from "./pages/LogOut";
 import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
@@ -41,12 +40,6 @@ const RouterConfig = createBrowserRouter(
               element: <PublishPage />,
             },
           ],
-        },
-
-        // Log out of Keycloak (and show the OIDC login page again)
-        {
-          path: "/logout",
-          element: <LogOut />,
         },
 
         // view park details

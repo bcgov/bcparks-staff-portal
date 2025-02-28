@@ -10,6 +10,7 @@ import checkJwt from "./middleware/checkJwt.js";
 import usersMiddleware from "./middleware/users.js";
 import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
+import userRoutes from "./routes/api/user.js";
 import parkRoutes from "./routes/api/parks.js";
 import seasonRoutes from "./routes/api/seasons.js";
 import winterSeasonRoutes from "./routes/api/winter-seasons.js";
@@ -62,6 +63,7 @@ const apiRouter = express.Router();
 apiRouter.use(checkJwt);
 apiRouter.use(usersMiddleware);
 
+apiRouter.use("/user", userRoutes);
 apiRouter.use("/parks", parkRoutes);
 apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
