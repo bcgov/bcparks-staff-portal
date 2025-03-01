@@ -32,6 +32,7 @@ import {
   normalizeToUTCDate,
   normalizeToLocalDate,
 } from "@/lib/utils";
+import paths from "@/router/paths";
 
 import "./SubmitWinterFeesDates.scss";
 
@@ -455,7 +456,7 @@ export default function SubmitWinterFeesDates() {
     const response = await sendData(payload);
 
     if (savingDraft) {
-      navigate(`/park/${parkId}?saved=${data.id}`);
+      navigate(`${paths.park(parkId)}?saved=${data.id}`);
     }
 
     return response;
@@ -511,7 +512,7 @@ export default function SubmitWinterFeesDates() {
       const submitOk = await submitChanges();
 
       if (submitOk) {
-        navigate(`/park/${parkId}/winter-fees/${seasonId}/preview`);
+        navigate(paths.winterFeesPreview(parkId, seasonId));
       }
     } catch (err) {
       console.error(err);
@@ -575,7 +576,7 @@ export default function SubmitWinterFeesDates() {
         isOpen={isConfirmationOpen}
       />
 
-      <NavBack routePath={`/park/${parkId}`}>
+      <NavBack routePath={paths.park(parkId)}>
         Back to {season.park.name} season dates
       </NavBack>
 
@@ -649,7 +650,7 @@ export default function SubmitWinterFeesDates() {
 
           <div className="controls d-flex flex-column flex-sm-row gap-2">
             <Link
-              to={`/park/${parkId}`}
+              to={paths.park(parkId)}
               type="button"
               className="btn btn-outline-primary"
             >
