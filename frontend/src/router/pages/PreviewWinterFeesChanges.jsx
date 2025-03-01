@@ -1,11 +1,12 @@
 import PropTypes from "prop-types";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
+import paths from "@/router/paths";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -20,8 +21,6 @@ import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
-
-import { Link } from "react-router-dom";
 
 import "./PreviewChanges.scss";
 
@@ -65,7 +64,7 @@ function PreviewChanges() {
   useNavigationGuard(hasChanges, openConfirmation);
 
   function navigateToEdit() {
-    navigate(`/park/${parkId}/winter-fees/${seasonId}/edit`);
+    navigate(paths.winterFeesEdit(parkId, seasonId));
   }
 
   function getDates(dates) {
@@ -97,7 +96,7 @@ function PreviewChanges() {
         readyToPublish,
       });
 
-      navigate(`/park/${parkId}?saved=${data.id}`);
+      navigate(`${paths.park(parkId)}?saved=${data.id}`);
     } catch (err) {
       console.error("Error saving preview", err);
 
@@ -134,7 +133,7 @@ function PreviewChanges() {
           missingDatesConfirmation.setInputMessage("");
           // Redirect back to the Park Details page on success.
           // Use the "approved" query param to show a flash message.
-          navigate(`/park/${parkId}?approved=${data.id}`);
+          navigate(`${paths.park(parkId)}?approved=${data.id}`);
         }
       } else {
         await approveData({
@@ -143,7 +142,7 @@ function PreviewChanges() {
         });
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
-        navigate(`/park/${parkId}?approved=${data.id}`);
+        navigate(`${paths.park(parkId)}?approved=${data.id}`);
       }
     } catch (err) {
       console.error("Error approving preview", err);
@@ -257,7 +256,7 @@ function PreviewChanges() {
         onConfirm={missingDatesConfirmation.handleConfirm}
       />
 
-      <NavBack routePath={`/park/${parkId}`}>
+      <NavBack routePath={paths.park(parkId)}>
         Back to {data?.park.name} dates
       </NavBack>
 
@@ -313,7 +312,7 @@ function PreviewChanges() {
 
           <div className="controls d-flex flex-column flex-sm-row gap-2">
             <Link
-              to={`/park/${parkId}/winter-fees/${seasonId}/edit`}
+              to={paths.winterFeesEdit(parkId, seasonId)}
               type="button"
               className="btn btn-outline-primary"
             >
