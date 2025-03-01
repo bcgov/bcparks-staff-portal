@@ -32,6 +32,7 @@ import {
   normalizeToUTCDate,
   normalizeToLocalDate,
 } from "@/lib/utils";
+import paths from "@/router/paths";
 
 import "./SubmitDates.scss";
 
@@ -125,7 +126,7 @@ function SubmitDates() {
     const response = await sendData(payload);
 
     if (savingDraft) {
-      navigate(`/park/${parkId}?saved=${data.id}`);
+      navigate(`${paths.park(parkId)}?saved=${data.id}`);
     }
 
     return response;
@@ -165,7 +166,7 @@ function SubmitDates() {
       const submitOk = await submitChanges();
 
       if (submitOk) {
-        navigate(`/park/${parkId}/edit/${seasonId}/preview`);
+        navigate(paths.seasonPreview(parkId, seasonId));
       }
     } catch (err) {
       console.error(err);
@@ -725,7 +726,7 @@ function SubmitDates() {
         variant="error"
       />
 
-      <NavBack routePath={`/park/${parkId}`}>
+      <NavBack routePath={paths.park(parkId)}>
         Back to {season?.park.name} season dates
       </NavBack>
 
@@ -807,7 +808,7 @@ function SubmitDates() {
 
           <div className="controls d-flex flex-column flex-sm-row gap-2">
             <Link
-              to={`/park/${parkId}`}
+              to={paths.park(parkId)}
               type="button"
               className="btn btn-outline-primary"
             >

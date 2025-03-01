@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import { faChevronDown, faPen, faChevronUp } from "@fa-kit/icons/classic/solid";
@@ -24,6 +24,8 @@ export default function ParkSeason({
   getTitle,
   DetailsComponent,
 }) {
+  const { parkId } = useParams();
+
   const navigate = useNavigate();
 
   const errorFlashMessage = useFlashMessage();
@@ -90,7 +92,7 @@ export default function ParkSeason({
       );
 
       if (confirm) {
-        navigate(getEditRoutePath(season.id));
+        navigate(getEditRoutePath(parkId, season.id));
       }
     } else if (season.status === "approved") {
       const confirm = await openConfirmation(
@@ -100,7 +102,7 @@ export default function ParkSeason({
       );
 
       if (confirm) {
-        navigate(getEditRoutePath(season.id));
+        navigate(getEditRoutePath(parkId, season.id));
       }
     } else if (season.status === "on API") {
       const confirm = await openConfirmation(
@@ -110,15 +112,15 @@ export default function ParkSeason({
       );
 
       if (confirm) {
-        navigate(getEditRoutePath(season.id));
+        navigate(getEditRoutePath(parkId, season.id));
       }
     } else {
-      navigate(getEditRoutePath(season.id));
+      navigate(getEditRoutePath(parkId, season.id));
     }
   }
 
   function navigateToPreview() {
-    navigate(getPreviewRoutePath(season.id));
+    navigate(getPreviewRoutePath(parkId, season.id));
   }
 
   return (

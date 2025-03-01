@@ -10,6 +10,7 @@ import PreviewWinterFeesChanges from "./pages/PreviewWinterFeesChanges";
 import MainLayout from "./layouts/MainLayout";
 import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
+import paths from "./paths";
 
 const RouterConfig = createBrowserRouter(
   [
@@ -44,31 +45,31 @@ const RouterConfig = createBrowserRouter(
 
         // view park details
         {
-          path: "/park/:parkId",
+          path: paths.park(":parkId"),
           element: <ParkDetails />,
         },
 
         // edit/submit dates for a season
         {
-          path: "/park/:parkId/edit/:seasonId",
+          path: paths.seasonEdit(":parkId", ":seasonId"),
           element: <SubmitDates />,
         },
 
         // review changes
         {
-          path: "/park/:parkId/edit/:seasonId/preview",
+          path: paths.seasonPreview(":parkId", ":seasonId"),
           element: <PreviewChanges />,
         },
 
         // edit/submit winter fees dates
         {
-          path: "/park/:parkId/winter-fees/:seasonId/edit",
+          path: paths.winterFeesEdit(":parkId", ":seasonId"),
           element: <SubmitWinterFeesDates />,
         },
 
         // review winter fees dates
         {
-          path: "/park/:parkId/winter-fees/:seasonId/preview",
+          path: paths.winterFeesPreview(":parkId", ":seasonId"),
           element: <PreviewWinterFeesChanges />,
         },
       ],
