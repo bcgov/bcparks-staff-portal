@@ -8,11 +8,11 @@ export default {
   park,
 
   seasonEdit(parkId, seasonId) {
-    return `${park(parkId)}/edit/${seasonId}`;
+    return `${park(parkId)}/seasons/${seasonId}/edit`;
   },
 
   seasonPreview(parkId, seasonId) {
-    return `${park(parkId)}/edit/${seasonId}/preview`;
+    return `${park(parkId)}/seasons/${seasonId}/preview`;
   },
 
   winterFeesEdit(parkId, seasonId) {
