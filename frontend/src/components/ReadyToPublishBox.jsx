@@ -6,7 +6,7 @@ export default function ReadyToPublishBox({
 }) {
   return (
     <div className="mb-4">
-      <h2 className="mb-4">Ready to publish?</h2>
+      <h3 className="mb-4">Ready to publish?</h3>
 
       <p>
         Are these dates ready to be made available to the public the next time

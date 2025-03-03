@@ -330,7 +330,7 @@ function SubmitDates() {
   function Campground({ campground }) {
     return (
       <section className="campground">
-        <h2 className="campground-name">{campground.name}</h2>
+        <h3 className="campground-name mb-4">{campground.name}</h3>
         {campground.features.map((feature) => (
           <Feature key={feature.id} feature={feature} />
         ))}
@@ -573,17 +573,21 @@ function SubmitDates() {
       return "Not available";
     }
 
-    return previousDates.map((dateRange, index) => (
-      <div key={dateRange.id} className={index > 0 ? "my-2" : "mb-2"}>
-        {formatDateRange(dateRange)}
+    return (
+      <div>
+        {previousDates.map((dateRange, index) => (
+          <div key={dateRange.id} className={index > 0 ? "my-2" : "mb-2"}>
+            {formatDateRange(dateRange)}
+          </div>
+        ))}
       </div>
-    ));
+    );
   }
 
   function Feature({ feature }) {
     return (
       <section className="feature">
-        {feature.name && <h3>{feature.name}</h3>}
+        {feature.name && <h4 className="feature-name mb-4">{feature.name}</h4>}
         <div className="row">
           <div className="col-md-6">
             <div>
@@ -601,11 +605,9 @@ function SubmitDates() {
               )}
             </div>
 
-            <div className="row">
-              <div className="col-auto">Previous:</div>
-              <div className="col">
-                {getPreviousDates(feature, "Operation")}
-              </div>
+            <div className="related-dates d-flex">
+              <span className="me-2">Previous:</span>{" "}
+              {getPreviousDates(feature, "Operation")}
             </div>
 
             {dates[feature.dateable.id]?.Operation.map((dateRange, index) => (
@@ -639,11 +641,9 @@ function SubmitDates() {
                 )}
               </div>
 
-              <div className="row">
-                <div className="col-auto">Previous:</div>
-                <div className="col">
-                  {getPreviousDates(feature, "Reservation")}
-                </div>
+              <div className="related-dates d-flex">
+                <span className="me-2">Previous:</span>{" "}
+                {getPreviousDates(feature, "Reservation")}
               </div>
 
               {dates[feature.dateable.id]?.Reservation.map(
@@ -731,17 +731,12 @@ function SubmitDates() {
       </NavBack>
 
       <header className="page-header internal">
-        <h1>
-          {season && `${season.park.name} ${season.operatingYear} season dates`}
-        </h1>
-      </header>
-
-      {season && (
-        <h2 className="feature-type-name header-with-icon">
+        <h1 className="header-with-icon">
           <FeatureIcon iconName={season.featureType.icon} />
-          {season.featureType.name}
-        </h2>
-      )}
+          {season.park.name} {season.featureType.name}
+        </h1>
+        <h2>Edit {season.operatingYear} season dates</h2>
+      </header>
 
       <p className="mb-5">
         <a
@@ -762,12 +757,12 @@ function SubmitDates() {
 
       <div className="row notes">
         <div className="col-lg-6">
-          <h2 className="mb-4">
+          <h3 className="mb-4">
             Notes
             {["approved", "on API"].includes(season?.status) && (
               <span className="text-danger">*</span>
             )}
-          </h2>
+          </h3>
 
           <ChangeLogsList changeLogs={season?.changeLogs} />
 
