@@ -115,7 +115,7 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
   const openDateEnd = parseInputDate(localDateRange.endDate) || minDate;
 
   return (
-    <div className="row dates-row operating-dates">
+    <div className="row gx-0 dates-row operating-dates">
       <div className="col-lg-5">
         <div className="form-group">
           <label htmlFor={startDateId} className="form-label d-lg-none">
@@ -170,7 +170,7 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
         </div>
       </div>
 
-      <div className="d-none d-lg-block col-lg-1 text-center">
+      <div className="d-none d-lg-flex align-items-center justify-content-center col-lg-1 text-center">
         <span>&ndash;</span>
       </div>
 
