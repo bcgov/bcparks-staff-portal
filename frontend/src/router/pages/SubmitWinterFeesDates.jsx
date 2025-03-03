@@ -310,7 +310,7 @@ function CampgroundFeature({ featureData }) {
 
   return (
     <section className="feature mb-4">
-      <h4>{featureData.name}</h4>
+      <h4 className="feature-name mb-4">{featureData.name}</h4>
 
       <div className="row">
         <div className="col-md-6">
@@ -613,12 +613,12 @@ export default function SubmitWinterFeesDates() {
 
       <div className="row notes">
         <div className="col-lg-6">
-          <h2 className="mb-4">
+          <h3 className="mb-4">
             Notes
             {["approved", "on API"].includes(season.status) && (
               <span className="text-danger">*</span>
             )}
-          </h2>
+          </h3>
 
           <ChangeLogsList changeLogs={season.changeLogs} />
 

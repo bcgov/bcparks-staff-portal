@@ -147,6 +147,10 @@ label.form-check-label {
   display: flex;
   align-items: center;
   gap: 0.5em;
+
+  .feature-icon {
+    height: 1.25em;
+  }
 }
 
 // error messages with optional icons
