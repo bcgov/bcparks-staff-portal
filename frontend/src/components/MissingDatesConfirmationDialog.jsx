@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fa-kit/icons/classic/regular";
@@ -11,7 +12,14 @@ function ConfirmationDialog({
   onConfirm,
   isOpen,
 }) {
+  const wordCount = useMemo(
+    () => inputMessage.split(" ").filter((word) => word).length,
+    [inputMessage],
+  );
+
   if (!isOpen) return null;
+
+  const maxWords = 250;
 
   return (
     <div className="confirmation-dialog-overlay">
@@ -44,18 +52,24 @@ function ConfirmationDialog({
             onChange={(e) => setInputMessage(e.target.value)}
             className="form-control"
           ></textarea>
+          <div className="info-row mt-1">
+            <div className="required-message">Required</div>
+            <div className="word-count">
+              {wordCount}/{maxWords}
+            </div>
+          </div>
         </div>
 
         <div className="confirmation-dialog-actions">
           <button className="btn btn-outline-primary" onClick={onCancel}>
-            Cancel
+            Continue editing
           </button>
           <button
             className="btn btn-primary"
             onClick={onConfirm}
-            disabled={!inputMessage}
+            disabled={!inputMessage || wordCount > maxWords}
           >
-            Confirm
+            Submit
           </button>
         </div>
       </div>
