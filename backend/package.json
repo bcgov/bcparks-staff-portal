@@ -13,7 +13,8 @@
     "sync-data": "node strapi-sync/syncData.js",
     "one-time-data-import": "node strapi-sync/oneTimeDataImport.js",
     "create-single-item-campgrounds": "node strapi-sync/create-single-item-campgrounds.js",
-    "create-multiple-item-campgrounds": "node strapi-sync/create-multiple-item-campgrounds.js"
+    "create-multiple-item-campgrounds": "node strapi-sync/create-multiple-item-campgrounds.js",
+    "create-missing-dates-and-seasons": "node strapi-sync/create-missing-dates-and-seasons.js"
   },
   "author": "",
   "license": "ISC",

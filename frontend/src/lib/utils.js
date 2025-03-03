@@ -75,6 +75,10 @@ export function formatDateShortWithYear(date) {
  * @returns {string} formatted date range
  */
 export function formatDateRange(dateRange) {
+  if (dateRange.startDate === null || dateRange.endDate === null) {
+    return "Not submitted";
+  }
+
   const startDate = isoToFormattedString(
     dateRange.startDate,
     DATE_FORMAT_SHORT_WITH_YEAR,
