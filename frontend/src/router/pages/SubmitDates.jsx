@@ -355,9 +355,9 @@ function SubmitDates() {
     const endDateId = `end-date-${dateRangeId}`;
 
     // Track validation errors for the whole range, or the whole dateable feature
-    const groupErrors = errors?.[dateRangeId] || errors?.[dateRange.dateableId];
-    const startErrors = errors?.[startDateId] || groupErrors;
-    const endErrors = errors?.[endDateId] || groupErrors;
+    const groupErrors = errors[dateRangeId] || errors[dateRange.dateableId];
+    const startErrors = errors[startDateId] || groupErrors;
+    const endErrors = errors[endDateId] || groupErrors;
 
     // Limit the date range to the operating year
     const minDate = new Date(season.operatingYear, 0, 1);
@@ -472,8 +472,11 @@ function SubmitDates() {
             </div>
 
             {/* Show validation errors for the startDate field */}
-            {errors?.[startDateId] && (
-              <div className="error-message mt-2">{errors?.[startDateId]}</div>
+            {errors[startDateId] && (
+              <div className="error-message mt-2">
+                <FontAwesomeIcon icon={faTriangleExclamation} />
+                <div>{errors[startDateId]}</div>
+              </div>
             )}
           </div>
         </div>
@@ -527,17 +530,20 @@ function SubmitDates() {
             </div>
 
             {/* Show validation errors for the endDate field */}
-            {errors?.[endDateId] && (
-              <div className="error-message mt-2">{errors?.[endDateId]}</div>
+            {errors[endDateId] && (
+              <div className="error-message mt-2">
+                <FontAwesomeIcon icon={faTriangleExclamation} />
+                <div>{errors[endDateId]}</div>
+              </div>
             )}
           </div>
         </div>
 
         {/* Show validation errors for the date range */}
-        {errors?.[dateRangeId] && (
+        {errors[dateRangeId] && (
           <div className="error-message mt-2">
-            <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
-            {errors?.[dateRangeId]}
+            <FontAwesomeIcon icon={faTriangleExclamation} />
+            <div>{errors[dateRangeId]}</div>
           </div>
         )}
       </div>
@@ -660,16 +666,10 @@ function SubmitDates() {
           )}
         </div>
         {/* Show validation errors for the whole dateable feature */}
-        {errors?.[feature.dateable.id] && (
-          <div
-            className="alert alert-danger alert-validation-error mt-2"
-            role="alert"
-          >
-            <div className="icon">
-              <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
-            </div>
-
-            <div className="content">{errors?.[feature.dateable.id]}</div>
+        {errors[feature.dateable.id] && (
+          <div className="error-message mt-2">
+            <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
+            <div>{errors[feature.dateable.id]}</div>
           </div>
         )}
       </section>
@@ -777,13 +777,11 @@ function SubmitDates() {
             dates if needed.
           </p>
 
-          <div
-            className={`form-group mb-4 ${errors?.notes ? "has-error" : ""}`}
-          >
+          <div className={`form-group mb-4 ${errors.notes ? "has-error" : ""}`}>
             <textarea
               className={classNames({
                 "form-control": true,
-                "is-invalid": errors?.notes,
+                "is-invalid": errors.notes,
               })}
               id="notes"
               name="notes"
@@ -794,8 +792,11 @@ function SubmitDates() {
                 validateNotes(ev.target.value);
               }}
             ></textarea>
-            {errors?.notes && (
-              <div className="error-message mt-2">{errors?.notes}</div>
+            {errors.notes && (
+              <div className="error-message mt-2">
+                <FontAwesomeIcon icon={faTriangleExclamation} />
+                <div>{errors.notes}</div>
+              </div>
             )}
           </div>
 

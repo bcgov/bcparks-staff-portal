@@ -134,18 +134,6 @@ label.form-check-label {
   font-size: var(--typography-font-size-body) !important;
 }
 
-// custom style for validation error alert
-.alert-validation-error {
-  display: flex;
-  gap: 0.5em;
-  color: var(--typography-color-primary);
-  width: fit-content;
-
-  .icon {
-    color: var(--icons-color-danger);
-  }
-}
-
 // custom style for bootstrap dropdowns
 .dropdown-toggle {
   // flip the arrow icon when the dropdown is open
@@ -156,6 +144,16 @@ label.form-check-label {
 
 // styles for header elements with icons
 .header-with-icon {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+// error messages with optional icons
+// for validation, etc.
+.error-message {
+  color: var(--support-border-color-danger);
+  font-size: 0.875em;
   display: flex;
   align-items: center;
   gap: 0.5em;

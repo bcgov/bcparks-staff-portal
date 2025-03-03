@@ -161,8 +161,11 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
           </div>
 
           {/* Show validation errors for the startDate field */}
-          {errors?.[startDateId] && (
-            <div className="error-message mt-2">{errors?.[startDateId]}</div>
+          {errors[startDateId] && (
+            <div className="error-message mt-2">
+              <FontAwesomeIcon icon={faTriangleExclamation} />
+              {errors[startDateId]}
+            </div>
           )}
         </div>
       </div>
@@ -213,17 +216,20 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
           </div>
 
           {/* Show validation errors for the endDate field */}
-          {errors?.[endDateId] && (
-            <div className="error-message mt-2">{errors?.[endDateId]}</div>
+          {errors[endDateId] && (
+            <div className="error-message mt-2">
+              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <div>{errors[endDateId]}</div>
+            </div>
           )}
         </div>
       </div>
 
       {/* Show validation errors for the date range */}
-      {errors?.[dateRangeId] && (
+      {errors[dateRangeId] && (
         <div className="error-message mt-2">
-          <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
-          {errors?.[dateRangeId]}
+          <FontAwesomeIcon icon={faTriangleExclamation} />
+          <div>{errors[dateRangeId]}</div>
         </div>
       )}
     </div>
@@ -637,7 +643,10 @@ export default function SubmitWinterFeesDates() {
               }}
             ></textarea>
             {errors.notes && (
-              <div className="error-message mt-2">{errors.notes}</div>
+              <div className="error-message mt-2">
+                <FontAwesomeIcon icon={faTriangleExclamation} />
+                <div>{errors.notes}</div>
+              </div>
             )}
           </div>
 
