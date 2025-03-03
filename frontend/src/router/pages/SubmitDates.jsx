@@ -697,7 +697,7 @@ function SubmitDates() {
     }),
   };
 
-  if (loading) {
+  if (loading || !season) {
     return <LoadingBar />;
   }
 
@@ -727,7 +727,7 @@ function SubmitDates() {
       />
 
       <NavBack routePath={paths.park(parkId)}>
-        Back to {season?.park.name} season dates
+        Back to {season.park.name} dates
       </NavBack>
 
       <header className="page-header internal">
