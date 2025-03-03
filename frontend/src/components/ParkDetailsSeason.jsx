@@ -152,7 +152,7 @@ export default function ParkSeason({
 
           <button
             onClick={toggleExpand}
-            className="btn btn-text-primary expand-toggle"
+            className="btn btn-text text-primary expand-toggle"
           >
             <FontAwesomeIcon
               className="append-content"
@@ -168,7 +168,7 @@ export default function ParkSeason({
       </div>
 
       <div className="controls">
-        <button onClick={navigateToEdit} className="btn btn-text-primary">
+        <button onClick={navigateToEdit} className="btn btn-text text-primary">
           <FontAwesomeIcon className="append-content me-2" icon={faPen} />
           <span>Edit</span>
         </button>
@@ -179,7 +179,7 @@ export default function ParkSeason({
 
             <button
               onClick={navigateToPreview}
-              className="btn btn-text-primary"
+              className="btn btn-text text-primary"
               disabled={disablePreviewButton}
             >
               <FontAwesomeIcon
