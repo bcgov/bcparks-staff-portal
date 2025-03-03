@@ -84,7 +84,7 @@ export function formatDateRange(dateRange) {
     DATE_FORMAT_SHORT_WITH_YEAR,
   );
 
-  return `${startDate} - ${endDate}`;
+  return `${startDate} – ${endDate}`;
 }
 
 export function formatDatetoISO(date) {
