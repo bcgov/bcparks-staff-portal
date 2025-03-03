@@ -64,3 +64,19 @@
   color: var(--icons-color-secondary);
   font-size: 32px;
 }
+
+.required-message {
+  color: var(--support-border-color-danger);
+  font-size: var(--typography-regular-small-body);
+}
+
+.word-count {
+  font-size: var(--typography-regular-small-body);
+  color: var(--typography-color-placeholder);
+  text-align: right;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+}

@@ -92,7 +92,7 @@ function ExportPage() {
 
       successFlash.openFlashMessage(
         "Export complete",
-        "Check your Downloads for the Excel document.",
+        "Check your downloads for the Excel document.",
       );
     } catch (csvError) {
       console.error("Error generating CSV", csvError);
