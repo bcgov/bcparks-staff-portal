@@ -218,7 +218,7 @@ function PreviewChanges() {
     setReadyToPublish(data.readyToPublish);
   }, [data]);
 
-  if (loading) {
+  if (loading || !data) {
     return <LoadingBar />;
   }
 
@@ -283,7 +283,7 @@ function PreviewChanges() {
 
       <div className="row notes">
         <div className="col-lg-6">
-          <h2 className="mb-4">Notes</h2>
+          <h3 className="mb-4">Notes</h3>
 
           <ChangeLogsList changeLogs={data?.changeLogs} />
 
