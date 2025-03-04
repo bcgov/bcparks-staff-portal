@@ -235,7 +235,9 @@ function PreviewChanges() {
   function Feature({ feature }) {
     return (
       <div>
-        {feature.name !== "" && <h5>{feature.name}</h5>}
+        {feature.name !== "" && (
+          <h4 className="feature-name mb-4">{feature.name}</h4>
+        )}
         <div className="table-responsive">
           <table className="table table-striped">
             <thead>
@@ -304,7 +306,7 @@ function PreviewChanges() {
   function Campground({ campground }) {
     return (
       <div>
-        <h4>{campground.name}</h4>
+        <h3 className="campground-name mb-4">{campground.name}</h3>
 
         {campground.features.map((feature) => (
           <Feature key={feature.id} feature={feature} />
@@ -330,7 +332,7 @@ function PreviewChanges() {
     setReadyToPublish(data.readyToPublish);
   }, [data]);
 
-  if (loading) {
+  if (loading || !data) {
     return <LoadingBar />;
   }
 
@@ -372,17 +374,14 @@ function PreviewChanges() {
       </NavBack>
 
       <header className="page-header internal">
-        <h1>
-          {data?.park.name} {data?.operatingYear} season dates preview
+        <h1 className="header-with-icon">
+          <FeatureIcon iconName={data.featureType.icon} />
+          {data.park.name} {data.featureType.name}
         </h1>
+        <h2>Edit {data.operatingYear} season dates</h2>
       </header>
 
       <section className="feature-type">
-        <h2 className="header-with-icon">
-          <FeatureIcon iconName={data?.featureType.icon} />
-          {data?.featureType.name}
-        </h2>
-
         {data?.campgrounds.map((campground) => (
           <Campground key={campground.id} campground={campground} />
         ))}
@@ -394,7 +393,7 @@ function PreviewChanges() {
 
       <div className="row notes">
         <div className="col-lg-6">
-          <h2 className="mb-4">Notes</h2>
+          <h3 className="mb-4">Notes</h3>
 
           <ChangeLogsList changeLogs={data?.changeLogs} />
 
