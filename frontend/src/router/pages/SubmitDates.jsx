@@ -45,6 +45,8 @@ function SubmitDates() {
   const [dates, setDates] = useState({});
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
+  // Track deleted date ranges
+  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
 
   const errorFlashMessage = useFlashMessage();
 
@@ -78,15 +80,25 @@ function SubmitDates() {
 
   // are there changes to save?
   function hasChanges() {
-    const datesChanged = Object.values(dates).some((dateType) =>
-      dateType.Operation.concat(dateType.Reservation).some(
-        (dateRange) => dateRange.changed,
-      ),
-    );
+    // Any existing dates changed
+    if (
+      Object.values(dates).some((dateType) =>
+        dateType.Operation.concat(dateType.Reservation).some(
+          (dateRange) => dateRange.changed,
+        ),
+      )
+    ) {
+      return true;
+    }
 
-    const readyChanged = readyToPublish !== data.readyToPublish;
+    // If any date ranges have been deleted
+    if (deletedDateRangeIds.length > 0) return true;
 
-    return datesChanged || notes || readyChanged;
+    // Ready to publish state has changed
+    if (readyToPublish !== data.readyToPublish) return true;
+
+    // Notes have been entered
+    return notes;
   }
 
   async function saveChanges(savingDraft) {
@@ -123,6 +135,7 @@ function SubmitDates() {
       notes,
       readyToPublish,
       dates: allDates,
+      deletedDateRangeIds,
     };
 
     const response = await sendData(payload);
@@ -267,7 +280,7 @@ function SubmitDates() {
     }));
   }
 
-  function removeDateRange(dateType, dateableId, index) {
+  function removeDateRange(dateType, dateableId, index, dateRangeId) {
     setDates((prevDates) => ({
       ...prevDates,
       [dateableId]: {
@@ -277,6 +290,11 @@ function SubmitDates() {
         ),
       },
     }));
+
+    // Track the deleted date range
+    if (dateRangeId) {
+      setDeletedDateRangeIds((previous) => [...previous, dateRangeId]);
+    }
   }
 
   function updateDateRange(
@@ -551,6 +569,7 @@ function SubmitDates() {
                   dateRange.dateType.name,
                   dateRange.dateableId,
                   index,
+                  dateRange.id,
                 )
               }
             >
