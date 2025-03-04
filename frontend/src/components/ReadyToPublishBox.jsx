@@ -19,7 +19,7 @@ export default function ReadyToPublishBox({
         <input
           checked={readyToPublish}
           onChange={() => setReadyToPublish(!readyToPublish)}
-          className="form-check-input"
+          className="form-check-input label-switch"
           type="checkbox"
           role="switch"
           id="ready-to-publish"

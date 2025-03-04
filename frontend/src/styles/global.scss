@@ -162,3 +162,33 @@ label.form-check-label {
   align-items: center;
   gap: 0.5em;
 }
+
+// custom switch component with text labels for on/off
+.form-switch:has(.label-switch) {
+  display: flex;
+  align-items: center;
+
+  input.label-switch[role="switch"] {
+    height: 1.5em;
+    width: 3.5em;
+    margin-right: 0.5em;
+    position: relative;
+
+    &::after {
+      font-size: 0.85em;
+      position: absolute;
+      top: 1px;
+      right: 5px;
+      content: "Off";
+      display: block;
+      color: var(--typography-color-primary);
+    }
+
+    &:checked::after {
+      left: 5px;
+      right: auto;
+      content: "On";
+      color: var(--typography-color-primary-invert);
+    }
+  }
+}
