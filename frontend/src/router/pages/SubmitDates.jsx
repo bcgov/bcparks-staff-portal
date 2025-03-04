@@ -5,6 +5,8 @@ import {
   faCircleInfo,
   faTriangleExclamation,
   faCalendarCheck,
+  faPlus,
+  faXmark,
 } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DatePicker from "react-datepicker";
@@ -265,6 +267,18 @@ function SubmitDates() {
     }));
   }
 
+  function removeDateRange(dateType, dateableId, index) {
+    setDates((prevDates) => ({
+      ...prevDates,
+      [dateableId]: {
+        ...prevDates[dateableId],
+        [dateType]: prevDates[dateableId][dateType].filter(
+          (_, i) => i !== index,
+        ),
+      },
+    }));
+  }
+
   function updateDateRange(
     dateableId,
     dateType,
@@ -315,17 +329,6 @@ function SubmitDates() {
     // Default: general operating dates tooltip
     return season.dateTypes.Operation.description;
   }
-
-  // The wireframes don't show the option to remove a date, but if we need it, we can add it here
-  // function removeDateRange(dateType, dateableId, index) {
-  //   setDates((prevDates) => ({
-  //     ...prevDates,
-  //     [dateableId]: {
-  //       ...prevDates[dateableId],
-  //       [dateType]: prevDates[dateableId][dateType].filter((_, i) => i !== index),
-  //     },
-  //   }));
-  // }
 
   function Campground({ campground }) {
     return (
@@ -481,8 +484,8 @@ function SubmitDates() {
           </div>
         </div>
 
-        <div className="d-none d-lg-flex justify-content-center col-lg-1 text-center">
-          <span className="date-range-dash">&ndash;</span>
+        <div className="date-range-dash d-none d-lg-flex justify-content-center col-lg-auto px-lg-2 text-center">
+          <span>&ndash;</span>
         </div>
 
         <div className="col-lg-5">
@@ -537,6 +540,26 @@ function SubmitDates() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="date-range-remove col-lg-1">
+          {index > 0 && (
+            <button
+              className="btn btn-text text-link"
+              onClick={() =>
+                removeDateRange(
+                  dateRange.dateType.name,
+                  dateRange.dateableId,
+                  index,
+                )
+              }
+            >
+              <FontAwesomeIcon icon={faXmark} />
+              <span className="ms-1 d-inline d-lg-none">
+                Remove this date range
+              </span>
+            </button>
+          )}
         </div>
 
         {/* Show validation errors for the date range */}
@@ -619,7 +642,8 @@ function SubmitDates() {
                 className="btn btn-text text-link"
                 onClick={() => addDateRange("Operation", feature.dateable.id)}
               >
-                + Add more operating dates
+                <FontAwesomeIcon icon={faPlus} />
+                <span className="ms-1">Add more operating dates</span>
               </button>
             </p>
           </div>
@@ -659,7 +683,8 @@ function SubmitDates() {
                     addDateRange("Reservation", feature.dateable.id)
                   }
                 >
-                  + Add more reservation dates
+                  <FontAwesomeIcon icon={faPlus} />
+                  <span className="ms-1">Add more reservation dates</span>
                 </button>
               </p>
             </div>
