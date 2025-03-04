@@ -481,8 +481,8 @@ function SubmitDates() {
           </div>
         </div>
 
-        <div className="d-none d-lg-flex align-items-center justify-content-center col-lg-1 text-center">
-          <span>&ndash;</span>
+        <div className="d-none d-lg-flex justify-content-center col-lg-1 text-center">
+          <span className="date-range-dash">&ndash;</span>
         </div>
 
         <div className="col-lg-5">
