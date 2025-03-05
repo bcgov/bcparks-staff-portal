@@ -139,8 +139,7 @@ const ParkResource = {
         actionType: "resource",
         icon: "RefreshCw",
         label: "Reset Database",
-        guard:
-          "Are you sure you want to reset the database? This action cannot be undone.",
+        guard: "Are you sure you want to reset the database?.",
         component: false,
         // eslint-disable-next-line no-unused-vars -- required by AdminJS
         async handler(request, response, context) {
@@ -148,7 +147,7 @@ const ParkResource = {
 
           try {
             // Call your backend function to reset the DB
-            // await resetScript(); // Replace with your actual function
+            await resetScript(); // Replace with your actual function
             console.log("Resetting database...");
 
             return {

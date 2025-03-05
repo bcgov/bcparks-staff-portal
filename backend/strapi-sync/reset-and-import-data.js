@@ -1,27 +1,33 @@
-import { exec } from "node:child_process";
 import { syncData, oneTimeDataImport } from "./sync.js";
 import { createSingleItemsCampgrounds } from "./create-single-item-campgrounds.js";
 import { createMultipleItemsCampgrounds } from "./create-multiple-item-campgrounds.js";
 import { createMissingDatesAndSeasons } from "./create-missing-dates-and-seasons.js";
+import {
+  Dateable,
+  Park,
+  User,
+  Campground,
+  FeatureType,
+  Feature,
+  DateType,
+  Season,
+  DateRange,
+  SeasonChangeLog,
+  DateChangeLog,
+} from "../models/index.js";
 
-function resetDatabase() {
-  return new Promise((resolve, reject) => {
-    exec(
-      `npx sequelize-cli db:drop && npx sequelize-cli db:create && npx sequelize-cli db:migrate`,
-      (error, stdout, stderr) => {
-        if (error) {
-          console.error(`Error: ${error.message}`);
-          return reject(error);
-        }
-        if (stderr) {
-          console.error(`Stderr: ${stderr}`);
-          return reject(stderr);
-        }
-        console.log(`Stdout: ${stdout}`);
-        return resolve(stdout);
-      },
-    );
-  });
+export async function deleteAllData() {
+  await DateChangeLog.destroy({ where: {} });
+  await SeasonChangeLog.destroy({ where: {} });
+  await DateRange.destroy({ where: {} });
+  await Season.destroy({ where: {} });
+  await Feature.destroy({ where: {} });
+  await Campground.destroy({ where: {} });
+  await FeatureType.destroy({ where: {} });
+  await DateType.destroy({ where: {} });
+  await Park.destroy({ where: {} });
+  await Dateable.destroy({ where: {} });
+  await User.destroy({ where: {} });
 }
 
 export async function importData() {
@@ -33,7 +39,7 @@ export async function importData() {
 }
 
 export async function resetScript() {
-  await resetDatabase();
+  await deleteAllData();
 
   await importData();
   console.log("calling resetDatabase");
