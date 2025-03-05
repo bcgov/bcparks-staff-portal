@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
+import paths from "@/router/paths";
 import { useApiGet } from "@/hooks/useApi";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import NavBack from "@/components/NavBack";
@@ -45,7 +46,7 @@ function ParkDetails() {
     // Remove the query string so the flash message won't show again
     searchParams.delete("approved");
     searchParams.delete("saved");
-    setSearchParams(searchParams);
+    setSearchParams(searchParams, { replace: true });
 
     // Find the season in the park data by its ID
     const allSeasons = [
@@ -100,9 +101,8 @@ function ParkDetails() {
           seasons={seasons}
           seasonProps={{
             getDataEndpoint: (seasonId) => `/seasons/${seasonId}`,
-            getEditRoutePath: (seasonId) => `/park/${parkId}/edit/${seasonId}`,
-            getPreviewRoutePath: (seasonId) =>
-              `/park/${parkId}/edit/${seasonId}/preview`,
+            getEditRoutePath: paths.seasonEdit,
+            getPreviewRoutePath: paths.seasonPreview,
             getTitle: (season) => `${season.operatingYear} season`,
             DetailsComponent: SeasonDates,
           }}
@@ -117,10 +117,8 @@ function ParkDetails() {
         seasons={park.winterFees}
         seasonProps={{
           getDataEndpoint: (seasonId) => `/winter-fees/${seasonId}`,
-          getEditRoutePath: (seasonId) =>
-            `/park/${parkId}/winter-fees/${seasonId}/edit`,
-          getPreviewRoutePath: (seasonId) =>
-            `/park/${parkId}/winter-fees/${seasonId}/preview`,
+          getEditRoutePath: paths.winterFeesEdit,
+          getPreviewRoutePath: paths.winterFeesPreview,
           getTitle: (season) =>
             `${season.operatingYear} – ${season.operatingYear + 1}`,
           DetailsComponent: WinterFeesDates,
