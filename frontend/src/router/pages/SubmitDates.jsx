@@ -1,6 +1,6 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { cloneDeep, set as lodashSet } from "lodash";
+import { cloneDeep, set as lodashSet, omit } from "lodash";
 import {
   faCircleInfo,
   faTriangleExclamation,
@@ -125,9 +125,9 @@ function SubmitDates() {
         // if the range is unchanged, skip this range
         return dateRange.changed;
       })
-      // Add dateTypeId to the date ranges
+      // Add dateTypeId to the date ranges, remove tempId
       .map((dateRange) => ({
-        ...dateRange,
+        ...omit(dateRange, ["tempId"]),
         dateTypeId: dateRange.dateType.id,
       }));
 
@@ -274,6 +274,8 @@ function SubmitDates() {
             dateableId,
             dateType: season.dateTypes[dateType],
             changed: true,
+            // Add a temporary ID for records that haven't been saved yet
+            tempId: crypto.randomUUID(),
           },
         ],
       },
@@ -653,7 +655,11 @@ function SubmitDates() {
             </div>
 
             {dates[feature.dateable.id]?.Operation.map((dateRange, index) => (
-              <DateRange key={index} dateRange={dateRange} index={index} />
+              <DateRange
+                key={dateRange.id || dateRange.tempId}
+                dateRange={dateRange}
+                index={index}
+              />
             ))}
 
             <p>
@@ -691,7 +697,11 @@ function SubmitDates() {
 
               {dates[feature.dateable.id]?.Reservation.map(
                 (dateRange, index) => (
-                  <DateRange key={index} dateRange={dateRange} index={index} />
+                  <DateRange
+                    key={dateRange.id || dateRange.tempId}
+                    dateRange={dateRange}
+                    index={index}
+                  />
                 ),
               )}
 
