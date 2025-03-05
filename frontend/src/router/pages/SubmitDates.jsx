@@ -722,7 +722,7 @@ function SubmitDates() {
         {/* Show validation errors for the whole dateable feature */}
         {errors[feature.dateable.id] && (
           <div className="error-message mt-2">
-            <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
+            <FontAwesomeIcon icon={faTriangleExclamation} />
             <div>{errors[feature.dateable.id]}</div>
           </div>
         )}
