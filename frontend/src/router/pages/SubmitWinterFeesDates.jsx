@@ -460,15 +460,25 @@ export default function SubmitWinterFeesDates() {
 
   function validateNotes() {}
 
-  // Are there changes to save?
+  // Returns true if there are any form changes to save
   function hasChanges() {
-    const datesChanged = Object.values(dates).some((dateRanges) =>
-      dateRanges.some((dateRange) => dateRange.changed),
-    );
+    // Any existing dates changed
+    if (
+      Object.values(dates).some((dateRanges) =>
+        dateRanges.some((dateRange) => dateRange.changed),
+      )
+    ) {
+      return true;
+    }
 
-    const readyChanged = readyToPublish !== data.readyToPublish;
+    // If any date ranges have been deleted
+    if (deletedDateRangeIds.length > 0) return true;
 
-    return datesChanged || notes || readyChanged;
+    // Ready to publish state has changed
+    if (readyToPublish !== data.readyToPublish) return true;
+
+    // Notes have been entered
+    return notes;
   }
 
   useNavigationGuard(hasChanges, openConfirmation);
