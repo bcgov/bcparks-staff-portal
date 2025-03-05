@@ -3,11 +3,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import cloneDeep from "lodash/cloneDeep";
+import omit from "lodash/omit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleInfo,
   faTriangleExclamation,
   faCalendarCheck,
+  faPlus,
+  faXmark,
 } from "@fa-kit/icons/classic/regular";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -42,7 +45,13 @@ const datesContext = createContext();
 // Context to provide the data to all the child components
 const dataContext = createContext();
 
-function DateRange({ dateableId, dateRange, index, updateDateRange }) {
+function DateRange({
+  dateableId,
+  dateRange,
+  index,
+  updateDateRange,
+  removeDateRange,
+}) {
   const data = useContext(dataContext);
 
   // Keep local state until the field is blurred or Enter is pressed
@@ -225,6 +234,20 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
         </div>
       </div>
 
+      <div className="date-range-remove col-lg-1">
+        {index > 0 && (
+          <button
+            className="btn btn-text text-link"
+            onClick={() => removeDateRange(index, dateRange.id)}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+            <span className="ms-1 d-inline d-lg-none">
+              Remove this date range
+            </span>
+          </button>
+        )}
+      </div>
+
       {/* Show validation errors for the date range */}
       {errors[dateRangeId] && (
         <div className="error-message mt-2">
@@ -254,7 +277,7 @@ function getReservationDatesText(featureData) {
 
 function CampgroundFeature({ featureData }) {
   // Inject dates object from the root component
-  const { dates, setDates } = useContext(datesContext);
+  const { dates, setDates, setDeletedDateRangeIds } = useContext(datesContext);
   const dateableId = featureData.dateableId;
   const featureDates = dates[dateableId];
 
@@ -270,10 +293,29 @@ function CampgroundFeature({ featureData }) {
         startDate: null,
         endDate: null,
         changed: true,
+        // Add a temporary ID for records that haven't been saved yet
+        tempId: crypto.randomUUID(),
       });
 
       return updatedDates;
     });
+  }
+
+  function removeDateRange(index, dateRangeId) {
+    setDates((prevDates) => {
+      const updatedDates = cloneDeep(prevDates);
+
+      updatedDates[dateableId] = prevDates[dateableId].filter(
+        (_, i) => i !== index,
+      );
+
+      return updatedDates;
+    });
+
+    // Track the deleted date range
+    if (dateRangeId) {
+      setDeletedDateRangeIds((previous) => [...previous, dateRangeId]);
+    }
   }
 
   /**
@@ -339,11 +381,12 @@ function CampgroundFeature({ featureData }) {
 
           {featureDates.map((dateRange, index) => (
             <DateRange
-              key={index}
+              key={dateRange.id || dateRange.tempId}
               dateableId={dateableId}
               dateRange={dateRange}
               index={index}
               updateDateRange={updateDateRange}
+              removeDateRange={removeDateRange}
             />
           ))}
 
@@ -352,7 +395,8 @@ function CampgroundFeature({ featureData }) {
               className="btn btn-text text-link"
               onClick={() => addDateRange()}
             >
-              + Add more winter fee dates
+              <FontAwesomeIcon icon={faPlus} />
+              <span className="ms-1">Add more operating dates</span>
             </button>
           </p>
         </div>
@@ -384,6 +428,8 @@ export default function SubmitWinterFeesDates() {
   const [dates, setDates] = useState({});
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
+  // Track deleted date ranges
+  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
 
   const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
 
@@ -433,9 +479,9 @@ export default function SubmitWinterFeesDates() {
     // Turn the `dates` structure into a flat array of date ranges
     const flattenedDates = Object.entries(dates).flatMap(
       ([dateableId, dateRanges]) =>
-        // Add foreign keys to the date ranges
+        // Add foreign keys to the date ranges, remove tempId
         dateRanges.map((dateRange) => ({
-          ...dateRange,
+          ...omit(dateRange, ["tempId"]),
           dateableId: Number(dateableId),
           dateTypeId: season.winterFeeDateType.id,
           seasonId,
@@ -457,6 +503,7 @@ export default function SubmitWinterFeesDates() {
       notes,
       readyToPublish,
       dates: changedDates,
+      deletedDateRangeIds,
     };
 
     const response = await sendData(payload);
@@ -604,7 +651,9 @@ export default function SubmitWinterFeesDates() {
       </p>
 
       <dataContext.Provider value={data}>
-        <datesContext.Provider value={{ dates, setDates }}>
+        <datesContext.Provider
+          value={{ dates, setDates, setDeletedDateRangeIds }}
+        >
           {season.featureTypes.map((featureType) => (
             <FeatureType key={featureType.id} featureTypeData={featureType} />
           ))}
@@ -699,6 +748,7 @@ export default function SubmitWinterFeesDates() {
 
 // prop validation
 const dateRangeShape = PropTypes.shape({
+  id: PropTypes.number,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
 });
@@ -708,6 +758,7 @@ DateRange.propTypes = {
   dateRange: dateRangeShape.isRequired,
   index: PropTypes.number.isRequired,
   updateDateRange: PropTypes.func.isRequired,
+  removeDateRange: PropTypes.func.isRequired,
 };
 
 CampgroundFeature.propTypes = {

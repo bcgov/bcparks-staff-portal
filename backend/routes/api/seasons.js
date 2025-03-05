@@ -234,7 +234,7 @@ router.post(
   "/:seasonId/save/",
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
-    const { notes, dates, readyToPublish } = req.body;
+    const { notes, dates, readyToPublish, deletedDateRangeIds } = req.body;
 
     // when we add roles: we need to check that this user has permission to edit this season
     // staff or operator that has access to this park
@@ -317,7 +317,16 @@ router.post(
       updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
     });
 
-    await Promise.all([saveSeason, updateDates, createChangeLogs]);
+    // Delete dateRanges removed by the user
+    const deleteDates = DateRange.destroy({
+      where: {
+        id: {
+          [Op.in]: deletedDateRangeIds,
+        },
+      },
+    });
+
+    await Promise.all([saveSeason, updateDates, createChangeLogs, deleteDates]);
 
     res.sendStatus(200);
   }),
