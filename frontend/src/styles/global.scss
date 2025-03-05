@@ -71,9 +71,7 @@ a:not(.btn):focus {
 }
 
 // custom bootstrap button style: "text"
-.btn-text-primary {
-  --bs-btn-color: var(--theme-primary-blue);
-
+.btn-text {
   &:hover,
   &:focus {
     text-decoration: underline;
@@ -114,10 +112,13 @@ a:not(.btn):focus {
     border-color: transparent;
   }
 
-  // override background color (not for text style buttons)
-  &:not(.btn-text-primary) {
+  &:not(.btn-text) {
     background-color: var(--surface-color-primary-button-disabled);
     color: var(--typography-color-disabled);
+  }
+
+  &.btn-text {
+    background-color: transparent;
   }
 }
 

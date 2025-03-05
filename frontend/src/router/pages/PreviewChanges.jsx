@@ -261,7 +261,7 @@ function PreviewChanges() {
                 <td>
                   <button
                     onClick={navigateToEdit}
-                    className="btn btn-text-primary"
+                    className="btn btn-text text-primary"
                   >
                     <FontAwesomeIcon
                       className="append-content me-2"
@@ -280,7 +280,7 @@ function PreviewChanges() {
                   <td>
                     <button
                       onClick={navigateToEdit}
-                      className="btn btn-text-primary"
+                      className="btn btn-text text-primary"
                     >
                       <FontAwesomeIcon
                         className="append-content me-2"
