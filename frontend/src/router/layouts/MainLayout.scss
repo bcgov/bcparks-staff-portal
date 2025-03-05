@@ -6,6 +6,10 @@
   & > header {
     border-bottom: 2px solid var(--theme-primary-gold);
 
+    .logo-link {
+      text-decoration: none;
+    }
+
     .app-title {
       white-space: nowrap;
 

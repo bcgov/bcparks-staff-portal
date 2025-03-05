@@ -23,7 +23,7 @@ export default function MainLayout() {
       <header className="bcparks-global d-flex align-items-center container-fluid py-1 bg-primary-nav">
         <Link
           to={`/`}
-          className="d-inline-block d-flex align-items-center align-items-md-end"
+          className="d-inline-block d-flex align-items-center align-items-md-end logo-link"
           href="/"
         >
           <img
