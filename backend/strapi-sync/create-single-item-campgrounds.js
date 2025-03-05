@@ -1765,14 +1765,14 @@ async function createCampground(item) {
 
   const campground = await createModel(Campground, data);
 
-  const feature = await getItemByAttributes(Feature, {
-    strapiFeatureId: item.items[0].featureId,
-  });
-  // const strapiId = parseInt(item.items[0].featureId.split("_")[1], 10);
-
   // const feature = await getItemByAttributes(Feature, {
-  //   strapiId,
+  //   strapiFeatureId: item.items[0].featureId,
   // });
+  const strapiId = parseInt(item.items[0].featureId.split("_")[1], 10);
+
+  const feature = await getItemByAttributes(Feature, {
+    strapiId,
+  });
 
   feature.campgroundId = campground.id;
   feature.name = "All sites";
@@ -1783,4 +1783,4 @@ export async function createSingleItemsCampgrounds(items) {
   await Promise.all(items.map(async (item) => createCampground(item)));
 }
 
-// createSingleItemsCampgrounds(campgrounds);
+createSingleItemsCampgrounds(campgrounds);

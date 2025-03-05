@@ -8,7 +8,7 @@ import {
 } from "../models/index.js";
 import { createModel } from "./utils.js";
 
-export async function createMissingDatesAndSeasons() {
+async function createMissingDatesAndSeasons() {
   const [seasons2025, dateTypes, winterFeatureType, features] =
     await Promise.all([
       Season.findAll({
@@ -151,4 +151,4 @@ export async function createMissingDatesAndSeasons() {
   }
 }
 
-// createMissingDatesAndSeasons();
+createMissingDatesAndSeasons();
