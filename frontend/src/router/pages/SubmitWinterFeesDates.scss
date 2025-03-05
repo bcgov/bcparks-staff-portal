@@ -4,6 +4,15 @@
     font-family: var(--bs-font-sans-serif); // "BCSans"
   }
 
+  section {
+    padding-block: var(--layout-margin-large);
+
+    // alternating background color
+    &:nth-of-type(odd) {
+      background-color: var(--surface-color-background-light-gray);
+    }
+  }
+
   .dates-row {
     margin-bottom: var(--layout-margin-large);
 

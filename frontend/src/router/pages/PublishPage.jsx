@@ -30,11 +30,19 @@ function PublishPage() {
   );
 
   if (loading) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <div>Error loading data: {error.message}</div>;
+    return (
+      <div className="container">
+        <div>Error loading data: {error.message}</div>
+      </div>
+    );
   }
 
   async function publishToApi() {
@@ -66,66 +74,70 @@ function PublishPage() {
   }
 
   return (
-    <div className="page publish">
-      <FlashMessage
-        title={successFlash.flashTitle}
-        message={successFlash.flashMessage}
-        isVisible={successFlash.isFlashOpen}
-        onClose={successFlash.handleFlashClose}
-      />
+    <div className="container">
+      <div className="page publish">
+        <FlashMessage
+          title={successFlash.flashTitle}
+          message={successFlash.flashMessage}
+          isVisible={successFlash.isFlashOpen}
+          onClose={successFlash.handleFlashClose}
+        />
 
-      <FlashMessage
-        title={errorFlash.flashTitle}
-        message={errorFlash.flashMessage}
-        isVisible={errorFlash.isFlashOpen}
-        onClose={errorFlash.handleFlashClose}
-        variant="error"
-      />
+        <FlashMessage
+          title={errorFlash.flashTitle}
+          message={errorFlash.flashMessage}
+          isVisible={errorFlash.isFlashOpen}
+          onClose={errorFlash.handleFlashClose}
+          variant="error"
+        />
 
-      <ConfirmationDialog
-        isOpen={isConfirmationOpen}
-        onConfirm={handleConfirm}
-        onCancel={handleCancel}
-        title={title}
-        message={message}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        notes={confirmationDialogNotes}
-      />
-      <div className="d-flex justify-content-end mb-2">
-        <button className="btn btn-primary" onClick={publishToApi}>
-          Publish to API
-        </button>
-        {saving && (
-          <span
-            className="spinner-border text-primary align-self-center me-2"
-            aria-hidden="true"
-          ></span>
-        )}
-      </div>
+        <ConfirmationDialog
+          isOpen={isConfirmationOpen}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+          title={title}
+          message={message}
+          confirmButtonText={confirmButtonText}
+          cancelButtonText={cancelButtonText}
+          notes={confirmationDialogNotes}
+        />
 
-      <div className="table-responsive">
-        <table className="table table-striped">
-          <thead>
-            <tr>
-              <th scope="col">Park name</th>
-              <th scope="col">Feature</th>
-              <th scope="col">Season</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data?.features.map((feature) => (
-              <tr key={`${feature.id}-${feature.season}`}>
-                <td>{feature.park.name}</td>
-                <td>{feature.name}</td>
-                <td>
-                  {feature.season}
-                  <NotReadyFlag show={!feature.readyToPublish} />
-                </td>
+        <div className="d-flex justify-content-end mb-2">
+          <button className="btn btn-primary" onClick={publishToApi}>
+            Publish to API
+          </button>
+
+          {saving && (
+            <span
+              className="spinner-border text-primary align-self-center me-2"
+              aria-hidden="true"
+            ></span>
+          )}
+        </div>
+
+        <div className="table-responsive">
+          <table className="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Park name</th>
+                <th scope="col">Feature</th>
+                <th scope="col">Season</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {data?.features.map((feature) => (
+                <tr key={`${feature.id}-${feature.season}`}>
+                  <td>{feature.park.name}</td>
+                  <td>{feature.name}</td>
+                  <td>
+                    {feature.season}
+                    <NotReadyFlag show={!feature.readyToPublish} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

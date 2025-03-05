@@ -353,9 +353,13 @@ function SubmitDates() {
   function Campground({ campground }) {
     return (
       <section className="campground">
-        <h3 className="campground-name mb-4">{campground.name}</h3>
+        <div className="container">
+          <h3 className="campground-name mb-4">{campground.name}</h3>
+        </div>
         {campground.features.map((feature) => (
-          <Feature key={feature.id} feature={feature} />
+          <div key={feature.id} className="container">
+            <Feature feature={feature} />
+          </div>
         ))}
       </section>
     );
@@ -630,7 +634,7 @@ function SubmitDates() {
 
   function Feature({ feature }) {
     return (
-      <section className="feature">
+      <div className="feature">
         {feature.name && <h4 className="feature-name mb-4">{feature.name}</h4>}
         <div className="row">
           <div className="col-md-6">
@@ -662,7 +666,7 @@ function SubmitDates() {
               />
             ))}
 
-            <p>
+            <div>
               <button
                 className="btn btn-text text-link"
                 onClick={() => addDateRange("Operation", feature.dateable.id)}
@@ -670,7 +674,7 @@ function SubmitDates() {
                 <FontAwesomeIcon icon={faPlus} />
                 <span className="ms-1">Add more operating dates</span>
               </button>
-            </p>
+            </div>
           </div>
 
           {feature.hasReservations && (
@@ -705,7 +709,7 @@ function SubmitDates() {
                 ),
               )}
 
-              <p>
+              <div>
                 <button
                   className="btn btn-text text-link"
                   onClick={() =>
@@ -715,10 +719,11 @@ function SubmitDates() {
                   <FontAwesomeIcon icon={faPlus} />
                   <span className="ms-1">Add more reservation dates</span>
                 </button>
-              </p>
+              </div>
             </div>
           )}
         </div>
+
         {/* Show validation errors for the whole dateable feature */}
         {errors[feature.dateable.id] && (
           <div className="error-message mt-2">
@@ -726,7 +731,7 @@ function SubmitDates() {
             <div>{errors[feature.dateable.id]}</div>
           </div>
         )}
-      </section>
+      </div>
     );
   }
 
@@ -752,11 +757,19 @@ function SubmitDates() {
   };
 
   if (loading || !season) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error loading season data: {error.message}</p>;
+    return (
+      <div className="container">
+        <p>Error loading season data: {error.message}</p>
+      </div>
+    );
   }
 
   return (
@@ -780,115 +793,128 @@ function SubmitDates() {
         variant="error"
       />
 
-      <NavBack routePath={paths.park(parkId)}>
-        Back to {season.park.name} dates
-      </NavBack>
+      <div className="container">
+        <NavBack routePath={paths.park(parkId)}>
+          Back to {season.park.name} dates
+        </NavBack>
 
-      <header className="page-header internal">
-        <h1 className="header-with-icon">
-          <FeatureIcon iconName={season.featureType.icon} />
-          {season.park.name} {season.featureType.name}
-        </h1>
-        <h2>Edit {season.operatingYear} season dates</h2>
-      </header>
+        <header className="page-header internal">
+          <h1 className="header-with-icon">
+            <FeatureIcon iconName={season.featureType.icon} />
+            {season.park.name} {season.featureType.name}
+          </h1>
+          <h2>Edit {season.operatingYear} season dates</h2>
+        </header>
 
-      <p className="mb-5">
-        <a
-          href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
-          target="_blank"
-        >
-          View a list of all statutory holidays
-        </a>
-      </p>
+        <p className="mb-5">
+          <a
+            href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
+            target="_blank"
+          >
+            View a list of all statutory holidays
+          </a>
+        </p>
+      </div>
 
-      {season?.campgrounds.map((campground) => (
-        <Campground key={campground.id} campground={campground} />
-      ))}
+      <div className="mb-5">
+        {season?.campgrounds.map((campground) => (
+          <Campground key={campground.id} campground={campground} />
+        ))}
 
-      {season?.features.map((feature) => (
-        <Feature key={feature.id} feature={feature} />
-      ))}
+        {season?.features.map((feature) => (
+          <section key={feature.id} className="non-campground-feature">
+            <div className="container">
+              <Feature feature={feature} />
+            </div>
+          </section>
+        ))}
+      </div>
 
-      <div className="row notes">
-        <div className="col-lg-6">
-          <h3 className="mb-4">
-            Notes
-            {["approved", "on API"].includes(season?.status) && (
-              <span className="text-danger">*</span>
-            )}
-          </h3>
+      <div className="container">
+        <div className="row notes">
+          <div className="col-lg-6">
+            <h3 className="mb-4">
+              Notes
+              {["approved", "on API"].includes(season?.status) && (
+                <span className="text-danger">*</span>
+              )}
+            </h3>
 
-          <ChangeLogsList changeLogs={season?.changeLogs} />
+            <ChangeLogsList changeLogs={season?.changeLogs} />
 
-          <p>
-            If you are updating the current year’s dates, provide an explanation
-            for why dates have changed. Provide any other notes about these
-            dates if needed.
-          </p>
+            <p>
+              If you are updating the current year’s dates, provide an
+              explanation for why dates have changed. Provide any other notes
+              about these dates if needed.
+            </p>
 
-          <div className={`form-group mb-4 ${errors.notes ? "has-error" : ""}`}>
-            <textarea
-              className={classNames({
-                "form-control": true,
-                "is-invalid": errors.notes,
-              })}
-              id="notes"
-              name="notes"
-              rows="5"
-              value={notes}
-              onChange={(ev) => {
-                setNotes(ev.target.value);
-                validateNotes(ev.target.value);
-              }}
-            ></textarea>
-            {errors.notes && (
-              <div className="error-message mt-2">
-                <FontAwesomeIcon icon={faTriangleExclamation} />
-                <div>{errors.notes}</div>
-              </div>
-            )}
-          </div>
-
-          <ContactBox />
-
-          <ReadyToPublishBox
-            readyToPublish={readyToPublish}
-            setReadyToPublish={setReadyToPublish}
-          />
-
-          <div className="controls d-flex flex-column flex-sm-row gap-2">
-            <Link
-              to={paths.park(parkId)}
-              type="button"
-              className="btn btn-outline-primary"
+            <div
+              className={`form-group mb-4 ${errors.notes ? "has-error" : ""}`}
             >
-              Back
-            </Link>
+              <textarea
+                className={classNames({
+                  "form-control": true,
+                  "is-invalid": errors.notes,
+                })}
+                id="notes"
+                name="notes"
+                rows="5"
+                value={notes}
+                onChange={(ev) => {
+                  setNotes(ev.target.value);
+                  validateNotes(ev.target.value);
+                }}
+              ></textarea>
 
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={saveAsDraft}
-              disabled={!hasChanges()}
-            >
-              Save draft
-            </button>
+              {errors.notes && (
+                <div className="error-message mt-2">
+                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                  <div>{errors.notes}</div>
+                </div>
+              )}
+            </div>
 
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={continueToPreview}
-              disabled={!hasChanges()}
-            >
-              Save and continue to preview
-            </button>
+            <ContactBox />
 
-            {saving && (
-              <span
-                className="spinner-border text-primary align-self-center me-2"
-                aria-hidden="true"
-              ></span>
-            )}
+            <ReadyToPublishBox
+              readyToPublish={readyToPublish}
+              setReadyToPublish={setReadyToPublish}
+            />
+
+            <div className="controls d-flex flex-column flex-sm-row gap-2">
+              <Link
+                to={paths.park(parkId)}
+                type="button"
+                className="btn btn-outline-primary"
+              >
+                Back
+              </Link>
+
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={saveAsDraft}
+                disabled={!hasChanges()}
+              >
+                Save draft
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={continueToPreview}
+                disabled={!hasChanges()}
+              >
+                Save and continue to preview
+              </button>
+
+              {saving && (
+                <span
+                  className="spinner-border text-primary align-self-center me-2"
+                  aria-hidden="true"
+                ></span>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -333,120 +333,136 @@ function PreviewChanges() {
   }, [data]);
 
   if (loading || !data) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error loading season data: {error.message}</p>;
+    return (
+      <div className="container">
+        <p>Error loading season data: {error.message}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="page review-changes">
-      <FlashMessage
-        title={errorFlashMessage.flashTitle}
-        message={errorFlashMessage.flashMessage}
-        isVisible={errorFlashMessage.isFlashOpen}
-        onClose={errorFlashMessage.handleFlashClose}
-        variant="error"
-      />
+    <div className="container">
+      <div className="page review-changes">
+        <FlashMessage
+          title={errorFlashMessage.flashTitle}
+          message={errorFlashMessage.flashMessage}
+          isVisible={errorFlashMessage.isFlashOpen}
+          onClose={errorFlashMessage.handleFlashClose}
+          variant="error"
+        />
 
-      <ConfirmationDialog
-        title={title}
-        message={message}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        notes={confirmationDialogNotes}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        isOpen={isConfirmationOpen}
-      />
+        <ConfirmationDialog
+          title={title}
+          message={message}
+          confirmButtonText={confirmButtonText}
+          cancelButtonText={cancelButtonText}
+          notes={confirmationDialogNotes}
+          onCancel={handleCancel}
+          onConfirm={handleConfirm}
+          isOpen={isConfirmationOpen}
+        />
 
-      <MissingDatesConfirmationDialog
-        featureNames={missingDatesConfirmation.featureNames}
-        inputMessage={missingDatesConfirmation.inputMessage}
-        setInputMessage={missingDatesConfirmation.setInputMessage}
-        isOpen={missingDatesConfirmation.isOpen}
-        onCancel={missingDatesConfirmation.handleCancel}
-        onConfirm={missingDatesConfirmation.handleConfirm}
-      />
-      <NavBack routePath={paths.park(parkId)}>
-        Back to {data?.park.name} dates
-      </NavBack>
+        <MissingDatesConfirmationDialog
+          featureNames={missingDatesConfirmation.featureNames}
+          inputMessage={missingDatesConfirmation.inputMessage}
+          setInputMessage={missingDatesConfirmation.setInputMessage}
+          isOpen={missingDatesConfirmation.isOpen}
+          onCancel={missingDatesConfirmation.handleCancel}
+          onConfirm={missingDatesConfirmation.handleConfirm}
+        />
 
-      <header className="page-header internal">
-        <h1 className="header-with-icon">
-          <FeatureIcon iconName={data.featureType.icon} />
-          {data.park.name} {data.featureType.name}
-        </h1>
-        <h2>Edit {data.operatingYear} season dates</h2>
-      </header>
+        <NavBack routePath={paths.park(parkId)}>
+          Back to {data?.park.name} dates
+        </NavBack>
 
-      <section className="feature-type">
-        {data?.campgrounds.map((campground) => (
-          <Campground key={campground.id} campground={campground} />
-        ))}
+        <header className="page-header internal">
+          <h1 className="header-with-icon">
+            <FeatureIcon iconName={data.featureType.icon} />
+            {data.park.name} {data.featureType.name}
+          </h1>
+          <h2>Edit {data.operatingYear} season dates</h2>
+        </header>
 
-        {data?.features.map((feature) => (
-          <Feature key={feature.id} feature={feature} />
-        ))}
-      </section>
+        <section className="feature-type">
+          {data?.campgrounds.map((campground) => (
+            <Campground key={campground.id} campground={campground} />
+          ))}
 
-      <div className="row notes">
-        <div className="col-lg-6">
-          <h3 className="mb-4">Notes</h3>
+          {data?.features.map((feature) => (
+            <Feature key={feature.id} feature={feature} />
+          ))}
+        </section>
 
-          <ChangeLogsList changeLogs={data?.changeLogs} />
+        <div className="row notes">
+          <div className="col-lg-6">
+            <h3 className="mb-4">Notes</h3>
 
-          <p>
-            If you are updating the current year’s dates, provide an explanation
-            for why dates have changed. Provide any other notes about these
-            dates if needed.
-          </p>
+            <ChangeLogsList changeLogs={data?.changeLogs} />
 
-          <div className="form-group mb-4">
-            <textarea
-              className="form-control"
-              id="notes"
-              name="notes"
-              rows="5"
-              value={notes}
-              onChange={(ev) => setNotes(ev.target.value)}
-            ></textarea>
-          </div>
-          <ContactBox />
+            <p>
+              If you are updating the current year’s dates, provide an
+              explanation for why dates have changed. Provide any other notes
+              about these dates if needed.
+            </p>
 
-          <ReadyToPublishBox
-            readyToPublish={readyToPublish}
-            setReadyToPublish={setReadyToPublish}
-          />
+            <div className="form-group mb-4">
+              <textarea
+                className="form-control"
+                id="notes"
+                name="notes"
+                rows="5"
+                value={notes}
+                onChange={(ev) => setNotes(ev.target.value)}
+              ></textarea>
+            </div>
 
-          <div className="controls d-flex flex-column flex-sm-row gap-2">
-            <Link
-              to={paths.seasonEdit(parkId, seasonId)}
-              type="button"
-              className="btn btn-outline-primary"
-            >
-              Back
-            </Link>
+            <ContactBox />
 
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={savePreview}
-            >
-              Save draft
-            </button>
+            <ReadyToPublishBox
+              readyToPublish={readyToPublish}
+              setReadyToPublish={setReadyToPublish}
+            />
 
-            <button type="button" className="btn btn-primary" onClick={approve}>
-              Mark approved
-            </button>
+            <div className="controls d-flex flex-column flex-sm-row gap-2">
+              <Link
+                to={paths.seasonEdit(parkId, seasonId)}
+                type="button"
+                className="btn btn-outline-primary"
+              >
+                Back
+              </Link>
 
-            {(saving || savingApproval) && (
-              <span
-                className="spinner-border text-primary align-self-center me-2"
-                aria-hidden="true"
-              ></span>
-            )}
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={savePreview}
+              >
+                Save draft
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={approve}
+              >
+                Mark approved
+              </button>
+
+              {(saving || savingApproval) && (
+                <span
+                  className="spinner-border text-primary align-self-center me-2"
+                  aria-hidden="true"
+                ></span>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -351,7 +351,7 @@ function CampgroundFeature({ featureData }) {
   }
 
   return (
-    <section className="feature mb-4">
+    <div className="feature">
       <h4 className="feature-name mb-4">{featureData.name}</h4>
 
       <div className="row">
@@ -390,7 +390,7 @@ function CampgroundFeature({ featureData }) {
             />
           ))}
 
-          <p>
+          <div>
             <button
               className="btn btn-text text-link"
               onClick={() => addDateRange()}
@@ -398,25 +398,27 @@ function CampgroundFeature({ featureData }) {
               <FontAwesomeIcon icon={faPlus} />
               <span className="ms-1">Add more operating dates</span>
             </button>
-          </p>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
 function FeatureType({ featureTypeData }) {
   return (
-    <div className="feature-type mb-5">
-      <h3 className="header-with-icon mb-4">
-        <FeatureIcon iconName={featureTypeData.icon} />
-        {featureTypeData.name}
-      </h3>
+    <section className="feature-type">
+      <div className="container">
+        <h3 className="header-with-icon mb-4">
+          <FeatureIcon iconName={featureTypeData.icon} />
+          {featureTypeData.name}
+        </h3>
 
-      {featureTypeData.features.map((feature) => (
-        <CampgroundFeature key={feature.id} featureData={feature} />
-      ))}
-    </div>
+        {featureTypeData.features.map((feature) => (
+          <CampgroundFeature key={feature.id} featureData={feature} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -611,11 +613,19 @@ export default function SubmitWinterFeesDates() {
   }, [data]);
 
   if (loading || !season) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error loading season data: {error.message}</p>;
+    return (
+      <div className="container">
+        <p>Error loading season data: {error.message}</p>
+      </div>
+    );
   }
 
   return (
@@ -639,116 +649,125 @@ export default function SubmitWinterFeesDates() {
         isOpen={isConfirmationOpen}
       />
 
-      <NavBack routePath={paths.park(parkId)}>
-        Back to {season.park.name} dates
-      </NavBack>
+      <div className="container">
+        <NavBack routePath={paths.park(parkId)}>
+          Back to {season.park.name} dates
+        </NavBack>
 
-      <header className="page-header internal">
-        <h1 className="header-with-icon">
-          <FeatureIcon iconName="winter-recreation" />
-          {season.park.name} winter fee
-        </h1>
-        <h2>Edit {season.name}</h2>
-      </header>
+        <header className="page-header internal">
+          <h1 className="header-with-icon">
+            <FeatureIcon iconName="winter-recreation" />
+            {season.park.name} winter fee
+          </h1>
+          <h2>Edit {season.name}</h2>
+        </header>
 
-      <p className="mb-5">
-        <a
-          href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
-          target="_blank"
-        >
-          View a list of all statutory holidays
-        </a>
-      </p>
+        <p className="mb-5">
+          <a
+            href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
+            target="_blank"
+          >
+            View a list of all statutory holidays
+          </a>
+        </p>
+      </div>
 
-      <dataContext.Provider value={data}>
-        <datesContext.Provider
-          value={{ dates, setDates, setDeletedDateRangeIds }}
-        >
-          {season.featureTypes.map((featureType) => (
-            <FeatureType key={featureType.id} featureTypeData={featureType} />
-          ))}
-        </datesContext.Provider>
-      </dataContext.Provider>
+      <div className="mb-5">
+        <dataContext.Provider value={data}>
+          <datesContext.Provider
+            value={{ dates, setDates, setDeletedDateRangeIds }}
+          >
+            {season.featureTypes.map((featureType) => (
+              <FeatureType key={featureType.id} featureTypeData={featureType} />
+            ))}
+          </datesContext.Provider>
+        </dataContext.Provider>
+      </div>
 
-      <div className="row notes">
-        <div className="col-lg-6">
-          <h3 className="mb-4">
-            Notes
-            {["approved", "on API"].includes(season.status) && (
-              <span className="text-danger">*</span>
-            )}
-          </h3>
+      <div className="container">
+        <div className="row notes">
+          <div className="col-lg-6">
+            <h3 className="mb-4">
+              Notes
+              {["approved", "on API"].includes(season.status) && (
+                <span className="text-danger">*</span>
+              )}
+            </h3>
 
-          <ChangeLogsList changeLogs={season.changeLogs} />
+            <ChangeLogsList changeLogs={season.changeLogs} />
 
-          <p>
-            If you are updating the current year’s dates, provide an explanation
-            for why dates have changed. Provide any other notes about these
-            dates if needed.
-          </p>
+            <p>
+              If you are updating the current year’s dates, provide an
+              explanation for why dates have changed. Provide any other notes
+              about these dates if needed.
+            </p>
 
-          <div className={`form-group mb-4 ${errors.notes ? "has-error" : ""}`}>
-            <textarea
-              className={classNames("form-control", {
-                "is-invalid": errors.notes,
-              })}
-              id="notes"
-              name="notes"
-              rows="5"
-              value={notes}
-              onChange={(ev) => {
-                setNotes(ev.target.value);
-                validateNotes(ev.target.value);
-              }}
-            ></textarea>
-            {errors.notes && (
-              <div className="error-message mt-2">
-                <FontAwesomeIcon icon={faTriangleExclamation} />
-                <div>{errors.notes}</div>
-              </div>
-            )}
-          </div>
-
-          <ContactBox />
-
-          <ReadyToPublishBox
-            readyToPublish={readyToPublish}
-            setReadyToPublish={setReadyToPublish}
-          />
-
-          <div className="controls d-flex flex-column flex-sm-row gap-2">
-            <Link
-              to={paths.park(parkId)}
-              type="button"
-              className="btn btn-outline-primary"
+            <div
+              className={`form-group mb-4 ${errors.notes ? "has-error" : ""}`}
             >
-              Back
-            </Link>
+              <textarea
+                className={classNames("form-control", {
+                  "is-invalid": errors.notes,
+                })}
+                id="notes"
+                name="notes"
+                rows="5"
+                value={notes}
+                onChange={(ev) => {
+                  setNotes(ev.target.value);
+                  validateNotes(ev.target.value);
+                }}
+              ></textarea>
 
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={saveAsDraft}
-              disabled={!hasChanges()}
-            >
-              Save draft
-            </button>
+              {errors.notes && (
+                <div className="error-message mt-2">
+                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                  <div>{errors.notes}</div>
+                </div>
+              )}
+            </div>
 
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={continueToPreview}
-              disabled={!hasChanges()}
-            >
-              Save and continue to preview
-            </button>
+            <ContactBox />
 
-            {saving && (
-              <span
-                className="spinner-border text-primary align-self-center me-2"
-                aria-hidden="true"
-              ></span>
-            )}
+            <ReadyToPublishBox
+              readyToPublish={readyToPublish}
+              setReadyToPublish={setReadyToPublish}
+            />
+
+            <div className="controls d-flex flex-column flex-sm-row gap-2">
+              <Link
+                to={paths.park(parkId)}
+                type="button"
+                className="btn btn-outline-primary"
+              >
+                Back
+              </Link>
+
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={saveAsDraft}
+                disabled={!hasChanges()}
+              >
+                Save draft
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={continueToPreview}
+                disabled={!hasChanges()}
+              >
+                Save and continue to preview
+              </button>
+
+              {saving && (
+                <span
+                  className="spinner-border text-primary align-self-center me-2"
+                  aria-hidden="true"
+                ></span>
+              )}
+            </div>
           </div>
         </div>
       </div>

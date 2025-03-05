@@ -1,19 +1,14 @@
 .page.submit-dates {
-  .campground {
+  section {
+    padding-block: var(--layout-margin-large);
+
     // alternating background color
-    &:nth-child(even) {
+    &:nth-of-type(odd) {
       background-color: var(--surface-color-background-light-gray);
     }
   }
 
   .feature {
-    margin-bottom: var(--layout-margin-large);
-
-    // alternating background color
-    &:nth-child(odd) {
-      background-color: var(--surface-color-background-light-gray);
-    }
-
     .dates-row {
       margin-bottom: var(--layout-margin-large);
 

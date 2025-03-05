@@ -122,61 +122,63 @@ function EditAndReview() {
   }
 
   return (
-    <div className="page dates-management">
-      <div className="table-filters row mb-4">
-        <div className="col-lg-3 col-md-6 col-12">
-          <label htmlFor="parkName" className="form-label">
-            Park name
-          </label>
+    <div className="container">
+      <div className="page dates-management">
+        <div className="table-filters row mb-4">
+          <div className="col-lg-3 col-md-6 col-12">
+            <label htmlFor="parkName" className="form-label">
+              Park name
+            </label>
 
-          <div className="input-with-append">
-            <input
-              type="text"
-              className="form-control input-search"
-              id="parkName"
-              placeholder="Search by park name"
-              value={nameFilter}
-              onChange={(e) => {
+            <div className="input-with-append">
+              <input
+                type="text"
+                className="form-control input-search"
+                id="parkName"
+                placeholder="Search by park name"
+                value={nameFilter}
+                onChange={(e) => {
+                  setPage(1);
+                  setNameFilter(e.target.value);
+                }}
+              />
+              <FontAwesomeIcon
+                className="append-content"
+                icon={faMagnifyingGlass}
+              />
+            </div>
+          </div>
+
+          <div className="col-lg-3 col-md-6 col-12">
+            <label htmlFor="status" className="form-label">
+              Status
+            </label>
+
+            <MultiSelect
+              options={statusOptions}
+              onInput={(value) => {
                 setPage(1);
-                setNameFilter(e.target.value);
+                setStatusFilter(value);
               }}
-            />
-            <FontAwesomeIcon
-              className="append-content"
-              icon={faMagnifyingGlass}
-            />
+              value={statusFilter}
+            >
+              Filter by status{" "}
+              {statusFilter.length > 0 && `(${statusFilter.length})`}
+            </MultiSelect>
+          </div>
+
+          <div className="col-lg-3 col-md-6 col-12 d-flex">
+            <button
+              onClick={resetFilters}
+              className="btn btn-link align-self-end"
+            >
+              Clear filters
+            </button>
           </div>
         </div>
 
-        <div className="col-lg-3 col-md-6 col-12">
-          <label htmlFor="status" className="form-label">
-            Status
-          </label>
-
-          <MultiSelect
-            options={statusOptions}
-            onInput={(value) => {
-              setPage(1);
-              setStatusFilter(value);
-            }}
-            value={statusFilter}
-          >
-            Filter by status{" "}
-            {statusFilter.length > 0 && `(${statusFilter.length})`}
-          </MultiSelect>
-        </div>
-
-        <div className="col-lg-3 col-md-6 col-12 d-flex">
-          <button
-            onClick={resetFilters}
-            className="btn btn-link align-self-end"
-          >
-            Clear filters
-          </button>
-        </div>
+        {renderTable()}
       </div>
-
-      {renderTable()}
     </div>
   );
 }
