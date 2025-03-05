@@ -1,8 +1,8 @@
 import { exec } from "node:child_process";
-// import { syncData, oneTimeDataImport } from "./sync.js";
-// import { createSingleItemsCampgrounds } from "./create-single-item-campgrounds.js";
-// import { createCampgrounds } from "./create-multiple-item-campgrounds.js";
-// import { createMissingDatesAndSeasons } from "./create-missing-dates-and-seasons.js";
+import { syncData, oneTimeDataImport } from "./sync.js";
+import { createSingleItemsCampgrounds } from "./create-single-item-campgrounds.js";
+import { createMultipleItemsCampgrounds } from "./create-multiple-item-campgrounds.js";
+import { createMissingDatesAndSeasons } from "./create-missing-dates-and-seasons.js";
 
 function resetDatabase() {
   return new Promise((resolve, reject) => {
@@ -24,13 +24,17 @@ function resetDatabase() {
   });
 }
 
-export async function resetScript() {
-  // await resetDatabase();
-  // await syncData();
-  // await oneTimeDataImport();
-  // await createSingleItemsCampgrounds();
-  // await createCampgrounds();
-  // await createMissingDatesAndSeasons();
+export async function importData() {
+  await syncData();
+  await oneTimeDataImport();
+  await createSingleItemsCampgrounds();
+  await createMultipleItemsCampgrounds();
+  await createMissingDatesAndSeasons();
+}
 
+export async function resetScript() {
+  await resetDatabase();
+
+  await importData();
   console.log("calling resetDatabase");
 }

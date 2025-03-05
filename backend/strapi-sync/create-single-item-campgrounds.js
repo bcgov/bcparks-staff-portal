@@ -1779,8 +1779,8 @@ async function createCampground(item) {
   await feature.save();
 }
 
-export async function createSingleItemsCampgrounds(items) {
-  await Promise.all(items.map(async (item) => createCampground(item)));
+export async function createSingleItemsCampgrounds() {
+  await Promise.all(campgrounds.map(async (item) => createCampground(item)));
 }
 
 // createSingleItemsCampgrounds(campgrounds);

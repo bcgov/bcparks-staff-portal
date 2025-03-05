@@ -517,8 +517,8 @@ async function createCampground(item) {
   );
 }
 
-export async function createCampgrounds(items) {
-  await Promise.all(items.map(async (item) => createCampground(item)));
+export async function createMultipleItemsCampgrounds() {
+  await Promise.all(campgrounds.map(async (item) => createCampground(item)));
 }
 
 // createCampgrounds(campgrounds);
