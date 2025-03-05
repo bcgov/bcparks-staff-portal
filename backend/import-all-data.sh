@@ -7,10 +7,7 @@ set -e
 npx sequelize-cli db:drop
 npx sequelize-cli db:create
 npm run migrate
-npm run sync-data
-npm run one-time-data-import
-npm run create-single-item-campgrounds
-npm run create-multiple-item-campgrounds
-npm run create-missing-dates-and-seasons
+
+npm run import-data
 
 echo "All commands executed successfully."
