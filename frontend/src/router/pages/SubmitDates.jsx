@@ -78,7 +78,7 @@ function SubmitDates() {
 
   const navigate = useNavigate();
 
-  // are there changes to save?
+  // Returns true if there are any form changes to save
   function hasChanges() {
     // Any existing dates changed
     if (
