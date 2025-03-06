@@ -88,7 +88,7 @@ export default function ParkSeason({
       const confirm = await openConfirmation(
         "Edit submitted dates?",
         "A review may already be in progress and all dates will need to be reviewed again.",
-        "Edit",
+        "Continue to edit",
       );
 
       if (confirm) {
@@ -98,7 +98,7 @@ export default function ParkSeason({
       const confirm = await openConfirmation(
         "Edit approved dates?",
         "Dates will need to be reviewed again to be approved.",
-        "Edit",
+        "Continue to edit",
       );
 
       if (confirm) {
@@ -108,7 +108,7 @@ export default function ParkSeason({
       const confirm = await openConfirmation(
         "Edit public dates on API?",
         "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
-        "Edit",
+        "Continue to edit",
       );
 
       if (confirm) {

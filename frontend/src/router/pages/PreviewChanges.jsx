@@ -140,7 +140,7 @@ function PreviewChanges() {
                 ? campground.name
                 : `${campground.name}: ${feature.name}`;
 
-            featureNameList.push(name);
+            featureNameList.push(`${name} operating dates`);
           }
 
           if (feature.hasReservations) {
@@ -157,7 +157,7 @@ function PreviewChanges() {
                   ? campground.name
                   : `${campground.name}: ${feature.name}`;
 
-              featureNameList.push(name);
+              featureNameList.push(`${name} reservation dates`);
             }
           }
         }
@@ -174,7 +174,7 @@ function PreviewChanges() {
         );
 
         if (operatingDates.length === 0) {
-          featureNameList.push(feature.name);
+          featureNameList.push(`${feature.name} operating dates`);
         }
 
         if (feature.hasReservations) {
@@ -186,7 +186,7 @@ function PreviewChanges() {
           );
 
           if (reservationDates.length === 0) {
-            featureNameList.push(feature.name);
+            featureNameList.push(`${feature.name} reservation dates`);
           }
         }
       }
