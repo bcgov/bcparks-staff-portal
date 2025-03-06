@@ -143,11 +143,8 @@ const ParkResource = {
         component: false,
         // eslint-disable-next-line no-unused-vars -- required by AdminJS
         async handler(request, response, context) {
-          // const { currentAdmin } = context;
-
           try {
-            // Call your backend function to reset the DB
-            await resetScript(); // Replace with your actual function
+            await resetScript();
             console.log("Resetting database...");
 
             return {

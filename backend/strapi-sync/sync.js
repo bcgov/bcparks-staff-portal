@@ -705,6 +705,3 @@ export async function oneTimeDataImport() {
 
   await createDatesAndSeasons(datesData);
 }
-
-// syncData();
-// oneTimeDataImport();

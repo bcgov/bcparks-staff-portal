@@ -150,5 +150,3 @@ export async function createMissingDatesAndSeasons() {
     await DateRange.bulkCreate(datesToCreate);
   }
 }
-
-// createMissingDatesAndSeasons();

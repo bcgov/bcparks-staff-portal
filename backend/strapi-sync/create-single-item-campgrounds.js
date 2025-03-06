@@ -1780,7 +1780,5 @@ async function createCampground(item) {
 }
 
 export async function createSingleItemsCampgrounds() {
-  await Promise.all(campgrounds.map(async (item) => createCampground(item)));
+  await Promise.all(campgrounds.map(createCampground));
 }
-
-// createSingleItemsCampgrounds(campgrounds);
