@@ -14,6 +14,15 @@ The `install` command can be used when deploying to a namespace for the very fir
 
 Run the following commands from the `helm/deployment` directory.
 
+### Create secrets
+
+The backend deployments rely on a few secrets that must be created manually in each namespace:
+
+- main-strapi-token
+- alpha-strapi-token (not needed in the production namespace)
+
+Create the access tokens in Strapi as needed, and use the values to create secrets for each backend deployment.
+
 ### Dev
 
 ```sh
@@ -111,7 +120,7 @@ The `uninstall` command ca be used to remove all resources defined by the Helm c
 
 Run the following commands from the `infrastructure/helm/bcparks` directory.
 
-NOTE: This wil not remove the `main-postgres-secret` or `alpha-postgres-secret`.
+NOTE: This wil not remove the secrets.
 
 ### Dev
 
