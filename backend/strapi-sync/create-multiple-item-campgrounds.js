@@ -480,16 +480,16 @@ const campgrounds = [
 ];
 
 async function updateFeature(item, campgroundId) {
-  const strapiId = parseInt(item.featureId.split("_")[1], 10);
+  // const strapiId = parseInt(item.featureId.split("_")[1], 10);
 
   // get feature by featureId
-  // const feature = await getItemByAttributes(Feature, {
-  //   strapiFeatureId: item.featureId,
-  // });
-
   const feature = await getItemByAttributes(Feature, {
-    strapiId,
+    strapiFeatureId: item.featureId,
   });
+
+  // const feature = await getItemByAttributes(Feature, {
+  //   strapiId,
+  // });
 
   // set campgroundId and name
   feature.campgroundId = campgroundId;
@@ -517,8 +517,6 @@ async function createCampground(item) {
   );
 }
 
-async function createCampgrounds(items) {
-  await Promise.all(items.map(async (item) => createCampground(item)));
+export async function createMultipleItemsCampgrounds() {
+  await Promise.all(campgrounds.map(createCampground));
 }
-
-createCampgrounds(campgrounds);

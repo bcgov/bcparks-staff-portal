@@ -8,7 +8,7 @@ import {
 } from "../models/index.js";
 import { createModel } from "./utils.js";
 
-async function createMissingDatesAndSeasons() {
+export async function createMissingDatesAndSeasons() {
   const [seasons2025, dateTypes, winterFeatureType, features] =
     await Promise.all([
       Season.findAll({
@@ -50,6 +50,9 @@ async function createMissingDatesAndSeasons() {
             ],
           },
         ],
+        where: {
+          active: true,
+        },
       }),
     ]);
 
@@ -150,5 +153,3 @@ async function createMissingDatesAndSeasons() {
     await DateRange.bulkCreate(datesToCreate);
   }
 }
-
-createMissingDatesAndSeasons();

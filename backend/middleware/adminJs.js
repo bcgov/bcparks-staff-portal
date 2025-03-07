@@ -5,6 +5,7 @@ import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
 import { Op } from "sequelize";
+import { resetScript } from "../strapi-sync/reset-and-import-data.js";
 
 import {
   Dateable,
@@ -130,11 +131,54 @@ const SeasonResource = {
   },
 };
 
+const ParkResource = {
+  resource: Park,
+  options: {
+    actions: {
+      resetDatabase: {
+        actionType: "resource",
+        icon: "RefreshCw",
+        label: "Reset Database",
+        guard: "Are you sure you want to reset the database?.",
+        component: false,
+        // eslint-disable-next-line no-unused-vars -- required by AdminJS
+        async handler(request, response, context) {
+          try {
+            await resetScript();
+            console.log("Resetting database...");
+
+            return {
+              notice: {
+                message: "Database has been successfully reset!",
+                type: "success",
+              },
+            };
+          } catch (error) {
+            return {
+              notice: {
+                message: error.toString(),
+                type: "error",
+              },
+            };
+          }
+        },
+      },
+    },
+  },
+};
+
 function getSeasonResource() {
   if (process.env.DEV_TEST_MODE === "true") {
     return SeasonResource;
   }
   return Season;
+}
+
+function getParkResource() {
+  if (process.env.DEV_TEST_MODE === "true") {
+    return ParkResource;
+  }
+  return Park;
 }
 
 const componentLoader = new ComponentLoader();
@@ -144,7 +188,7 @@ const adminOptions = {
   componentLoader,
   resources: [
     Dateable,
-    Park,
+    getParkResource(),
     User,
     Campground,
     FeatureType,

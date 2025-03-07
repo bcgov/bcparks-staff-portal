@@ -79,8 +79,7 @@ export async function getData(url, queryParams) {
  * @returns {Array} list of all models with thier name, endpoint, and items
  */
 export async function fetchAllModels() {
-  // const url = `${process.env.STRAPI_URL}/api`;
-  const url = "https://cms.bcparks.ca/api";
+  const url = `${process.env.STRAPI_URL}/api`;
 
   const strapiData = [
     {
@@ -225,6 +224,14 @@ export async function createOrUpdateFeatureType(strapiData, item) {
   }
 
   return dbItem;
+}
+
+function getSeasonStatus(operatingYear) {
+  // if operating year is in the past, set status to on API, else set to requested
+  const currentYear = new Date().getFullYear();
+  const status = operatingYear < currentYear ? "on API" : "requested";
+
+  return status;
 }
 
 /**
@@ -461,7 +468,7 @@ export async function createDatesAndSeasons(datesData) {
     if (!season) {
       // create season if a season matching those 3 attributes doesn't exist
       const data = {
-        status: "requested",
+        status: getSeasonStatus(operatingYear),
         readyToPublish: true,
         ...attrs,
       };
@@ -542,7 +549,7 @@ export async function createDatesAndSeasons(datesData) {
       // create season if a season matching those 3 attributes doesn't exist
       // needs to be created before creating date ranges, because date ranges need a seasonId
       const data = {
-        status: "requested",
+        status: getSeasonStatus(operatingYear),
         readyToPublish: true,
         ...attrs,
       };
@@ -669,8 +676,7 @@ async function createTestUser() {
  */
 export async function oneTimeDataImport() {
   // only meant to run once - not needed for regular sync
-  // const url = `${process.env.STRAPI_URL}/api`;
-  const url = "https://cms.bcparks.ca/api";
+  const url = `${process.env.STRAPI_URL}/api`;
 
   const datesData = {
     endpoint: "/park-operation-sub-area-dates",
@@ -699,6 +705,3 @@ export async function oneTimeDataImport() {
 
   await createDatesAndSeasons(datesData);
 }
-
-// syncData();
-// oneTimeDataImport();
