@@ -50,6 +50,9 @@ export async function createMissingDatesAndSeasons() {
             ],
           },
         ],
+        where: {
+          active: true,
+        },
       }),
     ]);
 
