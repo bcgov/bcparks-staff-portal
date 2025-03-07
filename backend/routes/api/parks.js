@@ -1,13 +1,6 @@
 import { Router } from "express";
 import _ from "lodash";
-import {
-  Park,
-  Season,
-  FeatureType,
-  Feature,
-  Dateable,
-  DateRange,
-} from "../../models/index.js";
+import { Park, Season, FeatureType } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
 const router = Router();
