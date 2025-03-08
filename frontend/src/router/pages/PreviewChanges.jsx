@@ -388,7 +388,7 @@ function PreviewChanges() {
             <FeatureIcon iconName={data.featureType.icon} />
             {data.park.name} {data.featureType.name}
           </h1>
-          <h2>Edit {data.operatingYear} season dates</h2>
+          <h2>Preview {data.operatingYear} season dates</h2>
         </header>
 
         <section className="feature-type">

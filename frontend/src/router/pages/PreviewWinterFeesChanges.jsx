@@ -154,7 +154,7 @@ function PreviewChanges() {
   function Feature({ feature }) {
     return (
       <div>
-        <h5>{feature.name}</h5>
+        <h4 className="feature-name mb-4">{feature.name}</h4>
 
         <div className="table-responsive">
           <table className="table table-striped">
@@ -279,7 +279,7 @@ function PreviewChanges() {
 
         {data?.featureTypes.map((featureType) => (
           <section key={featureType.id} className="feature-type">
-            <h3 className="header-with-icon">
+            <h3 className="header-with-icon mb-4">
               <FeatureIcon iconName={featureType.icon} />
               {featureType.name}
             </h3>
