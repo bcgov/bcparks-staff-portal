@@ -179,7 +179,7 @@ function DateRange({
         </div>
       </div>
 
-      <div className="d-none d-lg-flex align-items-center justify-content-center col-lg-1 text-center">
+      <div className="date-range-dash d-none d-lg-flex justify-content-center col-lg-auto px-lg-2 text-center">
         <span>&ndash;</span>
       </div>
 
