@@ -208,13 +208,16 @@ const ConnectSession = Connect(session);
 const sessionStore = new ConnectSession({
   conObject: {
     ...connectionConfig,
+    // this package uses "user" instead of "username"
+    user: connectionConfig.username,
     ssl: process.env.NODE_ENV === "production",
   },
-  tableName: "session",
+  tableName: "AdminSessions",
   createTableIfMissing: true,
 });
 
 export const sessionMiddleware = session({
+  store: sessionStore,
   secret: process.env.ADMIN_SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
@@ -230,10 +233,11 @@ export const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
   null,
   {
     store: sessionStore,
-    resave: true,
+    resave: false,
     saveUninitialized: true,
-    secret: "sessionsecret",
+    secret: process.env.ADMIN_SESSION_SECRET,
     cookie: {
+      maxAge: 10 * 60 * 60 * 1000, // 10 hours
       httpOnly: process.env.NODE_ENV === "production",
       secure: process.env.NODE_ENV === "production",
     },
