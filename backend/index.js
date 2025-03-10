@@ -8,7 +8,7 @@ import RateLimit from "express-rate-limit";
 import "./env.js";
 import checkJwt from "./middleware/checkJwt.js";
 import usersMiddleware from "./middleware/users.js";
-import { admin, adminRouter, sessionMiddleware } from "./middleware/adminJs.js";
+import { admin, adminRouter } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
 import userRoutes from "./routes/api/user.js";
 import parkRoutes from "./routes/api/parks.js";
@@ -25,6 +25,11 @@ const app = express();
 
 // enable CORS for all routes
 app.use(cors());
+
+// trust the first proxy
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 // JSON parsing middleware
 app.use(express.json());
@@ -50,9 +55,6 @@ const limiter = RateLimit({
 });
 
 app.use(limiter);
-
-// Session store middleware (for AdminJS)
-app.use(sessionMiddleware);
 
 // Public routes
 app.use("/", homeRoutes); // Health check route(s)

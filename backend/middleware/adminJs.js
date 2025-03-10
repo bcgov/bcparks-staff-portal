@@ -210,18 +210,25 @@ const sessionStore = new ConnectSession({
     ...connectionConfig,
     // this package uses "user" instead of "username"
     user: connectionConfig.username,
-    ssl: process.env.NODE_ENV === "production",
+    ssl:
+      process.env.NODE_ENV === "production"
+        ? {
+            // Allow CrunchyDB's self-signed certificate
+            rejectUnauthorized: false,
+          }
+        : false,
   },
   tableName: "AdminSessions",
   createTableIfMissing: true,
 });
 
-export const sessionMiddleware = session({
-  store: sessionStore,
-  secret: process.env.ADMIN_SESSION_SECRET,
-  resave: false,
-  saveUninitialized: true,
-});
+const cookieOptions = { maxAge: 10 * 60 * 60 * 1000 };
+
+if (process.env.NODE_ENV === "production") {
+  cookieOptions.httpOnly = true;
+  cookieOptions.secure = true;
+  cookieOptions.domain = ".bcparks.ca";
+}
 
 export const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
   admin,
@@ -236,12 +243,9 @@ export const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     resave: false,
     saveUninitialized: true,
     secret: process.env.ADMIN_SESSION_SECRET,
-    cookie: {
-      maxAge: 10 * 60 * 60 * 1000, // 10 hours
-      httpOnly: process.env.NODE_ENV === "production",
-      secure: process.env.NODE_ENV === "production",
-    },
-    name: "adminjs",
+    cookie: cookieOptions,
+    name: process.env.ADMIN_COOKIE_NAME,
+    proxy: process.env.NODE_ENV === "production",
   },
 );
 
