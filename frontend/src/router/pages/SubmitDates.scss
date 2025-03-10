@@ -1,32 +1,14 @@
 .page.submit-dates {
-  h2:not(.react-datepicker h2) {
-    margin-bottom: var(--layout-margin-xlarge);
+  section {
+    padding-block: var(--layout-margin-large);
 
-    .feature-icon {
-      height: 1.25em;
-    }
-  }
-
-  .campground {
     // alternating background color
-    &:nth-child(even) {
+    &:nth-of-type(odd) {
       background-color: var(--surface-color-background-light-gray);
     }
   }
 
   .feature {
-    margin-bottom: var(--layout-margin-large);
-    padding-block: var(--layout-padding-medium);
-
-    // alternating background color
-    &:nth-child(odd) {
-      background-color: var(--surface-color-background-light-gray);
-    }
-
-    h3 {
-      margin-bottom: var(--layout-margin-large);
-    }
-
     .dates-row {
       margin-bottom: var(--layout-margin-large);
 
@@ -45,6 +27,10 @@
           margin-bottom: 0;
         }
       }
+
+      .date-range-dash span {
+        line-height: 2.25em;
+      }
     }
   }
 
@@ -59,10 +45,5 @@
     border-style: solid;
     border-color: var(--surface-color-border-dark) transparent transparent
       transparent;
-  }
-
-  .error-message {
-    color: var(--support-border-color-danger);
-    font-size: 0.875em;
   }
 }

@@ -58,7 +58,7 @@ export default function MainLayout() {
         </div>
       </header>
 
-      <main className="container mb-5">
+      <main className="p-0">
         <Outlet />
       </main>
 

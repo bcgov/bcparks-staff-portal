@@ -235,7 +235,9 @@ function PreviewChanges() {
   function Feature({ feature }) {
     return (
       <div>
-        {feature.name !== "" && <h5>{feature.name}</h5>}
+        {feature.name !== "" && (
+          <h4 className="feature-name mb-4">{feature.name}</h4>
+        )}
         <div className="table-responsive">
           <table className="table table-striped">
             <thead>
@@ -304,7 +306,7 @@ function PreviewChanges() {
   function Campground({ campground }) {
     return (
       <div>
-        <h4>{campground.name}</h4>
+        <h3 className="campground-name mb-4">{campground.name}</h3>
 
         {campground.features.map((feature) => (
           <Feature key={feature.id} feature={feature} />
@@ -330,124 +332,137 @@ function PreviewChanges() {
     setReadyToPublish(data.readyToPublish);
   }, [data]);
 
-  if (loading) {
-    return <LoadingBar />;
+  if (loading || !data) {
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error loading season data: {error.message}</p>;
+    return (
+      <div className="container">
+        <p>Error loading season data: {error.message}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="page review-changes">
-      <FlashMessage
-        title={errorFlashMessage.flashTitle}
-        message={errorFlashMessage.flashMessage}
-        isVisible={errorFlashMessage.isFlashOpen}
-        onClose={errorFlashMessage.handleFlashClose}
-        variant="error"
-      />
+    <div className="container">
+      <div className="page review-changes">
+        <FlashMessage
+          title={errorFlashMessage.flashTitle}
+          message={errorFlashMessage.flashMessage}
+          isVisible={errorFlashMessage.isFlashOpen}
+          onClose={errorFlashMessage.handleFlashClose}
+          variant="error"
+        />
 
-      <ConfirmationDialog
-        title={title}
-        message={message}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        notes={confirmationDialogNotes}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        isOpen={isConfirmationOpen}
-      />
+        <ConfirmationDialog
+          title={title}
+          message={message}
+          confirmButtonText={confirmButtonText}
+          cancelButtonText={cancelButtonText}
+          notes={confirmationDialogNotes}
+          onCancel={handleCancel}
+          onConfirm={handleConfirm}
+          isOpen={isConfirmationOpen}
+        />
 
-      <MissingDatesConfirmationDialog
-        featureNames={missingDatesConfirmation.featureNames}
-        inputMessage={missingDatesConfirmation.inputMessage}
-        setInputMessage={missingDatesConfirmation.setInputMessage}
-        isOpen={missingDatesConfirmation.isOpen}
-        onCancel={missingDatesConfirmation.handleCancel}
-        onConfirm={missingDatesConfirmation.handleConfirm}
-      />
-      <NavBack routePath={paths.park(parkId)}>
-        Back to {data?.park.name} dates
-      </NavBack>
+        <MissingDatesConfirmationDialog
+          featureNames={missingDatesConfirmation.featureNames}
+          inputMessage={missingDatesConfirmation.inputMessage}
+          setInputMessage={missingDatesConfirmation.setInputMessage}
+          isOpen={missingDatesConfirmation.isOpen}
+          onCancel={missingDatesConfirmation.handleCancel}
+          onConfirm={missingDatesConfirmation.handleConfirm}
+        />
 
-      <header className="page-header internal">
-        <h1>
-          {data?.park.name} {data?.operatingYear} season dates preview
-        </h1>
-      </header>
+        <NavBack routePath={paths.park(parkId)}>
+          Back to {data?.park.name} dates
+        </NavBack>
 
-      <section className="feature-type">
-        <h2 className="header-with-icon">
-          <FeatureIcon iconName={data?.featureType.icon} />
-          {data?.featureType.name}
-        </h2>
+        <header className="page-header internal">
+          <h1 className="header-with-icon">
+            <FeatureIcon iconName={data.featureType.icon} />
+            {data.park.name} {data.featureType.name}
+          </h1>
+          <h2>Preview {data.operatingYear} season dates</h2>
+        </header>
 
-        {data?.campgrounds.map((campground) => (
-          <Campground key={campground.id} campground={campground} />
-        ))}
+        <section className="feature-type">
+          {data?.campgrounds.map((campground) => (
+            <Campground key={campground.id} campground={campground} />
+          ))}
 
-        {data?.features.map((feature) => (
-          <Feature key={feature.id} feature={feature} />
-        ))}
-      </section>
+          {data?.features.map((feature) => (
+            <Feature key={feature.id} feature={feature} />
+          ))}
+        </section>
 
-      <div className="row notes">
-        <div className="col-lg-6">
-          <h2 className="mb-4">Notes</h2>
+        <div className="row notes">
+          <div className="col-lg-6">
+            <h3 className="mb-4">Notes</h3>
 
-          <ChangeLogsList changeLogs={data?.changeLogs} />
+            <ChangeLogsList changeLogs={data?.changeLogs} />
 
-          <p>
-            If you are updating the current year’s dates, provide an explanation
-            for why dates have changed. Provide any other notes about these
-            dates if needed.
-          </p>
+            <p>
+              If you are updating the current year’s dates, provide an
+              explanation for why dates have changed. Provide any other notes
+              about these dates if needed.
+            </p>
 
-          <div className="form-group mb-4">
-            <textarea
-              className="form-control"
-              id="notes"
-              name="notes"
-              rows="5"
-              value={notes}
-              onChange={(ev) => setNotes(ev.target.value)}
-            ></textarea>
-          </div>
-          <ContactBox />
+            <div className="form-group mb-4">
+              <textarea
+                className="form-control"
+                id="notes"
+                name="notes"
+                rows="5"
+                value={notes}
+                onChange={(ev) => setNotes(ev.target.value)}
+              ></textarea>
+            </div>
 
-          <ReadyToPublishBox
-            readyToPublish={readyToPublish}
-            setReadyToPublish={setReadyToPublish}
-          />
+            <ContactBox />
 
-          <div className="controls d-flex flex-column flex-sm-row gap-2">
-            <Link
-              to={paths.seasonEdit(parkId, seasonId)}
-              type="button"
-              className="btn btn-outline-primary"
-            >
-              Back
-            </Link>
+            <ReadyToPublishBox
+              readyToPublish={readyToPublish}
+              setReadyToPublish={setReadyToPublish}
+            />
 
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={savePreview}
-            >
-              Save draft
-            </button>
+            <div className="controls d-flex flex-column flex-sm-row gap-2">
+              <Link
+                to={paths.seasonEdit(parkId, seasonId)}
+                type="button"
+                className="btn btn-outline-primary"
+              >
+                Back
+              </Link>
 
-            <button type="button" className="btn btn-primary" onClick={approve}>
-              Mark approved
-            </button>
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={savePreview}
+              >
+                Save draft
+              </button>
 
-            {(saving || savingApproval) && (
-              <span
-                className="spinner-border text-primary align-self-center me-2"
-                aria-hidden="true"
-              ></span>
-            )}
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={approve}
+              >
+                Mark approved
+              </button>
+
+              {(saving || savingApproval) && (
+                <span
+                  className="spinner-border text-primary align-self-center me-2"
+                  aria-hidden="true"
+                ></span>
+              )}
+            </div>
           </div>
         </div>
       </div>

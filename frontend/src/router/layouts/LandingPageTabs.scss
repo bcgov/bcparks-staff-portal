@@ -1,6 +1,10 @@
 .layout.landing-page-tabs {
   header.section-tabs {
     background-color: var(--surface-color-background-light-blue);
-    border-bottom-width: 12px;
+    border-bottom: 1px solid var(--theme-gray-50);
+
+    .nav-tabs {
+      border-bottom: none;
+    }
   }
 }

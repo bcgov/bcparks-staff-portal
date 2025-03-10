@@ -154,7 +154,7 @@ function PreviewChanges() {
   function Feature({ feature }) {
     return (
       <div>
-        <h5>{feature.name}</h5>
+        <h4 className="feature-name mb-4">{feature.name}</h4>
 
         <div className="table-responsive">
           <table className="table table-striped">
@@ -218,125 +218,140 @@ function PreviewChanges() {
     setReadyToPublish(data.readyToPublish);
   }, [data]);
 
-  if (loading) {
-    return <LoadingBar />;
+  if (loading || !data) {
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error loading season data: {error.message}</p>;
+    return (
+      <div className="container">
+        <p>Error loading season data: {error.message}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="page review-winter-fees-changes">
-      <FlashMessage
-        title={errorFlashMessage.flashTitle}
-        message={errorFlashMessage.flashMessage}
-        isVisible={errorFlashMessage.isFlashOpen}
-        onClose={errorFlashMessage.handleFlashClose}
-        variant="error"
-      />
+    <div className="container">
+      <div className="page review-winter-fees-changes">
+        <FlashMessage
+          title={errorFlashMessage.flashTitle}
+          message={errorFlashMessage.flashMessage}
+          isVisible={errorFlashMessage.isFlashOpen}
+          onClose={errorFlashMessage.handleFlashClose}
+          variant="error"
+        />
 
-      <ConfirmationDialog
-        title={title}
-        message={message}
-        notes={confirmationDialogNotes}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        isOpen={isConfirmationOpen}
-      />
+        <ConfirmationDialog
+          title={title}
+          message={message}
+          notes={confirmationDialogNotes}
+          confirmButtonText={confirmButtonText}
+          cancelButtonText={cancelButtonText}
+          onCancel={handleCancel}
+          onConfirm={handleConfirm}
+          isOpen={isConfirmationOpen}
+        />
 
-      <MissingDatesConfirmationDialog
-        featureNames={missingDatesConfirmation.featureNames}
-        inputMessage={missingDatesConfirmation.inputMessage}
-        setInputMessage={missingDatesConfirmation.setInputMessage}
-        isOpen={missingDatesConfirmation.isOpen}
-        onCancel={missingDatesConfirmation.handleCancel}
-        onConfirm={missingDatesConfirmation.handleConfirm}
-      />
+        <MissingDatesConfirmationDialog
+          featureNames={missingDatesConfirmation.featureNames}
+          inputMessage={missingDatesConfirmation.inputMessage}
+          setInputMessage={missingDatesConfirmation.setInputMessage}
+          isOpen={missingDatesConfirmation.isOpen}
+          onCancel={missingDatesConfirmation.handleCancel}
+          onConfirm={missingDatesConfirmation.handleConfirm}
+        />
 
-      <NavBack routePath={paths.park(parkId)}>
-        Back to {data?.park.name} dates
-      </NavBack>
+        <NavBack routePath={paths.park(parkId)}>
+          Back to {data?.park.name} dates
+        </NavBack>
 
-      <header className="page-header internal">
-        <h1 className="header-with-icon">
-          <FeatureIcon iconName="winter-recreation" />
-          {data.park.name} winter fee
-        </h1>
-        <h2>Preview {data.name}</h2>
-      </header>
+        <header className="page-header internal">
+          <h1 className="header-with-icon">
+            <FeatureIcon iconName="winter-recreation" />
+            {data.park.name} winter fee
+          </h1>
+          <h2>Preview {data.name}</h2>
+        </header>
 
-      {data?.featureTypes.map((featureType) => (
-        <section key={featureType.id} className="feature-type">
-          <h3 className="header-with-icon">
-            <FeatureIcon iconName={featureType.icon} />
-            {featureType.name}
-          </h3>
+        {data?.featureTypes.map((featureType) => (
+          <section key={featureType.id} className="feature-type">
+            <h3 className="header-with-icon mb-4">
+              <FeatureIcon iconName={featureType.icon} />
+              {featureType.name}
+            </h3>
 
-          {featureType.features.map((feature) => (
-            <Feature key={feature.id} feature={feature} />
-          ))}
-        </section>
-      ))}
+            {featureType.features.map((feature) => (
+              <Feature key={feature.id} feature={feature} />
+            ))}
+          </section>
+        ))}
 
-      <div className="row notes">
-        <div className="col-lg-6">
-          <h2 className="mb-4">Notes</h2>
+        <div className="row notes">
+          <div className="col-lg-6">
+            <h3 className="mb-4">Notes</h3>
 
-          <ChangeLogsList changeLogs={data?.changeLogs} />
+            <ChangeLogsList changeLogs={data?.changeLogs} />
 
-          <p>
-            If you are updating the current year’s dates, provide an explanation
-            for why dates have changed. Provide any other notes about these
-            dates if needed.
-          </p>
+            <p>
+              If you are updating the current year’s dates, provide an
+              explanation for why dates have changed. Provide any other notes
+              about these dates if needed.
+            </p>
 
-          <div className="form-group mb-4">
-            <textarea
-              className="form-control"
-              id="notes"
-              name="notes"
-              rows="5"
-              value={notes}
-              onChange={(ev) => setNotes(ev.target.value)}
-            ></textarea>
-          </div>
-          <ContactBox />
+            <div className="form-group mb-4">
+              <textarea
+                className="form-control"
+                id="notes"
+                name="notes"
+                rows="5"
+                value={notes}
+                onChange={(ev) => setNotes(ev.target.value)}
+              ></textarea>
+            </div>
 
-          <ReadyToPublishBox
-            readyToPublish={readyToPublish}
-            setReadyToPublish={setReadyToPublish}
-          />
+            <ContactBox />
 
-          <div className="controls d-flex flex-column flex-sm-row gap-2">
-            <Link
-              to={paths.winterFeesEdit(parkId, seasonId)}
-              type="button"
-              className="btn btn-outline-primary"
-            >
-              Back
-            </Link>
+            <ReadyToPublishBox
+              readyToPublish={readyToPublish}
+              setReadyToPublish={setReadyToPublish}
+            />
 
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={savePreview}
-            >
-              Save draft
-            </button>
+            <div className="controls d-flex flex-column flex-sm-row gap-2">
+              <Link
+                to={paths.winterFeesEdit(parkId, seasonId)}
+                type="button"
+                className="btn btn-outline-primary"
+              >
+                Back
+              </Link>
 
-            <button type="button" className="btn btn-primary" onClick={approve}>
-              Mark approved
-            </button>
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={savePreview}
+              >
+                Save draft
+              </button>
 
-            {(saving || savingApproval) && (
-              <span
-                className="spinner-border text-primary align-self-center me-2"
-                aria-hidden="true"
-              ></span>
-            )}
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={approve}
+              >
+                Mark approved
+              </button>
+
+              {(saving || savingApproval) && (
+                <span
+                  className="spinner-border text-primary align-self-center me-2"
+                  aria-hidden="true"
+                ></span>
+              )}
+            </div>
           </div>
         </div>
       </div>

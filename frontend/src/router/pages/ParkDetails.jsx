@@ -71,59 +71,69 @@ function ParkDetails() {
   }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
 
   if (loading) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error loading parks data: {error.message}</p>;
+    return (
+      <div className="container">
+        <p>Error loading parks data: {error.message}</p>
+      </div>
+    );
   }
 
   return (
-    <div className="page park-details">
-      <FlashMessage
-        title={flashTitle}
-        message={flashMessage}
-        isVisible={isFlashOpen}
-        onClose={handleFlashClose}
-      />
+    <div className="container">
+      <div className="page park-details">
+        <FlashMessage
+          title={flashTitle}
+          message={flashMessage}
+          isVisible={isFlashOpen}
+          onClose={handleFlashClose}
+        />
 
-      <NavBack routePath={"/"}>Back to Dates management</NavBack>
+        <NavBack routePath={"/"}>Back to Dates management</NavBack>
 
-      <header className="page-header internal">
-        <h1>{park?.name}</h1>
-      </header>
+        <header className="page-header internal">
+          <h1>{park?.name}</h1>
+        </header>
 
-      {Object.entries(park.featureTypes).map(([title, seasons]) => (
+        {Object.entries(park.featureTypes).map(([title, seasons]) => (
+          <FeatureType
+            key={title}
+            title={title}
+            icon={seasons[0].featureType.icon}
+            seasons={seasons}
+            seasonProps={{
+              getDataEndpoint: (seasonId) => `/seasons/${seasonId}`,
+              getEditRoutePath: paths.seasonEdit,
+              getPreviewRoutePath: paths.seasonPreview,
+              getTitle: (season) => `${season.operatingYear} season`,
+              DetailsComponent: SeasonDates,
+            }}
+          />
+        ))}
+
+        {/* Render Winter fee seasons separately from "regular" seasons
+            and use a specific season component */}
         <FeatureType
-          key={title}
-          title={title}
-          icon={seasons[0].featureType.icon}
-          seasons={seasons}
+          title="Winter fee"
+          icon="winter-recreation"
+          seasons={park.winterFees}
           seasonProps={{
-            getDataEndpoint: (seasonId) => `/seasons/${seasonId}`,
-            getEditRoutePath: paths.seasonEdit,
-            getPreviewRoutePath: paths.seasonPreview,
-            getTitle: (season) => `${season.operatingYear} season`,
-            DetailsComponent: SeasonDates,
+            getDataEndpoint: (seasonId) => `/winter-fees/${seasonId}`,
+            getEditRoutePath: paths.winterFeesEdit,
+            getPreviewRoutePath: paths.winterFeesPreview,
+            getTitle: (season) =>
+              `${season.operatingYear} – ${season.operatingYear + 1}`,
+            DetailsComponent: WinterFeesDates,
           }}
         />
-      ))}
-
-      {/* Render Winter fee seasons separately from "regular" seasons
-          and use a specific season component */}
-      <FeatureType
-        title="Winter fee"
-        icon="winter-recreation"
-        seasons={park.winterFees}
-        seasonProps={{
-          getDataEndpoint: (seasonId) => `/winter-fees/${seasonId}`,
-          getEditRoutePath: paths.winterFeesEdit,
-          getPreviewRoutePath: paths.winterFeesPreview,
-          getTitle: (season) =>
-            `${season.operatingYear} – ${season.operatingYear + 1}`,
-          DetailsComponent: WinterFeesDates,
-        }}
-      />
+      </div>
     </div>
   );
 }

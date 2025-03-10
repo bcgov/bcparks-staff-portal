@@ -21,6 +21,11 @@ header.page-header {
   border-bottom: 1px solid var(--surface-color-border-default);
 }
 
+.page {
+  margin-top: var(--layout-margin-medium);
+  margin-bottom: var(--layout-margin-huge);
+}
+
 // Increase bootstrap x-padding for containers to 16px
 .container {
   --bs-gutter-x: 2rem;
@@ -134,18 +139,6 @@ label.form-check-label {
   font-size: var(--typography-font-size-body) !important;
 }
 
-// custom style for validation error alert
-.alert-validation-error {
-  display: flex;
-  gap: 0.5em;
-  color: var(--typography-color-primary);
-  width: fit-content;
-
-  .icon {
-    color: var(--icons-color-danger);
-  }
-}
-
 // custom style for bootstrap dropdowns
 .dropdown-toggle {
   // flip the arrow icon when the dropdown is open
@@ -159,4 +152,47 @@ label.form-check-label {
   display: flex;
   align-items: center;
   gap: 0.5em;
+
+  .feature-icon {
+    height: 1.25em;
+  }
+}
+
+// error messages for validation, etc.
+.error-message {
+  color: var(--support-border-color-danger);
+  font-size: 0.875em;
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+// custom switch component with text labels for on/off
+.form-switch:has(.label-switch) {
+  display: flex;
+  align-items: center;
+
+  input.label-switch[role="switch"] {
+    height: 1.5em;
+    width: 3.5em;
+    margin-right: 0.5em;
+    position: relative;
+
+    &::after {
+      font-size: 0.85em;
+      position: absolute;
+      top: 1px;
+      right: 5px;
+      content: "Off";
+      display: block;
+      color: var(--typography-color-primary);
+    }
+
+    &:checked::after {
+      left: 5px;
+      right: auto;
+      content: "On";
+      color: var(--typography-color-primary-invert);
+    }
+  }
 }

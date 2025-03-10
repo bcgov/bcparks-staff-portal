@@ -3,11 +3,14 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import cloneDeep from "lodash/cloneDeep";
+import omit from "lodash/omit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleInfo,
   faTriangleExclamation,
   faCalendarCheck,
+  faPlus,
+  faXmark,
 } from "@fa-kit/icons/classic/regular";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -42,7 +45,13 @@ const datesContext = createContext();
 // Context to provide the data to all the child components
 const dataContext = createContext();
 
-function DateRange({ dateableId, dateRange, index, updateDateRange }) {
+function DateRange({
+  dateableId,
+  dateRange,
+  index,
+  updateDateRange,
+  removeDateRange,
+}) {
   const data = useContext(dataContext);
 
   // Keep local state until the field is blurred or Enter is pressed
@@ -115,7 +124,7 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
   const openDateEnd = parseInputDate(localDateRange.endDate) || minDate;
 
   return (
-    <div className="row dates-row operating-dates">
+    <div className="row gx-0 dates-row operating-dates">
       <div className="col-lg-5">
         <div className="form-group">
           <label htmlFor={startDateId} className="form-label d-lg-none">
@@ -161,13 +170,16 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
           </div>
 
           {/* Show validation errors for the startDate field */}
-          {errors?.[startDateId] && (
-            <div className="error-message mt-2">{errors?.[startDateId]}</div>
+          {errors[startDateId] && (
+            <div className="error-message mt-2">
+              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <div>{errors[startDateId]}</div>
+            </div>
           )}
         </div>
       </div>
 
-      <div className="d-none d-lg-block col-lg-1 text-center">
+      <div className="date-range-dash d-none d-lg-flex justify-content-center col-lg-auto px-lg-2 text-center">
         <span>&ndash;</span>
       </div>
 
@@ -213,17 +225,34 @@ function DateRange({ dateableId, dateRange, index, updateDateRange }) {
           </div>
 
           {/* Show validation errors for the endDate field */}
-          {errors?.[endDateId] && (
-            <div className="error-message mt-2">{errors?.[endDateId]}</div>
+          {errors[endDateId] && (
+            <div className="error-message mt-2">
+              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <div>{errors[endDateId]}</div>
+            </div>
           )}
         </div>
       </div>
 
+      <div className="date-range-remove col-lg-1">
+        {index > 0 && (
+          <button
+            className="btn btn-text text-link"
+            onClick={() => removeDateRange(index, dateRange.id)}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+            <span className="ms-1 d-inline d-lg-none">
+              Remove this date range
+            </span>
+          </button>
+        )}
+      </div>
+
       {/* Show validation errors for the date range */}
-      {errors?.[dateRangeId] && (
+      {errors[dateRangeId] && (
         <div className="error-message mt-2">
-          <FontAwesomeIcon icon={faTriangleExclamation} />{" "}
-          {errors?.[dateRangeId]}
+          <FontAwesomeIcon icon={faTriangleExclamation} />
+          <div>{errors[dateRangeId]}</div>
         </div>
       )}
     </div>
@@ -248,7 +277,7 @@ function getReservationDatesText(featureData) {
 
 function CampgroundFeature({ featureData }) {
   // Inject dates object from the root component
-  const { dates, setDates } = useContext(datesContext);
+  const { dates, setDates, setDeletedDateRangeIds } = useContext(datesContext);
   const dateableId = featureData.dateableId;
   const featureDates = dates[dateableId];
 
@@ -264,10 +293,29 @@ function CampgroundFeature({ featureData }) {
         startDate: null,
         endDate: null,
         changed: true,
+        // Add a temporary ID for records that haven't been saved yet
+        tempId: crypto.randomUUID(),
       });
 
       return updatedDates;
     });
+  }
+
+  function removeDateRange(index, dateRangeId) {
+    setDates((prevDates) => {
+      const updatedDates = cloneDeep(prevDates);
+
+      updatedDates[dateableId] = prevDates[dateableId].filter(
+        (_, i) => i !== index,
+      );
+
+      return updatedDates;
+    });
+
+    // Track the deleted date range
+    if (dateRangeId) {
+      setDeletedDateRangeIds((previous) => [...previous, dateRangeId]);
+    }
   }
 
   /**
@@ -303,8 +351,8 @@ function CampgroundFeature({ featureData }) {
   }
 
   return (
-    <section className="feature mb-4">
-      <h4>{featureData.name}</h4>
+    <div className="feature">
+      <h4 className="feature-name mb-4">{featureData.name}</h4>
 
       <div className="row">
         <div className="col-md-6">
@@ -333,40 +381,44 @@ function CampgroundFeature({ featureData }) {
 
           {featureDates.map((dateRange, index) => (
             <DateRange
-              key={index}
+              key={dateRange.id || dateRange.tempId}
               dateableId={dateableId}
               dateRange={dateRange}
               index={index}
               updateDateRange={updateDateRange}
+              removeDateRange={removeDateRange}
             />
           ))}
 
-          <p>
+          <div>
             <button
               className="btn btn-text text-link"
               onClick={() => addDateRange()}
             >
-              + Add more winter fee dates
+              <FontAwesomeIcon icon={faPlus} />
+              <span className="ms-1">Add more operating dates</span>
             </button>
-          </p>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
 
 function FeatureType({ featureTypeData }) {
   return (
-    <div className="feature-type mb-5">
-      <h3 className="header-with-icon mb-4">
-        <FeatureIcon iconName={featureTypeData.icon} />
-        {featureTypeData.name}
-      </h3>
+    <section className="feature-type">
+      <div className="container">
+        <h3 className="header-with-icon mb-4">
+          <FeatureIcon iconName={featureTypeData.icon} />
+          {featureTypeData.name}
+        </h3>
 
-      {featureTypeData.features.map((feature) => (
-        <CampgroundFeature key={feature.id} featureData={feature} />
-      ))}
-    </div>
+        {featureTypeData.features.map((feature) => (
+          <CampgroundFeature key={feature.id} featureData={feature} />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -378,6 +430,8 @@ export default function SubmitWinterFeesDates() {
   const [dates, setDates] = useState({});
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
+  // Track deleted date ranges
+  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
 
   const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
 
@@ -408,15 +462,25 @@ export default function SubmitWinterFeesDates() {
 
   function validateNotes() {}
 
-  // Are there changes to save?
+  // Returns true if there are any form changes to save
   function hasChanges() {
-    const datesChanged = Object.values(dates).some((dateRanges) =>
-      dateRanges.some((dateRange) => dateRange.changed),
-    );
+    // Any existing dates changed
+    if (
+      Object.values(dates).some((dateRanges) =>
+        dateRanges.some((dateRange) => dateRange.changed),
+      )
+    ) {
+      return true;
+    }
 
-    const readyChanged = readyToPublish !== data.readyToPublish;
+    // If any date ranges have been deleted
+    if (deletedDateRangeIds.length > 0) return true;
 
-    return datesChanged || notes || readyChanged;
+    // Ready to publish state has changed
+    if (readyToPublish !== data.readyToPublish) return true;
+
+    // Notes have been entered
+    return notes;
   }
 
   useNavigationGuard(hasChanges, openConfirmation);
@@ -427,9 +491,9 @@ export default function SubmitWinterFeesDates() {
     // Turn the `dates` structure into a flat array of date ranges
     const flattenedDates = Object.entries(dates).flatMap(
       ([dateableId, dateRanges]) =>
-        // Add foreign keys to the date ranges
+        // Add foreign keys to the date ranges, remove tempId
         dateRanges.map((dateRange) => ({
-          ...dateRange,
+          ...omit(dateRange, ["tempId"]),
           dateableId: Number(dateableId),
           dateTypeId: season.winterFeeDateType.id,
           seasonId,
@@ -451,6 +515,7 @@ export default function SubmitWinterFeesDates() {
       notes,
       readyToPublish,
       dates: changedDates,
+      deletedDateRangeIds,
     };
 
     const response = await sendData(payload);
@@ -548,11 +613,19 @@ export default function SubmitWinterFeesDates() {
   }, [data]);
 
   if (loading || !season) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <LoadingBar />
+      </div>
+    );
   }
 
   if (error) {
-    return <p>Error loading season data: {error.message}</p>;
+    return (
+      <div className="container">
+        <p>Error loading season data: {error.message}</p>
+      </div>
+    );
   }
 
   return (
@@ -576,111 +649,125 @@ export default function SubmitWinterFeesDates() {
         isOpen={isConfirmationOpen}
       />
 
-      <NavBack routePath={paths.park(parkId)}>
-        Back to {season.park.name} season dates
-      </NavBack>
+      <div className="container">
+        <NavBack routePath={paths.park(parkId)}>
+          Back to {season.park.name} dates
+        </NavBack>
 
-      <header className="page-header internal">
-        <h1 className="header-with-icon">
-          <FeatureIcon iconName="winter-recreation" />
-          {season.park.name} winter fee
-        </h1>
-        <h2>Edit {season.name}</h2>
-      </header>
+        <header className="page-header internal">
+          <h1 className="header-with-icon">
+            <FeatureIcon iconName="winter-recreation" />
+            {season.park.name} winter fee
+          </h1>
+          <h2>Edit {season.name}</h2>
+        </header>
 
-      <p className="mb-5">
-        <a
-          href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
-          target="_blank"
-        >
-          View a list of all statutory holidays
-        </a>
-      </p>
+        <p className="mb-5">
+          <a
+            href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
+            target="_blank"
+          >
+            View a list of all statutory holidays
+          </a>
+        </p>
+      </div>
 
-      <dataContext.Provider value={data}>
-        <datesContext.Provider value={{ dates, setDates }}>
-          {season.featureTypes.map((featureType) => (
-            <FeatureType key={featureType.id} featureTypeData={featureType} />
-          ))}
-        </datesContext.Provider>
-      </dataContext.Provider>
+      <div className="mb-5">
+        <dataContext.Provider value={data}>
+          <datesContext.Provider
+            value={{ dates, setDates, setDeletedDateRangeIds }}
+          >
+            {season.featureTypes.map((featureType) => (
+              <FeatureType key={featureType.id} featureTypeData={featureType} />
+            ))}
+          </datesContext.Provider>
+        </dataContext.Provider>
+      </div>
 
-      <div className="row notes">
-        <div className="col-lg-6">
-          <h2 className="mb-4">
-            Notes
-            {["approved", "on API"].includes(season.status) && (
-              <span className="text-danger">*</span>
-            )}
-          </h2>
+      <div className="container">
+        <div className="row notes">
+          <div className="col-lg-6">
+            <h3 className="mb-4">
+              Notes
+              {["approved", "on API"].includes(season.status) && (
+                <span className="text-danger">*</span>
+              )}
+            </h3>
 
-          <ChangeLogsList changeLogs={season.changeLogs} />
+            <ChangeLogsList changeLogs={season.changeLogs} />
 
-          <p>
-            If you are updating the current year’s dates, provide an explanation
-            for why dates have changed. Provide any other notes about these
-            dates if needed.
-          </p>
+            <p>
+              If you are updating the current year’s dates, provide an
+              explanation for why dates have changed. Provide any other notes
+              about these dates if needed.
+            </p>
 
-          <div className={`form-group mb-4 ${errors.notes ? "has-error" : ""}`}>
-            <textarea
-              className={classNames("form-control", {
-                "is-invalid": errors.notes,
-              })}
-              id="notes"
-              name="notes"
-              rows="5"
-              value={notes}
-              onChange={(ev) => {
-                setNotes(ev.target.value);
-                validateNotes(ev.target.value);
-              }}
-            ></textarea>
-            {errors.notes && (
-              <div className="error-message mt-2">{errors.notes}</div>
-            )}
-          </div>
-
-          <ContactBox />
-
-          <ReadyToPublishBox
-            readyToPublish={readyToPublish}
-            setReadyToPublish={setReadyToPublish}
-          />
-
-          <div className="controls d-flex flex-column flex-sm-row gap-2">
-            <Link
-              to={paths.park(parkId)}
-              type="button"
-              className="btn btn-outline-primary"
+            <div
+              className={`form-group mb-4 ${errors.notes ? "has-error" : ""}`}
             >
-              Back
-            </Link>
+              <textarea
+                className={classNames("form-control", {
+                  "is-invalid": errors.notes,
+                })}
+                id="notes"
+                name="notes"
+                rows="5"
+                value={notes}
+                onChange={(ev) => {
+                  setNotes(ev.target.value);
+                  validateNotes(ev.target.value);
+                }}
+              ></textarea>
 
-            <button
-              type="button"
-              className="btn btn-outline-primary"
-              onClick={saveAsDraft}
-              disabled={!hasChanges()}
-            >
-              Save draft
-            </button>
+              {errors.notes && (
+                <div className="error-message mt-2">
+                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                  <div>{errors.notes}</div>
+                </div>
+              )}
+            </div>
 
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={continueToPreview}
-              disabled={!hasChanges()}
-            >
-              Save and continue to preview
-            </button>
+            <ContactBox />
 
-            {saving && (
-              <span
-                className="spinner-border text-primary align-self-center me-2"
-                aria-hidden="true"
-              ></span>
-            )}
+            <ReadyToPublishBox
+              readyToPublish={readyToPublish}
+              setReadyToPublish={setReadyToPublish}
+            />
+
+            <div className="controls d-flex flex-column flex-sm-row gap-2">
+              <Link
+                to={paths.park(parkId)}
+                type="button"
+                className="btn btn-outline-primary"
+              >
+                Back
+              </Link>
+
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={saveAsDraft}
+                disabled={!hasChanges()}
+              >
+                Save draft
+              </button>
+
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={continueToPreview}
+                disabled={!hasChanges()}
+              >
+                Save and continue to preview
+              </button>
+
+              {saving && (
+                <span
+                  className="spinner-border text-primary align-self-center me-2"
+                  aria-hidden="true"
+                ></span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -690,6 +777,7 @@ export default function SubmitWinterFeesDates() {
 
 // prop validation
 const dateRangeShape = PropTypes.shape({
+  id: PropTypes.number,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
 });
@@ -699,6 +787,7 @@ DateRange.propTypes = {
   dateRange: dateRangeShape.isRequired,
   index: PropTypes.number.isRequired,
   updateDateRange: PropTypes.func.isRequired,
+  removeDateRange: PropTypes.func.isRequired,
 };
 
 CampgroundFeature.propTypes = {

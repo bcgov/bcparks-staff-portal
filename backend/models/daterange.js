@@ -23,6 +23,7 @@ export default (sequelize) => {
       DateRange.hasMany(models.DateChangeLog, {
         foreignKey: "dateRangeId",
         as: "dateChangeLogs",
+        onDelete: "CASCADE",
       });
     }
   }
