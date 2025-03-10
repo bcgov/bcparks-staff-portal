@@ -173,7 +173,7 @@ function DateRange({
           {errors[startDateId] && (
             <div className="error-message mt-2">
               <FontAwesomeIcon icon={faTriangleExclamation} />
-              {errors[startDateId]}
+              <div>{errors[startDateId]}</div>
             </div>
           )}
         </div>
