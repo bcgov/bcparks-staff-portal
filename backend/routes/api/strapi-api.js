@@ -1,4 +1,5 @@
 import axios from "axios";
+import "../../env.js";
 
 /**
  * Get the headers to be used by all requests
