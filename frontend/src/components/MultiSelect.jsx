@@ -2,6 +2,8 @@ import PropTypes from "prop-types";
 import { useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 
+import "./MultiSelect.scss";
+
 export default function MultiSelect({
   options,
   onInput,
@@ -83,7 +85,7 @@ export default function MultiSelect({
   }
 
   return (
-    <div className="dropdown">
+    <div className="multi-select dropdown">
       <button
         type="button"
         className="btn btn-outline-primary dropdown-toggle"
