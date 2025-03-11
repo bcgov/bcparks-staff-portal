@@ -191,12 +191,13 @@ async function createParkOperationSubAreaDatesInStrapi(datesToPublish) {
           data: date,
         };
 
-        await post(endpoint, data);
+        return await post(endpoint, data);
       } catch (error) {
         console.error(
           `Error creating date for featureId ${date.parkOperationSubArea} and year ${date.operatingYear}`,
           error,
         );
+        return null;
       }
     }),
   );
@@ -213,12 +214,13 @@ async function createParkFeatureDatesInStrapi(dates) {
           data: date,
         };
 
-        await post(endpoint, data);
+        return await post(endpoint, data);
       } catch (error) {
         console.error(
           `Error creating date for featureId ${date.parkOperationSubArea} and year ${date.operatingYear}`,
           error,
         );
+        return null;
       }
     }),
   );
@@ -371,20 +373,24 @@ async function publishToAPI(seasonTable) {
           );
 
           await markStrapiParkOperationSubAreaDatesInactive(dates.data);
+
           // The date object in strapi contains both the operating and reservation dates for a feature - operatingYear pair
           // we'll group all the date ranges by feature and operating year and then we'll group them if possible
           // If there are remaining dates, we'll create a new date object with the remaining dates
           const operatingDates = dateRanges
             .filter((dateRange) => dateRange.dateType.name === "Operation")
             .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
           const reservationDates = dateRanges
             .filter((dateRange) => dateRange.dateType.name === "Reservation")
             .sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
+
           // determine how many date objects we need to create
           const maxIndex = Math.max(
             operatingDates.length,
             reservationDates.length,
           );
+
           const groupedSeasonDates = [];
 
           for (let i = 0; i < maxIndex; i++) {
@@ -402,6 +408,7 @@ async function publishToAPI(seasonTable) {
               offSeasonEndDate: null,
               adminNote: null,
             };
+
             const operatingDate = operatingDates[i];
             const reservationDate = reservationDates[i];
 
@@ -413,6 +420,7 @@ async function publishToAPI(seasonTable) {
                 .toISOString()
                 .split("T")[0];
             }
+
             if (reservationDate) {
               obj.reservationStartDate = new Date(reservationDate.startDate)
                 .toISOString()
@@ -421,6 +429,7 @@ async function publishToAPI(seasonTable) {
                 .toISOString()
                 .split("T")[0];
             }
+
             groupedSeasonDates.push(obj);
           }
           // add all the dates for this feature in Strapi
