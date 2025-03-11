@@ -125,7 +125,7 @@ function EditAndReview() {
     <div className="container">
       <div className="page dates-management">
         <div className="table-filters row mb-4">
-          <div className="col-lg-3 col-md-6 col-12">
+          <div className="col-lg-3 col-md-6 col-12 mb-2 mb-md-0">
             <label htmlFor="parkName" className="form-label">
               Park name
             </label>
@@ -149,28 +149,29 @@ function EditAndReview() {
             </div>
           </div>
 
-          <div className="col-lg-3 col-md-6 col-12">
-            <label htmlFor="status" className="form-label">
-              Status
-            </label>
+          <div className="col-12 col-md-auto d-flex">
+            <div className="me-2">
+              <label htmlFor="status" className="form-label">
+                Status
+              </label>
 
-            <MultiSelect
-              options={statusOptions}
-              onInput={(value) => {
-                setPage(1);
-                setStatusFilter(value);
-              }}
-              value={statusFilter}
-            >
-              Filter by status{" "}
-              {statusFilter.length > 0 && `(${statusFilter.length})`}
-            </MultiSelect>
-          </div>
+              <MultiSelect
+                options={statusOptions}
+                onInput={(value) => {
+                  setPage(1);
+                  setStatusFilter(value);
+                }}
+                value={statusFilter}
+              >
+                Filter by status{" "}
+                {statusFilter.length > 0 && `(${statusFilter.length})`}
+              </MultiSelect>
+            </div>
 
-          <div className="col-lg-3 col-md-6 col-12 d-flex">
             <button
+              type="button"
               onClick={resetFilters}
-              className="btn btn-link align-self-end"
+              className="btn text-link text-decoration-underline align-self-end"
             >
               Clear filters
             </button>
