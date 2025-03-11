@@ -78,7 +78,7 @@ export default function EditAndReviewTable({
 
   return (
     <div className="table-responsive">
-      <table className="table table-striped table-hover">
+      <table className="table table-striped table-hover has-header-row">
         <thead>
           <tr>
             <th
