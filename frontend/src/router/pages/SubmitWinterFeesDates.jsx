@@ -572,11 +572,23 @@ export default function SubmitWinterFeesDates() {
     }
   }
 
+  function continueToPreviewEnabled() {
+    const allDatesHaveValues = Object.values(dates).every((dateRanges) =>
+      dateRanges.every((dateRange) => dateRange.startDate && dateRange.endDate),
+    );
+
+    return allDatesHaveValues && season.status === "requested";
+  }
+
   async function continueToPreview() {
     try {
-      const submitOk = await submitChanges();
+      if (hasChanges()) {
+        const submitOk = await submitChanges();
 
-      if (submitOk) {
+        if (submitOk) {
+          navigate(paths.winterFeesPreview(parkId, seasonId));
+        }
+      } else {
         navigate(paths.winterFeesPreview(parkId, seasonId));
       }
     } catch (err) {
@@ -756,7 +768,7 @@ export default function SubmitWinterFeesDates() {
                 type="button"
                 className="btn btn-primary"
                 onClick={continueToPreview}
-                disabled={!hasChanges()}
+                disabled={!hasChanges() && !continueToPreviewEnabled()}
               >
                 Save and continue to preview
               </button>

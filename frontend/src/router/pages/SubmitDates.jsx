@@ -101,6 +101,16 @@ function SubmitDates() {
     return notes;
   }
 
+  function continueToPreviewEnabled() {
+    const allDatesHaveValues = Object.values(dates).some((dateType) =>
+      dateType.Operation.concat(dateType.Reservation).every(
+        (dateRange) => dateRange.startDate && dateRange.endDate,
+      ),
+    );
+
+    return allDatesHaveValues && season.status === "requested";
+  }
+
   async function saveChanges(savingDraft) {
     setFormSubmitted(true);
 
@@ -178,9 +188,13 @@ function SubmitDates() {
 
   async function continueToPreview() {
     try {
-      const submitOk = await submitChanges();
+      if (hasChanges()) {
+        const submitOk = await submitChanges();
 
-      if (submitOk) {
+        if (submitOk) {
+          navigate(paths.seasonPreview(parkId, seasonId));
+        }
+      } else {
         navigate(paths.seasonPreview(parkId, seasonId));
       }
     } catch (err) {
@@ -903,7 +917,7 @@ function SubmitDates() {
                 type="button"
                 className="btn btn-primary"
                 onClick={continueToPreview}
-                disabled={!hasChanges()}
+                disabled={!hasChanges() && !continueToPreviewEnabled()}
               >
                 Save and continue to preview
               </button>
