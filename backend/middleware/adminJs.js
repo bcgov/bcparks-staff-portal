@@ -227,7 +227,6 @@ const cookieOptions = { maxAge: 10 * 60 * 60 * 1000 };
 if (process.env.NODE_ENV === "production") {
   cookieOptions.httpOnly = true;
   cookieOptions.secure = true;
-  cookieOptions.domain = ".bcparks.ca";
 }
 
 export const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
@@ -245,7 +244,6 @@ export const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     secret: process.env.ADMIN_SESSION_SECRET,
     cookie: cookieOptions,
     name: process.env.ADMIN_COOKIE_NAME,
-    proxy: process.env.NODE_ENV === "production",
   },
 );
 
