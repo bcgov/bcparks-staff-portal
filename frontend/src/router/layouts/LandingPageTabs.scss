@@ -5,6 +5,11 @@
 
     .nav-tabs {
       border-bottom: none;
+
+      // Prevent underline on active tab
+      a.active:hover {
+        text-decoration: none;
+      }
     }
   }
 }

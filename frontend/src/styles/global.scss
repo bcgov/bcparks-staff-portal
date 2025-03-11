@@ -196,3 +196,13 @@ label.form-check-label {
     }
   }
 }
+
+// custom table styles
+table {
+  // override bootstrap table border
+  &.has-header-row {
+    thead {
+      border-bottom: 2px solid var(--surface-color-border-dark);
+    }
+  }
+}

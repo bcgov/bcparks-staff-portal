@@ -32,7 +32,7 @@ function TableRow(park) {
       <td className="text-end">
         <Link to={parkLink} aria-label={`View ${park.name} park details`}>
           <FontAwesomeIcon
-            className="me-2"
+            className="me-2 text-body"
             icon={faChevronRight}
             aria-hidden="true"
           />
@@ -78,7 +78,7 @@ export default function EditAndReviewTable({
 
   return (
     <div className="table-responsive">
-      <table className="table table-striped table-hover">
+      <table className="table table-striped table-hover has-header-row">
         <thead>
           <tr>
             <th

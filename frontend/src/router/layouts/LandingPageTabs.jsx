@@ -11,7 +11,7 @@ export default function LandingPageTabs() {
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
               <NavLink className="nav-link" to="/">
-                Edit and Review
+                Edit and review
               </NavLink>
             </li>
             <li className="nav-item">
