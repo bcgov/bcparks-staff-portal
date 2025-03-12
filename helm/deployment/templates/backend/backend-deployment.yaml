@@ -68,6 +68,13 @@ spec:
               value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}/protocol/openid-connect/certs
             - name: JWT_ISSUER
               value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}
+            - name: STRAPI_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-strapi-token
+                  key: STRAPI_TOKEN
+            - name: STRAPI_URL
+              value: {{ .Values.cluster.cmsUrl }}
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-adminjs-secret
