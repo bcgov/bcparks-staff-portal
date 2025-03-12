@@ -16,12 +16,32 @@ Run the following commands from the `helm/deployment` directory.
 
 ### Create secrets
 
+#### Strapi access
+
 The backend deployments rely on a few secrets that must be created manually in each namespace:
 
 - main-strapi-token
 - alpha-strapi-token (not needed in the production namespace)
 
 Create the access tokens in Strapi as needed, and use the values to create secrets for each backend deployment.
+
+```sh
+oc -n a7dd13-dev create secret generic main-strapi-token  --from-literal STRAPI_TOKEN='abc-your-token-123';
+```
+
+#### AdminJS access
+
+Create a secret with the password you'll use to access AdminJS
+
+```sh
+oc create secret generic main-adminjs-secret \
+  --from-literal=ADMIN_USER=admin \
+  --from-literal=ADMIN_PASSWORD=$(openssl rand -base64 32) \
+  --from-literal=ADMIN_COOKIE_NAME=adminjs \
+  --from-literal=ADMIN_COOKIE_PASSWORD=$(openssl rand -base64 32) \
+  --from-literal=ADMIN_SESSION_SECRET=$(openssl rand -base64 32) \
+  -n a7dd13-dev # replace with the your namespace
+```
 
 ### Dev
 
