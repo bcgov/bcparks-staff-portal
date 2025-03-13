@@ -105,7 +105,7 @@ function SubmitDates() {
     setFormSubmitted(true);
 
     // Validate form state before saving
-    if (!validateForm()) {
+    if (!savingDraft && !validateForm()) {
       throw new ValidationError("Form validation failed");
     }
 
@@ -117,8 +117,11 @@ function SubmitDates() {
       )
       // Filter out any blank ranges or unchanged dates
       .filter((dateRange) => {
-        // if either date is null, skip this range
-        if (dateRange.startDate === null || dateRange.endDate === null) {
+        if (
+          dateRange.startDate === null &&
+          dateRange.endDate === null &&
+          !dateRange.id
+        ) {
           return false;
         }
 
