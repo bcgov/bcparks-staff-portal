@@ -235,20 +235,22 @@ export default function useValidation(dates, notes, season) {
     const operationExtent = dateExtents[dateableId].Operation;
     const reservationExtent = dateExtents[dateableId].Reservation;
 
-    // End date is one or more days after reservation end date
-    const daysBetween = differenceInCalendarDays(
-      operationExtent.maxDate,
-      reservationExtent.maxDate,
-    );
-
-    // The "within range" checks earlier will ensure that the operation end date
-    // is after the reservation end date, so we only need to check the number of days between the them
-
-    if (daysBetween < 1) {
-      return addError(
-        dateableId,
-        "Reservation end date must be one or more days before the operating end date.",
+    if (operationExtent.maxDate && reservationExtent.maxDate) {
+      // End date is one or more days after reservation end date
+      const daysBetween = differenceInCalendarDays(
+        operationExtent.maxDate,
+        reservationExtent.maxDate,
       );
+
+      // The "within range" checks earlier will ensure that the operation end date
+      // is after the reservation end date, so we only need to check the number of days between the them
+
+      if (daysBetween < 1) {
+        return addError(
+          dateableId,
+          "Reservation end date must be one or more days before the operating end date.",
+        );
+      }
     }
 
     return true;

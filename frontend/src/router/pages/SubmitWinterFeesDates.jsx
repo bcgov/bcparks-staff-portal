@@ -502,8 +502,12 @@ export default function SubmitWinterFeesDates() {
 
     // Filter out unchanged or empty date ranges
     const changedDates = flattenedDates.filter((dateRange) => {
-      // if either date is null, skip this range
-      if (dateRange.startDate === null || dateRange.endDate === null) {
+      // if both dates are null and it has no ID, skip this range
+      if (
+        dateRange.startDate === null &&
+        dateRange.endDate === null &&
+        !dateRange.id
+      ) {
         return false;
       }
 
