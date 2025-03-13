@@ -71,15 +71,15 @@ function getSeasonActions() {
           },
         );
 
-        // check if today is over june 21st
+        // check if today is over May 1st
         const today = new Date();
-        const june21 = new Date(today.getFullYear(), 5, 21);
+        const may1 = new Date(today.getFullYear(), 4, 1);
 
         let winterSeasonsUpdated = 0;
 
-        // After June 21st, all winter seasons for the current year shouldn't be editable
+        // After After May 1st, all winter seasons for the current year shouldn't be editable
         // so we update their status to "Not provided"
-        if (today > june21) {
+        if (today > may1) {
           const winterFeatureType = await FeatureType.findOne({
             attributes: ["id"],
             where: {
