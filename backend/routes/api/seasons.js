@@ -41,7 +41,13 @@ router.get(
     const { seasonId } = req.params;
 
     const seasonModel = await Season.findByPk(seasonId, {
-      attributes: ["id", "operatingYear", "status", "readyToPublish"],
+      attributes: [
+        "id",
+        "operatingYear",
+        "status",
+        "readyToPublish",
+        "editable",
+      ],
       include: [
         {
           model: FeatureType,

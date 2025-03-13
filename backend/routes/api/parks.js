@@ -82,6 +82,7 @@ router.get(
             "id",
             "operatingYear",
             "status",
+            "editable",
             "updatedAt",
             "readyToPublish",
           ],
