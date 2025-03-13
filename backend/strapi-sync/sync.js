@@ -467,9 +467,12 @@ export async function createDatesAndSeasons(datesData) {
 
     if (!season) {
       // create season if a season matching those 3 attributes doesn't exist
+      const seasonStatus = getSeasonStatus(operatingYear);
+
       const data = {
-        status: getSeasonStatus(operatingYear),
+        status: seasonStatus,
         readyToPublish: true,
+        editable: seasonStatus === "requested",
         ...attrs,
       };
 
@@ -548,9 +551,12 @@ export async function createDatesAndSeasons(datesData) {
     if (!season) {
       // create season if a season matching those 3 attributes doesn't exist
       // needs to be created before creating date ranges, because date ranges need a seasonId
+      const seasonStatus = getSeasonStatus(operatingYear);
+
       const data = {
-        status: getSeasonStatus(operatingYear),
+        status: seasonStatus,
         readyToPublish: true,
+        editable: seasonStatus === "requested",
         ...attrs,
       };
 

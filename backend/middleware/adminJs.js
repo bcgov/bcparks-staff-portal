@@ -59,6 +59,7 @@ function getSeasonActions() {
         const [updatedCount] = await Season.update(
           {
             status: "Not provided",
+            editable: false,
           },
           {
             where: {
@@ -70,9 +71,44 @@ function getSeasonActions() {
           },
         );
 
+        // check if today is over june 21st
+        const today = new Date();
+        const june21 = new Date(today.getFullYear(), 5, 21);
+
+        let winterSeasonsUpdated = 0;
+
+        // After June 21st, all winter seasons for the current year shouldn't be editable
+        // so we update their status to "Not provided"
+        if (today > june21) {
+          const winterFeatureType = await FeatureType.findOne({
+            attributes: ["id"],
+            where: {
+              name: "Winter fee",
+            },
+          });
+
+          const [winterUpdatedCount] = await Season.update(
+            {
+              status: "Not provided",
+              editable: false,
+            },
+            {
+              where: {
+                status: "requested",
+                featureTypeId: winterFeatureType.id,
+                operatingYear: currentYear,
+              },
+            },
+          );
+
+          winterSeasonsUpdated = winterUpdatedCount;
+        }
+
+        const totalUpdatedCount = updatedCount + winterSeasonsUpdated;
+
         return {
           notice: {
-            message: `Updated ${updatedCount} seasons to "Not provided"`,
+            message: `Updated ${totalUpdatedCount} seasons to "Not provided"`,
             type: "success",
           },
         };

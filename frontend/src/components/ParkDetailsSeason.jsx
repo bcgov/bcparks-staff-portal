@@ -73,13 +73,6 @@ export default function ParkSeason({
     setExpanded(!expanded);
   }
 
-  function editDisabled() {
-    // if the years is lower than current year, disable the edit button
-    const currentYear = new Date().getFullYear();
-
-    return season.operatingYear < currentYear;
-  }
-
   // @TODO: implement logic to show/hide preview button
   const showPreviewButton = true;
 
@@ -180,7 +173,7 @@ export default function ParkSeason({
         <button
           onClick={navigateToEdit}
           className="btn btn-text text-primary"
-          disabled={editDisabled()}
+          disabled={!season.editable}
         >
           <FontAwesomeIcon className="append-content me-2" icon={faPen} />
           <span>Edit</span>
@@ -215,6 +208,7 @@ ParkSeason.propTypes = {
     operatingYear: PropTypes.number.isRequired,
     status: PropTypes.string.isRequired,
     updatedAt: PropTypes.string,
+    editable: PropTypes.bool.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
   }),
 

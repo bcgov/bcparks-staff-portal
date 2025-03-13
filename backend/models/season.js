@@ -38,6 +38,10 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      editable: {
+        type: DataTypes.BOOLEAN,
+        defaultValue: true,
+      },
       createdAt: DataTypes.DATE,
       updatedAt: {
         type: DataTypes.DATE,
