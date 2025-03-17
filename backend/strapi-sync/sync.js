@@ -6,6 +6,7 @@ import {
   getStrapiModelData,
   getFeatureTypeIcon,
 } from "./utils.js";
+import winterParks from "./park-winter-dates.js";
 import {
   Park,
   FeatureType,
@@ -344,6 +345,22 @@ export async function syncFeatures(featureData) {
 }
 
 /**
+ * Check if two date ranges overlap
+ * @param {Object} range1 date range 1
+ * @param {Object} range2 date range 2
+ * @returns {boolean} true if the date ranges overlap
+ */
+function datesOverlap(range1, range2) {
+  const range1Start = new Date(range1.start);
+  const range1End = new Date(range1.end);
+
+  const range2Start = new Date(range2.start);
+  const range2End = new Date(range2.end);
+
+  return range1Start <= range2End && range1End >= range2Start;
+}
+
+/**
  * This method will only run once to import existing dates in Strapi.
  * Additionally, this will be used to create the seasons needed to group the dates
  * @param {Object} datesData strapi data for park operation sub area dates
@@ -374,6 +391,13 @@ export async function createDatesAndSeasons(datesData) {
         "parkId",
         "active",
       ],
+      include: [
+        {
+          model: Park,
+          as: "park",
+          attributes: ["id", "orcs"],
+        },
+      ],
     },
     { raw: true },
   );
@@ -401,6 +425,8 @@ export async function createDatesAndSeasons(datesData) {
   featureTypes.forEach((featureType) => {
     featureTypeMap[featureType.name] = featureType;
   });
+
+  const potentialWinterDates = {};
 
   await Promise.all(
     items.map(async (item) => {
@@ -431,18 +457,50 @@ export async function createDatesAndSeasons(datesData) {
         // if the date has offseason dates, and feature is a frontcountry campground
         // create winter season
         if (
+          feature.park.orcs in winterParks &&
           feature.featureTypeId ===
             featureTypeMap["Frontcountry campground"].id &&
-          (item.attributes.offSeasonStartDate ||
-            item.attributes.offSeasonEndDate)
+          [2023, 2024].includes(operatingYear)
         ) {
-          const winterSeasonKey = `${parkId}-${operatingYear}`;
+          // get the winter park dates for this year (only 2023 and 2024)
+          const winterParkDates = winterParks[feature.park.orcs][operatingYear];
 
-          if (!winterSeasonMap.has(winterSeasonKey)) {
-            winterSeasonMap.set(winterSeasonKey, []);
+          // check if date is within jac-april or oct-dec
+          const janAprDates = winterParkDates.janApril;
+          const octDecDates = winterParkDates.octDec;
+
+          const startDate = item.attributes.serviceStartDate;
+          const endDate = item.attributes.serviceEndDate;
+
+          if (
+            datesOverlap({ start: startDate, end: endDate }, janAprDates) ||
+            datesOverlap({ start: startDate, end: endDate }, octDecDates)
+          ) {
+            const winterSeasonKey = `${parkId}-${operatingYear}`;
+
+            if (!winterSeasonMap.has(winterSeasonKey)) {
+              winterSeasonMap.set(winterSeasonKey, new Set());
+            }
+
+            winterSeasonMap.get(winterSeasonKey).add(feature.strapiId);
           }
 
-          winterSeasonMap.get(winterSeasonKey).push(item);
+          // if the date has offseason dates, store them so we can easily access them later
+          // we'll need them to create dates that will populate the winter season
+          if (
+            item.attributes.offSeasonStartDate ||
+            item.attributes.offSeasonEndDate
+          ) {
+            if (!potentialWinterDates[feature.park.id]) {
+              potentialWinterDates[feature.park.id] = {};
+            }
+
+            if (!potentialWinterDates[feature.park.id][operatingYear]) {
+              potentialWinterDates[feature.park.id][operatingYear] = [];
+            }
+
+            potentialWinterDates[feature.park.id][operatingYear].push(item);
+          }
         }
       }
     }),
@@ -516,7 +574,7 @@ export async function createDatesAndSeasons(datesData) {
   const winterDatesToCreate = [];
   const featuresWithWinterFees = new Set();
 
-  for (const [key, seasonDates] of winterSeasonMap) {
+  for (const [key, featureIds] of winterSeasonMap) {
     const [parkId, operatingYear] = key.split("-");
 
     const featureTypeId = featureTypeMap["Winter fee"].id;
@@ -545,23 +603,52 @@ export async function createDatesAndSeasons(datesData) {
       season = await createModel(Season, data);
     }
 
-    seasonDates.forEach(async (date) => {
-      // for each date in the season, we create 1+ date ranges
-      const feature = await getItemByAttributes(Feature, {
-        strapiId: date.attributes.parkOperationSubArea.data.id,
-      });
+    // for each featureId in the season we create one date range using its dateableId
+    const featureIDList = Array.from(featureIds);
 
-      const dateObj = {
-        startDate: date.attributes.offSeasonStartDate,
-        endDate: date.attributes.offSeasonEndDate,
-        dateTypeId: dateTypeMap["Winter fee"].id,
-        dateableId: feature.dateableId,
-        seasonId: season.id,
-      };
+    Promise.all(
+      featureIDList.map(async (featureId) => {
+        const feature = await getItemByAttributes(Feature, {
+          strapiId: featureId,
+        });
 
-      winterDatesToCreate.push(dateObj);
-      featuresWithWinterFees.add(feature.id);
-    });
+        const potentialFeatureDates =
+          potentialWinterDates[parkId][operatingYear];
+
+        let addedCount = 0;
+
+        if (potentialFeatureDates) {
+          potentialFeatureDates.forEach((date) => {
+            if (date.attributes.parkOperationSubArea.data.id === featureId) {
+              const dateObj = {
+                startDate: date.attributes.offSeasonStartDate,
+                endDate: date.attributes.offSeasonEndDate,
+                dateTypeId: dateTypeMap["Winter fee"].id,
+                dateableId: feature.dateableId,
+                seasonId: season.id,
+              };
+
+              winterDatesToCreate.push(dateObj);
+              addedCount++;
+            }
+          });
+        }
+
+        // If no existing offseasons dates exist for this feature, create a date range with null dates
+        if (addedCount === 0) {
+          const dateObj = {
+            startDate: null,
+            endDate: null,
+            dateTypeId: dateTypeMap["Winter fee"].id,
+            dateableId: feature.dateableId,
+            seasonId: season.id,
+          };
+
+          winterDatesToCreate.push(dateObj);
+        }
+        featuresWithWinterFees.add(feature.id);
+      }),
+    );
   }
 
   await DateRange.bulkCreate(winterDatesToCreate);
