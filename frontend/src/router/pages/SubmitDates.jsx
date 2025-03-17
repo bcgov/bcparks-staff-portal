@@ -1,5 +1,5 @@
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { cloneDeep, set as lodashSet, omit } from "lodash";
 import {
   faCircleInfo,
@@ -101,15 +101,15 @@ function SubmitDates() {
     return notes;
   }
 
-  function continueToPreviewEnabled() {
-    const allDatesHaveValues = Object.values(dates).some((dateType) =>
-      dateType.Operation.concat(dateType.Reservation).every(
-        (dateRange) => dateRange.startDate && dateRange.endDate,
-      ),
-    );
-
-    return allDatesHaveValues && season.status === "requested";
-  }
+  const continueToPreviewEnabled = useMemo(
+    () =>
+      Object.values(dates).every((dateType) =>
+        dateType.Operation.concat(dateType.Reservation).every(
+          (dateRange) => dateRange.startDate && dateRange.endDate,
+        ),
+      ) && season.status === "requested",
+    [dates, season.status],
+  );
 
   async function saveChanges(savingDraft) {
     setFormSubmitted(true);
@@ -917,7 +917,7 @@ function SubmitDates() {
                 type="button"
                 className="btn btn-primary"
                 onClick={continueToPreview}
-                disabled={!hasChanges() && !continueToPreviewEnabled()}
+                disabled={!hasChanges() && !continueToPreviewEnabled}
               >
                 Save and continue to preview
               </button>

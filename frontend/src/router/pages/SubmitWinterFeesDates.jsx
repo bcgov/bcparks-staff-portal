@@ -1,4 +1,4 @@
-import { useEffect, useState, createContext, useContext } from "react";
+import { useEffect, useState, createContext, useContext, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import PropTypes from "prop-types";
 import classNames from "classnames";
@@ -572,13 +572,15 @@ export default function SubmitWinterFeesDates() {
     }
   }
 
-  function continueToPreviewEnabled() {
-    const allDatesHaveValues = Object.values(dates).every((dateRanges) =>
-      dateRanges.every((dateRange) => dateRange.startDate && dateRange.endDate),
-    );
-
-    return allDatesHaveValues && season.status === "requested";
-  }
+  const continueToPreviewEnabled = useMemo(
+    () =>
+      Object.values(dates).every((dateRanges) =>
+        dateRanges.every(
+          (dateRange) => dateRange.startDate && dateRange.endDate,
+        ),
+      ) && season.status === "requested",
+    [dates, season.status],
+  );
 
   async function continueToPreview() {
     try {
@@ -768,7 +770,7 @@ export default function SubmitWinterFeesDates() {
                 type="button"
                 className="btn btn-primary"
                 onClick={continueToPreview}
-                disabled={!hasChanges() && !continueToPreviewEnabled()}
+                disabled={!hasChanges() && !continueToPreviewEnabled}
               >
                 Save and continue to preview
               </button>
