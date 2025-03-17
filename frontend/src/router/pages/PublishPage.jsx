@@ -121,7 +121,7 @@ function PublishPage() {
               <tr>
                 <th scope="col">Park name</th>
                 <th scope="col">Feature</th>
-                <th scope="col">Season</th>
+                <th scope="col">Year</th>
               </tr>
             </thead>
             <tbody>

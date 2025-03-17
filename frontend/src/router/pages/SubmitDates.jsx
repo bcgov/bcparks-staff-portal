@@ -806,7 +806,7 @@ function SubmitDates() {
             <FeatureIcon iconName={season.featureType.icon} />
             {season.park.name} {season.featureType.name}
           </h1>
-          <h2>Edit {season.operatingYear} season dates</h2>
+          <h2>Edit {season.operatingYear} dates</h2>
         </header>
 
         <p className="mb-5">
