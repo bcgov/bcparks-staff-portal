@@ -60,12 +60,12 @@ function ParkDetails() {
     if (approvedSeasonId !== null) {
       openFlashMessage(
         "Dates approved",
-        `${park.name} ${season.featureType.name} ${season.operatingYear} season dates marked as approved`,
+        `${park.name} ${season.featureType.name} ${season.operatingYear} dates marked as approved`,
       );
     } else if (savedSeasonId !== null) {
       openFlashMessage(
         "Dates saved as draft",
-        `${park.name} ${season.featureType.name} ${season.operatingYear} season details saved`,
+        `${park.name} ${season.featureType.name} ${season.operatingYear} dates saved`,
       );
     }
   }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
@@ -112,7 +112,7 @@ function ParkDetails() {
               getDataEndpoint: (seasonId) => `/seasons/${seasonId}`,
               getEditRoutePath: paths.seasonEdit,
               getPreviewRoutePath: paths.seasonPreview,
-              getTitle: (season) => `${season.operatingYear} season`,
+              getTitle: (season) => `${season.operatingYear} dates`,
               DetailsComponent: SeasonDates,
             }}
           />
