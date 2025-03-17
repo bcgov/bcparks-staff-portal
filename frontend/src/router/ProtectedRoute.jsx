@@ -39,7 +39,7 @@ export default function ProtectedRoute({ children }) {
     // If there's an error, redirect to the sign-in page
     console.error("Authentication error:", auth.error);
     console.error("Redirecting to sign-in page...");
-    auth.signinRedirect();
+    auth.signoutRedirect();
     return <div>Authentication error: {auth.error?.message}</div>;
   }
 
