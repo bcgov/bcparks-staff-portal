@@ -29,7 +29,12 @@ export default function StatusBadge({ status }) {
     label = displayText;
   }
 
-  const classes = classNames(["badge", "rounded-pill", colorClass]);
+  const classes = classNames([
+    "badge",
+    "rounded-pill",
+    "status-badge",
+    colorClass,
+  ]);
 
   return <span className={classes}>{label}</span>;
 }

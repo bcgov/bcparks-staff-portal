@@ -1,4 +1,6 @@
-.text-bg-disabled {
-  background-color: var(--surface-color-primary-disabled);
-  color: var(--typography-color-primary) !important;
+.status-badge {
+  &.text-bg-disabled {
+    background-color: var(--surface-color-primary-disabled);
+    color: var(--typography-color-primary) !important;
+  }
 }
