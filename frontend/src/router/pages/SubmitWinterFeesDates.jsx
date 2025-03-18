@@ -90,13 +90,7 @@ function DateRange({
    * @returns {void}
    */
   function onSelect(dateField, date) {
-    updateDateRange(
-      index,
-      dateField,
-      date,
-      // @TODO: Callback to validate the new value
-      // validateForm
-    );
+    updateDateRange(index, dateField, date);
   }
 
   // Use an index based on the dateableId and index,
@@ -321,7 +315,7 @@ function CampgroundFeature({ featureData }) {
    * @param {Function} [callback] validation callback to run after updating the date
    * @returns {void}
    */
-  function updateDateRange(index, key, value, callback = null) {
+  function updateDateRange(index, key, value) {
     let newValue = null;
 
     if (value) {
@@ -336,10 +330,6 @@ function CampgroundFeature({ featureData }) {
       // Update the date value and mark the date range as changed
       updatedDates[dateableId][index][key] = newValue;
       updatedDates[dateableId][index].changed = true;
-
-      if (callback) {
-        callback(updatedDates);
-      }
 
       return updatedDates;
     });

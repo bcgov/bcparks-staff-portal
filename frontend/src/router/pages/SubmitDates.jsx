@@ -316,14 +316,7 @@ function SubmitDates() {
     }
   }
 
-  function updateDateRange(
-    dateableId,
-    dateType,
-    index,
-    key,
-    value,
-    callback = null,
-  ) {
+  function updateDateRange(dateableId, dateType, index, key, value) {
     let newValue = null;
 
     if (value) {
@@ -338,10 +331,6 @@ function SubmitDates() {
       // Update the date value and mark the date range as changed
       lodashSet(updatedDates, [dateableId, dateType, index, key], newValue);
       lodashSet(updatedDates, [dateableId, dateType, index, "changed"], true);
-
-      if (callback) {
-        callback(updatedDates);
-      }
 
       return updatedDates;
     });
@@ -453,8 +442,6 @@ function SubmitDates() {
         index,
         dateField,
         date,
-        // Callback to validate the new value
-        validateForm,
       );
     }
 
