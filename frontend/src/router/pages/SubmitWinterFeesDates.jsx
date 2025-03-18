@@ -6,9 +6,9 @@ import cloneDeep from "lodash/cloneDeep";
 import omit from "lodash/omit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCircleInfo,
-  faTriangleExclamation,
   faCalendarCheck,
+  faCircleInfo,
+  faHexagonExclamation,
   faPlus,
   faXmark,
 } from "@fa-kit/icons/classic/regular";
@@ -95,12 +95,7 @@ function DateRange({
       dateField,
       date,
       // @TODO: Callback to validate the new value
-      // (updatedDates) => {
-      //   onUpdateDateRange({
-      //     dateRange,
-      //     datesObj: updatedDates,
-      //   });
-      // },
+      // validateForm
     );
   }
 
@@ -172,7 +167,7 @@ function DateRange({
           {/* Show validation errors for the startDate field */}
           {errors[startDateId] && (
             <div className="error-message mt-2">
-              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <FontAwesomeIcon icon={faHexagonExclamation} />
               <div>{errors[startDateId]}</div>
             </div>
           )}
@@ -227,7 +222,7 @@ function DateRange({
           {/* Show validation errors for the endDate field */}
           {errors[endDateId] && (
             <div className="error-message mt-2">
-              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <FontAwesomeIcon icon={faHexagonExclamation} />
               <div>{errors[endDateId]}</div>
             </div>
           )}
@@ -251,7 +246,7 @@ function DateRange({
       {/* Show validation errors for the date range */}
       {errors[dateRangeId] && (
         <div className="error-message mt-2">
-          <FontAwesomeIcon icon={faTriangleExclamation} />
+          <FontAwesomeIcon icon={faHexagonExclamation} />
           <div>{errors[dateRangeId]}</div>
         </div>
       )}
@@ -739,7 +734,7 @@ export default function SubmitWinterFeesDates() {
 
               {errors.notes && (
                 <div className="error-message mt-2">
-                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                  <FontAwesomeIcon icon={faHexagonExclamation} />
                   <div>{errors.notes}</div>
                 </div>
               )}
