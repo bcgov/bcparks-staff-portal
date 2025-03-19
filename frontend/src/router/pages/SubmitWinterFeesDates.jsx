@@ -312,7 +312,6 @@ function CampgroundFeature({ featureData }) {
    * @param {number} index the index of the date range in `dates[dateableId]`
    * @param {string} key key in the DateRange object to update (startDate or endDate)
    * @param {string} value new date value as a UTC ISO string
-   * @param {Function} [callback] validation callback to run after updating the date
    * @returns {void}
    */
   function updateDateRange(index, key, value) {
