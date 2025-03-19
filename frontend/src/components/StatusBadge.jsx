@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import PropTypes from "prop-types";
+import "./StatusBadge.scss";
 
 export default function StatusBadge({ status }) {
   let colorClass = "text-bg-dark";
@@ -15,6 +16,10 @@ export default function StatusBadge({ status }) {
     ["on API", { cssClass: "text-bg-primary", displayText: "on API" }],
     ["approved", { cssClass: "text-bg-success", displayText: "Approved" }],
     ["requested", { cssClass: "text-bg-warning", displayText: "Requested" }],
+    [
+      "Not provided",
+      { cssClass: "text-bg-disabled", displayText: "Not provided" },
+    ],
   ]);
 
   if (statusMap.has(status)) {
@@ -24,7 +29,12 @@ export default function StatusBadge({ status }) {
     label = displayText;
   }
 
-  const classes = classNames(["badge", "rounded-pill", colorClass]);
+  const classes = classNames([
+    "badge",
+    "rounded-pill",
+    "status-badge",
+    colorClass,
+  ]);
 
   return <span className={classes}>{label}</span>;
 }

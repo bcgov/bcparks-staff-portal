@@ -170,7 +170,11 @@ export default function ParkSeason({
       </div>
 
       <div className="controls">
-        <button onClick={navigateToEdit} className="btn btn-text text-primary">
+        <button
+          onClick={navigateToEdit}
+          className="btn btn-text text-primary"
+          disabled={!season.editable}
+        >
           <FontAwesomeIcon className="append-content me-2" icon={faPen} />
           <span>Edit</span>
         </button>
@@ -204,6 +208,7 @@ ParkSeason.propTypes = {
     operatingYear: PropTypes.number.isRequired,
     status: PropTypes.string.isRequired,
     updatedAt: PropTypes.string,
+    editable: PropTypes.bool.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
   }),
 
