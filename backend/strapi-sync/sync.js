@@ -18,6 +18,7 @@ import {
   User,
 } from "../models/index.js";
 import { Op } from "sequelize";
+import { admin } from "../middleware/adminJs.js";
 
 /**
  * Gets data for specific page number
@@ -548,6 +549,7 @@ export async function createDatesAndSeasons(datesData) {
           dateTypeId: dateTypeMap.Operation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
+          adminNotes: date.attributes.adminNotes,
         };
 
         datesToCreate.push(dateObj);
@@ -562,6 +564,7 @@ export async function createDatesAndSeasons(datesData) {
           dateTypeId: dateTypeMap.Reservation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
+          adminNotes: date.attributes.adminNotes,
         };
 
         datesToCreate.push(dateObj);
