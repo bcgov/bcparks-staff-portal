@@ -316,7 +316,7 @@ export default function useValidation(dates, notes, season) {
   // Validate the form when the dates change
   useEffect(() => {
     // Skip validation until the dates have loaded
-    if (dates.pending) return;
+    if (!dates) return;
 
     validateForm();
   }, [notes, dates, validateForm, formSubmitted]);

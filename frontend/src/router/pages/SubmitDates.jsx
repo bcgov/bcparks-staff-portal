@@ -42,7 +42,7 @@ function SubmitDates() {
   const { parkId, seasonId } = useParams();
 
   const [season, setSeason] = useState(null);
-  const [dates, setDates] = useState({ pending: true });
+  const [dates, setDates] = useState(null);
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
   // Track deleted date ranges
@@ -80,6 +80,8 @@ function SubmitDates() {
 
   // Returns true if there are any form changes to save
   function hasChanges() {
+    if (!dates) return false;
+
     // Any existing dates changed
     if (
       Object.values(dates).some((dateType) =>
@@ -101,8 +103,10 @@ function SubmitDates() {
     return notes;
   }
 
-  const continueToPreviewEnabled = useMemo(
-    () =>
+  const continueToPreviewEnabled = useMemo(() => {
+    if (!dates) return false;
+
+    return (
       Object.values(dates).every((dateType) =>
         dateType.Operation?.concat(dateType.Reservation).every(
           (dateRange) => dateRange.startDate && dateRange.endDate,
