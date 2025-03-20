@@ -560,15 +560,17 @@ export default function SubmitWinterFeesDates() {
     }
   }
 
-  const continueToPreviewEnabled = useMemo(
-    () =>
+  const continueToPreviewEnabled = useMemo(() => {
+    if (!dates) return false;
+
+    return (
       Object.values(dates).every((dateRanges) =>
         dateRanges.every(
           (dateRange) => dateRange.startDate && dateRange.endDate,
         ),
-      ) && season?.status === "requested",
-    [dates, season],
-  );
+      ) && season?.status === "requested"
+    );
+  }, [dates, season]);
 
   async function continueToPreview() {
     try {
