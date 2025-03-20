@@ -101,15 +101,18 @@ function SubmitDates() {
     return notes;
   }
 
-  const continueToPreviewEnabled = useMemo(
-    () =>
+  const continueToPreviewEnabled = useMemo(() => {
+    if (!season) {
+      return false;
+    }
+    return (
       Object.values(dates).every((dateType) =>
         dateType.Operation.concat(dateType.Reservation).every(
           (dateRange) => dateRange.startDate && dateRange.endDate,
         ),
-      ) && season.status === "requested",
-    [dates, season.status],
-  );
+      ) && season.status === "requested"
+    );
+  }, [dates, season]);
 
   async function saveChanges(savingDraft) {
     setFormSubmitted(true);
