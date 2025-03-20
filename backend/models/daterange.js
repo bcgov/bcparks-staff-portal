@@ -34,6 +34,7 @@ export default (sequelize) => {
       dateTypeId: DataTypes.INTEGER,
       dateableId: DataTypes.INTEGER,
       seasonId: DataTypes.INTEGER,
+      adminNote: { type: DataTypes.STRING, allowNull: true },
     },
     {
       sequelize,
