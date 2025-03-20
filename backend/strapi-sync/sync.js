@@ -18,7 +18,6 @@ import {
   User,
 } from "../models/index.js";
 import { Op } from "sequelize";
-import { admin } from "../middleware/adminJs.js";
 
 /**
  * Gets data for specific page number
@@ -546,7 +545,7 @@ export async function createDatesAndSeasons(datesData) {
           dateTypeId: dateTypeMap.Operation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
-          adminNotes: date.attributes.adminNotes,
+          adminNotes: date.attributes.adminNote,
         };
 
         datesToCreate.push(dateObj);
@@ -561,7 +560,7 @@ export async function createDatesAndSeasons(datesData) {
           dateTypeId: dateTypeMap.Reservation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
-          adminNotes: date.attributes.adminNotes,
+          adminNotes: date.attributes.adminNote,
         };
 
         datesToCreate.push(dateObj);
@@ -623,6 +622,7 @@ export async function createDatesAndSeasons(datesData) {
                 dateTypeId: dateTypeMap["Winter fee"].id,
                 dateableId: feature.dateableId,
                 seasonId: season.id,
+                adminNote: date.attributes.adminNote,
               };
 
               winterDatesToCreate.push(dateObj);
