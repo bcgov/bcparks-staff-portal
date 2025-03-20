@@ -45,6 +45,7 @@ async function getDatesToSend() {
     endDate: new Date(dateRange.endDate).toISOString().split("T")[0],
     dateType: dateRange.dateType.name,
     parkOperationSubArea: dateRange.dateable.feature[0].strapiId,
+    adminNote: dateRange.adminNote,
   }));
 
   console.log(dateRangesToPublish.length);
