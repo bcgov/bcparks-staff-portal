@@ -107,8 +107,8 @@ function SubmitDates() {
         dateType.Operation.concat(dateType.Reservation).every(
           (dateRange) => dateRange.startDate && dateRange.endDate,
         ),
-      ) && season.status === "requested",
-    [dates, season.status],
+      ) && season?.status === "requested",
+    [dates, season],
   );
 
   async function saveChanges(savingDraft) {
