@@ -134,6 +134,24 @@ a:not(.btn):focus {
   border-color: var(--surface-color-border-active);
 }
 
+// custom style for validation error alert
+.alert-validation-error {
+  display: flex;
+  gap: 0.5em;
+  color: var(--typography-color-primary);
+
+  .icon {
+    color: var(--icons-color-danger);
+  }
+}
+
+// override bootstrap invalid form control styles
+.was-validated .form-control:invalid,
+.form-control.is-invalid {
+  // don't show the circle icon; we'll append a FontAwesomeIcon
+  background-image: none;
+}
+
 // override bootstrap theme styles: don't shrink radio/checkbox labels
 label.form-check-label {
   font-size: var(--typography-font-size-body) !important;
