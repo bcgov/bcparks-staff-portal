@@ -107,14 +107,17 @@ export default function useValidation(dates, notes, season) {
     (value = notes) => {
       clearError("notes");
 
-      if (!season?.status) return;
+      if (!formSubmitted.current || !season?.status) return true;
 
       if (!value && ["approved", "on API"].includes(season.status)) {
         addError(
           "notes",
           "The dates you are editing have already been Approved or Published. Please provide a note explaining the reason for this update.",
         );
+        return false;
       }
+
+      return true;
     },
     [notes, season],
   );
@@ -299,7 +302,7 @@ export default function useValidation(dates, notes, season) {
     setErrors({});
 
     // Validate notes
-    validateNotes();
+    const notesValid = validateNotes();
 
     // Validate all dates:
     // Loop over dateable features from `dates` (campsite groupings)
@@ -310,7 +313,7 @@ export default function useValidation(dates, notes, season) {
     );
 
     // Return true if all features passed validation
-    return validationResults.every((result) => result);
+    return notesValid && validationResults.every((result) => result);
   }, [validateNotes, dates, validateFeatureDates]);
 
   // Validate the form when the dates change

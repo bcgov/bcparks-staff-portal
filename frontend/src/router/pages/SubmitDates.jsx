@@ -195,6 +195,10 @@ function SubmitDates() {
 
   async function continueToPreview() {
     try {
+      if (!validateForm()) {
+        throw new ValidationError("Form validation failed");
+      }
+
       if (hasChanges()) {
         const submitOk = await submitChanges();
 
