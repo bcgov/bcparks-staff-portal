@@ -6,9 +6,9 @@ import cloneDeep from "lodash/cloneDeep";
 import omit from "lodash/omit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCircleInfo,
-  faTriangleExclamation,
   faCalendarCheck,
+  faCircleInfo,
+  faHexagonExclamation,
   faPlus,
   faXmark,
 } from "@fa-kit/icons/classic/regular";
@@ -90,18 +90,7 @@ function DateRange({
    * @returns {void}
    */
   function onSelect(dateField, date) {
-    updateDateRange(
-      index,
-      dateField,
-      date,
-      // @TODO: Callback to validate the new value
-      // (updatedDates) => {
-      //   onUpdateDateRange({
-      //     dateRange,
-      //     datesObj: updatedDates,
-      //   });
-      // },
-    );
+    updateDateRange(index, dateField, date);
   }
 
   // Use an index based on the dateableId and index,
@@ -172,7 +161,7 @@ function DateRange({
           {/* Show validation errors for the startDate field */}
           {errors[startDateId] && (
             <div className="error-message mt-2">
-              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <FontAwesomeIcon icon={faHexagonExclamation} />
               <div>{errors[startDateId]}</div>
             </div>
           )}
@@ -227,7 +216,7 @@ function DateRange({
           {/* Show validation errors for the endDate field */}
           {errors[endDateId] && (
             <div className="error-message mt-2">
-              <FontAwesomeIcon icon={faTriangleExclamation} />
+              <FontAwesomeIcon icon={faHexagonExclamation} />
               <div>{errors[endDateId]}</div>
             </div>
           )}
@@ -251,7 +240,7 @@ function DateRange({
       {/* Show validation errors for the date range */}
       {errors[dateRangeId] && (
         <div className="error-message mt-2">
-          <FontAwesomeIcon icon={faTriangleExclamation} />
+          <FontAwesomeIcon icon={faHexagonExclamation} />
           <div>{errors[dateRangeId]}</div>
         </div>
       )}
@@ -323,10 +312,9 @@ function CampgroundFeature({ featureData }) {
    * @param {number} index the index of the date range in `dates[dateableId]`
    * @param {string} key key in the DateRange object to update (startDate or endDate)
    * @param {string} value new date value as a UTC ISO string
-   * @param {Function} [callback] validation callback to run after updating the date
    * @returns {void}
    */
-  function updateDateRange(index, key, value, callback = null) {
+  function updateDateRange(index, key, value) {
     let newValue = null;
 
     if (value) {
@@ -341,10 +329,6 @@ function CampgroundFeature({ featureData }) {
       // Update the date value and mark the date range as changed
       updatedDates[dateableId][index][key] = newValue;
       updatedDates[dateableId][index].changed = true;
-
-      if (callback) {
-        callback(updatedDates);
-      }
 
       return updatedDates;
     });
@@ -576,15 +560,17 @@ export default function SubmitWinterFeesDates() {
     }
   }
 
-  const continueToPreviewEnabled = useMemo(
-    () =>
+  const continueToPreviewEnabled = useMemo(() => {
+    if (!dates) return false;
+
+    return (
       Object.values(dates).every((dateRanges) =>
         dateRanges.every(
           (dateRange) => dateRange.startDate && dateRange.endDate,
         ),
-      ) && season?.status === "requested",
-    [dates, season],
-  );
+      ) && season?.status === "requested"
+    );
+  }, [dates, season]);
 
   async function continueToPreview() {
     try {
@@ -739,7 +725,7 @@ export default function SubmitWinterFeesDates() {
 
               {errors.notes && (
                 <div className="error-message mt-2">
-                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                  <FontAwesomeIcon icon={faHexagonExclamation} />
                   <div>{errors.notes}</div>
                 </div>
               )}

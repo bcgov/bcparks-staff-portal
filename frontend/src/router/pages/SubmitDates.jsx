@@ -2,9 +2,9 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 import { cloneDeep, set as lodashSet, omit } from "lodash";
 import {
-  faCircleInfo,
-  faTriangleExclamation,
   faCalendarCheck,
+  faCircleInfo,
+  faHexagonExclamation,
   faPlus,
   faXmark,
 } from "@fa-kit/icons/classic/regular";
@@ -42,7 +42,7 @@ function SubmitDates() {
   const { parkId, seasonId } = useParams();
 
   const [season, setSeason] = useState(null);
-  const [dates, setDates] = useState({});
+  const [dates, setDates] = useState(null);
   const [notes, setNotes] = useState("");
   const [readyToPublish, setReadyToPublish] = useState(false);
   // Track deleted date ranges
@@ -52,11 +52,11 @@ function SubmitDates() {
 
   const {
     errors,
-    setFormSubmitted,
+    formSubmitted,
     validateNotes,
     validateForm,
-    onUpdateDateRange,
     ValidationError,
+    ...validation
   } = useValidation(dates, notes, season);
 
   const {
@@ -80,6 +80,8 @@ function SubmitDates() {
 
   // Returns true if there are any form changes to save
   function hasChanges() {
+    if (!dates) return false;
+
     // Any existing dates changed
     if (
       Object.values(dates).some((dateType) =>
@@ -101,18 +103,20 @@ function SubmitDates() {
     return notes;
   }
 
-  const continueToPreviewEnabled = useMemo(
-    () =>
+  const continueToPreviewEnabled = useMemo(() => {
+    if (!dates) return false;
+
+    return (
       Object.values(dates).every((dateType) =>
-        dateType.Operation.concat(dateType.Reservation).every(
+        dateType.Operation?.concat(dateType.Reservation).every(
           (dateRange) => dateRange.startDate && dateRange.endDate,
         ),
-      ) && season?.status === "requested",
-    [dates, season],
-  );
+      ) && season?.status === "requested"
+    );
+  }, [dates, season]);
 
   async function saveChanges(savingDraft) {
-    setFormSubmitted(true);
+    formSubmitted.current = true;
 
     // Validate form state before saving
     if (!savingDraft && !validateForm()) {
@@ -191,6 +195,10 @@ function SubmitDates() {
 
   async function continueToPreview() {
     try {
+      if (!validateForm()) {
+        throw new ValidationError("Form validation failed");
+      }
+
       if (hasChanges()) {
         const submitOk = await submitChanges();
 
@@ -316,14 +324,7 @@ function SubmitDates() {
     }
   }
 
-  function updateDateRange(
-    dateableId,
-    dateType,
-    index,
-    key,
-    value,
-    callback = null,
-  ) {
+  function updateDateRange(dateableId, dateType, index, key, value) {
     let newValue = null;
 
     if (value) {
@@ -338,10 +339,6 @@ function SubmitDates() {
       // Update the date value and mark the date range as changed
       lodashSet(updatedDates, [dateableId, dateType, index, key], newValue);
       lodashSet(updatedDates, [dateableId, dateType, index, "changed"], true);
-
-      if (callback) {
-        callback(updatedDates);
-      }
 
       return updatedDates;
     });
@@ -453,13 +450,6 @@ function SubmitDates() {
         index,
         dateField,
         date,
-        // Callback to validate the new value
-        (updatedDates) => {
-          onUpdateDateRange({
-            dateRange,
-            datesObj: updatedDates,
-          });
-        },
       );
     }
 
@@ -507,18 +497,18 @@ function SubmitDates() {
               />
 
               {/* Show the calendar icon unless the error icon is showing */}
-              {!startErrors && (
-                <FontAwesomeIcon
-                  className="append-content"
-                  icon={faCalendarCheck}
-                />
-              )}
+              <FontAwesomeIcon
+                className={classNames("append-content", {
+                  "text-danger": startErrors,
+                })}
+                icon={startErrors ? faHexagonExclamation : faCalendarCheck}
+              />
             </div>
 
             {/* Show validation errors for the startDate field */}
             {errors[startDateId] && (
               <div className="error-message mt-2">
-                <FontAwesomeIcon icon={faTriangleExclamation} />
+                <FontAwesomeIcon icon={faHexagonExclamation} />
                 <div>{errors[startDateId]}</div>
               </div>
             )}
@@ -565,18 +555,18 @@ function SubmitDates() {
               />
 
               {/* Show the calendar icon unless the error icon is showing */}
-              {!endErrors && (
-                <FontAwesomeIcon
-                  className="append-content"
-                  icon={faCalendarCheck}
-                />
-              )}
+              <FontAwesomeIcon
+                className={classNames("append-content", {
+                  "text-danger": endErrors,
+                })}
+                icon={endErrors ? faHexagonExclamation : faCalendarCheck}
+              />
             </div>
 
             {/* Show validation errors for the endDate field */}
             {errors[endDateId] && (
               <div className="error-message mt-2">
-                <FontAwesomeIcon icon={faTriangleExclamation} />
+                <FontAwesomeIcon icon={faHexagonExclamation} />
                 <div>{errors[endDateId]}</div>
               </div>
             )}
@@ -607,7 +597,7 @@ function SubmitDates() {
         {/* Show validation errors for the date range */}
         {errors[dateRangeId] && (
           <div className="error-message mt-2">
-            <FontAwesomeIcon icon={faTriangleExclamation} />
+            <FontAwesomeIcon icon={faHexagonExclamation} />
             <div>{errors[dateRangeId]}</div>
           </div>
         )}
@@ -662,10 +652,7 @@ function SubmitDates() {
                   placement="top"
                   content={getOperatingDatesTooltip(season.featureType.name)}
                 >
-                  <FontAwesomeIcon
-                    className="append-content "
-                    icon={faCircleInfo}
-                  />
+                  <FontAwesomeIcon icon={faCircleInfo} />
                 </TooltipWrapper>
               )}
             </div>
@@ -703,10 +690,7 @@ function SubmitDates() {
                     placement="top"
                     content={season.dateTypes.Reservation.description}
                   >
-                    <FontAwesomeIcon
-                      className="append-content "
-                      icon={faCircleInfo}
-                    />
+                    <FontAwesomeIcon icon={faCircleInfo} />
                   </TooltipWrapper>
                 )}
               </div>
@@ -744,7 +728,7 @@ function SubmitDates() {
         {/* Show validation errors for the whole dateable feature */}
         {errors[feature.dateable.id] && (
           <div className="error-message mt-2">
-            <FontAwesomeIcon icon={faTriangleExclamation} />
+            <FontAwesomeIcon icon={faHexagonExclamation} />
             <div>{errors[feature.dateable.id]}</div>
           </div>
         )}
@@ -885,7 +869,7 @@ function SubmitDates() {
 
               {errors.notes && (
                 <div className="error-message mt-2">
-                  <FontAwesomeIcon icon={faTriangleExclamation} />
+                  <FontAwesomeIcon icon={faHexagonExclamation} />
                   <div>{errors.notes}</div>
                 </div>
               )}
@@ -897,6 +881,19 @@ function SubmitDates() {
               readyToPublish={readyToPublish}
               setReadyToPublish={setReadyToPublish}
             />
+
+            {validation.isValid === false && (
+              <div
+                className="alert alert-danger alert-validation-error mb-4"
+                role="alert"
+              >
+                <div className="icon">
+                  <FontAwesomeIcon icon={faHexagonExclamation} />{" "}
+                </div>
+
+                <div className="content">Please fix errors to continue</div>
+              </div>
+            )}
 
             <div className="controls d-flex flex-column flex-sm-row gap-2">
               <Link
