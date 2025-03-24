@@ -119,7 +119,7 @@ function SubmitDates() {
     formSubmitted.current = true;
 
     // Validate form state before saving
-    if (!validateForm()) {
+    if (!savingDraft && !validateForm()) {
       throw new ValidationError("Form validation failed");
     }
 
