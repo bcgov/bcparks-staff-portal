@@ -13,6 +13,11 @@ import {
   FeatureType,
 } from "../../models/index.js";
 
+import {
+  adminsAndApprovers,
+  checkPermissions,
+} from "../../middleware/permissions.js";
+
 import { get, post, put } from "./strapi-api.js";
 
 const router = Router();
@@ -443,6 +448,7 @@ async function publishToAPI(seasonTable) {
 // - send data to the API
 router.post(
   "/publish-to-api/",
+  checkPermissions(adminsAndApprovers),
   asyncHandler(async (req, res) => {
     // get all seasons that are approved and ready to be published
     // and the associated objects we need to build the payload
