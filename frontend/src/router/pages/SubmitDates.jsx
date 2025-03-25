@@ -116,8 +116,6 @@ function SubmitDates() {
   }, [dates, season]);
 
   async function saveChanges(savingDraft) {
-    formSubmitted.current = true;
-
     // Validate form state before saving
     if (!savingDraft && !validateForm()) {
       throw new ValidationError("Form validation failed");
@@ -195,6 +193,8 @@ function SubmitDates() {
 
   async function continueToPreview() {
     try {
+      formSubmitted.current = true;
+
       if (!validateForm()) {
         throw new ValidationError("Form validation failed");
       }
@@ -223,6 +223,8 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
+      formSubmitted.current = true;
+
       await submitChanges(true);
     } catch (err) {
       console.error(err);
