@@ -1,6 +1,6 @@
 export default function ContactBox() {
   return (
-    <div className="alert alert-cta-contact mb-4" role="alert">
+    <div className="alert alert-cta-contact mb-5" role="alert">
       <p className="mb-0">
         <b>Questions?</b>
         <br />
