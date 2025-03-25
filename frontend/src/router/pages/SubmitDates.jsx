@@ -116,11 +116,6 @@ function SubmitDates() {
   }, [dates, season]);
 
   async function saveChanges(savingDraft) {
-    // Validate form state before saving
-    if (!savingDraft && !validateForm()) {
-      throw new ValidationError("Form validation failed");
-    }
-
     // Build a list of date ranges of all date types
     const allDates = Object.values(dates)
       .reduce(
