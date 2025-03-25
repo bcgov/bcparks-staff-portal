@@ -456,7 +456,7 @@ function SubmitDates() {
     return (
       <div className="row gx-0 dates-row">
         <div className="col-lg-5">
-          <div className="form-group">
+          <div className="form-group mb-3 mb-lg-0">
             <label htmlFor={startDateId} className="form-label d-lg-none">
               Start date
             </label>
@@ -573,7 +573,7 @@ function SubmitDates() {
           </div>
         </div>
 
-        <div className="date-range-remove col-lg-1">
+        <div className="date-range-remove col-lg-1 order-last order-lg-0">
           {index > 0 && (
             <button
               className="btn btn-text text-link"
