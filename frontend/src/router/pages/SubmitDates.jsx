@@ -218,8 +218,6 @@ function SubmitDates() {
 
   async function saveAsDraft() {
     try {
-      formSubmitted.current = true;
-
       await submitChanges(true);
     } catch (err) {
       console.error(err);
