@@ -171,7 +171,9 @@ router.get(
       };
 
       // group dateRanges by operatingYear and type
-      feature.dateable.dateRanges.forEach((dateRange) => {
+      const sortedDates = _.orderBy(feature.dateable.dateRanges, "startDate");
+
+      sortedDates.forEach((dateRange) => {
         const dateRangeItem = {
           id: dateRange.id,
           startDate: dateRange.startDate,

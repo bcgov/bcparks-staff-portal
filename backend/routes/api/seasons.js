@@ -178,6 +178,11 @@ router.get(
       feature.dateable.currentSeasonDates = [];
       feature.dateable.previousSeasonDates = [];
 
+      feature.dateable.dateRanges = _.orderBy(
+        feature.dateable.dateRanges,
+        "startDate",
+      );
+
       feature.dateable.dateRanges.forEach((dateRange) => {
         if (dateRange.seasonId === season.id) {
           feature.dateable.currentSeasonDates.push(dateRange);
