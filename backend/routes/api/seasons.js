@@ -240,7 +240,7 @@ router.post(
   "/:seasonId/save/",
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
-    const { notes, dates, readyToPublish, deletedDateRangeIds } = req.body;
+    const { notes, dates, readyToPublish, deletedDateRangeIds = [] } = req.body;
 
     // when we add roles: we need to check that this user has permission to edit this season
     // staff or operator that has access to this park
