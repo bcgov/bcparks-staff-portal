@@ -737,42 +737,42 @@ export default function SubmitWinterFeesDates() {
               readyToPublish={readyToPublish}
               setReadyToPublish={setReadyToPublish}
             />
-
-            <div className="controls d-flex flex-column flex-sm-row gap-2">
-              <Link
-                to={paths.park(parkId)}
-                type="button"
-                className="btn btn-outline-primary"
-              >
-                Back
-              </Link>
-
-              <button
-                type="button"
-                className="btn btn-outline-primary"
-                onClick={saveAsDraft}
-                disabled={!hasChanges()}
-              >
-                Save draft
-              </button>
-
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={continueToPreview}
-                disabled={!hasChanges() && !continueToPreviewEnabled}
-              >
-                Save and continue to preview
-              </button>
-
-              {saving && (
-                <span
-                  className="spinner-border text-primary align-self-center me-2"
-                  aria-hidden="true"
-                ></span>
-              )}
-            </div>
           </div>
+        </div>
+
+        <div className="controls d-flex flex-column flex-sm-row gap-2">
+          <Link
+            to={paths.park(parkId)}
+            type="button"
+            className="btn btn-outline-primary"
+          >
+            Back
+          </Link>
+
+          <button
+            type="button"
+            className="btn btn-outline-primary"
+            onClick={saveAsDraft}
+            disabled={!hasChanges()}
+          >
+            Save draft
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={continueToPreview}
+            disabled={!hasChanges() && !continueToPreviewEnabled}
+          >
+            Save and continue to preview
+          </button>
+
+          {saving && (
+            <span
+              className="spinner-border text-primary align-self-center me-2"
+              aria-hidden="true"
+            ></span>
+          )}
         </div>
       </div>
     </div>
