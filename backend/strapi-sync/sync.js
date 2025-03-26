@@ -465,7 +465,7 @@ export async function createDatesAndSeasons(datesData) {
           // get the winter park dates for this year (only 2023 and 2024)
           const winterParkDates = winterParks[feature.park.orcs][operatingYear];
 
-          // check if date is within jac-april or oct-dec
+          // check if date is within jan-april or oct-dec
           const janAprDates = winterParkDates.janApril;
           const octDecDates = winterParkDates.octDec;
 
