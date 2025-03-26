@@ -6,7 +6,7 @@ import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState } from "react";
 import orderBy from "lodash/orderBy";
-import PaginationBar from "./PaginationBar";
+import PaginationBar from "@/components/PaginationBar";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
