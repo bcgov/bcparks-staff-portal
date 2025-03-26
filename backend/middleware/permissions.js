@@ -10,10 +10,7 @@ export const adminsAndApprovers = ["doot-super-admin", "doot-approver"];
 export function checkPermissions(requiredRoles) {
   return (req, res, next) => {
     try {
-      if (
-        !req.auth?.resource_access ||
-        !req.auth.resource_access["staff-portal"]
-      ) {
+      if (!req.auth?.resource_access?.["staff-portal"]) {
         throw new Error("Authentication data missing");
       }
 
@@ -55,17 +52,12 @@ export function sanitizePayload(req, res, next) {
     }
 
     const userRoles = req.auth.resource_access["staff-portal"].roles;
-    const allowedRoles = ["doot-super-admin", "doot-approver"];
 
     // If the user does NOT have permission, remove `readyToPublish`
-    if (!allowedRoles.some((role) => userRoles.includes(role))) {
+    if (!adminsAndApprovers.some((role) => userRoles.includes(role))) {
       // check if readyToPublish is in the payload
-      if (req.body && "readyToPublish" in req.body) {
+      if (req.body) {
         delete req.body.readyToPublish;
-      }
-
-      // remove status from the payload
-      if (req.body && "status" in req.body) {
         delete req.body.status;
       }
     }
