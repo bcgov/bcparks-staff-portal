@@ -465,7 +465,7 @@ export async function createDatesAndSeasons(datesData) {
           // get the winter park dates for this year (only 2023 and 2024)
           const winterParkDates = winterParks[feature.park.orcs][operatingYear];
 
-          // check if date is within jac-april or oct-dec
+          // check if date is within jan-april or oct-dec
           const janAprDates = winterParkDates.janApril;
           const octDecDates = winterParkDates.octDec;
 
@@ -608,7 +608,7 @@ export async function createDatesAndSeasons(datesData) {
     // for each featureId in the season we create one date range using its dateableId
     const featureIDList = Array.from(featureIds);
 
-    Promise.all(
+    await Promise.all(
       featureIDList.map(async (featureId) => {
         const feature = await getItemByAttributes(Feature, {
           strapiId: featureId,

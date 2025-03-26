@@ -8,6 +8,9 @@ import {
 
 import { post } from "../routes/api/strapi-api.js";
 
+// This will only need to run once to migrate the dates from the old structure to the new structure in Strapi
+// This will only migrate the Winter fee date type including the admin notes for each date range
+
 async function getDatesToSend() {
   const dateRanges = await DateRange.findAll({
     attributes: ["startDate", "endDate"],
@@ -47,8 +50,6 @@ async function getDatesToSend() {
     parkOperationSubArea: dateRange.dateable.feature[0].strapiId,
     adminNote: dateRange.adminNote,
   }));
-
-  console.log(dateRangesToPublish.length);
 
   return dateRangesToPublish;
 }
