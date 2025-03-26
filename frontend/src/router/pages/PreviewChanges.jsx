@@ -111,6 +111,7 @@ function PreviewChanges() {
         notes,
         dates: [],
         readyToPublish,
+        deletedDateRangeIds: [],
       });
 
       navigate(`${paths.park(parkId)}?saved=${data.id}`);
