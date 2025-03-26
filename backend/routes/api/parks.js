@@ -29,7 +29,7 @@ function getParkStatus(seasons) {
     return "approved";
   }
 
-  const onAPI = seasons.every((s) => s.status === "on API");
+  const onAPI = seasons.some((s) => s.status === "on API");
 
   if (onAPI) {
     return "on API";
