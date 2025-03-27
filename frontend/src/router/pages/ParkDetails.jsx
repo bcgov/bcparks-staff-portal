@@ -57,15 +57,17 @@ function ParkDetails() {
 
     if (!season) return;
 
+    const featureTypeDisplay = season.featureType.name.toLocaleLowerCase();
+
     if (approvedSeasonId !== null) {
       openFlashMessage(
         "Dates approved",
-        `${park.name} ${season.featureType.name} ${season.operatingYear} dates marked as approved`,
+        `${park.name} ${featureTypeDisplay} ${season.operatingYear} dates marked as approved`,
       );
     } else if (savedSeasonId !== null) {
       openFlashMessage(
         "Dates saved as draft",
-        `${park.name} ${season.featureType.name} ${season.operatingYear} dates saved`,
+        `${park.name} ${featureTypeDisplay} ${season.operatingYear} dates saved`,
       );
     }
   }, [isFlashOpen, park, searchParams, setSearchParams, openFlashMessage]);
