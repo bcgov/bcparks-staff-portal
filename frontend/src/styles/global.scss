@@ -124,6 +124,7 @@ a:not(.btn):focus {
 
   &.btn-text {
     background-color: transparent;
+    color: var(--typography-color-disabled) !important;
   }
 }
 
