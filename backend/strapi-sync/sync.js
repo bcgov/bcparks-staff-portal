@@ -606,7 +606,7 @@ export async function createDatesAndSeasons(datesData) {
     // for each featureId in the season we create one date range using its dateableId
     const featureIDList = Array.from(featureIds);
 
-    Promise.all(
+    await Promise.all(
       featureIDList.map(async (featureId) => {
         const feature = await getItemByAttributes(Feature, {
           strapiId: featureId,
