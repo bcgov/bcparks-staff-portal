@@ -17,6 +17,12 @@ import {
   User,
 } from "../../models/index.js";
 
+import {
+  adminsAndApprovers,
+  checkPermissions,
+  sanitizePayload,
+} from "../../middleware/permissions.js";
+
 const router = Router();
 
 // function getNewStatusForSeason(season, user) {
@@ -243,6 +249,7 @@ router.get(
 // save draft (role determined by user)
 router.post(
   "/:seasonId/save/",
+  sanitizePayload,
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const { notes, dates, readyToPublish, deletedDateRangeIds = [] } = req.body;
@@ -346,6 +353,7 @@ router.post(
 // approve
 router.post(
   "/:seasonId/approve/",
+  checkPermissions(adminsAndApprovers),
   asyncHandler(async (req, res) => {
     const { seasonId } = req.params;
     const { notes, readyToPublish } = req.body;
