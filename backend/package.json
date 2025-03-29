@@ -28,7 +28,7 @@
     "@adminjs/sequelize": "^4.1.1",
     "@fast-csv/format": "^5.0.2",
     "adminjs": "^7.8.13",
-    "axios": "^1.7.8",
+    "axios": "^1.8.2",
     "compression": "^1.7.4",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
