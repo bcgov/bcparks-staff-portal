@@ -3,8 +3,7 @@ import { useBlocker } from "react-router-dom";
 import { removeTrailingSlash } from "@/lib/utils";
 
 export function useNavigationGuard(hasChanges, openConfirmation) {
-  const blocker = useBlocker(({ currentLocation, nextLocation }) => {
-    const currentPath = currentLocation.pathname;
+  const blocker = useBlocker(({ nextLocation }) => {
     const nextPath = removeTrailingSlash(nextLocation.pathname);
 
     // Get query string from nextPath
@@ -12,8 +11,8 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
 
     // Bypass the blocker when saving or approving
     if (
-      nextPath === `${currentPath}/preview` ||
-      nextPath === `${currentPath.replace("edit", "preview")}` ||
+      nextPath.includes("/preview") ||
+      nextPath.includes("/edit") ||
       queryString.has("approved") ||
       queryString.has("saved")
     ) {
