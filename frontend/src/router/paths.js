@@ -4,22 +4,38 @@ function park(id) {
   return `/parks/${id}`;
 }
 
+function season(parkId, seasonId) {
+  return `${park(parkId)}/seasons/${seasonId}`;
+}
+
+function edit(rootPath) {
+  return `${rootPath}/edit`;
+}
+
+function preview(rootPath) {
+  return `${rootPath}/preview`;
+}
+
 export default {
   park,
+  season,
+
+  edit,
+  preview,
 
   seasonEdit(parkId, seasonId) {
-    return `${park(parkId)}/seasons/${seasonId}/edit`;
+    return edit(season(parkId, seasonId));
   },
 
   seasonPreview(parkId, seasonId) {
-    return `${park(parkId)}/seasons/${seasonId}/preview`;
+    return preview(season(parkId, seasonId));
   },
 
   winterFeesEdit(parkId, seasonId) {
-    return `${park(parkId)}/winter-fees/${seasonId}/edit`;
+    return edit(`${park(parkId)}/winter-fees/${seasonId}`);
   },
 
   winterFeesPreview(parkId, seasonId) {
-    return `${park(parkId)}/winter-fees/${seasonId}/preview`;
+    return preview(`${park(parkId)}/winter-fees/${seasonId}`);
   },
 };

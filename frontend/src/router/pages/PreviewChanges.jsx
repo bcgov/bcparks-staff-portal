@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useOutletContext } from "react-router-dom";
+import { useApiPost } from "@/hooks/useApi";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
@@ -9,11 +8,11 @@ import { useFlashMessage } from "@/hooks/useFlashMessage";
 import paths from "@/router/paths";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
+import { faHexagonExclamation } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import NavBack from "@/components/NavBack";
 import FeatureIcon from "@/components/FeatureIcon";
-import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import DateRange from "@/components/DateRange";
@@ -25,13 +24,18 @@ import FlashMessage from "@/components/FlashMessage";
 import "./PreviewChanges.scss";
 
 function PreviewChanges() {
-  const { parkId, seasonId } = useParams();
-  const navigate = useNavigate();
-
-  const [notes, setNotes] = useState("");
-  const [readyToPublish, setReadyToPublish] = useState(false);
-
-  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
+  const {
+    parkId,
+    seasonId,
+    season,
+    notes,
+    setNotes,
+    readyToPublish,
+    setReadyToPublish,
+    validation,
+    navigate,
+    navigateAndScroll,
+  } = useOutletContext();
 
   const { sendData: saveData, loading: saving } = useApiPost(
     `/seasons/${seasonId}/save/`,
@@ -58,13 +62,13 @@ function PreviewChanges() {
   const missingDatesConfirmation = useMissingDatesConfirmation();
 
   function hasChanges() {
-    return notes !== "" || data.readyToPublish !== readyToPublish;
+    return notes !== "" || season.readyToPublish !== readyToPublish;
   }
 
   useNavigationGuard(hasChanges, openConfirmation);
 
   function navigateToEdit() {
-    navigate(paths.seasonEdit(parkId, seasonId));
+    navigateAndScroll(paths.seasonEdit(parkId, seasonId));
   }
 
   function getPrevSeasonDates(feature, dateType) {
@@ -114,7 +118,7 @@ function PreviewChanges() {
         deletedDateRangeIds: [],
       });
 
-      navigate(`${paths.park(parkId)}?saved=${data.id}`);
+      navigate(`${paths.park(parkId)}?saved=${seasonId}`);
     } catch (err) {
       console.error("Error saving preview", err);
 
@@ -125,7 +129,7 @@ function PreviewChanges() {
   function getFeaturesWithMissingDates() {
     const featureNameList = [];
 
-    data?.campgrounds.forEach((campground) => {
+    season?.campgrounds.forEach((campground) => {
       campground.features.forEach((feature) => {
         if (feature.active) {
           const operatingDates = feature.dateable.currentSeasonDates.filter(
@@ -165,7 +169,7 @@ function PreviewChanges() {
       });
     });
 
-    data?.features.forEach((feature) => {
+    season?.features.forEach((feature) => {
       if (feature.active) {
         const operatingDates = feature.dateable.currentSeasonDates.filter(
           (dateRange) =>
@@ -215,7 +219,7 @@ function PreviewChanges() {
           missingDatesConfirmation.setInputMessage("");
           // Redirect back to the Park Details page on success.
           // Use the "approved" query param to show a flash message.
-          navigate(`${paths.park(parkId)}?approved=${data.id}`);
+          navigate(`${paths.park(parkId)}?approved=${seasonId}`);
         }
       } else {
         await approveData({
@@ -224,7 +228,7 @@ function PreviewChanges() {
         });
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
-        navigate(`${paths.park(parkId)}?approved=${data.id}`);
+        navigate(`${paths.park(parkId)}?approved=${seasonId}`);
       }
     } catch (err) {
       console.error("Error approving preview", err);
@@ -247,10 +251,10 @@ function PreviewChanges() {
                   Type of date
                 </th>
                 <th scope="col" className="prev-date-column">
-                  {data?.operatingYear - 1}
+                  {season?.operatingYear - 1}
                 </th>
                 <th scope="col" className="current-date-column">
-                  {data?.operatingYear}
+                  {season?.operatingYear}
                 </th>
                 <th scope="col" className="actions-column"></th>
               </tr>
@@ -325,30 +329,6 @@ function PreviewChanges() {
     }),
   };
 
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-
-    setReadyToPublish(data.readyToPublish);
-  }, [data]);
-
-  if (loading || !data) {
-    return (
-      <div className="container">
-        <LoadingBar />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p>Error loading season data: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container">
       <div className="page review-changes">
@@ -381,23 +361,23 @@ function PreviewChanges() {
         />
 
         <NavBack routePath={paths.park(parkId)}>
-          Back to {data?.park.name} dates
+          Back to {season?.park.name} dates
         </NavBack>
 
         <header className="page-header internal">
           <h1 className="header-with-icon">
-            <FeatureIcon iconName={data.featureType.icon} />
-            {data.park.name} {data.featureType.name}
+            <FeatureIcon iconName={season.featureType.icon} />
+            {season.park.name} {season.featureType.name}
           </h1>
-          <h2>Preview {data.operatingYear} dates</h2>
+          <h2>Preview {season.operatingYear} dates</h2>
         </header>
 
         <section className="feature-type">
-          {data?.campgrounds.map((campground) => (
+          {season?.campgrounds.map((campground) => (
             <Campground key={campground.id} campground={campground} />
           ))}
 
-          {data?.features.map((feature) => (
+          {season?.features.map((feature) => (
             <Feature key={feature.id} feature={feature} />
           ))}
         </section>
@@ -406,7 +386,7 @@ function PreviewChanges() {
           <div className="col-lg-6">
             <h3 className="mb-4">Notes</h3>
 
-            <ChangeLogsList changeLogs={data?.changeLogs} />
+            <ChangeLogsList changeLogs={season?.changeLogs} />
 
             <p>
               If you are updating the current year’s dates, provide an
@@ -431,17 +411,30 @@ function PreviewChanges() {
               readyToPublish={readyToPublish}
               setReadyToPublish={setReadyToPublish}
             />
+
+            {validation.isValid === false && (
+              <div
+                className="alert alert-danger alert-validation-error mb-4"
+                role="alert"
+              >
+                <div className="icon">
+                  <FontAwesomeIcon icon={faHexagonExclamation} />{" "}
+                </div>
+
+                <div className="content">Please fix errors to continue</div>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="controls d-flex flex-column flex-sm-row gap-2">
-          <Link
-            to={paths.seasonEdit(parkId, seasonId)}
+          <button
             type="button"
             className="btn btn-outline-primary"
+            onClick={navigateToEdit}
           >
             Back
-          </Link>
+          </button>
 
           <button
             type="button"

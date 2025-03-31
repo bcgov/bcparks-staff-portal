@@ -1,5 +1,5 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { Link, useOutletContext } from "react-router-dom";
+import { useState, useMemo } from "react";
 import { cloneDeep, set as lodashSet, omit } from "lodash";
 import {
   faCalendarCheck,
@@ -17,17 +17,15 @@ import classNames from "classnames";
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import LoadingBar from "@/components/LoadingBar";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FeatureIcon from "@/components/FeatureIcon";
 import FlashMessage from "@/components/FlashMessage";
 
-import useValidation from "@/hooks/useValidation";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useApiPost } from "@/hooks/useApi";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
 import {
   formatDateRange,
@@ -39,12 +37,21 @@ import paths from "@/router/paths";
 import "./SubmitDates.scss";
 
 function SubmitDates() {
-  const { parkId, seasonId } = useParams();
+  const {
+    parkId,
+    seasonId,
+    season,
+    dates,
+    setDates,
+    notes,
+    setNotes,
+    readyToPublish,
+    setReadyToPublish,
+    validation,
+    navigate,
+    navigateAndScroll,
+  } = useOutletContext();
 
-  const [season, setSeason] = useState(null);
-  const [dates, setDates] = useState(null);
-  const [notes, setNotes] = useState("");
-  const [readyToPublish, setReadyToPublish] = useState(false);
   // Track deleted date ranges
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
 
@@ -56,8 +63,7 @@ function SubmitDates() {
     validateNotes,
     validateForm,
     ValidationError,
-    ...validation
-  } = useValidation(dates, notes, season);
+  } = validation;
 
   const {
     title,
@@ -71,12 +77,9 @@ function SubmitDates() {
     isConfirmationOpen,
   } = useConfirmation();
 
-  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
   const { sendData, loading: saving } = useApiPost(
     `/seasons/${seasonId}/save/`,
   );
-
-  const navigate = useNavigate();
 
   // Returns true if there are any form changes to save
   function hasChanges() {
@@ -97,7 +100,7 @@ function SubmitDates() {
     if (deletedDateRangeIds.length > 0) return true;
 
     // Ready to publish state has changed
-    if (readyToPublish !== data.readyToPublish) return true;
+    if (readyToPublish !== season.readyToPublish) return true;
 
     // Notes have been entered
     return notes;
@@ -151,7 +154,7 @@ function SubmitDates() {
     const response = await sendData(payload);
 
     if (savingDraft) {
-      navigate(`${paths.park(parkId)}?saved=${data.id}`);
+      navigate(`${paths.park(parkId)}?saved=${seasonId}`);
     }
 
     return response;
@@ -198,10 +201,10 @@ function SubmitDates() {
         const submitOk = await submitChanges();
 
         if (submitOk) {
-          navigate(paths.seasonPreview(parkId, seasonId));
+          navigateAndScroll(paths.seasonPreview(parkId, seasonId));
         }
       } else {
-        navigate(paths.seasonPreview(parkId, seasonId));
+        navigateAndScroll(paths.seasonPreview(parkId, seasonId));
       }
     } catch (err) {
       console.error(err);
@@ -233,52 +236,6 @@ function SubmitDates() {
   }
 
   useNavigationGuard(hasChanges, openConfirmation);
-
-  useEffect(() => {
-    if (data) {
-      const currentSeasonDates = {};
-
-      data.campgrounds.forEach((campground) => {
-        campground.features.forEach((feature) => {
-          currentSeasonDates[feature.dateable.id] = {
-            Operation: [],
-            Reservation: [],
-          };
-          feature.dateable.currentSeasonDates.forEach((dateRange) => {
-            currentSeasonDates[feature.dateable.id][
-              dateRange.dateType.name
-            ].push({
-              ...dateRange,
-              dateableId: feature.dateable.id,
-              inputType: "text",
-              changed: false,
-            });
-          });
-        });
-      });
-
-      data.features.forEach((feature) => {
-        currentSeasonDates[feature.dateable.id] = {
-          Operation: [],
-          Reservation: [],
-        };
-        feature.dateable.currentSeasonDates.forEach((dateRange) => {
-          currentSeasonDates[feature.dateable.id][dateRange.dateType.name].push(
-            {
-              ...dateRange,
-              dateableId: feature.dateable.id,
-              inputType: "text",
-              changed: false,
-            },
-          );
-        });
-      });
-
-      setSeason(data);
-      setDates(currentSeasonDates);
-      setReadyToPublish(data.readyToPublish);
-    }
-  }, [data]);
 
   function addDateRange(dateType, dateableId) {
     setDates((prevDates) => ({
@@ -752,22 +709,6 @@ function SubmitDates() {
     }),
   };
 
-  if (loading || !season) {
-    return (
-      <div className="container">
-        <LoadingBar />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p>Error loading season data: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="page submit-dates">
       <ConfirmationDialog
@@ -916,7 +857,7 @@ function SubmitDates() {
             onClick={continueToPreview}
             disabled={!hasChanges() && !continueToPreviewEnabled}
           >
-            Save and continue to preview
+            Continue to preview
           </button>
 
           {saving && (

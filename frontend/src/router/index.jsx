@@ -3,6 +3,7 @@ import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
 import ParkDetails from "./pages/ParkDetails";
+import SeasonPage from "./pages/SeasonPage";
 import SubmitDates from "./pages/SubmitDates";
 import SubmitWinterFeesDates from "./pages/SubmitWinterFeesDates";
 import PreviewChanges from "./pages/PreviewChanges";
@@ -49,17 +50,27 @@ const RouterConfig = createBrowserRouter(
           element: <ParkDetails />,
         },
 
-        // edit/submit dates for a season
+        // Season page with sub-routes
         {
-          path: paths.seasonEdit(":parkId", ":seasonId"),
-          element: <SubmitDates />,
+          path: paths.season(":parkId", ":seasonId"),
+          // element: <div>test foo</div>,
+          element: <SeasonPage />,
+          children: [
+            // edit/submit dates for a season
+            {
+              path: "edit",
+              element: <SubmitDates />,
+            },
+
+            // preview changes before saving
+            {
+              path: "preview",
+              element: <PreviewChanges />,
+            },
+          ],
         },
 
-        // review changes
-        {
-          path: paths.seasonPreview(":parkId", ":seasonId"),
-          element: <PreviewChanges />,
-        },
+        // @TODO: whatever we do above, do the same for winter fees
 
         // edit/submit winter fees dates
         {
