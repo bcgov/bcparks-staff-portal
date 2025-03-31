@@ -201,6 +201,12 @@ function PreviewChanges() {
   }
 
   async function approve() {
+    validation.formSubmitted.current = true;
+
+    if (!validation.validateForm()) {
+      throw new validation.ValidationError("Form validation failed");
+    }
+
     const featuresWithMissingDates = getFeaturesWithMissingDates();
 
     try {
@@ -233,7 +239,13 @@ function PreviewChanges() {
     } catch (err) {
       console.error("Error approving preview", err);
 
-      showErrorFlash();
+      if (err instanceof validation.ValidationError) {
+        // @TODO: Handle validation errors
+        console.error(err);
+      } else {
+        // Show a flash message for fatal server errors
+        showErrorFlash();
+      }
     }
   }
 
