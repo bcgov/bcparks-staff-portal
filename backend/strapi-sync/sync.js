@@ -465,7 +465,7 @@ export async function createDatesAndSeasons(datesData) {
           // get the winter park dates for this year (only 2023 and 2024)
           const winterParkDates = winterParks[feature.park.orcs][operatingYear];
 
-          // check if date is within jac-april or oct-dec
+          // check if date is within jan-april or oct-dec
           const janAprDates = winterParkDates.janApril;
           const octDecDates = winterParkDates.octDec;
 
@@ -548,6 +548,7 @@ export async function createDatesAndSeasons(datesData) {
           dateTypeId: dateTypeMap.Operation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
+          adminNotes: date.attributes.adminNote,
         };
 
         datesToCreate.push(dateObj);
@@ -562,6 +563,7 @@ export async function createDatesAndSeasons(datesData) {
           dateTypeId: dateTypeMap.Reservation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
+          adminNotes: date.attributes.adminNote,
         };
 
         datesToCreate.push(dateObj);
@@ -626,6 +628,7 @@ export async function createDatesAndSeasons(datesData) {
                 dateTypeId: dateTypeMap["Winter fee"].id,
                 dateableId: feature.dateableId,
                 seasonId: season.id,
+                adminNote: date.attributes.adminNote,
               };
 
               winterDatesToCreate.push(dateObj);
