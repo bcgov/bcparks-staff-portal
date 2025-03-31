@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export function useConfirmation() {
   const [isOpen, setIsOpen] = useState(false);
@@ -9,23 +9,33 @@ export function useConfirmation() {
   const [cancelButtonText, setCancelButtonText] = useState("");
   const [resolvePromise, setResolvePromise] = useState(null);
 
-  function openConfirmation(
-    confirmationTitle,
-    confirmationMessage,
-    confirmText = "Confirm",
-    cancelText = "Cancel",
-    notesParam = "",
-  ) {
-    return new Promise((resolve) => {
-      setTitle(confirmationTitle);
-      setMessage(confirmationMessage);
-      setNotes(notesParam);
-      setConfirmButtonText(confirmText);
-      setCancelButtonText(cancelText);
-      setResolvePromise(() => resolve); // Store the resolve function
-      setIsOpen(true);
-    });
-  }
+  const openConfirmation = useCallback(
+    (
+      confirmationTitle,
+      confirmationMessage,
+      confirmText = "Confirm",
+      cancelText = "Cancel",
+      notesParam = "",
+    ) =>
+      new Promise((resolve) => {
+        setTitle(confirmationTitle);
+        setMessage(confirmationMessage);
+        setNotes(notesParam);
+        setConfirmButtonText(confirmText);
+        setCancelButtonText(cancelText);
+        setResolvePromise(() => resolve); // Store the resolve function
+        setIsOpen(true);
+      }),
+    [
+      setTitle,
+      setMessage,
+      setNotes,
+      setConfirmButtonText,
+      setCancelButtonText,
+      setResolvePromise,
+      setIsOpen,
+    ],
+  );
 
   function handleConfirm() {
     if (resolvePromise) {
