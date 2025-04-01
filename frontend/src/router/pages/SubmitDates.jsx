@@ -57,13 +57,7 @@ function SubmitDates() {
 
   const errorFlashMessage = useFlashMessage();
 
-  const {
-    errors,
-    formSubmitted,
-    validateNotes,
-    validateForm,
-    ValidationError,
-  } = validation;
+  const { errors, formSubmitted, validateForm, ValidationError } = validation;
 
   const {
     title,
@@ -749,7 +743,6 @@ function SubmitDates() {
                 value={notes}
                 onChange={(ev) => {
                   setNotes(ev.target.value);
-                  validateNotes(ev.target.value);
                 }}
               ></textarea>
 
