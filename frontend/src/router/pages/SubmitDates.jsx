@@ -48,8 +48,8 @@ function SubmitDates() {
     readyToPublish,
     setReadyToPublish,
     validation,
-    navigate,
     navigateAndScroll,
+    saveAsDraft,
   } = useOutletContext();
 
   // Track deleted date ranges
@@ -118,7 +118,7 @@ function SubmitDates() {
     );
   }, [dates, season]);
 
-  async function saveChanges(savingDraft) {
+  async function saveChanges() {
     // Build a list of date ranges of all date types
     const allDates = Object.values(dates)
       .reduce(
@@ -153,33 +153,7 @@ function SubmitDates() {
 
     const response = await sendData(payload);
 
-    if (savingDraft) {
-      navigate(`${paths.park(parkId)}?saved=${seasonId}`);
-    }
-
     return response;
-  }
-
-  async function submitChanges(savingDraft = false) {
-    if (["pending review", "approved", "on API"].includes(season.status)) {
-      const confirm = await openConfirmation(
-        "Move back to draft?",
-        "The dates will be moved back to draft and need to be submitted again to be reviewed.",
-        "Move to draft",
-        "Cancel",
-        "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
-      );
-
-      if (confirm) {
-        await saveChanges(savingDraft);
-        return true;
-      }
-    } else {
-      await saveChanges(savingDraft);
-      return true;
-    }
-
-    return false;
   }
 
   function showErrorFlash() {
@@ -197,31 +171,7 @@ function SubmitDates() {
         throw new ValidationError("Form validation failed");
       }
 
-      if (hasChanges()) {
-        const submitOk = await submitChanges();
-
-        if (submitOk) {
-          navigateAndScroll(paths.seasonPreview(parkId, seasonId));
-        }
-      } else {
-        navigateAndScroll(paths.seasonPreview(parkId, seasonId));
-      }
-    } catch (err) {
-      console.error(err);
-
-      if (err instanceof ValidationError) {
-        // @TODO: Handle validation errors
-        console.error(errors);
-      } else {
-        // Show a flash message for fatal server errors
-        showErrorFlash();
-      }
-    }
-  }
-
-  async function saveAsDraft() {
-    try {
-      await submitChanges(true);
+      navigateAndScroll(paths.seasonPreview(parkId, seasonId));
     } catch (err) {
       console.error(err);
 
@@ -845,7 +795,9 @@ function SubmitDates() {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={saveAsDraft}
+            onClick={() =>
+              saveAsDraft(saveChanges, openConfirmation, showErrorFlash)
+            }
             disabled={!hasChanges()}
           >
             Save draft

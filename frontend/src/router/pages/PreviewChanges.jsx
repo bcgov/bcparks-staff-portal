@@ -35,6 +35,7 @@ function PreviewChanges() {
     validation,
     navigate,
     navigateAndScroll,
+    saveAsDraft,
   } = useOutletContext();
 
   const { sendData: saveData, loading: saving } = useApiPost(
@@ -110,20 +111,12 @@ function PreviewChanges() {
   }
 
   async function savePreview() {
-    try {
-      await saveData({
-        notes,
-        dates: [],
-        readyToPublish,
-        deletedDateRangeIds: [],
-      });
-
-      navigate(`${paths.park(parkId)}?saved=${seasonId}`);
-    } catch (err) {
-      console.error("Error saving preview", err);
-
-      showErrorFlash();
-    }
+    return saveData({
+      notes,
+      dates: [],
+      readyToPublish,
+      deletedDateRangeIds: [],
+    });
   }
 
   function getFeaturesWithMissingDates() {
@@ -451,7 +444,10 @@ function PreviewChanges() {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={savePreview}
+            onClick={() =>
+              saveAsDraft(savePreview, openConfirmation, showErrorFlash)
+            }
+            disabled={!hasChanges()}
           >
             Save draft
           </button>

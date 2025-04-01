@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 
+import paths from "@/router/paths";
 import { useApiGet } from "@/hooks/useApi";
 import useValidation from "@/hooks/useValidation";
 
@@ -75,6 +76,36 @@ export default function SeasonPage() {
     window.scrollTo(0, 0);
   }
 
+  async function saveAsDraft(saveFunction, openConfirmation, showErrorFlash) {
+    try {
+      if (["pending review", "approved", "on API"].includes(season.status)) {
+        const confirm = await openConfirmation(
+          "Move back to draft?",
+          "The dates will be moved back to draft and need to be submitted again to be reviewed.",
+          "Move to draft",
+          "Cancel",
+          "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
+        );
+
+        if (!confirm) return;
+      }
+
+      await saveFunction();
+
+      navigate(`${paths.park(parkId)}?saved=${seasonId}`);
+    } catch (err) {
+      console.error(err);
+
+      if (err instanceof validation.ValidationError) {
+        // @TODO: Handle validation errors
+        console.error(validation.errors);
+      } else {
+        // Show a flash message for fatal server errors
+        showErrorFlash();
+      }
+    }
+  }
+
   if (loading || !season) {
     return (
       <div className="container">
@@ -106,6 +137,7 @@ export default function SeasonPage() {
         validation,
         navigate,
         navigateAndScroll,
+        saveAsDraft,
       }}
     />
   );
