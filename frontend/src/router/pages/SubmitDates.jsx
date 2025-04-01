@@ -1,6 +1,6 @@
 import { Link, useOutletContext } from "react-router-dom";
 import { useState, useMemo } from "react";
-import { cloneDeep, set as lodashSet, omit } from "lodash";
+import { cloneDeep, set as lodashSet } from "lodash";
 import {
   faCalendarCheck,
   faCircleInfo,
@@ -19,14 +19,8 @@ import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FeatureIcon from "@/components/FeatureIcon";
-import FlashMessage from "@/components/FlashMessage";
 
-import { useConfirmation } from "@/hooks/useConfirmation";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useApiPost } from "@/hooks/useApi";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import {
   formatDateRange,
   normalizeToUTCDate,
@@ -49,56 +43,14 @@ function SubmitDates() {
     setReadyToPublish,
     validation,
     navigateAndScroll,
+    setDeletedDateRangeIds,
     saveAsDraft,
+    showErrorFlash,
+    hasChanges,
+    saving,
   } = useOutletContext();
 
-  // Track deleted date ranges
-  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
-
-  const errorFlashMessage = useFlashMessage();
-
   const { errors, formSubmitted, validateForm, ValidationError } = validation;
-
-  const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
-
-  const { sendData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
-
-  // Returns true if there are any form changes to save
-  function hasChanges() {
-    if (!dates) return false;
-
-    // Any existing dates changed
-    if (
-      Object.values(dates).some((dateType) =>
-        dateType.Operation.concat(dateType.Reservation).some(
-          (dateRange) => dateRange.changed,
-        ),
-      )
-    ) {
-      return true;
-    }
-
-    // If any date ranges have been deleted
-    if (deletedDateRangeIds.length > 0) return true;
-
-    // Ready to publish state has changed
-    if (readyToPublish !== season.readyToPublish) return true;
-
-    // Notes have been entered
-    return notes;
-  }
 
   const continueToPreviewEnabled = useMemo(() => {
     if (!dates) return false;
@@ -111,51 +63,6 @@ function SubmitDates() {
       ) && season?.status === "requested"
     );
   }, [dates, season]);
-
-  async function saveChanges() {
-    // Build a list of date ranges of all date types
-    const allDates = Object.values(dates)
-      .reduce(
-        (acc, dateType) => acc.concat(dateType.Operation, dateType.Reservation),
-        [],
-      )
-      // Filter out any blank ranges or unchanged dates
-      .filter((dateRange) => {
-        if (
-          dateRange.startDate === null &&
-          dateRange.endDate === null &&
-          !dateRange.id
-        ) {
-          return false;
-        }
-
-        // if the range is unchanged, skip this range
-        return dateRange.changed;
-      })
-      // Add dateTypeId to the date ranges, remove tempId
-      .map((dateRange) => ({
-        ...omit(dateRange, ["tempId"]),
-        dateTypeId: dateRange.dateType.id,
-      }));
-
-    const payload = {
-      notes,
-      readyToPublish,
-      dates: allDates,
-      deletedDateRangeIds,
-    };
-
-    const response = await sendData(payload);
-
-    return response;
-  }
-
-  function showErrorFlash() {
-    errorFlashMessage.openFlashMessage(
-      "Unable to save changes",
-      "There was a problem saving these changes. Please try again.",
-    );
-  }
 
   async function continueToPreview() {
     try {
@@ -178,8 +85,6 @@ function SubmitDates() {
       }
     }
   }
-
-  useNavigationGuard(hasChanges, openConfirmation);
 
   function addDateRange(dateType, dateableId) {
     setDates((prevDates) => ({
@@ -655,25 +560,6 @@ function SubmitDates() {
 
   return (
     <div className="page submit-dates">
-      <ConfirmationDialog
-        title={title}
-        message={message}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        notes={confirmationDialogNotes}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        isOpen={isConfirmationOpen}
-      />
-
-      <FlashMessage
-        title={errorFlashMessage.flashTitle}
-        message={errorFlashMessage.flashMessage}
-        isVisible={errorFlashMessage.isFlashOpen}
-        onClose={errorFlashMessage.handleFlashClose}
-        variant="error"
-      />
-
       <div className="container">
         <NavBack routePath={paths.park(parkId)}>
           Back to {season.park.name} dates
@@ -788,9 +674,7 @@ function SubmitDates() {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={() =>
-              saveAsDraft(saveChanges, openConfirmation, showErrorFlash)
-            }
+            onClick={saveAsDraft}
             disabled={!hasChanges()}
           >
             Save draft

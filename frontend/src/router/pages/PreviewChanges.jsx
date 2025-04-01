@@ -1,10 +1,7 @@
 import PropTypes from "prop-types";
 import { useOutletContext } from "react-router-dom";
 import { useApiPost } from "@/hooks/useApi";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useConfirmation } from "@/hooks/useConfirmation";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import paths from "@/router/paths";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
@@ -17,9 +14,7 @@ import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmationDialog";
-import FlashMessage from "@/components/FlashMessage";
 
 import "./PreviewChanges.scss";
 
@@ -36,37 +31,16 @@ function PreviewChanges() {
     navigate,
     navigateAndScroll,
     saveAsDraft,
+    showErrorFlash,
+    hasChanges,
+    saving,
   } = useOutletContext();
-
-  const { sendData: saveData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
 
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
 
-  const errorFlashMessage = useFlashMessage();
-
-  const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
-
   const missingDatesConfirmation = useMissingDatesConfirmation();
-
-  function hasChanges() {
-    return notes !== "" || season.readyToPublish !== readyToPublish;
-  }
-
-  useNavigationGuard(hasChanges, openConfirmation);
 
   function navigateToEdit() {
     navigateAndScroll(paths.seasonEdit(parkId, seasonId));
@@ -101,22 +75,6 @@ function PreviewChanges() {
         end={dateRange.endDate}
       />
     ));
-  }
-
-  function showErrorFlash() {
-    errorFlashMessage.openFlashMessage(
-      "Unable to save changes",
-      "There was a problem saving these changes. Please try again.",
-    );
-  }
-
-  async function savePreview() {
-    return saveData({
-      notes,
-      dates: [],
-      readyToPublish,
-      deletedDateRangeIds: [],
-    });
   }
 
   function getFeaturesWithMissingDates() {
@@ -337,25 +295,6 @@ function PreviewChanges() {
   return (
     <div className="container">
       <div className="page review-changes">
-        <FlashMessage
-          title={errorFlashMessage.flashTitle}
-          message={errorFlashMessage.flashMessage}
-          isVisible={errorFlashMessage.isFlashOpen}
-          onClose={errorFlashMessage.handleFlashClose}
-          variant="error"
-        />
-
-        <ConfirmationDialog
-          title={title}
-          message={message}
-          confirmButtonText={confirmButtonText}
-          cancelButtonText={cancelButtonText}
-          notes={confirmationDialogNotes}
-          onCancel={handleCancel}
-          onConfirm={handleConfirm}
-          isOpen={isConfirmationOpen}
-        />
-
         <MissingDatesConfirmationDialog
           featureNames={missingDatesConfirmation.featureNames}
           inputMessage={missingDatesConfirmation.inputMessage}
@@ -444,9 +383,7 @@ function PreviewChanges() {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={() =>
-              saveAsDraft(savePreview, openConfirmation, showErrorFlash)
-            }
+            onClick={saveAsDraft}
             disabled={!hasChanges()}
           >
             Save draft

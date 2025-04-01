@@ -29,9 +29,9 @@ function PreviewChanges() {
     navigate,
     navigateAndScroll,
     saveAsDraft,
-    saving,
-    hasChanges,
     showErrorFlash,
+    hasChanges,
+    saving,
   } = useOutletContext();
 
   const { sendData: approveData, loading: savingApproval } = useApiPost(
