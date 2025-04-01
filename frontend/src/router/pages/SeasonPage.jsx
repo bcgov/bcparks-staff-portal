@@ -92,30 +92,21 @@ export default function SeasonPage() {
   }
 
   return (
-    <div>
-      <p>debug</p>
-      <p>validation.isValid: {validation.isValid ? "Y" : "N"}</p>
-      <p>validation errors:</p>
-      <pre>{JSON.stringify(validation.errors)}</pre>
-
-      <hr></hr>
-
-      <Outlet
-        context={{
-          parkId,
-          seasonId,
-          season,
-          dates,
-          setDates,
-          notes,
-          setNotes,
-          readyToPublish,
-          setReadyToPublish,
-          validation,
-          navigate,
-          navigateAndScroll,
-        }}
-      />
-    </div>
+    <Outlet
+      context={{
+        parkId,
+        seasonId,
+        season,
+        dates,
+        setDates,
+        notes,
+        setNotes,
+        readyToPublish,
+        setReadyToPublish,
+        validation,
+        navigate,
+        navigateAndScroll,
+      }}
+    />
   );
 }
