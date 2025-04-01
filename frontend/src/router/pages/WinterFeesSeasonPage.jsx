@@ -4,8 +4,13 @@ import omit from "lodash/omit";
 
 import paths from "@/router/paths";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { useFlashMessage } from "@/hooks/useFlashMessage";
+import { useConfirmation } from "@/hooks/useConfirmation";
+import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 
 import LoadingBar from "@/components/LoadingBar";
+import FlashMessage from "@/components/FlashMessage";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 export default function WinterFeesSeasonPage() {
   // Render the SubmitWinterFeesDates (edit form) or PreviewWinterFeesChanges
@@ -14,6 +19,8 @@ export default function WinterFeesSeasonPage() {
 
   const { parkId, seasonId } = useParams();
   const navigate = useNavigate();
+  const errorFlashMessage = useFlashMessage();
+  const confirmationDialog = useConfirmation();
 
   const [season, setSeason] = useState(null);
   const [dates, setDates] = useState(null);
@@ -97,10 +104,17 @@ export default function WinterFeesSeasonPage() {
     return response;
   }
 
-  async function saveAsDraft(openConfirmation, showErrorFlash) {
+  function showErrorFlash() {
+    errorFlashMessage.openFlashMessage(
+      "Unable to save changes",
+      "There was a problem saving these changes. Please try again.",
+    );
+  }
+
+  async function saveAsDraft() {
     try {
       if (["pending review", "approved", "on API"].includes(season.status)) {
-        const confirm = await openConfirmation(
+        const confirm = await confirmationDialog.openConfirmation(
           "Move back to draft?",
           "The dates will be moved back to draft and need to be submitted again to be reviewed.",
           "Move to draft",
@@ -144,7 +158,7 @@ export default function WinterFeesSeasonPage() {
     return notes;
   }
 
-  console.log("test", hasChanges);
+  useNavigationGuard(hasChanges, confirmationDialog.openConfirmation);
 
   if (loading || !season) {
     return (
@@ -163,25 +177,46 @@ export default function WinterFeesSeasonPage() {
   }
 
   return (
-    <Outlet
-      context={{
-        parkId,
-        seasonId,
-        season,
-        dates,
-        setDates,
-        notes,
-        setNotes,
-        readyToPublish,
-        setReadyToPublish,
-        navigate,
-        navigateAndScroll,
-        deletedDateRangeIds, // @TODO: maybe not needed
-        setDeletedDateRangeIds,
-        saveAsDraft,
-        saving,
-        hasChanges,
-      }}
-    />
+    <>
+      <FlashMessage
+        title={errorFlashMessage.flashTitle}
+        message={errorFlashMessage.flashMessage}
+        isVisible={errorFlashMessage.isFlashOpen}
+        onClose={errorFlashMessage.handleFlashClose}
+        variant="error"
+      />
+
+      <ConfirmationDialog
+        title={confirmationDialog.title}
+        message={confirmationDialog.message}
+        confirmButtonText={confirmationDialog.confirmButtonText}
+        cancelButtonText={confirmationDialog.cancelButtonText}
+        notes={confirmationDialog.confirmationDialogNotes}
+        onCancel={confirmationDialog.handleCancel}
+        onConfirm={confirmationDialog.handleConfirm}
+        isOpen={confirmationDialog.isConfirmationOpen}
+      />
+
+      <Outlet
+        context={{
+          parkId,
+          seasonId,
+          season,
+          dates,
+          setDates,
+          notes,
+          setNotes,
+          readyToPublish,
+          setReadyToPublish,
+          navigate,
+          navigateAndScroll,
+          setDeletedDateRangeIds,
+          saveAsDraft,
+          saving,
+          hasChanges,
+          showErrorFlash,
+        }}
+      />
+    </>
   );
 }

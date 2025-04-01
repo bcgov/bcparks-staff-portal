@@ -20,12 +20,6 @@ import FeatureIcon from "@/components/FeatureIcon";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import FlashMessage from "@/components/FlashMessage";
-
-import { useConfirmation } from "@/hooks/useConfirmation";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 
 import {
   formatDateRange,
@@ -413,31 +407,8 @@ export default function SubmitWinterFeesDates() {
     hasChanges,
   } = useOutletContext();
 
-  const errorFlashMessage = useFlashMessage();
-
-  const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
-
   // @TODO: Implement validation
   const errors = {};
-
-  useNavigationGuard(hasChanges, openConfirmation); // @TODO: refactor
-
-  function showErrorFlash() {
-    errorFlashMessage.openFlashMessage(
-      "Unable to save changes",
-      "There was a problem saving these changes. Please try again.",
-    );
-  }
 
   const continueToPreviewEnabled = useMemo(() => {
     if (!dates) return false;
@@ -458,25 +429,6 @@ export default function SubmitWinterFeesDates() {
 
   return (
     <div className="page submit-winter-fees-dates">
-      <FlashMessage
-        title={errorFlashMessage.flashTitle}
-        message={errorFlashMessage.flashMessage}
-        isVisible={errorFlashMessage.isFlashOpen}
-        onClose={errorFlashMessage.handleFlashClose}
-        variant="error"
-      />
-
-      <ConfirmationDialog
-        title={title}
-        message={message}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        notes={confirmationDialogNotes}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        isOpen={isConfirmationOpen}
-      />
-
       <div className="container">
         <NavBack routePath={paths.park(parkId)}>
           Back to {season.park.name} dates
@@ -569,7 +521,7 @@ export default function SubmitWinterFeesDates() {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={() => saveAsDraft(openConfirmation, showErrorFlash)}
+            onClick={saveAsDraft}
             disabled={!hasChanges()}
           >
             Save draft
