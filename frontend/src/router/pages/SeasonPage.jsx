@@ -36,7 +36,6 @@ export default function SeasonPage() {
   const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
 
   const { sendData, loading: saving } = useApiPost(
-    // @TODO: refactor too
     `/seasons/${seasonId}/save/`,
   );
 

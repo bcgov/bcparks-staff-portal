@@ -22,6 +22,7 @@ function PreviewChanges() {
     parkId,
     seasonId,
     season,
+    dates,
     notes,
     setNotes,
     readyToPublish,
@@ -44,11 +45,11 @@ function PreviewChanges() {
     navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
   }
 
-  function getDates(dates) {
-    if (dates.length === 0) {
+  function getDates(seasonDates) {
+    if (seasonDates.length === 0) {
       return "Not available";
     }
-    return dates.map((date) => (
+    return seasonDates.map((date) => (
       <DateRange
         key={date.id}
         formatWithYear={true}
@@ -58,6 +59,7 @@ function PreviewChanges() {
     ));
   }
 
+  // @TODO: use `dates`
   function getFeaturesWithMissingDates() {
     const features = season.featureTypes.flatMap((featureType) =>
       featureType.features.filter(
@@ -106,6 +108,9 @@ function PreviewChanges() {
   }
 
   function Feature({ feature }) {
+    // Get edited dates from `dates` (instead of the original dates in `season`)
+    const currentWinterDates = dates[feature.dateableId] ?? [];
+
     return (
       <div>
         <h4 className="feature-name mb-4">{feature.name}</h4>
@@ -130,7 +135,7 @@ function PreviewChanges() {
               <tr>
                 <td>Winter fee</td>
                 <td>{getDates(feature.previousWinterDates)}</td>
-                <td>{getDates(feature.currentWinterDates)}</td>
+                <td>{getDates(currentWinterDates)}</td>
                 <td>
                   <button
                     onClick={navigateToEdit}

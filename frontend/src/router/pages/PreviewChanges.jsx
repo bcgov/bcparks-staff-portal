@@ -23,6 +23,7 @@ function PreviewChanges() {
     parkId,
     seasonId,
     season,
+    dates,
     notes,
     setNotes,
     readyToPublish,
@@ -47,28 +48,28 @@ function PreviewChanges() {
   }
 
   function getPrevSeasonDates(feature, dateType) {
-    const dates = feature.dateable.previousSeasonDates.filter(
+    const seasonDates = feature.dateable.previousSeasonDates.filter(
       (dateRange) => dateRange.dateType.name === dateType,
     );
 
-    if (dates.length === 0) {
+    if (seasonDates.length === 0) {
       return "Not available";
     }
-    return dates.map((date) => (
+    return seasonDates.map((date) => (
       <DateRange key={date.id} start={date.startDate} end={date.endDate} />
     ));
   }
 
+  // Returns the current (potentially edited) season dates for the feature
   function getCurrentSeasonDates(feature, dateType) {
     if (!feature.active) {
       return "Not requested";
     }
 
-    const dates = feature.dateable.currentSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === dateType,
-    );
+    // Get edited dates from `dates` (instead of the original dates in `season`)
+    const editedDates = dates[feature.dateable.id]?.[dateType] ?? [];
 
-    return dates.map((dateRange) => (
+    return editedDates.map((dateRange) => (
       <DateRange
         key={dateRange.id}
         start={dateRange.startDate}
@@ -77,6 +78,7 @@ function PreviewChanges() {
     ));
   }
 
+  // @TODO: use `dates`
   function getFeaturesWithMissingDates() {
     const featureNameList = [];
 
