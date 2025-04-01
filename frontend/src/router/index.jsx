@@ -5,6 +5,7 @@ import ExportPage from "./pages/ExportPage";
 import ParkDetails from "./pages/ParkDetails";
 import SeasonPage from "./pages/SeasonPage";
 import SubmitDates from "./pages/SubmitDates";
+import WinterFeesSeasonPage from "./pages/WinterFeesSeasonPage";
 import SubmitWinterFeesDates from "./pages/SubmitWinterFeesDates";
 import PreviewChanges from "./pages/PreviewChanges";
 import PreviewWinterFeesChanges from "./pages/PreviewWinterFeesChanges";
@@ -70,18 +71,24 @@ const RouterConfig = createBrowserRouter(
           ],
         },
 
-        // @TODO: whatever we do above, do the same for winter fees
-
-        // edit/submit winter fees dates
+        // Winter Fee Season page with sub-routes
         {
-          path: paths.winterFeesEdit(":parkId", ":seasonId"),
-          element: <SubmitWinterFeesDates />,
-        },
+          path: paths.winterFeesSeason(":parkId", ":seasonId"),
+          element: <WinterFeesSeasonPage />,
 
-        // review winter fees dates
-        {
-          path: paths.winterFeesPreview(":parkId", ":seasonId"),
-          element: <PreviewWinterFeesChanges />,
+          children: [
+            // edit/submit winter fees dates
+            {
+              path: "edit",
+              element: <SubmitWinterFeesDates />,
+            },
+
+            // preview winter fees changes before saving
+            {
+              path: "preview",
+              element: <PreviewWinterFeesChanges />,
+            },
+          ],
         },
       ],
     },

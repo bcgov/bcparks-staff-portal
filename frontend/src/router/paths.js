@@ -8,6 +8,10 @@ function season(parkId, seasonId) {
   return `${park(parkId)}/seasons/${seasonId}`;
 }
 
+function winterFeesSeason(parkId, seasonId) {
+  return `${park(parkId)}/winter-fees/${seasonId}`;
+}
+
 function edit(rootPath) {
   return `${rootPath}/edit`;
 }
@@ -19,6 +23,7 @@ function preview(rootPath) {
 export default {
   park,
   season,
+  winterFeesSeason,
 
   edit,
   preview,
@@ -32,10 +37,10 @@ export default {
   },
 
   winterFeesEdit(parkId, seasonId) {
-    return edit(`${park(parkId)}/winter-fees/${seasonId}`);
+    return edit(winterFeesSeason(parkId, seasonId));
   },
 
   winterFeesPreview(parkId, seasonId) {
-    return preview(`${park(parkId)}/winter-fees/${seasonId}`);
+    return preview(winterFeesSeason(parkId, seasonId));
   },
 };
