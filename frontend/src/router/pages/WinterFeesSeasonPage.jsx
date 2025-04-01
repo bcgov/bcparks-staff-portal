@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
+import omit from "lodash/omit";
 
 import paths from "@/router/paths";
-import { useApiGet } from "@/hooks/useApi";
+import { useApiGet, useApiPost } from "@/hooks/useApi";
 
 import LoadingBar from "@/components/LoadingBar";
 
@@ -23,6 +24,10 @@ export default function WinterFeesSeasonPage() {
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
 
   const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
+
+  const { sendData, loading: saving } = useApiPost(
+    `/seasons/${seasonId}/save/`,
+  );
 
   useEffect(() => {
     if (!data) return;
@@ -50,7 +55,49 @@ export default function WinterFeesSeasonPage() {
     window.scrollTo(0, 0);
   }
 
-  async function saveAsDraft(saveFunction, openConfirmation, showErrorFlash) {
+  async function saveChanges() {
+    // @TODO: Validate form state before saving
+
+    // Turn the `dates` structure into a flat array of date ranges
+    const flattenedDates = Object.entries(dates).flatMap(
+      ([dateableId, dateRanges]) =>
+        // Add foreign keys to the date ranges, remove tempId
+        dateRanges.map((dateRange) => ({
+          ...omit(dateRange, ["tempId"]),
+          dateableId: Number(dateableId),
+          dateTypeId: season.winterFeeDateType.id,
+          seasonId,
+        })),
+    );
+
+    // Filter out unchanged or empty date ranges
+    const changedDates = flattenedDates.filter((dateRange) => {
+      // if both dates are null and it has no ID, skip this range
+      if (
+        dateRange.startDate === null &&
+        dateRange.endDate === null &&
+        !dateRange.id
+      ) {
+        return false;
+      }
+
+      // if the range is unchanged, skip this range
+      return dateRange.changed;
+    });
+
+    const payload = {
+      notes,
+      readyToPublish,
+      dates: changedDates,
+      deletedDateRangeIds,
+    };
+
+    const response = await sendData(payload);
+
+    return response;
+  }
+
+  async function saveAsDraft(openConfirmation, showErrorFlash) {
     try {
       if (["pending review", "approved", "on API"].includes(season.status)) {
         const confirm = await openConfirmation(
@@ -64,7 +111,7 @@ export default function WinterFeesSeasonPage() {
         if (!confirm) return;
       }
 
-      await saveFunction();
+      await saveChanges();
       navigate(`${paths.park(parkId)}?saved=${seasonId}`);
     } catch (err) {
       console.error(err);
@@ -75,6 +122,29 @@ export default function WinterFeesSeasonPage() {
       showErrorFlash();
     }
   }
+
+  // Returns true if there are any form changes to save
+  function hasChanges() {
+    // Any existing dates changed
+    if (
+      Object.values(dates).some((dateRanges) =>
+        dateRanges.some((dateRange) => dateRange.changed),
+      )
+    ) {
+      return true;
+    }
+
+    // If any date ranges have been deleted
+    if (deletedDateRangeIds.length > 0) return true;
+
+    // Ready to publish state has changed
+    if (readyToPublish !== season.readyToPublish) return true;
+
+    // Notes have been entered
+    return notes;
+  }
+
+  console.log("test", hasChanges);
 
   if (loading || !season) {
     return (
@@ -106,9 +176,11 @@ export default function WinterFeesSeasonPage() {
         setReadyToPublish,
         navigate,
         navigateAndScroll,
-        deletedDateRangeIds,
+        deletedDateRangeIds, // @TODO: maybe not needed
         setDeletedDateRangeIds,
         saveAsDraft,
+        saving,
+        hasChanges,
       }}
     />
   );

@@ -3,7 +3,6 @@ import { Link, useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import cloneDeep from "lodash/cloneDeep";
-import omit from "lodash/omit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,
@@ -24,7 +23,6 @@ import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
 
-import { useApiPost } from "@/hooks/useApi";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
@@ -410,13 +408,10 @@ export default function SubmitWinterFeesDates() {
     readyToPublish,
     setReadyToPublish,
     navigateAndScroll,
-    deletedDateRangeIds,
     saveAsDraft,
+    saving,
+    hasChanges,
   } = useOutletContext();
-
-  const { sendData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
 
   const errorFlashMessage = useFlashMessage();
 
@@ -435,70 +430,7 @@ export default function SubmitWinterFeesDates() {
   // @TODO: Implement validation
   const errors = {};
 
-  // Returns true if there are any form changes to save
-  function hasChanges() {
-    // Any existing dates changed
-    if (
-      Object.values(dates).some((dateRanges) =>
-        dateRanges.some((dateRange) => dateRange.changed),
-      )
-    ) {
-      return true;
-    }
-
-    // If any date ranges have been deleted
-    if (deletedDateRangeIds.length > 0) return true;
-
-    // Ready to publish state has changed
-    if (readyToPublish !== season.readyToPublish) return true;
-
-    // Notes have been entered
-    return notes;
-  }
-
-  useNavigationGuard(hasChanges, openConfirmation);
-
-  async function saveChanges() {
-    // @TODO: Validate form state before saving
-
-    // Turn the `dates` structure into a flat array of date ranges
-    const flattenedDates = Object.entries(dates).flatMap(
-      ([dateableId, dateRanges]) =>
-        // Add foreign keys to the date ranges, remove tempId
-        dateRanges.map((dateRange) => ({
-          ...omit(dateRange, ["tempId"]),
-          dateableId: Number(dateableId),
-          dateTypeId: season.winterFeeDateType.id,
-          seasonId,
-        })),
-    );
-
-    // Filter out unchanged or empty date ranges
-    const changedDates = flattenedDates.filter((dateRange) => {
-      // if both dates are null and it has no ID, skip this range
-      if (
-        dateRange.startDate === null &&
-        dateRange.endDate === null &&
-        !dateRange.id
-      ) {
-        return false;
-      }
-
-      // if the range is unchanged, skip this range
-      return dateRange.changed;
-    });
-
-    const payload = {
-      notes,
-      readyToPublish,
-      dates: changedDates,
-      deletedDateRangeIds,
-    };
-
-    const response = await sendData(payload);
-
-    return response;
-  }
+  useNavigationGuard(hasChanges, openConfirmation); // @TODO: refactor
 
   function showErrorFlash() {
     errorFlashMessage.openFlashMessage(
@@ -637,9 +569,7 @@ export default function SubmitWinterFeesDates() {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={() =>
-              saveAsDraft(saveChanges, openConfirmation, showErrorFlash)
-            }
+            onClick={() => saveAsDraft(openConfirmation, showErrorFlash)}
             disabled={!hasChanges()}
           >
             Save draft
@@ -649,7 +579,7 @@ export default function SubmitWinterFeesDates() {
             type="button"
             className="btn btn-primary"
             onClick={continueToPreview}
-            disabled={!hasChanges() && !continueToPreviewEnabled}
+            disabled={!continueToPreviewEnabled}
           >
             Continue to preview
           </button>

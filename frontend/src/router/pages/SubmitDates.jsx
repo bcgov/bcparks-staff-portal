@@ -800,7 +800,7 @@ function SubmitDates() {
             type="button"
             className="btn btn-primary"
             onClick={continueToPreview}
-            disabled={!hasChanges() && !continueToPreviewEnabled}
+            disabled={!continueToPreviewEnabled}
           >
             Continue to preview
           </button>

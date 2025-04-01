@@ -1,7 +1,6 @@
 import PropTypes from "prop-types";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useApiGet, useApiPost } from "@/hooks/useApi";
+import { Link, useOutletContext } from "react-router-dom";
+import { useApiPost } from "@/hooks/useApi";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
@@ -13,7 +12,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import NavBack from "@/components/NavBack";
 import FeatureIcon from "@/components/FeatureIcon";
-import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import DateRange from "@/components/DateRange";
@@ -25,17 +23,20 @@ import FlashMessage from "@/components/FlashMessage";
 import "./PreviewChanges.scss";
 
 function PreviewChanges() {
-  const { parkId, seasonId } = useParams();
-  const navigate = useNavigate();
-
-  const [notes, setNotes] = useState("");
-  const [readyToPublish, setReadyToPublish] = useState(false);
-
-  const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
-
-  const { sendData: saveData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
+  const {
+    parkId,
+    seasonId,
+    season,
+    notes,
+    setNotes,
+    readyToPublish,
+    setReadyToPublish,
+    navigate,
+    navigateAndScroll,
+    saveAsDraft,
+    hasChanges,
+    saving,
+  } = useOutletContext();
 
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
@@ -57,14 +58,10 @@ function PreviewChanges() {
 
   const missingDatesConfirmation = useMissingDatesConfirmation();
 
-  function hasChanges() {
-    return notes !== "" || data.readyToPublish !== readyToPublish;
-  }
-
   useNavigationGuard(hasChanges, openConfirmation);
 
   function navigateToEdit() {
-    navigate(paths.winterFeesEdit(parkId, seasonId));
+    navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
   }
 
   function getDates(dates) {
@@ -88,25 +85,8 @@ function PreviewChanges() {
     );
   }
 
-  async function savePreview() {
-    try {
-      await saveData({
-        notes,
-        dates: [],
-        readyToPublish,
-        deletedDateRangeIds: [],
-      });
-
-      navigate(`${paths.park(parkId)}?saved=${data.id}`);
-    } catch (err) {
-      console.error("Error saving preview", err);
-
-      showErrorFlash();
-    }
-  }
-
   function getFeaturesWithMissingDates() {
-    const features = data.featureTypes.flatMap((featureType) =>
+    const features = season.featureTypes.flatMap((featureType) =>
       featureType.features.filter(
         (feature) => feature.currentWinterDates.length === 0,
       ),
@@ -134,7 +114,7 @@ function PreviewChanges() {
           missingDatesConfirmation.setInputMessage("");
           // Redirect back to the Park Details page on success.
           // Use the "approved" query param to show a flash message.
-          navigate(`${paths.park(parkId)}?approved=${data.id}`);
+          navigate(`${paths.park(parkId)}?approved=${seasonId}`);
         }
       } else {
         await approveData({
@@ -143,7 +123,7 @@ function PreviewChanges() {
         });
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
-        navigate(`${paths.park(parkId)}?approved=${data.id}`);
+        navigate(`${paths.park(parkId)}?approved=${seasonId}`);
       }
     } catch (err) {
       console.error("Error approving preview", err);
@@ -165,10 +145,10 @@ function PreviewChanges() {
                   Type of date
                 </th>
                 <th scope="col" className="prev-date-column">
-                  {data.previousSeasonName}
+                  {season.previousSeasonName}
                 </th>
                 <th scope="col" className="current-date-column">
-                  {data.name}
+                  {season.name}
                 </th>
                 <th scope="col" className="actions-column"></th>
               </tr>
@@ -211,30 +191,6 @@ function PreviewChanges() {
     feature: PropTypes.object,
   };
 
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-
-    setReadyToPublish(data.readyToPublish);
-  }, [data]);
-
-  if (loading || !data) {
-    return (
-      <div className="container">
-        <LoadingBar />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p>Error loading season data: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container">
       <div className="page review-winter-fees-changes">
@@ -267,18 +223,18 @@ function PreviewChanges() {
         />
 
         <NavBack routePath={paths.park(parkId)}>
-          Back to {data?.park.name} dates
+          Back to {season?.park.name} dates
         </NavBack>
 
         <header className="page-header internal">
           <h1 className="header-with-icon">
             <FeatureIcon iconName="winter-recreation" />
-            {data.park.name} winter fee
+            {season.park.name} winter fee
           </h1>
-          <h2>Preview {data.name}</h2>
+          <h2>Preview {season.name}</h2>
         </header>
 
-        {data?.featureTypes.map((featureType) => (
+        {season?.featureTypes.map((featureType) => (
           <section key={featureType.id} className="feature-type">
             <h3 className="header-with-icon mb-4">
               <FeatureIcon iconName={featureType.icon} />
@@ -295,7 +251,7 @@ function PreviewChanges() {
           <div className="col-lg-6">
             <h3 className="mb-4">Notes</h3>
 
-            <ChangeLogsList changeLogs={data?.changeLogs} />
+            <ChangeLogsList changeLogs={season?.changeLogs} />
 
             <p>
               If you are updating the current year’s dates, provide an
@@ -335,7 +291,8 @@ function PreviewChanges() {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={savePreview}
+            onClick={() => saveAsDraft(openConfirmation, showErrorFlash)}
+            disabled={!hasChanges()}
           >
             Save draft
           </button>
