@@ -88,6 +88,8 @@ function PreviewChanges() {
   async function approve() {
     const featuresWithMissingDates = getFeaturesWithMissingDates();
 
+    // @TODO: save changes first, if necessary
+
     try {
       if (featuresWithMissingDates.length > 0) {
         const { confirm, confirmationMessage } =

@@ -78,7 +78,7 @@ function PreviewChanges() {
     ));
   }
 
-  // @TODO: use `dates`
+  // @TODO: use `dates` - see winter fees version
   function getFeaturesWithMissingDates() {
     const featureNameList = [];
 
@@ -153,8 +153,11 @@ function PreviewChanges() {
     return featureNameList;
   }
 
+  // Saves and approves the changes
   async function approve() {
     validation.formSubmitted.current = true;
+
+    // @TODO: save changes first, if necessary
 
     if (!validation.validateForm()) {
       throw new validation.ValidationError("Form validation failed");
