@@ -45,11 +45,11 @@ function PreviewChanges() {
     navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
   }
 
-  function getDates(seasonDates) {
-    if (seasonDates.length === 0) {
+  function getDates(featureDates) {
+    if (featureDates.length === 0) {
       return "Not available";
     }
-    return seasonDates.map((date) => (
+    return featureDates.map((date) => (
       <DateRange
         key={date.id}
         formatWithYear={true}
@@ -59,17 +59,32 @@ function PreviewChanges() {
     ));
   }
 
-  // @TODO: use `dates`
+  // Returns the names of features with no (or null) date ranges
   function getFeaturesWithMissingDates() {
-    const features = season.featureTypes.flatMap((featureType) =>
-      featureType.features.filter(
-        (feature) => feature.currentWinterDates.length === 0,
+    const allFeatures = season.featureTypes.flatMap(
+      (featureType) => featureType.features,
+    );
+
+    // Get dateable IDs with no associated dates (or null date ranges)
+    const dateableIds = Object.entries(dates).filter(([, featureDates]) =>
+      featureDates.every(
+        (featureDate) =>
+          featureDate.startDate === null && featureDate.endDate === null,
       ),
     );
 
-    return features.map((feature) => feature.name);
+    const featureNames = dateableIds.map(([dateableId]) => {
+      const feature = allFeatures.find(
+        (f) => f.dateableId === Number(dateableId),
+      );
+
+      return feature.name;
+    });
+
+    return featureNames;
   }
 
+  // Saves and approves the changes
   async function approve() {
     const featuresWithMissingDates = getFeaturesWithMissingDates();
 
