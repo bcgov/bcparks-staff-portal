@@ -30,6 +30,7 @@ function PreviewChanges() {
     navigate,
     navigateAndScroll,
     saveAsDraft,
+    saveChanges,
     showErrorFlash,
     hasChanges,
     saving,
@@ -88,9 +89,12 @@ function PreviewChanges() {
   async function approve() {
     const featuresWithMissingDates = getFeaturesWithMissingDates();
 
-    // @TODO: save changes first, if necessary
-
     try {
+      // Save changes first, if necessary
+      if (hasChanges()) {
+        await saveChanges();
+      }
+
       if (featuresWithMissingDates.length > 0) {
         const { confirm, confirmationMessage } =
           await missingDatesConfirmation.openConfirmation(
@@ -99,7 +103,7 @@ function PreviewChanges() {
 
         if (confirm) {
           await approveData({
-            notes: [notes, confirmationMessage],
+            notes: [confirmationMessage],
             readyToPublish,
           });
 
@@ -110,7 +114,7 @@ function PreviewChanges() {
         }
       } else {
         await approveData({
-          notes: [notes],
+          notes: [], // Notes were saved with saveChanges,
           readyToPublish,
         });
         // Redirect back to the Park Details page on success.

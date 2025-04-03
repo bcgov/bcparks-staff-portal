@@ -212,6 +212,7 @@ export default function WinterFeesSeasonPage() {
           navigateAndScroll,
           setDeletedDateRangeIds,
           saveAsDraft,
+          saveChanges,
           saving,
           hasChanges,
           showErrorFlash,

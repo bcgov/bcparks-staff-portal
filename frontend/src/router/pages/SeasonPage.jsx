@@ -246,6 +246,7 @@ export default function SeasonPage() {
           navigateAndScroll,
           setDeletedDateRangeIds,
           saveAsDraft,
+          saveChanges,
           showErrorFlash,
           hasChanges,
           saving,
