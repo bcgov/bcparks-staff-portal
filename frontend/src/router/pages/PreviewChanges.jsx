@@ -78,76 +78,58 @@ function PreviewChanges() {
     ));
   }
 
-  // @TODO: use `dates` - see winter fees version
+  // Returns true if an array of date ranges is all null (or empty)
+  function missingDates(featureDatesArray) {
+    // Check if all date ranges are null
+    return featureDatesArray.every(
+      (dateRange) => dateRange.startDate === null && dateRange.endDate === null,
+    );
+  }
+
+  // Returns the names of features with no (or null) date ranges
   function getFeaturesWithMissingDates() {
-    const featureNameList = [];
+    // Combine the campgrounds and other features
+    const campgrounds = season?.campgrounds ?? [];
+    const features = season?.features ?? [];
+    const featuresToCheck = [
+      ...campgrounds.flatMap((campground) => campground.features),
+      ...features,
+    ];
 
-    season?.campgrounds.forEach((campground) => {
-      campground.features.forEach((feature) => {
-        if (feature.active) {
-          const operatingDates = feature.dateable.currentSeasonDates.filter(
-            (dateRange) =>
-              dateRange.dateType.name === "Operation" &&
-              dateRange.startDate &&
-              dateRange.endDate,
-          );
+    // Collect a list of feature names to return
+    const featureNameList = featuresToCheck.flatMap((feature) => {
+      if (!feature.active) return [];
 
-          if (operatingDates.length === 0) {
-            const name =
-              feature.name === "All sites"
-                ? campground.name
-                : `${campground.name}: ${feature.name}`;
+      const missing = [];
 
-            featureNameList.push(`${name} operating dates`);
-          }
+      // Resolve the display name from the feature/campground
+      let name = feature.name;
 
-          if (feature.hasReservations) {
-            const reservationDates = feature.dateable.currentSeasonDates.filter(
-              (dateRange) =>
-                dateRange.dateType.name === "Reservation" &&
-                dateRange.startDate &&
-                dateRange.endDate,
-            );
+      // If the feature is part of a campground, prepend the campground name
+      if (feature.campground) {
+        const campgroundName = feature.campground.name;
 
-            if (reservationDates.length === 0) {
-              const name =
-                feature.name === "All sites"
-                  ? campground.name
-                  : `${campground.name}: ${feature.name}`;
-
-              featureNameList.push(`${name} reservation dates`);
-            }
-          }
-        }
-      });
-    });
-
-    season?.features.forEach((feature) => {
-      if (feature.active) {
-        const operatingDates = feature.dateable.currentSeasonDates.filter(
-          (dateRange) =>
-            dateRange.dateType.name === "Operation" &&
-            dateRange.startDate &&
-            dateRange.endDate,
-        );
-
-        if (operatingDates.length === 0) {
-          featureNameList.push(`${feature.name} operating dates`);
-        }
-
-        if (feature.hasReservations) {
-          const reservationDates = feature.dateable.currentSeasonDates.filter(
-            (dateRange) =>
-              dateRange.dateType.name === "Reservation" &&
-              dateRange.startDate &&
-              dateRange.endDate,
-          );
-
-          if (reservationDates.length === 0) {
-            featureNameList.push(`${feature.name} reservation dates`);
-          }
+        if (name === "All sites" || !name) {
+          name = campgroundName;
+        } else {
+          name = `${campgroundName}: ${name}`;
         }
       }
+
+      const dateableId = feature.dateable.id;
+      const featureDates = dates[dateableId];
+      const { Operation, Reservation } = featureDates;
+
+      // Check operating dates
+      if (missingDates(Operation)) {
+        missing.push(`${name} operating dates`);
+      }
+
+      if (feature.hasReservations && missingDates(Reservation)) {
+        missing.push(`${name} reservation dates`);
+      }
+
+      return missing;
     });
 
     return featureNameList;
