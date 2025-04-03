@@ -52,7 +52,7 @@ function PreviewChanges() {
     }
     return featureDates.map((date) => (
       <DateRange
-        key={date.id}
+        key={date.id || date.tempId}
         formatWithYear={true}
         start={date.startDate}
         end={date.endDate}
