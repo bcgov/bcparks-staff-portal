@@ -216,13 +216,7 @@ function PreviewChanges() {
             <tbody>
               <tr>
                 <td>Operating</td>
-                {
-                  // @TODO: use live data from `dates`
-                }
                 <td>{getPrevSeasonDates(feature, "Operation")}</td>
-                {
-                  // @TODO: use live data from `dates`
-                }
                 <td>{getCurrentSeasonDates(feature, "Operation")}</td>
                 <td>
                   <button
@@ -241,13 +235,7 @@ function PreviewChanges() {
               {feature.hasReservations && (
                 <tr>
                   <td>Reservation</td>
-                  {
-                    // @TODO: use live data from `dates`
-                  }
                   <td>{getPrevSeasonDates(feature, "Reservation")}</td>
-                  {
-                    // @TODO: use live data from `dates`
-                  }
                   <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
                   <td>
                     <button
