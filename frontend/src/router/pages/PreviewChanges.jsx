@@ -72,7 +72,7 @@ function PreviewChanges() {
 
     return editedDates.map((dateRange) => (
       <DateRange
-        key={dateRange.id}
+        key={dateRange.id || dateRange.tempId}
         start={dateRange.startDate}
         end={dateRange.endDate}
       />
