@@ -16,7 +16,7 @@ instances:
   name: ha # high availability
   replicas: 2
   dataVolumeClaimSpec:
-    storage: 480Mi
+    storage: 2Gi
     storageClassName: netapp-block-standard
   requests:
     cpu: 100m
@@ -59,7 +59,7 @@ pgBackRest:
       incremental: 0 0,4,12,16,20 * * *
     volume:
       accessModes: "ReadWriteOnce"
-      storage: 1Gi
+      storage: 2Gi
       storageClassName: netapp-file-backup
   repoHost:
     requests:

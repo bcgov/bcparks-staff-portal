@@ -14,9 +14,9 @@ standby:
 
 instances:
   name: ha # high availability
-  replicas: 1
+  replicas: 2
   dataVolumeClaimSpec:
-    storage: 480Mi
+    storage: 2Gi
     storageClassName: netapp-block-standard
   requests:
     cpu: 100m
@@ -49,7 +49,7 @@ dataSource:
 
 pgBackRest:
   image: # it's not necessary to specify an image as the images specified in the Crunchy Postgres Operator will be pulled by default
-  retention: "2" # Ideally a larger number such as 30 backups/days
+  retention: "15" # Ideally a larger number such as 30 backups/days
   # If retention-full-type set to 'count' then the oldest backups will expire when the number of backups reach the number defined in retention
   # If retention-full-type set to 'time' then the number defined in retention will take that many days worth of full backups before expiration
   retentionFullType: count
@@ -59,7 +59,7 @@ pgBackRest:
       incremental: 0 0,4,12,16,20 * * *
     volume:
       accessModes: "ReadWriteOnce"
-      storage: 64Mi
+      storage: 2Gi
       storageClassName: netapp-file-backup
   repoHost:
     requests:
