@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import PropTypes from "prop-types";
-import { Link, useOutletContext } from "react-router-dom";
+import { useOutletContext } from "react-router-dom";
 import { useApiPost } from "@/hooks/useApi";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
 import paths from "@/router/paths";
@@ -84,6 +84,18 @@ function PreviewChanges({ review = false }) {
     });
 
     return featureNames;
+  }
+
+  // Navigate back to the previous page
+  function onBackButtonClick() {
+    // On the Review page, go back to the Park Details page
+    if (review) {
+      navigate(paths.park(parkId));
+      return;
+    }
+
+    // On the Preview page, go back to the Edit page
+    navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
   }
 
   // Saves and approves the changes
@@ -263,13 +275,13 @@ function PreviewChanges({ review = false }) {
         </div>
 
         <div className="controls d-flex flex-column flex-sm-row gap-2">
-          <Link
-            to={paths.winterFeesEdit(parkId, seasonId)}
+          <button
             type="button"
             className="btn btn-outline-primary"
+            onClick={onBackButtonClick}
           >
             Back
-          </Link>
+          </button>
 
           <button
             type="button"

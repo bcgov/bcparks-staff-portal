@@ -150,6 +150,18 @@ function PreviewChanges({ review = false }) {
     return featureNameList;
   }
 
+  // Navigate back to the previous page
+  function onBackButtonClick() {
+    // On the Review page, go back to the Park Details page
+    if (review) {
+      navigate(paths.park(parkId));
+      return;
+    }
+
+    // On the Preview page, go back to the Edit page
+    navigateAndScroll(paths.seasonEdit(parkId, seasonId));
+  }
+
   // Saves and approves the changes
   async function approve() {
     validation.formSubmitted.current = true;
@@ -382,7 +394,7 @@ function PreviewChanges({ review = false }) {
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={navigateToEdit}
+            onClick={onBackButtonClick}
           >
             Back
           </button>
