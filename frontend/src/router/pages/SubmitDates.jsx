@@ -53,8 +53,13 @@ function SubmitDates() {
   const { errors, formSubmitted, validateForm, ValidationError } = validation;
 
   const continueToPreviewEnabled = useMemo(() => {
+    // Form must be loaded
     if (!dates) return false;
 
+    // Form must be valid
+    if (!validation.isValid) return false;
+
+    // All date ranges must have start and end dates
     return (
       Object.values(dates).every((dateType) =>
         dateType.Operation?.concat(dateType.Reservation).every(
@@ -62,7 +67,7 @@ function SubmitDates() {
         ),
       ) && season?.status === "requested"
     );
-  }, [dates, season]);
+  }, [dates, season, validation.isValid]);
 
   async function continueToPreview() {
     try {

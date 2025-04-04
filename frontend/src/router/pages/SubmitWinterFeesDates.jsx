@@ -411,8 +411,12 @@ export default function SubmitWinterFeesDates() {
   const errors = {};
 
   const continueToPreviewEnabled = useMemo(() => {
+    // Form must be loaded
     if (!dates) return false;
 
+    // @TODO: Validate form too
+
+    // All date ranges must have start and end dates
     return (
       Object.values(dates).every((dateRanges) =>
         dateRanges.every(
