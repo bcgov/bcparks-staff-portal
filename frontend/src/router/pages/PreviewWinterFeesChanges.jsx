@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import PropTypes from "prop-types";
 import { Link, useOutletContext } from "react-router-dom";
 import { useApiPost } from "@/hooks/useApi";
@@ -36,15 +37,15 @@ function PreviewChanges({ review = false }) {
     saving,
   } = useOutletContext();
 
+  const navigateToEdit = useCallback(() => {
+    navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
+  }, [parkId, seasonId, navigateAndScroll]);
+
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
 
   const missingDatesConfirmation = useMissingDatesConfirmation();
-
-  function navigateToEdit() {
-    navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
-  }
 
   function getDates(featureDates) {
     if (featureDates.length === 0) {

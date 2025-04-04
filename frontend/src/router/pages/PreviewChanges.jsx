@@ -1,3 +1,4 @@
+import { useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useOutletContext } from "react-router-dom";
 import { useApiPost } from "@/hooks/useApi";
@@ -38,15 +39,28 @@ function PreviewChanges({ review = false }) {
     saving,
   } = useOutletContext();
 
+  const navigateToEdit = useCallback(() => {
+    navigateAndScroll(paths.seasonEdit(parkId, seasonId));
+  }, [parkId, seasonId, navigateAndScroll]);
+
+  // Set formSubmitted to trigger full validation
+  validation.formSubmitted.current = true;
+
+  // The data should be valid before getting to this Preview/Review page.
+  // If somebody types in the URL manually to get here with invalid data,
+  // just redirect them to the edit page.
+  useEffect(() => {
+    if (!validation.isValid) {
+      // @TODO: show a flash message about the redirect?
+      navigateToEdit();
+    }
+  }, [navigateToEdit, validation.isValid]);
+
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
 
   const missingDatesConfirmation = useMissingDatesConfirmation();
-
-  function navigateToEdit() {
-    navigateAndScroll(paths.seasonEdit(parkId, seasonId));
-  }
 
   function getPrevSeasonDates(feature, dateType) {
     const seasonDates = feature.dateable.previousSeasonDates.filter(
