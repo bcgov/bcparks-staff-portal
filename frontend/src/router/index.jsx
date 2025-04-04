@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
@@ -21,6 +21,7 @@ const RouterConfig = createBrowserRouter(
       // Protect the entire app with the AuthProvider
       element: <MainLayout />,
       errorElement: <ErrorPage />,
+
       children: [
         {
           path: "/",
@@ -45,7 +46,7 @@ const RouterConfig = createBrowserRouter(
           ],
         },
 
-        // view park details
+        // View park details
         {
           path: paths.park(":parkId"),
           element: <ParkDetails />,
@@ -54,22 +55,28 @@ const RouterConfig = createBrowserRouter(
         // Season page with sub-routes
         {
           path: paths.season(":parkId", ":seasonId"),
-          // element: <div>test foo</div>,
           element: <SeasonPage />,
+
           children: [
-            // edit/submit dates for a season
+            // Redirect the season root to the edit page
+            {
+              index: true,
+              element: <Navigate to="edit" replace />,
+            },
+
+            // Edit/submit dates for a season
             {
               path: "edit",
               element: <SubmitDates />,
             },
 
-            // preview changes before saving
+            // Preview changes before saving
             {
               path: "preview",
               element: <PreviewChanges />,
             },
 
-            // review submissions for approval
+            // Review submissions for approval
             {
               path: "review",
               element: <PreviewChanges review={true} />,
@@ -83,19 +90,25 @@ const RouterConfig = createBrowserRouter(
           element: <WinterFeesSeasonPage />,
 
           children: [
-            // edit/submit winter fees dates
+            // Redirect the season root to the edit page
+            {
+              index: true,
+              element: <Navigate to="edit" replace />,
+            },
+
+            // Edit/submit winter fees dates
             {
               path: "edit",
               element: <SubmitWinterFeesDates />,
             },
 
-            // preview winter fees changes before saving
+            // Preview winter fees changes before saving
             {
               path: "preview",
               element: <PreviewWinterFeesChanges />,
             },
 
-            // review winter fees submissions for approval
+            // Review winter fees submissions for approval
             {
               path: "review",
               element: <PreviewWinterFeesChanges review={true} />,
