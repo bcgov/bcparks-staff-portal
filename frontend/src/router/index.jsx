@@ -68,6 +68,12 @@ const RouterConfig = createBrowserRouter(
               path: "preview",
               element: <PreviewChanges />,
             },
+
+            // review submissions for approval
+            {
+              path: "review",
+              element: <PreviewChanges review={true} />,
+            },
           ],
         },
 
@@ -87,6 +93,12 @@ const RouterConfig = createBrowserRouter(
             {
               path: "preview",
               element: <PreviewWinterFeesChanges />,
+            },
+
+            // review winter fees submissions for approval
+            {
+              path: "review",
+              element: <PreviewWinterFeesChanges review={true} />,
             },
           ],
         },

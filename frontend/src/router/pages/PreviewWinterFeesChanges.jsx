@@ -17,7 +17,7 @@ import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmatio
 
 import "./PreviewChanges.scss";
 
-function PreviewChanges() {
+function PreviewChanges({ review = false }) {
   const {
     parkId,
     seasonId,
@@ -211,7 +211,9 @@ function PreviewChanges() {
             <FeatureIcon iconName="winter-recreation" />
             {season.park.name} winter fee
           </h1>
-          <h2>Preview {season.name}</h2>
+          <h2>
+            {review ? "Review" : "Preview"} {season.name}
+          </h2>
         </header>
 
         {season?.featureTypes.map((featureType) => (
@@ -292,5 +294,11 @@ function PreviewChanges() {
     </div>
   );
 }
+
+PreviewChanges.propTypes = {
+  // Boolean flag for Review mode (display different titles and buttons)
+  // Otherwise, default to Preview mode (for editing/submitters)
+  review: PropTypes.bool,
+};
 
 export default PreviewChanges;
