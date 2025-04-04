@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import classNames from "classnames";
 import PropTypes from "prop-types";
@@ -20,7 +20,7 @@ export default function ParkSeason({
   season,
   getDataEndpoint,
   getEditRoutePath,
-  getPreviewRoutePath,
+  getReviewRoutePath,
   getTitle,
   DetailsComponent,
 }) {
@@ -74,10 +74,13 @@ export default function ParkSeason({
   }
 
   // @TODO: implement logic to show/hide preview button
-  const showPreviewButton = true;
+  const showReviewButton = true;
 
   // @TODO: implement logic to disable preview button
-  const disablePreviewButton = true;
+  const disableReviewButton = useMemo(
+    () => season.status !== "pending review",
+    [season.status],
+  );
 
   const updateDate = season.updatedAt
     ? formatDate(season.updatedAt, "America/Vancouver")
@@ -119,8 +122,8 @@ export default function ParkSeason({
     }
   }
 
-  function navigateToPreview() {
-    navigate(getPreviewRoutePath(parkId, season.id));
+  function navigateToReview() {
+    navigate(getReviewRoutePath(parkId, season.id));
   }
 
   return (
@@ -179,14 +182,14 @@ export default function ParkSeason({
           <span>Edit</span>
         </button>
 
-        {showPreviewButton && (
+        {showReviewButton && (
           <>
             <div className="divider"></div>
 
             <button
-              onClick={navigateToPreview}
+              onClick={navigateToReview}
               className="btn btn-text text-primary"
-              disabled={disablePreviewButton}
+              disabled={disableReviewButton}
             >
               <FontAwesomeIcon
                 className="append-content me-2"
@@ -214,7 +217,7 @@ ParkSeason.propTypes = {
 
   getDataEndpoint: PropTypes.func.isRequired,
   getEditRoutePath: PropTypes.func.isRequired,
-  getPreviewRoutePath: PropTypes.func.isRequired,
+  getReviewRoutePath: PropTypes.func.isRequired,
   getTitle: PropTypes.func.isRequired,
   DetailsComponent: PropTypes.elementType.isRequired,
 };

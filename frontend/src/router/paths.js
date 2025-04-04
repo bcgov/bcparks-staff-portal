@@ -20,6 +20,10 @@ function preview(rootPath) {
   return `${rootPath}/preview`;
 }
 
+function review(rootPath) {
+  return `${rootPath}/review`;
+}
+
 export default {
   park,
   season,
@@ -36,11 +40,19 @@ export default {
     return preview(season(parkId, seasonId));
   },
 
+  seasonReview(parkId, seasonId) {
+    return review(season(parkId, seasonId));
+  },
+
   winterFeesEdit(parkId, seasonId) {
     return edit(winterFeesSeason(parkId, seasonId));
   },
 
   winterFeesPreview(parkId, seasonId) {
     return preview(winterFeesSeason(parkId, seasonId));
+  },
+
+  winterFeesReview(parkId, seasonId) {
+    return review(winterFeesSeason(parkId, seasonId));
   },
 };
