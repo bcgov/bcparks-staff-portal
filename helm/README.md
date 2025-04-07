@@ -73,6 +73,12 @@ helm -n a7dd13-dev install alpha . -f values-alpha-dev.yaml
 helm -n a7dd13-test install alpha . -f values-alpha-test.yaml
 ```
 
+### Training (for RSOs and POs)
+
+```sh
+helm -n a7dd13-test install training . -f values-training.yaml
+```
+
 ### Create the Postgres user and db
 
 If this is the first time deploying the app then you will also need to create a Postgres user and an empty database.
@@ -134,6 +140,12 @@ helm -n a7dd13-dev upgrade alpha . -f values-alpha-dev.yaml
 helm -n a7dd13-test upgrade alpha . -f values-alpha-test.yaml
 ```
 
+### Training
+
+```sh
+helm -n a7dd13-test upgrade training . -f values-training.yaml
+```
+
 ## Teardown
 
 The `uninstall` command ca be used to remove all resources defined by the Helm chart. Please note that secrets and PVCs created by the Helm chart are not automatically removed.
@@ -170,4 +182,10 @@ helm -n a7dd13-dev uninstall alpha
 
 ```sh
 helm -n a7dd13-test uninstall alpha
+```
+
+### Training
+
+```sh
+helm -n a7dd13-test uninstall training
 ```
