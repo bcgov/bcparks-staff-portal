@@ -59,13 +59,21 @@ Alpha environments share the crunchy-postgres infrastructure with the main envir
 ### Dev
 
 ```sh
+# dev:
 helm -n a7dd13-dev upgrade crunchy . -f values-dev.yaml
+
+# alpha-dev:
+helm -n a7dd13-dev upgrade crunchy-alpha . -f values-alpha-dev.yaml
 ```
 
 ### Test
 
 ```sh
+# test:
 helm -n a7dd13-test upgrade crunchy . -f values-test.yaml
+
+# alpha-test:
+helm -n a7dd13-test upgrade crunchy-alpha . -f values-alpha-test.yaml
 ```
 
 ### Prod
