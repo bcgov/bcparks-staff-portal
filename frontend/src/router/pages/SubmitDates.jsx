@@ -451,7 +451,7 @@ function SubmitDates() {
         {feature.name && <h4 className="feature-name mb-4">{feature.name}</h4>}
         <div className="row">
           <div className="col-md-6">
-            <div>
+            <div id={`Operation-dates-${feature.id}`}>
               <span className="me-1">Operating dates</span>
               {season?.dateTypes?.Operation?.description && (
                 <TooltipWrapper
@@ -489,7 +489,7 @@ function SubmitDates() {
 
           {feature.hasReservations && (
             <div className="col-md-6">
-              <div>
+              <div id={`Reservation-dates-${feature.id}`}>
                 <span className="me-1">Reservation dates</span>
                 {season?.dateTypes?.Reservation?.description && (
                   <TooltipWrapper
@@ -544,6 +544,7 @@ function SubmitDates() {
 
   Feature.propTypes = {
     feature: PropTypes.shape({
+      id: PropTypes.number.isRequired,
       name: PropTypes.string.isRequired,
       dateable: PropTypes.shape({
         id: PropTypes.number.isRequired,
