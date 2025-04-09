@@ -39,9 +39,19 @@ function PreviewChanges({ review = false }) {
     saving,
   } = useOutletContext();
 
-  const navigateToEdit = useCallback(() => {
-    navigateAndScroll(paths.seasonEdit(parkId, seasonId));
-  }, [parkId, seasonId, navigateAndScroll]);
+  const navigateToEdit = useCallback(
+    (anchor = null) => {
+      let anchorId;
+
+      // If the anchor is provided, scroll to the specific date type
+      if (anchor?.dateType && anchor?.featureId) {
+        anchorId = `${anchor.dateType}-dates-${anchor.featureId}`;
+      }
+
+      navigateAndScroll(paths.seasonEdit(parkId, seasonId), anchorId);
+    },
+    [parkId, seasonId, navigateAndScroll],
+  );
 
   // Set formSubmitted to trigger full validation
   validation.formSubmitted.current = true;
@@ -246,7 +256,12 @@ function PreviewChanges({ review = false }) {
                 <td>{getCurrentSeasonDates(feature, "Operation")}</td>
                 <td>
                   <button
-                    onClick={navigateToEdit}
+                    onClick={() =>
+                      navigateToEdit({
+                        dateType: "Operation",
+                        featureId: feature.id,
+                      })
+                    }
                     className="btn btn-text text-primary"
                   >
                     <FontAwesomeIcon
@@ -265,7 +280,12 @@ function PreviewChanges({ review = false }) {
                   <td>{getCurrentSeasonDates(feature, "Reservation")}</td>
                   <td>
                     <button
-                      onClick={navigateToEdit}
+                      onClick={() =>
+                        navigateToEdit({
+                          dateType: "Reservation",
+                          featureId: feature.id,
+                        })
+                      }
                       className="btn btn-text text-primary"
                     >
                       <FontAwesomeIcon
