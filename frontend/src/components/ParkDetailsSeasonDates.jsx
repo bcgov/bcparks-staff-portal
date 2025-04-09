@@ -1,5 +1,4 @@
-import groupBy from "lodash/groupBy";
-import orderBy from "lodash/orderBy";
+import { groupBy, orderBy } from "lodash-es";
 import PropTypes from "prop-types";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList.jsx";

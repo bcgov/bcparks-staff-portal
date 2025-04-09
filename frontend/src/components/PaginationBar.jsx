@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import range from "lodash/range";
+import { range } from "lodash-es";
 import PropTypes from "prop-types";
 
 export default function PaginationBar({

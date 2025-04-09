@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { omit, mapValues, minBy, maxBy, orderBy } from "lodash";
+import { omit, mapValues, minBy, maxBy, orderBy } from "lodash-es";
 import { differenceInCalendarDays, parseISO, isBefore, max } from "date-fns";
 
 // Returns a chronological list of date ranges with overlapping ranges combined

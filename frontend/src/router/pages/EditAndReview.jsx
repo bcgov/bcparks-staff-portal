@@ -5,7 +5,7 @@ import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState } from "react";
-import orderBy from "lodash/orderBy";
+import { orderBy } from "lodash-es";
 import PaginationBar from "@/components/PaginationBar";
 
 function EditAndReview() {
