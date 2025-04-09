@@ -30,7 +30,7 @@ FeatureType.propTypes = {
   seasonProps: PropTypes.shape({
     getDataEndpoint: PropTypes.func.isRequired,
     getEditRoutePath: PropTypes.func.isRequired,
-    getPreviewRoutePath: PropTypes.func.isRequired,
+    getReviewRoutePath: PropTypes.func.isRequired,
     getTitle: PropTypes.func.isRequired,
     DetailsComponent: PropTypes.elementType.isRequired,
   }),

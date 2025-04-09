@@ -1,9 +1,8 @@
-import { useEffect, useState, createContext, useContext, useMemo } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Link, useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import cloneDeep from "lodash/cloneDeep";
-import omit from "lodash/omit";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,
@@ -17,18 +16,10 @@ import "react-datepicker/dist/react-datepicker.css";
 
 import TooltipWrapper from "@/components/TooltipWrapper";
 import NavBack from "@/components/NavBack";
-import LoadingBar from "@/components/LoadingBar";
 import FeatureIcon from "@/components/FeatureIcon";
 import ChangeLogsList from "@/components/ChangeLogsList";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
-import FlashMessage from "@/components/FlashMessage";
-
-import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useConfirmation } from "@/hooks/useConfirmation";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 
 import {
   formatDateRange,
@@ -39,12 +30,6 @@ import paths from "@/router/paths";
 
 import "./SubmitWinterFeesDates.scss";
 
-// Context to provide dates to all the child components
-const datesContext = createContext();
-
-// Context to provide the data to all the child components
-const dataContext = createContext();
-
 function DateRange({
   dateableId,
   dateRange,
@@ -52,7 +37,7 @@ function DateRange({
   updateDateRange,
   removeDateRange,
 }) {
-  const data = useContext(dataContext);
+  const { season } = useOutletContext();
 
   // Keep local state until the field is blurred or Enter is pressed
   const [localDateRange, setLocalDateRange] = useState(dateRange);
@@ -105,8 +90,8 @@ function DateRange({
   const endErrors = false;
 
   // Limit the date range: Jan 1 - Dec 31 of the following year
-  const minDate = new Date(data.operatingYear, 0, 1);
-  const maxDate = new Date(data.operatingYear + 1, 11, 31);
+  const minDate = new Date(season.operatingYear, 0, 1);
+  const maxDate = new Date(season.operatingYear + 1, 11, 31);
 
   // Open the calendar to Jan 1 of the operating year if no date is set
   const openDateStart = parseInputDate(localDateRange.startDate) || minDate;
@@ -265,13 +250,13 @@ function getReservationDatesText(featureData) {
 }
 
 function CampgroundFeature({ featureData }) {
-  // Inject dates object from the root component
-  const { dates, setDates, setDeletedDateRangeIds } = useContext(datesContext);
+  // Get DateType info for the tooltip from the API data
+  const { season, dates, setDates, setDeletedDateRangeIds } =
+    useOutletContext();
   const dateableId = featureData.dateableId;
   const featureDates = dates[dateableId];
 
-  // Get DateType info for the tooltip from the API data
-  const { winterFeeDateType } = useContext(dataContext);
+  const winterFeeDateType = season.winterFeeDateType;
 
   function addDateRange() {
     setDates((prevDates) => {
@@ -407,162 +392,31 @@ function FeatureType({ featureTypeData }) {
 }
 
 export default function SubmitWinterFeesDates() {
-  const parkId = Number(useParams().parkId);
-  const seasonId = Number(useParams().seasonId);
-
-  const [season, setSeason] = useState(null);
-  const [dates, setDates] = useState({});
-  const [notes, setNotes] = useState("");
-  const [readyToPublish, setReadyToPublish] = useState(false);
-  // Track deleted date ranges
-  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
-
-  const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
-
-  const { sendData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
-
-  const errorFlashMessage = useFlashMessage();
-
   const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
-
-  const navigate = useNavigate();
+    parkId,
+    seasonId,
+    season,
+    dates,
+    notes,
+    setNotes,
+    readyToPublish,
+    setReadyToPublish,
+    navigateAndScroll,
+    saveAsDraft,
+    saving,
+    hasChanges,
+  } = useOutletContext();
 
   // @TODO: Implement validation
   const errors = {};
 
-  class ValidationError extends Error {}
-
-  function validateNotes() {}
-
-  // Returns true if there are any form changes to save
-  function hasChanges() {
-    // Any existing dates changed
-    if (
-      Object.values(dates).some((dateRanges) =>
-        dateRanges.some((dateRange) => dateRange.changed),
-      )
-    ) {
-      return true;
-    }
-
-    // If any date ranges have been deleted
-    if (deletedDateRangeIds.length > 0) return true;
-
-    // Ready to publish state has changed
-    if (readyToPublish !== data.readyToPublish) return true;
-
-    // Notes have been entered
-    return notes;
-  }
-
-  useNavigationGuard(hasChanges, openConfirmation);
-
-  async function saveChanges(savingDraft) {
-    // @TODO: Validate form state before saving
-
-    // Turn the `dates` structure into a flat array of date ranges
-    const flattenedDates = Object.entries(dates).flatMap(
-      ([dateableId, dateRanges]) =>
-        // Add foreign keys to the date ranges, remove tempId
-        dateRanges.map((dateRange) => ({
-          ...omit(dateRange, ["tempId"]),
-          dateableId: Number(dateableId),
-          dateTypeId: season.winterFeeDateType.id,
-          seasonId,
-        })),
-    );
-
-    // Filter out unchanged or empty date ranges
-    const changedDates = flattenedDates.filter((dateRange) => {
-      // if both dates are null and it has no ID, skip this range
-      if (
-        dateRange.startDate === null &&
-        dateRange.endDate === null &&
-        !dateRange.id
-      ) {
-        return false;
-      }
-
-      // if the range is unchanged, skip this range
-      return dateRange.changed;
-    });
-
-    const payload = {
-      notes,
-      readyToPublish,
-      dates: changedDates,
-      deletedDateRangeIds,
-    };
-
-    const response = await sendData(payload);
-
-    if (savingDraft) {
-      navigate(`${paths.park(parkId)}?saved=${data.id}`);
-    }
-
-    return response;
-  }
-
-  async function submitChanges(savingDraft = false) {
-    if (["pending review", "approved", "on API"].includes(season.status)) {
-      const confirm = await openConfirmation(
-        "Move back to draft?",
-        "The dates will be moved back to draft and need to be submitted again to be reviewed.",
-        "Move to draft",
-        "Cancel",
-        "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
-      );
-
-      if (confirm) {
-        await saveChanges(savingDraft);
-        return true;
-      }
-    } else {
-      await saveChanges(savingDraft);
-      return true;
-    }
-
-    return false;
-  }
-
-  function showErrorFlash() {
-    errorFlashMessage.openFlashMessage(
-      "Unable to save changes",
-      "There was a problem saving these changes. Please try again.",
-    );
-  }
-
-  async function saveAsDraft() {
-    try {
-      await submitChanges(true);
-    } catch (err) {
-      console.error(err);
-
-      if (err instanceof ValidationError) {
-        // @TODO: Handle validation errors
-        console.error(errors);
-      } else {
-        // Show a flash message for fatal server errors
-        showErrorFlash();
-      }
-    }
-  }
-
   const continueToPreviewEnabled = useMemo(() => {
+    // Form must be loaded
     if (!dates) return false;
 
+    // @TODO: Validate form too
+
+    // All date ranges must have start and end dates
     return (
       Object.values(dates).every((dateRanges) =>
         dateRanges.every(
@@ -573,86 +427,12 @@ export default function SubmitWinterFeesDates() {
   }, [dates, season]);
 
   async function continueToPreview() {
-    try {
-      if (hasChanges()) {
-        const submitOk = await submitChanges();
-
-        if (submitOk) {
-          navigate(paths.winterFeesPreview(parkId, seasonId));
-        }
-      } else {
-        navigate(paths.winterFeesPreview(parkId, seasonId));
-      }
-    } catch (err) {
-      console.error(err);
-
-      if (err instanceof ValidationError) {
-        // @TODO: Handle validation errors
-        console.error(errors);
-      } else {
-        // Show a flash message for fatal server errors
-        showErrorFlash();
-      }
-    }
-  }
-
-  useEffect(() => {
-    if (!data) return;
-
-    // Format the data for the page state: flatten the features
-    const dateEntries = data.featureTypes.flatMap((featureType) =>
-      // Create object entries with the dateable ID and date ranges
-      featureType.features.map((feature) => [
-        feature.dateableId,
-        feature.currentWinterDates,
-      ]),
-    );
-
-    // Group by dateable IDs
-    const dateableGroups = Object.fromEntries(dateEntries);
-
-    setSeason(data);
-    setDates(dateableGroups);
-    setReadyToPublish(data.readyToPublish);
-  }, [data]);
-
-  if (loading || !season) {
-    return (
-      <div className="container">
-        <LoadingBar />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p>Error loading season data: {error.message}</p>
-      </div>
-    );
+    // @TODO: Validate winter fees edit form
+    navigateAndScroll(paths.winterFeesPreview(parkId, seasonId));
   }
 
   return (
     <div className="page submit-winter-fees-dates">
-      <FlashMessage
-        title={errorFlashMessage.flashTitle}
-        message={errorFlashMessage.flashMessage}
-        isVisible={errorFlashMessage.isFlashOpen}
-        onClose={errorFlashMessage.handleFlashClose}
-        variant="error"
-      />
-
-      <ConfirmationDialog
-        title={title}
-        message={message}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        notes={confirmationDialogNotes}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        isOpen={isConfirmationOpen}
-      />
-
       <div className="container">
         <NavBack routePath={paths.park(parkId)}>
           Back to {season.park.name} dates
@@ -677,15 +457,9 @@ export default function SubmitWinterFeesDates() {
       </div>
 
       <div className="mb-5">
-        <dataContext.Provider value={data}>
-          <datesContext.Provider
-            value={{ dates, setDates, setDeletedDateRangeIds }}
-          >
-            {season.featureTypes.map((featureType) => (
-              <FeatureType key={featureType.id} featureTypeData={featureType} />
-            ))}
-          </datesContext.Provider>
-        </dataContext.Provider>
+        {season.featureTypes.map((featureType) => (
+          <FeatureType key={featureType.id} featureTypeData={featureType} />
+        ))}
       </div>
 
       <div className="container">
@@ -719,7 +493,6 @@ export default function SubmitWinterFeesDates() {
                 value={notes}
                 onChange={(ev) => {
                   setNotes(ev.target.value);
-                  validateNotes(ev.target.value);
                 }}
               ></textarea>
 
@@ -762,9 +535,9 @@ export default function SubmitWinterFeesDates() {
             type="button"
             className="btn btn-primary"
             onClick={continueToPreview}
-            disabled={!hasChanges() && !continueToPreviewEnabled}
+            disabled={!continueToPreviewEnabled}
           >
-            Save and continue to preview
+            Continue to preview
           </button>
 
           {saving && (

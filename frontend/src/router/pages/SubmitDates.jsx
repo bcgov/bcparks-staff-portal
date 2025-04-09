@@ -1,6 +1,6 @@
-import { useParams, useNavigate, Link } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
-import { cloneDeep, set as lodashSet, omit } from "lodash";
+import { Link, useOutletContext } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { cloneDeep, set as lodashSet } from "lodash";
 import {
   faCalendarCheck,
   faCircleInfo,
@@ -17,18 +17,10 @@ import classNames from "classnames";
 import NavBack from "@/components/NavBack";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import LoadingBar from "@/components/LoadingBar";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import ChangeLogsList from "@/components/ChangeLogsList";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FeatureIcon from "@/components/FeatureIcon";
-import FlashMessage from "@/components/FlashMessage";
 
-import useValidation from "@/hooks/useValidation";
-import { useConfirmation } from "@/hooks/useConfirmation";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import {
   formatDateRange,
   normalizeToUTCDate,
@@ -39,73 +31,35 @@ import paths from "@/router/paths";
 import "./SubmitDates.scss";
 
 function SubmitDates() {
-  const { parkId, seasonId } = useParams();
-
-  const [season, setSeason] = useState(null);
-  const [dates, setDates] = useState(null);
-  const [notes, setNotes] = useState("");
-  const [readyToPublish, setReadyToPublish] = useState(false);
-  // Track deleted date ranges
-  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
-
-  const errorFlashMessage = useFlashMessage();
-
   const {
-    errors,
-    formSubmitted,
-    validateNotes,
-    validateForm,
-    ValidationError,
-    ...validation
-  } = useValidation(dates, notes, season);
+    parkId,
+    seasonId,
+    season,
+    dates,
+    setDates,
+    notes,
+    setNotes,
+    readyToPublish,
+    setReadyToPublish,
+    validation,
+    navigateAndScroll,
+    setDeletedDateRangeIds,
+    saveAsDraft,
+    showErrorFlash,
+    hasChanges,
+    saving,
+  } = useOutletContext();
 
-  const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
-
-  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
-  const { sendData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
-
-  const navigate = useNavigate();
-
-  // Returns true if there are any form changes to save
-  function hasChanges() {
-    if (!dates) return false;
-
-    // Any existing dates changed
-    if (
-      Object.values(dates).some((dateType) =>
-        dateType.Operation.concat(dateType.Reservation).some(
-          (dateRange) => dateRange.changed,
-        ),
-      )
-    ) {
-      return true;
-    }
-
-    // If any date ranges have been deleted
-    if (deletedDateRangeIds.length > 0) return true;
-
-    // Ready to publish state has changed
-    if (readyToPublish !== data.readyToPublish) return true;
-
-    // Notes have been entered
-    return notes;
-  }
+  const { errors, formSubmitted, validateForm, ValidationError } = validation;
 
   const continueToPreviewEnabled = useMemo(() => {
+    // Form must be loaded
     if (!dates) return false;
 
+    // Form must be valid
+    if (!validation.isValid) return false;
+
+    // All date ranges must have start and end dates
     return (
       Object.values(dates).every((dateType) =>
         dateType.Operation?.concat(dateType.Reservation).every(
@@ -113,78 +67,7 @@ function SubmitDates() {
         ),
       ) && season?.status === "requested"
     );
-  }, [dates, season]);
-
-  async function saveChanges(savingDraft) {
-    // Build a list of date ranges of all date types
-    const allDates = Object.values(dates)
-      .reduce(
-        (acc, dateType) => acc.concat(dateType.Operation, dateType.Reservation),
-        [],
-      )
-      // Filter out any blank ranges or unchanged dates
-      .filter((dateRange) => {
-        if (
-          dateRange.startDate === null &&
-          dateRange.endDate === null &&
-          !dateRange.id
-        ) {
-          return false;
-        }
-
-        // if the range is unchanged, skip this range
-        return dateRange.changed;
-      })
-      // Add dateTypeId to the date ranges, remove tempId
-      .map((dateRange) => ({
-        ...omit(dateRange, ["tempId"]),
-        dateTypeId: dateRange.dateType.id,
-      }));
-
-    const payload = {
-      notes,
-      readyToPublish,
-      dates: allDates,
-      deletedDateRangeIds,
-    };
-
-    const response = await sendData(payload);
-
-    if (savingDraft) {
-      navigate(`${paths.park(parkId)}?saved=${data.id}`);
-    }
-
-    return response;
-  }
-
-  async function submitChanges(savingDraft = false) {
-    if (["pending review", "approved", "on API"].includes(season.status)) {
-      const confirm = await openConfirmation(
-        "Move back to draft?",
-        "The dates will be moved back to draft and need to be submitted again to be reviewed.",
-        "Move to draft",
-        "Cancel",
-        "If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
-      );
-
-      if (confirm) {
-        await saveChanges(savingDraft);
-        return true;
-      }
-    } else {
-      await saveChanges(savingDraft);
-      return true;
-    }
-
-    return false;
-  }
-
-  function showErrorFlash() {
-    errorFlashMessage.openFlashMessage(
-      "Unable to save changes",
-      "There was a problem saving these changes. Please try again.",
-    );
-  }
+  }, [dates, season, validation.isValid]);
 
   async function continueToPreview() {
     try {
@@ -194,15 +77,7 @@ function SubmitDates() {
         throw new ValidationError("Form validation failed");
       }
 
-      if (hasChanges()) {
-        const submitOk = await submitChanges();
-
-        if (submitOk) {
-          navigate(paths.seasonPreview(parkId, seasonId));
-        }
-      } else {
-        navigate(paths.seasonPreview(parkId, seasonId));
-      }
+      navigateAndScroll(paths.seasonPreview(parkId, seasonId));
     } catch (err) {
       console.error(err);
 
@@ -215,70 +90,6 @@ function SubmitDates() {
       }
     }
   }
-
-  async function saveAsDraft() {
-    try {
-      await submitChanges(true);
-    } catch (err) {
-      console.error(err);
-
-      if (err instanceof ValidationError) {
-        // @TODO: Handle validation errors
-        console.error(errors);
-      } else {
-        // Show a flash message for fatal server errors
-        showErrorFlash();
-      }
-    }
-  }
-
-  useNavigationGuard(hasChanges, openConfirmation);
-
-  useEffect(() => {
-    if (data) {
-      const currentSeasonDates = {};
-
-      data.campgrounds.forEach((campground) => {
-        campground.features.forEach((feature) => {
-          currentSeasonDates[feature.dateable.id] = {
-            Operation: [],
-            Reservation: [],
-          };
-          feature.dateable.currentSeasonDates.forEach((dateRange) => {
-            currentSeasonDates[feature.dateable.id][
-              dateRange.dateType.name
-            ].push({
-              ...dateRange,
-              dateableId: feature.dateable.id,
-              inputType: "text",
-              changed: false,
-            });
-          });
-        });
-      });
-
-      data.features.forEach((feature) => {
-        currentSeasonDates[feature.dateable.id] = {
-          Operation: [],
-          Reservation: [],
-        };
-        feature.dateable.currentSeasonDates.forEach((dateRange) => {
-          currentSeasonDates[feature.dateable.id][dateRange.dateType.name].push(
-            {
-              ...dateRange,
-              dateableId: feature.dateable.id,
-              inputType: "text",
-              changed: false,
-            },
-          );
-        });
-      });
-
-      setSeason(data);
-      setDates(currentSeasonDates);
-      setReadyToPublish(data.readyToPublish);
-    }
-  }, [data]);
 
   function addDateRange(dateType, dateableId) {
     setDates((prevDates) => ({
@@ -752,43 +563,8 @@ function SubmitDates() {
     }),
   };
 
-  if (loading || !season) {
-    return (
-      <div className="container">
-        <LoadingBar />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p>Error loading season data: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="page submit-dates">
-      <ConfirmationDialog
-        title={title}
-        message={message}
-        confirmButtonText={confirmButtonText}
-        cancelButtonText={cancelButtonText}
-        notes={confirmationDialogNotes}
-        onCancel={handleCancel}
-        onConfirm={handleConfirm}
-        isOpen={isConfirmationOpen}
-      />
-
-      <FlashMessage
-        title={errorFlashMessage.flashTitle}
-        message={errorFlashMessage.flashMessage}
-        isVisible={errorFlashMessage.isFlashOpen}
-        onClose={errorFlashMessage.handleFlashClose}
-        variant="error"
-      />
-
       <div className="container">
         <NavBack routePath={paths.park(parkId)}>
           Back to {season.park.name} dates
@@ -858,7 +634,6 @@ function SubmitDates() {
                 value={notes}
                 onChange={(ev) => {
                   setNotes(ev.target.value);
-                  validateNotes(ev.target.value);
                 }}
               ></textarea>
 
@@ -914,9 +689,9 @@ function SubmitDates() {
             type="button"
             className="btn btn-primary"
             onClick={continueToPreview}
-            disabled={!hasChanges() && !continueToPreviewEnabled}
+            disabled={!continueToPreviewEnabled}
           >
-            Save and continue to preview
+            Continue to preview
           </button>
 
           {saving && (

@@ -113,7 +113,7 @@ function ParkDetails() {
             seasonProps={{
               getDataEndpoint: (seasonId) => `/seasons/${seasonId}`,
               getEditRoutePath: paths.seasonEdit,
-              getPreviewRoutePath: paths.seasonPreview,
+              getReviewRoutePath: paths.seasonReview,
               getTitle: (season) => `${season.operatingYear} dates`,
               DetailsComponent: SeasonDates,
             }}
@@ -129,7 +129,7 @@ function ParkDetails() {
           seasonProps={{
             getDataEndpoint: (seasonId) => `/winter-fees/${seasonId}`,
             getEditRoutePath: paths.winterFeesEdit,
-            getPreviewRoutePath: paths.winterFeesPreview,
+            getReviewRoutePath: paths.winterFeesReview,
             getTitle: (season) =>
               `${season.operatingYear} – ${season.operatingYear + 1}`,
             DetailsComponent: WinterFeesDates,

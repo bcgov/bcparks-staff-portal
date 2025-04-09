@@ -1,11 +1,8 @@
+import { useCallback } from "react";
 import PropTypes from "prop-types";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useConfirmation } from "@/hooks/useConfirmation";
+import { useOutletContext } from "react-router-dom";
+import { useApiPost } from "@/hooks/useApi";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import paths from "@/router/paths";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
@@ -13,67 +10,50 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import NavBack from "@/components/NavBack";
 import FeatureIcon from "@/components/FeatureIcon";
-import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmationDialog";
-import FlashMessage from "@/components/FlashMessage";
 
 import "./PreviewChanges.scss";
 
-function PreviewChanges() {
-  const { parkId, seasonId } = useParams();
-  const navigate = useNavigate();
+function PreviewChanges({ review = false }) {
+  const {
+    parkId,
+    seasonId,
+    season,
+    dates,
+    notes,
+    setNotes,
+    readyToPublish,
+    setReadyToPublish,
+    navigate,
+    navigateAndScroll,
+    saveAsDraft,
+    saveChanges,
+    showErrorFlash,
+    hasChanges,
+    saving,
+  } = useOutletContext();
 
-  const [notes, setNotes] = useState("");
-  const [readyToPublish, setReadyToPublish] = useState(false);
-
-  const { data, loading, error } = useApiGet(`/winter-fees/${seasonId}`);
-
-  const { sendData: saveData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
+  const navigateToEdit = useCallback(() => {
+    navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
+  }, [parkId, seasonId, navigateAndScroll]);
 
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
 
-  const errorFlashMessage = useFlashMessage();
-
-  const {
-    title,
-    message,
-    confirmationDialogNotes,
-    confirmButtonText,
-    cancelButtonText,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
-
   const missingDatesConfirmation = useMissingDatesConfirmation();
 
-  function hasChanges() {
-    return notes !== "" || data.readyToPublish !== readyToPublish;
-  }
-
-  useNavigationGuard(hasChanges, openConfirmation);
-
-  function navigateToEdit() {
-    navigate(paths.winterFeesEdit(parkId, seasonId));
-  }
-
-  function getDates(dates) {
-    if (dates.length === 0) {
+  function getDates(featureDates) {
+    if (featureDates.length === 0) {
       return "Not available";
     }
-    return dates.map((date) => (
+    return featureDates.map((date) => (
       <DateRange
-        key={date.id}
+        key={date.id || date.tempId}
         formatWithYear={true}
         start={date.startDate}
         end={date.endDate}
@@ -81,44 +61,53 @@ function PreviewChanges() {
     ));
   }
 
-  function showErrorFlash() {
-    errorFlashMessage.openFlashMessage(
-      "Unable to save changes",
-      "There was a problem saving these changes. Please try again.",
-    );
-  }
-
-  async function savePreview() {
-    try {
-      await saveData({
-        notes,
-        dates: [],
-        readyToPublish,
-        deletedDateRangeIds: [],
-      });
-
-      navigate(`${paths.park(parkId)}?saved=${data.id}`);
-    } catch (err) {
-      console.error("Error saving preview", err);
-
-      showErrorFlash();
-    }
-  }
-
+  // Returns the names of features with no (or null) date ranges
   function getFeaturesWithMissingDates() {
-    const features = data.featureTypes.flatMap((featureType) =>
-      featureType.features.filter(
-        (feature) => feature.currentWinterDates.length === 0,
+    const allFeatures = season.featureTypes.flatMap(
+      (featureType) => featureType.features,
+    );
+
+    // Get dateable IDs with no associated dates (or null date ranges)
+    const dateableIds = Object.entries(dates).filter(([, featureDates]) =>
+      featureDates.every(
+        (featureDate) =>
+          featureDate.startDate === null && featureDate.endDate === null,
       ),
     );
 
-    return features.map((feature) => feature.name);
+    const featureNames = dateableIds.map(([dateableId]) => {
+      const feature = allFeatures.find(
+        (f) => f.dateableId === Number(dateableId),
+      );
+
+      return feature.name;
+    });
+
+    return featureNames;
   }
 
+  // Navigate back to the previous page
+  function onBackButtonClick() {
+    // On the Review page, go back to the Park Details page
+    if (review) {
+      navigate(paths.park(parkId));
+      return;
+    }
+
+    // On the Preview page, go back to the Edit page
+    navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
+  }
+
+  // Saves and approves the changes
   async function approve() {
     const featuresWithMissingDates = getFeaturesWithMissingDates();
 
     try {
+      // Save changes first, if necessary
+      if (hasChanges()) {
+        await saveChanges();
+      }
+
       if (featuresWithMissingDates.length > 0) {
         const { confirm, confirmationMessage } =
           await missingDatesConfirmation.openConfirmation(
@@ -127,23 +116,23 @@ function PreviewChanges() {
 
         if (confirm) {
           await approveData({
-            notes: [notes, confirmationMessage],
+            notes: [confirmationMessage],
             readyToPublish,
           });
 
           missingDatesConfirmation.setInputMessage("");
           // Redirect back to the Park Details page on success.
           // Use the "approved" query param to show a flash message.
-          navigate(`${paths.park(parkId)}?approved=${data.id}`);
+          navigate(`${paths.park(parkId)}?approved=${seasonId}`);
         }
       } else {
         await approveData({
-          notes: [notes],
+          notes: [], // Notes were saved with saveChanges,
           readyToPublish,
         });
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
-        navigate(`${paths.park(parkId)}?approved=${data.id}`);
+        navigate(`${paths.park(parkId)}?approved=${seasonId}`);
       }
     } catch (err) {
       console.error("Error approving preview", err);
@@ -153,6 +142,9 @@ function PreviewChanges() {
   }
 
   function Feature({ feature }) {
+    // Get edited dates from `dates` (instead of the original dates in `season`)
+    const currentWinterDates = dates[feature.dateableId] ?? [];
+
     return (
       <div>
         <h4 className="feature-name mb-4">{feature.name}</h4>
@@ -165,10 +157,10 @@ function PreviewChanges() {
                   Type of date
                 </th>
                 <th scope="col" className="prev-date-column">
-                  {data.previousSeasonName}
+                  {season.previousSeasonName}
                 </th>
                 <th scope="col" className="current-date-column">
-                  {data.name}
+                  {season.name}
                 </th>
                 <th scope="col" className="actions-column"></th>
               </tr>
@@ -177,7 +169,7 @@ function PreviewChanges() {
               <tr>
                 <td>Winter fee</td>
                 <td>{getDates(feature.previousWinterDates)}</td>
-                <td>{getDates(feature.currentWinterDates)}</td>
+                <td>{getDates(currentWinterDates)}</td>
                 <td>
                   <button
                     onClick={navigateToEdit}
@@ -211,52 +203,9 @@ function PreviewChanges() {
     feature: PropTypes.object,
   };
 
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-
-    setReadyToPublish(data.readyToPublish);
-  }, [data]);
-
-  if (loading || !data) {
-    return (
-      <div className="container">
-        <LoadingBar />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p>Error loading season data: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container">
       <div className="page review-winter-fees-changes">
-        <FlashMessage
-          title={errorFlashMessage.flashTitle}
-          message={errorFlashMessage.flashMessage}
-          isVisible={errorFlashMessage.isFlashOpen}
-          onClose={errorFlashMessage.handleFlashClose}
-          variant="error"
-        />
-
-        <ConfirmationDialog
-          title={title}
-          message={message}
-          notes={confirmationDialogNotes}
-          confirmButtonText={confirmButtonText}
-          cancelButtonText={cancelButtonText}
-          onCancel={handleCancel}
-          onConfirm={handleConfirm}
-          isOpen={isConfirmationOpen}
-        />
-
         <MissingDatesConfirmationDialog
           featureNames={missingDatesConfirmation.featureNames}
           inputMessage={missingDatesConfirmation.inputMessage}
@@ -267,18 +216,20 @@ function PreviewChanges() {
         />
 
         <NavBack routePath={paths.park(parkId)}>
-          Back to {data?.park.name} dates
+          Back to {season?.park.name} dates
         </NavBack>
 
         <header className="page-header internal">
           <h1 className="header-with-icon">
             <FeatureIcon iconName="winter-recreation" />
-            {data.park.name} winter fee
+            {season.park.name} winter fee
           </h1>
-          <h2>Preview {data.name}</h2>
+          <h2>
+            {review ? "Review" : "Preview"} {season.name}
+          </h2>
         </header>
 
-        {data?.featureTypes.map((featureType) => (
+        {season?.featureTypes.map((featureType) => (
           <section key={featureType.id} className="feature-type">
             <h3 className="header-with-icon mb-4">
               <FeatureIcon iconName={featureType.icon} />
@@ -295,7 +246,7 @@ function PreviewChanges() {
           <div className="col-lg-6">
             <h3 className="mb-4">Notes</h3>
 
-            <ChangeLogsList changeLogs={data?.changeLogs} />
+            <ChangeLogsList changeLogs={season?.changeLogs} />
 
             <p>
               If you are updating the current year’s dates, provide an
@@ -324,18 +275,19 @@ function PreviewChanges() {
         </div>
 
         <div className="controls d-flex flex-column flex-sm-row gap-2">
-          <Link
-            to={paths.winterFeesEdit(parkId, seasonId)}
+          <button
             type="button"
             className="btn btn-outline-primary"
+            onClick={onBackButtonClick}
           >
             Back
-          </Link>
+          </button>
 
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={savePreview}
+            onClick={saveAsDraft}
+            disabled={!hasChanges()}
           >
             Save draft
           </button>
@@ -355,5 +307,11 @@ function PreviewChanges() {
     </div>
   );
 }
+
+PreviewChanges.propTypes = {
+  // Boolean flag for Review mode (display different titles and buttons)
+  // Otherwise, default to Preview mode (for editing/submitters)
+  review: PropTypes.bool,
+};
 
 export default PreviewChanges;

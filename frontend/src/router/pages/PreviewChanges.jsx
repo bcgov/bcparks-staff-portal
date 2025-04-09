@@ -1,205 +1,183 @@
+import { useCallback, useEffect } from "react";
 import PropTypes from "prop-types";
-import { useNavigate, useParams, Link } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { useApiGet, useApiPost } from "@/hooks/useApi";
-import { useNavigationGuard } from "@/hooks/useNavigationGuard";
-import { useConfirmation } from "@/hooks/useConfirmation";
+import { useOutletContext } from "react-router-dom";
+import { useApiPost } from "@/hooks/useApi";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
 import paths from "@/router/paths";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
+import { faHexagonExclamation } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import NavBack from "@/components/NavBack";
 import FeatureIcon from "@/components/FeatureIcon";
-import LoadingBar from "@/components/LoadingBar";
 import ContactBox from "@/components/ContactBox";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import DateRange from "@/components/DateRange";
 import ChangeLogsList from "@/components/ChangeLogsList";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import MissingDatesConfirmationDialog from "@/components/MissingDatesConfirmationDialog";
-import FlashMessage from "@/components/FlashMessage";
 
 import "./PreviewChanges.scss";
 
-function PreviewChanges() {
-  const { parkId, seasonId } = useParams();
-  const navigate = useNavigate();
+function PreviewChanges({ review = false }) {
+  const {
+    parkId,
+    seasonId,
+    season,
+    dates,
+    notes,
+    setNotes,
+    readyToPublish,
+    setReadyToPublish,
+    validation,
+    navigate,
+    navigateAndScroll,
+    saveAsDraft,
+    saveChanges,
+    showErrorFlash,
+    hasChanges,
+    saving,
+  } = useOutletContext();
 
-  const [notes, setNotes] = useState("");
-  const [readyToPublish, setReadyToPublish] = useState(false);
+  const navigateToEdit = useCallback(() => {
+    navigateAndScroll(paths.seasonEdit(parkId, seasonId));
+  }, [parkId, seasonId, navigateAndScroll]);
 
-  const { data, loading, error } = useApiGet(`/seasons/${seasonId}`);
+  // Set formSubmitted to trigger full validation
+  validation.formSubmitted.current = true;
 
-  const { sendData: saveData, loading: saving } = useApiPost(
-    `/seasons/${seasonId}/save/`,
-  );
+  // The data should be valid before getting to this Preview/Review page.
+  // If somebody types in the URL manually to get here with invalid data,
+  // just redirect them to the edit page.
+  useEffect(() => {
+    if (!validation.isValid) {
+      // @TODO: show a flash message about the redirect?
+      navigateToEdit();
+    }
+  }, [navigateToEdit, validation.isValid]);
 
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
 
-  const errorFlashMessage = useFlashMessage();
-
-  const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
-
   const missingDatesConfirmation = useMissingDatesConfirmation();
 
-  function hasChanges() {
-    return notes !== "" || data.readyToPublish !== readyToPublish;
-  }
-
-  useNavigationGuard(hasChanges, openConfirmation);
-
-  function navigateToEdit() {
-    navigate(paths.seasonEdit(parkId, seasonId));
-  }
-
   function getPrevSeasonDates(feature, dateType) {
-    const dates = feature.dateable.previousSeasonDates.filter(
+    const seasonDates = feature.dateable.previousSeasonDates.filter(
       (dateRange) => dateRange.dateType.name === dateType,
     );
 
-    if (dates.length === 0) {
+    if (seasonDates.length === 0) {
       return "Not available";
     }
-    return dates.map((date) => (
+    return seasonDates.map((date) => (
       <DateRange key={date.id} start={date.startDate} end={date.endDate} />
     ));
   }
 
+  // Returns the current (potentially edited) season dates for the feature
   function getCurrentSeasonDates(feature, dateType) {
     if (!feature.active) {
       return "Not requested";
     }
 
-    const dates = feature.dateable.currentSeasonDates.filter(
-      (dateRange) => dateRange.dateType.name === dateType,
-    );
+    // Get edited dates from `dates` (instead of the original dates in `season`)
+    const editedDates = dates[feature.dateable.id]?.[dateType] ?? [];
 
-    return dates.map((dateRange) => (
+    return editedDates.map((dateRange) => (
       <DateRange
-        key={dateRange.id}
+        key={dateRange.id || dateRange.tempId}
         start={dateRange.startDate}
         end={dateRange.endDate}
       />
     ));
   }
 
-  function showErrorFlash() {
-    errorFlashMessage.openFlashMessage(
-      "Unable to save changes",
-      "There was a problem saving these changes. Please try again.",
+  // Returns true if an array of date ranges is all null (or empty)
+  function missingDates(featureDatesArray) {
+    // Check if all date ranges are null
+    return featureDatesArray.every(
+      (dateRange) => dateRange.startDate === null && dateRange.endDate === null,
     );
   }
 
-  async function savePreview() {
-    try {
-      await saveData({
-        notes,
-        dates: [],
-        readyToPublish,
-        deletedDateRangeIds: [],
-      });
-
-      navigate(`${paths.park(parkId)}?saved=${data.id}`);
-    } catch (err) {
-      console.error("Error saving preview", err);
-
-      showErrorFlash();
-    }
-  }
-
+  // Returns the names of features with no (or null) date ranges
   function getFeaturesWithMissingDates() {
-    const featureNameList = [];
+    // Combine the campgrounds and other features
+    const campgrounds = season?.campgrounds ?? [];
+    const features = season?.features ?? [];
+    const featuresToCheck = [
+      ...campgrounds.flatMap((campground) => campground.features),
+      ...features,
+    ];
 
-    data?.campgrounds.forEach((campground) => {
-      campground.features.forEach((feature) => {
-        if (feature.active) {
-          const operatingDates = feature.dateable.currentSeasonDates.filter(
-            (dateRange) =>
-              dateRange.dateType.name === "Operation" &&
-              dateRange.startDate &&
-              dateRange.endDate,
-          );
+    // Collect a list of feature names to return
+    const featureNameList = featuresToCheck.flatMap((feature) => {
+      if (!feature.active) return [];
 
-          if (operatingDates.length === 0) {
-            const name =
-              feature.name === "All sites"
-                ? campground.name
-                : `${campground.name}: ${feature.name}`;
+      const missing = [];
 
-            featureNameList.push(`${name} operating dates`);
-          }
+      // Resolve the display name from the feature/campground
+      let name = feature.name;
 
-          if (feature.hasReservations) {
-            const reservationDates = feature.dateable.currentSeasonDates.filter(
-              (dateRange) =>
-                dateRange.dateType.name === "Reservation" &&
-                dateRange.startDate &&
-                dateRange.endDate,
-            );
+      // If the feature is part of a campground, prepend the campground name
+      if (feature.campground) {
+        const campgroundName = feature.campground.name;
 
-            if (reservationDates.length === 0) {
-              const name =
-                feature.name === "All sites"
-                  ? campground.name
-                  : `${campground.name}: ${feature.name}`;
-
-              featureNameList.push(`${name} reservation dates`);
-            }
-          }
-        }
-      });
-    });
-
-    data?.features.forEach((feature) => {
-      if (feature.active) {
-        const operatingDates = feature.dateable.currentSeasonDates.filter(
-          (dateRange) =>
-            dateRange.dateType.name === "Operation" &&
-            dateRange.startDate &&
-            dateRange.endDate,
-        );
-
-        if (operatingDates.length === 0) {
-          featureNameList.push(`${feature.name} operating dates`);
-        }
-
-        if (feature.hasReservations) {
-          const reservationDates = feature.dateable.currentSeasonDates.filter(
-            (dateRange) =>
-              dateRange.dateType.name === "Reservation" &&
-              dateRange.startDate &&
-              dateRange.endDate,
-          );
-
-          if (reservationDates.length === 0) {
-            featureNameList.push(`${feature.name} reservation dates`);
-          }
+        if (name === "All sites" || !name) {
+          name = campgroundName;
+        } else {
+          name = `${campgroundName}: ${name}`;
         }
       }
+
+      const dateableId = feature.dateable.id;
+      const featureDates = dates[dateableId];
+      const { Operation, Reservation } = featureDates;
+
+      // Check operating dates
+      if (missingDates(Operation)) {
+        missing.push(`${name} operating dates`);
+      }
+
+      if (feature.hasReservations && missingDates(Reservation)) {
+        missing.push(`${name} reservation dates`);
+      }
+
+      return missing;
     });
 
     return featureNameList;
   }
 
+  // Navigate back to the previous page
+  function onBackButtonClick() {
+    // On the Review page, go back to the Park Details page
+    if (review) {
+      navigate(paths.park(parkId));
+      return;
+    }
+
+    // On the Preview page, go back to the Edit page
+    navigateAndScroll(paths.seasonEdit(parkId, seasonId));
+  }
+
+  // Saves and approves the changes
   async function approve() {
+    validation.formSubmitted.current = true;
+
+    if (!validation.validateForm()) {
+      throw new validation.ValidationError("Form validation failed");
+    }
+
     const featuresWithMissingDates = getFeaturesWithMissingDates();
 
     try {
+      // Save changes first, if necessary
+      if (hasChanges()) {
+        await saveChanges();
+      }
+
       if (featuresWithMissingDates.length > 0) {
         const { confirm, confirmationMessage } =
           await missingDatesConfirmation.openConfirmation(
@@ -208,28 +186,34 @@ function PreviewChanges() {
 
         if (confirm) {
           await approveData({
-            notes: [notes, confirmationMessage],
+            notes: [confirmationMessage],
             readyToPublish,
           });
 
           missingDatesConfirmation.setInputMessage("");
           // Redirect back to the Park Details page on success.
           // Use the "approved" query param to show a flash message.
-          navigate(`${paths.park(parkId)}?approved=${data.id}`);
+          navigate(`${paths.park(parkId)}?approved=${seasonId}`);
         }
       } else {
         await approveData({
-          notes: [notes],
+          notes: [], // Notes were saved with saveChanges,
           readyToPublish,
         });
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
-        navigate(`${paths.park(parkId)}?approved=${data.id}`);
+        navigate(`${paths.park(parkId)}?approved=${seasonId}`);
       }
     } catch (err) {
       console.error("Error approving preview", err);
 
-      showErrorFlash();
+      if (err instanceof validation.ValidationError) {
+        // @TODO: Handle validation errors
+        console.error(err);
+      } else {
+        // Show a flash message for fatal server errors
+        showErrorFlash();
+      }
     }
   }
 
@@ -247,10 +231,10 @@ function PreviewChanges() {
                   Type of date
                 </th>
                 <th scope="col" className="prev-date-column">
-                  {data?.operatingYear - 1}
+                  {season?.operatingYear - 1}
                 </th>
                 <th scope="col" className="current-date-column">
-                  {data?.operatingYear}
+                  {season?.operatingYear}
                 </th>
                 <th scope="col" className="actions-column"></th>
               </tr>
@@ -325,52 +309,9 @@ function PreviewChanges() {
     }),
   };
 
-  useEffect(() => {
-    if (!data) {
-      return;
-    }
-
-    setReadyToPublish(data.readyToPublish);
-  }, [data]);
-
-  if (loading || !data) {
-    return (
-      <div className="container">
-        <LoadingBar />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container">
-        <p>Error loading season data: {error.message}</p>
-      </div>
-    );
-  }
-
   return (
     <div className="container">
       <div className="page review-changes">
-        <FlashMessage
-          title={errorFlashMessage.flashTitle}
-          message={errorFlashMessage.flashMessage}
-          isVisible={errorFlashMessage.isFlashOpen}
-          onClose={errorFlashMessage.handleFlashClose}
-          variant="error"
-        />
-
-        <ConfirmationDialog
-          title={title}
-          message={message}
-          confirmButtonText={confirmButtonText}
-          cancelButtonText={cancelButtonText}
-          notes={confirmationDialogNotes}
-          onCancel={handleCancel}
-          onConfirm={handleConfirm}
-          isOpen={isConfirmationOpen}
-        />
-
         <MissingDatesConfirmationDialog
           featureNames={missingDatesConfirmation.featureNames}
           inputMessage={missingDatesConfirmation.inputMessage}
@@ -381,23 +322,25 @@ function PreviewChanges() {
         />
 
         <NavBack routePath={paths.park(parkId)}>
-          Back to {data?.park.name} dates
+          Back to {season?.park.name} dates
         </NavBack>
 
         <header className="page-header internal">
           <h1 className="header-with-icon">
-            <FeatureIcon iconName={data.featureType.icon} />
-            {data.park.name} {data.featureType.name}
+            <FeatureIcon iconName={season.featureType.icon} />
+            {season.park.name} {season.featureType.name}
           </h1>
-          <h2>Preview {data.operatingYear} dates</h2>
+          <h2>
+            {review ? "Review" : "Preview"} {season.operatingYear} dates
+          </h2>
         </header>
 
         <section className="feature-type">
-          {data?.campgrounds.map((campground) => (
+          {season?.campgrounds.map((campground) => (
             <Campground key={campground.id} campground={campground} />
           ))}
 
-          {data?.features.map((feature) => (
+          {season?.features.map((feature) => (
             <Feature key={feature.id} feature={feature} />
           ))}
         </section>
@@ -406,7 +349,7 @@ function PreviewChanges() {
           <div className="col-lg-6">
             <h3 className="mb-4">Notes</h3>
 
-            <ChangeLogsList changeLogs={data?.changeLogs} />
+            <ChangeLogsList changeLogs={season?.changeLogs} />
 
             <p>
               If you are updating the current year’s dates, provide an
@@ -431,22 +374,36 @@ function PreviewChanges() {
               readyToPublish={readyToPublish}
               setReadyToPublish={setReadyToPublish}
             />
+
+            {validation.isValid === false && (
+              <div
+                className="alert alert-danger alert-validation-error mb-4"
+                role="alert"
+              >
+                <div className="icon">
+                  <FontAwesomeIcon icon={faHexagonExclamation} />{" "}
+                </div>
+
+                <div className="content">Please fix errors to continue</div>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="controls d-flex flex-column flex-sm-row gap-2">
-          <Link
-            to={paths.seasonEdit(parkId, seasonId)}
+          <button
             type="button"
             className="btn btn-outline-primary"
+            onClick={onBackButtonClick}
           >
             Back
-          </Link>
+          </button>
 
           <button
             type="button"
             className="btn btn-outline-primary"
-            onClick={savePreview}
+            onClick={saveAsDraft}
+            disabled={!hasChanges()}
           >
             Save draft
           </button>
@@ -466,5 +423,11 @@ function PreviewChanges() {
     </div>
   );
 }
+
+PreviewChanges.propTypes = {
+  // Boolean flag for Review mode (display different titles and buttons)
+  // Otherwise, default to Preview mode (for editing/submitters)
+  review: PropTypes.bool,
+};
 
 export default PreviewChanges;
