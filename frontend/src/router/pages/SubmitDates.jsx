@@ -1,6 +1,6 @@
 import { Link, useOutletContext } from "react-router-dom";
 import { useState, useMemo } from "react";
-import { cloneDeep, set as lodashSet } from "lodash";
+import { cloneDeep, set as lodashSet } from "lodash-es";
 import {
   faCalendarCheck,
   faCircleInfo,

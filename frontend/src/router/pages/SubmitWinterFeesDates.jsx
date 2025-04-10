@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Link, useOutletContext } from "react-router-dom";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import cloneDeep from "lodash/cloneDeep";
+import { cloneDeep } from "lodash-es";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
-import omit from "lodash/omit";
+import { omit } from "lodash-es";
 
 import paths from "@/router/paths";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
