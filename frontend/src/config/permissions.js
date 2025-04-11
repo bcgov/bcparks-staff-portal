@@ -4,6 +4,7 @@
 export const ROLES = {
   SUPER_ADMIN: "doot-super-admin",
   APPROVER: "doot-approver",
+  SUBMITTER: "doot-submitter",
   RSO: "doot-rso",
   PO: "doot-po",
 };

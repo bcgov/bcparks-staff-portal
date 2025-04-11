@@ -15,6 +15,7 @@ import FlashMessage from "@/components/FlashMessage";
 
 import { useConfirmation } from "@/hooks/useConfirmation";
 import { useFlashMessage } from "@/hooks/useFlashMessage";
+import useAccess from "@/hooks/useAccess";
 
 export default function ParkSeason({
   season,
@@ -25,6 +26,7 @@ export default function ParkSeason({
   DetailsComponent,
 }) {
   const { parkId } = useParams();
+  const { ROLES, checkAccess } = useAccess();
 
   const navigate = useNavigate();
 
@@ -73,10 +75,14 @@ export default function ParkSeason({
     setExpanded(!expanded);
   }
 
-  // @TODO: implement logic to show/hide preview button
-  const showReviewButton = true;
+  // Show/hide preview button based on the user roles
+  const showReviewButton = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
 
-  // @TODO: implement logic to disable preview button
+  // Disable preview button based on the season status
+  // Only allow review if the status is "pending review"
   const disableReviewButton = useMemo(
     () => season.status !== "pending review",
     [season.status],
