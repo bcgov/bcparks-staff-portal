@@ -14,7 +14,8 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
       nextPath.includes("/preview") ||
       nextPath.includes("/edit") ||
       queryString.has("approved") ||
-      queryString.has("saved")
+      queryString.has("saved") ||
+      queryString.has("submitted")
     ) {
       return false;
     }
