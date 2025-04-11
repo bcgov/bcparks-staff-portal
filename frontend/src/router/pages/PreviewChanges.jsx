@@ -1,8 +1,9 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import { useOutletContext } from "react-router-dom";
 import { useApiPost } from "@/hooks/useApi";
 import { useMissingDatesConfirmation } from "@/hooks/useMissingDatesConfirmation";
+import useAccess from "@/hooks/useAccess";
 import paths from "@/router/paths";
 
 import { faPen } from "@fa-kit/icons/classic/solid";
@@ -39,6 +40,14 @@ function PreviewChanges({ review = false }) {
     saving,
   } = useOutletContext();
 
+  const { ROLES, checkAccess } = useAccess();
+
+  // Check if the user has permission to approve the season
+  const approver = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
+
   const navigateToEdit = useCallback(
     (anchor = null) => {
       let anchorId;
@@ -66,8 +75,12 @@ function PreviewChanges({ review = false }) {
     }
   }, [navigateToEdit, validation.isValid]);
 
-  const { sendData: approveData, loading: savingApproval } = useApiPost(
+  const { sendData: approveData, loading: sendingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
+  );
+
+  const { sendData: submitData, loading: sendingSubmit } = useApiPost(
+    `/seasons/${seasonId}/submit-for-approval/`,
   );
 
   const missingDatesConfirmation = useMissingDatesConfirmation();
@@ -172,8 +185,13 @@ function PreviewChanges({ review = false }) {
     navigateAndScroll(paths.seasonEdit(parkId, seasonId));
   }
 
-  // Saves and approves the changes
-  async function approve() {
+  /**
+   * Saves and sends the data to the API with the given POST function.
+   * @param {Function} postFunction Function to call to POST the data.
+   * @param {string|Object} redirectTo Router `to` object or string to redirect to.
+   * @returns {Promise<void>}
+   */
+  async function saveAndPost(postFunction, redirectTo) {
     validation.formSubmitted.current = true;
 
     if (!validation.validateForm()) {
@@ -195,7 +213,7 @@ function PreviewChanges({ review = false }) {
           );
 
         if (confirm) {
-          await approveData({
+          await postFunction({
             notes: [confirmationMessage],
             readyToPublish,
           });
@@ -203,16 +221,16 @@ function PreviewChanges({ review = false }) {
           missingDatesConfirmation.setInputMessage("");
           // Redirect back to the Park Details page on success.
           // Use the "approved" query param to show a flash message.
-          navigate(`${paths.park(parkId)}?approved=${seasonId}`);
+          navigate(redirectTo);
         }
       } else {
-        await approveData({
+        await postFunction({
           notes: [], // Notes were saved with saveChanges,
           readyToPublish,
         });
         // Redirect back to the Park Details page on success.
         // Use the "approved" query param to show a flash message.
-        navigate(`${paths.park(parkId)}?approved=${seasonId}`);
+        navigate(redirectTo);
       }
     } catch (err) {
       console.error("Error approving preview", err);
@@ -225,6 +243,22 @@ function PreviewChanges({ review = false }) {
         showErrorFlash();
       }
     }
+  }
+
+  // Saves and approves the changes
+  async function approve() {
+    return saveAndPost(approveData, {
+      pathname: paths.park(parkId),
+      search: `?approved=${seasonId}`,
+    });
+  }
+
+  // Saves and submits the changes for review
+  async function submitForApproval() {
+    return saveAndPost(submitData, {
+      pathname: paths.park(parkId),
+      search: `?submitted=${seasonId}`,
+    });
   }
 
   function Feature({ feature }) {
@@ -428,11 +462,23 @@ function PreviewChanges({ review = false }) {
             Save draft
           </button>
 
-          <button type="button" className="btn btn-primary" onClick={approve}>
-            Mark approved
-          </button>
+          {approver && (
+            <button type="button" className="btn btn-primary" onClick={approve}>
+              Mark approved
+            </button>
+          )}
 
-          {(saving || savingApproval) && (
+          {!approver && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={submitForApproval}
+            >
+              Submit for approval
+            </button>
+          )}
+
+          {(saving || sendingApproval || sendingSubmit) && (
             <span
               className="spinner-border text-primary align-self-center me-2"
               aria-hidden="true"
