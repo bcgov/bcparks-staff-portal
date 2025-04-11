@@ -402,8 +402,54 @@ router.post(
 );
 
 // submit for review
+router.post(
+  "/:seasonId/submit-for-approval/",
+  asyncHandler(async (req, res) => {
+    const { seasonId } = req.params;
+    const { notes, readyToPublish } = req.body;
 
-// approve
+    const season = await Season.findByPk(seasonId);
+
+    if (!season) {
+      const error = new Error("Season not found");
+
+      error.status = 404;
+      throw error;
+    }
+
+    // Approving a season can have more than one note
+    // if the approved season has some empty dates
+    const notesToCreate = notes
+      .filter((n) => n !== "")
+      .map((note) => ({
+        seasonId,
+        userId: req.user.id,
+        notes: note,
+        statusOldValue: season.status,
+        statusNewValue: "pending review",
+        readyToPublishOldValue: season.readyToPublish,
+        readyToPublishNewValue: readyToPublish,
+      }));
+
+    // bulk create season change logs
+    SeasonChangeLog.bulkCreate(notesToCreate);
+
+    // update season
+    Season.update(
+      {
+        readyToPublish,
+        status: "pending review",
+      },
+      {
+        where: {
+          id: seasonId,
+        },
+      },
+    );
+
+    res.sendStatus(200);
+  }),
+);
 
 // publish
 
