@@ -316,10 +316,12 @@ function PreviewChanges({ review = false }) {
 
             <ContactBox />
 
-            <ReadyToPublishBox
-              readyToPublish={readyToPublish}
-              setReadyToPublish={setReadyToPublish}
-            />
+            {approver && (
+              <ReadyToPublishBox
+                readyToPublish={readyToPublish}
+                setReadyToPublish={setReadyToPublish}
+              />
+            )}
           </div>
         </div>
 

@@ -26,6 +26,7 @@ import {
   normalizeToUTCDate,
   normalizeToLocalDate,
 } from "@/lib/utils";
+import useAccess from "@/hooks/useAccess";
 import paths from "@/router/paths";
 
 import "./SubmitWinterFeesDates.scss";
@@ -410,6 +411,14 @@ export default function SubmitWinterFeesDates() {
     hasChanges,
   } = useOutletContext();
 
+  const { ROLES, checkAccess } = useAccess();
+
+  // Check if the user has permission to approve the season
+  const approver = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
+
   // @TODO: Implement validation
   const errors = {};
 
@@ -509,10 +518,12 @@ export default function SubmitWinterFeesDates() {
 
             <ContactBox />
 
-            <ReadyToPublishBox
-              readyToPublish={readyToPublish}
-              setReadyToPublish={setReadyToPublish}
-            />
+            {approver && (
+              <ReadyToPublishBox
+                readyToPublish={readyToPublish}
+                setReadyToPublish={setReadyToPublish}
+              />
+            )}
           </div>
         </div>
 
