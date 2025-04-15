@@ -56,10 +56,25 @@ export default function WinterFeesSeasonPage() {
     setReadyToPublish(data.readyToPublish);
   }, [data]);
 
-  // Navigates to a new route and scrolls to the top of the page
-  function navigateAndScroll(to) {
-    navigate(to);
-    window.scrollTo(0, 0);
+  // Navigates to a new route and scrolls to an anchor, or the top of the page
+  function navigateAndScroll(to, anchorId) {
+    navigate({
+      pathname: to,
+      hash: anchorId && `#${anchorId}`,
+    });
+
+    if (anchorId) {
+      // Wait for the component to render before scrolling
+      setTimeout(() => {
+        const anchor = document.getElementById(anchorId);
+
+        // Scroll to the anchor, if it exists
+        anchor?.scrollIntoView();
+      }, 150);
+    } else {
+      // Scroll to the top of the page
+      window.scrollTo(0, 0);
+    }
   }
 
   async function saveChanges() {
