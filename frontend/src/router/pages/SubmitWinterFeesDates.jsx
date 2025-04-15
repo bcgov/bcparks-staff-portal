@@ -325,7 +325,10 @@ function CampgroundFeature({ featureData }) {
 
       <div className="row">
         <div className="col-md-6">
-          <div className="date-type-header me-1 mb-2">
+          <div
+            id={`Winter-fee-dates-${featureData.id}`}
+            className="date-type-header me-1 mb-2"
+          >
             Winter fee dates{" "}
             {
               <TooltipWrapper
@@ -569,6 +572,7 @@ DateRange.propTypes = {
 
 CampgroundFeature.propTypes = {
   featureData: PropTypes.shape({
+    id: PropTypes.number.isRequired,
     dateableId: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     previousWinterDates: PropTypes.arrayOf(dateRangeShape).isRequired,

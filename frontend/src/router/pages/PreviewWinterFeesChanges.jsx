@@ -37,9 +37,19 @@ function PreviewChanges({ review = false }) {
     saving,
   } = useOutletContext();
 
-  const navigateToEdit = useCallback(() => {
-    navigateAndScroll(paths.winterFeesEdit(parkId, seasonId));
-  }, [parkId, seasonId, navigateAndScroll]);
+  const navigateToEdit = useCallback(
+    (anchor = null) => {
+      let anchorId;
+
+      // If the anchor is provided, scroll to the specific date type
+      if (anchor?.dateType && anchor?.featureId) {
+        anchorId = `${anchor.dateType}-dates-${anchor.featureId}`;
+      }
+
+      navigateAndScroll(paths.winterFeesEdit(parkId, seasonId), anchorId);
+    },
+    [parkId, seasonId, navigateAndScroll],
+  );
 
   const { sendData: approveData, loading: savingApproval } = useApiPost(
     `/seasons/${seasonId}/approve/`,
@@ -172,7 +182,12 @@ function PreviewChanges({ review = false }) {
                 <td>{getDates(currentWinterDates)}</td>
                 <td>
                   <button
-                    onClick={navigateToEdit}
+                    onClick={() =>
+                      navigateToEdit({
+                        dateType: "Winter-fee",
+                        featureId: feature.id,
+                      })
+                    }
                     className="btn btn-text text-primary"
                   >
                     <FontAwesomeIcon
