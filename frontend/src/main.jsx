@@ -13,7 +13,13 @@ createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider onSigninCallback={onSigninCallback} {...oidcConfig}>
       <ProtectedRoute>
-        <RouterProvider router={router} />
+        <RouterProvider
+          router={router}
+          future={{
+            // eslint-disable-next-line camelcase -- vendor flag
+            v7_startTransition: true,
+          }}
+        />
       </ProtectedRoute>
     </AuthProvider>
   </StrictMode>,
