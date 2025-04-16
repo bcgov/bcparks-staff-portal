@@ -529,7 +529,7 @@ export default function SubmitWinterFeesDates() {
             type="button"
             className="btn btn-outline-primary"
             onClick={saveAsDraft}
-            disabled={!hasChanges()}
+            disabled={!hasChanges}
           >
             Save draft
           </button>

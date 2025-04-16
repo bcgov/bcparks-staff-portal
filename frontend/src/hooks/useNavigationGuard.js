@@ -18,7 +18,7 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
     ) {
       return false;
     }
-    return hasChanges();
+    return hasChanges;
   });
 
   useEffect(() => {
@@ -44,7 +44,7 @@ export function useNavigationGuard(hasChanges, openConfirmation) {
 
   const handleBeforeUnload = useCallback(
     async (e) => {
-      if (hasChanges()) {
+      if (hasChanges) {
         e.preventDefault();
       }
     },
