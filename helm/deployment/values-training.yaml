@@ -1,0 +1,20 @@
+cluster:
+  ssoAuthUrl: https://test.loginproxy.gov.bc.ca/auth
+  cmsUrl: https://test-cms.bcparks.ca
+
+images:
+  frontend:
+    tag: test
+  backend:
+    tag: test
+
+frontend:
+  env:
+    externalUrl: https://training-staff.bcparks.ca
+    publicUrl: https://test.bcparks.ca
+
+backend:
+  env:
+    externalUrl: https://training-staff-api.bcparks.ca
+    devTestMode: "true"
+  postgresSecret: crunchy-postgres-training-pguser-postgres

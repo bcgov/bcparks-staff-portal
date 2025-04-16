@@ -24,6 +24,9 @@ helm -n a7dd13-test install crunchy . -f values-test.yaml
 
 # alpha test:
 helm -n a7dd13-test install crunchy-alpha . -f values-alpha-test.yaml
+
+# training: (a third test environment, for RSOs and POs)
+helm -n a7dd13-test install crunchy-training . -f values-training.yaml
 ```
 
 ### Prod
@@ -74,6 +77,9 @@ helm -n a7dd13-test upgrade crunchy . -f values-test.yaml
 
 # alpha-test:
 helm -n a7dd13-test upgrade crunchy-alpha . -f values-alpha-test.yaml
+
+# training: (a third test environment, for RSOs and POs)
+helm -n a7dd13-test upgrade crunchy-training . -f values-training.yaml
 ```
 
 ### Prod
