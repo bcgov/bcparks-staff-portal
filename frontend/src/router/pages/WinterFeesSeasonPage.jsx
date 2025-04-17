@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { omit } from "lodash-es";
 
@@ -153,7 +153,9 @@ export default function WinterFeesSeasonPage() {
   }
 
   // Returns true if there are any form changes to save
-  function hasChanges() {
+  const hasChanges = useMemo(() => {
+    if (!dates) return false;
+
     // Any existing dates changed
     if (
       Object.values(dates).some((dateRanges) =>
@@ -171,7 +173,7 @@ export default function WinterFeesSeasonPage() {
 
     // Notes have been entered
     return notes;
-  }
+  }, [dates, deletedDateRangeIds.length, notes, readyToPublish, season]);
 
   useNavigationGuard(hasChanges, confirmationDialog.openConfirmation);
 

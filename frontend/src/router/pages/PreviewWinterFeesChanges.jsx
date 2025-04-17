@@ -114,7 +114,7 @@ function PreviewChanges({ review = false }) {
 
     try {
       // Save changes first, if necessary
-      if (hasChanges()) {
+      if (hasChanges) {
         await saveChanges();
       }
 
@@ -302,7 +302,7 @@ function PreviewChanges({ review = false }) {
             type="button"
             className="btn btn-outline-primary"
             onClick={saveAsDraft}
-            disabled={!hasChanges()}
+            disabled={!hasChanges}
           >
             Save draft
           </button>
