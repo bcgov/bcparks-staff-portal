@@ -24,11 +24,13 @@ export default function LandingPageTabs() {
                 Edit{approver && " and review"}
               </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/publish">
-                Publish
-              </NavLink>
-            </li>
+            {approver && (
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/publish">
+                  Publish
+                </NavLink>
+              </li>
+            )}
             <li className="nav-item">
               <NavLink className="nav-link" to="/export">
                 Export
