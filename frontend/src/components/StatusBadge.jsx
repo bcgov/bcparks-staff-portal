@@ -13,9 +13,13 @@ export default function StatusBadge({ status }) {
 
   // Map status code to color class and display label
   const statusMap = new Map([
-    ["on API", { cssClass: "text-bg-primary", displayText: "on API" }],
+    ["on API", { cssClass: "text-bg-primary", displayText: "On API" }],
     ["approved", { cssClass: "text-bg-success", displayText: "Approved" }],
     ["requested", { cssClass: "text-bg-warning", displayText: "Requested" }],
+    [
+      "pending review",
+      { cssClass: "text-bg-dark", displayText: "Pending review" },
+    ],
     [
       "Not provided",
       { cssClass: "text-bg-disabled", displayText: "Not provided" },

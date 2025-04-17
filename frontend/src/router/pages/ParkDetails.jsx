@@ -31,6 +31,7 @@ function ParkDetails() {
 
     const approvedSeasonId = searchParams.get("approved");
     const savedSeasonId = searchParams.get("saved");
+    const submittedSeasonId = searchParams.get("submitted");
 
     let seasonId = null;
 
@@ -38,6 +39,8 @@ function ParkDetails() {
       seasonId = approvedSeasonId;
     } else if (savedSeasonId !== null) {
       seasonId = savedSeasonId;
+    } else if (submittedSeasonId !== null) {
+      seasonId = submittedSeasonId;
     }
 
     if (!park || seasonId === null) return;
@@ -46,6 +49,7 @@ function ParkDetails() {
     // Remove the query string so the flash message won't show again
     searchParams.delete("approved");
     searchParams.delete("saved");
+    searchParams.delete("submitted");
     setSearchParams(searchParams, { replace: true });
 
     // Find the season in the park data by its ID

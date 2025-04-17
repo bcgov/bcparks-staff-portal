@@ -252,7 +252,7 @@ router.post(
   sanitizePayload,
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
-    const { notes, dates, readyToPublish, deletedDateRangeIds = [] } = req.body;
+    const { notes, dates, deletedDateRangeIds = [] } = req.body;
 
     // when we add roles: we need to check that this user has permission to edit this season
     // staff or operator that has access to this park
@@ -277,6 +277,9 @@ router.post(
     // this will depend on the user's role
     // right now we're just setting everything to requested
     // const newStatus = getNewStatusForSeason(season, null);
+
+    // If no readyToPublish is provided, treat it as unchanged
+    const readyToPublish = req.body.readyToPublish ?? season.readyToPublish;
 
     // create season change log
     const seasonChangeLog = await SeasonChangeLog.create({
@@ -402,8 +405,54 @@ router.post(
 );
 
 // submit for review
+router.post(
+  "/:seasonId/submit-for-approval/",
+  asyncHandler(async (req, res) => {
+    const { seasonId } = req.params;
+    const { notes } = req.body;
 
-// approve
+    const season = await Season.findByPk(seasonId);
+
+    if (!season) {
+      const error = new Error("Season not found");
+
+      error.status = 404;
+      throw error;
+    }
+
+    // Submitting a season for review can have more than one note
+    // if the approved season has some empty dates
+    const notesToCreate = notes
+      .filter((n) => n !== "")
+      .map((note) => ({
+        seasonId,
+        userId: req.user.id,
+        notes: note,
+        statusOldValue: season.status,
+        statusNewValue: "pending review",
+        // Treat it as unchanged: submitters can't change readyToPublish
+        readyToPublishOldValue: season.readyToPublish,
+        readyToPublishNewValue: season.readyToPublish,
+      }));
+
+    // bulk create season change logs
+    SeasonChangeLog.bulkCreate(notesToCreate);
+
+    // update season
+    Season.update(
+      {
+        status: "pending review",
+      },
+      {
+        where: {
+          id: seasonId,
+        },
+      },
+    );
+
+    res.sendStatus(200);
+  }),
+);
 
 // publish
 

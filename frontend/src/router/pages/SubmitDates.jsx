@@ -26,6 +26,7 @@ import {
   normalizeToUTCDate,
   normalizeToLocalDate,
 } from "@/lib/utils";
+import useAccess from "@/hooks/useAccess";
 import paths from "@/router/paths";
 
 import "./SubmitDates.scss";
@@ -49,6 +50,14 @@ function SubmitDates() {
     hasChanges,
     saving,
   } = useOutletContext();
+
+  const { ROLES, checkAccess } = useAccess();
+
+  // Check if the user has permission to approve the season
+  const approver = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
 
   const { errors, formSubmitted, validateForm, ValidationError } = validation;
 
@@ -648,10 +657,12 @@ function SubmitDates() {
 
             <ContactBox />
 
-            <ReadyToPublishBox
-              readyToPublish={readyToPublish}
-              setReadyToPublish={setReadyToPublish}
-            />
+            {approver && (
+              <ReadyToPublishBox
+                readyToPublish={readyToPublish}
+                setReadyToPublish={setReadyToPublish}
+              />
+            )}
 
             {validation.isValid === false && (
               <div
