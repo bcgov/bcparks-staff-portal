@@ -118,7 +118,15 @@ const RouterConfig = createBrowserRouter(
       ],
     },
   ],
-  { basename: "/v2/" },
+  {
+    basename: "/v2/",
+
+    // future flags: disable warnings about v7 changes
+    future: {
+      // eslint-disable-next-line camelcase -- vendor flag
+      v7_relativeSplatPath: true,
+    },
+  },
 );
 
 export default RouterConfig;
