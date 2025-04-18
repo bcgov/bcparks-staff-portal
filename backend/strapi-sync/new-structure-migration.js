@@ -9,17 +9,15 @@ import {
 import { post } from "../routes/api/strapi-api.js";
 
 // This will only need to run once to migrate the dates from the old structure to the new structure in Strapi
-// This will only migrate the Winter fee date type including the admin notes for each date range
 
 async function getDatesToSend() {
   const dateRanges = await DateRange.findAll({
-    attributes: ["startDate", "endDate"],
+    attributes: ["startDate", "endDate", "adminNote"],
     include: [
       {
         model: DateType,
         as: "dateType",
         attributes: ["name"],
-        where: { name: "Winter fee" },
       },
       {
         model: Dateable,
