@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { hasAuthParams, useAuth } from "react-oidc-context";
 import PropTypes from "prop-types";
 import AccessProvider from "@/router/AccessProvider";
@@ -9,6 +9,8 @@ import AccessProvider from "@/router/AccessProvider";
 // https://github.com/authts/sample-keycloak-react-oidc-context/
 export default function ProtectedRoute({ children }) {
   const auth = useAuth();
+  // Get the query params from the URL
+  const params = useMemo(() => new URLSearchParams(window.location.search), []);
 
   // Track if a redirect has happened to prevent redirect loops
   const [hasTriedSignin, setHasTriedSignin] = useState(false);
@@ -18,6 +20,9 @@ export default function ProtectedRoute({ children }) {
    * See {@link https://github.com/authts/react-oidc-context?tab=readme-ov-file#automatic-sign-in}
    */
   useEffect(() => {
+    // If the URL has the "logged-out" query param, do not redirect
+    if (params.has("logged-out")) return;
+
     if (
       !(
         hasAuthParams() ||
@@ -33,9 +38,13 @@ export default function ProtectedRoute({ children }) {
       auth.signinRedirect();
       setHasTriedSignin(true);
     }
-  }, [auth, hasTriedSignin]);
+  }, [auth, hasTriedSignin, params]);
 
   if (auth.error) {
+    // If there's an error, redirect to the sign-in page
+    console.error("Authentication error:", auth.error);
+    console.error("Redirecting to sign-in page...");
+    auth.signoutRedirect();
     return <div>Authentication error: {auth.error?.message}</div>;
   }
 
@@ -44,7 +53,7 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (!auth.isAuthenticated) {
-    return <div>Authentication error: Unable to sign in</div>;
+    return <div>Logged out.</div>;
   }
 
   return <AccessProvider auth={auth}>{children}</AccessProvider>;
