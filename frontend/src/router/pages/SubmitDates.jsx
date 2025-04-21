@@ -139,14 +139,17 @@ function SubmitDates() {
     }
   }
 
+  /**
+   * Updates a date range in the `dates` object.
+   * @param {number} dateableId The ID of the dateable feature
+   * @param {string} dateType "Operation" or "Reservation"
+   * @param {number} index The index of the date range in the dateType array
+   * @param {string} key key in the DateRange object to update (startDate or endDate)
+   * @param {Date} value The new date value
+   * @returns {void}
+   */
   function updateDateRange(dateableId, dateType, index, key, value) {
-    let newValue = null;
-
-    if (value) {
-      const date = normalizeToUTCDate(value);
-
-      newValue = date.toISOString();
-    }
+    const newValue = normalizeToUTCDate(value);
 
     setDates((prevDates) => {
       const updatedDates = cloneDeep(prevDates);
@@ -221,6 +224,14 @@ function SubmitDates() {
 
     // Keep local state until the field is blurred or Enter is pressed
     const [localDateRange, setLocalDateRange] = useState(dateRange);
+    const adjustedLocalStartDate = useMemo(
+      () => normalizeToLocalDate(localDateRange.startDate),
+      [localDateRange.startDate],
+    );
+    const adjustedLocalEndDate = useMemo(
+      () => normalizeToLocalDate(localDateRange.endDate),
+      [localDateRange.endDate],
+    );
 
     // Updates the local date ranges to control the DatePickers
     function onDateChange(dateField, dateObj) {
@@ -229,28 +240,15 @@ function SubmitDates() {
 
       const updatedRange = {
         ...localDateRange,
-        [dateField]: utcDateObj?.toISOString() ?? null,
+        [dateField]: utcDateObj ?? null,
       };
 
       setLocalDateRange(updatedRange);
     }
 
-    /**
-     * Returns a local date object from a UTC-zoned ISO string, or null
-     * @param {string|null} dateString ISO date string from localDateRange
-     * @returns {Date|null} parsed local Date
-     */
-    function parseInputDate(dateString) {
-      // Allow null dates to pass through
-      if (!dateString) return null;
-
-      // Parse as local time
-      return normalizeToLocalDate(new Date(dateString));
-    }
-
     // Open the calendar to Jan 1 of the operating year if no date is set
-    const openDateStart = parseInputDate(localDateRange.startDate) || minDate;
-    const openDateEnd = parseInputDate(localDateRange.endDate) || minDate;
+    const openDateStart = adjustedLocalStartDate || minDate;
+    const openDateEnd = adjustedLocalEndDate || minDate;
 
     /**
      * Calls updateDateRange with a new date value.
@@ -286,14 +284,11 @@ function SubmitDates() {
                 minDate={minDate}
                 maxDate={maxDate}
                 openToDate={openDateStart}
-                selected={parseInputDate(localDateRange.startDate)}
+                selected={adjustedLocalStartDate}
                 onChange={(date) => onDateChange("startDate", date)}
                 onBlur={() => {
                   // Update the `dates` object on blur
-                  onSelect(
-                    "startDate",
-                    parseInputDate(localDateRange.startDate),
-                  );
+                  onSelect("startDate", adjustedLocalStartDate);
                 }}
                 onKeyDown={(event) => {
                   // Update the `dates` object on Enter
@@ -301,10 +296,7 @@ function SubmitDates() {
                     event.key === "Enter" &&
                     event.target.tagName === "INPUT"
                   ) {
-                    onSelect(
-                      "startDate",
-                      parseInputDate(localDateRange.startDate),
-                    );
+                    onSelect("startDate", adjustedLocalStartDate);
                   }
                 }}
                 dateFormat="EEE, MMM d, yyyy"
@@ -350,11 +342,11 @@ function SubmitDates() {
                 minDate={minDate}
                 maxDate={maxDate}
                 openToDate={openDateEnd}
-                selected={parseInputDate(localDateRange.endDate)}
+                selected={adjustedLocalEndDate}
                 onChange={(date) => onDateChange("endDate", date)}
                 onBlur={() => {
                   // Update the `dates` object on blur
-                  onSelect("endDate", parseInputDate(localDateRange.endDate));
+                  onSelect("endDate", adjustedLocalEndDate);
                 }}
                 onKeyDown={(event) => {
                   // Update the `dates` object on Enter
@@ -362,7 +354,7 @@ function SubmitDates() {
                     event.key === "Enter" &&
                     event.target.tagName === "INPUT"
                   ) {
-                    onSelect("endDate", parseInputDate(localDateRange.endDate));
+                    onSelect("endDate", adjustedLocalEndDate);
                   }
                 }}
                 dateFormat="EEE, MMM d, yyyy"
@@ -423,8 +415,8 @@ function SubmitDates() {
   DateRange.propTypes = {
     dateRange: PropTypes.shape({
       id: PropTypes.number,
-      startDate: PropTypes.string,
-      endDate: PropTypes.string,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
       dateableId: PropTypes.number.isRequired,
       dateType: PropTypes.shape({
         id: PropTypes.number.isRequired,
@@ -560,8 +552,8 @@ function SubmitDates() {
         previousSeasonDates: PropTypes.arrayOf(
           PropTypes.shape({
             id: PropTypes.number.isRequired,
-            startDate: PropTypes.string,
-            endDate: PropTypes.string,
+            startDate: PropTypes.instanceOf(Date),
+            endDate: PropTypes.instanceOf(Date),
             dateType: PropTypes.shape({
               id: PropTypes.number.isRequired,
               name: PropTypes.string.isRequired,

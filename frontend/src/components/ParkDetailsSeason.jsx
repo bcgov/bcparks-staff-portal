@@ -216,7 +216,7 @@ ParkSeason.propTypes = {
     id: PropTypes.number.isRequired,
     operatingYear: PropTypes.number.isRequired,
     status: PropTypes.string.isRequired,
-    updatedAt: PropTypes.string,
+    updatedAt: PropTypes.instanceOf(Date),
     editable: PropTypes.bool.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
   }),

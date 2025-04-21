@@ -1,4 +1,3 @@
-import { parseISO, formatISO } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 
 // Month, day, year
@@ -43,30 +42,16 @@ export function normalizeToLocalDate(dateObject) {
   );
 }
 
-/**
- * Formats an ISO date string into a human-readable string
- * @param {string} isoString ISO date string
- * @param {string} formatString date-fns formatting string
- * @param {string} timezone timezone to format the date in
- * @returns {string} The formatted date string
- */
-function isoToFormattedString(isoString, formatString, timezone = "UTC") {
-  if (!isoString) return "";
-
-  const date = parseISO(isoString);
-
-  return formatInTimeZone(date, timezone, formatString);
-}
-
 export function formatDate(date, timezone = "UTC") {
-  return isoToFormattedString(date, DATE_FORMAT_DEFAULT, timezone);
+  return formatInTimeZone(date, timezone, DATE_FORMAT_DEFAULT);
 }
 
-export function formatDateShort(date) {
-  return isoToFormattedString(date, DATE_FORMAT_SHORT);
+export function formatDateShort(date, timezone = "UTC") {
+  return formatInTimeZone(date, timezone, DATE_FORMAT_SHORT);
 }
-export function formatDateShortWithYear(date) {
-  return isoToFormattedString(date, DATE_FORMAT_SHORT_WITH_YEAR);
+
+export function formatDateShortWithYear(date, timezone = "UTC") {
+  return formatInTimeZone(date, timezone, DATE_FORMAT_SHORT_WITH_YEAR);
 }
 
 /**
@@ -79,22 +64,10 @@ export function formatDateRange(dateRange) {
     return "Not submitted";
   }
 
-  const startDate = isoToFormattedString(
-    dateRange.startDate,
-    DATE_FORMAT_SHORT_WITH_YEAR,
-  );
-  const endDate = isoToFormattedString(
-    dateRange.endDate,
-    DATE_FORMAT_SHORT_WITH_YEAR,
-  );
+  const startDate = formatDateShortWithYear(dateRange.startDate);
+  const endDate = formatDateShortWithYear(dateRange.endDate);
 
   return `${startDate} – ${endDate}`;
-}
-
-export function formatDatetoISO(date) {
-  if (!date) return "";
-
-  return formatISO(date, { representation: "date" });
 }
 
 // used to properly compare paths
