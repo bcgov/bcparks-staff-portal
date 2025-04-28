@@ -77,8 +77,8 @@ DateTypeRow.propTypes = {
   dateRanges: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
-      startDate: PropTypes.string.isRequired,
-      endDate: PropTypes.string.isRequired,
+      startDate: PropTypes.instanceOf(Date).isRequired,
+      endDate: PropTypes.instanceOf(Date).isRequired,
     }),
   ).isRequired,
 };

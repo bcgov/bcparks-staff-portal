@@ -31,7 +31,7 @@ export default function DateRange({ start, end, formatWithYear = false }) {
 }
 
 DateRange.propTypes = {
-  start: PropTypes.string,
-  end: PropTypes.string,
+  start: PropTypes.instanceOf(Date),
+  end: PropTypes.instanceOf(Date),
   formatWithYear: PropTypes.bool,
 };

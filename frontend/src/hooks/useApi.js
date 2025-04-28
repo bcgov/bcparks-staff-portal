@@ -1,11 +1,40 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { parseISO } from "date-fns";
 import axios from "axios";
 import { useAuth } from "react-oidc-context";
 import getEnv from "../config/getEnv";
 
+/**
+ * Parses JSON data and converts date strings to Date objects.
+ * @param {string} key The key of the property being parsed
+ * @param {any} value The value of the property being parsed
+ * @returns {any} - parsed value
+ */
+function parseJsonWithDates(key, value) {
+  // If the value is a string and matches the ISO date format, parse it as a date
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/u.test(value)) {
+    const date = parseISO(value);
+
+    return isNaN(date.getTime()) ? value : date;
+  }
+
+  // Return other values without transformation
+  return value;
+}
+
 // Create an Axios instance for the API server
 const axiosInstance = axios.create({
   baseURL: getEnv("VITE_API_BASE_URL"),
+
+  // Use a custom JSON parser to convert date strings
+  transformResponse(data) {
+    try {
+      return JSON.parse(data, parseJsonWithDates);
+    } catch {
+      // If the response isn't JSON, return it as is
+      return data;
+    }
+  },
 });
 
 export function useApiGet(endpoint, options = {}) {

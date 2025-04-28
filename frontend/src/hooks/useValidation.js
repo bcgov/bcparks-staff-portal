@@ -1,19 +1,16 @@
 import { useEffect, useState, useCallback, useMemo, useRef } from "react";
-import { omit, mapValues, minBy, maxBy, orderBy } from "lodash-es";
-import { differenceInCalendarDays, parseISO, isBefore, max } from "date-fns";
+import { omit, mapValues, minBy, maxBy, orderBy, cloneDeep } from "lodash-es";
+import { differenceInCalendarDays, isBefore, max } from "date-fns";
 
 // Returns a chronological list of date ranges with overlapping ranges combined
 function consolidateRanges(ranges) {
-  // Parse ISO date strings (and filter out any missing values)
-  const parsedRanges = ranges
-    .filter((range) => range.startDate && range.endDate)
-    .map((range) => ({
-      startDate: parseISO(range.startDate),
-      endDate: parseISO(range.endDate),
-    }));
+  // Filter out any missing values
+  const filteredRanges = ranges.filter(
+    (range) => range.startDate && range.endDate,
+  );
 
   // Sort ranges by start date
-  const sorted = orderBy(parsedRanges, ["startDate"]);
+  const sorted = orderBy(cloneDeep(filteredRanges), ["startDate"]);
 
   // Combine overlapping ranges
   const consolidated = sorted.reduce((merged, current) => {
@@ -77,20 +74,16 @@ export default function useValidation(dates, notes, season) {
           // Get the dateRange with the earliest start date for this campground & date type
           const minDateRange = minBy(
             dateTypeDates,
-            (dateRange) => new Date(dateRange.startDate),
+            (dateRange) => dateRange.startDate,
           );
-          const minDate = minDateRange?.startDate
-            ? new Date(minDateRange?.startDate)
-            : null;
+          const minDate = minDateRange?.startDate ?? null;
 
           // Get the dateRange with the latest end date for this campground & date type
           const maxDateRange = maxBy(
             dateTypeDates,
-            (dateRange) => new Date(dateRange.endDate),
+            (dateRange) => dateRange.endDate,
           );
-          const maxDate = maxDateRange?.endDate
-            ? new Date(maxDateRange.endDate)
-            : null;
+          const maxDate = maxDateRange?.endDate ?? null;
 
           return { minDate, maxDate };
         }),
@@ -168,12 +161,8 @@ export default function useValidation(dates, notes, season) {
         return true;
       }
 
-      // Parse date strings
-      const startDate = new Date(start);
-      const endDate = new Date(end);
-
       // Check if the start date is before the end date
-      if (startDate > endDate) {
+      if (start > end) {
         valid = false;
         addError(
           dateRangeId,
@@ -186,12 +175,12 @@ export default function useValidation(dates, notes, season) {
       if (!operatingYear) return valid;
 
       // Date must be within the year for that form
-      if (startDate.getUTCFullYear() !== operatingYear) {
+      if (start.getUTCFullYear() !== operatingYear) {
         valid = false;
         addError(startDateId, `Enter dates for ${operatingYear} only`, false);
       }
 
-      if (endDate.getUTCFullYear() !== operatingYear) {
+      if (end.getUTCFullYear() !== operatingYear) {
         valid = false;
         addError(endDateId, `Enter dates for ${operatingYear} only`, false);
       }

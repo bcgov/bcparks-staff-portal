@@ -42,19 +42,14 @@ function DateRange({
 
   // Keep local state until the field is blurred or Enter is pressed
   const [localDateRange, setLocalDateRange] = useState(dateRange);
-
-  /**
-   * Returns a local date object from a UTC-zoned ISO string, or null
-   * @param {string|null} dateString ISO date string from localDateRange
-   * @returns {Date|null} parsed local Date
-   */
-  function parseInputDate(dateString) {
-    // Allow null dates to pass through
-    if (!dateString) return null;
-
-    // Parse as local time
-    return normalizeToLocalDate(new Date(dateString));
-  }
+  const adjustedLocalStartDate = useMemo(
+    () => normalizeToLocalDate(localDateRange.startDate),
+    [localDateRange.startDate],
+  );
+  const adjustedLocalEndDate = useMemo(
+    () => normalizeToLocalDate(localDateRange.endDate),
+    [localDateRange.endDate],
+  );
 
   // Updates the local date ranges to control the DatePickers
   function onDateChange(dateField, dateObj) {
@@ -63,7 +58,7 @@ function DateRange({
 
     const updatedRange = {
       ...localDateRange,
-      [dateField]: utcDateObj?.toISOString() ?? null,
+      [dateField]: utcDateObj ?? null,
     };
 
     setLocalDateRange(updatedRange);
@@ -95,8 +90,8 @@ function DateRange({
   const maxDate = new Date(season.operatingYear + 1, 11, 31);
 
   // Open the calendar to Jan 1 of the operating year if no date is set
-  const openDateStart = parseInputDate(localDateRange.startDate) || minDate;
-  const openDateEnd = parseInputDate(localDateRange.endDate) || minDate;
+  const openDateStart = adjustedLocalStartDate || minDate;
+  const openDateEnd = adjustedLocalEndDate || minDate;
 
   return (
     <div className="row gx-0 dates-row operating-dates">
@@ -116,19 +111,16 @@ function DateRange({
               minDate={minDate}
               maxDate={maxDate}
               openToDate={openDateStart}
-              selected={parseInputDate(localDateRange.startDate)}
+              selected={adjustedLocalStartDate}
               onChange={(date) => onDateChange("startDate", date)}
               onBlur={() => {
                 // Update the `dates` object on blur
-                onSelect("startDate", parseInputDate(localDateRange.startDate));
+                onSelect("startDate", adjustedLocalStartDate);
               }}
               onKeyDown={(event) => {
                 // Update the `dates` object on Enter
                 if (event.key === "Enter" && event.target.tagName === "INPUT") {
-                  onSelect(
-                    "startDate",
-                    parseInputDate(localDateRange.startDate),
-                  );
+                  onSelect("startDate", adjustedLocalStartDate);
                 }
               }}
               dateFormat="EEE, MMM d, yyyy"
@@ -174,16 +166,16 @@ function DateRange({
               minDate={minDate}
               maxDate={maxDate}
               openToDate={openDateEnd}
-              selected={parseInputDate(localDateRange.endDate)}
+              selected={adjustedLocalEndDate}
               onChange={(date) => onDateChange("endDate", date)}
               onBlur={() => {
                 // Update the `dates` object on blur
-                onSelect("endDate", parseInputDate(localDateRange.endDate));
+                onSelect("endDate", adjustedLocalEndDate);
               }}
               onKeyDown={(event) => {
                 // Update the `dates` object on Enter
                 if (event.key === "Enter" && event.target.tagName === "INPUT") {
-                  onSelect("endDate", parseInputDate(localDateRange.endDate));
+                  onSelect("endDate", adjustedLocalEndDate);
                 }
               }}
               dateFormat="EEE, MMM d, yyyy"
@@ -294,20 +286,14 @@ function CampgroundFeature({ featureData }) {
   }
 
   /**
-   * Updates the date range in the `dates` object.
-   * @param {number} index the index of the date range in `dates[dateableId]`
-   * @param {string} key key in the DateRange object to update (startDate or endDate)
-   * @param {string} value new date value as a UTC ISO string
+   * Updates a date range in the `dates` object.
+   * @param {number} index The index of the date range in `dates[dateableId]`
+   * @param {string} key Key in the DateRange object to update (startDate or endDate)
+   * @param {string} value The new date value
    * @returns {void}
    */
   function updateDateRange(index, key, value) {
-    let newValue = null;
-
-    if (value) {
-      const date = normalizeToUTCDate(value);
-
-      newValue = date.toISOString();
-    }
+    const newValue = normalizeToUTCDate(value);
 
     setDates((prevDates) => {
       const updatedDates = cloneDeep(prevDates);
@@ -569,8 +555,8 @@ export default function SubmitWinterFeesDates() {
 // prop validation
 const dateRangeShape = PropTypes.shape({
   id: PropTypes.number,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
+  startDate: PropTypes.instanceOf(Date),
+  endDate: PropTypes.instanceOf(Date),
 });
 
 DateRange.propTypes = {
