@@ -293,38 +293,38 @@ export async function createOrUpdateFeature(item) {
     // there is a script to create campgrounds and assign features to them
     // this script will rename the feature to fit within the campground
     if (!dbItem.campgroundId) {
-      dbItem.name = item.attributes.parkSubArea;
+      dbItem.name = item.parkSubArea;
     }
 
     const featureType = await getItemByAttributes(FeatureType, {
-      strapiId: item.attributes.parkSubAreaType.data.id,
+      strapiId: item.parkSubAreaType.id,
     });
 
     dbItem.featureTypeId = featureType.id;
-    dbItem.active = item.attributes.isActive;
-    dbItem.strapiFeatureId = item.attributes.featureId;
+    dbItem.active = item.isActive;
+    dbItem.strapiFeatureId = item.featureId;
 
-    dbItem.hasReservations = item.attributes.hasReservations;
+    dbItem.hasReservations = item.hasReservations;
 
     await dbItem.save();
   } else {
     const dateable = await createModel(Dateable);
     const park = await getItemByAttributes(Park, {
-      strapiId: item.attributes.protectedArea.data.id,
+      strapiId: item.protectedArea.id,
     });
     const featureType = await getItemByAttributes(FeatureType, {
-      strapiId: item.attributes.parkSubAreaType.data.id,
+      strapiId: item.parkSubAreaType.id,
     });
 
     const data = {
-      name: item.attributes.parkSubArea,
+      name: item.parkSubArea,
       parkId: park.id,
       featureTypeId: featureType.id,
       dateableId: dateable.id,
-      hasReservations: item.attributes.hasReservations,
-      active: item.attributes.isActive,
+      hasReservations: item.hasReservations,
+      active: item.isActive,
       strapiId: item.id,
-      strapiFeatureId: item.attributes.featureId,
+      strapiFeatureId: item.featureId,
     };
 
     dbItem = await createModel(Feature, data);
@@ -367,11 +367,11 @@ function datesOverlap(range1, range2) {
  * @returns {Promise[Object]} resolves when all dates and seasons have been created
  */
 export async function createDatesAndSeasons(datesData) {
-  const items = datesData.items.filter((item) => item.attributes.isActive);
+  const items = datesData.items.filter((item) => item.isActive);
 
   const subareaIds = [
     ...new Set(
-      items.map((item) => item.attributes.parkOperationSubArea?.data?.id),
+      items.map((item) => item.parkOperationSubArea?.id),
     ),
   ];
 
@@ -431,7 +431,7 @@ export async function createDatesAndSeasons(datesData) {
   await Promise.all(
     items.map(async (item) => {
       // if there is no subAreaId, we can't create a date range because the date is orphaned
-      const subAreaId = item.attributes.parkOperationSubArea?.data?.id;
+      const subAreaId = item.parkOperationSubArea?.id;
 
       if (!subAreaId) {
         return;
@@ -442,7 +442,7 @@ export async function createDatesAndSeasons(datesData) {
       if (feature && feature.active) {
         const featureTypeId = feature.featureTypeId;
         const parkId = feature.parkId;
-        const operatingYear = item.attributes.operatingYear;
+        const operatingYear = item.operatingYear;
 
         // a season is defined by the park, featureType, and operatingYear
         // this key will be used later to create season objects if they don't exist
@@ -469,8 +469,8 @@ export async function createDatesAndSeasons(datesData) {
           const janAprDates = winterParkDates.janApril;
           const octDecDates = winterParkDates.octDec;
 
-          const startDate = item.attributes.serviceStartDate;
-          const endDate = item.attributes.serviceEndDate;
+          const startDate = item.serviceStartDate;
+          const endDate = item.serviceEndDate;
 
           if (
             datesOverlap({ start: startDate, end: endDate }, janAprDates) ||
@@ -488,8 +488,8 @@ export async function createDatesAndSeasons(datesData) {
           // if the date has offseason dates, store them so we can easily access them later
           // we'll need them to create dates that will populate the winter season
           if (
-            item.attributes.offSeasonStartDate ||
-            item.attributes.offSeasonEndDate
+            item.offSeasonStartDate ||
+            item.offSeasonEndDate
           ) {
             if (!potentialWinterDates[feature.park.id]) {
               potentialWinterDates[feature.park.id] = {};
@@ -536,34 +536,34 @@ export async function createDatesAndSeasons(datesData) {
     seasonDates.forEach(async (date) => {
       // for each date in the season, we create 1+ date ranges
       const feature = featureMap.get(
-        date.attributes.parkOperationSubArea.data.id,
+        date.parkOperationSubArea.id,
       );
 
       // a single date in strapi can map to multiple date ranges in our DB
       // we create separate instances with its own dateType
-      if (date.attributes.serviceStartDate || date.attributes.serviceEndDate) {
+      if (date.serviceStartDate || date.serviceEndDate) {
         const dateObj = {
-          startDate: date.attributes.serviceStartDate,
-          endDate: date.attributes.serviceEndDate,
+          startDate: date.serviceStartDate,
+          endDate: date.serviceEndDate,
           dateTypeId: dateTypeMap.Operation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
-          adminNotes: date.attributes.adminNote,
+          adminNote: date.adminNote,
         };
 
         datesToCreate.push(dateObj);
       }
       if (
-        date.attributes.reservationStartDate ||
-        date.attributes.reservationEndDate
+        date.reservationStartDate ||
+        date.reservationEndDate
       ) {
         const dateObj = {
-          startDate: date.attributes.reservationStartDate,
-          endDate: date.attributes.reservationEndDate,
+          startDate: date.reservationStartDate,
+          endDate: date.reservationEndDate,
           dateTypeId: dateTypeMap.Reservation.id,
           dateableId: feature.dateableId,
           seasonId: season.id,
-          adminNotes: date.attributes.adminNote,
+          adminNote: date.adminNote,
         };
 
         datesToCreate.push(dateObj);
@@ -621,14 +621,14 @@ export async function createDatesAndSeasons(datesData) {
 
         if (potentialFeatureDates) {
           potentialFeatureDates.forEach((date) => {
-            if (date.attributes.parkOperationSubArea.data.id === featureId) {
+            if (date.parkOperationSubArea.id === featureId) {
               const dateObj = {
-                startDate: date.attributes.offSeasonStartDate,
-                endDate: date.attributes.offSeasonEndDate,
+                startDate: date.offSeasonStartDate,
+                endDate: date.offSeasonEndDate,
                 dateTypeId: dateTypeMap["Winter fee"].id,
                 dateableId: feature.dateableId,
                 seasonId: season.id,
-                adminNote: date.attributes.adminNote,
+                adminNote: date.adminNote,
               };
 
               winterDatesToCreate.push(dateObj);
