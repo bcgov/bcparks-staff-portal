@@ -5,6 +5,7 @@ import logo from "@/assets/bc-parks-logo.svg";
 import logoVertical from "@/assets/bc-parks-logo-vertical.svg";
 import useAccess from "@/hooks/useAccess";
 import { useApiGet } from "@/hooks/useApi";
+import NavSidebar from "@/components/NavSidebar.jsx";
 
 export default function MainLayout() {
   const { logOut } = useAccess();
@@ -58,8 +59,12 @@ export default function MainLayout() {
         </div>
       </header>
 
-      <main className="p-0">
-        <Outlet />
+      <main className="p-0 d-flex flex-column flex-md-row">
+        <NavSidebar />
+
+        <div className="flex-fill">
+          <Outlet />
+        </div>
       </main>
 
       <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">

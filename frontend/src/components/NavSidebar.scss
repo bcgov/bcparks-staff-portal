@@ -1,0 +1,13 @@
+#portal-nav-sidebar {
+  background: var(--theme-gray-10);
+  width: clamp(15em, 20%, 20em);
+  padding: 1.5rem 1rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+
+  .nav-link {
+    font-weight: 700;
+  }
+}
