@@ -19,6 +19,12 @@ const ResponsiveDrawer = ({ handleTabChange }) => {
   };
 
   const handleClick = (item) => {
+    // If the item has a href, navigate to that URL
+    if (item.href) {
+      window.location.href = item.href;
+      return;
+    }
+
     handleTabChange(null, item.value);
     setMobileOpen(false);
   };
@@ -26,8 +32,9 @@ const ResponsiveDrawer = ({ handleTabChange }) => {
   const items = [
     { "value": 0, "text": "Advisories" },
     { "value": 1, "text": "Park Access Status" },
-    { "value": 2, "text": "Activities & Facilities" }
-  ]
+    { "value": 2, "text": "Activities & Facilities" },
+    { "value": 3, "text": "Dates of Operation", "href": "/v2/" },
+  ];
 
   const drawer = (
     <div>
