@@ -31,7 +31,7 @@ const navItems = [
 export default function NavSidebar() {
   return (
     <aside id="portal-nav-sidebar" className="collapse d-lg-block">
-      <ul className="nav nav-pills flex-column mb-auto">
+      <ul className="nav flex-column mb-auto">
         {navItems.map(({ Tag, label, active, ...itemProps }) => (
           <li key={label} className="nav-item">
             {/* Use "a" for external links and Router Link components for internal links */}
