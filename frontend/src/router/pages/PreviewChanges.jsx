@@ -476,7 +476,7 @@ function PreviewChanges({ review = false }) {
               className="btn btn-primary"
               onClick={submitForApproval}
             >
-              Submit for approval
+              Submit for review
             </button>
           )}
 
