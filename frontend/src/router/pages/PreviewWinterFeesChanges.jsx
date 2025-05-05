@@ -38,7 +38,7 @@ function PreviewChanges({ review = false }) {
     saving,
   } = useOutletContext();
 
- const { ROLES, checkAccess } = useAccess();
+  const { ROLES, checkAccess } = useAccess();
 
   // Check if the user has permission to approve the season
   const approver = useMemo(
@@ -355,7 +355,7 @@ function PreviewChanges({ review = false }) {
               className="btn btn-primary"
               onClick={submitForApproval}
             >
-              Submit for approval
+              Submit for review
             </button>
           )}
 
