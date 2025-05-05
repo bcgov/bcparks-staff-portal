@@ -1,0 +1,28 @@
+// Make the menu show over the content
+#touch-menu {
+  position: absolute;
+  top: var(--top-nav-height);
+  left: 0;
+  right: 0;
+  z-index: 999;
+  background: var(--surface-color-menus-default);
+  box-shadow: var(--surface-shadow-small);
+
+  .nav-item {
+    border-bottom: 1px solid var(--surface-color-border-default);
+
+    &:hover {
+      background: var(--surface-color-menus-hover);
+    }
+
+    .nav-link {
+      color: var(--theme-primary-blue);
+      padding: 1.25em 1.5em;
+      line-height: 1.5;
+
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+}

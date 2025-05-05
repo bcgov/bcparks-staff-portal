@@ -1,16 +1,21 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Outlet, Link } from "react-router-dom";
 import "./MainLayout.scss";
 import logo from "@/assets/bc-parks-logo.svg";
 import logoVertical from "@/assets/bc-parks-logo-vertical.svg";
 import useAccess from "@/hooks/useAccess";
 import { useApiGet } from "@/hooks/useApi";
+import NavSidebar from "@/components/NavSidebar.jsx";
+import TouchMenu from "@/components/TouchMenu";
 
 export default function MainLayout() {
   const { logOut } = useAccess();
 
   // Fetch the user name to display in the header
   const userDetails = useApiGet("/user");
+
+  // Show or hide the touch menu
+  const [showTouchMenu, setShowTouchMenu] = useState(true);
 
   const userName = useMemo(() => {
     if (userDetails.loading || userDetails.error) return "";
@@ -20,7 +25,7 @@ export default function MainLayout() {
 
   return (
     <div className="layout main">
-      <header className="bcparks-global d-flex align-items-center container-fluid py-1 bg-primary-nav">
+      <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
         <Link
           to={`/`}
           className="d-inline-block d-flex align-items-center align-items-md-end logo-link"
@@ -45,8 +50,8 @@ export default function MainLayout() {
           </div>
         </Link>
 
-        <div className="user-controls text-white d-flex align-items-center ms-auto me-2">
-          <div className="d-none d-md-block user-name me-3">{userName}</div>
+        <div className="user-controls d-none d-md-flex text-white align-items-center ms-auto">
+          <div className="user-name me-3">{userName}</div>
 
           <button
             type="button"
@@ -56,10 +61,31 @@ export default function MainLayout() {
             Logout
           </button>
         </div>
+
+        <button
+          className="navbar-toggler d-block d-md-none"
+          type="button"
+          data-toggle="collapse"
+          data-target="#touch-menu"
+          onClick={() => setShowTouchMenu(!showTouchMenu)}
+        >
+          <span className="navbar-toggler-icon"></span>
+        </button>
       </header>
 
-      <main className="p-0">
-        <Outlet />
+      <TouchMenu
+        show={showTouchMenu}
+        closeMenu={() => setShowTouchMenu(false)}
+        logOut={logOut}
+        userName={userName}
+      />
+
+      <main className="p-0 d-flex flex-column flex-md-row">
+        <NavSidebar />
+
+        <div className="flex-fill">
+          <Outlet />
+        </div>
       </main>
 
       <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">

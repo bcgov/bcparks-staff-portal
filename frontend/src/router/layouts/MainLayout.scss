@@ -3,7 +3,10 @@
   flex-direction: column;
   min-height: 100vh;
 
+  --top-nav-height: 4.5rem;
+
   & > header {
+    height: var(--top-nav-height);
     border-bottom: 2px solid var(--theme-primary-gold);
 
     .logo-link {

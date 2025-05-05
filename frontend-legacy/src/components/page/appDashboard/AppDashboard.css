@@ -25,6 +25,11 @@
   overflow: visible !important;
 }
 
+/* External link tabs should still inherit parent colors, not link colors */
+.app-tabs .external-link.MuiTab-textColorInherit {
+  color: inherit !important;
+}
+
 .app-tab .MuiTab-wrapper {
   font-weight: bold !important;
   align-items: unset !important;

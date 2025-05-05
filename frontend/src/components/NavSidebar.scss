@@ -1,0 +1,28 @@
+#portal-nav-sidebar {
+  background: var(--theme-gray-20);
+  width: clamp(17em, 20%, 20em);
+  padding: 3rem 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: auto;
+
+  .nav-link {
+    padding: 0.75rem 1.5rem;
+    text-align: right;
+    font-weight: 700;
+    opacity: 0.6;
+    transition: opacity 150ms ease-in-out;
+
+    &:hover {
+      text-decoration: none;
+      opacity: 0.8;
+    }
+
+    &.active {
+      opacity: 1;
+      background: var(--surface-color-background-white);
+      color: var(--theme-primary-blue);
+    }
+  }
+}

@@ -76,6 +76,12 @@ export default function AppDashboard({
                 {...a11yProps(2, "dashboard-tab")}
               />
             )}
+            <Tab
+              className="external-link"
+              label="Dates of Operation"
+              component="a"
+              href="/v2/"
+            />
           </Tabs>
           <TabPanel value={tabIndex} index={0} label="dashboard">
             <AdvisoryDashboard page={{ setError, cmsData, setCmsData }} />
