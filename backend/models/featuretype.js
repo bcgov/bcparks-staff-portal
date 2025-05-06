@@ -15,7 +15,7 @@ export default (sequelize) => {
 
       FeatureType.hasMany(models.Season, {
         foreignKey: "featureTypeId",
-        as: "parkAreas",
+        as: "seasons",
       });
     }
   }
