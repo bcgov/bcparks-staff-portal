@@ -1,5 +1,5 @@
 import "../env.js";
-import { Campground, Feature, Park } from "../models/index.js";
+import { ParkArea, Feature, Park } from "../models/index.js";
 
 import { getItemByAttributes, createModel } from "./utils.js";
 
@@ -1763,7 +1763,7 @@ async function createCampground(item) {
     parkId: park.id,
   };
 
-  const campground = await createModel(Campground, data);
+  const campground = await createModel(ParkArea, data);
 
   const feature = await getItemByAttributes(Feature, {
     strapiFeatureId: item.items[0].featureId,
@@ -1774,7 +1774,7 @@ async function createCampground(item) {
   //   strapiId,
   // });
 
-  feature.campgroundId = campground.id;
+  feature.parkAreaId = campground.id;
   feature.name = "All sites";
   await feature.save();
 }

@@ -6,7 +6,7 @@ import {
   Dateable,
   Park,
   User,
-  Campground,
+  ParkArea,
   FeatureType,
   Feature,
   DateType,
@@ -22,7 +22,7 @@ export async function deleteAllData() {
   await DateRange.destroy({ where: {} });
   await Season.destroy({ where: {} });
   await Feature.destroy({ where: {} });
-  await Campground.destroy({ where: {} });
+  await ParkArea.destroy({ where: {} });
   await FeatureType.destroy({ where: {} });
   await DateType.destroy({ where: {} });
   await Park.destroy({ where: {} });

@@ -11,21 +11,19 @@ import {
   DateType,
   DateRange,
   Dateable,
-  Campground,
+  ParkArea,
   SeasonChangeLog,
   User,
 } from "../../models/index.js";
 
 function getFeatureName(feature) {
-  // if feature has a campground, and feature.name is "All sites", return campground name
-  // if feature has a campground, and feature.name is not "All sites", return "campgroundName: feature.name"
-  // if feature does not have a campground, return feature.name
-  const { campground, name } = feature;
+  // if feature has a parkArea, and feature.name is "All sites", return parkArea name
+  // if feature has a parkArea, and feature.name is not "All sites", return "parkAreaName: feature.name"
+  // if feature does not have a parkArea, return feature.name
+  const { parkArea, name } = feature;
 
-  if (campground) {
-    return name === "All sites"
-      ? campground.name
-      : `${campground.name}: ${name}`;
+  if (parkArea) {
+    return name === "All sites" ? parkArea.name : `${parkArea.name}: ${name}`;
   }
 
   return name;
@@ -93,8 +91,8 @@ router.get(
           attributes: ["id", "name", "icon"],
         },
         {
-          model: Campground,
-          as: "campground",
+          model: ParkArea,
+          as: "parkArea",
           required: false,
           attributes: ["id", "name"],
         },
@@ -139,7 +137,7 @@ router.get(
 
     let features = featureList.map((feature) => feature.toJSON());
 
-    // Order features alphabetically before grouping by campground
+    // Order features alphabetically before grouping by parkArea
     features = _.orderBy(features, ["name"], ["asc"]);
 
     // Map to group features by featureType

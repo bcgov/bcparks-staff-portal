@@ -16,9 +16,9 @@ export default (sequelize) => {
         foreignKey: "parkId",
         as: "features",
       });
-      Park.hasMany(models.Campground, {
+      Park.hasMany(models.ParkArea, {
         foreignKey: "parkId",
-        as: "campgrounds",
+        as: "parkAreas",
       });
       Park.hasMany(models.Season, {
         foreignKey: "parkId",
