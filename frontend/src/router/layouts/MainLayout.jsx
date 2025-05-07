@@ -15,7 +15,7 @@ export default function MainLayout() {
   const userDetails = useApiGet("/user");
 
   // Show or hide the touch menu
-  const [showTouchMenu, setShowTouchMenu] = useState(true);
+  const [showTouchMenu, setShowTouchMenu] = useState(false);
 
   const userName = useMemo(() => {
     if (userDetails.loading || userDetails.error) return "";
