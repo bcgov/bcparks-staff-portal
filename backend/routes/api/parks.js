@@ -42,7 +42,7 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     const parks = await Park.findAll({
-      attributes: ["id", "orcs", "name"],
+      attributes: ["id", "orcs", "name", "managementAreas"],
       include: [
         {
           model: Season,
@@ -57,6 +57,8 @@ router.get(
       id: park.id,
       name: park.name,
       orcs: park.orcs,
+      section: park.managementAreas.map((m) => m.section),
+      managementArea: park.managementAreas.map((m) => m.mgmtArea),
       status: getParkStatus(park.seasons),
       readyToPublish: park.seasons.every((s) => s.readyToPublish),
     }));

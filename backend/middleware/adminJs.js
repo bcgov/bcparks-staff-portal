@@ -18,6 +18,8 @@ import {
   DateType,
   Season,
   DateRange,
+  Section,
+  ManagementArea,
   SeasonChangeLog,
   DateChangeLog,
 } from "../models/index.js";
@@ -269,6 +271,8 @@ const adminOptions = {
     DateType,
     SeasonResource,
     DateRange,
+    Section,
+    ManagementArea,
     SeasonChangeLog,
     DateChangeLog,
   ],

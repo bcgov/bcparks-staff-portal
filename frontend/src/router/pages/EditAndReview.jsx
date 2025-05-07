@@ -1,5 +1,6 @@
+import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
+import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
@@ -7,10 +8,23 @@ import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState } from "react";
 import { orderBy } from "lodash-es";
 import PaginationBar from "@/components/PaginationBar";
+import FilterPanel from "@/components/FilterPanel";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
+  const {
+    data: sectionsData,
+    loading: sectionsLoading,
+    error: sectionsError,
+  } = useApiGet("/sections");
+  const {
+    data: managementAreasData,
+    loading: managementAreasLoading,
+    error: managementAreasError,
+  } = useApiGet("/management-areas");
   const parks = useMemo(() => data || [], [data]);
+  const sections = useMemo(() => sectionsData || [], [sectionsData]);
+  const managementAreas = useMemo(() => managementAreasData || [], [managementAreasData]);
 
   const statusOptions = [
     { value: "pending review", label: "Pending review" },
@@ -26,6 +40,7 @@ function EditAndReview() {
   // table filter state
   const [nameFilter, setNameFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState([]);
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   // table sorting state
   const [sortColumn, setSortColumn] = useState("parkName");
@@ -89,6 +104,7 @@ function EditAndReview() {
     return sortedParks.slice(start, end);
   }, [sortedParks, page, pageSize]);
 
+  // components
   function renderTable() {
     if (loading) {
       return <LoadingBar />;
@@ -120,6 +136,50 @@ function EditAndReview() {
       </div>
     );
   }
+
+  // "filter by status" dropdown
+  function StatusFilter({ options, filter, setFilter }) {
+    return (
+      <MultiSelect
+        options={options}
+        onInput={(value) => {
+          setPage(1);
+          setFilter(value);
+        }}
+        value={filter}
+      >
+        Filter by status {filter.length > 0 && `(${filter.length})`}
+      </MultiSelect>
+    );
+  }
+
+  // "clear filters" button
+  function ClearFilter({ onClick }) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className="btn text-link text-decoration-underline align-self-end"
+      >
+        Clear filters
+      </button>
+    );
+  }
+
+  StatusFilter.propTypes = {
+    options: PropTypes.arrayOf(
+      PropTypes.shape({
+        value: PropTypes.string.isRequired,
+        label: PropTypes.string.isRequired,
+      }),
+    ).isRequired,
+    filter: PropTypes.arrayOf(PropTypes.string).isRequired,
+    setFilter: PropTypes.func.isRequired,
+  };
+
+  ClearFilter.propTypes = {
+    onClick: PropTypes.func.isRequired,
+  };
 
   return (
     <div className="container">
@@ -154,31 +214,45 @@ function EditAndReview() {
               <label htmlFor="status" className="form-label">
                 Status
               </label>
-
-              <MultiSelect
+              <StatusFilter
                 options={statusOptions}
-                onInput={(value) => {
-                  setPage(1);
-                  setStatusFilter(value);
-                }}
-                value={statusFilter}
-              >
-                Filter by status{" "}
-                {statusFilter.length > 0 && `(${statusFilter.length})`}
-              </MultiSelect>
+                filter={statusFilter}
+                setFilter={setStatusFilter}
+              />
             </div>
 
             <button
               type="button"
-              onClick={resetFilters}
-              className="btn text-link text-decoration-underline align-self-end"
+              onClick={() => setShowFilterPanel(!showFilterPanel)}
+              className="btn btn-outline-primary align-self-end me-2"
             >
-              Clear filters
+              <FontAwesomeIcon icon={faFilter} className="me-1" />
+              All filters
             </button>
+            <ClearFilter onClick={resetFilters} />
           </div>
         </div>
 
         {renderTable()}
+
+        <FilterPanel
+          show={showFilterPanel}
+          setShow={setShowFilterPanel}
+          sections={sections}
+          sectionsLoading={sectionsLoading}
+          sectionsError={sectionsError}
+          managementAreas={managementAreas}
+          managementAreasLoading={managementAreasLoading}
+          managementAreasError={managementAreasError}
+          statusFilter={
+            <StatusFilter
+              options={statusOptions}
+              filter={statusFilter}
+              setFilter={setStatusFilter}
+            />
+          }
+          clearFilter={<ClearFilter onClick={resetFilters} />}
+        />
       </div>
     </div>
   );
