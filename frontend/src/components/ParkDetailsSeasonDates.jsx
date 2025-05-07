@@ -67,10 +67,10 @@ function CampGround({ campground }) {
 export default function SeasonDates({ data }) {
   return (
     <div className="park-details-season-dates details-content">
-      {data.campgrounds.length > 0 && (
+      {data.parkAreas.length > 0 && (
         <div className="campgrounds">
-          {data.campgrounds.map((campground) => (
-            <CampGround key={campground.id} campground={campground} />
+          {data.parkAreas.map((parkArea) => (
+            <CampGround key={parkArea.id} campground={parkArea} />
           ))}
         </div>
       )}
@@ -103,7 +103,7 @@ const dateRangePropShape = PropTypes.shape({
   }).isRequired,
 });
 
-const campgroundFeaturePropShape = PropTypes.shape({
+const parkAreaFeaturePropShape = PropTypes.shape({
   id: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   dateable: PropTypes.shape({
@@ -111,26 +111,26 @@ const campgroundFeaturePropShape = PropTypes.shape({
   }),
 });
 
-const campgroundPropShape = PropTypes.shape({
+const parkAreaPropShape = PropTypes.shape({
   id: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
-  features: PropTypes.arrayOf(campgroundFeaturePropShape),
+  features: PropTypes.arrayOf(parkAreaFeaturePropShape),
 });
 
 SeasonDates.propTypes = {
   data: PropTypes.shape({
-    campgrounds: PropTypes.arrayOf(campgroundPropShape),
-    features: PropTypes.arrayOf(campgroundFeaturePropShape),
+    parkAreas: PropTypes.arrayOf(parkAreaPropShape),
+    features: PropTypes.arrayOf(parkAreaFeaturePropShape),
     changeLogs: PropTypes.array.isRequired,
   }).isRequired,
 };
 
 CampGround.propTypes = {
-  campground: campgroundPropShape,
+  campground: parkAreaPropShape,
 };
 
 CampGroundFeature.propTypes = {
-  feature: campgroundFeaturePropShape,
+  feature: parkAreaFeaturePropShape,
 };
 
 DateTypeRow.propTypes = {

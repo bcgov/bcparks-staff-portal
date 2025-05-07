@@ -591,7 +591,7 @@ function SubmitDates() {
       </div>
 
       <div className="mb-5">
-        {season?.campgrounds.map((campground) => (
+        {season?.parkAreas.map((campground) => (
           <Campground key={campground.id} campground={campground} />
         ))}
 

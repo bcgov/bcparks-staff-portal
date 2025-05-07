@@ -126,11 +126,11 @@ function PreviewChanges({ review = false }) {
 
   // Returns the names of features with no (or null) date ranges
   function getFeaturesWithMissingDates() {
-    // Combine the campgrounds and other features
-    const campgrounds = season?.campgrounds ?? [];
+    // Combine the parkAreas and other features
+    const parkAreas = season?.parkAreas ?? [];
     const features = season?.features ?? [];
     const featuresToCheck = [
-      ...campgrounds.flatMap((campground) => campground.features),
+      ...parkAreas.flatMap((parkArea) => parkArea.features),
       ...features,
     ];
 
@@ -140,17 +140,17 @@ function PreviewChanges({ review = false }) {
 
       const missing = [];
 
-      // Resolve the display name from the feature/campground
+      // Resolve the display name from the feature/parkArea
       let name = feature.name;
 
-      // If the feature is part of a campground, prepend the campground name
-      if (feature.campground) {
-        const campgroundName = feature.campground.name;
+      // If the feature is part of a (campground) parkArea, prepend the parkArea name
+      if (feature.parkArea) {
+        const parkAreaName = feature.parkArea.name;
 
         if (name === "All sites" || !name) {
-          name = campgroundName;
+          name = parkAreaName;
         } else {
-          name = `${campgroundName}: ${name}`;
+          name = `${parkAreaName}: ${name}`;
         }
       }
 
@@ -390,8 +390,8 @@ function PreviewChanges({ review = false }) {
         </header>
 
         <section className="feature-type">
-          {season?.campgrounds.map((campground) => (
-            <Campground key={campground.id} campground={campground} />
+          {season?.parkAreas.map((parkArea) => (
+            <Campground key={parkArea.id} campground={parkArea} />
           ))}
 
           {season?.features.map((feature) => (
