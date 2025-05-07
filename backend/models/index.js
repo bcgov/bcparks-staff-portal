@@ -28,7 +28,7 @@ const DateRange = DateRangeModel(sequelize);
 const SeasonChangeLog = SeasonChangeLogModel(sequelize);
 const DateChangeLog = DateChangeLogModel(sequelize);
 
-export const models = {
+const models = {
   Dateable,
   Park,
   User,
@@ -47,3 +47,17 @@ Object.values(models).forEach((model) => {
     model.associate(models);
   }
 });
+
+export {
+  Dateable,
+  Park,
+  User,
+  ParkArea,
+  FeatureType,
+  Feature,
+  DateType,
+  Season,
+  DateRange,
+  SeasonChangeLog,
+  DateChangeLog,
+};
