@@ -9,6 +9,8 @@ import "./FilterPanel.scss";
 function FilterPanel({
   show,
   setShow,
+  allFilter,
+  updateFilter,
   sections,
   sectionsLoading,
   sectionsError,
@@ -20,8 +22,6 @@ function FilterPanel({
 }) {
   // states
   const [selectedBundles, setSelectedBundles] = useState([]);
-  const [selectedSections, setSelectedSections] = useState([]);
-  const [selectedManagementAreas, setSelectedManagementAreas] = useState([]);
   const [selectedDateTypes, setSelectedDateTypes] = useState([]);
   const [selectedFeatureTypes, setSelectedFeatureTypes] = useState([]);
   const [isInReservationSystem, setIsInReservationSystem] = useState(false);
@@ -40,16 +40,19 @@ function FilterPanel({
 
   // dummy data
   // TODO: replace with real data
+  // TODO: CMS-324
   const bundleOptions = [
     { value: "bundle1", label: "Bundle 1" },
     { value: "bundle2", label: "Bundle 2" },
     { value: "bundle3", label: "Bundle 3" },
   ];
+  // TODO: CMS-787
   const dateTypeOptions = [
     { value: "operation", label: "Operation" },
     { value: "reservation", label: "Reservation" },
     { value: "winter-fee", label: "Winter Fee" },
   ];
+  // TODO: CMS-887
   const featureTypeOptions = [
     { value: "campground", label: "Campground" },
     { value: "trail", label: "Trail" },
@@ -66,8 +69,8 @@ function FilterPanel({
         id="section"
         label="Section(s)"
         options={sections}
-        value={selectedSections}
-        onChange={(e) => setSelectedSections(e)}
+        value={allFilter.sections}
+        onChange={(e) =>   updateFilter("sections", e)}
         placeholder="Select Section(s)"
         optionLabel="sectionName"
         optionValue="sectionNumber"
@@ -85,8 +88,8 @@ function FilterPanel({
         id="management-area"
         label="Management Area(s)"
         options={managementAreas}
-        value={selectedManagementAreas}
-        onChange={(e) => setSelectedManagementAreas(e)}
+        value={allFilter.managementAreas}
+        onChange={(e) => updateFilter("managementAreas", e)}
         placeholder="Select Management Area(s)"
         optionLabel="managementAreaName"
         optionValue="managementAreaNumber"
@@ -150,6 +153,7 @@ function FilterPanel({
             />
           </div>
           <div className="mt-4">
+            {/* TODO: CMS-788 */}
             <SwitchToggle
               id="has-date-note"
               label="Has date note"
@@ -162,6 +166,7 @@ function FilterPanel({
           <h3>Park</h3>
           <div className="row">
             <div className="col-lg-6">
+              {/* TODO: CMS-887 */}
               <MultiSelectField
                 id="feature-type"
                 label="Feature Type(s)"
@@ -187,6 +192,11 @@ export default FilterPanel;
 FilterPanel.propTypes = {
   show: PropTypes.bool.isRequired,
   setShow: PropTypes.func.isRequired,
+  allFilter: PropTypes.shape({
+    sections: PropTypes.arrayOf(PropTypes.string).isRequired,
+    managementAreas: PropTypes.arrayOf(PropTypes.string).isRequired,
+  }).isRequired,
+  updateFilter: PropTypes.func.isRequired,
   sections: PropTypes.arrayOf(
     PropTypes.shape({
       sectionNumber: PropTypes.string.isRequired,

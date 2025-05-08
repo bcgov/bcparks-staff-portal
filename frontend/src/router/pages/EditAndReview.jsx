@@ -1,4 +1,3 @@
-import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
@@ -24,7 +23,10 @@ function EditAndReview() {
   } = useApiGet("/management-areas");
   const parks = useMemo(() => data || [], [data]);
   const sections = useMemo(() => sectionsData || [], [sectionsData]);
-  const managementAreas = useMemo(() => managementAreasData || [], [managementAreasData]);
+  const managementAreas = useMemo(
+    () => managementAreasData || [],
+    [managementAreasData],
+  );
 
   const statusOptions = [
     { value: "pending review", label: "Pending review" },
@@ -38,8 +40,12 @@ function EditAndReview() {
   const pageSize = 25;
 
   // table filter state
-  const [nameFilter, setNameFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState([]);
+  const [allFilter, setAllFilter] = useState({
+    name: "",
+    status: [],
+    sections: [],
+    managementAreas: [],
+  });
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   // table sorting state
@@ -48,8 +54,12 @@ function EditAndReview() {
 
   function resetFilters() {
     setPage(1);
-    setNameFilter("");
-    setStatusFilter([]);
+    setAllFilter({
+      name: "",
+      status: [],
+      sections: [],
+      managementAreas: [],
+    });
   }
 
   function updateSort(column, order) {
@@ -63,23 +73,56 @@ function EditAndReview() {
       parks.filter((park) => {
         // If a name filter is set, filter out parks that don't match
         if (
-          nameFilter.length > 0 &&
+          allFilter.name.length > 0 &&
           !park.name
             .toLocaleLowerCase()
-            .includes(nameFilter.toLocaleLowerCase())
+            .includes(allFilter.name.toLocaleLowerCase())
         ) {
           return false;
         }
-
-        // If status filters are set, filter out unselected statuses
-        if (statusFilter.length > 0 && !statusFilter.includes(park.status)) {
+        // filter by status
+        if (
+          allFilter.status.length > 0 &&
+          !allFilter.status.includes(park.status)
+        ) {
+          return false;
+        }
+        // filter by sections
+        if (
+          allFilter.sections.length > 0 &&
+          !allFilter.sections.some((section) =>
+            park.section.some(
+              (parkSection) =>
+                parkSection.number === parseInt(section.sectionNumber, 10),
+            ),
+          )
+        ) {
+          return false;
+        }
+        // filter by management areas
+        if (
+          allFilter.managementAreas.length > 0 &&
+          !allFilter.managementAreas.some((area) =>
+            park.managementArea.some(
+              (parkArea) =>
+                parkArea.number === parseInt(area.managementAreaNumber, 10),
+            ),
+          )
+        ) {
           return false;
         }
 
         return true;
       }),
-    [parks, nameFilter, statusFilter],
+    [parks, allFilter],
   );
+
+  function updateFilter(key, value) {
+    setAllFilter((prevFilters) => ({
+      ...prevFilters,
+      [key]: value,
+    }));
+  }
 
   // returns sorted and filtered parks array
   function getSortedParks() {
@@ -138,48 +181,34 @@ function EditAndReview() {
   }
 
   // "filter by status" dropdown
-  function StatusFilter({ options, filter, setFilter }) {
+  function StatusFilter() {
     return (
       <MultiSelect
-        options={options}
+        options={statusOptions}
         onInput={(value) => {
           setPage(1);
-          setFilter(value);
+          updateFilter("status", value);
         }}
-        value={filter}
+        value={allFilter.status}
       >
-        Filter by status {filter.length > 0 && `(${filter.length})`}
+        Filter by status{" "}
+        {allFilter.status.length > 0 && `(${allFilter.status.length})`}
       </MultiSelect>
     );
   }
 
   // "clear filters" button
-  function ClearFilter({ onClick }) {
+  function ClearFilter() {
     return (
       <button
         type="button"
-        onClick={onClick}
+        onClick={resetFilters}
         className="btn text-link text-decoration-underline align-self-end"
       >
         Clear filters
       </button>
     );
   }
-
-  StatusFilter.propTypes = {
-    options: PropTypes.arrayOf(
-      PropTypes.shape({
-        value: PropTypes.string.isRequired,
-        label: PropTypes.string.isRequired,
-      }),
-    ).isRequired,
-    filter: PropTypes.arrayOf(PropTypes.string).isRequired,
-    setFilter: PropTypes.func.isRequired,
-  };
-
-  ClearFilter.propTypes = {
-    onClick: PropTypes.func.isRequired,
-  };
 
   return (
     <div className="container">
@@ -196,10 +225,10 @@ function EditAndReview() {
                 className="form-control input-search"
                 id="parkName"
                 placeholder="Search by park name"
-                value={nameFilter}
+                value={allFilter.name}
                 onChange={(e) => {
                   setPage(1);
-                  setNameFilter(e.target.value);
+                  updateFilter("name", e.target.value);
                 }}
               />
               <FontAwesomeIcon
@@ -214,11 +243,7 @@ function EditAndReview() {
               <label htmlFor="status" className="form-label">
                 Status
               </label>
-              <StatusFilter
-                options={statusOptions}
-                filter={statusFilter}
-                setFilter={setStatusFilter}
-              />
+              <StatusFilter />
             </div>
 
             <button
@@ -229,7 +254,7 @@ function EditAndReview() {
               <FontAwesomeIcon icon={faFilter} className="me-1" />
               All filters
             </button>
-            <ClearFilter onClick={resetFilters} />
+            <ClearFilter />
           </div>
         </div>
 
@@ -238,20 +263,16 @@ function EditAndReview() {
         <FilterPanel
           show={showFilterPanel}
           setShow={setShowFilterPanel}
+          allFilter={allFilter}
+          updateFilter={updateFilter}
           sections={sections}
           sectionsLoading={sectionsLoading}
           sectionsError={sectionsError}
           managementAreas={managementAreas}
           managementAreasLoading={managementAreasLoading}
           managementAreasError={managementAreasError}
-          statusFilter={
-            <StatusFilter
-              options={statusOptions}
-              filter={statusFilter}
-              setFilter={setStatusFilter}
-            />
-          }
-          clearFilter={<ClearFilter onClick={resetFilters} />}
+          statusFilter={<StatusFilter />}
+          clearFilter={<ClearFilter />}
         />
       </div>
     </div>
