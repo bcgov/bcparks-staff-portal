@@ -69,7 +69,7 @@ export default function TouchMenu({
             className="btn btn-text w-100 text-start nav-link"
             onClick={onLogoutClick}
           >
-            {userName}
+            <span className="text-dark">{userName}</span>
             <br />
             Logout
           </button>
