@@ -9,7 +9,7 @@ import "./FilterPanel.scss";
 function FilterPanel({
   show,
   setShow,
-  allFilter,
+  filters,
   updateFilter,
   filterOptions,
   filterOptionsLoading,
@@ -78,7 +78,7 @@ function FilterPanel({
                 id="section"
                 label="Section(s)"
                 options={sections}
-                value={allFilter.sections}
+                value={filters.sections}
                 onChange={(e) => updateFilter("sections", e)}
                 placeholder="Select Section(s)"
                 optionLabel="name"
@@ -88,7 +88,7 @@ function FilterPanel({
                 id="management-area"
                 label="Management Area(s)"
                 options={managementAreas}
-                value={allFilter.managementAreas}
+                value={filters.managementAreas}
                 onChange={(e) => updateFilter("managementAreas", e)}
                 placeholder="Select Management Area(s)"
                 optionLabel="name"
@@ -103,7 +103,7 @@ function FilterPanel({
                     id="date-type"
                     label="Date Type(s)"
                     options={dateTypes}
-                    value={allFilter.dateTypes}
+                    value={filters.dateTypes}
                     onChange={(e) => updateFilter("dateTypes", e)}
                     placeholder="Select Date Type(s)"
                     optionLabel="name"
@@ -138,7 +138,7 @@ function FilterPanel({
                     id="feature-type"
                     label="Feature Type(s)"
                     options={featureTypes}
-                    value={allFilter.featureTypes}
+                    value={filters.featureTypes}
                     onChange={(e) => updateFilter("featureTypes", e)}
                     placeholder="Select Feature Type(s)"
                     optionLabel="name"
@@ -163,7 +163,7 @@ export default FilterPanel;
 FilterPanel.propTypes = {
   show: PropTypes.bool.isRequired,
   setShow: PropTypes.func.isRequired,
-  allFilter: PropTypes.shape({
+  filters: PropTypes.shape({
     sections: PropTypes.arrayOf(PropTypes.object),
     managementAreas: PropTypes.arrayOf(PropTypes.object),
     dateTypes: PropTypes.arrayOf(PropTypes.object),

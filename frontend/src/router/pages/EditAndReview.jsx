@@ -31,7 +31,7 @@ function EditAndReview() {
   const pageSize = 25;
 
   // table filter state
-  const [allFilter, setAllFilter] = useState({
+  const [filters, setFilters] = useState({
     name: "",
     bundles: [],
     status: [],
@@ -50,7 +50,7 @@ function EditAndReview() {
 
   function resetFilters() {
     setPage(1);
-    setAllFilter({
+    setFilters({
       name: "",
       bundles: [],
       status: [],
@@ -74,27 +74,26 @@ function EditAndReview() {
       parks.filter((park) => {
         // If a name filter is set, filter out parks that don't match
         if (
-          allFilter.name.length > 0 &&
+          filters.name.length > 0 &&
           !park.name
             .toLocaleLowerCase()
-            .includes(allFilter.name.toLocaleLowerCase())
+            .includes(filters.name.toLocaleLowerCase())
         ) {
           return false;
         }
         // filter by status
         if (
-          allFilter.status.length > 0 &&
-          !allFilter.status.includes(park.status)
+          filters.status.length > 0 &&
+          !filters.status.includes(park.status)
         ) {
           return false;
         }
         // filter by sections
         if (
-          allFilter.sections.length > 0 &&
-          !allFilter.sections.some((section) =>
+          filters.sections.length > 0 &&
+          !filters.sections.some((section) =>
             park.section.some(
-              (parkSection) =>
-                parkSection.number === section.sectionNumber,
+              (parkSection) => parkSection.number === section.sectionNumber,
             ),
           )
         ) {
@@ -102,11 +101,10 @@ function EditAndReview() {
         }
         // filter by management areas
         if (
-          allFilter.managementAreas.length > 0 &&
-          !allFilter.managementAreas.some((area) =>
+          filters.managementAreas.length > 0 &&
+          !filters.managementAreas.some((area) =>
             park.managementArea.some(
-              (parkArea) =>
-                parkArea.number === area.managementAreaNumber,
+              (parkArea) => parkArea.number === area.managementAreaNumber,
             ),
           )
         ) {
@@ -127,11 +125,11 @@ function EditAndReview() {
 
         return true;
       }),
-    [parks, allFilter],
+    [parks, filters],
   );
 
   function updateFilter(key, value) {
-    setAllFilter((prevFilters) => ({
+    setFilters((prevFilters) => ({
       ...prevFilters,
       [key]: value,
     }));
@@ -202,10 +200,10 @@ function EditAndReview() {
           setPage(1);
           updateFilter("status", value);
         }}
-        value={allFilter.status}
+        value={filters.status}
       >
         Filter by status{" "}
-        {allFilter.status.length > 0 && `(${allFilter.status.length})`}
+        {filters.status.length > 0 && `(${filters.status.length})`}
       </MultiSelect>
     );
   }
@@ -238,7 +236,7 @@ function EditAndReview() {
                 className="form-control input-search"
                 id="parkName"
                 placeholder="Search by park name"
-                value={allFilter.name}
+                value={filters.name}
                 onChange={(e) => {
                   setPage(1);
                   updateFilter("name", e.target.value);
@@ -276,7 +274,7 @@ function EditAndReview() {
         <FilterPanel
           show={showFilterPanel}
           setShow={setShowFilterPanel}
-          allFilter={allFilter}
+          filters={filters}
           updateFilter={updateFilter}
           filterOptions={filterOptions}
           filterOptionsLoading={filterOptionsLoading}
