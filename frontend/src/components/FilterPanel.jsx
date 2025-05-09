@@ -11,19 +11,15 @@ function FilterPanel({
   setShow,
   allFilter,
   updateFilter,
-  sections,
-  sectionsLoading,
-  sectionsError,
-  managementAreas,
-  managementAreasLoading,
-  managementAreasError,
+  filterOptions,
+  filterOptionsLoading,
+  filterOptionsError,
   statusFilter,
   clearFilter,
 }) {
-  // states
+  // constants and states
+  const { sections, managementAreas, dateTypes, featureTypes } = filterOptions;
   const [selectedBundles, setSelectedBundles] = useState([]);
-  const [selectedDateTypes, setSelectedDateTypes] = useState([]);
-  const [selectedFeatureTypes, setSelectedFeatureTypes] = useState([]);
   const [isInReservationSystem, setIsInReservationSystem] = useState(false);
   const [hasDateNote, setHasDateNote] = useState(false);
 
@@ -46,56 +42,6 @@ function FilterPanel({
     { value: "bundle2", label: "Bundle 2" },
     { value: "bundle3", label: "Bundle 3" },
   ];
-  // TODO: CMS-787
-  const dateTypeOptions = [
-    { value: "operation", label: "Operation" },
-    { value: "reservation", label: "Reservation" },
-    { value: "winter-fee", label: "Winter Fee" },
-  ];
-  // TODO: CMS-887
-  const featureTypeOptions = [
-    { value: "campground", label: "Campground" },
-    { value: "trail", label: "Trail" },
-    { value: "picnic-area", label: "Picnic Area" },
-  ];
-
-  // components
-  function renderSectionField() {
-    if (sectionsLoading) return <LoadingBar />;
-    if (sectionsError)
-      return <p>Error loading sections data: {sectionsError.message}</p>;
-    return (
-      <MultiSelectField
-        id="section"
-        label="Section(s)"
-        options={sections}
-        value={allFilter.sections}
-        onChange={(e) =>   updateFilter("sections", e)}
-        placeholder="Select Section(s)"
-        optionLabel="sectionName"
-        optionValue="sectionNumber"
-      />
-    );
-  }
-  function renderManagementAreaField() {
-    if (managementAreasLoading) return <LoadingBar />;
-    if (managementAreasError)
-      return (
-        <p>Error loading management areas: {managementAreasError.message}</p>
-      );
-    return (
-      <MultiSelectField
-        id="management-area"
-        label="Management Area(s)"
-        options={managementAreas}
-        value={allFilter.managementAreas}
-        onChange={(e) => updateFilter("managementAreas", e)}
-        placeholder="Select Management Area(s)"
-        optionLabel="managementAreaName"
-        optionValue="managementAreaNumber"
-      />
-    );
-  }
 
   return (
     <Offcanvas
@@ -114,70 +60,95 @@ function FilterPanel({
           <h3>Status</h3>
           {statusFilter}
         </div>
-        <div className="mt-4">
-          <h3>Area</h3>
-          {/* TODO: CMS-324 */}
-          <MultiSelectField
-            id="bundle"
-            label="Bundle(s)"
-            options={bundleOptions}
-            value={selectedBundles}
-            onChange={(e) => setSelectedBundles(e)}
-            placeholder="Select bundle(s)"
-          />
-          {renderSectionField()}
-          {renderManagementAreaField()}
-        </div>
-        <div className="mt-4">
-          <h3>Dates</h3>
-          {/* TODO: CMS-788 */}
-          <div className="row">
-            <div className="col-lg-6">
+        {filterOptionsLoading && <LoadingBar />}
+        {!filterOptionsLoading && !filterOptionsError && (
+          <>
+            <div className="mt-4">
+              <h3>Area</h3>
+              {/* TODO: CMS-324 */}
               <MultiSelectField
-                id="date-type"
-                label="Date Type(s)"
-                options={dateTypeOptions}
-                value={selectedDateTypes}
-                onChange={(e) => setSelectedDateTypes(e)}
-                placeholder="Select Date Type(s)"
+                id="bundle"
+                label="Bundle(s)"
+                options={bundleOptions}
+                value={selectedBundles}
+                onChange={(e) => setSelectedBundles(e)}
+                placeholder="Select bundle(s)"
+              />
+              <MultiSelectField
+                id="section"
+                label="Section(s)"
+                options={sections}
+                value={allFilter.sections}
+                onChange={(e) => updateFilter("sections", e)}
+                placeholder="Select Section(s)"
+                optionLabel="name"
+                optionValue="sectionNumber"
+              />
+              <MultiSelectField
+                id="management-area"
+                label="Management Area(s)"
+                options={managementAreas}
+                value={allFilter.managementAreas}
+                onChange={(e) => updateFilter("managementAreas", e)}
+                placeholder="Select Management Area(s)"
+                optionLabel="name"
+                optionValue="managementAreaNumber"
               />
             </div>
-          </div>
-          <div className="mt-4">
-            {/* TODO: CMS-787 */}
-            <SwitchToggle
-              id="is-in-reservation-system"
-              label="In BC Parks reservation system"
-              checked={isInReservationSystem}
-              onChange={handleReservationSystem}
-            />
-          </div>
-          <div className="mt-4">
-            {/* TODO: CMS-788 */}
-            <SwitchToggle
-              id="has-date-note"
-              label="Has date note"
-              checked={hasDateNote}
-              onChange={handleDateNote}
-            />
-          </div>
-        </div>
-        <div className="mt-4">
-          <h3>Park</h3>
-          <div className="row">
-            <div className="col-lg-6">
-              {/* TODO: CMS-887 */}
-              <MultiSelectField
-                id="feature-type"
-                label="Feature Type(s)"
-                options={featureTypeOptions}
-                value={selectedFeatureTypes}
-                onChange={(e) => setSelectedFeatureTypes(e)}
-                placeholder="Select Feature Type(s)"
-              />
+            <div className="mt-4">
+              <h3>Dates</h3>
+              <div className="row">
+                <div className="col-lg-6">
+                  <MultiSelectField
+                    id="date-type"
+                    label="Date Type(s)"
+                    options={dateTypes}
+                    value={allFilter.dateTypes}
+                    onChange={(e) => updateFilter("dateTypes", e)}
+                    placeholder="Select Date Type(s)"
+                    optionLabel="name"
+                    optionValue="name"
+                  />
+                </div>
+              </div>
+              <div className="mt-4">
+                {/* TODO: CMS-787 */}
+                <SwitchToggle
+                  id="is-in-reservation-system"
+                  label="In BC Parks reservation system"
+                  checked={isInReservationSystem}
+                  onChange={handleReservationSystem}
+                />
+              </div>
+              <div className="mt-4">
+                {/* TODO: CMS-788 */}
+                <SwitchToggle
+                  id="has-date-note"
+                  label="Has date note"
+                  checked={hasDateNote}
+                  onChange={handleDateNote}
+                />
+              </div>
             </div>
-          </div>
-        </div>
+            <div className="mt-4">
+              <h3>Park</h3>
+              <div className="row">
+                <div className="col-lg-6">
+                  <MultiSelectField
+                    id="feature-type"
+                    label="Feature Type(s)"
+                    options={featureTypes}
+                    value={allFilter.featureTypes}
+                    onChange={(e) => updateFilter("featureTypes", e)}
+                    placeholder="Select Feature Type(s)"
+                    optionLabel="name"
+                    optionValue="strapiId"
+                  />
+                </div>
+              </div>
+            </div>
+          </>
+        )}
         <div className="mt-4">
           <button className="btn btn-primary">Apply filters</button>
           {clearFilter}
@@ -193,26 +164,20 @@ FilterPanel.propTypes = {
   show: PropTypes.bool.isRequired,
   setShow: PropTypes.func.isRequired,
   allFilter: PropTypes.shape({
-    sections: PropTypes.arrayOf(PropTypes.string).isRequired,
-    managementAreas: PropTypes.arrayOf(PropTypes.string).isRequired,
+    sections: PropTypes.arrayOf(PropTypes.object),
+    managementAreas: PropTypes.arrayOf(PropTypes.object),
+    dateTypes: PropTypes.arrayOf(PropTypes.object),
+    featureTypes: PropTypes.arrayOf(PropTypes.object),
   }).isRequired,
   updateFilter: PropTypes.func.isRequired,
-  sections: PropTypes.arrayOf(
-    PropTypes.shape({
-      sectionNumber: PropTypes.string.isRequired,
-      sectionName: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  sectionsLoading: PropTypes.bool.isRequired,
-  sectionsError: PropTypes.object,
-  managementAreas: PropTypes.arrayOf(
-    PropTypes.shape({
-      managementAreaNumber: PropTypes.string.isRequired,
-      managementAreaName: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  managementAreasLoading: PropTypes.bool.isRequired,
-  managementAreasError: PropTypes.object,
+  filterOptions: PropTypes.shape({
+    sections: PropTypes.arrayOf(PropTypes.object),
+    managementAreas: PropTypes.arrayOf(PropTypes.object),
+    dateTypes: PropTypes.arrayOf(PropTypes.object),
+    featureTypes: PropTypes.arrayOf(PropTypes.object),
+  }).isRequired,
+  filterOptionsLoading: PropTypes.bool.isRequired,
+  filterOptionsError: PropTypes.object,
   statusFilter: PropTypes.element.isRequired,
   clearFilter: PropTypes.element.isRequired,
 };

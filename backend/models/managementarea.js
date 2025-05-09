@@ -18,10 +18,10 @@ export default (sequelize) => {
   ManagementArea.init(
     {
       managementAreaNumber: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
-      managementAreaName: {
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
       },

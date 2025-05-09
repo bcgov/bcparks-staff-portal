@@ -34,22 +34,13 @@ function MultiSelectField({
 MultiSelectField.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.string.isRequired,
-      label: PropTypes.string.isRequired,
-    }),
-  ).isRequired,
-  value: PropTypes.arrayOf(PropTypes.string).isRequired,
+  options: PropTypes.arrayOf(PropTypes.object).isRequired,
+  value: PropTypes.arrayOf(PropTypes.object),
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
   optionLabel: PropTypes.string,
   optionValue: PropTypes.string,
 };
 
-MultiSelectField.defaultProps = {
-  value: "",
-  placeholder: "Select an option",
-};
 
 export default MultiSelectField;

@@ -9,10 +9,10 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       managementAreaNumber: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
-      managementAreaName: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
       },

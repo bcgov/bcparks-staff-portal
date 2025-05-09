@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-// TODO: repleace a custom switch with this component
+// TODO: replace a custom switch with this component
 function SwitchToggle({ id, label, checked, onChange }) {
   return (
     <div className="form-check form-switch">

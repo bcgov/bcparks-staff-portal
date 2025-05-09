@@ -672,14 +672,14 @@ export async function createOrUpdateSection(item) {
   if (dbItem) {
     // update existing section
     dbItem.sectionNumber = item.sectionNumber;
-    dbItem.sectionName = item.sectionName;
+    dbItem.name = item.sectionName;
     await dbItem.save();
   } else {
     // create a new section
     const data = {
       id: item.id,
       sectionNumber: item.sectionNumber,
-      sectionName: item.sectionName,
+      name: item.sectionName,
     };
 
     dbItem = await createModel(Section, data);
@@ -710,7 +710,7 @@ export async function createOrUpdateManagementArea(item) {
   if (dbItem) {
     // update existing management area
     dbItem.managementAreaNumber = item.managementAreaNumber;
-    dbItem.managementAreaName = item.managementAreaName;
+    dbItem.name = item.managementAreaName;
     dbItem.sectionId = item.section?.id;
 
     await dbItem.save();
@@ -719,7 +719,7 @@ export async function createOrUpdateManagementArea(item) {
     const data = {
       id: item.id,
       managementAreaNumber: item.managementAreaNumber,
-      managementAreaName: item.managementAreaName,
+      name: item.managementAreaName,
       sectionId: item.section?.id,
     };
 

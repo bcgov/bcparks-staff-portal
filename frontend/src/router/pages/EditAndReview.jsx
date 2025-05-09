@@ -12,21 +12,12 @@ import FilterPanel from "@/components/FilterPanel";
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
   const {
-    data: sectionsData,
-    loading: sectionsLoading,
-    error: sectionsError,
-  } = useApiGet("/sections");
-  const {
-    data: managementAreasData,
-    loading: managementAreasLoading,
-    error: managementAreasError,
-  } = useApiGet("/management-areas");
-  const parks = useMemo(() => data || [], [data]);
-  const sections = useMemo(() => sectionsData || [], [sectionsData]);
-  const managementAreas = useMemo(
-    () => managementAreasData || [],
-    [managementAreasData],
-  );
+    data: filterOptionsData,
+    loading: filterOptionsLoading,
+    error: filterOptionsError,
+  } = useApiGet("/filter-options");
+  const parks = data ?? [];
+  const filterOptions = filterOptionsData ?? {};
 
   const statusOptions = [
     { value: "pending review", label: "Pending review" },
@@ -42,9 +33,14 @@ function EditAndReview() {
   // table filter state
   const [allFilter, setAllFilter] = useState({
     name: "",
+    bundles: [],
     status: [],
     sections: [],
     managementAreas: [],
+    dateTypes: [],
+    featureTypes: [],
+    isInReservationSystem: false,
+    hasDateNote: false,
   });
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
@@ -56,9 +52,14 @@ function EditAndReview() {
     setPage(1);
     setAllFilter({
       name: "",
+      bundles: [],
       status: [],
       sections: [],
       managementAreas: [],
+      dateTypes: [],
+      featureTypes: [],
+      isInReservationSystem: false,
+      hasDateNote: false,
     });
   }
 
@@ -93,7 +94,7 @@ function EditAndReview() {
           !allFilter.sections.some((section) =>
             park.section.some(
               (parkSection) =>
-                parkSection.number === parseInt(section.sectionNumber, 10),
+                parkSection.number === section.sectionNumber,
             ),
           )
         ) {
@@ -105,12 +106,24 @@ function EditAndReview() {
           !allFilter.managementAreas.some((area) =>
             park.managementArea.some(
               (parkArea) =>
-                parkArea.number === parseInt(area.managementAreaNumber, 10),
+                parkArea.number === area.managementAreaNumber,
             ),
           )
         ) {
           return false;
         }
+        // TODO: CMS-324
+        // filter by bundles
+
+        // TODO: CMS-788
+        // filter by date types
+
+        // TODO: CMS-887
+        // filter by feature types
+
+        // TODO: CMS-787
+        // filter by isInReservationSystem
+        // filter by hasDateNote
 
         return true;
       }),
@@ -265,12 +278,9 @@ function EditAndReview() {
           setShow={setShowFilterPanel}
           allFilter={allFilter}
           updateFilter={updateFilter}
-          sections={sections}
-          sectionsLoading={sectionsLoading}
-          sectionsError={sectionsError}
-          managementAreas={managementAreas}
-          managementAreasLoading={managementAreasLoading}
-          managementAreasError={managementAreasError}
+          filterOptions={filterOptions}
+          filterOptionsLoading={filterOptionsLoading}
+          filterOptionsError={filterOptionsError}
           statusFilter={<StatusFilter />}
           clearFilter={<ClearFilter />}
         />

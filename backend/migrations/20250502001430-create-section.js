@@ -9,10 +9,10 @@ module.exports = {
         type: Sequelize.INTEGER,
       },
       sectionNumber: {
-        type: Sequelize.STRING,
+        type: Sequelize.INTEGER,
         allowNull: false,
       },
-      sectionName: {
+      name: {
         type: Sequelize.STRING,
         allowNull: false,
       },

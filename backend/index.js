@@ -16,8 +16,7 @@ import seasonRoutes from "./routes/api/seasons.js";
 import winterSeasonRoutes from "./routes/api/winter-seasons.js";
 import exportRoutes from "./routes/api/export.js";
 import publishRoutes from "./routes/api/publish.js";
-import sectionRoutes from "./routes/api/sections.js";
-import managementAreaRoutes from "./routes/api/management-areas.js";
+import filterOptionsRoutes from "./routes/api/filter-options.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
@@ -73,8 +72,7 @@ apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
 apiRouter.use("/winter-fees", winterSeasonRoutes);
 apiRouter.use("/publish", publishRoutes);
-apiRouter.use("/sections", sectionRoutes);
-apiRouter.use("/management-areas", managementAreaRoutes);
+apiRouter.use("/filter-options", filterOptionsRoutes);
 
 app.use("/api", apiRouter);
 

@@ -18,10 +18,10 @@ export default (sequelize) => {
   Section.init(
     {
       sectionNumber: {
-        type: DataTypes.STRING,
+        type: DataTypes.INTEGER,
         allowNull: false,
       },
-      sectionName: {
+      name: {
         type: DataTypes.STRING,
         allowNull: false,
       },
