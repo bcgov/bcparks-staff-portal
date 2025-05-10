@@ -17,6 +17,8 @@ export default (sequelize) => {
         foreignKey: "dateableId",
         as: "dateable",
       });
+
+      ParkArea.belongsTo(models.Publishable, { foreignKey: "publishableId" });
     }
   }
   ParkArea.init(

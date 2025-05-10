@@ -13,6 +13,8 @@ export default (sequelize) => {
         as: "dateable",
       });
 
+      Park.belongsTo(models.Publishable, { foreignKey: "publishableId" });
+
       Park.hasMany(models.Feature, {
         foreignKey: "parkId",
         as: "features",

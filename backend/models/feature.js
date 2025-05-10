@@ -27,6 +27,8 @@ export default (sequelize) => {
         foreignKey: "dateableId",
         as: "dateable",
       });
+
+      Feature.belongsTo(models.Publishable, { foreignKey: "publishableId" });
     }
   }
   Feature.init(

@@ -12,14 +12,19 @@ export default (sequelize) => {
         foreignKey: "parkId",
         as: "park",
       });
+
       Season.belongsTo(models.FeatureType, {
         foreignKey: "featureTypeId",
         as: "featureType",
       });
+
+      Season.belongsTo(models.Publishable, { foreignKey: "publishableId" });
+
       Season.hasMany(models.SeasonChangeLog, {
         foreignKey: "seasonId",
         as: "changeLogs",
       });
+
       Season.hasMany(models.DateRange, {
         foreignKey: "seasonId",
         as: "dateRanges",

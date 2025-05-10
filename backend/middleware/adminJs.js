@@ -10,6 +10,7 @@ import "../env.js";
 
 import {
   Dateable,
+  Publishable,
   Park,
   User,
   ParkArea,
@@ -263,6 +264,7 @@ const adminOptions = {
   componentLoader,
   resources: [
     Dateable,
+    Publishable,
     getParkResource(),
     User,
     ParkArea,
