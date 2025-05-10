@@ -19,10 +19,10 @@ router.get(
       attributes: ["id", "managementAreaNumber", "name"],
     });
     const dateTypes = await DateType.findAll({
-      attributes: ["name"],
+      attributes: ["id", "name"],
     });
     const featureTypes = await FeatureType.findAll({
-      attributes: ["strapiId", "name"],
+      attributes: ["id", "name"],
     });
 
     // Combine the results into a single object

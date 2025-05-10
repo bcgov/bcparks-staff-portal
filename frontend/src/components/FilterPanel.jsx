@@ -107,7 +107,7 @@ function FilterPanel({
                     onChange={(e) => updateFilter("dateTypes", e)}
                     placeholder="Select Date Type(s)"
                     optionLabel="name"
-                    optionValue="name"
+                    optionValue="id"
                   />
                 </div>
               </div>
@@ -142,7 +142,7 @@ function FilterPanel({
                     onChange={(e) => updateFilter("featureTypes", e)}
                     placeholder="Select Feature Type(s)"
                     optionLabel="name"
-                    optionValue="strapiId"
+                    optionValue="id"
                   />
                 </div>
               </div>

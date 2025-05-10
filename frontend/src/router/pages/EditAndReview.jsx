@@ -88,6 +88,9 @@ function EditAndReview() {
         ) {
           return false;
         }
+        // TODO: CMS-324
+        // filter by bundles
+
         // filter by sections
         if (
           filters.sections.length > 0 &&
@@ -110,17 +113,35 @@ function EditAndReview() {
         ) {
           return false;
         }
-        // TODO: CMS-324
-        // filter by bundles
-
-        // TODO: CMS-788
         // filter by date types
-
-        // TODO: CMS-887
+        if (
+          filters.dateTypes.length > 0 &&
+          !filters.dateTypes.some((filterDateType) =>
+            park.seasons.some((season) =>
+              season.dateRanges.some(
+                (dateRange) => dateRange.dateType.id === filterDateType.id,
+              ),
+            ),
+          )
+        ) {
+          return false;
+        }
         // filter by feature types
+        if (
+          filters.featureTypes.length > 0 &&
+          !filters.featureTypes.some((filterFeatureType) =>
+            park.seasons.some(
+              (season) => season.featureType.id === filterFeatureType.id,
+            ),
+          )
+        ) {
+          return false;
+        }
 
         // TODO: CMS-787
         // filter by isInReservationSystem
+
+        // TODO: CMS-788
         // filter by hasDateNote
 
         return true;

@@ -42,5 +42,4 @@ MultiSelectField.propTypes = {
   optionValue: PropTypes.string,
 };
 
-
 export default MultiSelectField;

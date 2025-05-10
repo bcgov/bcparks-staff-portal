@@ -1,6 +1,12 @@
 import { Router } from "express";
 import _ from "lodash";
-import { Park, Season, FeatureType } from "../../models/index.js";
+import {
+  Park,
+  Season,
+  FeatureType,
+  DateRange,
+  DateType,
+} from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
 const router = Router();
@@ -49,6 +55,25 @@ router.get(
           as: "seasons",
           attributes: ["id", "status", "readyToPublish"],
           required: true,
+          include: [
+            {
+              model: FeatureType,
+              as: "featureType",
+              attributes: ["id", "name"],
+            },
+            {
+              model: DateRange,
+              as: "dateRanges",
+              attributes: ["id"],
+              include: [
+                {
+                  model: DateType,
+                  as: "dateType",
+                  attributes: ["id", "name"],
+                },
+              ],
+            },
+          ],
         },
       ],
     });
@@ -60,6 +85,20 @@ router.get(
       section: park.managementAreas.map((m) => m.section),
       managementArea: park.managementAreas.map((m) => m.mgmtArea),
       status: getParkStatus(park.seasons),
+      seasons: park.seasons.map((s) => ({
+        id: s.id,
+        featureType: {
+          id: s.featureType.id,
+          name: s.featureType.name,
+        },
+        dateRanges: s.dateRanges.map((dr) => ({
+          id: dr.id,
+          dateType: {
+            id: dr.dateType.id,
+            name: dr.dateType.name,
+          },
+        })),
+      })),
       readyToPublish: park.seasons.every((s) => s.readyToPublish),
     }));
 
