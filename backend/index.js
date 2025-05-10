@@ -82,6 +82,7 @@ app.use(admin.options.rootPath, adminRouter);
 // error handling middleware
 // eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware
 app.use((err, req, res, next) => {
+  console.error("Error occurred:", err.message);
   console.error(err.stack);
 
   const status = err.status || 500;
