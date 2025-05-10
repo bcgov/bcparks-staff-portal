@@ -12,12 +12,18 @@ export default (sequelize) => {
         foreignKey: "parkId",
         as: "park",
       });
+
+      ParkArea.belongsTo(models.Dateable, {
+        foreignKey: "dateableId",
+        as: "dateable",
+      });
     }
   }
   ParkArea.init(
     {
       name: DataTypes.STRING,
       parkId: DataTypes.INTEGER,
+      dateableId: DataTypes.INTEGER,
     },
     {
       sequelize,

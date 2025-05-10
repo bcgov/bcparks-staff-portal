@@ -12,14 +12,17 @@ export default (sequelize) => {
         foreignKey: "parkId",
         as: "park",
       });
+
       Feature.belongsTo(models.FeatureType, {
         foreignKey: "featureTypeId",
         as: "featureType",
       });
+
       Feature.belongsTo(models.ParkArea, {
         foreignKey: "parkAreaId",
         as: "parkArea",
       });
+
       Feature.belongsTo(models.Dateable, {
         foreignKey: "dateableId",
         as: "dateable",

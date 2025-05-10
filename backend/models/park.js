@@ -12,14 +12,17 @@ export default (sequelize) => {
         foreignKey: "dateableId",
         as: "dateable",
       });
+
       Park.hasMany(models.Feature, {
         foreignKey: "parkId",
         as: "features",
       });
+
       Park.hasMany(models.ParkArea, {
         foreignKey: "parkId",
         as: "parkAreas",
       });
+
       Park.hasMany(models.Season, {
         foreignKey: "parkId",
         as: "seasons",
