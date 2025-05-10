@@ -47,6 +47,11 @@ export default (sequelize) => {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
       },
+      seasonType: {
+        type: DataTypes.ENUM("winter", "regular"),
+        allowNull: false,
+        defaultValue: "regular",
+      },
       createdAt: DataTypes.DATE,
       updatedAt: {
         type: DataTypes.DATE,
