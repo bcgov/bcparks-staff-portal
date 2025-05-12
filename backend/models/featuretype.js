@@ -13,10 +13,11 @@ export default (sequelize) => {
         as: "features",
       });
 
-      FeatureType.hasMany(models.Season, {
-        foreignKey: "featureTypeId",
-        as: "seasons",
-      });
+      // Deprecated but not removed yet
+      // FeatureType.hasMany(models.Season, {
+      //   foreignKey: "featureTypeId",
+      //   as: "seasons",
+      // });
 
       FeatureType.belongsTo(models.Dateable, {
         foreignKey: "dateableId",

@@ -13,10 +13,11 @@ export default (sequelize) => {
         as: "park",
       });
 
-      Season.belongsTo(models.FeatureType, {
-        foreignKey: "featureTypeId",
-        as: "featureType",
-      });
+      // Deprecated but not removed yet
+      // Season.belongsTo(models.FeatureType, {
+      //   foreignKey: "featureTypeId",
+      //   as: "featureType",
+      // });
 
       Season.belongsTo(models.Publishable, { foreignKey: "publishableId" });
 
