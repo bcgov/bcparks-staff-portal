@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
+import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
@@ -7,10 +7,17 @@ import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState } from "react";
 import { orderBy } from "lodash-es";
 import PaginationBar from "@/components/PaginationBar";
+import FilterPanel from "@/components/FilterPanel";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
-  const parks = useMemo(() => data || [], [data]);
+  const {
+    data: filterOptionsData,
+    loading: filterOptionsLoading,
+    error: filterOptionsError,
+  } = useApiGet("/filter-options");
+  const parks = data ?? [];
+  const filterOptions = filterOptionsData ?? {};
 
   const statusOptions = [
     { value: "pending review", label: "Pending review" },
@@ -24,8 +31,18 @@ function EditAndReview() {
   const pageSize = 25;
 
   // table filter state
-  const [nameFilter, setNameFilter] = useState("");
-  const [statusFilter, setStatusFilter] = useState([]);
+  const [filters, setFilters] = useState({
+    name: "",
+    bundles: [],
+    status: [],
+    sections: [],
+    managementAreas: [],
+    dateTypes: [],
+    featureTypes: [],
+    isInReservationSystem: false,
+    hasDateNote: false,
+  });
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   // table sorting state
   const [sortColumn, setSortColumn] = useState("parkName");
@@ -33,8 +50,17 @@ function EditAndReview() {
 
   function resetFilters() {
     setPage(1);
-    setNameFilter("");
-    setStatusFilter([]);
+    setFilters({
+      name: "",
+      bundles: [],
+      status: [],
+      sections: [],
+      managementAreas: [],
+      dateTypes: [],
+      featureTypes: [],
+      isInReservationSystem: false,
+      hasDateNote: false,
+    });
   }
 
   function updateSort(column, order) {
@@ -48,23 +74,87 @@ function EditAndReview() {
       parks.filter((park) => {
         // If a name filter is set, filter out parks that don't match
         if (
-          nameFilter.length > 0 &&
+          filters.name.length > 0 &&
           !park.name
             .toLocaleLowerCase()
-            .includes(nameFilter.toLocaleLowerCase())
+            .includes(filters.name.toLocaleLowerCase())
+        ) {
+          return false;
+        }
+        // filter by status
+        if (
+          filters.status.length > 0 &&
+          !filters.status.includes(park.status)
+        ) {
+          return false;
+        }
+        // TODO: CMS-324
+        // filter by bundles
+
+        // filter by sections
+        if (
+          filters.sections.length > 0 &&
+          !filters.sections.some((section) =>
+            park.section.some(
+              (parkSection) => parkSection.number === section.sectionNumber,
+            ),
+          )
+        ) {
+          return false;
+        }
+        // filter by management areas
+        if (
+          filters.managementAreas.length > 0 &&
+          !filters.managementAreas.some((area) =>
+            park.managementArea.some(
+              (parkArea) => parkArea.number === area.managementAreaNumber,
+            ),
+          )
+        ) {
+          return false;
+        }
+        // filter by date types
+        if (
+          filters.dateTypes.length > 0 &&
+          !filters.dateTypes.some((filterDateType) =>
+            park.seasons.some((season) =>
+              season.dateRanges.some(
+                (dateRange) => dateRange.dateType.id === filterDateType.id,
+              ),
+            ),
+          )
+        ) {
+          return false;
+        }
+        // filter by feature types
+        if (
+          filters.featureTypes.length > 0 &&
+          !filters.featureTypes.some((filterFeatureType) =>
+            park.seasons.some(
+              (season) => season.featureType.id === filterFeatureType.id,
+            ),
+          )
         ) {
           return false;
         }
 
-        // If status filters are set, filter out unselected statuses
-        if (statusFilter.length > 0 && !statusFilter.includes(park.status)) {
-          return false;
-        }
+        // TODO: CMS-787
+        // filter by isInReservationSystem
+
+        // TODO: CMS-788
+        // filter by hasDateNote
 
         return true;
       }),
-    [parks, nameFilter, statusFilter],
+    [parks, filters],
   );
+
+  function updateFilter(key, value) {
+    setFilters((prevFilters) => ({
+      ...prevFilters,
+      [key]: value,
+    }));
+  }
 
   // returns sorted and filtered parks array
   function getSortedParks() {
@@ -89,6 +179,7 @@ function EditAndReview() {
     return sortedParks.slice(start, end);
   }, [sortedParks, page, pageSize]);
 
+  // components
   function renderTable() {
     if (loading) {
       return <LoadingBar />;
@@ -121,6 +212,36 @@ function EditAndReview() {
     );
   }
 
+  // "filter by status" dropdown
+  function StatusFilter() {
+    return (
+      <MultiSelect
+        options={statusOptions}
+        onInput={(value) => {
+          setPage(1);
+          updateFilter("status", value);
+        }}
+        value={filters.status}
+      >
+        Filter by status{" "}
+        {filters.status.length > 0 && `(${filters.status.length})`}
+      </MultiSelect>
+    );
+  }
+
+  // "clear filters" button
+  function ClearFilter() {
+    return (
+      <button
+        type="button"
+        onClick={resetFilters}
+        className="btn text-link text-decoration-underline align-self-end"
+      >
+        Clear filters
+      </button>
+    );
+  }
+
   return (
     <div className="container">
       <div className="page dates-management">
@@ -136,10 +257,10 @@ function EditAndReview() {
                 className="form-control input-search"
                 id="parkName"
                 placeholder="Search by park name"
-                value={nameFilter}
+                value={filters.name}
                 onChange={(e) => {
                   setPage(1);
-                  setNameFilter(e.target.value);
+                  updateFilter("name", e.target.value);
                 }}
               />
               <FontAwesomeIcon
@@ -154,31 +275,34 @@ function EditAndReview() {
               <label htmlFor="status" className="form-label">
                 Status
               </label>
-
-              <MultiSelect
-                options={statusOptions}
-                onInput={(value) => {
-                  setPage(1);
-                  setStatusFilter(value);
-                }}
-                value={statusFilter}
-              >
-                Filter by status{" "}
-                {statusFilter.length > 0 && `(${statusFilter.length})`}
-              </MultiSelect>
+              <StatusFilter />
             </div>
 
             <button
               type="button"
-              onClick={resetFilters}
-              className="btn text-link text-decoration-underline align-self-end"
+              onClick={() => setShowFilterPanel(!showFilterPanel)}
+              className="btn btn-outline-primary align-self-end me-2"
             >
-              Clear filters
+              <FontAwesomeIcon icon={faFilter} className="me-1" />
+              All filters
             </button>
+            <ClearFilter />
           </div>
         </div>
 
         {renderTable()}
+
+        <FilterPanel
+          show={showFilterPanel}
+          setShow={setShowFilterPanel}
+          filters={filters}
+          updateFilter={updateFilter}
+          filterOptions={filterOptions}
+          filterOptionsLoading={filterOptionsLoading}
+          filterOptionsError={filterOptionsError}
+          statusFilter={<StatusFilter />}
+          clearFilter={<ClearFilter />}
+        />
       </div>
     </div>
   );

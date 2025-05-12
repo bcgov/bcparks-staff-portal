@@ -9,6 +9,8 @@ import FeatureModel from "./feature.js";
 import DateTypeModel from "./datetype.js";
 import SeasonModel from "./season.js";
 import DateRangeModel from "./daterange.js";
+import SectionModel from "./section.js";
+import ManagementAreaModel from "./managementarea.js";
 import SeasonChangeLogModel from "./seasonchangelog.js";
 import DateChangeLogModel from "./datechangelog.js";
 
@@ -24,6 +26,8 @@ const Feature = FeatureModel(sequelize);
 const DateType = DateTypeModel(sequelize);
 const Season = SeasonModel(sequelize);
 const DateRange = DateRangeModel(sequelize);
+const Section = SectionModel(sequelize);
+const ManagementArea = ManagementAreaModel(sequelize);
 
 const SeasonChangeLog = SeasonChangeLogModel(sequelize);
 const DateChangeLog = DateChangeLogModel(sequelize);
@@ -38,6 +42,8 @@ const models = {
   DateType,
   Season,
   DateRange,
+  Section,
+  ManagementArea,
   SeasonChangeLog,
   DateChangeLog,
 };
@@ -60,4 +66,6 @@ export {
   DateRange,
   SeasonChangeLog,
   DateChangeLog,
+  Section,
+  ManagementArea
 };
