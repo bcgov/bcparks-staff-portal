@@ -55,6 +55,9 @@ function getSeasonKey(season) {
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
+    // @TODO: Reimplement this endpoint to use the publishable model
+    throw new Error("Not implemented yet");
+
     // get all seasons that are approved and ready to be published
     const approvedSeasons = await Season.findAll({
       where: {
@@ -448,6 +451,9 @@ router.post(
   "/publish-to-api/",
   checkPermissions(adminsAndApprovers),
   asyncHandler(async (req, res) => {
+    // @TODO: Reimplement this endpoint to use the publishable model
+    throw new Error("Not implemented yet");
+
     // get all seasons that are approved and ready to be published
     // and the associated objects we need to build the payload
     const approvedSeasons = await Season.findAll({
