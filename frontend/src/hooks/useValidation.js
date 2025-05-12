@@ -71,14 +71,14 @@ export default function useValidation(dates, notes, season) {
     (datesObj = dates) => {
       const mapped = mapValues(datesObj, (campsiteDates) =>
         mapValues(campsiteDates, (dateTypeDates) => {
-          // Get the dateRange with the earliest start date for this campground & date type
+          // Get the dateRange with the earliest start date for this parkArea & date type
           const minDateRange = minBy(
             dateTypeDates,
             (dateRange) => dateRange.startDate,
           );
           const minDate = minDateRange?.startDate ?? null;
 
-          // Get the dateRange with the latest end date for this campground & date type
+          // Get the dateRange with the latest end date for this parkArea & date type
           const maxDateRange = maxBy(
             dateTypeDates,
             (dateRange) => dateRange.endDate,

@@ -78,11 +78,8 @@ The seed data can be useful if you want to test something specific. However, we 
 To add the data from Strapi:
 
 1. Make sure that you have run all the migrations `npm run migrate`
-2. Run `npm run sync-data` command.
-3. Run `npm run one-time-data-import`. Make you only run this one time.
-4. Run `npm run create-single-item-campgrounds`. Make you only run this one time.
-5. Run `npm run create-multiple-item-campgrounds`. Make you only run this one time.
-6. Go to the admin dashboard and create a user `http://localhost:8100/admin/login`
+2. Run `npm run import-data` command to import data and run one-time creation scripts.
+3. Go to the admin dashboard and create a user `http://localhost:8100/admin/login`
 
 If for some reason, there is something wrong with the data in the DB and the app becomes unusable.
 Just recreate the DB and readd the data from Strapi.
@@ -90,7 +87,4 @@ Just recreate the DB and readd the data from Strapi.
 1. `npx sequelize-cli db:drop `
 2. `npx sequelize-cli db:create`
 3. `npm run migrate`
-4. `npm run sync-data`
-5. `npm run one-time-data-import`
-6. `npm run create-single-item-campgrounds`
-7. `npm run create-multiple-item-campgrounds`
+4. `npm run import-data`

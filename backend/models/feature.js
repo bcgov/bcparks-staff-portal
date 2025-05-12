@@ -16,9 +16,9 @@ export default (sequelize) => {
         foreignKey: "featureTypeId",
         as: "featureType",
       });
-      Feature.belongsTo(models.Campground, {
-        foreignKey: "campgroundId",
-        as: "campground",
+      Feature.belongsTo(models.ParkArea, {
+        foreignKey: "parkAreaId",
+        as: "parkArea",
       });
       Feature.belongsTo(models.Dateable, {
         foreignKey: "dateableId",
@@ -34,7 +34,7 @@ export default (sequelize) => {
       featureTypeId: DataTypes.INTEGER,
       dateableId: DataTypes.INTEGER,
       hasReservations: DataTypes.BOOLEAN,
-      campgroundId: DataTypes.INTEGER,
+      parkAreaId: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
       strapiId: DataTypes.INTEGER,
       hasWinterFeeDates: DataTypes.BOOLEAN,

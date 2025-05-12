@@ -43,8 +43,8 @@ export default function SeasonPage() {
     if (data) {
       const currentSeasonDates = {};
 
-      data.campgrounds.forEach((campground) => {
-        campground.features.forEach((feature) => {
+      data.parkAreas.forEach((parkArea) => {
+        parkArea.features.forEach((feature) => {
           currentSeasonDates[feature.dateable.id] = {
             Operation: [],
             Reservation: [],

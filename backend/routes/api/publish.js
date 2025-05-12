@@ -9,7 +9,7 @@ import {
   DateRange,
   DateType,
   Dateable,
-  Campground,
+  ParkArea,
   FeatureType,
 } from "../../models/index.js";
 
@@ -23,15 +23,13 @@ import { get, post, put } from "./strapi-api.js";
 const router = Router();
 
 export function getFeatureName(feature) {
-  // if feature has a campground, and feature.name is "All sites", return campground name
-  // if feature has a campground, and feature.name is not "All sites", return "campgroundName: feature.name"
-  // if feature does not have a campground, return feature.name
-  const { campground, name } = feature;
+  // if feature has a parkArea, and feature.name is "All sites", return parkArea name
+  // if feature has a parkArea, and feature.name is not "All sites", return "parkAreaName: feature.name"
+  // if feature does not have a parkArea, return feature.name
+  const { parkArea, name } = feature;
 
-  if (campground) {
-    return name === "All sites"
-      ? campground.name
-      : `${campground.name}: ${name}`;
+  if (parkArea) {
+    return name === "All sites" ? parkArea.name : `${parkArea.name}: ${name}`;
   }
 
   return name;
@@ -131,8 +129,8 @@ router.get(
           attributes: ["id", "orcs", "name"],
         },
         {
-          model: Campground,
-          as: "campground",
+          model: ParkArea,
+          as: "parkArea",
           attributes: ["id", "name"],
         },
       ],

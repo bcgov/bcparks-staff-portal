@@ -1,5 +1,5 @@
 import "../env.js";
-import { Campground, Feature, Park } from "../models/index.js";
+import { ParkArea, Feature, Park } from "../models/index.js";
 
 import { getItemByAttributes, createModel } from "./utils.js";
 
@@ -479,7 +479,7 @@ const campgrounds = [
   },
 ];
 
-async function updateFeature(item, campgroundId) {
+async function updateFeature(item, parkAreaId) {
   // const strapiId = parseInt(item.featureId.split("_")[1], 10);
 
   // get feature by featureId
@@ -491,8 +491,8 @@ async function updateFeature(item, campgroundId) {
   //   strapiId,
   // });
 
-  // set campgroundId and name
-  feature.campgroundId = campgroundId;
+  // set parkAreaId and name
+  feature.parkAreaId = parkAreaId;
   feature.name = item.newName;
 
   await feature.save();
@@ -510,7 +510,7 @@ async function createCampground(item) {
     parkId: park.id,
   };
 
-  const campground = await createModel(Campground, data);
+  const campground = await createModel(ParkArea, data);
 
   await Promise.all(
     item.items.map(async (feature) => updateFeature(feature, campground.id)),

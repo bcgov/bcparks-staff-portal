@@ -3,7 +3,7 @@ import sequelize from "../db/connection.js";
 import DateableModel from "./dateable.js";
 import ParkModel from "./park.js";
 import UserModel from "./user.js";
-import CampgroundModel from "./campground.js";
+import ParkAreaModel from "./parkarea.js";
 import FeatureTypeModel from "./featuretype.js";
 import FeatureModel from "./feature.js";
 import DateTypeModel from "./datetype.js";
@@ -18,7 +18,7 @@ const Park = ParkModel(sequelize);
 
 const User = UserModel(sequelize);
 
-const Campground = CampgroundModel(sequelize);
+const ParkArea = ParkAreaModel(sequelize);
 const FeatureType = FeatureTypeModel(sequelize);
 const Feature = FeatureModel(sequelize);
 const DateType = DateTypeModel(sequelize);
@@ -32,7 +32,7 @@ const models = {
   Dateable,
   Park,
   User,
-  Campground,
+  ParkArea,
   FeatureType,
   Feature,
   DateType,
@@ -49,15 +49,15 @@ Object.values(models).forEach((model) => {
 });
 
 export {
-  Dateable, // not needed
+  Dateable,
   Park,
-  User, // not needed
-  Campground,
+  User,
+  ParkArea,
   FeatureType,
   Feature,
   DateType,
   Season,
   DateRange,
-  SeasonChangeLog, // not needed
-  DateChangeLog, // not needed
+  SeasonChangeLog,
+  DateChangeLog,
 };

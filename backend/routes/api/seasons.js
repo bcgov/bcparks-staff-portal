@@ -11,7 +11,7 @@ import {
   DateType,
   DateRange,
   Dateable,
-  Campground,
+  ParkArea,
   SeasonChangeLog,
   DateChangeLog,
   User,
@@ -124,8 +124,8 @@ router.get(
       attributes: ["id", "name", "hasReservations", "active"],
       include: [
         {
-          model: Campground,
-          as: "campground",
+          model: ParkArea,
+          as: "parkArea",
           attributes: ["id", "name"],
         },
         {
@@ -202,38 +202,38 @@ router.get(
       return feature;
     });
 
-    // Order features alphabetically before grouping by campground
+    // Order features alphabetically before grouping by parkArea
     features = _.orderBy(features, ["name"], ["asc"]);
 
-    const campgroundsMap = {};
+    const parkAreasMap = {};
 
-    // some features are grouped by campgrounds
-    // we want to assign each feature to the respective campground if it exists
+    // some features are grouped by parkAreas
+    // we want to assign each feature to the respective parkArea if it exists
     features.forEach((feature) => {
-      if (feature.campground) {
-        if (!campgroundsMap[feature.campground.id]) {
-          campgroundsMap[feature.campground.id] = {
-            id: feature.campground.id,
-            name: feature.campground.name,
+      if (feature.parkArea) {
+        if (!parkAreasMap[feature.parkArea.id]) {
+          parkAreasMap[feature.parkArea.id] = {
+            id: feature.parkArea.id,
+            name: feature.parkArea.name,
             features: [],
           };
         }
 
-        campgroundsMap[feature.campground.id].features.push({
+        parkAreasMap[feature.parkArea.id].features.push({
           ...feature,
           name: feature.name === "All sites" ? "" : feature.name,
         });
       }
     });
 
-    const campgrounds = Object.values(campgroundsMap);
+    const parkAreas = Object.values(parkAreasMap);
 
     const output = {
       ...season,
       dateTypes,
-      campgrounds,
-      // we want to send only the features that are not grouped by campgrounds
-      features: features.filter((feature) => !feature.campground),
+      parkAreas,
+      // we want to send only the features that are not grouped by parkAreas
+      features: features.filter((feature) => !feature.parkArea),
     };
 
     res.json(output);
