@@ -14,9 +14,13 @@ import {
   DateRange,
   SeasonChangeLog,
   DateChangeLog,
+  Section,
+  ManagementArea,
 } from "../models/index.js";
 
 export async function deleteAllData() {
+  await Section.destroy({ where: {} });
+  await ManagementArea.destroy({ where: {} });
   await DateChangeLog.destroy({ where: {} });
   await SeasonChangeLog.destroy({ where: {} });
   await DateRange.destroy({ where: {} });

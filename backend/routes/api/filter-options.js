@@ -12,18 +12,22 @@ const router = Router();
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const sections = await Section.findAll({
-      attributes: ["id", "sectionNumber", "name"],
-    });
-    const managementAreas = await ManagementArea.findAll({
-      attributes: ["id", "managementAreaNumber", "name"],
-    });
-    const dateTypes = await DateType.findAll({
-      attributes: ["id", "name"],
-    });
-    const featureTypes = await FeatureType.findAll({
-      attributes: ["id", "name"],
-    });
+    // Run all queries concurrently
+    const [sections, managementAreas, dateTypes, featureTypes] =
+      await Promise.all([
+        Section.findAll({
+          attributes: ["id", "sectionNumber", "name"],
+        }),
+        ManagementArea.findAll({
+          attributes: ["id", "managementAreaNumber", "name"],
+        }),
+        DateType.findAll({
+          attributes: ["id", "name"],
+        }),
+        FeatureType.findAll({
+          attributes: ["id", "name"],
+        }),
+      ]);
 
     // Combine the results into a single object
     const filterOptions = {
