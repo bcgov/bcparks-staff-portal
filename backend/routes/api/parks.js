@@ -4,6 +4,7 @@ import {
   Park,
   Season,
   FeatureType,
+  Publishable,
   DateRange,
   DateType,
 } from "../../models/index.js";
@@ -57,9 +58,16 @@ router.get(
           required: true,
           include: [
             {
-              model: FeatureType,
-              as: "featureType",
-              attributes: ["id", "name"],
+              model: Publishable,
+              as: "publishable",
+              attributes: ["id"],
+              include: [
+                {
+                  model: FeatureType,
+                  as: "featureType",
+                  attributes: ["id", "name"],
+                },
+              ],
             },
             {
               model: DateRange,
@@ -88,8 +96,8 @@ router.get(
       seasons: park.seasons.map((s) => ({
         id: s.id,
         featureType: {
-          id: s.featureType.id,
-          name: s.featureType.name,
+          id: s.publishable.featureType?.id,
+          name: s.publishable.featureType?.name,
         },
         dateRanges: s.dateRanges.map((dr) => ({
           id: dr.id,
@@ -129,9 +137,16 @@ router.get(
           ],
           include: [
             {
-              model: FeatureType,
-              as: "featureType",
-              attributes: ["id", "name", "icon"],
+              model: Publishable,
+              as: "publishable",
+              attributes: ["id"],
+              include: [
+                {
+                  model: FeatureType,
+                  as: "featureType",
+                  attributes: ["id", "name", "icon"],
+                },
+              ],
             },
           ],
         },
@@ -149,7 +164,7 @@ router.get(
 
     const featureTypes = _.mapValues(
       // group seasons by feature type
-      _.groupBy(parkJson.seasons, (s) => s.featureType.name),
+      _.groupBy(parkJson.seasons, (s) => s.publishable.featureType?.name),
 
       // sort by year
       (group) => _.orderBy(group, ["operatingYear"], ["desc"]),

@@ -112,7 +112,8 @@ function ParkDetails() {
           <FeatureType
             key={title}
             title={title}
-            icon={seasons[0].featureType.icon}
+            // Temporary fix until the publishable model is implemented
+            icon={seasons[0].publishable.featureType?.icon}
             seasons={seasons}
             seasonProps={{
               getDataEndpoint: (seasonId) => `/seasons/${seasonId}`,

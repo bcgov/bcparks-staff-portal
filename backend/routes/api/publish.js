@@ -56,7 +56,10 @@ router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
     // @TODO: Reimplement this endpoint to use the publishable model
-    throw new Error("Not implemented yet");
+    const error = new Error("Not implemented yet");
+
+    error.status = 501;
+    throw error;
 
     // get all seasons that are approved and ready to be published
     const approvedSeasons = await Season.findAll({
@@ -452,7 +455,10 @@ router.post(
   checkPermissions(adminsAndApprovers),
   asyncHandler(async (req, res) => {
     // @TODO: Reimplement this endpoint to use the publishable model
-    throw new Error("Not implemented yet");
+    const error = new Error("Not implemented yet");
+
+    error.status = 501;
+    throw error;
 
     // get all seasons that are approved and ready to be published
     // and the associated objects we need to build the payload

@@ -34,12 +34,15 @@ export async function deleteAllData() {
   await User.destroy({ where: {} });
 }
 
-export async function importData() {
+export async function importData(full = false) {
   await syncData();
-  await oneTimeDataImport();
-  await createSingleItemsCampgrounds();
-  await createMultipleItemsCampgrounds();
-  await createMissingDatesAndSeasons();
+
+  if (full) {
+    await oneTimeDataImport();
+    await createSingleItemsCampgrounds();
+    await createMultipleItemsCampgrounds();
+    await createMissingDatesAndSeasons();
+  }
 }
 
 export async function resetScript() {
