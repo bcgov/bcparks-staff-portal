@@ -42,7 +42,7 @@ export default function TouchMenu({
 
   return (
     <div
-      className={classNames("navbar-collapse collapse d-md-none", {
+      className={classNames("navbar-collapse collapse d-lg-none", {
         show,
       })}
       id="touch-menu"

@@ -50,7 +50,7 @@ export default function MainLayout() {
           </div>
         </Link>
 
-        <div className="user-controls d-none d-md-flex text-white align-items-center ms-auto">
+        <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
           <div className="user-name me-3">{userName}</div>
 
           <button
@@ -63,7 +63,7 @@ export default function MainLayout() {
         </div>
 
         <button
-          className="navbar-toggler d-block d-md-none"
+          className="navbar-toggler d-block d-lg-none"
           type="button"
           data-toggle="collapse"
           data-target="#touch-menu"
