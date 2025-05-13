@@ -135,5 +135,4 @@ dist
 # crunchy-postgres helm files (from https://github.com/bcgov/crunchy-postgres/tree/main/charts/crunchy-postgres)
 helm/crunchy-postgres/.helmignore
 helm/crunchy-postgres/Chart.yaml
-helm/crunchy-postgres/templates/
 helm/crunchy-postgres/values.yaml
