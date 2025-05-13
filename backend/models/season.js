@@ -19,7 +19,10 @@ export default (sequelize) => {
       //   as: "featureType",
       // });
 
-      Season.belongsTo(models.Publishable, { foreignKey: "publishableId" });
+      Season.belongsTo(models.Publishable, {
+        foreignKey: "publishableId",
+        as: "publishable",
+      });
 
       Season.hasMany(models.SeasonChangeLog, {
         foreignKey: "seasonId",

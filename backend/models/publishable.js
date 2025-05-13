@@ -8,12 +8,27 @@ export default (sequelize) => {
     // @param models
     static associate(models) {
       // define association here
-      Publishable.hasOne(models.Park, { foreignKey: "publishableId" });
-      Publishable.hasOne(models.ParkArea, { foreignKey: "publishableId" });
-      Publishable.hasOne(models.FeatureType, { foreignKey: "publishableId" });
-      Publishable.hasOne(models.Feature, { foreignKey: "publishableId" });
+      Publishable.hasOne(models.Park, {
+        foreignKey: "publishableId",
+        as: "park",
+      });
+      Publishable.hasOne(models.ParkArea, {
+        foreignKey: "publishableId",
+        as: "parkArea",
+      });
+      Publishable.hasOne(models.FeatureType, {
+        foreignKey: "publishableId",
+        as: "featureType",
+      });
+      Publishable.hasOne(models.Feature, {
+        foreignKey: "publishableId",
+        as: "feature",
+      });
 
-      Publishable.hasMany(models.Season, { foreignKey: "publishableId" });
+      Publishable.hasMany(models.Season, {
+        foreignKey: "publishableId",
+        as: "seasons",
+      });
     }
   }
   Publishable.init(
