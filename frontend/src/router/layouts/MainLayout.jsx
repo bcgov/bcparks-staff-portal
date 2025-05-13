@@ -7,6 +7,7 @@ import useAccess from "@/hooks/useAccess";
 import { useApiGet } from "@/hooks/useApi";
 import NavSidebar from "@/components/NavSidebar.jsx";
 import TouchMenu from "@/components/TouchMenu";
+import LoadingBar from "@/components/LoadingBar";
 
 export default function MainLayout() {
   const { logOut } = useAccess();
@@ -84,7 +85,17 @@ export default function MainLayout() {
         <NavSidebar />
 
         <div className="flex-fill">
-          <Outlet />
+          {/*
+            Don't render the body until userDetails are loaded.
+            The body makes API requests, and race conditions could create duplicate User records.
+          */}
+          {userDetails.loading ? (
+            <div className="container mt-3">
+              <LoadingBar />
+            </div>
+          ) : (
+            <Outlet />
+          )}
         </div>
       </main>
 
