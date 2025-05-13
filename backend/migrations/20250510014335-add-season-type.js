@@ -1,7 +1,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // Add a SeasonType ENUM columnn to the Seasons table with values "regular" or "winter"
+    // Add a SeasonType ENUM column to the Seasons table with values "regular" or "winter"
     await queryInterface.addColumn("Seasons", "seasonType", {
       type: Sequelize.ENUM("regular", "winter"),
       allowNull: false,
