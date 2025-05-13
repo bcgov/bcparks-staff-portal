@@ -81,6 +81,7 @@ function EditAndReview() {
         ) {
           return false;
         }
+
         // filter by status
         if (
           filters.status.length > 0 &&
@@ -88,6 +89,7 @@ function EditAndReview() {
         ) {
           return false;
         }
+
         // TODO: CMS-324
         // filter by bundles
 
@@ -102,6 +104,7 @@ function EditAndReview() {
         ) {
           return false;
         }
+
         // filter by management areas
         if (
           filters.managementAreas.length > 0 &&
@@ -113,6 +116,7 @@ function EditAndReview() {
         ) {
           return false;
         }
+
         // filter by date types
         if (
           filters.dateTypes.length > 0 &&
@@ -126,6 +130,7 @@ function EditAndReview() {
         ) {
           return false;
         }
+
         // filter by feature types
         if (
           filters.featureTypes.length > 0 &&
@@ -138,8 +143,16 @@ function EditAndReview() {
           return false;
         }
 
-        // TODO: CMS-787
         // filter by isInReservationSystem
+        if (
+          filters.isInReservationSystem &&
+          !(
+            park.inReservationSystem ||
+            park.features.some((feature) => feature.inReservationSystem)
+          )
+        ) {
+          return false;
+        }
 
         // TODO: CMS-788
         // filter by hasDateNote

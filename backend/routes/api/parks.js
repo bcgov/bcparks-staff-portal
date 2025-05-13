@@ -7,6 +7,7 @@ import {
   Publishable,
   DateRange,
   DateType,
+  Feature,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
@@ -49,8 +50,19 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     const parks = await Park.findAll({
-      attributes: ["id", "orcs", "name", "managementAreas"],
+      attributes: [
+        "id",
+        "orcs",
+        "name",
+        "managementAreas",
+        "inReservationSystem",
+      ],
       include: [
+        {
+          model: Feature,
+          as: "features",
+          attributes: ["id", "inReservationSystem"],
+        },
         {
           model: Season,
           as: "seasons",
@@ -84,30 +96,36 @@ router.get(
           ],
         },
       ],
+      order: [["name", "ASC"]],
     });
 
     const output = parks.map((park) => ({
       id: park.id,
       name: park.name,
       orcs: park.orcs,
-      section: park.managementAreas.map((m) => m.section),
-      managementArea: park.managementAreas.map((m) => m.mgmtArea),
+      section: park.managementAreas.map((area) => area.section),
+      managementArea: park.managementAreas.map((area) => area.mgmtArea),
+      inReservationSystem: park.inReservationSystem,
       status: getParkStatus(park.seasons),
-      seasons: park.seasons.map((s) => ({
-        id: s.id,
+      features: park.features.map((feature) => ({
+        id: feature.id,
+        inReservationSystem: feature.inReservationSystem,
+      })),
+      seasons: park.seasons.map((season) => ({
+        id: season.id,
         featureType: {
-          id: s.publishable.featureType?.id,
-          name: s.publishable.featureType?.name,
+          id: season.publishable.featureType?.id,
+          name: season.publishable.featureType?.name,
         },
-        dateRanges: s.dateRanges.map((dr) => ({
-          id: dr.id,
+        dateRanges: season.dateRanges.map((dateRange) => ({
+          id: dateRange.id,
           dateType: {
-            id: dr.dateType.id,
-            name: dr.dateType.name,
+            id: dateRange.dateType.id,
+            name: dateRange.dateType.name,
           },
         })),
       })),
-      readyToPublish: park.seasons.every((s) => s.readyToPublish),
+      readyToPublish: park.seasons.every((season) => season.readyToPublish),
     }));
 
     // Return all rows

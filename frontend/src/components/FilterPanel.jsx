@@ -20,18 +20,10 @@ function FilterPanel({
   // constants and states
   const { sections, managementAreas, dateTypes, featureTypes } = filterOptions;
   const [selectedBundles, setSelectedBundles] = useState([]);
-  const [isInReservationSystem, setIsInReservationSystem] = useState(false);
-  const [hasDateNote, setHasDateNote] = useState(false);
 
   // functions
   function handleClose() {
     setShow(false);
-  }
-  function handleReservationSystem(e) {
-    setIsInReservationSystem(e.target.checked);
-  }
-  function handleDateNote(e) {
-    setHasDateNote(e.target.checked);
   }
 
   // dummy data
@@ -116,8 +108,10 @@ function FilterPanel({
                 <SwitchToggle
                   id="is-in-reservation-system"
                   label="In BC Parks reservation system"
-                  checked={isInReservationSystem}
-                  onChange={handleReservationSystem}
+                  checked={filters.isInReservationSystem}
+                  onChange={(e) =>
+                    updateFilter("isInReservationSystem", e.target.checked)
+                  }
                 />
               </div>
               <div className="mt-4">
@@ -125,8 +119,10 @@ function FilterPanel({
                 <SwitchToggle
                   id="has-date-note"
                   label="Has date note"
-                  checked={hasDateNote}
-                  onChange={handleDateNote}
+                  checked={filters.hasDateNote}
+                  onChange={(e) =>
+                    updateFilter("hasDateNote", e.target.checked)
+                  }
                 />
               </div>
             </div>
@@ -168,6 +164,8 @@ FilterPanel.propTypes = {
     managementAreas: PropTypes.arrayOf(PropTypes.object),
     dateTypes: PropTypes.arrayOf(PropTypes.object),
     featureTypes: PropTypes.arrayOf(PropTypes.object),
+    isInReservationSystem: PropTypes.bool,
+    hasDateNote: PropTypes.bool,
   }).isRequired,
   updateFilter: PropTypes.func.isRequired,
   filterOptions: PropTypes.shape({

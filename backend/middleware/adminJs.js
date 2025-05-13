@@ -271,6 +271,10 @@ const adminOptions = {
     SeasonChangeLog,
     DateChangeLog,
   ],
+  branding: {
+    companyName: "Dates of Operation Admin",
+    logo: false,
+  },
 };
 
 // AdminJS plugin
