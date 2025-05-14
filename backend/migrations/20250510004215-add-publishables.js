@@ -78,13 +78,13 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("Publishables");
-
     // Remove the foreign keys
     await queryInterface.removeColumn("Parks", "publishableId");
     await queryInterface.removeColumn("ParkAreas", "publishableId");
     await queryInterface.removeColumn("FeatureTypes", "publishableId");
     await queryInterface.removeColumn("Features", "publishableId");
     await queryInterface.removeColumn("Seasons", "publishableId");
+
+    await queryInterface.dropTable("Publishables");
   },
 };
