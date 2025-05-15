@@ -112,7 +112,7 @@ pgBackRest:
   # Specify the repo to use for manual full backups
   # PVC=repo1 / S3=repo2
   manual:
-    repo: repo1
+    repoName: repo1
 
 patroni:
   postgresql:
