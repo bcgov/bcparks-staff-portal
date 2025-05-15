@@ -10,9 +10,6 @@ import { createModel } from "./utils.js";
 import { Op } from "sequelize";
 
 export async function createMissingDatesAndSeasons() {
-  // @TODO: Reimplement this script to use the publishable model
-  throw new Error("Not implemented yet");
-
   const [seasons, dateTypes, winterFeatureType, features] = await Promise.all([
     // get all seasons for 2025 and 2024
     Season.findAll({
