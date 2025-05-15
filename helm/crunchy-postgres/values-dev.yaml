@@ -102,6 +102,18 @@ pgBackRest:
     fullSchedule: "0 9 * * *"
     incrementalSchedule: "0 1,5,13,17,21 * * *"
 
+  # Restore from backup
+  restore:
+    enabled: false
+    # PVC=repo1 / S3=repo2
+    repoName: ~ # provide repo name
+    target: ~ # 2024-03-24 17:16:00-07 this is the target timestamp to go back to in current cluster
+
+  # Specify the repo to use for manual full backups
+  # PVC=repo1 / S3=repo2
+  manual:
+    repoName: repo1
+
 patroni:
   postgresql:
     pg_hba: "host all all 0.0.0.0/0 md5"
