@@ -100,7 +100,7 @@ export async function fetchAllModels() {
     {
       endpoint: "/protected-areas",
       model: "protected-area",
-      fields: ["parkFacilities", "parkOperations", "managementAreas"],
+      fields: ["parkFacilities", "parkOperation", "managementAreas"],
       items: [],
     },
     {
@@ -170,6 +170,9 @@ export async function createOrUpdatePark(item) {
   if (dbItem) {
     dbItem.name = item.attributes.protectedAreaName;
     dbItem.managementAreas = item.mgmtAreaAndSection;
+    // Update it to false if inReservationSystem from Strapi returns null
+    dbItem.inReservationSystem =
+      item.attributes.parkOperation.inReservationSystem ?? false;
 
     await dbItem.save();
   } else {
@@ -180,6 +183,8 @@ export async function createOrUpdatePark(item) {
       dateableId: dateable.id,
       strapiId: item.id,
       managementAreas: item.mgmtAreaAndSection,
+      inReservationSystem:
+        item.attributes.parkOperation.inReservationSystem ?? false,
     };
 
     dbItem = await createModel(Park, data);
@@ -307,6 +312,8 @@ export async function createOrUpdateFeature(item) {
     dbItem.strapiFeatureId = item.featureId;
 
     dbItem.hasReservations = item.hasReservations;
+    // Update it to false if inReservationSystem from Strapi returns null
+    dbItem.inReservationSystem = item.inReservationSystem ?? false;
 
     await dbItem.save();
   } else {
@@ -324,6 +331,7 @@ export async function createOrUpdateFeature(item) {
       featureTypeId: featureType.id,
       dateableId: dateable.id,
       hasReservations: item.hasReservations,
+      inReservationSystem: item.inReservationSystem ?? false,
       active: item.isActive,
       strapiId: item.id,
       strapiFeatureId: item.featureId,

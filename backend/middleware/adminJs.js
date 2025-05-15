@@ -271,6 +271,10 @@ const adminOptions = {
     SeasonChangeLog,
     DateChangeLog,
   ],
+  branding: {
+    companyName: "BC Parks Staff Portal Admin",
+    logo: false,
+  },
 };
 
 // AdminJS plugin

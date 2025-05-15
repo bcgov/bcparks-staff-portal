@@ -46,6 +46,7 @@ export default (sequelize) => {
       active: DataTypes.BOOLEAN,
       strapiId: DataTypes.INTEGER,
       hasWinterFeeDates: DataTypes.BOOLEAN,
+      inReservationSystem: DataTypes.BOOLEAN,
     },
     {
       sequelize,
