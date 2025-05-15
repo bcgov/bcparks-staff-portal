@@ -272,7 +272,7 @@ const adminOptions = {
     DateChangeLog,
   ],
   branding: {
-    companyName: "Dates of Operation Admin",
+    companyName: "BC Parks Staff Portal Admin",
     logo: false,
   },
 };
