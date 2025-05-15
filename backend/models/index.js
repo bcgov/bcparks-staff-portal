@@ -1,6 +1,7 @@
 import sequelize from "../db/connection.js";
 
 import DateableModel from "./dateable.js";
+import PublishableModel from "./publishable.js";
 import ParkModel from "./park.js";
 import UserModel from "./user.js";
 import ParkAreaModel from "./parkarea.js";
@@ -14,7 +15,9 @@ import ManagementAreaModel from "./managementarea.js";
 import SeasonChangeLogModel from "./seasonchangelog.js";
 import DateChangeLogModel from "./datechangelog.js";
 
+// Junction tables with ID columns
 const Dateable = DateableModel(sequelize);
+const Publishable = PublishableModel(sequelize);
 
 const Park = ParkModel(sequelize);
 
@@ -34,6 +37,7 @@ const DateChangeLog = DateChangeLogModel(sequelize);
 
 const models = {
   Dateable,
+  Publishable,
   Park,
   User,
   ParkArea,
@@ -56,6 +60,7 @@ Object.values(models).forEach((model) => {
 
 export {
   Dateable,
+  Publishable,
   Park,
   User,
   ParkArea,

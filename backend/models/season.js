@@ -12,14 +12,23 @@ export default (sequelize) => {
         foreignKey: "parkId",
         as: "park",
       });
-      Season.belongsTo(models.FeatureType, {
-        foreignKey: "featureTypeId",
-        as: "featureType",
+
+      // Deprecated but not removed yet
+      // Season.belongsTo(models.FeatureType, {
+      //   foreignKey: "featureTypeId",
+      //   as: "featureType",
+      // });
+
+      Season.belongsTo(models.Publishable, {
+        foreignKey: "publishableId",
+        as: "publishable",
       });
+
       Season.hasMany(models.SeasonChangeLog, {
         foreignKey: "seasonId",
         as: "changeLogs",
       });
+
       Season.hasMany(models.DateRange, {
         foreignKey: "seasonId",
         as: "dateRanges",
@@ -41,6 +50,11 @@ export default (sequelize) => {
       editable: {
         type: DataTypes.BOOLEAN,
         defaultValue: true,
+      },
+      seasonType: {
+        type: DataTypes.ENUM("winter", "regular"),
+        allowNull: false,
+        defaultValue: "regular",
       },
       createdAt: DataTypes.DATE,
       updatedAt: {

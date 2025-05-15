@@ -44,6 +44,12 @@ const router = Router();
 router.get(
   "/:seasonId",
   asyncHandler(async (req, res) => {
+    // @TODO: Reimplement this endpoint to use the publishable model
+    const error = new Error("Not implemented yet");
+
+    error.status = 501;
+    throw error;
+
     const { seasonId } = req.params;
 
     const seasonModel = await Season.findByPk(seasonId, {
@@ -251,6 +257,12 @@ router.post(
   "/:seasonId/save/",
   sanitizePayload,
   asyncHandler(async (req, res) => {
+    // @TODO: Reimplement this endpoint to use the publishable model
+    const error = new Error("Not implemented yet");
+
+    error.status = 501;
+    throw error;
+
     const seasonId = Number(req.params.seasonId);
     const { notes, dates, deletedDateRangeIds = [] } = req.body;
 

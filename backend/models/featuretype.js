@@ -13,9 +13,20 @@ export default (sequelize) => {
         as: "features",
       });
 
-      FeatureType.hasMany(models.Season, {
-        foreignKey: "featureTypeId",
-        as: "seasons",
+      // Deprecated but not removed yet
+      // FeatureType.hasMany(models.Season, {
+      //   foreignKey: "featureTypeId",
+      //   as: "seasons",
+      // });
+
+      FeatureType.belongsTo(models.Dateable, {
+        foreignKey: "dateableId",
+        as: "dateable",
+      });
+
+      FeatureType.belongsTo(models.Publishable, {
+        foreignKey: "publishableId",
+        as: "publishable",
       });
     }
   }
@@ -24,6 +35,7 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       strapiId: DataTypes.INTEGER,
       icon: DataTypes.STRING,
+      dateableId: DataTypes.INTEGER,
     },
     {
       sequelize,

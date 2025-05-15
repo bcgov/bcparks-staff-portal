@@ -10,6 +10,7 @@ import "../env.js";
 
 import {
   Dateable,
+  Publishable,
   Park,
   User,
   ParkArea,
@@ -82,13 +83,6 @@ function getSeasonActions() {
         // After After May 1st, all winter seasons for the current year shouldn't be editable
         // so we update their status to "Not provided"
         if (today > may1) {
-          const winterFeatureType = await FeatureType.findOne({
-            attributes: ["id"],
-            where: {
-              name: "Winter fee",
-            },
-          });
-
           const [winterUpdatedCount] = await Season.update(
             {
               status: "Not provided",
@@ -97,7 +91,7 @@ function getSeasonActions() {
             {
               where: {
                 status: "requested",
-                featureTypeId: winterFeatureType.id,
+                seasonType: "winter",
                 operatingYear: currentYear,
               },
             },
@@ -263,6 +257,7 @@ const adminOptions = {
   componentLoader,
   resources: [
     Dateable,
+    Publishable,
     getParkResource(),
     User,
     ParkArea,

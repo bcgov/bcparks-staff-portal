@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "migrate": "sequelize-cli db:migrate",
     "test": "echo \"Error: no test specified\" && exit 1",
+    "sync-data": "node strapi-sync/re-sync-data.js",
     "import-data": "node strapi-sync/import-data.js"
   },
   "author": "",
