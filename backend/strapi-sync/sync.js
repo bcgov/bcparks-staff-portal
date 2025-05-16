@@ -282,6 +282,13 @@ export async function createDateTypes() {
       endDateLabel: "Winter end date",
       description: "Reduced services and reduced legislated winter fees.",
     },
+    // TODO: CMS-793 - Add description
+    {
+      name: "First come, first served",
+      startDateLabel: "First come, first served start date",
+      endDateLabel: "First come, first served end date",
+      description: "",
+    }
   ];
 
   await Promise.all(data.map((item) => createModel(DateType, item)));

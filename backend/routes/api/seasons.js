@@ -23,6 +23,8 @@ import {
   sanitizePayload,
 } from "../../middleware/permissions.js";
 
+import { createFirstComeFirstServedDateRange } from "../utils/dateHelper.js";
+
 const router = Router();
 
 // function getNewStatusForSeason(season, user) {
@@ -373,7 +375,27 @@ router.post(
     const { seasonId } = req.params;
     const { notes, readyToPublish } = req.body;
 
-    const season = await Season.findByPk(seasonId);
+    const season = await Season.findByPk(seasonId, {
+      include: [
+        {
+          model: FeatureType,
+          as: "featureType",
+          attributes: ["id", "name"],
+        },
+        {
+          model: DateRange,
+          as: "dateRanges",
+          attributes: ["id", "startDate", "endDate", "dateTypeId"],
+          include: [
+            {
+              model: DateType,
+              as: "dateType",
+              attributes: ["id", "name"],
+            },
+          ],
+        },
+      ],
+    });
 
     if (!season) {
       const error = new Error("Season not found");
@@ -381,6 +403,9 @@ router.post(
       error.status = 404;
       throw error;
     }
+
+    // Create "First come, first served" DateRange if applicable
+    await createFirstComeFirstServedDateRange(season);
 
     // Approving a season can have more than one note
     // if the approved season has some empty dates
