@@ -7,6 +7,7 @@ import {
   getFeatureTypeIcon,
 } from "./utils.js";
 import winterParks from "./park-winter-dates.js";
+import { dateTypesData } from "./date-types.js";
 import {
   Park,
   FeatureType,
@@ -258,33 +259,31 @@ export async function syncFeatureTypes(strapiData, featureTypeData) {
 
 /**
  * These are not associated with any specific model in Strapi
- * We will create these manually once
- * @returns {Promise[Object]} resolves when all dateTypes have been created
+ * We will create these manually
+ * @param {Object} item dateType data from db
+ * @returns {DateType} dateType model
  */
-export async function createDateTypes() {
-  const data = [
-    {
-      name: "Operation",
-      startDateLabel: "Service Start Date",
-      endDateLabel: "Service End Date",
-      description:
-        "All nights where the area is open by the operator. Fees and service levels can vary depending on the time of year.",
-    },
-    {
-      name: "Reservation",
-      startDateLabel: "Reservation Start Date",
-      endDateLabel: "Reservation End Date",
-      description: "Dates where reservations are available.",
-    },
-    {
-      name: "Winter fee",
-      startDateLabel: "Winter start date",
-      endDateLabel: "Winter end date",
-      description: "Reduced services and reduced legislated winter fees.",
-    },
-  ];
+export async function createOrUpdateDateType(item) {
+  let dbItem = await DateType.findOne({
+    where: { name: item.name, level: item.level },
+  });
 
-  await Promise.all(data.map((item) => createModel(DateType, item)));
+  if (dbItem) {
+    dbItem.startDateLabel = item.startDateLabel;
+    dbItem.endDateLabel = item.endDateLabel;
+    dbItem.description = item.description;
+    await dbItem.save();
+  } else {
+    dbItem = await createModel(DateType, item);
+  }
+
+  return dbItem;
+}
+
+export async function syncDateTypes() {
+  for (const item of dateTypesData) {
+    await createOrUpdateDateType(item);
+  }
 }
 
 /**
@@ -804,6 +803,7 @@ export async function syncData() {
   await syncFeatures(featureData);
   await syncSections(sectionData);
   await syncManagementAreas(mgmtAreaData);
+  await syncDateTypes();
 }
 
 /**
@@ -855,8 +855,6 @@ export async function oneTimeDataImport() {
       params.append(`populate[${field}][fields]`, "id");
     }
   }
-
-  await createDateTypes();
 
   await createWinterFeatureType();
 
