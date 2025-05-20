@@ -7,6 +7,7 @@ import "../env.js";
 import {
   Dateable,
   Feature,
+  FeatureType,
   Park,
   ParkArea,
   Publishable,
@@ -44,6 +45,9 @@ const parks = await Park.findAll({
       model: Feature,
       as: "features",
       required: true,
+      where: {
+        active: true,
+      },
     },
   ],
   transaction,
@@ -109,6 +113,10 @@ dateablesAdded = 0;
 seasonsAdded = 0;
 
 const parkAreaFeatures = await Feature.findAll({
+  where: {
+    active: true,
+  },
+
   include: [
     {
       model: ParkArea,
@@ -117,6 +125,7 @@ const parkAreaFeatures = await Feature.findAll({
       attributes: ["id", "name", "publishableId", "dateableId"],
     },
   ],
+
   transaction,
 });
 
@@ -183,9 +192,11 @@ seasonsAdded = 0;
 
 const features = await Feature.findAll({
   where: {
+    active: true,
     // Find Features with null parkAreaId
     parkAreaId: null,
   },
+
   transaction,
 });
 
@@ -239,6 +250,81 @@ console.log(`Added ${dateablesAdded} missing Feature Dateables`);
 console.log(`Added ${seasonsAdded} new Feature Seasons`);
 
 // Step 4: Create new seasons for the following year for every Group Camping Feature
+const nextYear = operatingYear + 1;
+
+publishablesAdded = 0;
+dateablesAdded = 0;
+seasonsAdded = 0;
+
+const groupCampingFeatures = await Feature.findAll({
+  where: {
+    active: true,
+  },
+
+  include: {
+    model: FeatureType,
+    as: "featureType",
+    required: true,
+
+    where: {
+      name: "Group campground",
+    },
+  },
+
+  transaction,
+});
+
+console.log(`Found ${groupCampingFeatures.length} Group Camping features`);
+
+const groupCampingQueries = groupCampingFeatures.map(async (feature) => {
+  // If the feature doesn't have a publishableId, add one and associate it
+  if (!feature.publishableId) {
+    const publishable = await Publishable.create({}, { transaction });
+
+    feature.publishableId = publishable.id;
+    await feature.save({ transaction });
+    publishablesAdded++;
+  }
+
+  // If the feature doesn't have a dateableId, add one and associate it
+  if (!feature.dateableId) {
+    const dateable = await Dateable.create({}, { transaction });
+
+    feature.dateableId = dateable.id;
+    await feature.save({ transaction });
+    dateablesAdded++;
+  }
+
+  // Create a season for this Feature's Publishable ID and next Operating Year, if it doesn't exist
+  const season = await Season.findOne({
+    where: {
+      publishableId: feature.publishableId,
+      operatingYear: nextYear,
+    },
+
+    transaction,
+  });
+
+  if (!season) {
+    await Season.create(
+      {
+        publishableId: feature.publishableId,
+        operatingYear: nextYear,
+        status: "requested",
+      },
+      { transaction },
+    );
+    seasonsAdded++;
+  }
+});
+
+await Promise.all(groupCampingQueries);
+
+console.log(
+  `Added ${publishablesAdded} missing Group Camping Feature Publishables`,
+);
+console.log(`Added ${dateablesAdded} missing Group Camping Feature Dateables`);
+console.log(`Added ${seasonsAdded} new Group Camping Feature Seasons`);
 
 console.log("Committing transaction...");
 
