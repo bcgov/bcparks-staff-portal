@@ -19,7 +19,7 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       startDateLabel: DataTypes.STRING,
       endDateLabel: DataTypes.STRING,
-      description: DataTypes.STRING,
+      description: DataTypes.TEXT,
       level: {
         type: DataTypes.ENUM("park", "feature"),
         allowNull: false,

@@ -281,9 +281,7 @@ export async function createOrUpdateDateType(item) {
 }
 
 export async function syncDateTypes() {
-  for (const item of dateTypesData) {
-    await createOrUpdateDateType(item);
-  }
+  await Promise.all(dateTypesData.map((item) => createOrUpdateDateType(item)));
 }
 
 /**
