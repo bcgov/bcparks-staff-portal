@@ -114,9 +114,9 @@ async function createSeason(publishableId, year) {
   return newSeason.id;
 }
 
-console.log(`Creating seasons for ${operatingYear}`);
+console.log(`Creating Seasons for ${operatingYear}`);
 
-// Step 1: Create new seasons for every Park
+// Step 1: Create new Seasons for every Park
 
 // Get all the Parks with Features
 const parks = await Park.findAll({
@@ -134,7 +134,7 @@ const parks = await Park.findAll({
   transaction,
 });
 
-console.log(`Found ${parks.length} parks with features`);
+console.log(`Found ${parks.length} Parks with Features`);
 
 const parksQueries = parks.map(async (park) => {
   // If the park doesn't have a publishableId, add one and associate it
@@ -182,7 +182,7 @@ const parkAreasMap = new Map(
 );
 const parkAreas = Array.from(parkAreasMap.values());
 
-console.log(`Found ${parkAreas.length} park areas with features`);
+console.log(`Found ${parkAreas.length} ParkAreas with Features`);
 
 const parkAreasQueries = parkAreas.map(async (parkArea) => {
   // If the parkArea doesn't have a publishableId, add one and associate it
@@ -217,7 +217,7 @@ const features = await Feature.findAll({
   transaction,
 });
 
-console.log(`Found ${features.length} features with no park area`);
+console.log(`Found ${features.length} Features with no ParkArea`);
 
 const featuresQueries = features.map(async (feature) => {
   // If the feature doesn't have a publishableId, add one and associate it
@@ -263,7 +263,7 @@ const groupCampingFeatures = await Feature.findAll({
   transaction,
 });
 
-console.log(`Found ${groupCampingFeatures.length} Group Camping features`);
+console.log(`Found ${groupCampingFeatures.length} Group Camping Features`);
 
 const groupCampingQueries = groupCampingFeatures.map(async (feature) => {
   // If the feature doesn't have a publishableId, add one and associate it

@@ -88,3 +88,15 @@ Just recreate the DB and readd the data from Strapi.
 2. `npx sequelize-cli db:create`
 3. `npm run migrate`
 4. `npm run import-data`
+
+### Creating new seasons
+
+Add blank seasons for new operating years with the `create-seasons` NPM script:
+
+```bash
+# Example: create seasons for 2028
+# (This will also create Group Camping seasons for the next year, 2029)
+npm run create-seasons 2028
+```
+
+This will create new records in the Seasons table for all Parks, ParkAreas, and Features that will be requesting dates for the 2028 operating year. Group Campground features for the year after (2029) will also be requested by this script.
