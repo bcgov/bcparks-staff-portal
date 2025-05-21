@@ -66,5 +66,12 @@ export const dateTypesData = [
     endDateLabel: "Full services and fees end date",
     description: "",
     level: "feature",
+  },
+  {
+    name: "First come, first served",
+    startDateLabel: "First come first served start date",
+    endDateLabel: "First come first served end date",
+    description: "",
+    level: "feature",
   }
 ];
