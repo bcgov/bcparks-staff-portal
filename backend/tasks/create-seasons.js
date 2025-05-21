@@ -17,6 +17,7 @@ import {
 // Run all queries in a transaction
 const transaction = await Season.sequelize.transaction();
 
+// Print errors and roll back transaction on exceptions
 process.on("uncaughtException", (err) => {
   console.error(`\n${err.message}\n`);
   transaction?.rollback();
@@ -24,14 +25,94 @@ process.on("uncaughtException", (err) => {
 });
 
 // Get the operating year from command line arguments
-let operatingYear = process.argv[2];
+const operatingYear = Number(process.argv[2]);
 
-if (!operatingYear) {
+if (isNaN(operatingYear)) {
   console.info("Usage example: npm run create-seasons 2027");
   throw new Error("Missing operating year");
 }
 
-operatingYear = Number(operatingYear);
+// Track the number of rows inserted
+let publishablesAdded = 0;
+let dateablesAdded = 0;
+let seasonsAdded = 0;
+
+/**
+ * Creates a new Publishable or Dateable ID and associates it with the given record, if it doesn't already have one.
+ * @param {Park|ParkArea|Feature} record The record to check and update
+ * @param {string} keyName The name of the key to check ("publishableId" or "dateableId")
+ * @param {any} KeyModel Db model to use for creating the new ID (Publishable or Dateable)
+ * @returns {Promise<number>} The ID of the record's Publishable/Dateable
+ */
+async function createKey(record, keyName, KeyModel) {
+  if (record[keyName]) return { key: record[keyName], added: false };
+
+  // Create the missing FK record in the function table
+  const junctionKey = await KeyModel.create({}, { transaction });
+
+  record[keyName] = junctionKey.id;
+  await record.save({ transaction });
+  return { key: junctionKey.id, added: true };
+}
+
+/**
+ * Creates a new Publishable ID and associates it with the given record, if it doesn't already have one.
+ * @param {Park|ParkArea|Feature} record The record to check and update
+ * @returns {Promise<number>} The record's Publishable ID
+ */
+async function createPublishable(record) {
+  const { key, added } = await createKey(record, "publishableId", Publishable);
+
+  if (added) publishablesAdded++;
+
+  return key;
+}
+
+/**
+ * Creates a new Dateable ID and associates it with the given record, if it doesn't already have one.
+ * @param {Park|ParkArea|Feature} record The record to check and update
+ * @returns {Promise<number>} The record's Dateable ID
+ */
+async function createDateable(record) {
+  const { key, added } = await createKey(record, "dateableId", Dateable);
+
+  if (added) dateablesAdded++;
+
+  return key;
+}
+
+/**
+ * Creates a new Season for the given Publishable ID and operating year, if it doesn't already exist.
+ * @param {number} publishableId The Publishable ID to check
+ * @param {number} year The operating year for the season
+ * @returns {Promise<number>} The ID of the created or existing Season
+ */
+async function createSeason(publishableId, year) {
+  // Create a season for this Publishable ID and Operating Year, if it doesn't exist
+  const season = await Season.findOne({
+    where: {
+      publishableId,
+      operatingYear: year,
+    },
+
+    transaction,
+  });
+
+  if (season) return season.id;
+
+  const newSeason = await Season.create(
+    {
+      publishableId,
+      operatingYear: year,
+      status: "requested",
+    },
+
+    { transaction },
+  );
+
+  seasonsAdded++;
+  return newSeason.id;
+}
 
 console.log(`Creating seasons for ${operatingYear}`);
 
@@ -55,49 +136,15 @@ const parks = await Park.findAll({
 
 console.log(`Found ${parks.length} parks with features`);
 
-let publishablesAdded = 0;
-let dateablesAdded = 0;
-let seasonsAdded = 0;
-
 const parksQueries = parks.map(async (park) => {
   // If the park doesn't have a publishableId, add one and associate it
-  if (!park.publishableId) {
-    const publishable = await Publishable.create({}, { transaction });
-
-    park.publishableId = publishable.id;
-    await park.save({ transaction });
-    publishablesAdded++;
-  }
+  await createPublishable(park);
 
   // If the park doesn't have a dateableId, add one and associate it
-  if (!park.dateableId) {
-    const dateable = await Dateable.create({}, { transaction });
-
-    park.dateableId = dateable.id;
-    await park.save({ transaction });
-    dateablesAdded++;
-  }
+  await createDateable(park);
 
   // Create a season for this park's Publishable ID and Operating Year, if it doesn't exist
-  const season = await Season.findOne({
-    where: {
-      publishableId: park.publishableId,
-      operatingYear,
-    },
-    transaction,
-  });
-
-  if (!season) {
-    await Season.create(
-      {
-        publishableId: park.publishableId,
-        operatingYear,
-        status: "requested",
-      },
-      { transaction },
-    );
-    seasonsAdded++;
-  }
+  await createSeason(park.publishableId, operatingYear);
 });
 
 await Promise.all(parksQueries);
@@ -139,43 +186,13 @@ console.log(`Found ${parkAreas.length} park areas with features`);
 
 const parkAreasQueries = parkAreas.map(async (parkArea) => {
   // If the parkArea doesn't have a publishableId, add one and associate it
-  if (!parkArea.publishableId) {
-    const publishable = await Publishable.create({}, { transaction });
-
-    parkArea.publishableId = publishable.id;
-    await parkArea.save({ transaction });
-    publishablesAdded++;
-  }
+  await createPublishable(parkArea);
 
   // If the parkArea doesn't have a dateableId, add one and associate it
-  if (!parkArea.dateableId) {
-    const dateable = await Dateable.create({}, { transaction });
-
-    parkArea.dateableId = dateable.id;
-    await parkArea.save({ transaction });
-    dateablesAdded++;
-  }
+  await createDateable(parkArea);
 
   // Create a season for this parkArea's Publishable ID and Operating Year, if it doesn't exist
-  const season = await Season.findOne({
-    where: {
-      publishableId: parkArea.publishableId,
-      operatingYear,
-    },
-    transaction,
-  });
-
-  if (!season) {
-    await Season.create(
-      {
-        publishableId: parkArea.publishableId,
-        operatingYear,
-        status: "requested",
-      },
-      { transaction },
-    );
-    seasonsAdded++;
-  }
+  await createSeason(parkArea.publishableId, operatingYear);
 });
 
 await Promise.all(parkAreasQueries);
@@ -204,43 +221,13 @@ console.log(`Found ${features.length} features with no park area`);
 
 const featuresQueries = features.map(async (feature) => {
   // If the feature doesn't have a publishableId, add one and associate it
-  if (!feature.publishableId) {
-    const publishable = await Publishable.create({}, { transaction });
-
-    feature.publishableId = publishable.id;
-    await feature.save({ transaction });
-    publishablesAdded++;
-  }
+  await createPublishable(feature);
 
   // If the feature doesn't have a dateableId, add one and associate it
-  if (!feature.dateableId) {
-    const dateable = await Dateable.create({}, { transaction });
-
-    feature.dateableId = dateable.id;
-    await feature.save({ transaction });
-    dateablesAdded++;
-  }
+  await createDateable(feature);
 
   // Create a season for this feature's Publishable ID and Operating Year, if it doesn't exist
-  const season = await Season.findOne({
-    where: {
-      publishableId: feature.publishableId,
-      operatingYear,
-    },
-    transaction,
-  });
-
-  if (!season) {
-    await Season.create(
-      {
-        publishableId: feature.publishableId,
-        operatingYear,
-        status: "requested",
-      },
-      { transaction },
-    );
-    seasonsAdded++;
-  }
+  await createSeason(feature.publishableId, operatingYear);
 });
 
 await Promise.all(featuresQueries);
@@ -278,44 +265,13 @@ console.log(`Found ${groupCampingFeatures.length} Group Camping features`);
 
 const groupCampingQueries = groupCampingFeatures.map(async (feature) => {
   // If the feature doesn't have a publishableId, add one and associate it
-  if (!feature.publishableId) {
-    const publishable = await Publishable.create({}, { transaction });
-
-    feature.publishableId = publishable.id;
-    await feature.save({ transaction });
-    publishablesAdded++;
-  }
+  await createPublishable(feature);
 
   // If the feature doesn't have a dateableId, add one and associate it
-  if (!feature.dateableId) {
-    const dateable = await Dateable.create({}, { transaction });
-
-    feature.dateableId = dateable.id;
-    await feature.save({ transaction });
-    dateablesAdded++;
-  }
+  await createDateable(feature);
 
   // Create a season for this Feature's Publishable ID and next Operating Year, if it doesn't exist
-  const season = await Season.findOne({
-    where: {
-      publishableId: feature.publishableId,
-      operatingYear: nextYear,
-    },
-
-    transaction,
-  });
-
-  if (!season) {
-    await Season.create(
-      {
-        publishableId: feature.publishableId,
-        operatingYear: nextYear,
-        status: "requested",
-      },
-      { transaction },
-    );
-    seasonsAdded++;
-  }
+  await createSeason(feature.publishableId, nextYear);
 });
 
 await Promise.all(groupCampingQueries);
