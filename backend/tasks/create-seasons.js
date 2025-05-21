@@ -239,6 +239,8 @@ console.log(`Added ${seasonsAdded} new Feature Seasons`);
 // Step 4: Create new seasons for the following year for every Group Camping Feature
 const nextYear = operatingYear + 1;
 
+console.log(`Creating Group Camping seasons for ${nextYear}`);
+
 publishablesAdded = 0;
 dateablesAdded = 0;
 seasonsAdded = 0;
