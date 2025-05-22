@@ -8,7 +8,7 @@ import { DateRange, DateType } from "../../models/index.js";
 // Example 2: Operation: 2025-04-01 to 2025-10-31
 //            Reservation: 2025-05-10 to 2025-10-12
 //            First come: 2025-04-01 to 2025-05-09
-//            First come: 2025-10-13 to 2025-10-31
+//            First come: 2025-10-13 to 2025-10-30
 
 /**
  * @param {Object} season
@@ -61,10 +61,13 @@ export async function createFirstComeFirstServedDateRange(season) {
       // Calculate the second "First come, first served" DateRange (after Reservation)
       if (operationDateRange.endDate > reservationDateRange.endDate) {
         const firstComeStartDate = new Date(reservationDateRange.endDate);
-
-        // Add one day
+        
         firstComeStartDate.setDate(firstComeStartDate.getDate() + 1);
-        const firstComeEndDate = operationDateRange.endDate;
+
+        // Subtract one day from operation end date
+        const firstComeEndDate = new Date(operationDateRange.endDate);
+
+        firstComeEndDate.setDate(firstComeEndDate.getDate() - 1);
 
         firstComeDateRanges.push({
           seasonId: season.id,
