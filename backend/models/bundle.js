@@ -20,6 +20,12 @@ export default (sequelize, DataTypes) => {
         foreignKey: "bundleId",
         as: "parks",
       });
+
+      // Each Bundle can have many UserBundle associations
+      Bundle.hasMany(models.UserBundles, {
+        foreignKey: "bundleId",
+        as: "userBundles",
+      });
     }
   }
 

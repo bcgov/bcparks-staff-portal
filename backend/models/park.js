@@ -32,6 +32,13 @@ export default (sequelize) => {
         foreignKey: "parkId",
         as: "seasons",
       });
+
+      // Each Park can associate with many Bundles through BundleParks
+      Park.hasMany(models.BundlePark, {
+        foreignKey: "parkOrcs",
+        sourceKey: "orcs",
+        as: "bundleParks",
+      });
     }
   }
   Park.init(
