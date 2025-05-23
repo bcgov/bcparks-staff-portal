@@ -1,6 +1,6 @@
-import { Model } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 
-export default (sequelize, DataTypes) => {
+export default (sequelize) => {
   class Bundle extends Model {
     // Helper method for defining associations.
     // This method is not a part of Sequelize lifecycle.

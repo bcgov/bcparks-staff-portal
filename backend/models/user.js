@@ -22,7 +22,7 @@ export default (sequelize) => {
 
       // Each User can associate with many Bundles through UserBundles
       User.belongsToMany(models.Bundle, {
-        through: models.UserBundles,
+        through: models.UserBundle,
         foreignKey: "userEmail",
         otherKey: "bundleId",
         as: "bundles",

@@ -1,8 +1,8 @@
-import { Model } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 
 // Each BundlePark association links one Bundle (id) to one Park (orcs)
 
-export default (sequelize, DataTypes) => {
+export default (sequelize) => {
   class BundlePark extends Model {
     // Helper method for defining associations.
     // This method is not a part of Sequelize lifecycle.

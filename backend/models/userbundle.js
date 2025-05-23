@@ -1,8 +1,8 @@
-import { Model } from "sequelize";
+import { Model, DataTypes } from "sequelize";
 
 // Each UserBundle association links one User (id) to one Bundle (id)
 
-export default (sequelize, DataTypes) => {
+export default (sequelize) => {
   class UserBundle extends Model {
     // Helper method for defining associations.
     // This method is not a part of Sequelize lifecycle.
