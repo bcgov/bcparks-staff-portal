@@ -22,8 +22,6 @@ import {
   Section,
   ManagementArea,
   Bundle,
-  UserBundle,
-  BundlePark,
   SeasonChangeLog,
   DateChangeLog,
 } from "../models/index.js";
@@ -272,8 +270,8 @@ const adminOptions = {
     Section,
     ManagementArea,
     Bundle,
-    UserBundle,
-    BundlePark,
+    // UserBundle, -- doesn't work with the current version of AdminJS
+    // BundlePark, -- doesn't work with the current version of AdminJS
     SeasonChangeLog,
     DateChangeLog,
   ],
