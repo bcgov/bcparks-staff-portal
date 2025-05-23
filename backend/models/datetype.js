@@ -20,11 +20,9 @@ export default (sequelize) => {
       startDateLabel: DataTypes.STRING,
       endDateLabel: DataTypes.STRING,
       description: DataTypes.TEXT,
-      level: {
-        type: DataTypes.ENUM("park", "feature"),
-        allowNull: false,
-        defaultValue: "feature",
-      },
+      parkLevel: DataTypes.BOOLEAN,
+      featureLevel: DataTypes.BOOLEAN,
+      parkAreaLevel: DataTypes.BOOLEAN,
     },
     {
       sequelize,

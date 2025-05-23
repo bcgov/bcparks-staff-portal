@@ -261,20 +261,35 @@ export async function syncFeatureTypes(strapiData, featureTypeData) {
  * These are not associated with any specific model in Strapi
  * We will create these manually
  * @param {Object} item dateType data from db
- * @returns {DateType} dateType model
+ * @returns {Promise<DateType>} dateType model
  */
 export async function createOrUpdateDateType(item) {
+  // determine boolean fields based on level array
+  const parkLevel = item.level?.includes("park") || false;
+  const featureLevel = item.level?.includes("feature") || false;
+  const parkAreaLevel = item.level?.includes("parkArea") || false;
+
   let dbItem = await DateType.findOne({
-    where: { name: item.name, level: item.level },
+    where: { name: item.name, parkLevel, featureLevel, parkAreaLevel },
   });
 
   if (dbItem) {
-    dbItem.startDateLabel = item.startDateLabel;
-    dbItem.endDateLabel = item.endDateLabel;
-    dbItem.description = item.description;
+    dbItem.set({
+      startDateLabel: item.startDateLabel,
+      endDateLabel: item.endDateLabel,
+      description: item.description,
+      parkLevel,
+      featureLevel,
+      parkAreaLevel,
+    });
     await dbItem.save();
   } else {
-    dbItem = await createModel(DateType, item);
+    dbItem = await createModel(DateType, {
+      ...item,
+      parkLevel,
+      featureLevel,
+      parkAreaLevel,
+    });
   }
 
   return dbItem;
