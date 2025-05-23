@@ -21,7 +21,7 @@ import {
   DateRange,
   Section,
   ManagementArea,
-  Bundle,
+  AccessGroup,
   SeasonChangeLog,
   DateChangeLog,
 } from "../models/index.js";
@@ -269,9 +269,9 @@ const adminOptions = {
     DateRange,
     Section,
     ManagementArea,
-    Bundle,
-    // UserBundle, -- doesn't work with the current version of AdminJS
-    // BundlePark, -- doesn't work with the current version of AdminJS
+    AccessGroup,
+    // UserAccessGroup, -- doesn't work with the current version of AdminJS
+    // AccessGroupPark, -- doesn't work with the current version of AdminJS
     SeasonChangeLog,
     DateChangeLog,
   ],

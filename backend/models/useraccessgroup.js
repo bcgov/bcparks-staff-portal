@@ -1,29 +1,31 @@
 import { Model, DataTypes } from "sequelize";
 
-// Each BundlePark association links one Bundle (id) to one Park (orcs)
+// Each UserAccessGroup association links one User (id) to one AccessGroup (id)
 
 export default (sequelize) => {
-  class BundlePark extends Model {
+  class UserAccessGroup extends Model {
     // Helper method for defining associations.
     // This method is not a part of Sequelize lifecycle.
     // The `models/index` file will call this method automatically.
     // @param models
     static associate(models) {
-      // Each BundlePark entry belongs to one Park, linked by parkOrcs
-      BundlePark.belongsTo(models.Park, {
-        foreignKey: "parkOrcs",
-        targetKey: "orcs",
+      // Each UserAccessGroup entry belongs to one User, linked by the user's email
+      UserAccessGroup.belongsTo(models.User, {
+        foreignKey: "userEmail",
+        targetKey: "email",
+        as: "user",
       });
 
-      // Each BundlePark entry belongs to one Bundle, linked by bundleId
-      BundlePark.belongsTo(models.Bundle, {
-        foreignKey: "bundleId",
+      // Each UserAccessGroup entry belongs to one AccessGroup, linked by accessGroupId
+      UserAccessGroup.belongsTo(models.AccessGroup, {
+        foreignKey: "accessGroupId",
         targetKey: "id",
+        as: "accessGroup",
       });
     }
   }
 
-  BundlePark.init(
+  UserAccessGroup.init(
     {
       id: {
         type: DataTypes.INTEGER,
@@ -32,28 +34,28 @@ export default (sequelize) => {
         allowNull: false,
       },
 
-      bundleId: {
+      accessGroupId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
-          model: "Bundles",
+          model: "AccessGroups",
           key: "id",
         },
       },
 
-      parkOrcs: {
+      userEmail: {
         type: DataTypes.STRING,
         allowNull: false,
         references: {
-          model: "Parks",
-          key: "orcs",
+          model: "Users",
+          key: "email",
         },
       },
     },
     {
       sequelize,
-      modelName: "BundlePark",
+      modelName: "UserAccessGroup",
     },
   );
-  return BundlePark;
+  return UserAccessGroup;
 };

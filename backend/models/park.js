@@ -33,20 +33,20 @@ export default (sequelize) => {
         as: "seasons",
       });
 
-      // Each Park can have many BundleParks associations to associate with many Bundles
-      Park.hasMany(models.BundlePark, {
+      // Each Park can have many AccessGroupParks associations to associate with many AccessGroups
+      Park.hasMany(models.AccessGroupPark, {
         foreignKey: "parkOrcs",
         sourceKey: "orcs",
-        as: "bundleParks",
+        as: "accessGroupParks",
       });
 
-      // Each Park can associate with many Bundles through BundleParks
-      Park.belongsToMany(models.Bundle, {
-        through: models.BundlePark,
+      // Each Park can associate with many AccessGroups through AccessGroupParks
+      Park.belongsToMany(models.AccessGroup, {
+        through: models.AccessGroupPark,
         foreignKey: "parkOrcs",
-        otherKey: "bundleId",
+        otherKey: "accessGroupId",
         sourceKey: "orcs",
-        as: "bundles",
+        as: "accessGroups",
       });
     }
   }

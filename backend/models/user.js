@@ -13,20 +13,20 @@ export default (sequelize) => {
         as: "changeLogs",
       });
 
-      // Each User can have many UserBundle associations to assocate with many Bundles
-      User.hasMany(models.UserBundle, {
+      // Each User can have many UserAccessGroup associations to assocate with many AccessGroups
+      User.hasMany(models.UserAccessGroup, {
         foreignKey: "userEmail",
         sourceKey: "email",
-        as: "userBundles",
+        as: "userAccessGroups",
       });
 
-      // Each User can associate with many Bundles through UserBundles
-      User.belongsToMany(models.Bundle, {
-        through: models.UserBundle,
+      // Each User can associate with many AccessGroups through UserAccessGroups
+      User.belongsToMany(models.AccessGroup, {
+        through: models.UserAccessGroup,
         foreignKey: "userEmail",
-        otherKey: "bundleId",
+        otherKey: "accessGroupId",
         sourceKey: "email",
-        as: "bundles",
+        as: "accessGroups",
       });
     }
   }
