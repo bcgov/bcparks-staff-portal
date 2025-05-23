@@ -9,20 +9,21 @@ export default (sequelize, DataTypes) => {
     static associate(models) {
       // Each Bundle can associate with many Users through UserBundles
       Bundle.belongsToMany(models.User, {
-        through: models.UserBundles,
+        through: models.UserBundle,
         foreignKey: "bundleId",
+        otherKey: "userEmail",
         as: "users",
       });
 
       // Each Bundle can associate with many Parks through BundleParks
       Bundle.belongsToMany(models.Park, {
-        through: models.BundleParks,
+        through: models.BundlePark,
         foreignKey: "bundleId",
         as: "parks",
       });
 
       // Each Bundle can have many UserBundle associations
-      Bundle.hasMany(models.UserBundles, {
+      Bundle.hasMany(models.UserBundle, {
         foreignKey: "bundleId",
         as: "userBundles",
       });

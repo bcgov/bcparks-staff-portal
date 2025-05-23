@@ -12,6 +12,21 @@ export default (sequelize) => {
         foreignKey: "userId",
         as: "changeLogs",
       });
+
+      // Each User can have many UserBundle associations to assocate with many Bundles
+      User.hasMany(models.UserBundle, {
+        foreignKey: "userEmail",
+        sourceKey: "email",
+        as: "userBundles",
+      });
+
+      // Each User can associate with many Bundles through UserBundles
+      User.belongsToMany(models.Bundle, {
+        through: models.UserBundles,
+        foreignKey: "userEmail",
+        otherKey: "bundleId",
+        as: "bundles",
+      });
     }
   }
   User.init(
