@@ -25,6 +25,7 @@ export default (sequelize) => {
         through: models.UserBundle,
         foreignKey: "userEmail",
         otherKey: "bundleId",
+        sourceKey: "email",
         as: "bundles",
       });
     }

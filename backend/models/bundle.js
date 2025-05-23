@@ -12,6 +12,7 @@ export default (sequelize) => {
         through: models.UserBundle,
         foreignKey: "bundleId",
         otherKey: "userEmail",
+        targetKey: "email",
         as: "users",
       });
 
@@ -19,6 +20,8 @@ export default (sequelize) => {
       Bundle.belongsToMany(models.Park, {
         through: models.BundlePark,
         foreignKey: "bundleId",
+        otherKey: "parkOrcs",
+        targetKey: "orcs",
         as: "parks",
       });
 

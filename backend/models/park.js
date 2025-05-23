@@ -45,6 +45,7 @@ export default (sequelize) => {
         through: models.BundlePark,
         foreignKey: "parkOrcs",
         otherKey: "bundleId",
+        sourceKey: "orcs",
         as: "bundles",
       });
     }
