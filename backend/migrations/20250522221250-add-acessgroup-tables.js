@@ -53,6 +53,7 @@ module.exports = {
 
       accessGroupId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: "AccessGroups",
           key: "id",
@@ -85,6 +86,7 @@ module.exports = {
 
       accessGroupId: {
         type: Sequelize.INTEGER,
+        allowNull: false,
         references: {
           model: "AccessGroups",
           key: "id",
