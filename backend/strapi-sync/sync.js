@@ -285,7 +285,10 @@ export async function createOrUpdateDateType(item) {
     await dbItem.save();
   } else {
     dbItem = await createModel(DateType, {
-      ...item,
+      name: item.name,
+      startDateLabel: item.startDateLabel,
+      endDateLabel: item.endDateLabel,
+      description: item.description,
       parkLevel,
       featureLevel,
       parkAreaLevel,
