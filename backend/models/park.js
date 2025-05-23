@@ -33,11 +33,19 @@ export default (sequelize) => {
         as: "seasons",
       });
 
-      // Each Park can associate with many Bundles through BundleParks
+      // Each Park can have many BundleParks associations to associate with many Bundles
       Park.hasMany(models.BundlePark, {
         foreignKey: "parkOrcs",
         sourceKey: "orcs",
         as: "bundleParks",
+      });
+
+      // Each Park can associate with many Bundles through BundleParks
+      Park.belongsToMany(models.Bundle, {
+        through: models.BundlePark,
+        foreignKey: "parkOrcs",
+        otherKey: "bundleId",
+        as: "bundles",
       });
     }
   }
