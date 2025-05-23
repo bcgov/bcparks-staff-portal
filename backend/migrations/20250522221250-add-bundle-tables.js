@@ -27,8 +27,11 @@ module.exports = {
       },
     });
 
-    // Add an index to the User.email column - we'll use it to look up permissions in UserBundles
+    // Add an index to the Users.email column - we'll use it to look up permissions in UserBundles
     await queryInterface.addIndex("Users", ["email"], { unique: true });
+
+    // Add an index to the Parks.orcs column - we'll use it to look up permissions in BundleParks
+    await queryInterface.addIndex("Parks", ["orcs"], { unique: true });
 
     // Add a table for UserBundles (which Users have access to which Bundles)
     await queryInterface.createTable("UserBundles", {
@@ -39,11 +42,12 @@ module.exports = {
         allowNull: false,
       },
 
-      userId: {
-        type: Sequelize.INTEGER,
+      userEmail: {
+        type: Sequelize.STRING,
+        allowNull: false,
         references: {
           model: "Users",
-          key: "id",
+          key: "email",
         },
       },
 
@@ -67,7 +71,7 @@ module.exports = {
     });
 
     // Add indexes to the columns we'll join on
-    await queryInterface.addIndex("UserBundles", ["userId"]);
+    await queryInterface.addIndex("UserBundles", ["userEmail"]);
     await queryInterface.addIndex("UserBundles", ["bundleId"]);
 
     // Add a table for BundleParks (which Parks are in which Bundles)
@@ -87,11 +91,12 @@ module.exports = {
         },
       },
 
-      parkId: {
-        type: Sequelize.INTEGER,
+      parkOrcs: {
+        type: Sequelize.STRING,
+        allowNull: false,
         references: {
           model: "Parks",
-          key: "id",
+          key: "orcs",
         },
       },
 
@@ -108,7 +113,7 @@ module.exports = {
 
     // Add indexes to the columns we'll join on
     await queryInterface.addIndex("BundleParks", ["bundleId"]);
-    await queryInterface.addIndex("BundleParks", ["parkId"]);
+    await queryInterface.addIndex("BundleParks", ["parkOrcs"]);
   },
 
   async down(queryInterface, Sequelize) {
@@ -119,7 +124,10 @@ module.exports = {
     // Drop the Bundles table
     await queryInterface.dropTable("Bundles");
 
-    // Remove the index from the User.email column
+    // Remove the index from the Users.email column
     await queryInterface.removeIndex("Users", ["email"]);
+
+    // Remove the index from the Parks.orcs column
+    await queryInterface.removeIndex("Parks", ["orcs"]);
   },
 };
