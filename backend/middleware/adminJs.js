@@ -21,6 +21,7 @@ import {
   DateRange,
   Section,
   ManagementArea,
+  AccessGroup,
   SeasonChangeLog,
   DateChangeLog,
 } from "../models/index.js";
@@ -268,6 +269,9 @@ const adminOptions = {
     DateRange,
     Section,
     ManagementArea,
+    AccessGroup,
+    // UserAccessGroup, -- doesn't work with the current version of AdminJS
+    // AccessGroupPark, -- doesn't work with the current version of AdminJS
     SeasonChangeLog,
     DateChangeLog,
   ],

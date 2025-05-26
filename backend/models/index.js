@@ -12,6 +12,9 @@ import SeasonModel from "./season.js";
 import DateRangeModel from "./daterange.js";
 import SectionModel from "./section.js";
 import ManagementAreaModel from "./managementarea.js";
+import AccessGroupModel from "./accessgroup.js";
+import UserAccessGroupModel from "./useraccessgroup.js";
+import AccessGroupParkModel from "./accessgrouppark.js";
 import SeasonChangeLogModel from "./seasonchangelog.js";
 import DateChangeLogModel from "./datechangelog.js";
 
@@ -31,6 +34,9 @@ const Season = SeasonModel(sequelize);
 const DateRange = DateRangeModel(sequelize);
 const Section = SectionModel(sequelize);
 const ManagementArea = ManagementAreaModel(sequelize);
+const AccessGroup = AccessGroupModel(sequelize);
+const UserAccessGroup = UserAccessGroupModel(sequelize);
+const AccessGroupPark = AccessGroupParkModel(sequelize);
 
 const SeasonChangeLog = SeasonChangeLogModel(sequelize);
 const DateChangeLog = DateChangeLogModel(sequelize);
@@ -48,6 +54,9 @@ const models = {
   DateRange,
   Section,
   ManagementArea,
+  AccessGroup,
+  UserAccessGroup,
+  AccessGroupPark,
   SeasonChangeLog,
   DateChangeLog,
 };
@@ -72,5 +81,8 @@ export {
   SeasonChangeLog,
   DateChangeLog,
   Section,
-  ManagementArea
+  ManagementArea,
+  AccessGroup,
+  UserAccessGroup,
+  AccessGroupPark,
 };

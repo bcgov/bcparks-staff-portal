@@ -32,6 +32,22 @@ export default (sequelize) => {
         foreignKey: "parkId",
         as: "seasons",
       });
+
+      // Each Park can have many AccessGroupParks associations to associate with many AccessGroups
+      Park.hasMany(models.AccessGroupPark, {
+        foreignKey: "parkOrcs",
+        sourceKey: "orcs",
+        as: "accessGroupParks",
+      });
+
+      // Each Park can associate with many AccessGroups through AccessGroupParks
+      Park.belongsToMany(models.AccessGroup, {
+        through: models.AccessGroupPark,
+        foreignKey: "parkOrcs",
+        otherKey: "accessGroupId",
+        sourceKey: "orcs",
+        as: "accessGroups",
+      });
     }
   }
   Park.init(

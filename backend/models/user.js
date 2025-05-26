@@ -12,6 +12,22 @@ export default (sequelize) => {
         foreignKey: "userId",
         as: "changeLogs",
       });
+
+      // Each User can have many UserAccessGroup associations to assocate with many AccessGroups
+      User.hasMany(models.UserAccessGroup, {
+        foreignKey: "userEmail",
+        sourceKey: "email",
+        as: "userAccessGroups",
+      });
+
+      // Each User can associate with many AccessGroups through UserAccessGroups
+      User.belongsToMany(models.AccessGroup, {
+        through: models.UserAccessGroup,
+        foreignKey: "userEmail",
+        otherKey: "accessGroupId",
+        sourceKey: "email",
+        as: "accessGroups",
+      });
     }
   }
   User.init(

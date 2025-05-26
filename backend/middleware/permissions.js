@@ -1,4 +1,4 @@
-// TODO: include checks when we have list of POs and Bundles
+// TODO: include checks when we have list of POs and AccessGroups
 
 export const adminsAndApprovers = ["doot-super-admin", "doot-approver"];
 
