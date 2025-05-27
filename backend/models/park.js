@@ -60,6 +60,18 @@ export default (sequelize) => {
       // since they're only needed for display in the CSV export
       managementAreas: DataTypes.JSONB,
       inReservationSystem: DataTypes.BOOLEAN,
+
+      hasTier1Dates: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+
+      hasTier2Dates: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
