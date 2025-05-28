@@ -28,7 +28,7 @@ function EditAndReview() {
 
   // table pagination
   const [page, setPage] = useState(1);
-  const pageSize = 25;
+  const pageSize = 5;
 
   // table filter state
   const [filters, setFilters] = useState({

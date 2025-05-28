@@ -220,8 +220,13 @@ label.form-check-label {
 table {
   // override bootstrap table border
   &.has-header-row {
+    border: var(--layout-border-width-medium) solid var(--theme-primary-blue);
     thead {
       border-bottom: 2px solid var(--surface-color-border-dark);
+    }
+    tbody {
+      border-bottom: var(--layout-border-width-small) solid
+        var(--surface-color-border-default);
     }
   }
 }
