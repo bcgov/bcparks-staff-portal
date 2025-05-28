@@ -49,11 +49,16 @@ IconButton.propTypes = {
 // renders all date ranges for a given year as a list
 // e.g. [{ startDate: "Mon Jan 1", endDate: "Tue Jan 2" }, { startDate: "Mon Dec 30", endDate: "Tue Dec 31" }]
 // => Mon, 1 Jan – Tue, 2 Jan / Mon, 30 Dec – Tue, 31 Dec
-function DateRangesList({ year }) {
-  if (!year || year.length === 0) return null;
+function DateRangesList({ dateRanges, isLastYear }) {
+  // leave it blank when date information is not available
+  // display 'Not provided' when the year has passed and there are no dates
+  if (!dateRanges || dateRanges.length === 0) {
+    return isLastYear ? <span className="text-muted">Not provided</span> : null;
+  }
+
   return (
     <ul className="list-unstyled mb-0">
-      {year.map((dateRange) => (
+      {dateRanges.map((dateRange) => (
         <li key={dateRange.id}>
           {formattedDateRange(dateRange.startDate, dateRange.endDate)}
         </li>
@@ -63,13 +68,14 @@ function DateRangesList({ year }) {
 }
 
 DateRangesList.propTypes = {
-  year: PropTypes.arrayOf(
+  dateRanges: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       startDate: PropTypes.instanceOf(Date).isRequired,
       endDate: PropTypes.instanceOf(Date).isRequired,
     }),
   ),
+  isLastYear: PropTypes.bool,
 };
 
 function DateTypeTableRow({ groupedDateRanges }) {
@@ -94,10 +100,10 @@ function DateTableRow({ groupedDateRanges }) {
     <tr key={dateTypeName} className="table-row--date">
       <td className="fw-bold">{dateTypeName}</td>
       <td>
-        <DateRangesList year={yearsObj[lastYear]} />
+        <DateRangesList dateRanges={yearsObj[lastYear]} isLastYear={true} />
       </td>
       <td>
-        <DateRangesList year={yearsObj[currentYear]} />
+        <DateRangesList dateRanges={yearsObj[currentYear]} />
       </td>
     </tr>
   ));
