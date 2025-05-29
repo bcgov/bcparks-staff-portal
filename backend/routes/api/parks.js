@@ -91,12 +91,13 @@ function buildFeatureOutput(feature, allDateRanges) {
   // get date ranges for park.feature
   // filter allDateRanges by feature.dateableId
   const featureDateRanges = allDateRanges
-    .filter((dataRange) => dataRange.dateableId === feature.dateableId)
+    .filter((dateRange) => dateRange.dateableId === feature.dateableId)
     .map(buildDateRangeObject);
 
   return {
     id: feature.id,
     dateableId: feature.dateableId,
+    publishableId: feature.publishableId,
     parkAreaId: feature.parkAreaId,
     name: feature.name,
     inReservationSystem: feature.inReservationSystem,
@@ -117,6 +118,7 @@ router.get(
     const parks = await Park.findAll({
       attributes: [
         "id",
+        "dateableId",
         "orcs",
         "name",
         "managementAreas",
@@ -129,6 +131,7 @@ router.get(
           attributes: [
             "id",
             "dateableId",
+            "publishableId",
             "parkAreaId",
             "name",
             "inReservationSystem",
@@ -144,7 +147,13 @@ router.get(
         {
           model: ParkArea,
           as: "parkAreas",
-          attributes: ["id", "dateableId", "name"],
+          attributes: ["id", "dateableId", "publishableId", "name"],
+          // filter parkAreas that are publishable
+          where: {
+            publishableId: {
+              [Op.ne]: null,
+            },
+          },
         },
         {
           model: Season,
@@ -198,14 +207,22 @@ router.get(
         (season) => season.dateRanges,
       );
 
+      // get date ranges for park
+      // filter allDateRanges by park.dateableId
+      const parkDateRanges = allDateRanges
+        .filter((dateRange) => dateRange.dateableId === park.dateableId)
+        .map(buildDateRangeObject);
+
       return {
         id: park.id,
+        dateableId: park.dateableId,
         name: park.name,
         orcs: park.orcs,
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,
         status: getParkStatus(park.seasons),
+        groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, allDateRanges),
         ),
@@ -213,7 +230,7 @@ router.get(
           // get date ranges for park.parkArea
           // filter allDateRanges by parkArea.dateableId
           const parkAreaDateRanges = allDateRanges
-            .filter((dataRange) => dataRange.dateableId === parkArea.dateableId)
+            .filter((dateRange) => dateRange.dateableId === parkArea.dateableId)
             .map(buildDateRangeObject);
 
           // get features for park.parkArea
@@ -227,6 +244,7 @@ router.get(
           return {
             id: parkArea.id,
             dateableId: parkArea.dateableId,
+            publishableId: parkArea.publishableId,
             name: parkArea.name,
             features: parkAreaFeatures,
             groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),

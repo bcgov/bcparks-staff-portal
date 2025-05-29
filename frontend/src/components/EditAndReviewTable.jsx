@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { faCheck } from "@fa-kit/icons/classic/solid";
@@ -8,6 +8,7 @@ import StatusBadge from "@/components/StatusBadge";
 // TODO: add it to DateRangesList once status is implemented
 // import NotReadyFlag from "@/components/NotReadyFlag";
 import { formatDateShort } from "@/lib/utils";
+import useAccess from "@/hooks/useAccess";
 import "./EditAndReviewTable.scss";
 
 // Constants
@@ -122,6 +123,13 @@ function StatusTableRow({
   status,
   color,
 }) {
+  // user role
+  const { ROLES, checkAccess } = useAccess();
+  const approver = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
+
   return (
     <tr key={id} className={classNames(level && `table-row--${level}`)}>
       <th
@@ -136,10 +144,12 @@ function StatusTableRow({
           </div>
         )}
       </th>
-      <th scope="col" className="align-middle text-end">
+      <th scope="col" className="align-middle text-end text-nowrap">
         <StatusBadge status={status} />
         <IconButton icon={faPen} label="Edit" textColor={color} />
-        <IconButton icon={faCheck} label="Approve" textColor={color} />
+        {approver && (
+          <IconButton icon={faCheck} label="Approve" textColor={color} />
+        )}
       </th>
     </tr>
   );
@@ -160,37 +170,6 @@ function Table(park) {
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
 
-  // TODO: replace dummy data with real data
-  // dummy data for park
-  const parkGroupedDateRanges = {
-    Operation: {
-      2024: [
-        {
-          id: 1,
-          startDate: new Date("2024-05-15T00:00:00.000Z"),
-          endDate: new Date("2024-10-15T00:00:00.000Z"),
-        },
-      ],
-      2025: [
-        {
-          id: 2,
-          startDate: new Date("2025-11-15T00:00:00.000Z"),
-          endDate: new Date("2025-12-15T00:00:00.000Z"),
-        },
-      ],
-    },
-    Tier1: {
-      2024: [
-        {
-          id: 3,
-          startDate: new Date("2024-05-15T00:00:00.000Z"),
-          endDate: new Date("2024-10-15T00:00:00.000Z"),
-        },
-      ],
-      2025: [],
-    },
-  };
-
   return (
     <table key={park.id} className="table has-header-row mb-0">
       <thead>
@@ -205,9 +184,8 @@ function Table(park) {
 
       <tbody>
         {/* 1 - park level */}
-        {/* TODO: replace dummy data with real data */}
-        <DateTypeTableRow groupedDateRanges={parkGroupedDateRanges} />
-        <DateTableRow groupedDateRanges={parkGroupedDateRanges} />
+        <DateTypeTableRow groupedDateRanges={park.groupedDateRanges} />
+        <DateTableRow groupedDateRanges={park.groupedDateRanges} />
 
         {/* 2 - park area level */}
         {parkAreas.length > 0 &&
@@ -245,9 +223,10 @@ function Table(park) {
           ))}
 
         {/* 3 - feature level */}
+        {/* features that don't belong to park area, and are publishable  */}
         {features.length > 0 &&
           features
-            .filter((feature) => !feature.parkAreaId)
+            .filter((feature) => !feature.parkAreaId && feature.publishableId)
             .map((feature) => (
               <React.Fragment key={feature.id}>
                 {/* TODO: replace dummy status */}
