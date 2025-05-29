@@ -6,6 +6,8 @@ import "../env.js";
 
 import {
   Dateable,
+  DateRange,
+  DateType,
   Feature,
   FeatureType,
   Park,
@@ -114,13 +116,106 @@ async function createSeason(publishableId, year) {
   return newSeason.id;
 }
 
+/**
+ * Creates blank Tier 2 dates for the given park if it had Tier 2 dates in the previous year.
+ * @param {number} dateableId The Park's Dateable ID for the new Season
+ * @param {number} seasonId The ID of the Park's new Season
+ * @param {Park} park Park record to check and create dates for
+ * @param {number} year The operating year for the current season
+ * @param {number} tier2DateTypeId The ID of the Tier 2 date type
+ * @returns {Promise<void>}
+ */
+async function createTier2Dates(
+  dateableId,
+  seasonId,
+  park,
+  year,
+  tier2DateTypeId,
+) {
+  if (!park.hasTier2Dates) return false;
+
+  // If the Park had Tier 2 dates in the previous year,
+  // create the same number of blank Tier 2 dates for the new season
+
+  console.log("Creating blank Tier 2 dates for park:", park.name);
+
+  // If any Date Ranges already exist for this season, skip creating new ones
+  const existingRanges = await DateRange.findAll({
+    where: {
+      seasonId,
+      dateTypeId: tier2DateTypeId,
+    },
+    transaction,
+  });
+
+  if (existingRanges.length > 0) {
+    console.log(
+      `Found ${existingRanges.length} existing Date Ranges for Season ${seasonId}: ` +
+        `Skipping creation of new Tier 2 dates.`,
+    );
+    return false;
+  }
+
+  // Check if the park's Dateable ID has any Tier 2 dates in the previous year
+  const previousYear = year - 1;
+  const previousParkSeasons = await Season.findAll({
+    where: {
+      publishableId: park.publishableId,
+      operatingYear: previousYear,
+    },
+
+    include: [
+      {
+        model: DateRange,
+        as: "dateRanges",
+        required: true,
+        where: { dateTypeId: tier2DateTypeId },
+      },
+    ],
+
+    transaction,
+  });
+
+  if (previousParkSeasons.length === 0) return false;
+
+  // Create DateRange records for each Season's Tier 2 dates
+  let numCreated = 0;
+  const insertQueries = previousParkSeasons.map(async (oldSeason) => {
+    if (!oldSeason.dateRanges.length) return null;
+
+    // Create a new blank DateRange for each Tier 2 date in the old season
+    const createData = oldSeason.dateRanges.map(() => ({
+      seasonId,
+      dateableId,
+      dateTypeId: tier2DateTypeId,
+      startDate: null,
+      endDate: null,
+      adminNote: null,
+    }));
+
+    // Create the DateRange records in bulk
+    numCreated += createData.length;
+    return DateRange.bulkCreate(createData);
+  });
+
+  const allDone = await Promise.all(insertQueries);
+
+  if (numCreated > 0) {
+    console.log(
+      `Created ${numCreated} blank Tier 2 dates for park ${park.name} (${park.publishableId})`,
+    );
+  }
+
+  return allDone;
+}
+
 console.log(`Creating Seasons for ${operatingYear}`);
 
 // Step 1: Create new Seasons for every Park
 
 // Get all the Parks with Features
 const parks = await Park.findAll({
-  attributes: ["id", "name", "publishableId", "dateableId"],
+  attributes: ["id", "name", "publishableId", "dateableId", "hasTier2Dates"],
   include: [
     {
       model: Feature,
@@ -136,18 +231,45 @@ const parks = await Park.findAll({
 
 console.log(`Found ${parks.length} Parks with Features`);
 
+// Get the Tier 2 DateType
+const tier2DateType = await DateType.findOne({
+  where: {
+    name: "Tier 2",
+  },
+  transaction,
+});
+
+if (!tier2DateType) {
+  console.warn(`Tier 2 DateType not found. Skipping Tier 2 dates creation.`);
+}
+
 const parksQueries = parks.map(async (park) => {
   // If the park doesn't have a publishableId, add one and associate it
   await createPublishable(park);
 
   // If the park doesn't have a dateableId, add one and associate it
-  await createDateable(park);
+  const dateableId = await createDateable(park);
 
   // Create a season for this park's Publishable ID and Operating Year, if it doesn't exist
-  await createSeason(park.publishableId, operatingYear);
+  const seasonId = await createSeason(park.publishableId, operatingYear);
+
+  if (tier2DateType) {
+    // Create blank Tier 2 dates for the park, if applicable
+    await createTier2Dates(
+      dateableId,
+      seasonId,
+      park,
+      operatingYear,
+      tier2DateType.id,
+    );
+  }
 });
 
 await Promise.all(parksQueries);
+
+// exit with 0 status
+transaction?.rollback();
+process.exit(0);
 
 console.log(`Added ${publishablesAdded} missing Park Publishables`);
 console.log(`Added ${dateablesAdded} missing Park Dateables`);
