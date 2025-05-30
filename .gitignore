@@ -136,3 +136,5 @@ dist
 helm/crunchy-postgres/.helmignore
 helm/crunchy-postgres/Chart.yaml
 helm/crunchy-postgres/values.yaml
+
+bcparks-staff-portal.code-workspace
