@@ -137,8 +137,6 @@ async function createTier2Dates(
   // If the Park had Tier 2 dates in the previous year,
   // create the same number of blank Tier 2 dates for the new season
 
-  console.log("Creating blank Tier 2 dates for park:", park.name);
-
   // If any Date Ranges already exist for this season, skip creating new ones
   const existingRanges = await DateRange.findAll({
     where: {
@@ -151,7 +149,7 @@ async function createTier2Dates(
   if (existingRanges.length > 0) {
     console.log(
       `Found ${existingRanges.length} existing Date Ranges for Season ${seasonId}: ` +
-        `Skipping creation of new Tier 2 dates.`,
+        `Skipping creation of new Tier 2 dates for ${park.name}.`,
     );
     return [];
   }
@@ -176,8 +174,6 @@ async function createTier2Dates(
     transaction,
   });
 
-  if (previousParkSeasons.length === 0) return [];
-
   // Create DateRange records for each Season's Tier 2 dates
   let numCreated = 0;
   const insertQueries = previousParkSeasons.map(async (oldSeason) => {
@@ -200,11 +196,9 @@ async function createTier2Dates(
 
   const allDone = await Promise.all(insertQueries);
 
-  if (numCreated > 0) {
-    console.log(
-      `Created ${numCreated} blank Tier 2 dates for park ${park.name} (${park.publishableId})`,
-    );
-  }
+  console.log(
+    `Created ${numCreated} blank Tier 2 dates for park ${park.name} (Publishable ${park.publishableId})`,
+  );
 
   return allDone;
 }
