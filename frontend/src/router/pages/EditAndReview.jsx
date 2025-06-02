@@ -8,7 +8,7 @@ import { useMemo, useState } from "react";
 import { orderBy } from "lodash-es";
 import PaginationBar from "@/components/PaginationBar";
 import FilterPanel from "@/components/FilterPanel";
-import FormPanel from "../../components/FormPanel";
+import FormPanel from "@/components/FormPanel";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");

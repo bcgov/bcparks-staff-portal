@@ -204,7 +204,7 @@ function Table({ park, formPanelHandler }) {
                 formPanelHandler({ ...parkArea, level: "park-area" })
               }
             />
-            <DateTypeTableRow groupedDateRanges={parkAreas.groupedDateRanges} />
+            <DateTypeTableRow groupedDateRanges={parkArea.groupedDateRanges} />
 
             {/* features that belong to park area */}
             {parkArea.features.map((parkFeature) => (
