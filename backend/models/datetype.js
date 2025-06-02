@@ -19,7 +19,22 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       startDateLabel: DataTypes.STRING,
       endDateLabel: DataTypes.STRING,
-      description: DataTypes.STRING,
+      description: DataTypes.TEXT,
+      parkLevel:  {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      featureLevel:  {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      parkAreaLevel:  {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
