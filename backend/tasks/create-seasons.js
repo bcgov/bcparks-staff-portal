@@ -123,7 +123,7 @@ async function createSeason(publishableId, year) {
  * @param {Park} park Park record to check and create dates for
  * @param {number} year The operating year for the current season
  * @param {number} tier2DateTypeId The ID of the Tier 2 date type
- * @returns {Promise<DateRange[]>|Promise<boolean>} Returns a Promise that resolves to an array of created DateRanges, or false if creation was skipped.
+ * @returns {Promise<DateRange[]>} Returns a Promise that resolves to an array of created DateRanges
  */
 async function createTier2Dates(
   dateableId,
@@ -132,7 +132,7 @@ async function createTier2Dates(
   year,
   tier2DateTypeId,
 ) {
-  if (!park.hasTier2Dates) return false;
+  if (!park.hasTier2Dates) return [];
 
   // If the Park had Tier 2 dates in the previous year,
   // create the same number of blank Tier 2 dates for the new season
@@ -153,7 +153,7 @@ async function createTier2Dates(
       `Found ${existingRanges.length} existing Date Ranges for Season ${seasonId}: ` +
         `Skipping creation of new Tier 2 dates.`,
     );
-    return false;
+    return [];
   }
 
   // Check if the park's Dateable ID has any Tier 2 dates in the previous year
@@ -176,7 +176,7 @@ async function createTier2Dates(
     transaction,
   });
 
-  if (previousParkSeasons.length === 0) return false;
+  if (previousParkSeasons.length === 0) return [];
 
   // Create DateRange records for each Season's Tier 2 dates
   let numCreated = 0;
