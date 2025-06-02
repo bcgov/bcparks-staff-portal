@@ -13,7 +13,7 @@ module.exports = {
       type: Sequelize.BOOLEAN,
       allowNull: false,
       defaultValue: false,
-      comment: "Indicates if the Park can have the Tier 1 date type",
+      comment: "Indicates if the Park can have the Tier 2 date type",
     });
   },
 
