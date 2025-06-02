@@ -123,7 +123,7 @@ async function createSeason(publishableId, year) {
  * @param {Park} park Park record to check and create dates for
  * @param {number} year The operating year for the current season
  * @param {number} tier2DateTypeId The ID of the Tier 2 date type
- * @returns {Promise<void>}
+ * @returns {Promise<DateRange[]>|Promise<boolean>} Returns a Promise that resolves to an array of created DateRanges, or false if creation was skipped.
  */
 async function createTier2Dates(
   dateableId,
@@ -266,10 +266,6 @@ const parksQueries = parks.map(async (park) => {
 });
 
 await Promise.all(parksQueries);
-
-// exit with 0 status
-transaction?.rollback();
-process.exit(0);
 
 console.log(`Added ${publishablesAdded} missing Park Publishables`);
 console.log(`Added ${dateablesAdded} missing Park Dateables`);
