@@ -20,11 +20,7 @@ const lastYear = currentYear - 1;
 // e.g. startDate – endDate => Mon, 1 Jan – Tue, 31 Dec
 function formattedDateRange(startDate, endDate) {
   if (!startDate || !endDate) return null;
-  return (
-    <>
-      {formatDateShort(startDate)} &ndash; {formatDateShort(endDate)}
-    </>
-  );
+  return `${formatDateShort(startDate)} – ${formatDateShort(endDate)}`;
 }
 
 // Components
@@ -121,6 +117,7 @@ function StatusTableRow({
   name,
   typeName,
   status,
+  formPanelHandler,
   color,
 }) {
   // user role
@@ -146,7 +143,12 @@ function StatusTableRow({
       </th>
       <th scope="col" className="align-middle text-end text-nowrap">
         <StatusBadge status={status} />
-        <IconButton icon={faPen} label="Edit" textColor={color} />
+        <IconButton
+          icon={faPen}
+          label="Edit"
+          onClick={formPanelHandler}
+          textColor={color}
+        />
         {approver && (
           <IconButton icon={faCheck} label="Approve" textColor={color} />
         )}
@@ -162,10 +164,11 @@ StatusTableRow.propTypes = {
   name: PropTypes.string.isRequired,
   typeName: PropTypes.string,
   status: PropTypes.string.isRequired,
+  formPanelHandler: PropTypes.func,
   color: PropTypes.string,
 };
 
-function Table(park) {
+function Table({ park, formPanelHandler }) {
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
@@ -178,6 +181,7 @@ function Table(park) {
           nameCellClass="fw-normal text-white"
           name={park.name}
           status={park.status}
+          formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
       </thead>
@@ -188,100 +192,107 @@ function Table(park) {
         <DateTableRow groupedDateRanges={park.groupedDateRanges} />
 
         {/* 2 - park area level */}
-        {parkAreas.length > 0 &&
-          parkAreas.map((parkArea) => (
-            <React.Fragment key={parkArea.id}>
-              {/* TODO: replace dummy status */}
-              <StatusTableRow
-                id={parkArea.id}
-                level="park-area"
-                name={`${park.name} - ${parkArea.name}`}
-                status={park.status}
-              />
-              <DateTypeTableRow
-                groupedDateRanges={parkAreas.groupedDateRanges}
-              />
+        {parkAreas.map((parkArea) => (
+          <React.Fragment key={parkArea.id}>
+            {/* TODO: replace dummy status */}
+            <StatusTableRow
+              id={parkArea.id}
+              level="park-area"
+              name={`${park.name} - ${parkArea.name}`}
+              status={park.status}
+              formPanelHandler={() =>
+                formPanelHandler({ ...parkArea, level: "park-area" })
+              }
+            />
+            <DateTypeTableRow groupedDateRanges={parkAreas.groupedDateRanges} />
 
-              {/* features that belong to park area */}
-              {parkArea.features.length > 0 &&
-                parkArea.features.map((parkFeature) => (
-                  <React.Fragment key={parkFeature.id}>
-                    <tr className="table-row--park-area-feature">
-                      <th scope="colgroup" colSpan="3">
-                        {parkFeature.name}
-                      </th>
-                    </tr>
-                    <DateTypeTableRow
-                      groupedDateRanges={parkFeature.groupedDateRanges}
-                    />
-                    <DateTableRow
-                      groupedDateRanges={parkFeature.groupedDateRanges}
-                    />
-                  </React.Fragment>
-                ))}
-            </React.Fragment>
-          ))}
+            {/* features that belong to park area */}
+            {parkArea.features.map((parkFeature) => (
+              <React.Fragment key={parkFeature.id}>
+                <tr className="table-row--park-area-feature">
+                  <th scope="colgroup" colSpan="3">
+                    {parkFeature.name}
+                  </th>
+                </tr>
+                <DateTypeTableRow
+                  groupedDateRanges={parkFeature.groupedDateRanges}
+                />
+                <DateTableRow
+                  groupedDateRanges={parkFeature.groupedDateRanges}
+                />
+              </React.Fragment>
+            ))}
+          </React.Fragment>
+        ))}
 
         {/* 3 - feature level */}
         {/* features that don't belong to park area, and are publishable  */}
-        {features.length > 0 &&
-          features
-            .filter((feature) => !feature.parkAreaId && feature.publishableId)
-            .map((feature) => (
-              <React.Fragment key={feature.id}>
-                {/* TODO: replace dummy status */}
-                <StatusTableRow
-                  id={feature.id}
-                  level="feature"
-                  name={`${park.name} - ${feature.name}`}
-                  typeName={feature.featureType.name}
-                  status={park.status}
-                />
-                <DateTypeTableRow
-                  groupedDateRanges={feature.groupedDateRanges}
-                />
-                <DateTableRow groupedDateRanges={feature.groupedDateRanges} />
-              </React.Fragment>
-            ))}
+        {features
+          .filter((feature) => !feature.parkAreaId && feature.publishableId)
+          .map((feature) => (
+            <React.Fragment key={feature.id}>
+              {/* TODO: replace dummy status */}
+              <StatusTableRow
+                id={feature.id}
+                level="feature"
+                name={`${park.name} - ${feature.name}`}
+                typeName={feature.featureType.name}
+                status={park.status}
+                formPanelHandler={() =>
+                  formPanelHandler({ ...feature, level: "feature" })
+                }
+              />
+              <DateTypeTableRow groupedDateRanges={feature.groupedDateRanges} />
+              <DateTableRow groupedDateRanges={feature.groupedDateRanges} />
+            </React.Fragment>
+          ))}
       </tbody>
     </table>
   );
 }
 
 Table.propTypes = {
-  id: PropTypes.number.isRequired,
-  name: PropTypes.string.isRequired,
-  status: PropTypes.string.isRequired,
-  parkAreas: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      features: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.number.isRequired,
-          name: PropTypes.string.isRequired,
-          groupedDateRanges: PropTypes.object,
-        }),
-      ),
-    }),
-  ),
-  features: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      featureType: PropTypes.shape({
+  park: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    groupedDateRanges: PropTypes.object,
+    parkAreas: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
+        features: PropTypes.arrayOf(
+          PropTypes.shape({
+            id: PropTypes.number.isRequired,
+            name: PropTypes.string.isRequired,
+            groupedDateRanges: PropTypes.object,
+          }),
+        ),
       }),
-      groupedDateRanges: PropTypes.object,
-    }),
-  ),
+    ),
+    features: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+        featureType: PropTypes.shape({
+          name: PropTypes.string.isRequired,
+        }),
+        groupedDateRanges: PropTypes.object,
+      }),
+    ),
+  }),
+  formPanelHandler: PropTypes.func.isRequired,
 };
 
-export default function EditAndReviewTable({ data, onResetFilters }) {
+export default function EditAndReviewTable({
+  data,
+  onResetFilters,
+  formPanelHandler,
+}) {
   return (
     <div className="table-responsive">
       {data.map((park) => (
-        <Table key={park.id} {...park} />
+        <Table key={park.id} park={park} formPanelHandler={formPanelHandler} />
       ))}
 
       {data.length === 0 && (
@@ -308,4 +319,5 @@ EditAndReviewTable.propTypes = {
     }),
   ),
   onResetFilters: PropTypes.func,
+  formPanelHandler: PropTypes.func,
 };

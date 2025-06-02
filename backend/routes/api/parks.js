@@ -52,23 +52,19 @@ function getParkStatus(seasons) {
 // group dateRanges by date type name then by year
 // e.g. {Operation: {2024: [...], 2025: [...]}, Winter: {2024: [...], 2025: [...]}, ...}
 function groupDateRangesByTypeAndYear(dateRanges) {
-  const grouped = {};
+  // filter out invalid dateRanges
+  const validRanges = dateRanges.filter(
+    (dateRange) => dateRange.dateType && dateRange.startDate,
+  );
 
-  dateRanges.forEach((dateRange) => {
-    if (!dateRange.dateType || !dateRange.startDate) return;
-
-    const type = dateRange.dateType.name;
-    const startYear = new Date(dateRange.startDate).getFullYear();
-
-    if (!grouped[type]) grouped[type] = {};
-    if (!grouped[type][startYear]) grouped[type][startYear] = [];
-    grouped[type][startYear].push({
-      id: dateRange.id,
-      startDate: dateRange.startDate,
-      endDate: dateRange.endDate,
-    });
-  });
-  return grouped;
+  // group by dateType name
+  return _.mapValues(
+    _.groupBy(validRanges, (dateRange) => dateRange.dateType.name),
+    (ranges) =>
+      _.groupBy(ranges, (dateRange) =>
+        new Date(dateRange.startDate).getFullYear(),
+      ),
+  );
 }
 
 // build a date range output object

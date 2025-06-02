@@ -1,5 +1,5 @@
 .status-badge {
-  outline: var(--layout-border-width-medium) solid var(--bs-white);
+  outline: var(--layout-border-width-medium) solid var(--theme-gray-white);
   &.text-bg-disabled {
     background-color: var(--surface-color-primary-disabled);
     color: var(--typography-color-primary) !important;

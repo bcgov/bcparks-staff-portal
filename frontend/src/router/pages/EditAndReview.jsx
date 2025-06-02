@@ -8,6 +8,7 @@ import { useMemo, useState } from "react";
 import { orderBy } from "lodash-es";
 import PaginationBar from "@/components/PaginationBar";
 import FilterPanel from "@/components/FilterPanel";
+import FormPanel from "../../components/FormPanel";
 
 function EditAndReview() {
   const { data, loading, error } = useApiGet("/parks");
@@ -42,7 +43,15 @@ function EditAndReview() {
     isInReservationSystem: false,
     hasDateNote: false,
   });
+  const [formData, setFormData] = useState({});
+  const [showFormPanel, setShowFormPanel] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+
+  // open form panel when the Edit button is clicked
+  function formPanelHandler(formDataObj) {
+    setFormData(formDataObj);
+    setShowFormPanel(!showFormPanel);
+  }
 
   // table sorting state
   const [sortColumn, setSortColumn] = useState("parkName");
@@ -207,10 +216,8 @@ function EditAndReview() {
         <div className="mb-3">
           <EditAndReviewTable
             data={pageData}
-            onSort={updateSort}
             onResetFilters={resetFilters}
-            sortOrder={sortOrder}
-            sortColumn={sortColumn}
+            formPanelHandler={formPanelHandler}
           />
         </div>
 
@@ -304,6 +311,12 @@ function EditAndReview() {
         </div>
 
         {renderTable()}
+
+        <FormPanel
+          show={showFormPanel}
+          setShow={setShowFormPanel}
+          formData={formData}
+        />
 
         <FilterPanel
           show={showFilterPanel}
