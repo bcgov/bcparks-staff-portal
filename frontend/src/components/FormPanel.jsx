@@ -15,6 +15,7 @@ function FormPanel({ show, setShow, formData }) {
   return (
     <Offcanvas
       show={show}
+      backdrop="static"
       onHide={handleClose}
       placement="end"
       className="form-panel"

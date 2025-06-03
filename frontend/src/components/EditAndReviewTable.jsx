@@ -142,7 +142,11 @@ function StatusTableRow({
         )}
       </th>
       <th scope="col" className="align-middle text-end text-nowrap">
-        <StatusBadge status={status} />
+        {status && (
+          <div className="d-inline-block me-2">
+            <StatusBadge status={status} />
+          </div>
+        )}
         <IconButton
           icon={faPen}
           label="Edit"
@@ -163,7 +167,7 @@ StatusTableRow.propTypes = {
   nameCellClass: PropTypes.string,
   name: PropTypes.string.isRequired,
   typeName: PropTypes.string,
-  status: PropTypes.string.isRequired,
+  status: PropTypes.string,
   formPanelHandler: PropTypes.func,
   color: PropTypes.string,
 };
@@ -194,12 +198,12 @@ function Table({ park, formPanelHandler }) {
         {/* 2 - park area level */}
         {parkAreas.map((parkArea) => (
           <React.Fragment key={parkArea.id}>
-            {/* TODO: replace dummy status */}
             <StatusTableRow
               id={parkArea.id}
               level="park-area"
               name={`${park.name} - ${parkArea.name}`}
-              status={park.status}
+              typeName={parkArea.featureType.name}
+              status={parkArea.season?.status}
               formPanelHandler={() =>
                 formPanelHandler({ ...parkArea, level: "park-area" })
               }
@@ -231,13 +235,12 @@ function Table({ park, formPanelHandler }) {
           .filter((feature) => !feature.parkAreaId && feature.publishableId)
           .map((feature) => (
             <React.Fragment key={feature.id}>
-              {/* TODO: replace dummy status */}
               <StatusTableRow
                 id={feature.id}
                 level="feature"
                 name={`${park.name} - ${feature.name}`}
                 typeName={feature.featureType.name}
-                status={park.status}
+                status={feature.season?.status}
                 formPanelHandler={() =>
                   formPanelHandler({ ...feature, level: "feature" })
                 }
