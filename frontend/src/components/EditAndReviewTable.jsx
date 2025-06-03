@@ -203,7 +203,7 @@ function Table({ park, formPanelHandler }) {
               level="park-area"
               name={`${park.name} - ${parkArea.name}`}
               typeName={parkArea.featureType.name}
-              status={parkArea.season?.status}
+              status={parkArea.status}
               formPanelHandler={() =>
                 formPanelHandler({ ...parkArea, level: "park-area" })
               }
@@ -240,7 +240,7 @@ function Table({ park, formPanelHandler }) {
                 level="feature"
                 name={`${park.name} - ${feature.name}`}
                 typeName={feature.featureType.name}
-                status={feature.season?.status}
+                status={feature.status}
                 formPanelHandler={() =>
                   formPanelHandler({ ...feature, level: "feature" })
                 }

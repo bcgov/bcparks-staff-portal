@@ -104,22 +104,14 @@ function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
 
   // get season for park.feature
   // filter park.seasons by feature.publishableId
-  let matchedSeason = parkSeasons.find(
-    (parkSeason) => parkSeason.publishableId === feature.publishableId,
+  // backwards compatibility - filter park.seasons by feature.featureType.publishableId
+  const featureSeasons = parkSeasons.filter(
+    (parkSeason) =>
+      parkSeason.publishableId === feature.publishableId ||
+      (feature.featureType &&
+        feature.featureType.publishableId &&
+        parkSeason.publishableId === feature.featureType.publishableId),
   );
-
-  // backwards compatibility
-  // if matchedSeason is not found, try to match by feature.featureType.publishableId
-  if (
-    !matchedSeason &&
-    feature.featureType &&
-    feature.featureType.publishableId
-  ) {
-    matchedSeason = parkSeasons.find(
-      (parkSeason) =>
-        parkSeason.publishableId === feature.featureType.publishableId,
-    );
-  }
 
   return {
     id: feature.id,
@@ -133,7 +125,7 @@ function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
       publishableId: feature.featureType.publishableId,
       name: feature.featureType.name,
     },
-    season: matchedSeason ? buildSeasonOutput(matchedSeason) : null,
+    status: getParkStatus(featureSeasons),
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
   };
 }
@@ -296,22 +288,15 @@ router.get(
 
           // get season for park.parkArea
           // filter park.seasons by parkArea.publishableId
-          let matchedSeason = park.seasons.find(
-            (parkSeason) => parkSeason.publishableId === parkArea.publishableId,
-          );
+          // backwards compatibility - filter park.seasons by parkArea.featureType.publishableId
 
-          // backwards compatibility
-          // if matchedSeason is not found, try to match by parkArea.featureType.publishableId
-          if (
-            !matchedSeason &&
-            parkArea.featureType &&
-            parkArea.featureType.publishableId
-          ) {
-            matchedSeason = park.seasons.find(
-              (parkSeason) =>
-                parkSeason.publishableId === parkArea.featureType.publishableId,
-            );
-          }
+          const parkAreaSeasons = park.seasons.filter(
+            (parkSeason) =>
+              parkSeason.publishableId === parkArea.publishableId ||
+              (featureType &&
+                featureType.publishableId &&
+                parkSeason.publishableId === featureType.publishableId),
+          );
 
           return {
             id: parkArea.id,
@@ -320,7 +305,7 @@ router.get(
             name: parkArea.name,
             features: parkAreaFeatures,
             ...(featureType && { featureType }),
-            season: matchedSeason ? buildSeasonOutput(matchedSeason) : null,
+            status: getParkStatus(parkAreaSeasons),
             groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
           };
         }),
