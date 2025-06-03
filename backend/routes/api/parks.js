@@ -16,6 +16,39 @@ import asyncHandler from "express-async-handler";
 const router = Router();
 
 // Functions
+function getParkStatus(seasons) {
+  // if any season has status==requested, return requested
+  // else if any season has status==pending review, return pending review
+  // else if any season has status==approved, return approved
+  // if all seasons have status==on API, return on API
+
+  const requested = seasons.some((s) => s.status === "requested");
+
+  if (requested) {
+    return "requested";
+  }
+
+  const pendingReview = seasons.some((s) => s.status === "pending review");
+
+  if (pendingReview) {
+    return "pending review";
+  }
+
+  const approved = seasons.some((s) => s.status === "approved");
+
+  if (approved) {
+    return "approved";
+  }
+
+  const onAPI = seasons.some((s) => s.status === "on API");
+
+  if (onAPI) {
+    return "on API";
+  }
+
+  return null;
+}
+
 // group dateRanges by date type name then by year
 // e.g. {Operation: {2024: [...], 2025: [...]}, Winter: {2024: [...], 2025: [...]}, ...}
 function groupDateRangesByTypeAndYear(dateRanges) {
@@ -226,7 +259,7 @@ router.get(
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,
-        status: park.status,
+        status: getParkStatus(park.seasons),
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, allDateRanges, park.seasons),
