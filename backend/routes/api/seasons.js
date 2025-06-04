@@ -27,300 +27,368 @@ import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstS
 
 const router = Router();
 
-// function getNewStatusForSeason(season, user) {
-//   // this will depend on the user's role
-//   // rn we're just setting everything to requested
-//   // For staff
-//   //   requested -- > requested
-//   //   pending review -- > pending review
-//   //   approved -- > pending review
-//   //   on API --> pending review
-//   // For operator
-//   //   requested -- > requested
-//   //   pending review -- > requested
-//   //   approved -- > requested
-//   //   on API --> requested
-//   return season.status;
-// }
+/**
+ * Checks if a Season exists, and throws an error if the Season is not found.
+ * @param {Season} season The Season model instance to check
+ * @throws {Error} If the Season is not found, an error with status 404 is thrown
+ * @returns {boolean} Returns true if the Season exists
+ */
+function checkSeasonExists(season) {
+  if (season) return true;
 
+  const error = new Error("Season not found");
+
+  error.status = 404;
+  throw error;
+}
+
+/**
+ * Updates the status of a Season.
+ * If "save" is true, it will first save the changes to the Season.
+ * @param {number} seasonId The ID of the season to update
+ * @param {string} status The new status to set for the season
+ * @param {boolean} [readyToPublish] Optionally provide a new readyToPublish value to set
+ * @returns {Promise<Season>} The updated season model
+ */
+async function updateStatus(seasonId, status, readyToPublish = null) {
+  const season = await Season.findByPk(seasonId);
+
+  checkSeasonExists(season);
+
+  // Update season status
+  season.status = status;
+
+  // Update the "Ready to publish" flag if provided
+  if (readyToPublish !== null) {
+    season.readyToPublish = readyToPublish;
+  }
+
+  return season.save();
+}
+
+/**
+ * Returns the previous Season's dates for a given current Season.
+ * @param {Season} currentSeason The current season object with operatingYear and publishableId
+ * @returns {Season} The previous season model with its Dateable and DateRanges
+ */
+async function getPreviousSeasonDates(currentSeason) {
+  try {
+    return await Season.findOne({
+      where: {
+        operatingYear: currentSeason.operatingYear - 1,
+        publishableId: currentSeason.publishableId,
+      },
+      include: [
+        {
+          model: DateRange,
+          as: "dateRanges",
+          required: false,
+        },
+      ],
+    });
+  } catch (error) {
+    console.error("Error fetching previous season:", error);
+    return null;
+  }
+}
+
+/**
+ * Returns a query part for including change logs associated with a Season.
+ * @returns {Object} Sequelize query part for fetching change logs
+ */
+function changeLogsQueryPart() {
+  return {
+    model: SeasonChangeLog,
+    as: "changeLogs",
+    attributes: ["id", "notes", "createdAt"],
+    // Filter out empty notes
+    where: {
+      notes: {
+        [Op.ne]: "",
+      },
+    },
+    required: false,
+    order: [["createdAt", "DESC"]],
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["id", "name"],
+      },
+    ],
+  };
+}
+
+/**
+ * Returns a query part for including DateRanges associated with a Season.
+ * @param {number} seasonId the ID of the DateRanges' Season
+ * @returns {Object} Sequelize query part for fetching DateRanges
+ */
+function dateRangesQueryPart(seasonId) {
+  return {
+    model: DateRange,
+    as: "dateRanges",
+    attributes: ["id", "startDate", "endDate"],
+    where: {
+      seasonId,
+    },
+    required: false,
+    order: [["startDate", "ASC"]],
+    include: [
+      {
+        model: DateType,
+        as: "dateType",
+        attributes: ["id", "name"],
+      },
+    ],
+  };
+}
+
+/**
+ * Returns a query part for including a Dateable and its DateRanges.
+ * @param {number} seasonId the ID of the DateRanges' Season
+ * @returns {Object} Sequelize query part for fetching Dateable and its DateRanges
+ */
+function dateableAndDatesQueryPart(seasonId) {
+  return {
+    model: Dateable,
+    as: "dateable",
+    include: [dateRangesQueryPart(seasonId)],
+  };
+}
+
+/**
+ * Returns a query part for including FeatureType details with a Feature.
+ * @returns {Object} Sequelize query part for fetching FeatureType details
+ */
+function featureTypeQueryPart() {
+  return {
+    model: FeatureType,
+    as: "featureType",
+    attributes: ["id", "name"],
+  };
+}
+
+// Common attributes for all Season queries
+const SEASON_ATTRIBUTES = [
+  "id",
+  "operatingYear",
+  "status",
+  "readyToPublish",
+  "editable",
+  "publishableId",
+];
+
+// Get all form data and DateRanges for a Feature Season
 router.get(
-  "/:seasonId",
+  "/feature/:seasonId",
   asyncHandler(async (req, res) => {
-    // @TODO: Reimplement this endpoint to use the publishable model
-    const error = new Error("Not implemented yet");
-
-    error.status = 501;
-    throw error;
-
-    const { seasonId } = req.params;
+    const seasonId = Number(req.params.seasonId);
 
     const seasonModel = await Season.findByPk(seasonId, {
-      attributes: [
-        "id",
-        "operatingYear",
-        "status",
-        "readyToPublish",
-        "editable",
-      ],
+      attributes: SEASON_ATTRIBUTES,
       include: [
+        // Feature details
         {
-          model: FeatureType,
-          as: "featureType",
-          attributes: ["id", "name", "icon"],
-        },
-        {
-          model: Park,
-          as: "park",
-          attributes: ["id", "name", "orcs"],
-        },
-        {
-          model: SeasonChangeLog,
-          as: "changeLogs",
-          attributes: ["id", "notes", "createdAt"],
-          // Filter out empty notes
-          where: {
-            notes: {
-              [Op.ne]: "",
-            },
-          },
-          required: false,
-          order: [["createdAt", "DESC"]],
+          model: Feature,
+          as: "feature",
           include: [
+            featureTypeQueryPart(),
+
+            // Park Area, if any
             {
-              model: User,
-              as: "user",
+              model: ParkArea,
+              as: "parkArea",
               attributes: ["id", "name"],
-            },
-          ],
-        },
-      ],
-    });
-
-    if (!seasonModel) {
-      const error = new Error("Season not found");
-
-      error.status = 404;
-      throw error;
-    }
-
-    const season = seasonModel.toJSON();
-    const prevSeason = await Season.findOne({
-      where: {
-        parkId: season.park.id,
-        featureTypeId: season.featureType.id,
-        operatingYear: season.operatingYear - 1,
-      },
-      attributes: ["id"],
-    });
-
-    // we want to get the features for this season and the previous season
-    // seasonsIds will be used to query the date ranges
-    const seasonIds = [season.id];
-
-    if (prevSeason) {
-      seasonIds.push(prevSeason.id);
-    }
-
-    // we fetch features separately
-    // later assign each feature's date ranges to the respective season
-    const parkFeatures = await Feature.findAll({
-      where: {
-        parkId: season.park.id,
-        active: true,
-        featureTypeId: season.featureType.id,
-      },
-      attributes: ["id", "name", "hasReservations", "active"],
-      include: [
-        {
-          model: ParkArea,
-          as: "parkArea",
-          attributes: ["id", "name"],
-        },
-        {
-          model: Dateable,
-          as: "dateable",
-          attributes: ["id"],
-          required: false,
-          include: [
-            // get all the dateRanges for this feature for this season and previous season
-            {
-              model: DateRange,
-              as: "dateRanges",
               required: false,
-              attributes: ["id", "seasonId", "startDate", "endDate"],
-              include: [
-                {
-                  model: DateType,
-                  as: "dateType",
-                  attributes: ["id", "name", "description"],
-                },
-              ],
-              where: {
-                seasonId: {
-                  [Op.or]: seasonIds,
-                },
-              },
             },
+
+            // Park details
+            {
+              model: Park,
+              as: "park",
+            },
+
+            // Dates for this Feature Season
+            dateableAndDatesQueryPart(seasonId),
           ],
         },
+
+        changeLogsQueryPart(),
       ],
     });
 
-    // we want to get all the date types for this season
-    const dateTypes = {};
+    checkSeasonExists(seasonModel);
 
-    // add datetypes from the db to map
-    const dateTypesFromDb = await DateType.findAll({
-      attributes: ["id", "name", "description"],
-      where: {
-        name: {
-          [Op.in]: ["Operation", "Reservation"],
-        },
-      },
-    });
+    // Get the previous year's Season Dates for this Feature
+    const previousSeason = await getPreviousSeasonDates(seasonModel);
 
-    dateTypesFromDb.forEach((dateType) => {
-      dateTypes[dateType.name] = dateType.toJSON();
-    });
-
-    let features = parkFeatures.map((featureObj) => {
-      const feature = featureObj.toJSON();
-
-      // each feature will have an array of date ranges for the current season and the previous season
-      // we'll remove the dateRanges array and add currentSeasonDates and previousSeasonDates arrays
-      // so that the client can easily sort them
-      feature.dateable.currentSeasonDates = [];
-      feature.dateable.previousSeasonDates = [];
-
-      feature.dateable.dateRanges = _.orderBy(
-        feature.dateable.dateRanges,
-        "startDate",
-      );
-
-      feature.dateable.dateRanges.forEach((dateRange) => {
-        if (dateRange.seasonId === season.id) {
-          feature.dateable.currentSeasonDates.push(dateRange);
-        }
-
-        if (dateRange.seasonId === prevSeason?.id) {
-          feature.dateable.previousSeasonDates.push(dateRange);
-        }
-      });
-      delete feature.dateable.dateRanges;
-      return feature;
-    });
-
-    // Order features alphabetically before grouping by parkArea
-    features = _.orderBy(features, ["name"], ["asc"]);
-
-    const parkAreasMap = {};
-
-    // some features are grouped by parkAreas
-    // we want to assign each feature to the respective parkArea if it exists
-    features.forEach((feature) => {
-      if (feature.parkArea) {
-        if (!parkAreasMap[feature.parkArea.id]) {
-          parkAreasMap[feature.parkArea.id] = {
-            id: feature.parkArea.id,
-            name: feature.parkArea.name,
-            features: [],
-          };
-        }
-
-        parkAreasMap[feature.parkArea.id].features.push({
-          ...feature,
-          name: feature.name === "All sites" ? "" : feature.name,
-        });
-      }
-    });
-
-    const parkAreas = Object.values(parkAreasMap);
-
-    const output = {
-      ...season,
-      dateTypes,
-      parkAreas,
-      // we want to send only the features that are not grouped by parkAreas
-      features: features.filter((feature) => !feature.parkArea),
-    };
+    const output = { current: seasonModel, previous: previousSeason };
 
     res.json(output);
   }),
 );
 
-// SAVING FORMS
-// - save draft (operator)
-// - submit for review (operator)
-// - save draft (staff)
-// - approve (staff)
+// Get all form data and DateRanges for a ParkArea Season
+router.get(
+  "/park-area/:seasonId",
+  asyncHandler(async (req, res) => {
+    const seasonId = Number(req.params.seasonId);
 
-// save draft (role determined by user)
+    const seasonModel = await Season.findByPk(seasonId, {
+      attributes: SEASON_ATTRIBUTES,
+      include: [
+        // Park Area details
+        {
+          model: ParkArea,
+          as: "parkArea",
+          include: [
+            {
+              model: Park,
+              as: "park",
+            },
+
+            // Dates for this Park Area Season
+            dateableAndDatesQueryPart(seasonId),
+
+            {
+              model: Feature,
+              as: "features",
+              include: [
+                featureTypeQueryPart(),
+
+                // Dates for this Feature Season
+                dateableAndDatesQueryPart(seasonId),
+              ],
+            },
+          ],
+        },
+
+        changeLogsQueryPart(),
+      ],
+    });
+
+    checkSeasonExists(seasonModel);
+
+    // Get the previous year's Season Dates for this Feature
+    const previousSeason = await getPreviousSeasonDates(seasonModel);
+
+    const output = { current: seasonModel, previous: previousSeason };
+
+    res.json(output);
+  }),
+);
+
+// Get all form data and DateRanges for a Park Season
+router.get(
+  "/park/:seasonId",
+  asyncHandler(async (req, res) => {
+    const seasonId = Number(req.params.seasonId);
+
+    const seasonModel = await Season.findByPk(seasonId, {
+      attributes: SEASON_ATTRIBUTES,
+      include: [
+        // Park Area details
+        {
+          model: Park,
+          as: "park",
+
+          include: [
+            // Park-level dates
+            // Dates for this Park Season
+            dateableAndDatesQueryPart(seasonId),
+
+            // Park Areas for this Park Season
+            {
+              model: ParkArea,
+              as: "parkAreas",
+              required: false,
+              include: [
+                // Dates for this Park Area Season
+                dateableAndDatesQueryPart(seasonId),
+
+                {
+                  model: Feature,
+                  as: "features",
+                  include: [
+                    featureTypeQueryPart(),
+
+                    // Dates for this Feature Season
+                    dateableAndDatesQueryPart(seasonId),
+                  ],
+                },
+              ],
+            },
+
+            // Features that aren't in a Park Area
+            {
+              model: Feature,
+              as: "features",
+              where: {
+                parkAreaId: null, // Only get Features not in a Park Area
+              },
+              required: false,
+              include: [
+                featureTypeQueryPart(),
+
+                // Dates for this Feature Season
+                dateableAndDatesQueryPart(seasonId),
+              ],
+            },
+          ],
+        },
+
+        changeLogsQueryPart(),
+      ],
+    });
+
+    checkSeasonExists(seasonModel);
+
+    // Get the previous year's Season Dates for this Feature
+    const previousSeason = await getPreviousSeasonDates(seasonModel);
+
+    const output = { current: seasonModel, previous: previousSeason };
+
+    res.json(output);
+  }),
+);
+
+// Save draft
 router.post(
   "/:seasonId/save/",
   sanitizePayload,
   asyncHandler(async (req, res) => {
-    // @TODO: Reimplement this endpoint to use the publishable model
-    const error = new Error("Not implemented yet");
-
-    error.status = 501;
-    throw error;
-
     const seasonId = Number(req.params.seasonId);
-    const { notes, dates, deletedDateRangeIds = [] } = req.body;
+    const {
+      notes = "",
+      dateRanges = [],
+      deletedDateRangeIds = [],
+      readyToPublish,
+    } = req.body;
 
-    // when we add roles: we need to check that this user has permission to edit this season
-    // staff or operator that has access to this park
+    // Check if the season exists
+    const season = await Season.findByPk(seasonId, {});
 
-    const season = await Season.findByPk(seasonId, {
-      include: [
-        {
-          model: Park,
-          as: "park",
-          attributes: ["id"],
-        },
-      ],
-    });
+    checkSeasonExists(season);
 
-    if (!season) {
-      const error = new Error("Season not found");
+    const newStatus = "requested";
 
-      error.status = 404;
-      throw error;
-    }
-
-    // this will depend on the user's role
-    // right now we're just setting everything to requested
-    // const newStatus = getNewStatusForSeason(season, null);
-
-    // If no readyToPublish is provided, treat it as unchanged
-    const readyToPublish = req.body.readyToPublish ?? season.readyToPublish;
-
-    // create season change log
+    // Create season change log with the notes
     const seasonChangeLog = await SeasonChangeLog.create({
       seasonId,
       userId: req.user.id,
       notes,
       statusOldValue: season.status,
-      statusNewValue: "requested",
+      statusNewValue: newStatus,
       readyToPublishOldValue: season.readyToPublish,
       readyToPublishNewValue: readyToPublish,
     });
 
-    // Update season
-    const saveSeason = Season.update(
-      {
-        readyToPublish,
-        status: "requested",
-      },
-      {
-        where: {
-          id: seasonId,
-        },
-      },
-    );
+    // Update the season object with the new status and readyToPublish values
+    const saveSeason = updateStatus(seasonId, newStatus, readyToPublish);
 
     // Create date change logs for updated dateRanges
-    const existingDateIds = dates
+    const existingDateIds = dateRanges
       .filter((date) => date.id)
       .map((date) => date.id);
     const existingDateRows = await DateRange.findAll({
@@ -331,7 +399,7 @@ router.post(
       },
     });
 
-    const datesToUpdateByid = _.keyBy(dates, "id");
+    const datesToUpdateByid = _.keyBy(dateRanges, "id");
     const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
       const newDateRange = datesToUpdateByid[oldDateRange.id];
 
@@ -348,7 +416,7 @@ router.post(
     const createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate);
 
     // Update or create dateRanges
-    const updateDates = DateRange.bulkCreate(dates, {
+    const updateDates = DateRange.bulkCreate(dateRanges, {
       updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
     });
 
@@ -367,130 +435,32 @@ router.post(
   }),
 );
 
-// approve
+// Approve
 router.post(
   "/:seasonId/approve/",
   checkPermissions(adminsAndApprovers),
   asyncHandler(async (req, res) => {
-    const { seasonId } = req.params;
-    const { notes, readyToPublish } = req.body;
+    const seasonId = Number(req.params.seasonId);
 
-    const season = await Season.findByPk(seasonId, {
-      include: [
-        {
-          model: FeatureType,
-          as: "featureType",
-          attributes: ["id", "name"],
-        },
-        {
-          model: DateRange,
-          as: "dateRanges",
-          attributes: ["id", "startDate", "endDate", "dateTypeId"],
-          include: [
-            {
-              model: DateType,
-              as: "dateType",
-              attributes: ["id", "name"],
-            },
-          ],
-        },
-      ],
-    });
-
-    if (!season) {
-      const error = new Error("Season not found");
-
-      error.status = 404;
-      throw error;
-    }
+    const season = await updateStatus(seasonId, "approved");
 
     // Create "First come, first served" DateRange if applicable
     await createFirstComeFirstServedDateRange(season);
 
-    // Approving a season can have more than one note
-    // if the approved season has some empty dates
-    const notesToCreate = notes
-      .filter((n) => n !== "")
-      .map((note) => ({
-        seasonId,
-        userId: req.user.id,
-        notes: note,
-        statusOldValue: season.status,
-        statusNewValue: "approved",
-        readyToPublishOldValue: season.readyToPublish,
-        readyToPublishNewValue: readyToPublish,
-      }));
-
-    // bulk create season change logs
-    SeasonChangeLog.bulkCreate(notesToCreate);
-
-    // update season
-    Season.update(
-      {
-        readyToPublish,
-        status: "approved",
-      },
-      {
-        where: {
-          id: seasonId,
-        },
-      },
-    );
-
     res.sendStatus(200);
   }),
 );
 
-// submit for review
+// Submit for review
 router.post(
-  "/:seasonId/submit-for-approval/",
+  "/:seasonId/submit/",
   asyncHandler(async (req, res) => {
-    const { seasonId } = req.params;
-    const { notes } = req.body;
+    const seasonId = Number(req.params.seasonId);
 
-    const season = await Season.findByPk(seasonId);
-
-    if (!season) {
-      const error = new Error("Season not found");
-
-      error.status = 404;
-      throw error;
-    }
-
-    // Submitting a season for review can have more than one note
-    // if the approved season has some empty dates
-    const notesToCreate = notes
-      .filter((n) => n !== "")
-      .map((note) => ({
-        seasonId,
-        userId: req.user.id,
-        notes: note,
-        statusOldValue: season.status,
-        statusNewValue: "pending review",
-        // Treat it as unchanged: submitters can't change readyToPublish
-        readyToPublishOldValue: season.readyToPublish,
-        readyToPublishNewValue: season.readyToPublish,
-      }));
-
-    // bulk create season change logs
-    SeasonChangeLog.bulkCreate(notesToCreate);
-
-    // update season
-    Season.update(
-      {
-        status: "pending review",
-      },
-      {
-        where: {
-          id: seasonId,
-        },
-      },
-    );
+    await updateStatus(seasonId, "pending review");
 
     res.sendStatus(200);
   }),
 );
-
-// publish
 
 export default router;
