@@ -9,8 +9,21 @@ export default (sequelize) => {
     static associate(models) {
       // define association here
       Season.belongsTo(models.Park, {
-        foreignKey: "parkId",
+        foreignKey: "publishableId",
+        targetKey: "publishableId",
         as: "park",
+      });
+
+      Season.belongsTo(models.ParkArea, {
+        foreignKey: "publishableId",
+        targetKey: "publishableId",
+        as: "parkArea",
+      });
+
+      Season.belongsTo(models.Feature, {
+        foreignKey: "publishableId",
+        targetKey: "publishableId",
+        as: "feature",
       });
 
       // Deprecated but not removed yet
@@ -39,7 +52,7 @@ export default (sequelize) => {
   Season.init(
     {
       operatingYear: DataTypes.INTEGER,
-      parkId: DataTypes.INTEGER,
+      parkId: DataTypes.INTEGER, // deprecated: use publishableId instead
       featureTypeId: DataTypes.INTEGER,
       status: DataTypes.STRING,
       readyToPublish: {

@@ -17,6 +17,10 @@ const router = Router();
 
 // Functions
 function getParkStatus(seasons) {
+  // @TODO: fix this
+  console.log("getParkStatus", seasons);
+  if (!seasons) return "requested";
+
   // if any season has status==requested, return requested
   // else if any season has status==pending review, return pending review
   // else if any season has status==approved, return approved
@@ -105,7 +109,7 @@ function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
   // get season for park.feature
   // filter park.seasons by feature.publishableId
   // backwards compatibility - filter park.seasons by feature.featureType.publishableId
-  const featureSeasons = parkSeasons.filter(
+  const featureSeasons = parkSeasons?.filter(
     (parkSeason) =>
       parkSeason.publishableId === feature.publishableId ||
       (feature.featureType &&
@@ -130,6 +134,54 @@ function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
   };
 }
 
+const MIN_YEAR_TEMP = 2024;
+
+const itemDates = {
+  model: Season,
+  as: "seasons",
+  attributes: [
+    "id",
+    "publishableId",
+    "featureTypeId",
+    "status",
+    "readyToPublish",
+    "operatingYear",
+  ],
+  // required: true,
+  // filter seasons with operatingYear >= minYear
+  where: {
+    operatingYear: {
+      [Op.gte]: MIN_YEAR_TEMP,
+    },
+  },
+  include: [
+    {
+      model: Publishable,
+      as: "publishable",
+      attributes: ["id"],
+      // include: [
+      //   {
+      //     model: FeatureType,
+      //     as: "featureType",
+      //     attributes: ["id", "name"],
+      //   },
+      // ],
+    },
+    {
+      model: DateRange,
+      as: "dateRanges",
+      attributes: ["id", "dateableId", "startDate", "endDate"],
+      include: [
+        {
+          model: DateType,
+          as: "dateType",
+          attributes: ["id", "name"],
+        },
+      ],
+    },
+  ],
+};
+
 router.get(
   "/",
   asyncHandler(async (req, res) => {
@@ -147,9 +199,14 @@ router.get(
         "inReservationSystem",
       ],
       include: [
+        // Publishable Features that aren't part of a ParkArea
         {
           model: Feature,
           as: "features",
+          where: {
+            parkAreaId: null,
+          },
+          required: false,
           attributes: [
             "id",
             "dateableId",
@@ -164,70 +221,63 @@ router.get(
               as: "featureType",
               attributes: ["id", "publishableId", "name"],
             },
+            // Publishable and Dates for the Feature
+            itemDates,
           ],
         },
-        {
-          model: ParkArea,
-          as: "parkAreas",
-          attributes: ["id", "dateableId", "publishableId", "name"],
-          // filter parkAreas that are publishable
-          where: {
-            publishableId: {
-              [Op.ne]: null,
-            },
-          },
-        },
-        {
-          model: Season,
-          as: "seasons",
-          attributes: [
-            "id",
-            "publishableId",
-            "featureTypeId",
-            "status",
-            "readyToPublish",
-            "operatingYear",
-          ],
-          required: true,
-          // filter seasons with operatingYear >= minYear
-          where: {
-            operatingYear: {
-              [Op.gte]: minYear,
-            },
-          },
-          include: [
-            {
-              model: Publishable,
-              as: "publishable",
-              attributes: ["id"],
-              include: [
-                {
-                  model: FeatureType,
-                  as: "featureType",
-                  attributes: ["id", "name"],
-                },
-              ],
-            },
-            {
-              model: DateRange,
-              as: "dateRanges",
-              attributes: ["id", "dateableId", "startDate", "endDate"],
-              include: [
-                {
-                  model: DateType,
-                  as: "dateType",
-                  attributes: ["id", "name"],
-                },
-              ],
-            },
-          ],
-        },
+
+        // Park areas
+        // {
+        //   model: ParkArea,
+        //   as: "parkAreas",
+        //   attributes: ["id", "dateableId", "publishableId", "name"],
+
+        //   include: [
+        //     // Features that are part of the ParkArea
+        //     {
+        //       model: Feature,
+        //       as: "features",
+        //       attributes: [
+        //         "id",
+        //         "dateableId",
+        //         "publishableId",
+        //         "parkAreaId",
+        //         "name",
+        //         "inReservationSystem",
+        //       ],
+        //       include: [
+        //         {
+        //           model: FeatureType,
+        //           as: "featureType",
+        //           attributes: ["id", "publishableId", "name"],
+        //         },
+        //       ],
+        //     },
+
+        //     // Publishable for the ParkArea
+        //     {
+        //       model: Publishable,
+        //       as: "publishable",
+        //       attributes: ["id"],
+        //       include: [
+        //         {
+        //           model: FeatureType,
+        //           as: "featureType",
+        //           attributes: ["id", "name"],
+        //         },
+        //       ],
+        //     },
+        //   ],
+        // },
+
+        // Publishable Seasons for the Park itself
+        // itemDates,
       ],
-      order: [
-        ["name", "ASC"],
-        [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
-        [{ model: Feature, as: "features" }, "name", "ASC"],
-      ],
+      // order: [
+      //   // ["name", "ASC"],
+      //   // [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
+      //   // [{ model: Feature, as: "features" }, "name", "ASC"],
+      // ],
     });
 
     const output = parks.map((park) => {
@@ -251,12 +301,12 @@ router.get(
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,
-        status: getParkStatus(park.seasons),
+        status: getParkStatus(park.seasons), //
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, allDateRanges, park.seasons),
         ),
-        parkAreas: park.parkAreas.map((parkArea) => {
+        parkAreas: park.parkAreas?.map((parkArea) => {
           // get date ranges for park.parkArea
           // filter allDateRanges by parkArea.dateableId
           const parkAreaDateRanges = allDateRanges
@@ -309,7 +359,7 @@ router.get(
             groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
           };
         }),
-        seasons: park.seasons.map((season) => ({
+        seasons: park.seasons?.map((season) => ({
           id: season.id,
           publishableId: season.publishableId,
           operatingYear: season.operatingYear,
@@ -321,83 +371,12 @@ router.get(
           readyToPublish: season.readyToPublish,
           dateRanges: season.dateRanges.map(buildDateRangeObject),
         })),
-        readyToPublish: park.seasons.every((season) => season.readyToPublish),
+        readyToPublish: park.seasons?.every((season) => season.readyToPublish),
       };
     });
 
     // Return all rows
     res.json(output);
-  }),
-);
-
-router.get(
-  "/:orcs",
-  asyncHandler(async (req, res) => {
-    const { orcs } = req.params;
-
-    const park = await Park.findOne({
-      where: { orcs },
-      attributes: ["orcs", "name"],
-      include: [
-        {
-          model: Season,
-          as: "seasons",
-          attributes: [
-            "id",
-            "operatingYear",
-            "status",
-            "editable",
-            "updatedAt",
-            "readyToPublish",
-          ],
-          include: [
-            {
-              model: Publishable,
-              as: "publishable",
-              attributes: ["id"],
-              include: [
-                {
-                  model: FeatureType,
-                  as: "featureType",
-                  attributes: ["id", "name", "icon"],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
-
-    if (!park) {
-      const error = new Error(`Park not found: ${orcs}`);
-
-      error.status = 404;
-      throw error;
-    }
-
-    const parkJson = park.toJSON();
-
-    const featureTypes = _.mapValues(
-      // group seasons by feature type
-      _.groupBy(parkJson.seasons, (s) => s.publishable.featureType?.name),
-
-      // sort by year
-      (group) => _.orderBy(group, ["operatingYear"], ["desc"]),
-    );
-
-    const winterFees = [];
-
-    // move winter fees to the root object
-    // so the frontend can treat it differently
-    if ("Winter fee" in featureTypes) {
-      winterFees.push(...featureTypes["Winter fee"]);
-      delete featureTypes["Winter fee"];
-    }
-
-    // remove unused season key
-    delete parkJson.seasons;
-
-    res.json({ ...parkJson, featureTypes, winterFees });
   }),
 );
 
