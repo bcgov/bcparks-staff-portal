@@ -23,7 +23,7 @@ import {
   sanitizePayload,
 } from "../../middleware/permissions.js";
 
-import { createFirstComeFirstServedDateRange } from "../utils/dateHelper.js";
+import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 
 const router = Router();
 
