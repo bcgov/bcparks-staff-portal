@@ -53,6 +53,7 @@ export default (sequelize) => {
     {
       operatingYear: DataTypes.INTEGER,
       parkId: DataTypes.INTEGER, // deprecated: use publishableId instead
+      publishableId: DataTypes.INTEGER,
       featureTypeId: DataTypes.INTEGER,
       status: DataTypes.STRING,
       readyToPublish: {

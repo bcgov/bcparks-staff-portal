@@ -5,7 +5,6 @@ import {
   Park,
   Season,
   FeatureType,
-  Publishable,
   DateRange,
   DateType,
   Feature,
@@ -13,12 +12,53 @@ import {
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
+// Constants
 const router = Router();
+const currentYear = new Date().getFullYear();
+const minYear = currentYear - 1;
+
+const seasonModel = {
+  model: Season,
+  as: "seasons",
+  attributes: [
+    "id",
+    "publishableId",
+    "featureTypeId",
+    "status",
+    "readyToPublish",
+    "operatingYear",
+  ],
+  // filter seasons with operatingYear >= minYear
+  where: {
+    operatingYear: {
+      [Op.gte]: minYear,
+    },
+  },
+  include: [
+    {
+      model: DateRange,
+      as: "dateRanges",
+      attributes: ["id", "dateableId", "startDate", "endDate"],
+      include: [
+        {
+          model: DateType,
+          as: "dateType",
+          attributes: ["id", "name"],
+        },
+      ],
+    },
+  ],
+};
 
 // Functions
-function getParkStatus(seasons) {
+// get all date ranges from seasons
+function getAllDateRanges(seasons) {
+  return _.flatMap(seasons, (season) => season.dateRanges);
+}
+
+// get publishable item status from seasons
+function getStatus(seasons) {
   // @TODO: fix this
-  console.log("getParkStatus", seasons);
   if (!seasons) return "requested";
 
   // if any season has status==requested, return requested
@@ -86,35 +126,11 @@ function buildDateRangeObject(dateRange) {
   };
 }
 
-// build a season output object
-function buildSeasonOutput(matchedSeason) {
-  return {
-    id: matchedSeason.id,
-    publishableId: matchedSeason.publishableId,
-    featureTypeId: matchedSeason.featureTypeId,
-    status: matchedSeason.status,
-    operatingYear: matchedSeason.operatingYear,
-    readyToPublish: matchedSeason.readyToPublish,
-  };
-}
-
 // build feature output object
-function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
+function buildFeatureOutput(feature) {
   // get date ranges for park.feature
-  // filter allDateRanges by feature.dateableId
-  const featureDateRanges = allDateRanges
-    .filter((dateRange) => dateRange.dateableId === feature.dateableId)
-    .map(buildDateRangeObject);
-
-  // get season for park.feature
-  // filter park.seasons by feature.publishableId
-  // backwards compatibility - filter park.seasons by feature.featureType.publishableId
-  const featureSeasons = parkSeasons?.filter(
-    (parkSeason) =>
-      parkSeason.publishableId === feature.publishableId ||
-      (feature.featureType &&
-        feature.featureType.publishableId &&
-        parkSeason.publishableId === feature.featureType.publishableId),
+  const featureDateRanges = getAllDateRanges(feature.seasons).map(
+    buildDateRangeObject,
   );
 
   return {
@@ -129,65 +145,15 @@ function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
       publishableId: feature.featureType.publishableId,
       name: feature.featureType.name,
     },
-    status: getParkStatus(featureSeasons),
+    seasons: feature.seasons,
+    status: getStatus(feature.seasons),
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
   };
 }
 
-const MIN_YEAR_TEMP = 2024;
-
-const itemDates = {
-  model: Season,
-  as: "seasons",
-  attributes: [
-    "id",
-    "publishableId",
-    "featureTypeId",
-    "status",
-    "readyToPublish",
-    "operatingYear",
-  ],
-  // required: true,
-  // filter seasons with operatingYear >= minYear
-  where: {
-    operatingYear: {
-      [Op.gte]: MIN_YEAR_TEMP,
-    },
-  },
-  include: [
-    {
-      model: Publishable,
-      as: "publishable",
-      attributes: ["id"],
-      // include: [
-      //   {
-      //     model: FeatureType,
-      //     as: "featureType",
-      //     attributes: ["id", "name"],
-      //   },
-      // ],
-    },
-    {
-      model: DateRange,
-      as: "dateRanges",
-      attributes: ["id", "dateableId", "startDate", "endDate"],
-      include: [
-        {
-          model: DateType,
-          as: "dateType",
-          attributes: ["id", "name"],
-        },
-      ],
-    },
-  ],
-};
-
 router.get(
   "/",
   asyncHandler(async (req, res) => {
-    const currentYear = new Date().getFullYear();
-    const minYear = currentYear - 1;
-
     const parks = await Park.findAll({
       attributes: [
         "id",
@@ -222,75 +188,151 @@ router.get(
               attributes: ["id", "publishableId", "name"],
             },
             // Publishable and Dates for the Feature
-            itemDates,
+            seasonModel,
           ],
         },
 
         // Park areas
-        // {
-        //   model: ParkArea,
-        //   as: "parkAreas",
-        //   attributes: ["id", "dateableId", "publishableId", "name"],
+        {
+          model: ParkArea,
+          as: "parkAreas",
+          attributes: ["id", "dateableId", "publishableId", "name"],
 
-        //   include: [
-        //     // Features that are part of the ParkArea
-        //     {
-        //       model: Feature,
-        //       as: "features",
-        //       attributes: [
-        //         "id",
-        //         "dateableId",
-        //         "publishableId",
-        //         "parkAreaId",
-        //         "name",
-        //         "inReservationSystem",
-        //       ],
-        //       include: [
-        //         {
-        //           model: FeatureType,
-        //           as: "featureType",
-        //           attributes: ["id", "publishableId", "name"],
-        //         },
-        //       ],
-        //     },
-
-        //     // Publishable for the ParkArea
-        //     {
-        //       model: Publishable,
-        //       as: "publishable",
-        //       attributes: ["id"],
-        //       include: [
-        //         {
-        //           model: FeatureType,
-        //           as: "featureType",
-        //           attributes: ["id", "name"],
-        //         },
-        //       ],
-        //     },
-        //   ],
-        // },
+          include: [
+            // Features that are part of the ParkArea
+            {
+              model: Feature,
+              as: "features",
+              attributes: [
+                "id",
+                "dateableId",
+                "publishableId",
+                "parkAreaId",
+                "name",
+                "inReservationSystem",
+              ],
+              include: [
+                {
+                  model: FeatureType,
+                  as: "featureType",
+                  attributes: ["id", "publishableId", "name"],
+                },
+                // Publishable and Dates for the Feature
+                {
+                  model: Season,
+                  as: "seasons",
+                  attributes: [
+                    "id",
+                    "publishableId",
+                    "featureTypeId",
+                    "status",
+                    "readyToPublish",
+                    "operatingYear",
+                  ],
+                  where: {
+                    operatingYear: {
+                      [Op.gte]: minYear,
+                    },
+                  },
+                  include: [
+                    {
+                      model: DateRange,
+                      as: "dateRanges",
+                      attributes: ["id", "dateableId", "startDate", "endDate"],
+                      include: [
+                        {
+                          model: DateType,
+                          as: "dateType",
+                          attributes: ["id", "name"],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+            // Publishable and Dates for the ParkArea
+            {
+              model: Season,
+              as: "seasons",
+              attributes: [
+                "id",
+                "publishableId",
+                "featureTypeId",
+                "status",
+                "readyToPublish",
+                "operatingYear",
+              ],
+              where: {
+                operatingYear: {
+                  [Op.gte]: minYear,
+                },
+              },
+              include: [
+                {
+                  model: DateRange,
+                  as: "dateRanges",
+                  attributes: ["id", "dateableId", "startDate", "endDate"],
+                  include: [
+                    {
+                      model: DateType,
+                      as: "dateType",
+                      attributes: ["id", "name"],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
 
         // Publishable Seasons for the Park itself
         // itemDates,
+        {
+          model: Season,
+          as: "seasons",
+          attributes: [
+            "id",
+            "publishableId",
+            "featureTypeId",
+            "status",
+            "readyToPublish",
+            "operatingYear",
+          ],
+          where: {
+            operatingYear: {
+              [Op.gte]: minYear,
+            },
+          },
+          include: [
+            {
+              model: DateRange,
+              as: "dateRanges",
+              attributes: ["id", "dateableId", "startDate", "endDate"],
+              include: [
+                {
+                  model: DateType,
+                  as: "dateType",
+                  attributes: ["id", "name"],
+                },
+              ],
+            },
+          ],
+        },
       ],
-      // order: [
-      //   // ["name", "ASC"],
-      //   // [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
-      //   // [{ model: Feature, as: "features" }, "name", "ASC"],
-      // ],
+      order: [
+        ["name", "ASC"],
+        [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
+        [{ model: Feature, as: "features" }, "name", "ASC"],
+      ],
     });
 
     const output = parks.map((park) => {
-      const allDateRanges = _.flatMap(
-        park.seasons,
-        (season) => season.dateRanges,
-      );
-
       // get date ranges for park
       // filter allDateRanges by park.dateableId
-      const parkDateRanges = allDateRanges
-        .filter((dateRange) => dateRange.dateableId === park.dateableId)
-        .map(buildDateRangeObject);
+      const parkDateRanges = getAllDateRanges(park.seasons).map(
+        buildDateRangeObject,
+      );
 
       return {
         id: park.id,
@@ -301,61 +343,39 @@ router.get(
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,
-        status: getParkStatus(park.seasons), //
+        status: getStatus(park.seasons),
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
-        features: park.features.map((feature) =>
-          buildFeatureOutput(feature, allDateRanges, park.seasons),
-        ),
+        features: park.features.map((feature) => buildFeatureOutput(feature)),
         parkAreas: park.parkAreas?.map((parkArea) => {
           // get date ranges for park.parkArea
-          // filter allDateRanges by parkArea.dateableId
-          const parkAreaDateRanges = allDateRanges
-            .filter((dateRange) => dateRange.dateableId === parkArea.dateableId)
-            .map(buildDateRangeObject);
-
-          // get features for park.parkArea
-          // filter park.features by parkArea.id
-          const parkAreaFeatures = park.features
-            .filter((parkFeature) => parkFeature.parkAreaId === parkArea.id)
-            .map((parkFeature) =>
-              buildFeatureOutput(parkFeature, allDateRanges, park.seasons),
-            );
+          const parkAreaDateRanges = getAllDateRanges(parkArea.seasons).map(
+            buildDateRangeObject,
+          );
 
           // add featureType to parkArea if all features have the same featureType
           let featureType = null;
 
           if (
-            parkAreaFeatures.length > 0 &&
-            parkAreaFeatures.every(
+            parkArea.features.length > 0 &&
+            parkArea.features.every(
               (parkAreaFeature) =>
                 parkAreaFeature.featureType &&
                 parkAreaFeature.featureType.id ===
-                  parkAreaFeatures[0].featureType.id,
+                  parkArea.features[0].featureType.id,
             )
           ) {
-            featureType = { ...parkAreaFeatures[0].featureType };
+            featureType = { ...parkArea.features[0].featureType };
           }
-
-          // get season for park.parkArea
-          // filter park.seasons by parkArea.publishableId
-          // backwards compatibility - filter park.seasons by parkArea.featureType.publishableId
-
-          const parkAreaSeasons = park.seasons.filter(
-            (parkSeason) =>
-              parkSeason.publishableId === parkArea.publishableId ||
-              (featureType &&
-                featureType.publishableId &&
-                parkSeason.publishableId === featureType.publishableId),
-          );
 
           return {
             id: parkArea.id,
             dateableId: parkArea.dateableId,
             publishableId: parkArea.publishableId,
             name: parkArea.name,
-            features: parkAreaFeatures,
+            features: parkArea.features,
             ...(featureType && { featureType }),
-            status: getParkStatus(parkAreaSeasons),
+            seasons: parkArea.seasons,
+            status: getStatus(parkArea.seasons),
             groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
           };
         }),
@@ -364,10 +384,6 @@ router.get(
           publishableId: season.publishableId,
           operatingYear: season.operatingYear,
           status: season.status,
-          featureType: {
-            id: season.publishable.featureType?.id,
-            name: season.publishable.featureType?.name,
-          },
           readyToPublish: season.readyToPublish,
           dateRanges: season.dateRanges.map(buildDateRangeObject),
         })),
