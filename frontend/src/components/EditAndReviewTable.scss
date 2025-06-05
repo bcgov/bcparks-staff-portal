@@ -1,0 +1,20 @@
+table {
+  tr.table-row {
+    &--park {
+      th {
+        background-color: var(--theme-primary-blue);
+      }
+    }
+    &--park-area,
+    &--feature {
+      th {
+        background-color: var(--theme-blue-10);
+      }
+    }
+    &--park-area-feature {
+      th {
+        background-color: var(--theme-gray-10);
+      }
+    }
+  }
+}

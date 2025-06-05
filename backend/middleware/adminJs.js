@@ -205,6 +205,17 @@ const SeasonResource = {
 
   options: {
     actions: getSeasonActions(),
+    listProperties: [
+      "id",
+      "publishableId",
+      "featureTypeId",
+      "operatingYear",
+      "status",
+      "readyToPublish",
+      "editable",
+      "createdAt",
+      "updatedAt",
+    ]
   },
 };
 
