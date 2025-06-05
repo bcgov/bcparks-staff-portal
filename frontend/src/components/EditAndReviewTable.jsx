@@ -202,8 +202,7 @@ function Table({ park, formPanelHandler }) {
               id={parkArea.id}
               level="park-area"
               name={`${park.name} - ${parkArea.name}`}
-              typeName={parkArea.featureType?.name}
-              // typeName={parkArea.featureType?.dataValues.name}
+              typeName={parkArea.featureType.name}
               status={parkArea.status}
               formPanelHandler={() =>
                 formPanelHandler({ ...parkArea, level: "park-area" })
@@ -212,6 +211,7 @@ function Table({ park, formPanelHandler }) {
             <DateTypeTableRow groupedDateRanges={parkArea.groupedDateRanges} />
 
             {/* features that belong to park area */}
+            {/* these features might not be publishable */}
             {parkArea.features.map((parkFeature) => (
               <React.Fragment key={parkFeature.id}>
                 <tr className="table-row--park-area-feature">
@@ -231,9 +231,9 @@ function Table({ park, formPanelHandler }) {
         ))}
 
         {/* 3 - feature level */}
-        {/* features that don't belong to park area, and are publishable  */}
+        {/* features that don't belong to park area  */}
+        {/* these features are publishable */}
         {features
-          .filter((feature) => !feature.parkAreaId && feature.publishableId)
           .map((feature) => (
             <React.Fragment key={feature.id}>
               <StatusTableRow

@@ -171,6 +171,9 @@ router.get(
           as: "features",
           where: {
             parkAreaId: null,
+            publishableId: {
+              [Op.ne]: null,
+            },
           },
           required: false,
           attributes: [
@@ -287,7 +290,6 @@ router.get(
         },
 
         // Publishable Seasons for the Park itself
-        // itemDates,
         {
           model: Season,
           as: "seasons",
@@ -364,7 +366,7 @@ router.get(
                   parkArea.features[0].featureType.id,
             )
           ) {
-            featureType = { ...parkArea.features[0].featureType };
+            featureType = parkArea.features[0].featureType.get({ plain: true });
           }
 
           return {

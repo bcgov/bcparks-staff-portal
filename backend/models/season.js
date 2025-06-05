@@ -52,8 +52,8 @@ export default (sequelize) => {
   Season.init(
     {
       operatingYear: DataTypes.INTEGER,
-      parkId: DataTypes.INTEGER, // deprecated: use publishableId instead
       publishableId: DataTypes.INTEGER,
+      parkId: DataTypes.INTEGER, // deprecated: use publishableId instead
       featureTypeId: DataTypes.INTEGER,
       status: DataTypes.STRING,
       readyToPublish: {
