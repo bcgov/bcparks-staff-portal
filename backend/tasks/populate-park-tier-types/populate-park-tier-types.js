@@ -20,12 +20,9 @@ const updateQueries = jsonData.map(async (parkData) => {
       throw new Error(`Park with orcs ${orcs} not found.`);
     }
 
-    // Update the
+    // Update the park with the appropriate tier type
     const updateQuery = await park.update({
       [columnName]: true,
-      where: {
-        orcs,
-      },
     });
 
     console.log(`Updated park ${orcs} with tierType ${tierType}`);
