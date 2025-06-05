@@ -1,0 +1,226 @@
+[
+  {
+    "parkName": "Alice Lake Park",
+    "orcs": "90",
+    "note": "T1 in effect March 14, 2025 - Nov 2, 2025",
+    "tierType": "t1",
+    "startDate": "2025-03-14",
+    "endDate": "2025-11-02"
+  },
+  {
+    "parkName": "Cultus Lake Park",
+    "orcs": "41",
+    "note": "T2 in effect January 1, 2025 - March 27, 2025",
+    "tierType": "t2",
+    "startDate": "2025-01-01",
+    "endDate": "2025-03-27"
+  },
+  {
+    "parkName": "Cultus Lake Park",
+    "orcs": "41",
+    "note": "T1 in effect March 28, 2025 - November 16, 2025",
+    "tierType": "t1",
+    "startDate": "2025-03-28",
+    "endDate": "2025-11-16"
+  },
+  {
+    "parkName": "Cultus Lake Park",
+    "orcs": "41",
+    "note": "T2 in effect November 17, 2025 - December 31, 2025",
+    "tierType": "t2",
+    "startDate": "2025-11-17",
+    "endDate": "2025-12-31"
+  },
+  {
+    "parkName": "Fintry Park",
+    "orcs": "9213",
+    "note": "T1 in effect April 4, 2025 - October 13, 2025",
+    "tierType": "t1",
+    "startDate": "2025-04-04",
+    "endDate": "2025-10-13"
+  },
+  {
+    "parkName": "Goldstream Park",
+    "orcs": "96",
+    "note": "T2 in effect May 2, 2025 - May 15, 2025",
+    "tierType": "t2",
+    "startDate": "2025-05-02",
+    "endDate": "2025-05-15"
+  },
+  {
+    "parkName": "Goldstream Park",
+    "orcs": "96",
+    "note": "T1 in effect May 16, 2025 - Sept 1, 2025",
+    "tierType": "t1",
+    "startDate": "2025-05-16",
+    "endDate": "2025-09-01"
+  },
+  {
+    "parkName": "Goldstream Park",
+    "orcs": "96",
+    "note": "T2 in effect Sept 2, 2025 - Sept 13, 2025",
+    "tierType": "t2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-09-13"
+  },
+  {
+    "parkName": "Golden Ears Park",
+    "orcs": "8",
+    "note": "T2 in effect **Note: Golden Ears will remain in Tier 2 until further notice due to internet connectivity issues.",
+    "tierType": "t2",
+    "startDate": "2025-01-01",
+    "endDate": "2026-01-01"
+  },
+  {
+    "parkName": "Gordon Bay Park",
+    "orcs": "210",
+    "note": "T2 in effect January 1, 2025 - May 9, 2025",
+    "tierType": "t2",
+    "startDate": "2025-01-01",
+    "endDate": "2025-05-09"
+  },
+  {
+    "parkName": "Gordon Bay Park",
+    "orcs": "210",
+    "note": "T1 in effect May 10, 2025 - Aug 31, 2025",
+    "tierType": "t1",
+    "startDate": "2025-05-10",
+    "endDate": "2025-08-31"
+  },
+  {
+    "parkName": "Gordon Bay Park",
+    "orcs": "210",
+    "note": "T2 in effect Sept. 1, 2025 - Dec. 31, 2025",
+    "tierType": "t2",
+    "startDate": "2025-09-01",
+    "endDate": "2025-12-31"
+  },
+  {
+    "parkName": "Kikomun Creek Park",
+    "orcs": "235",
+    "note": "T2 in effect May 5 - June 24, 2025",
+    "tierType": "t2",
+    "startDate": "2025-05-05",
+    "endDate": "2025-06-24"
+  },
+  {
+    "parkName": "Kikomun Creek Park",
+    "orcs": "235",
+    "note": "T1 in effect June 25 - Sept 1, 2025",
+    "tierType": "t1",
+    "startDate": "2025-06-25",
+    "endDate": "2025-09-01"
+  },
+  {
+    "parkName": "Kikomun Creek Park",
+    "orcs": "235",
+    "note": "T2 in effect Sept 2 - Oct 1, 2025",
+    "tierType": "t2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-10-01"
+  },
+  {
+    "parkName": "Lakelse Lake Park",
+    "orcs": "70",
+    "note": "T1 in effect May 2, 2025 - September 14, 2025",
+    "tierType": "t1",
+    "startDate": "2025-05-02",
+    "endDate": "2025-09-14"
+  },
+  {
+    "parkName": "Lakelse Lake Park",
+    "orcs": "70",
+    "note": "T2 in effect September 15 - October 6, 2025",
+    "tierType": "t2",
+    "startDate": "2025-09-15",
+    "endDate": "2025-10-06"
+  },
+  {
+    "parkName": "Miracle Beach Park",
+    "orcs": "45",
+    "note": "T2 in effect March 14, 2025 - June 12, 2025",
+    "tierType": "t2",
+    "startDate": "2025-03-14",
+    "endDate": "2025-06-12"
+  },
+  {
+    "parkName": "Miracle Beach Park",
+    "orcs": "45",
+    "note": "T1 in effect June 13, 2025 - Sept 6, 2025",
+    "tierType": "t1",
+    "startDate": "2025-06-13",
+    "endDate": "2025-09-06"
+  },
+  {
+    "parkName": "Miracle Beach Park",
+    "orcs": "45",
+    "note": "T2 in effect Sept 7, 2025 - October 30, 2025",
+    "tierType": "t2",
+    "startDate": "2025-09-07",
+    "endDate": "2025-10-30"
+  },
+  {
+    "parkName": "Okanagan Lake Park",
+    "orcs": "54",
+    "note": "T2 in effect March 28, 2025 - June 10, 2025",
+    "tierType": "t2",
+    "startDate": "2025-03-28",
+    "endDate": "2025-06-10"
+  },
+  {
+    "parkName": "Okanagan Lake Park",
+    "orcs": "54",
+    "note": "T1 in effect June 11, 2025 - September 1, 2025",
+    "tierType": "t1",
+    "startDate": "2025-06-11",
+    "endDate": "2025-09-01"
+  },
+  {
+    "parkName": "Okanagan Lake Park",
+    "orcs": "54",
+    "note": "T2 in effect September 2, 2025 - October 13, 2025",
+    "tierType": "t2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-10-13"
+  },
+  {
+    "parkName": "Porteau Cove Park",
+    "orcs": "314",
+    "note": "T1 in effect Year Round",
+    "tierType": "t1",
+    "startDate": "2025-01-01",
+    "endDate": "2026-01-01"
+  },
+  {
+    "parkName": "Rathtrevor Beach Park",
+    "orcs": "193",
+    "note": "T2 in effect Apr 11, 2025 - May 15, 2025",
+    "tierType": "t2",
+    "startDate": "2025-04-11",
+    "endDate": "2025-05-15"
+  },
+  {
+    "parkName": "Rathtrevor Beach Park",
+    "orcs": "193",
+    "note": "T1 in effect May 16, 2025 - Sept 1, 2025",
+    "tierType": "t1",
+    "startDate": "2025-05-16",
+    "endDate": "2025-09-01"
+  },
+  {
+    "parkName": "Rathtrevor Beach Park",
+    "orcs": "193",
+    "note": "T2 in effect Sept 2, 2025 - Oct 12, 2025",
+    "tierType": "t2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-10-12"
+  },
+  {
+    "parkName": "Shuswap Lake Park",
+    "orcs": "89",
+    "note": "T1 in effect May 1, 2024 - Oct 14, 2024",
+    "tierType": "t1",
+    "startDate": "2024-05-01",
+    "endDate": "2024-10-14"
+  }
+]
