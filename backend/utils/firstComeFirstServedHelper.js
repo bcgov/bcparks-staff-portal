@@ -85,8 +85,8 @@ export async function createFirstComeFirstServedDateRange(season) {
       }
 
       // Create the new DateRanges in the database
-      for (const dateRange of firstComeDateRanges) {
-        await DateRange.create(dateRange);
+      if (firstComeDateRanges.length > 0) {
+        await DateRange.bulkCreate(firstComeDateRanges);
       }
     }
   }
