@@ -350,6 +350,7 @@ async function publishToAPI(seasonTable) {
   for (const { operatingYear, featureType, features } of Object.values(
     seasonTable,
   )) {
+    // TODO: Publish all date types to Strapi /park-feature-dates
     if (featureType.name === "Winter fee") {
       Object.entries(features).map(async ([featureId, dateRanges]) => {
         // get strapi dates
