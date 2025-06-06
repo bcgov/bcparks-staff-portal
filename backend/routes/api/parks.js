@@ -390,7 +390,7 @@ router.get(
           operatingYear: season.operatingYear,
           status: season.status,
           readyToPublish: season.readyToPublish,
-          dateRanges: season.dateRanges.map(buildDateRangeObject),
+          dateRanges: season.dateRanges.map(buildDateRangeObject, season.readyToPublish)
         })),
       };
     });
