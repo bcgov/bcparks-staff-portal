@@ -144,8 +144,8 @@ function EditAndReview() {
         if (
           filters.featureTypes.length > 0 &&
           !filters.featureTypes.some((filterFeatureType) =>
-            park.seasons.some(
-              (season) => season.featureType.id === filterFeatureType.id,
+            park.features.some(
+              (feature) => feature.featureType.id === filterFeatureType.id,
             ),
           )
         ) {

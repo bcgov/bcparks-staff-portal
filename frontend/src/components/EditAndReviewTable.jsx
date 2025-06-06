@@ -5,8 +5,7 @@ import { faCheck } from "@fa-kit/icons/classic/solid";
 import { faPen } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
-// TODO: add it to DateRangesList once status is implemented
-// import NotReadyFlag from "@/components/NotReadyFlag";
+import NotReadyFlag from "@/components/NotReadyFlag";
 import { formatDateShort } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import "./EditAndReviewTable.scss";
@@ -58,6 +57,7 @@ function DateRangesList({ dateRanges, isLastYear }) {
       {dateRanges.map((dateRange) => (
         <li key={dateRange.id}>
           {formattedDateRange(dateRange.startDate, dateRange.endDate)}
+          <NotReadyFlag show={!dateRange.readyToPublish} />
         </li>
       ))}
     </ul>
@@ -70,6 +70,7 @@ DateRangesList.propTypes = {
       id: PropTypes.number.isRequired,
       startDate: PropTypes.instanceOf(Date).isRequired,
       endDate: PropTypes.instanceOf(Date).isRequired,
+      readyToPublish: PropTypes.bool.isRequired,
     }),
   ),
   isLastYear: PropTypes.bool,
@@ -233,23 +234,22 @@ function Table({ park, formPanelHandler }) {
         {/* 3 - feature level */}
         {/* features that don't belong to park area  */}
         {/* these features are publishable */}
-        {features
-          .map((feature) => (
-            <React.Fragment key={feature.id}>
-              <StatusTableRow
-                id={feature.id}
-                level="feature"
-                name={`${park.name} - ${feature.name}`}
-                typeName={feature.featureType.name}
-                status={feature.status}
-                formPanelHandler={() =>
-                  formPanelHandler({ ...feature, level: "feature" })
-                }
-              />
-              <DateTypeTableRow groupedDateRanges={feature.groupedDateRanges} />
-              <DateTableRow groupedDateRanges={feature.groupedDateRanges} />
-            </React.Fragment>
-          ))}
+        {features.map((feature) => (
+          <React.Fragment key={feature.id}>
+            <StatusTableRow
+              id={feature.id}
+              level="feature"
+              name={`${park.name} - ${feature.name}`}
+              typeName={feature.featureType.name}
+              status={feature.status}
+              formPanelHandler={() =>
+                formPanelHandler({ ...feature, level: "feature" })
+              }
+            />
+            <DateTypeTableRow groupedDateRanges={feature.groupedDateRanges} />
+            <DateTableRow groupedDateRanges={feature.groupedDateRanges} />
+          </React.Fragment>
+        ))}
       </tbody>
     </table>
   );

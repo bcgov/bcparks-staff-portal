@@ -17,6 +17,7 @@ const router = Router();
 const currentYear = new Date().getFullYear();
 const minYear = currentYear - 1;
 
+// @TODO: it is not repeatable?
 const seasonModel = {
   model: Season,
   as: "seasons",
@@ -51,11 +52,6 @@ const seasonModel = {
 };
 
 // Functions
-// get all date ranges from seasons
-function getAllDateRanges(seasons) {
-  return _.flatMap(seasons, (season) => season.dateRanges);
-}
-
 // get publishable item status from seasons
 function getStatus(seasons) {
   // @TODO: fix this
@@ -112,7 +108,7 @@ function groupDateRangesByTypeAndYear(dateRanges) {
 }
 
 // build a date range output object
-function buildDateRangeObject(dateRange) {
+function buildDateRangeObject(dateRange, readyToPublish) {
   return {
     id: dateRange.id,
     startDate: dateRange.startDate,
@@ -123,15 +119,23 @@ function buildDateRangeObject(dateRange) {
           name: dateRange.dateType.name,
         }
       : null,
+    readyToPublish,
   };
+}
+
+// get all date ranges from seasons
+function getAllDateRanges(seasons) {
+  return _.flatMap(seasons, (season) =>
+    (season.dateRanges || []).map((dateRange) =>
+      buildDateRangeObject(dateRange, season.readyToPublish),
+    ),
+  );
 }
 
 // build feature output object
 function buildFeatureOutput(feature) {
   // get date ranges for park.feature
-  const featureDateRanges = getAllDateRanges(feature.seasons).map(
-    buildDateRangeObject,
-  );
+  const featureDateRanges = getAllDateRanges(feature.seasons);
 
   return {
     id: feature.id,
@@ -148,6 +152,37 @@ function buildFeatureOutput(feature) {
     seasons: feature.seasons,
     status: getStatus(feature.seasons),
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
+  };
+}
+
+// build park area output object
+function buildParkAreaOutput(parkArea) {
+  const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
+
+  // add featureType to parkArea if all features have the same featureType
+  let featureType = null;
+
+  if (
+    parkArea.features.length > 0 &&
+    parkArea.features.every(
+      (parkAreaFeature) =>
+        parkAreaFeature.featureType &&
+        parkAreaFeature.featureType.id === parkArea.features[0].featureType.id,
+    )
+  ) {
+    featureType = parkArea.features[0].featureType.get({ plain: true });
+  }
+
+  return {
+    id: parkArea.id,
+    dateableId: parkArea.dateableId,
+    publishableId: parkArea.publishableId,
+    name: parkArea.name,
+    features: parkArea.features,
+    ...(featureType && { featureType }),
+    seasons: parkArea.seasons,
+    status: getStatus(parkArea.seasons),
+    groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
 }
 
@@ -332,9 +367,7 @@ router.get(
     const output = parks.map((park) => {
       // get date ranges for park
       // filter allDateRanges by park.dateableId
-      const parkDateRanges = getAllDateRanges(park.seasons).map(
-        buildDateRangeObject,
-      );
+      const parkDateRanges = getAllDateRanges(park.seasons);
 
       return {
         id: park.id,
@@ -348,40 +381,10 @@ router.get(
         status: getStatus(park.seasons),
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
         features: park.features.map((feature) => buildFeatureOutput(feature)),
-        parkAreas: park.parkAreas?.map((parkArea) => {
-          // get date ranges for park.parkArea
-          const parkAreaDateRanges = getAllDateRanges(parkArea.seasons).map(
-            buildDateRangeObject,
-          );
-
-          // add featureType to parkArea if all features have the same featureType
-          let featureType = null;
-
-          if (
-            parkArea.features.length > 0 &&
-            parkArea.features.every(
-              (parkAreaFeature) =>
-                parkAreaFeature.featureType &&
-                parkAreaFeature.featureType.id ===
-                  parkArea.features[0].featureType.id,
-            )
-          ) {
-            featureType = parkArea.features[0].featureType.get({ plain: true });
-          }
-
-          return {
-            id: parkArea.id,
-            dateableId: parkArea.dateableId,
-            publishableId: parkArea.publishableId,
-            name: parkArea.name,
-            features: parkArea.features,
-            ...(featureType && { featureType }),
-            seasons: parkArea.seasons,
-            status: getStatus(parkArea.seasons),
-            groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
-          };
-        }),
-        seasons: park.seasons?.map((season) => ({
+        parkAreas: park.parkAreas.map((parkArea) =>
+          buildParkAreaOutput(parkArea),
+        ),
+        seasons: park.seasons.map((season) => ({
           id: season.id,
           publishableId: season.publishableId,
           operatingYear: season.operatingYear,
@@ -389,7 +392,6 @@ router.get(
           readyToPublish: season.readyToPublish,
           dateRanges: season.dateRanges.map(buildDateRangeObject),
         })),
-        readyToPublish: park.seasons?.every((season) => season.readyToPublish),
       };
     });
 
