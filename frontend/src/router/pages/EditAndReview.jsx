@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
+import useAccess from "@/hooks/useAccess";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
@@ -18,6 +19,13 @@ function EditAndReview() {
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
+
+  // user role
+  const { ROLES, checkAccess } = useAccess();
+  const approver = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
 
   const statusOptions = [
     { value: "requested", label: "Requested by HQ" },
@@ -294,6 +302,7 @@ function EditAndReview() {
           show={showFormPanel}
           setShow={setShowFormPanel}
           formData={formData}
+          approver={approver}
         />
 
         <FilterPanel
