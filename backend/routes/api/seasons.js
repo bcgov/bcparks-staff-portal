@@ -2,6 +2,7 @@ import { Router } from "express";
 import _ from "lodash";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
+import sequelize from "../../db/connection.js";
 
 import {
   Park,
@@ -48,10 +49,16 @@ function checkSeasonExists(season) {
  * @param {number} seasonId The ID of the season to update
  * @param {string} status The new status to set for the season
  * @param {boolean} [readyToPublish] Optionally provide a new readyToPublish value to set
+ * @param {Transaction} [transaction] Optional Sequelize transaction object for atomic operations
  * @returns {Promise<Season>} The updated season model
  */
-async function updateStatus(seasonId, status, readyToPublish = null) {
-  const season = await Season.findByPk(seasonId);
+async function updateStatus(
+  seasonId,
+  status,
+  readyToPublish = null,
+  transaction = null,
+) {
+  const season = await Season.findByPk(seasonId, { transaction });
 
   checkSeasonExists(season);
 
@@ -63,7 +70,9 @@ async function updateStatus(seasonId, status, readyToPublish = null) {
     season.readyToPublish = readyToPublish;
   }
 
-  return season.save();
+  return season.save({
+    transaction,
+  });
 }
 
 /**
@@ -366,72 +375,101 @@ router.post(
       readyToPublish,
     } = req.body;
 
-    // Check if the season exists
-    const season = await Season.findByPk(seasonId, {});
+    const transaction = await sequelize.transaction();
 
-    checkSeasonExists(season);
+    try {
+      // Check if the season exists
+      const season = await Season.findByPk(seasonId, { transaction });
 
-    const newStatus = "requested";
+      checkSeasonExists(season);
 
-    // Create season change log with the notes
-    const seasonChangeLog = await SeasonChangeLog.create({
-      seasonId,
-      userId: req.user.id,
-      notes,
-      statusOldValue: season.status,
-      statusNewValue: newStatus,
-      readyToPublishOldValue: season.readyToPublish,
-      readyToPublishNewValue: readyToPublish,
-    });
+      const newStatus = "requested";
 
-    // Update the season object with the new status and readyToPublish values
-    const saveSeason = updateStatus(seasonId, newStatus, readyToPublish);
-
-    // Create date change logs for updated dateRanges
-    const existingDateIds = dateRanges
-      .filter((date) => date.id)
-      .map((date) => date.id);
-    const existingDateRows = await DateRange.findAll({
-      where: {
-        id: {
-          [Op.in]: existingDateIds,
+      // Create season change log with the notes
+      const seasonChangeLog = await SeasonChangeLog.create(
+        {
+          seasonId,
+          userId: req.user.id,
+          notes,
+          statusOldValue: season.status,
+          statusNewValue: newStatus,
+          readyToPublishOldValue: season.readyToPublish,
+          readyToPublishNewValue: readyToPublish,
         },
-      },
-    });
+        { transaction },
+      );
 
-    const datesToUpdateByid = _.keyBy(dateRanges, "id");
-    const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
-      const newDateRange = datesToUpdateByid[oldDateRange.id];
+      // Update the season object with the new status and readyToPublish values
+      const saveSeason = updateStatus(
+        seasonId,
+        newStatus,
+        readyToPublish,
+        transaction,
+      );
 
-      return {
-        dateRangeId: oldDateRange.id,
-        seasonChangeLogId: seasonChangeLog.id,
-        startDateOldValue: oldDateRange.startDate,
-        startDateNewValue: newDateRange.startDate,
-        endDateOldValue: oldDateRange.endDate,
-        endDateNewValue: newDateRange.endDate,
-      };
-    });
-
-    const createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate);
-
-    // Update or create dateRanges
-    const updateDates = DateRange.bulkCreate(dateRanges, {
-      updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
-    });
-
-    // Delete dateRanges removed by the user
-    const deleteDates = DateRange.destroy({
-      where: {
-        id: {
-          [Op.in]: deletedDateRangeIds,
+      // Create date change logs for updated dateRanges
+      const existingDateIds = dateRanges
+        .filter((date) => date.id)
+        .map((date) => date.id);
+      const existingDateRows = await DateRange.findAll({
+        where: {
+          id: {
+            [Op.in]: existingDateIds,
+          },
         },
-      },
-    });
 
-    await Promise.all([saveSeason, updateDates, createChangeLogs, deleteDates]);
+        transaction,
+      });
 
-    res.sendStatus(200);
+      const datesToUpdateByid = _.keyBy(dateRanges, "id");
+      const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
+        const newDateRange = datesToUpdateByid[oldDateRange.id];
+
+        return {
+          dateRangeId: oldDateRange.id,
+          seasonChangeLogId: seasonChangeLog.id,
+          startDateOldValue: oldDateRange.startDate,
+          startDateNewValue: newDateRange.startDate,
+          endDateOldValue: oldDateRange.endDate,
+          endDateNewValue: newDateRange.endDate,
+        };
+      });
+
+      const createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate, {
+        transaction,
+      });
+
+      // Update or create dateRanges
+      const updateDates = DateRange.bulkCreate(dateRanges, {
+        updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
+
+        transaction,
+      });
+
+      // Delete dateRanges removed by the user
+      const deleteDates = DateRange.destroy({
+        where: {
+          id: {
+            [Op.in]: deletedDateRangeIds,
+          },
+        },
+
+        transaction,
+      });
+
+      await Promise.all([
+        saveSeason,
+        updateDates,
+        createChangeLogs,
+        deleteDates,
+      ]);
+
+      await transaction.commit();
+      res.sendStatus(200);
+    } catch (error) {
+      await transaction.rollback();
+      throw error; // Re-throw to let global error handler catch it
+    }
   }),
 );
 
@@ -442,12 +480,25 @@ router.post(
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
 
-    const season = await updateStatus(seasonId, "approved");
+    const transaction = await sequelize.transaction();
 
-    // Create "First come, first served" DateRange if applicable
-    await createFirstComeFirstServedDateRange(season);
+    try {
+      const season = await updateStatus(
+        seasonId,
+        "approved",
+        null,
+        transaction,
+      );
 
-    res.sendStatus(200);
+      // Create "First come, first served" DateRange if applicable
+      await createFirstComeFirstServedDateRange(season, transaction);
+
+      await transaction.commit();
+      res.sendStatus(200);
+    } catch (error) {
+      await transaction.rollback();
+      throw error; // Re-throw to let global error handler catch it
+    }
   }),
 );
 
