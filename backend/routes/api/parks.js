@@ -14,11 +14,9 @@ import asyncHandler from "express-async-handler";
 
 // Constants
 const router = Router();
-const currentYear = new Date().getFullYear();
-const minYear = currentYear - 1;
 
 // Functions
-function seasonModel(required = true) {
+function seasonModel(minYear, required = true) {
   return {
     model: Season,
     as: "seasons",
@@ -54,7 +52,7 @@ function seasonModel(required = true) {
   };
 }
 
-function featureModel(where = {}) {
+function featureModel(minYear, where = {}) {
   return {
     model: Feature,
     as: "features",
@@ -75,46 +73,21 @@ function featureModel(where = {}) {
         attributes: ["id", "publishableId", "name"],
       },
       // Publishable Seasons for the Feature
-      seasonModel(false),
+      seasonModel(minYear, false),
     ],
   };
 }
 
 // get publishable item status from seasons
 function getStatus(seasons) {
-  // @TODO: fix this
-  if (!seasons) return "requested";
+  const currentYear = new Date().getFullYear();
+  // filter seasons by current year
+  const currentSeasons = seasons.filter(
+    (season) => season.operatingYear === currentYear,
+  );
 
-  // if any season has status==requested, return requested
-  // else if any season has status==pending review, return pending review
-  // else if any season has status==approved, return approved
-  // if all seasons have status==on API, return on API
-
-  const requested = seasons.some((s) => s.status === "requested");
-
-  if (requested) {
-    return "requested";
-  }
-
-  const pendingReview = seasons.some((s) => s.status === "pending review");
-
-  if (pendingReview) {
-    return "pending review";
-  }
-
-  const approved = seasons.some((s) => s.status === "approved");
-
-  if (approved) {
-    return "approved";
-  }
-
-  const onAPI = seasons.some((s) => s.status === "on API");
-
-  if (onAPI) {
-    return "on API";
-  }
-
-  return null;
+  // return status of the first current season
+  return currentSeasons.length > 0 ? currentSeasons[0].status : null;
 }
 
 // group dateRanges by date type name then by year
@@ -185,6 +158,7 @@ function buildFeatureOutput(feature) {
 
 // build park area output object
 function buildParkAreaOutput(parkArea) {
+  // get date ranges for parkArea
   const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
 
   // add featureType to parkArea if all features have the same featureType
@@ -206,7 +180,7 @@ function buildParkAreaOutput(parkArea) {
     dateableId: parkArea.dateableId,
     publishableId: parkArea.publishableId,
     name: parkArea.name,
-    features: parkArea.features,
+    features: parkArea.features.map((feature) => buildFeatureOutput(feature)),
     featureType: featureType ?? null,
     seasons: parkArea.seasons,
     status: getStatus(parkArea.seasons),
@@ -217,6 +191,10 @@ function buildParkAreaOutput(parkArea) {
 router.get(
   "/",
   asyncHandler(async (req, res) => {
+    // Constants
+    const currentYear = new Date().getFullYear();
+    const minYear = currentYear - 1;
+
     const parks = await Park.findAll({
       attributes: [
         "id",
@@ -229,7 +207,7 @@ router.get(
       ],
       include: [
         // Publishable Seasons for the Park
-        seasonModel(),
+        seasonModel(minYear),
 
         // ParkAreas
         {
@@ -238,14 +216,14 @@ router.get(
           attributes: ["id", "dateableId", "publishableId", "name"],
           include: [
             // Features that are part of the ParkArea
-            featureModel(),
+            featureModel(minYear),
             // Publishable Seasons for the ParkArea
-            seasonModel(),
+            seasonModel(minYear),
           ],
         },
 
         // Publishable Features that aren't part of a ParkArea
-        featureModel({
+        featureModel(minYear, {
           parkAreaId: null,
           publishableId: {
             [Op.ne]: null,
@@ -261,7 +239,6 @@ router.get(
 
     const output = parks.map((park) => {
       // get date ranges for park
-      // filter allDateRanges by park.dateableId
       const parkDateRanges = getAllDateRanges(park.seasons);
 
       return {

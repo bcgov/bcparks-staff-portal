@@ -259,7 +259,7 @@ Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
+    status: PropTypes.string,
     groupedDateRanges: PropTypes.object,
     parkAreas: PropTypes.arrayOf(
       PropTypes.shape({
