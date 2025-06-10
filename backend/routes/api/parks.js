@@ -82,12 +82,12 @@ function featureModel(minYear, where = {}) {
 function getStatus(seasons) {
   const currentYear = new Date().getFullYear();
   // filter seasons by current year
-  const currentSeasons = seasons.filter(
+  const currentSeason = seasons.find(
     (season) => season.operatingYear === currentYear,
   );
 
   // return status of the first current season
-  return currentSeasons.length > 0 ? currentSeasons[0].status : null;
+  return currentSeason ? currentSeason.status : null;
 }
 
 // group dateRanges by date type name then by year
