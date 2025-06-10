@@ -18,7 +18,7 @@ const currentYear = new Date().getFullYear();
 const minYear = currentYear - 1;
 
 // Functions
-function seasonModel() {
+function seasonModel(required = true) {
   return {
     model: Season,
     as: "seasons",
@@ -36,6 +36,7 @@ function seasonModel() {
         [Op.gte]: minYear,
       },
     },
+    required,
     include: [
       {
         model: DateRange,
@@ -74,7 +75,7 @@ function featureModel(where = {}) {
         attributes: ["id", "publishableId", "name"],
       },
       // Publishable Seasons for the Feature
-      seasonModel(),
+      seasonModel(false),
     ],
   };
 }

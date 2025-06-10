@@ -203,7 +203,7 @@ function Table({ park, formPanelHandler }) {
               id={parkArea.id}
               level="park-area"
               name={`${park.name} - ${parkArea.name}`}
-              typeName={parkArea.featureType.name}
+              typeName={parkArea.featureType?.name}
               status={parkArea.status}
               formPanelHandler={() =>
                 formPanelHandler({ ...parkArea, level: "park-area" })

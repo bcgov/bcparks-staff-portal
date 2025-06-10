@@ -35,9 +35,7 @@ export default (sequelize) => {
 
       Feature.hasMany(models.Season, {
         foreignKey: "publishableId",
-        // Features that are part of the ParkArea should be displayed even if the publishableId is null
-        // e.g. Shuswap Lake Campground has features site 1-78 and site 79-245
-        // sourceKey: "publishableId",
+        sourceKey: "publishableId",
         as: "seasons",
       });
     }
