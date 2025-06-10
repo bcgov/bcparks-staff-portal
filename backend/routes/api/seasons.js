@@ -24,7 +24,7 @@ import {
   sanitizePayload,
 } from "../../middleware/permissions.js";
 
-import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
+// import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 
 const router = Router();
 
@@ -483,15 +483,11 @@ router.post(
     const transaction = await sequelize.transaction();
 
     try {
-      const season = await updateStatus(
-        seasonId,
-        "approved",
-        null,
-        transaction,
-      );
+      await updateStatus(seasonId, "approved", null, transaction);
 
       // Create "First come, first served" DateRange if applicable
-      await createFirstComeFirstServedDateRange(season, transaction);
+      // @TODO: Uncomment when the function is implemented with v2 data model
+      // await createFirstComeFirstServedDateRange(season, transaction);
 
       await transaction.commit();
       res.sendStatus(200);
