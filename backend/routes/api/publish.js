@@ -549,7 +549,7 @@ router.post(
 
     Season.update(
       {
-        status: "on API",
+        status: "published",
       },
       {
         where: {

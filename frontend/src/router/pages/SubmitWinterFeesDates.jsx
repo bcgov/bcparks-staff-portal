@@ -465,7 +465,7 @@ export default function SubmitWinterFeesDates() {
           <div className="col-lg-6">
             <h3 className="mb-4">
               Notes
-              {["approved", "on API"].includes(season.status) && (
+              {["approved", "published"].includes(season.status) && (
                 <span className="text-danger">*</span>
               )}
             </h3>

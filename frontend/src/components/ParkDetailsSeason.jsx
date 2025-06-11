@@ -113,9 +113,9 @@ export default function ParkSeason({
       if (confirm) {
         navigate(getEditRoutePath(parkId, season.id));
       }
-    } else if (season.status === "on API") {
+    } else if (season.status === "published") {
       const confirm = await openConfirmation(
-        "Edit public dates on API?",
+        "Edit published dates?",
         "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
         "Continue to edit",
       );

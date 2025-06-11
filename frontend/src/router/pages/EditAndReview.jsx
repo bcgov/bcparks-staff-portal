@@ -23,7 +23,7 @@ function EditAndReview() {
     { value: "pending review", label: "Pending HQ review" },
     { value: "requested", label: "Requested by HQ" },
     { value: "approved", label: "Approved" },
-    { value: "on API", label: "Published" },
+    { value: "published", label: "Published" },
   ];
 
   // table pagination

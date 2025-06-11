@@ -236,9 +236,9 @@ export async function createOrUpdateFeatureType(strapiData, item) {
 }
 
 function getSeasonStatus(operatingYear) {
-  // if operating year is in the past, set status to on API, else set to requested
+  // if operating year is in the past, set status to published, else set to requested
   const currentYear = new Date().getFullYear();
-  const status = operatingYear < currentYear ? "on API" : "requested";
+  const status = operatingYear < currentYear ? "published" : "requested";
 
   return status;
 }
