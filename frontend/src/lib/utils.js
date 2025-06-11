@@ -54,6 +54,11 @@ export function formatDateShortWithYear(date, timezone = "UTC") {
   return formatInTimeZone(date, timezone, DATE_FORMAT_SHORT_WITH_YEAR);
 }
 
+export function formatDateRangeText(startDate, endDate) {
+  if (!startDate || !endDate) return null;
+  return `${formatDateShort(startDate)} – ${formatDateShort(endDate)}`;
+}
+
 /**
  * Returns a string with the dates formatted "Weekday, Month Day, Year"
  * @param {Object} dateRange object with startDate and endDate

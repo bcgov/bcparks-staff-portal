@@ -44,7 +44,7 @@ function seasonModel(minYear, required = true) {
           {
             model: DateType,
             as: "dateType",
-            attributes: ["id", "name"],
+            attributes: ["id", "name", "description"],
           },
         ],
       },
@@ -106,6 +106,7 @@ function buildDateRangeObject(dateRange, readyToPublish) {
       ? {
           id: dateRange.dateType.id,
           name: dateRange.dateType.name,
+          description: dateRange.dateType.description,
         }
       : null,
     readyToPublish,

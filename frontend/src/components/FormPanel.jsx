@@ -3,7 +3,7 @@ import classNames from "classnames";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import FormContainer from "@/components/FormContainer";
-// import DateRangeForm from "@/components/DateRangeForm";
+import DateRangeForm from "@/components/DateRangeForm";
 import "./FormPanel.scss";
 
 // Components
@@ -86,6 +86,7 @@ function FormPanel({ show, setShow, formData, approver }) {
   // Constants
   const data = formData || {};
   const currentYear = new Date().getFullYear();
+  const lastYear = currentYear - 1;
 
   // Functions
   function handleClose() {
@@ -125,20 +126,11 @@ function FormPanel({ show, setShow, formData, approver }) {
             {data.seasons.length > 0 && (
               <FormContainer>
                 {/* TODO: tier 1 form */}
-                {data.hasTier1Dates && (
-                  <div>
-                    <p>This park has Tier 1 dates.</p>
-                    {/* <DateRangeForm /> */}
-                  </div>
-                )}
+                {data.hasTier1Dates && <DateRangeForm dateType="Tier 1" />}
                 {/* TODO: tier 2 form */}
-                {data.hasTier2Dates && (
-                  <div>
-                    <p>This park has Tier 2 dates.</p>
-                    {/* <DateRangeForm /> */}
-                  </div>
-                )}
+                {data.hasTier2Dates && <DateRangeForm dateType="Tier 2" />}
                 {/* TODO: winter fee form */}
+                <DateRangeForm dateType="Winter fee" />
               </FormContainer>
             )}
             <h6 className="fw-normal">Park gate</h6>
@@ -148,12 +140,6 @@ function FormPanel({ show, setShow, formData, approver }) {
             </p>
             <RadioButtons id="park-gate" />
             {/* TODO: display Operating dates if hasGate is true or if it has Operating dates */}
-            {data.groupedDateRanges?.Operation[currentYear].length > 0 && (
-              <div>
-                <p>This park operating dates.</p>
-                {/* <DateRangeForm /> */}
-              </div>
-            )}
           </>
         )}
         {/* park area */}
@@ -162,20 +148,16 @@ function FormPanel({ show, setShow, formData, approver }) {
             {data.features.length > 0 && (
               <FormContainer>
                 {data.features.map((feature) => (
-                  <div key={feature.id}>
-                    {feature.groupedDateRanges &&
-                      Object.entries(feature.groupedDateRanges).map(
-                        ([dateTypeName, yearObj]) =>
-                          Object.entries(yearObj).map(([year, dateRanges]) =>
-                            dateRanges.map((dateRange) => (
-                              <div key={dateRange.id}>
-                                <h6 className="fw-normal">{dateTypeName}</h6>
-                                {/* TODO: dates form */}
-                                {/* <DateRangeForm /> */}
-                              </div>
-                            )),
-                          ),
-                      )}
+                  <div key={feature.id} className="mb-4">
+                    <h5>{feature.name}</h5>
+                    {feature.groupedDateRanges && (
+                      <DateRangeForm
+                        dateRanges={feature.groupedDateRanges}
+                        seasons={feature.seasons}
+                        currentYear={currentYear}
+                        lastYear={lastYear}
+                      />
+                    )}
                   </div>
                 ))}
               </FormContainer>
@@ -190,17 +172,14 @@ function FormPanel({ show, setShow, formData, approver }) {
           <>
             <FormContainer>
               <h5>{data.name}</h5>
-              {data.groupedDateRanges &&
-                Object.entries(data.groupedDateRanges).map(
-                  ([dateTypeName, yearObj]) =>
-                    Object.entries(yearObj).map(([year, dateRanges]) =>
-                      dateRanges.map((dateRange) => (
-                        <div key={dateRange.id}>
-                          <h6 className="fw-normal">{dateTypeName}</h6>
-                        </div>
-                      )),
-                    ),
-                )}
+              {data.groupedDateRanges && (
+                <DateRangeForm
+                  dateRanges={data.groupedDateRanges}
+                  seasons={data.seasons}
+                  currentYear={currentYear}
+                  lastYear={lastYear}
+                />
+              )}
             </FormContainer>
             <h6 className="fw-normal">{data.name} gate</h6>
             <p>Does {data.name} have a gated entrance?</p>
