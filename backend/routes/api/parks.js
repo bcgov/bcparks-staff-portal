@@ -141,11 +141,11 @@ function getAllDateRanges(seasons) {
 }
 
 // build feature output object
-function buildFeatureOutput(feature, currentYear) {
+function buildFeatureOutput(feature, currentYear, includeCurrentSeason = true) {
   // get date ranges for park.feature
   const featureDateRanges = getAllDateRanges(feature.seasons);
 
-  return {
+  const output = {
     id: feature.id,
     dateableId: feature.dateableId,
     publishableId: feature.publishableId,
@@ -158,9 +158,14 @@ function buildFeatureOutput(feature, currentYear) {
       name: feature.featureType.name,
     },
     seasons: feature.seasons,
-    currentSeason: buildCurrentSeasonOutput(feature.seasons, currentYear),
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
   };
+
+  if (includeCurrentSeason) {
+    output.currentSeason = buildCurrentSeasonOutput(feature.seasons, currentYear);
+  }
+
+  return output;
 }
 
 // build park area output object
@@ -188,7 +193,7 @@ function buildParkAreaOutput(parkArea, currentYear) {
     publishableId: parkArea.publishableId,
     name: parkArea.name,
     features: parkArea.features.map((feature) =>
-      buildFeatureOutput(feature, currentYear),
+      buildFeatureOutput(feature, currentYear, false),
     ),
     featureType: featureType ?? null,
     seasons: parkArea.seasons,
