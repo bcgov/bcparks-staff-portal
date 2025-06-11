@@ -78,16 +78,9 @@ function featureModel(minYear, where = {}) {
   };
 }
 
-// get publishable item status from seasons
-function getStatus(seasons) {
-  const currentYear = new Date().getFullYear();
-  // filter seasons by current year
-  const currentSeason = seasons.find(
-    (season) => season.operatingYear === currentYear,
-  );
-
-  // return status of the first current season
-  return currentSeason ? currentSeason.status : null;
+// get a season for current year
+function getCurrentSeason(seasons, currentYear) {
+  return seasons.find((season) => season.operatingYear === currentYear) || {};
 }
 
 // group dateRanges by date type name then by year
@@ -134,7 +127,7 @@ function getAllDateRanges(seasons) {
 }
 
 // build feature output object
-function buildFeatureOutput(feature) {
+function buildFeatureOutput(feature, currentYear) {
   // get date ranges for park.feature
   const featureDateRanges = getAllDateRanges(feature.seasons);
 
@@ -151,13 +144,13 @@ function buildFeatureOutput(feature) {
       name: feature.featureType.name,
     },
     seasons: feature.seasons,
-    status: getStatus(feature.seasons),
+    currentSeason: getCurrentSeason(feature.seasons, currentYear),
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
   };
 }
 
 // build park area output object
-function buildParkAreaOutput(parkArea) {
+function buildParkAreaOutput(parkArea, currentYear) {
   // get date ranges for parkArea
   const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
 
@@ -180,10 +173,12 @@ function buildParkAreaOutput(parkArea) {
     dateableId: parkArea.dateableId,
     publishableId: parkArea.publishableId,
     name: parkArea.name,
-    features: parkArea.features.map((feature) => buildFeatureOutput(feature)),
+    features: parkArea.features.map((feature) =>
+      buildFeatureOutput(feature, currentYear),
+    ),
     featureType: featureType ?? null,
     seasons: parkArea.seasons,
-    status: getStatus(parkArea.seasons),
+    currentSeason: getCurrentSeason(parkArea.seasons, currentYear),
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
 }
@@ -250,11 +245,13 @@ router.get(
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,
-        status: getStatus(park.seasons),
+        currentSeason: getCurrentSeason(park.seasons, currentYear),
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
-        features: park.features.map((feature) => buildFeatureOutput(feature)),
+        features: park.features.map((feature) =>
+          buildFeatureOutput(feature, currentYear),
+        ),
         parkAreas: park.parkAreas.map((parkArea) =>
-          buildParkAreaOutput(parkArea),
+          buildParkAreaOutput(parkArea, currentYear),
         ),
         seasons: park.seasons.map((season) => ({
           id: season.id,

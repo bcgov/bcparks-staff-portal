@@ -6,6 +6,7 @@ import { faPen } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateShort } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import "./EditAndReviewTable.scss";
@@ -57,7 +58,12 @@ function DateRangesList({ dateRanges, isLastYear }) {
       {dateRanges.map((dateRange) => (
         <li key={dateRange.id}>
           {formattedDateRange(dateRange.startDate, dateRange.endDate)}
-          <NotReadyFlag show={!dateRange.readyToPublish} />
+          <TooltipWrapper
+            placement="top"
+            content="Dates not ready to be made public"
+          >
+            <NotReadyFlag show={!dateRange.readyToPublish} />
+          </TooltipWrapper>
         </li>
       ))}
     </ul>
@@ -185,7 +191,7 @@ function Table({ park, formPanelHandler }) {
           level="park"
           nameCellClass="fw-normal text-white"
           name={park.name}
-          status={park.status}
+          status={park.currentSeason?.status}
           formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
@@ -204,12 +210,13 @@ function Table({ park, formPanelHandler }) {
               level="park-area"
               name={`${park.name} - ${parkArea.name}`}
               typeName={parkArea.featureType?.name}
-              status={parkArea.status}
+              status={parkArea.currentSeason?.status}
               formPanelHandler={() =>
                 formPanelHandler({ ...parkArea, level: "park-area" })
               }
             />
             <DateTypeTableRow groupedDateRanges={parkArea.groupedDateRanges} />
+            <DateTableRow groupedDateRanges={parkArea.groupedDateRanges} />
 
             {/* features that belong to park area */}
             {/* these features might not be publishable */}
@@ -241,7 +248,7 @@ function Table({ park, formPanelHandler }) {
               level="feature"
               name={`${park.name} - ${feature.name}`}
               typeName={feature.featureType.name}
-              status={feature.status}
+              status={feature.currentSeason?.status}
               formPanelHandler={() =>
                 formPanelHandler({ ...feature, level: "feature" })
               }
@@ -259,16 +266,31 @@ Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    status: PropTypes.string,
+    seasons: PropTypes.object,
+    currentSeason: PropTypes.shape({
+      status: PropTypes.string,
+    }),
     groupedDateRanges: PropTypes.object,
     parkAreas: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
+        seasons: PropTypes.object,
+        currentSeason: PropTypes.shape({
+          status: PropTypes.string,
+        }),
+        groupedDateRanges: PropTypes.object,
+        featureType: PropTypes.shape({
+          name: PropTypes.string,
+        }),
         features: PropTypes.arrayOf(
           PropTypes.shape({
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
+            seasons: PropTypes.object,
+            currentSeason: PropTypes.shape({
+              status: PropTypes.string,
+            }),
             groupedDateRanges: PropTypes.object,
           }),
         ),
@@ -278,10 +300,14 @@ Table.propTypes = {
       PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
+        seasons: PropTypes.object,
+        currentSeason: PropTypes.shape({
+          status: PropTypes.string,
+        }),
+        groupedDateRanges: PropTypes.object,
         featureType: PropTypes.shape({
           name: PropTypes.string.isRequired,
         }),
-        groupedDateRanges: PropTypes.object,
       }),
     ),
   }),
