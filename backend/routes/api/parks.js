@@ -78,11 +78,6 @@ function featureModel(minYear, where = {}) {
   };
 }
 
-// get a season for current year
-function getCurrentSeason(seasons, currentYear) {
-  return seasons.find((season) => season.operatingYear === currentYear) || {};
-}
-
 // group dateRanges by date type name then by year
 // e.g. {Operation: {2024: [...], 2025: [...]}, Winter: {2024: [...], 2025: [...]}, ...}
 function groupDateRangesByTypeAndYear(dateRanges) {
@@ -117,6 +112,25 @@ function buildDateRangeObject(dateRange, readyToPublish) {
   };
 }
 
+// build a current season object
+function buildCurrentSeasonOutput(seasons, currentYear) {
+  if (!seasons || seasons.length === 0) return null;
+
+  // get a season for current year
+  const currentSeason = seasons.find(
+    (season) => season.operatingYear === currentYear,
+  );
+
+  if (!currentSeason) return null;
+
+  return {
+    id: currentSeason.id,
+    publishableId: currentSeason.publishableId,
+    operatingYear: currentSeason.operatingYear,
+    status: currentSeason.status,
+  };
+}
+
 // get all date ranges from seasons
 function getAllDateRanges(seasons) {
   return _.flatMap(seasons, (season) =>
@@ -144,7 +158,7 @@ function buildFeatureOutput(feature, currentYear) {
       name: feature.featureType.name,
     },
     seasons: feature.seasons,
-    currentSeason: getCurrentSeason(feature.seasons, currentYear),
+    currentSeason: buildCurrentSeasonOutput(feature.seasons, currentYear),
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
   };
 }
@@ -178,7 +192,7 @@ function buildParkAreaOutput(parkArea, currentYear) {
     ),
     featureType: featureType ?? null,
     seasons: parkArea.seasons,
-    currentSeason: getCurrentSeason(parkArea.seasons, currentYear),
+    currentSeason: buildCurrentSeasonOutput(parkArea.seasons, currentYear),
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
 }
@@ -245,7 +259,7 @@ router.get(
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,
-        currentSeason: getCurrentSeason(park.seasons, currentYear),
+        currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, currentYear),

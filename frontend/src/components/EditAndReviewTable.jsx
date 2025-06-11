@@ -266,7 +266,6 @@ Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    seasons: PropTypes.object,
     currentSeason: PropTypes.shape({
       status: PropTypes.string,
     }),
@@ -275,7 +274,6 @@ Table.propTypes = {
       PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
-        seasons: PropTypes.object,
         currentSeason: PropTypes.shape({
           status: PropTypes.string,
         }),
@@ -287,7 +285,6 @@ Table.propTypes = {
           PropTypes.shape({
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
-            seasons: PropTypes.object,
             currentSeason: PropTypes.shape({
               status: PropTypes.string,
             }),
@@ -300,7 +297,6 @@ Table.propTypes = {
       PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
-        seasons: PropTypes.object,
         currentSeason: PropTypes.shape({
           status: PropTypes.string,
         }),
