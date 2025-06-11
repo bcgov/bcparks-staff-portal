@@ -32,6 +32,12 @@ export default (sequelize) => {
         foreignKey: "publishableId",
         as: "publishable",
       });
+
+      Feature.hasMany(models.Season, {
+        foreignKey: "publishableId",
+        sourceKey: "publishableId",
+        as: "seasons",
+      });
     }
   }
   Feature.init(

@@ -5,7 +5,6 @@ import {
   Park,
   Season,
   FeatureType,
-  Publishable,
   DateRange,
   DateType,
   Feature,
@@ -13,40 +12,70 @@ import {
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
+// Constants
 const router = Router();
 
 // Functions
-function getParkStatus(seasons) {
-  // if any season has status==requested, return requested
-  // else if any season has status==pending review, return pending review
-  // else if any season has status==approved, return approved
-  // if all seasons have status==on API, return on API
+function seasonModel(minYear, required = true) {
+  return {
+    model: Season,
+    as: "seasons",
+    attributes: [
+      "id",
+      "publishableId",
+      "featureTypeId",
+      "status",
+      "readyToPublish",
+      "operatingYear",
+    ],
+    // filter seasons with operatingYear >= minYear
+    where: {
+      operatingYear: {
+        [Op.gte]: minYear,
+      },
+    },
+    required,
+    include: [
+      {
+        model: DateRange,
+        as: "dateRanges",
+        attributes: ["id", "dateableId", "startDate", "endDate"],
+        include: [
+          {
+            model: DateType,
+            as: "dateType",
+            attributes: ["id", "name"],
+          },
+        ],
+      },
+    ],
+  };
+}
 
-  const requested = seasons.some((s) => s.status === "requested");
-
-  if (requested) {
-    return "requested";
-  }
-
-  const pendingReview = seasons.some((s) => s.status === "pending review");
-
-  if (pendingReview) {
-    return "pending review";
-  }
-
-  const approved = seasons.some((s) => s.status === "approved");
-
-  if (approved) {
-    return "approved";
-  }
-
-  const onAPI = seasons.some((s) => s.status === "on API");
-
-  if (onAPI) {
-    return "on API";
-  }
-
-  return null;
+function featureModel(minYear, where = {}) {
+  return {
+    model: Feature,
+    as: "features",
+    where: { ...where },
+    required: false,
+    attributes: [
+      "id",
+      "dateableId",
+      "publishableId",
+      "parkAreaId",
+      "name",
+      "inReservationSystem",
+    ],
+    include: [
+      {
+        model: FeatureType,
+        as: "featureType",
+        attributes: ["id", "publishableId", "name"],
+      },
+      // Publishable Seasons for the Feature
+      seasonModel(minYear, false),
+    ],
+  };
 }
 
 // group dateRanges by date type name then by year
@@ -68,7 +97,7 @@ function groupDateRangesByTypeAndYear(dateRanges) {
 }
 
 // build a date range output object
-function buildDateRangeObject(dateRange) {
+function buildDateRangeObject(dateRange, readyToPublish) {
   return {
     id: dateRange.id,
     startDate: dateRange.startDate,
@@ -79,41 +108,44 @@ function buildDateRangeObject(dateRange) {
           name: dateRange.dateType.name,
         }
       : null,
+    readyToPublish,
   };
 }
 
-// build a season output object
-function buildSeasonOutput(matchedSeason) {
+// build a current season object
+function buildCurrentSeasonOutput(seasons, currentYear) {
+  if (!seasons || seasons.length === 0) return null;
+
+  // get a season for current year
+  const currentSeason = seasons.find(
+    (season) => season.operatingYear === currentYear,
+  );
+
+  if (!currentSeason) return null;
+
   return {
-    id: matchedSeason.id,
-    publishableId: matchedSeason.publishableId,
-    featureTypeId: matchedSeason.featureTypeId,
-    status: matchedSeason.status,
-    operatingYear: matchedSeason.operatingYear,
-    readyToPublish: matchedSeason.readyToPublish,
+    id: currentSeason.id,
+    publishableId: currentSeason.publishableId,
+    operatingYear: currentSeason.operatingYear,
+    status: currentSeason.status,
   };
+}
+
+// get all date ranges from seasons
+function getAllDateRanges(seasons) {
+  return _.flatMap(seasons, (season) =>
+    (season.dateRanges || []).map((dateRange) =>
+      buildDateRangeObject(dateRange, season.readyToPublish),
+    ),
+  );
 }
 
 // build feature output object
-function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
+function buildFeatureOutput(feature, currentYear, includeCurrentSeason = true) {
   // get date ranges for park.feature
-  // filter allDateRanges by feature.dateableId
-  const featureDateRanges = allDateRanges
-    .filter((dateRange) => dateRange.dateableId === feature.dateableId)
-    .map(buildDateRangeObject);
+  const featureDateRanges = getAllDateRanges(feature.seasons);
 
-  // get season for park.feature
-  // filter park.seasons by feature.publishableId
-  // backwards compatibility - filter park.seasons by feature.featureType.publishableId
-  const featureSeasons = parkSeasons.filter(
-    (parkSeason) =>
-      parkSeason.publishableId === feature.publishableId ||
-      (feature.featureType &&
-        feature.featureType.publishableId &&
-        parkSeason.publishableId === feature.featureType.publishableId),
-  );
-
-  return {
+  const output = {
     id: feature.id,
     dateableId: feature.dateableId,
     publishableId: feature.publishableId,
@@ -125,14 +157,55 @@ function buildFeatureOutput(feature, allDateRanges, parkSeasons) {
       publishableId: feature.featureType.publishableId,
       name: feature.featureType.name,
     },
-    status: getParkStatus(featureSeasons),
+    seasons: feature.seasons,
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
+  };
+
+  if (includeCurrentSeason) {
+    output.currentSeason = buildCurrentSeasonOutput(feature.seasons, currentYear);
+  }
+
+  return output;
+}
+
+// build park area output object
+function buildParkAreaOutput(parkArea, currentYear) {
+  // get date ranges for parkArea
+  const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
+
+  // add featureType to parkArea if all features have the same featureType
+  let featureType = null;
+
+  if (
+    parkArea.features.length > 0 &&
+    parkArea.features.every(
+      (parkAreaFeature) =>
+        parkAreaFeature.featureType &&
+        parkAreaFeature.featureType.id === parkArea.features[0].featureType.id,
+    )
+  ) {
+    featureType = parkArea.features[0].featureType.get({ plain: true });
+  }
+
+  return {
+    id: parkArea.id,
+    dateableId: parkArea.dateableId,
+    publishableId: parkArea.publishableId,
+    name: parkArea.name,
+    features: parkArea.features.map((feature) =>
+      buildFeatureOutput(feature, currentYear, false),
+    ),
+    featureType: featureType ?? null,
+    seasons: parkArea.seasons,
+    currentSeason: buildCurrentSeasonOutput(parkArea.seasons, currentYear),
+    groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
 }
 
 router.get(
   "/",
   asyncHandler(async (req, res) => {
+    // Constants
     const currentYear = new Date().getFullYear();
     const minYear = currentYear - 1;
 
@@ -147,81 +220,29 @@ router.get(
         "inReservationSystem",
       ],
       include: [
-        {
-          model: Feature,
-          as: "features",
-          attributes: [
-            "id",
-            "dateableId",
-            "publishableId",
-            "parkAreaId",
-            "name",
-            "inReservationSystem",
-          ],
-          include: [
-            {
-              model: FeatureType,
-              as: "featureType",
-              attributes: ["id", "publishableId", "name"],
-            },
-          ],
-        },
+        // Publishable Seasons for the Park
+        seasonModel(minYear),
+
+        // ParkAreas
         {
           model: ParkArea,
           as: "parkAreas",
           attributes: ["id", "dateableId", "publishableId", "name"],
-          // filter parkAreas that are publishable
-          where: {
-            publishableId: {
-              [Op.ne]: null,
-            },
-          },
-        },
-        {
-          model: Season,
-          as: "seasons",
-          attributes: [
-            "id",
-            "publishableId",
-            "featureTypeId",
-            "status",
-            "readyToPublish",
-            "operatingYear",
-          ],
-          required: true,
-          // filter seasons with operatingYear >= minYear
-          where: {
-            operatingYear: {
-              [Op.gte]: minYear,
-            },
-          },
           include: [
-            {
-              model: Publishable,
-              as: "publishable",
-              attributes: ["id"],
-              include: [
-                {
-                  model: FeatureType,
-                  as: "featureType",
-                  attributes: ["id", "name"],
-                },
-              ],
-            },
-            {
-              model: DateRange,
-              as: "dateRanges",
-              attributes: ["id", "dateableId", "startDate", "endDate"],
-              include: [
-                {
-                  model: DateType,
-                  as: "dateType",
-                  attributes: ["id", "name"],
-                },
-              ],
-            },
+            // Features that are part of the ParkArea
+            featureModel(minYear),
+            // Publishable Seasons for the ParkArea
+            seasonModel(minYear),
           ],
         },
+
+        // Publishable Features that aren't part of a ParkArea
+        featureModel(minYear, {
+          parkAreaId: null,
+          publishableId: {
+            [Op.ne]: null,
+          },
+        }),
       ],
       order: [
         ["name", "ASC"],
@@ -231,16 +252,8 @@ router.get(
     });
 
     const output = parks.map((park) => {
-      const allDateRanges = _.flatMap(
-        park.seasons,
-        (season) => season.dateRanges,
-      );
-
       // get date ranges for park
-      // filter allDateRanges by park.dateableId
-      const parkDateRanges = allDateRanges
-        .filter((dateRange) => dateRange.dateableId === park.dateableId)
-        .map(buildDateRangeObject);
+      const parkDateRanges = getAllDateRanges(park.seasons);
 
       return {
         id: park.id,
@@ -251,153 +264,30 @@ router.get(
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,
-        status: getParkStatus(park.seasons),
+        currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
         features: park.features.map((feature) =>
-          buildFeatureOutput(feature, allDateRanges, park.seasons),
+          buildFeatureOutput(feature, currentYear),
         ),
-        parkAreas: park.parkAreas.map((parkArea) => {
-          // get date ranges for park.parkArea
-          // filter allDateRanges by parkArea.dateableId
-          const parkAreaDateRanges = allDateRanges
-            .filter((dateRange) => dateRange.dateableId === parkArea.dateableId)
-            .map(buildDateRangeObject);
-
-          // get features for park.parkArea
-          // filter park.features by parkArea.id
-          const parkAreaFeatures = park.features
-            .filter((parkFeature) => parkFeature.parkAreaId === parkArea.id)
-            .map((parkFeature) =>
-              buildFeatureOutput(parkFeature, allDateRanges, park.seasons),
-            );
-
-          // add featureType to parkArea if all features have the same featureType
-          let featureType = null;
-
-          if (
-            parkAreaFeatures.length > 0 &&
-            parkAreaFeatures.every(
-              (parkAreaFeature) =>
-                parkAreaFeature.featureType &&
-                parkAreaFeature.featureType.id ===
-                  parkAreaFeatures[0].featureType.id,
-            )
-          ) {
-            featureType = { ...parkAreaFeatures[0].featureType };
-          }
-
-          // get season for park.parkArea
-          // filter park.seasons by parkArea.publishableId
-          // backwards compatibility - filter park.seasons by parkArea.featureType.publishableId
-
-          const parkAreaSeasons = park.seasons.filter(
-            (parkSeason) =>
-              parkSeason.publishableId === parkArea.publishableId ||
-              (featureType &&
-                featureType.publishableId &&
-                parkSeason.publishableId === featureType.publishableId),
-          );
-
-          return {
-            id: parkArea.id,
-            dateableId: parkArea.dateableId,
-            publishableId: parkArea.publishableId,
-            name: parkArea.name,
-            features: parkAreaFeatures,
-            ...(featureType && { featureType }),
-            status: getParkStatus(parkAreaSeasons),
-            groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
-          };
-        }),
+        parkAreas: park.parkAreas.map((parkArea) =>
+          buildParkAreaOutput(parkArea, currentYear),
+        ),
         seasons: park.seasons.map((season) => ({
           id: season.id,
           publishableId: season.publishableId,
           operatingYear: season.operatingYear,
           status: season.status,
-          featureType: {
-            id: season.publishable.featureType?.id,
-            name: season.publishable.featureType?.name,
-          },
           readyToPublish: season.readyToPublish,
-          dateRanges: season.dateRanges.map(buildDateRangeObject),
+          dateRanges: season.dateRanges.map(
+            buildDateRangeObject,
+            season.readyToPublish,
+          ),
         })),
-        readyToPublish: park.seasons.every((season) => season.readyToPublish),
       };
     });
 
     // Return all rows
     res.json(output);
-  }),
-);
-
-router.get(
-  "/:orcs",
-  asyncHandler(async (req, res) => {
-    const { orcs } = req.params;
-
-    const park = await Park.findOne({
-      where: { orcs },
-      attributes: ["orcs", "name"],
-      include: [
-        {
-          model: Season,
-          as: "seasons",
-          attributes: [
-            "id",
-            "operatingYear",
-            "status",
-            "editable",
-            "updatedAt",
-            "readyToPublish",
-          ],
-          include: [
-            {
-              model: Publishable,
-              as: "publishable",
-              attributes: ["id"],
-              include: [
-                {
-                  model: FeatureType,
-                  as: "featureType",
-                  attributes: ["id", "name", "icon"],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
-
-    if (!park) {
-      const error = new Error(`Park not found: ${orcs}`);
-
-      error.status = 404;
-      throw error;
-    }
-
-    const parkJson = park.toJSON();
-
-    const featureTypes = _.mapValues(
-      // group seasons by feature type
-      _.groupBy(parkJson.seasons, (s) => s.publishable.featureType?.name),
-
-      // sort by year
-      (group) => _.orderBy(group, ["operatingYear"], ["desc"]),
-    );
-
-    const winterFees = [];
-
-    // move winter fees to the root object
-    // so the frontend can treat it differently
-    if ("Winter fee" in featureTypes) {
-      winterFees.push(...featureTypes["Winter fee"]);
-      delete featureTypes["Winter fee"];
-    }
-
-    // remove unused season key
-    delete parkJson.seasons;
-
-    res.json({ ...parkJson, featureTypes, winterFees });
   }),
 );
 

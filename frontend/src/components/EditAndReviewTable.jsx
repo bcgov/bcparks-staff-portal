@@ -5,8 +5,8 @@ import { faCheck } from "@fa-kit/icons/classic/solid";
 import { faPen } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
-// TODO: add it to DateRangesList once status is implemented
-// import NotReadyFlag from "@/components/NotReadyFlag";
+import NotReadyFlag from "@/components/NotReadyFlag";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateShort } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import "./EditAndReviewTable.scss";
@@ -58,6 +58,12 @@ function DateRangesList({ dateRanges, isLastYear }) {
       {dateRanges.map((dateRange) => (
         <li key={dateRange.id}>
           {formattedDateRange(dateRange.startDate, dateRange.endDate)}
+          <TooltipWrapper
+            placement="top"
+            content="Dates not ready to be made public"
+          >
+            <NotReadyFlag show={!dateRange.readyToPublish} />
+          </TooltipWrapper>
         </li>
       ))}
     </ul>
@@ -70,6 +76,7 @@ DateRangesList.propTypes = {
       id: PropTypes.number.isRequired,
       startDate: PropTypes.instanceOf(Date).isRequired,
       endDate: PropTypes.instanceOf(Date).isRequired,
+      readyToPublish: PropTypes.bool.isRequired,
     }),
   ),
   isLastYear: PropTypes.bool,
@@ -184,7 +191,7 @@ function Table({ park, formPanelHandler }) {
           level="park"
           nameCellClass="fw-normal text-white"
           name={park.name}
-          status={park.status}
+          status={park.currentSeason?.status}
           formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
@@ -202,15 +209,17 @@ function Table({ park, formPanelHandler }) {
               id={parkArea.id}
               level="park-area"
               name={`${park.name} - ${parkArea.name}`}
-              typeName={parkArea.featureType.name}
-              status={parkArea.status}
+              typeName={parkArea.featureType?.name}
+              status={parkArea.currentSeason?.status}
               formPanelHandler={() =>
                 formPanelHandler({ ...parkArea, level: "park-area" })
               }
             />
             <DateTypeTableRow groupedDateRanges={parkArea.groupedDateRanges} />
+            <DateTableRow groupedDateRanges={parkArea.groupedDateRanges} />
 
             {/* features that belong to park area */}
+            {/* these features might not be publishable */}
             {parkArea.features.map((parkFeature) => (
               <React.Fragment key={parkFeature.id}>
                 <tr className="table-row--park-area-feature">
@@ -230,25 +239,24 @@ function Table({ park, formPanelHandler }) {
         ))}
 
         {/* 3 - feature level */}
-        {/* features that don't belong to park area, and are publishable  */}
-        {features
-          .filter((feature) => !feature.parkAreaId && feature.publishableId)
-          .map((feature) => (
-            <React.Fragment key={feature.id}>
-              <StatusTableRow
-                id={feature.id}
-                level="feature"
-                name={`${park.name} - ${feature.name}`}
-                typeName={feature.featureType.name}
-                status={feature.status}
-                formPanelHandler={() =>
-                  formPanelHandler({ ...feature, level: "feature" })
-                }
-              />
-              <DateTypeTableRow groupedDateRanges={feature.groupedDateRanges} />
-              <DateTableRow groupedDateRanges={feature.groupedDateRanges} />
-            </React.Fragment>
-          ))}
+        {/* features that don't belong to park area  */}
+        {/* these features are publishable */}
+        {features.map((feature) => (
+          <React.Fragment key={feature.id}>
+            <StatusTableRow
+              id={feature.id}
+              level="feature"
+              name={`${park.name} - ${feature.name}`}
+              typeName={feature.featureType.name}
+              status={feature.currentSeason?.status}
+              formPanelHandler={() =>
+                formPanelHandler({ ...feature, level: "feature" })
+              }
+            />
+            <DateTypeTableRow groupedDateRanges={feature.groupedDateRanges} />
+            <DateTableRow groupedDateRanges={feature.groupedDateRanges} />
+          </React.Fragment>
+        ))}
       </tbody>
     </table>
   );
@@ -258,16 +266,28 @@ Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
+    currentSeason: PropTypes.shape({
+      status: PropTypes.string,
+    }),
     groupedDateRanges: PropTypes.object,
     parkAreas: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
+        currentSeason: PropTypes.shape({
+          status: PropTypes.string,
+        }),
+        groupedDateRanges: PropTypes.object,
+        featureType: PropTypes.shape({
+          name: PropTypes.string,
+        }),
         features: PropTypes.arrayOf(
           PropTypes.shape({
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
+            currentSeason: PropTypes.shape({
+              status: PropTypes.string,
+            }),
             groupedDateRanges: PropTypes.object,
           }),
         ),
@@ -277,10 +297,13 @@ Table.propTypes = {
       PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
+        currentSeason: PropTypes.shape({
+          status: PropTypes.string,
+        }),
+        groupedDateRanges: PropTypes.object,
         featureType: PropTypes.shape({
           name: PropTypes.string.isRequired,
         }),
-        groupedDateRanges: PropTypes.object,
       }),
     ),
   }),

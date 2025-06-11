@@ -5,7 +5,6 @@ import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState } from "react";
-import { orderBy } from "lodash-es";
 import PaginationBar from "@/components/PaginationBar";
 import FilterPanel from "@/components/FilterPanel";
 import FormPanel from "@/components/FormPanel";
@@ -17,7 +16,7 @@ function EditAndReview() {
     loading: filterOptionsLoading,
     error: filterOptionsError,
   } = useApiGet("/filter-options");
-  const parks = data ?? [];
+  const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
 
   const statusOptions = [
@@ -53,10 +52,6 @@ function EditAndReview() {
     setShowFormPanel(!showFormPanel);
   }
 
-  // table sorting state
-  const [sortColumn, setSortColumn] = useState("parkName");
-  const [sortOrder, setSortOrder] = useState("asc");
-
   function resetFilters() {
     setPage(1);
     setFilters({
@@ -70,12 +65,6 @@ function EditAndReview() {
       isInReservationSystem: false,
       hasDateNote: false,
     });
-  }
-
-  function updateSort(column, order) {
-    setPage(1);
-    setSortColumn(column);
-    setSortOrder(order);
   }
 
   const filteredParks = useMemo(
@@ -144,8 +133,8 @@ function EditAndReview() {
         if (
           filters.featureTypes.length > 0 &&
           !filters.featureTypes.some((filterFeatureType) =>
-            park.seasons.some(
-              (season) => season.featureType.id === filterFeatureType.id,
+            park.features.some(
+              (feature) => feature.featureType.id === filterFeatureType.id,
             ),
           )
         ) {
@@ -178,28 +167,17 @@ function EditAndReview() {
     }));
   }
 
-  // returns sorted and filtered parks array
-  function getSortedParks() {
-    if (sortColumn === "parkName") {
-      return orderBy(
-        filteredParks,
-        [(item) => item.name.toLowerCase()],
-        [sortOrder === "asc" ? "asc" : "desc"],
-      );
-    }
-
-    return filteredParks;
-  }
-  const sortedParks = getSortedParks();
-
-  // Slice the sorted/filtered list of parks for pagination
-  const totalPages = Math.ceil(sortedParks.length / pageSize);
+  // Slice the list of parks for pagination
+  const totalPages = useMemo(
+    () => Math.ceil(filteredParks.length / pageSize),
+    [filteredParks, pageSize],
+  );
   const pageData = useMemo(() => {
     const start = pageSize * (page - 1);
     const end = start + pageSize;
 
-    return sortedParks.slice(start, end);
-  }, [sortedParks, page, pageSize]);
+    return filteredParks.slice(start, end);
+  }, [filteredParks, page, pageSize]);
 
   // components
   function renderTable() {

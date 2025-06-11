@@ -22,6 +22,17 @@ export default (sequelize) => {
         foreignKey: "publishableId",
         as: "publishable",
       });
+
+      ParkArea.hasMany(models.Feature, {
+        foreignKey: "parkAreaId",
+        as: "features",
+      });
+
+      ParkArea.hasMany(models.Season, {
+        foreignKey: "publishableId",
+        sourceKey: "publishableId",
+        as: "seasons",
+      });
     }
   }
   ParkArea.init(
