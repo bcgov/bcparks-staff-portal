@@ -6,7 +6,7 @@ import { Park } from "../../models/index.js";
 const jsonPath = path.join(import.meta.dirname, "2025-tier-data.json");
 const jsonData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
-// Update each  park
+// Update each park
 const updateQueries = jsonData.map(async (parkData) => {
   const { orcs, tierType } = parkData;
   const columnName = tierType === "t1" ? "hasTier1Dates" : "hasTier2Dates";
