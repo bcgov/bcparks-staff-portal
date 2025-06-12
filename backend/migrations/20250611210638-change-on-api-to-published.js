@@ -8,7 +8,7 @@ module.exports = {
 
     // Update all Season records with status "Not provided" to "not provided"
     await queryInterface.sequelize.query(
-      `UPDATE "Seasons" SET "status" = 'published' WHERE "status" = 'on API';`,
+      `UPDATE "Seasons" SET "status" = 'not provided' WHERE "status" = 'Not provided';`,
     );
   },
 
@@ -20,7 +20,7 @@ module.exports = {
 
     // Revert all Season records with status "not provided" back to "Not provided"
     await queryInterface.sequelize.query(
-      `UPDATE "Seasons" SET "status" = 'on API' WHERE "status" = 'not provided';`,
+      `UPDATE "Seasons" SET "status" = 'Not provided' WHERE "status" = 'not provided';`,
     );
   },
 };
