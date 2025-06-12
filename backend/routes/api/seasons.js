@@ -92,6 +92,14 @@ async function getPreviousSeasonDates(currentSeason) {
           model: DateRange,
           as: "dateRanges",
           required: false,
+
+          include: [
+            {
+              model: DateType,
+              as: "dateType",
+              attributes: ["id", "name"],
+            },
+          ],
         },
       ],
     });
