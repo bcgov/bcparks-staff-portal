@@ -5,17 +5,17 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 import DatePicker from "react-datepicker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
+import { faCircleInfo, faCalendarCheck } from "@fa-kit/icons/classic/regular";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateRangeText } from "@/lib/utils";
+import "./DateRangeForm.scss";
 
 // Components
-function DateRangeFields({}) {
+function DateRangeFields() {
   return (
     <div className="d-flex mb-3">
       <div className="form-group">
-        <label className="form-label d-lg-none">
-          Start date
-        </label>
+        <label className="form-label d-lg-none">Start date</label>
         <div className="input-with-append">
           <DatePicker
             className={classNames({
@@ -24,8 +24,12 @@ function DateRangeFields({}) {
             dateFormat="EEE, MMM d, yyyy"
             showMonthYearDropdown
           />
-          <FontAwesomeIcon icon={faCalendarCheck} />
+          <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
         </div>
+      </div>
+
+      <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
+        <span>&ndash;</span>
       </div>
 
       <div className="form-group">
@@ -38,7 +42,7 @@ function DateRangeFields({}) {
             dateFormat="EEE, MMM d, yyyy"
             showMonthYearDropdown
           />
-          <FontAwesomeIcon icon={faCalendarCheck} />
+          <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
         </div>
       </div>
     </div>
@@ -57,7 +61,13 @@ function DateRangeForm({
     return (
       <div className="row gx-0">
         <div key={dateType} className="col-lg-6">
-          <h6 className="fw-normal">{dateType}</h6>
+          <h6 className="fw-normal mb-3">
+            {dateType}{" "}
+            <TooltipWrapper placement="top" content="TEST">
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+          {/* TODO: Previous dates */}
           <DateRangeFields />
         </div>
       </div>
@@ -104,7 +114,11 @@ function DateRangeForm({
 DateRangeForm.propTypes = {
   dateType: PropTypes.string,
   dateRanges: PropTypes.object,
-  seasons: PropTypes.object,
+  seasons: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number,
+    }),
+  ),
   currentYear: PropTypes.number,
   lastYear: PropTypes.number,
 };

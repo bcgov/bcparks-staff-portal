@@ -1,23 +1,105 @@
+import { useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import FormContainer from "@/components/FormContainer";
 import DateRangeForm from "@/components/DateRangeForm";
+import RadioButtonGroup from "@/components/RadioButtonGroup";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import "./FormPanel.scss";
+import TimeRangeForm from "./TimeRangeForm";
 
 // Components
-function RadioButtons({ id }) {
+
+function GateRadioButtons({ value, onChange }) {
   return (
-    <Form className="mb-4">
-      <Form.Check id={`${id}--yes`} type="radio" label="Yes" />
-      <Form.Check id={`${id}--yes`} type="radio" label="No" />
-    </Form>
+    <RadioButtonGroup
+      id="has-gate"
+      options={[
+        { value: true, label: "Yes" },
+        { value: false, label: "No" },
+      ]}
+      value={value}
+      onChange={onChange}
+    />
   );
 }
 
-RadioButtons.propTypes = {
-  id: PropTypes.string,
+GateRadioButtons.propTypes = {
+  value: PropTypes.bool,
+  onChange: PropTypes.func.isRequired,
+};
+
+function GateForm({ dateRanges, seasons, currentYear, lastYear }) {
+  const [gateOptions, setGateOptions] = useState({
+    openAtDawn: false,
+    closedAtDusk: false,
+    sameHoursEveryYear: false,
+  });
+
+  function handleCheckboxChange(e) {
+    const { name, checked } = e.target;
+
+    setGateOptions((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
+  }
+
+  return (
+    <div className="mb-4">
+      <DateRangeForm
+        dateType="Operating dates"
+        dateRanges={dateRanges}
+        seasons={seasons}
+        currentYear={currentYear}
+        lastYear={lastYear}
+      />
+      <h6 className="fw-normal">
+        Gate hours{" "}
+        <TooltipWrapper placement="top" content="TEST">
+          <FontAwesomeIcon icon={faCircleInfo} />
+        </TooltipWrapper>
+      </h6>
+      <Form>
+        <Form.Check
+          type="checkbox"
+          id="open-at-dawn"
+          name="openAtDawn"
+          label="Open at dawn"
+          checked={gateOptions.openAtDawn}
+          onChange={handleCheckboxChange}
+        />
+        <Form.Check
+          type="checkbox"
+          id="closed-at-dusk"
+          name="closedAtDusk"
+          label="Closed at dusk"
+          checked={gateOptions.closedAtDusk}
+          onChange={handleCheckboxChange}
+        />
+        <TimeRangeForm />
+        <Form.Check
+          type="checkbox"
+          id="same-hours-every-year"
+          name="sameHoursEveryYear"
+          label="Hours are the same every year"
+          checked={gateOptions.sameHoursEveryYear}
+          onChange={handleCheckboxChange}
+        />
+      </Form>
+    </div>
+  );
+}
+
+GateForm.propTypes = {
+  dateRanges: PropTypes.object,
+  seasons: PropTypes.array,
+  currentYear: PropTypes.number,
+  lastYear: PropTypes.number,
 };
 
 function InternalNotes({ errors = {}, notes = "", setNotes }) {
@@ -88,12 +170,22 @@ function FormPanel({ show, setShow, formData, approver }) {
   const currentYear = new Date().getFullYear();
   const lastYear = currentYear - 1;
 
+  const [park, setPark] = useState({
+    hasGate: false,
+  });
+  const [parkArea, setParkArea] = useState({
+    hasGate: false,
+  });
+  const [feature, setFeature] = useState({
+    hasGate: false,
+  });
+
   // Functions
   function handleClose() {
     setShow(false);
   }
 
-  // console.log("DATA", data);
+  console.log("DATA", data);
 
   return (
     <Offcanvas
@@ -107,7 +199,7 @@ function FormPanel({ show, setShow, formData, approver }) {
         <Offcanvas.Title>
           <h2>{data.name}</h2>
           <h2 className="fw-normal">{currentYear} dates</h2>
-          <p className="fw-normal">
+          <p className="fs-6 fw-normal">
             <a
               href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
               target="_blank"
@@ -138,7 +230,18 @@ function FormPanel({ show, setShow, formData, approver }) {
               Does this park have a single gated vehicle entrance? If there are
               multiple vehicle entrances, select &quot;No&quot;.
             </p>
-            <RadioButtons id="park-gate" />
+            <GateRadioButtons
+              value={park.hasGate}
+              onChange={(value) => setPark({ ...park, hasGate: value })}
+            />
+            {park.hasGate && (
+              <GateForm
+                dateRanges={data.groupedDateRanges}
+                seasons={data.seasons}
+                currentYear={currentYear}
+                lastYear={lastYear}
+              />
+            )}
             {/* TODO: display Operating dates if hasGate is true or if it has Operating dates */}
           </>
         )}
@@ -164,7 +267,7 @@ function FormPanel({ show, setShow, formData, approver }) {
             )}
             <h6 className="fw-normal">{data.name} gate</h6>
             <p>Does {data.name} have a gated entrance?</p>
-            <RadioButtons id="park-area-gate" />
+            {/* <RadioButtons id="park-area-gate" /> */}
           </>
         )}
         {/* feature */}
@@ -183,7 +286,7 @@ function FormPanel({ show, setShow, formData, approver }) {
             </FormContainer>
             <h6 className="fw-normal">{data.name} gate</h6>
             <p>Does {data.name} have a gated entrance?</p>
-            <RadioButtons id="feature-gate" />
+            {/* <RadioButtons id="feature-gate" /> */}
           </>
         )}
 
