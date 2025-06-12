@@ -21,7 +21,10 @@ import { DateRange, DateType } from "../models/index.js";
 // First come 2: 2025-10-13 to 2025-10-30
 // => From Reservation end date plus 1 to Operation end date minus 1
 
-export async function createFirstComeFirstServedDateRange(season) {
+export async function createFirstComeFirstServedDateRange(
+  season,
+  transaction = null,
+) {
   // Check if the FeatureType is "Frontcountry camping" or "Walk-in camping"
   if (
     season.featureType.name === "Frontcountry camping" ||
@@ -33,6 +36,8 @@ export async function createFirstComeFirstServedDateRange(season) {
         name: ["Operation", "Reservation", "First come, first served"],
       },
       attributes: ["id", "name"],
+
+      transaction,
     });
 
     const dateTypeMap = new Map(
@@ -86,7 +91,7 @@ export async function createFirstComeFirstServedDateRange(season) {
 
       // Create the new DateRanges in the database
       if (firstComeDateRanges.length > 0) {
-        await DateRange.bulkCreate(firstComeDateRanges);
+        await DateRange.bulkCreate(firstComeDateRanges, { transaction });
       }
     }
   }
