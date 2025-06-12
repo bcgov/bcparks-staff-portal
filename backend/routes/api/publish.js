@@ -90,7 +90,7 @@ router.get(
           seasonMap[key] = {
             fetchConditions: {
               parkId: season.parkId,
-              hasWinterFeeDates: true,
+              // hasWinterFeeDates: true, // removed in v2 data model
             },
             seasons: [],
           };
@@ -122,13 +122,7 @@ router.get(
       where: {
         [Op.or]: parkFeaturePairs,
       },
-      attributes: [
-        "id",
-        "name",
-        "strapiId",
-        "featureTypeId",
-        "hasWinterFeeDates",
-      ],
+      attributes: ["id", "name", "strapiId", "featureTypeId"],
       include: [
         {
           model: Park,

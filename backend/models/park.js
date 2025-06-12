@@ -73,6 +73,12 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+
+      hasWinterFeeDates: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
