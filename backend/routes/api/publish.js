@@ -19,7 +19,7 @@ import {
 } from "../../middleware/permissions.js";
 
 import { get, post, put } from "./strapi-api.js";
-import * as STATUS from "../../constants";
+import * as STATUS from "../../constants/seasonStatus.js";
 
 const router = Router();
 
