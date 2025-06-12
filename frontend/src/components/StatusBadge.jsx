@@ -24,7 +24,7 @@ export default function StatusBadge({ status }) {
       { cssClass: "text-bg-dark", displayText: "Pending HQ review" },
     ],
     [
-      "Not provided",
+      "not provided",
       { cssClass: "text-bg-disabled", displayText: "Not provided" },
     ],
   ]);
