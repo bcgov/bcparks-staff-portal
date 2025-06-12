@@ -1,4 +1,7 @@
 import "../env.js";
+
+import { Op } from "sequelize";
+
 import { get } from "./axios.js";
 import {
   getItemByAttributes,
@@ -20,7 +23,7 @@ import {
   ManagementArea,
   User,
 } from "../models/index.js";
-import { Op } from "sequelize";
+import * as STATUS from "../constants/seasonStatus.js";
 
 /**
  * Gets data for specific page number
@@ -238,7 +241,8 @@ export async function createOrUpdateFeatureType(strapiData, item) {
 function getSeasonStatus(operatingYear) {
   // if operating year is in the past, set status to published, else set to requested
   const currentYear = new Date().getFullYear();
-  const status = operatingYear < currentYear ? "published" : "requested";
+  const status =
+    operatingYear < currentYear ? STATUS.PUBLISHED : STATUS.REQUESTED;
 
   return status;
 }
@@ -546,7 +550,7 @@ export async function createDatesAndSeasons(datesData) {
       const data = {
         status: seasonStatus,
         readyToPublish: true,
-        editable: seasonStatus === "requested",
+        editable: seasonStatus === STATUS.REQUESTED,
         ...attrs,
       };
 
@@ -613,7 +617,7 @@ export async function createDatesAndSeasons(datesData) {
       const data = {
         status: seasonStatus,
         readyToPublish: true,
-        editable: seasonStatus === "requested",
+        editable: seasonStatus === STATUS.REQUESTED,
         ...attrs,
       };
 

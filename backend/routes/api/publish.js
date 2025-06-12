@@ -19,6 +19,7 @@ import {
 } from "../../middleware/permissions.js";
 
 import { get, post, put } from "./strapi-api.js";
+import * as STATUS from "../../constants";
 
 const router = Router();
 
@@ -64,7 +65,7 @@ router.get(
     // get all seasons that are approved and ready to be published
     const approvedSeasons = await Season.findAll({
       where: {
-        status: "approved",
+        status: STATUS.APPROVED,
       },
       attributes: ["id", "parkId", "operatingYear", "readyToPublish"],
       include: [
@@ -465,7 +466,7 @@ router.post(
     // and the associated objects we need to build the payload
     const approvedSeasons = await Season.findAll({
       where: {
-        status: "approved",
+        status: STATUS.APPROVED,
         readyToPublish: true,
       },
       attributes: ["id", "parkId", "featureTypeId", "operatingYear"],
@@ -549,7 +550,7 @@ router.post(
 
     Season.update(
       {
-        status: "published",
+        status: STATUS.PUBLISHED,
       },
       {
         where: {

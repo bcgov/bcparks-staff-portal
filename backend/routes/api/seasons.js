@@ -3,6 +3,7 @@ import _ from "lodash";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
+import * as STATUS from "../../constants/seasonStatus.js";
 
 import {
   Park,
@@ -391,7 +392,7 @@ router.post(
 
       checkSeasonExists(season);
 
-      const newStatus = "requested";
+      const newStatus = STATUS.REQUESTED;
 
       // Create season change log with the notes
       const seasonChangeLog = await SeasonChangeLog.create(
@@ -491,7 +492,7 @@ router.post(
     const transaction = await sequelize.transaction();
 
     try {
-      await updateStatus(seasonId, "approved", null, transaction);
+      await updateStatus(seasonId, STATUS.APPROVED, null, transaction);
 
       // Create "First come, first served" DateRange if applicable
       // @TODO: Uncomment when the function is implemented with v2 data model
@@ -512,7 +513,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
 
-    await updateStatus(seasonId, "pending review");
+    await updateStatus(seasonId, STATUS.PENDING_REVIEW);
 
     res.sendStatus(200);
   }),

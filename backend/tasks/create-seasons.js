@@ -15,6 +15,7 @@ import {
   Publishable,
   Season,
 } from "../models/index.js";
+import * as STATUS from "../constants/seasonStatus.js";
 
 // Run all queries in a transaction
 const transaction = await Season.sequelize.transaction();
@@ -106,7 +107,7 @@ async function createSeason(publishableId, year) {
     {
       publishableId,
       operatingYear: year,
-      status: "requested",
+      status: STATUS.REQUESTED,
     },
 
     { transaction },

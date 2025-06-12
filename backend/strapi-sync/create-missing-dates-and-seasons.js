@@ -8,6 +8,7 @@ import {
 } from "../models/index.js";
 import { createModel } from "./utils.js";
 import { Op } from "sequelize";
+import * as STATUS from "../constants/seasonStatus.js";
 
 export async function createMissingDatesAndSeasons() {
   const [seasons, dateTypes, winterFeatureType, features] = await Promise.all([
@@ -91,7 +92,7 @@ export async function createMissingDatesAndSeasons() {
     if (!seasonMap.has(key)) {
       // create season right away becase we need the id
       const newSeason = await createModel(Season, {
-        status: "requested",
+        status: STATUS.REQUESTED,
         readyToPublish: true,
         parkId,
         featureTypeId,
