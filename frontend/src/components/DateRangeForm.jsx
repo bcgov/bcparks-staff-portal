@@ -1,51 +1,79 @@
 // Copied from /pages/SubmitDates.jsx
-// TODO: change it to be a shared component
 
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import DatePicker from "react-datepicker";
+import Form from "react-bootstrap/Form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo, faCalendarCheck } from "@fa-kit/icons/classic/regular";
+import {
+  faPlus,
+  faCircleInfo,
+  faCalendarCheck,
+} from "@fa-kit/icons/classic/regular";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateRangeText } from "@/lib/utils";
-import "./DateRangeForm.scss";
 
 // Components
 function DateRangeFields() {
   return (
-    <div className="d-flex mb-3">
-      <div className="form-group">
-        <label className="form-label d-lg-none">Start date</label>
-        <div className="input-with-append">
-          <DatePicker
-            className={classNames({
-              "form-control": true,
-            })}
-            dateFormat="EEE, MMM d, yyyy"
-            showMonthYearDropdown
-          />
-          <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
+    <Form className="mb-4">
+      <div className="d-flex mb-2">
+        <div className="form-group">
+          <label className="form-label d-lg-none">Start date</label>
+          <div className="input-with-append">
+            <DatePicker
+              className={classNames({
+                "form-control": true,
+              })}
+              dateFormat="EEE, MMM d, yyyy"
+              showMonthYearDropdown
+            />
+            <FontAwesomeIcon
+              className="append-content"
+              icon={faCalendarCheck}
+            />
+          </div>
+        </div>
+
+        <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
+          <span>&ndash;</span>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label d-lg-none">End date</label>
+          <div className="input-with-append">
+            <DatePicker
+              className={classNames({
+                "form-control": true,
+              })}
+              dateFormat="EEE, MMM d, yyyy"
+              showMonthYearDropdown
+            />
+            <FontAwesomeIcon
+              className="append-content"
+              icon={faCalendarCheck}
+            />
+          </div>
         </div>
       </div>
 
-      <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
-        <span>&ndash;</span>
-      </div>
+      <button
+        className="btn btn-text text-link"
+        // onClick={}
+      >
+        <FontAwesomeIcon icon={faPlus} />
+        <span className="ms-1">Add more operating dates</span>
+      </button>
 
-      <div className="form-group">
-        <label className="form-label d-lg-none">End date</label>
-        <div className="input-with-append">
-          <DatePicker
-            className={classNames({
-              "form-control": true,
-            })}
-            dateFormat="EEE, MMM d, yyyy"
-            showMonthYearDropdown
-          />
-          <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
-        </div>
-      </div>
-    </div>
+      <Form.Check
+        type="checkbox"
+        id="same-dates-every-year"
+        name="sameDatesEveryYear"
+        label="Dates are the same every year"
+        // checked={}
+        // onChange={}
+      />
+    </Form>
   );
 }
 
@@ -56,32 +84,38 @@ function DateRangeForm({
   currentYear,
   lastYear,
 }) {
+  // console.log("dateRanges", dateRanges);
   // if there are no date ranges
   if (!dateRanges || Object.keys(dateRanges).length === 0) {
     return (
-      <div className="row gx-0">
+      <div className="row mb-3">
         <div key={dateType} className="col-lg-6">
-          <h6 className="fw-normal mb-3">
+          <h6 className="fw-normal">
             {dateType}{" "}
             <TooltipWrapper placement="top" content="TEST">
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
           </h6>
-          {/* TODO: Previous dates */}
           <DateRangeFields />
         </div>
       </div>
     );
   }
   return (
-    <div className="row gx-0">
+    <div className="row  mb-3">
       {Object.entries(dateRanges).map(([dateTypeName, dateRange]) => {
         const lastYearRanges = dateRange[lastYear] || [];
-        const currentYearRanges = dateRange[currentYear] || [];
+        // const currentYearRanges = dateRange[currentYear] || [];
 
         return (
           <div key={dateTypeName} className="col-lg-6">
-            <h6 className="fw-normal">{dateTypeName}</h6>
+            <h6 className="fw-normal">
+              {dateTypeName}{" "}
+              <TooltipWrapper placement="top" content="TEST">
+                <FontAwesomeIcon icon={faCircleInfo} />
+              </TooltipWrapper>
+            </h6>
+            {/* previous year dates */}
             {lastYearRanges.length > 0 && (
               <div className="d-flex">
                 <span className="me-2">Previous:</span>
@@ -92,18 +126,8 @@ function DateRangeForm({
                 ))}
               </div>
             )}
-
-            {/* TODO: add form for current year */}
-            {currentYearRanges.length > 0 && (
-              <div className="d-flex">
-                <span className="me-2">Current:</span>
-                {currentYearRanges.map((date) => (
-                  <span key={date.id}>
-                    {formatDateRangeText(date.startDate, date.endDate)}
-                  </span>
-                ))}
-              </div>
-            )}
+            {/* current year dates */}
+            <DateRangeFields />
           </div>
         );
       })}

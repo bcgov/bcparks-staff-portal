@@ -3,28 +3,31 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import FormContainer from "@/components/FormContainer";
 import DateRangeForm from "@/components/DateRangeForm";
 import RadioButtonGroup from "@/components/RadioButtonGroup";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import TooltipWrapper from "@/components/TooltipWrapper";
+import TimeRangeForm from "@/components/TimeRangeForm";
+import FeatureIcon from "@/components/FeatureIcon";
+import { useApiGet } from "@/hooks/useApi";
 import "./FormPanel.scss";
-import TimeRangeForm from "./TimeRangeForm";
 
 // Components
-
 function GateRadioButtons({ value, onChange }) {
   return (
-    <RadioButtonGroup
-      id="has-gate"
-      options={[
-        { value: true, label: "Yes" },
-        { value: false, label: "No" },
-      ]}
-      value={value}
-      onChange={onChange}
-    />
+    <div className="mb-4">
+      <RadioButtonGroup
+        id="has-gate"
+        options={[
+          { value: true, label: "Yes" },
+          { value: false, label: "No" },
+        ]}
+        value={value}
+        onChange={onChange}
+      />
+    </div>
   );
 }
 
@@ -33,7 +36,7 @@ GateRadioButtons.propTypes = {
   onChange: PropTypes.func.isRequired,
 };
 
-function GateForm({ dateRanges, seasons, currentYear, lastYear }) {
+function GateForm({ dateRanges, seasons, level, currentYear, lastYear }) {
   const [gateOptions, setGateOptions] = useState({
     openAtDawn: false,
     closedAtDusk: false,
@@ -51,13 +54,15 @@ function GateForm({ dateRanges, seasons, currentYear, lastYear }) {
 
   return (
     <div className="mb-4">
-      <DateRangeForm
-        dateType="Operating dates"
-        dateRanges={dateRanges}
-        seasons={seasons}
-        currentYear={currentYear}
-        lastYear={lastYear}
-      />
+      {level === "park" && (
+        <DateRangeForm
+          dateType="Operating dates"
+          dateRanges={dateRanges}
+          seasons={seasons}
+          currentYear={currentYear}
+          lastYear={lastYear}
+        />
+      )}
       <h6 className="fw-normal">
         Gate hours{" "}
         <TooltipWrapper placement="top" content="TEST">
@@ -98,6 +103,7 @@ function GateForm({ dateRanges, seasons, currentYear, lastYear }) {
 GateForm.propTypes = {
   dateRanges: PropTypes.object,
   seasons: PropTypes.array,
+  level: PropTypes.string,
   currentYear: PropTypes.number,
   lastYear: PropTypes.number,
 };
@@ -170,6 +176,7 @@ function FormPanel({ show, setShow, formData, approver }) {
   const currentYear = new Date().getFullYear();
   const lastYear = currentYear - 1;
 
+  // States
   const [park, setPark] = useState({
     hasGate: false,
   });
@@ -180,12 +187,25 @@ function FormPanel({ show, setShow, formData, approver }) {
     hasGate: false,
   });
 
+  // Hooks
+  const endpoint =
+    data.level && data.currentSeason?.id
+      ? `/seasons/${data.level}/${data.currentSeason.id}`
+      : null;
+
+  const {
+    data: seasonData = {},
+    // loading: seasonLoading,
+    // error: seasonError,
+  } = useApiGet(endpoint);
+
   // Functions
   function handleClose() {
     setShow(false);
   }
 
-  console.log("DATA", data);
+  // console.log("seasonData", seasonData);
+  // console.log("data", data);
 
   return (
     <Offcanvas
@@ -197,6 +217,12 @@ function FormPanel({ show, setShow, formData, approver }) {
     >
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>
+          {(data.level === "park-area" || data.level === "feature") && (
+            <h4 className="header-with-icon fw-normal">
+              <FeatureIcon iconName={data.featureType.icon} />
+              {data.featureType.name}
+            </h4>
+          )}
           <h2>{data.name}</h2>
           <h2 className="fw-normal">{currentYear} dates</h2>
           <p className="fs-6 fw-normal">
@@ -238,36 +264,48 @@ function FormPanel({ show, setShow, formData, approver }) {
               <GateForm
                 dateRanges={data.groupedDateRanges}
                 seasons={data.seasons}
+                level={data.level}
                 currentYear={currentYear}
                 lastYear={lastYear}
               />
             )}
-            {/* TODO: display Operating dates if hasGate is true or if it has Operating dates */}
           </>
         )}
         {/* park area */}
         {data.level === "park-area" && (
           <>
-            {data.features.length > 0 && (
-              <FormContainer>
-                {data.features.map((feature) => (
-                  <div key={feature.id} className="mb-4">
-                    <h5>{feature.name}</h5>
-                    {feature.groupedDateRanges && (
+            <FormContainer>
+              {/* features in park area */}
+              {data.features.length > 0 &&
+                data.features.map((parkAreaFeature) => (
+                  <div key={parkAreaFeature.id} className="mb-4">
+                    <h5>{parkAreaFeature.name}</h5>
+                    {parkAreaFeature.groupedDateRanges && (
                       <DateRangeForm
-                        dateRanges={feature.groupedDateRanges}
-                        seasons={feature.seasons}
+                        dateRanges={parkAreaFeature.groupedDateRanges}
+                        seasons={data.seasons}
                         currentYear={currentYear}
                         lastYear={lastYear}
                       />
                     )}
                   </div>
                 ))}
-              </FormContainer>
-            )}
+            </FormContainer>
             <h6 className="fw-normal">{data.name} gate</h6>
             <p>Does {data.name} have a gated entrance?</p>
-            {/* <RadioButtons id="park-area-gate" /> */}
+            <GateRadioButtons
+              value={parkArea.hasGate}
+              onChange={(value) => setParkArea({ ...parkArea, hasGate: value })}
+            />
+            {parkArea.hasGate && (
+              <GateForm
+                dateRanges={data.groupedDateRanges}
+                seasons={data.seasons}
+                level={data.level}
+                currentYear={currentYear}
+                lastYear={lastYear}
+              />
+            )}
           </>
         )}
         {/* feature */}
@@ -286,7 +324,19 @@ function FormPanel({ show, setShow, formData, approver }) {
             </FormContainer>
             <h6 className="fw-normal">{data.name} gate</h6>
             <p>Does {data.name} have a gated entrance?</p>
-            {/* <RadioButtons id="feature-gate" /> */}
+            <GateRadioButtons
+              value={feature.hasGate}
+              onChange={(value) => setFeature({ ...feature, hasGate: value })}
+            />
+            {feature.hasGate && (
+              <GateForm
+                dateRanges={data.groupedDateRanges}
+                seasons={data.seasons}
+                level={data.level}
+                currentYear={currentYear}
+                lastYear={lastYear}
+              />
+            )}
           </>
         )}
 

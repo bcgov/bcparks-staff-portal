@@ -70,7 +70,7 @@ function featureModel(minYear, where = {}) {
       {
         model: FeatureType,
         as: "featureType",
-        attributes: ["id", "publishableId", "name"],
+        attributes: ["id", "publishableId", "name", "icon"],
       },
       // Publishable Seasons for the Feature
       seasonModel(minYear, false),
@@ -157,6 +157,7 @@ function buildFeatureOutput(feature, currentYear, includeCurrentSeason = true) {
       id: feature.featureType.id,
       publishableId: feature.featureType.publishableId,
       name: feature.featureType.name,
+      icon: feature.featureType.icon,
     },
     seasons: feature.seasons,
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
