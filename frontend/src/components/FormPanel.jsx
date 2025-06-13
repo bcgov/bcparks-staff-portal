@@ -1,48 +1,41 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import classNames from "classnames";
 import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
-import FormContainer from "@/components/FormContainer";
 import DateRangeForm from "@/components/DateRangeForm";
-import RadioButtonGroup from "@/components/RadioButtonGroup";
-import TooltipWrapper from "@/components/TooltipWrapper";
-import TimeRangeForm from "@/components/TimeRangeForm";
 import FeatureIcon from "@/components/FeatureIcon";
+import FormContainer from "@/components/FormContainer";
+import InternalNotes from "@/components/InternalNotes";
+import RadioButtonGroup from "@/components/RadioButtonGroup";
+import ReadyToPublishBox from "@/components/ReadyToPublishBox";
+import TimeRangeForm from "@/components/TimeRangeForm";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import { useApiGet } from "@/hooks/useApi";
 import "./FormPanel.scss";
 
 // Components
-function GateRadioButtons({ value, onChange }) {
-  return (
-    <div className="mb-4">
-      <RadioButtonGroup
-        id="has-gate"
-        options={[
-          { value: true, label: "Yes" },
-          { value: false, label: "No" },
-        ]}
-        value={value}
-        onChange={onChange}
-      />
-    </div>
-  );
-}
-
-GateRadioButtons.propTypes = {
-  value: PropTypes.bool,
-  onChange: PropTypes.func.isRequired,
-};
-
-function GateForm({ dateRanges, seasons, level, currentYear, lastYear }) {
+// TODO: separate GateForm into its own file
+function GateForm({
+  gateTitle,
+  gateDescription,
+  hasGate,
+  setHasGate,
+  dateRanges,
+  seasons,
+  level,
+  currentYear,
+  lastYear,
+}) {
+  // States
   const [gateOptions, setGateOptions] = useState({
     openAtDawn: false,
     closedAtDusk: false,
     sameHoursEveryYear: false,
   });
 
+  // Functions
   function handleCheckboxChange(e) {
     const { name, checked } = e.target;
 
@@ -54,53 +47,76 @@ function GateForm({ dateRanges, seasons, level, currentYear, lastYear }) {
 
   return (
     <div className="mb-4">
-      {level === "park" && (
-        <DateRangeForm
-          dateType="Operating dates"
-          dateRanges={dateRanges}
-          seasons={seasons}
-          currentYear={currentYear}
-          lastYear={lastYear}
+      <h6 className="fw-normal">{gateTitle}</h6>
+      <p>{gateDescription}</p>
+      <div className="mb-4">
+        <RadioButtonGroup
+          id="has-gate"
+          options={[
+            { value: true, label: "Yes" },
+            { value: false, label: "No" },
+          ]}
+          value={hasGate}
+          onChange={(value) => setHasGate(value)}
         />
+      </div>
+      {hasGate && (
+        <div>
+          {level === "park" && (
+            <DateRangeForm
+              dateType="Operating dates"
+              dateRanges={dateRanges}
+              seasons={seasons}
+              currentYear={currentYear}
+              lastYear={lastYear}
+            />
+          )}
+          <h6 className="fw-normal">
+            Gate hours {/* TODO: change content */}
+            <TooltipWrapper placement="top" content="TEST">
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+          <Form>
+            <Form.Check
+              type="checkbox"
+              id="open-at-dawn"
+              name="openAtDawn"
+              label="Open at dawn"
+              className="mb-2"
+              checked={gateOptions.openAtDawn}
+              onChange={handleCheckboxChange}
+            />
+            <Form.Check
+              type="checkbox"
+              id="closed-at-dusk"
+              name="closedAtDusk"
+              label="Closed at dusk"
+              className="mb-2"
+              checked={gateOptions.closedAtDusk}
+              onChange={handleCheckboxChange}
+            />
+            <TimeRangeForm />
+            <Form.Check
+              type="checkbox"
+              id="same-hours-every-year"
+              name="sameHoursEveryYear"
+              label="Hours are the same every year"
+              checked={gateOptions.sameHoursEveryYear}
+              onChange={handleCheckboxChange}
+            />
+          </Form>
+        </div>
       )}
-      <h6 className="fw-normal">
-        Gate hours{" "}
-        <TooltipWrapper placement="top" content="TEST">
-          <FontAwesomeIcon icon={faCircleInfo} />
-        </TooltipWrapper>
-      </h6>
-      <Form>
-        <Form.Check
-          type="checkbox"
-          id="open-at-dawn"
-          name="openAtDawn"
-          label="Open at dawn"
-          checked={gateOptions.openAtDawn}
-          onChange={handleCheckboxChange}
-        />
-        <Form.Check
-          type="checkbox"
-          id="closed-at-dusk"
-          name="closedAtDusk"
-          label="Closed at dusk"
-          checked={gateOptions.closedAtDusk}
-          onChange={handleCheckboxChange}
-        />
-        <TimeRangeForm />
-        <Form.Check
-          type="checkbox"
-          id="same-hours-every-year"
-          name="sameHoursEveryYear"
-          label="Hours are the same every year"
-          checked={gateOptions.sameHoursEveryYear}
-          onChange={handleCheckboxChange}
-        />
-      </Form>
     </div>
   );
 }
 
 GateForm.propTypes = {
+  gateTitle: PropTypes.string,
+  gateDescription: PropTypes.string,
+  hasGate: PropTypes.bool,
+  setHasGate: PropTypes.func.isRequired,
   dateRanges: PropTypes.object,
   seasons: PropTypes.array,
   level: PropTypes.string,
@@ -108,55 +124,18 @@ GateForm.propTypes = {
   lastYear: PropTypes.number,
 };
 
-function InternalNotes({ errors = {}, notes = "", setNotes }) {
-  return (
-    <div className="mb-4">
-      <h3>Internal notes</h3>
-      <p>
-        If you are updating the current year&apos;s dates, provide an
-        explanation for why dates have changed. Provide any other notes about
-        these dates if needed.
-      </p>
-      <div className={`form-group mb-2 ${errors.notes ? "has-error" : ""}`}>
-        <textarea
-          id="internal-notes"
-          rows="5"
-          name="notes"
-          value={notes}
-          onChange={(e) => {
-            setNotes(e.target.value);
-          }}
-          className={classNames({
-            "form-control": true,
-            "is-invalid": errors.notes,
-          })}
-        ></textarea>
-      </div>
-      <div>
-        <small>Visible to all BC Parks staff and Park Operators</small>
-      </div>
-    </div>
-  );
-}
-
-InternalNotes.propTypes = {
-  errors: PropTypes.object,
-  notes: PropTypes.string,
-  setNotes: PropTypes.func,
-};
-
 function Buttons({ onSave, onSubmit, approver }) {
   return (
     <div>
-      <button className="btn btn-outline-primary me-3" onClick={onSave}>
+      <button className="btn btn-outline-primary fw-bold me-3" onClick={onSave}>
         Save draft
       </button>
       {approver ? (
-        <button className="btn btn-primary" onClick={onSubmit}>
+        <button className="btn btn-primary fw-bold" onClick={onSubmit}>
           Mark approved
         </button>
       ) : (
-        <button className="btn btn-primary" onClick={onSubmit}>
+        <button className="btn btn-primary fw-bold" onClick={onSubmit}>
           Submit to HQ
         </button>
       )}
@@ -179,12 +158,15 @@ function FormPanel({ show, setShow, formData, approver }) {
   // States
   const [park, setPark] = useState({
     hasGate: false,
+    readyToPublish: false,
   });
   const [parkArea, setParkArea] = useState({
     hasGate: false,
+    readyToPublish: false,
   });
   const [feature, setFeature] = useState({
     hasGate: false,
+    readyToPublish: false,
   });
 
   // Hooks
@@ -204,9 +186,11 @@ function FormPanel({ show, setShow, formData, approver }) {
     setShow(false);
   }
 
-  // console.log("seasonData", seasonData);
-  // console.log("data", data);
+  console.log("endpoint", endpoint);
+  console.log("seasonData", seasonData);
+  console.log("data", data);
 
+  // TODO: hook seasonData into the form
   return (
     <Offcanvas
       show={show}
@@ -217,6 +201,7 @@ function FormPanel({ show, setShow, formData, approver }) {
     >
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>
+          {/* display feature type name and icon if the form is for park-area or feature */}
           {(data.level === "park-area" || data.level === "feature") && (
             <h4 className="header-with-icon fw-normal">
               <FeatureIcon iconName={data.featureType.icon} />
@@ -238,40 +223,45 @@ function FormPanel({ show, setShow, formData, approver }) {
       <Offcanvas.Body>
         <h3>Public information</h3>
         <p>This information is displayed on bcpark.ca</p>
-        {/* park */}
+
+        {/* 1 - park level */}
         {data.level === "park" && (
           <>
             {data.seasons.length > 0 && (
               <FormContainer>
-                {/* TODO: tier 1 form */}
+                {/* tier 1 form */}
                 {data.hasTier1Dates && <DateRangeForm dateType="Tier 1" />}
-                {/* TODO: tier 2 form */}
+                {/* tier 2 form */}
                 {data.hasTier2Dates && <DateRangeForm dateType="Tier 2" />}
                 {/* TODO: winter fee form */}
                 <DateRangeForm dateType="Winter fee" />
               </FormContainer>
             )}
-            <h6 className="fw-normal">Park gate</h6>
-            <p>
-              Does this park have a single gated vehicle entrance? If there are
-              multiple vehicle entrances, select &quot;No&quot;.
-            </p>
-            <GateRadioButtons
-              value={park.hasGate}
-              onChange={(value) => setPark({ ...park, hasGate: value })}
+            <GateForm
+              gateTitle="Park gate"
+              gateDescription='Does this park have a single gated vehicle entrance? If there are
+              multiple vehicle entrances, select "No".'
+              hasGate={park.hasGate}
+              setHasGate={(value) => setPark({ ...park, hasGate: value })}
+              dateRanges={data.groupedDateRanges}
+              seasons={data.seasons}
+              level={data.level}
+              currentYear={currentYear}
+              lastYear={lastYear}
             />
-            {park.hasGate && (
-              <GateForm
-                dateRanges={data.groupedDateRanges}
-                seasons={data.seasons}
-                level={data.level}
-                currentYear={currentYear}
-                lastYear={lastYear}
+            {/* TODO: add Ready to Publish for approver */}
+            {approver && (
+              <ReadyToPublishBox
+                readyToPublish={park.readyToPublish}
+                setReadyToPublish={(value) =>
+                  setPark({ ...park, readyToPublish: value })
+                }
               />
             )}
           </>
         )}
-        {/* park area */}
+
+        {/* 2- park area level */}
         {data.level === "park-area" && (
           <>
             <FormContainer>
@@ -291,24 +281,32 @@ function FormPanel({ show, setShow, formData, approver }) {
                   </div>
                 ))}
             </FormContainer>
-            <h6 className="fw-normal">{data.name} gate</h6>
-            <p>Does {data.name} have a gated entrance?</p>
-            <GateRadioButtons
-              value={parkArea.hasGate}
-              onChange={(value) => setParkArea({ ...parkArea, hasGate: value })}
+            <GateForm
+              gateTitle={`${data.name} gate`}
+              gateDescription={`Does ${data.name} have a gated entrance?`}
+              hasGate={parkArea.hasGate}
+              setHasGate={(value) =>
+                setParkArea({ ...parkArea, hasGate: value })
+              }
+              dateRanges={data.groupedDateRanges}
+              seasons={data.seasons}
+              level={data.level}
+              currentYear={currentYear}
+              lastYear={lastYear}
             />
-            {parkArea.hasGate && (
-              <GateForm
-                dateRanges={data.groupedDateRanges}
-                seasons={data.seasons}
-                level={data.level}
-                currentYear={currentYear}
-                lastYear={lastYear}
+            {/* TODO: add Ready to Publish for approver */}
+            {approver && (
+              <ReadyToPublishBox
+                readyToPublish={parkArea.readyToPublish}
+                setReadyToPublish={(value) =>
+                  setPark({ ...parkArea, readyToPublish: value })
+                }
               />
             )}
           </>
         )}
-        {/* feature */}
+
+        {/* 3 - feature level */}
         {data.level === "feature" && (
           <>
             <FormContainer>
@@ -322,27 +320,30 @@ function FormPanel({ show, setShow, formData, approver }) {
                 />
               )}
             </FormContainer>
-            <h6 className="fw-normal">{data.name} gate</h6>
-            <p>Does {data.name} have a gated entrance?</p>
-            <GateRadioButtons
-              value={feature.hasGate}
-              onChange={(value) => setFeature({ ...feature, hasGate: value })}
+            <GateForm
+              gateTitle={`${data.name} gate`}
+              gateDescription={`Does ${data.name} have a gated entrance?`}
+              hasGate={feature.hasGate}
+              setHasGate={(value) => setFeature({ ...feature, hasGate: value })}
+              dateRanges={data.groupedDateRanges}
+              seasons={data.seasons}
+              level={data.level}
+              currentYear={currentYear}
+              lastYear={lastYear}
             />
-            {feature.hasGate && (
-              <GateForm
-                dateRanges={data.groupedDateRanges}
-                seasons={data.seasons}
-                level={data.level}
-                currentYear={currentYear}
-                lastYear={lastYear}
+            {/* TODO: add Ready to Publish for approver */}
+            {approver && (
+              <ReadyToPublishBox
+                readyToPublish={feature.readyToPublish}
+                setReadyToPublish={(value) =>
+                  setPark({ ...feature, readyToPublish: value })
+                }
               />
             )}
           </>
         )}
 
         {/* TODO: add Public Notes for v3 */}
-        {/* TODO: add Ready to Publish for approver */}
-        {/* {approver && <ReadyToPublishBox />} */}
         <InternalNotes />
         <Buttons approver={approver} />
       </Offcanvas.Body>

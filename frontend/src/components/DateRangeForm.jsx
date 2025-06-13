@@ -16,8 +16,8 @@ import { formatDateRangeText } from "@/lib/utils";
 // Components
 function DateRangeFields() {
   return (
-    <Form className="mb-4">
-      <div className="d-flex mb-2">
+    <Form>
+      <div className="d-flex">
         <div className="form-group">
           <label className="form-label d-lg-none">Start date</label>
           <div className="input-with-append">
@@ -80,18 +80,18 @@ function DateRangeFields() {
 function DateRangeForm({
   dateType,
   dateRanges,
-  seasons,
-  currentYear,
+  // seasons,
+  // currentYear,
   lastYear,
 }) {
-  // console.log("dateRanges", dateRanges);
   // if there are no date ranges
   if (!dateRanges || Object.keys(dateRanges).length === 0) {
     return (
-      <div className="row mb-3">
+      <div className="row">
         <div key={dateType} className="col-lg-6">
           <h6 className="fw-normal">
-            {dateType}{" "}
+            {/* TODO: display date type even no date? */}
+            {dateType} No dates available {/* TODO: change content */}
             <TooltipWrapper placement="top" content="TEST">
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
@@ -102,7 +102,7 @@ function DateRangeForm({
     );
   }
   return (
-    <div className="row  mb-3">
+    <div className="row">
       {Object.entries(dateRanges).map(([dateTypeName, dateRange]) => {
         const lastYearRanges = dateRange[lastYear] || [];
         // const currentYearRanges = dateRange[currentYear] || [];
@@ -138,12 +138,12 @@ function DateRangeForm({
 DateRangeForm.propTypes = {
   dateType: PropTypes.string,
   dateRanges: PropTypes.object,
-  seasons: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number,
-    }),
-  ),
-  currentYear: PropTypes.number,
+  // seasons: PropTypes.arrayOf(
+  //   PropTypes.shape({
+  //     id: PropTypes.number,
+  //   }),
+  // ),
+  // currentYear: PropTypes.number,
   lastYear: PropTypes.number,
 };
 
