@@ -1,18 +1,12 @@
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 
-function RadioButtonGroup({
-  id,
-  name,
-  options,
-  value,
-  onChange,
-}) {
+function RadioButtonGroup({ id, name, options, value, onChange }) {
   return (
     <Form>
-      {options.map((option, index) => (
+      {options.map((option) => (
         <Form.Check
-          key={index}
+          key={option.value}
           id={`${id}--${option.value}`}
           type="radio"
           label={option.label}

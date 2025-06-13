@@ -127,15 +127,27 @@ GateForm.propTypes = {
 function Buttons({ onSave, onSubmit, approver }) {
   return (
     <div>
-      <button className="btn btn-outline-primary fw-bold me-3" onClick={onSave}>
+      <button
+        type="button"
+        onClick={onSave}
+        className="btn btn-outline-primary fw-bold me-3"
+      >
         Save draft
       </button>
       {approver ? (
-        <button className="btn btn-primary fw-bold" onClick={onSubmit}>
+        <button
+          type="button"
+          onClick={onSubmit}
+          className="btn btn-primary fw-bold"
+        >
           Mark approved
         </button>
       ) : (
-        <button className="btn btn-primary fw-bold" onClick={onSubmit}>
+        <button
+          type="button"
+          onClick={onSubmit}
+          className="btn btn-primary fw-bold"
+        >
           Submit to HQ
         </button>
       )}
@@ -185,10 +197,6 @@ function FormPanel({ show, setShow, formData, approver }) {
   function handleClose() {
     setShow(false);
   }
-
-  console.log("endpoint", endpoint);
-  console.log("seasonData", seasonData);
-  console.log("data", data);
 
   // TODO: hook seasonData into the form
   return (
@@ -299,7 +307,7 @@ function FormPanel({ show, setShow, formData, approver }) {
               <ReadyToPublishBox
                 readyToPublish={parkArea.readyToPublish}
                 setReadyToPublish={(value) =>
-                  setPark({ ...parkArea, readyToPublish: value })
+                  setParkArea({ ...parkArea, readyToPublish: value })
                 }
               />
             )}
@@ -336,7 +344,7 @@ function FormPanel({ show, setShow, formData, approver }) {
               <ReadyToPublishBox
                 readyToPublish={feature.readyToPublish}
                 setReadyToPublish={(value) =>
-                  setPark({ ...feature, readyToPublish: value })
+                  setFeature({ ...feature, readyToPublish: value })
                 }
               />
             )}

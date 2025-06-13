@@ -57,21 +57,18 @@ function DateRangeFields() {
         </div>
       </div>
 
-      <button
-        className="btn btn-text text-link"
-        // onClick={}
-      >
+      {/* TODO */}
+      <button className="btn btn-text text-link">
         <FontAwesomeIcon icon={faPlus} />
-        <span className="ms-1">Add more operating dates</span>
+        <span className="ms-1">Add more dates</span>
       </button>
 
+      {/* TODO */}
       <Form.Check
         type="checkbox"
         id="same-dates-every-year"
         name="sameDatesEveryYear"
         label="Dates are the same every year"
-        // checked={}
-        // onChange={}
       />
     </Form>
   );
@@ -87,15 +84,16 @@ function DateRangeForm({
   // if there are no date ranges
   if (!dateRanges || Object.keys(dateRanges).length === 0) {
     return (
-      <div className="row">
+      <div className="row mb-4">
         <div key={dateType} className="col-lg-6">
           <h6 className="fw-normal">
             {/* TODO: display date type even no date? */}
-            {dateType} No dates available {/* TODO: change content */}
+            {dateType} {/* TODO: change content */}
             <TooltipWrapper placement="top" content="TEST">
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
           </h6>
+          <p>No dates available</p>
           <DateRangeFields />
         </div>
       </div>
