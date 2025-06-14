@@ -100,6 +100,7 @@ function formatChangeLog(changeLog) {
  * @returns {string} - Formatted date string
  */
 function formatDate(ISODate) {
+  if (!ISODate) return "";
   return format(new Date(ISODate), "EEEE, MMMM d, yyyy", { timeZone: "UTC" });
 }
 
