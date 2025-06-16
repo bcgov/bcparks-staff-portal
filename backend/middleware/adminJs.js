@@ -6,6 +6,7 @@ import Connect from "connect-pg-simple";
 import session from "express-session";
 import { Op } from "sequelize";
 import { resetScript } from "../strapi-sync/reset-and-import-data.js";
+import * as STATUS from "../constants/seasonStatus.js";
 import "../env.js";
 
 import {
@@ -59,15 +60,15 @@ function getSeasonActions() {
       async handler(request, response, context) {
         const currentYear = new Date().getFullYear();
 
-        // update status to "Not provided" for all seasons with status "requested" and operatingYear < currentYear
+        // update status to "not provided" for all seasons with status "requested" and operatingYear < currentYear
         const [updatedCount] = await Season.update(
           {
-            status: "Not provided",
+            status: STATUS.NOT_PROVIDED,
             editable: false,
           },
           {
             where: {
-              status: "requested",
+              status: STATUS.REQUESTED,
               operatingYear: {
                 [Op.lt]: currentYear,
               },
@@ -82,16 +83,16 @@ function getSeasonActions() {
         let winterSeasonsUpdated = 0;
 
         // After After May 1st, all winter seasons for the current year shouldn't be editable
-        // so we update their status to "Not provided"
+        // so we update their status to "not provided"
         if (today > may1) {
           const [winterUpdatedCount] = await Season.update(
             {
-              status: "Not provided",
+              status: STATUS.NOT_PROVIDED,
               editable: false,
             },
             {
               where: {
-                status: "requested",
+                status: STATUS.REQUESTED,
                 seasonType: "winter",
                 operatingYear: currentYear,
               },
@@ -105,7 +106,7 @@ function getSeasonActions() {
 
         return {
           notice: {
-            message: `Updated ${totalUpdatedCount} seasons to "Not provided"`,
+            message: `Updated ${totalUpdatedCount} seasons to "${STATUS.NOT_PROVIDED}"`,
             type: "success",
           },
         };
@@ -128,7 +129,7 @@ function getSeasonActions() {
           // set status to requested for this season
           const season = await Season.findByPk(seasonId);
 
-          season.status = "requested";
+          season.status = STATUS.REQUESTED;
           season.readyToPublish = true;
           season.updatedAt = null;
 
@@ -215,7 +216,7 @@ const SeasonResource = {
       "editable",
       "createdAt",
       "updatedAt",
-    ]
+    ],
   },
 };
 

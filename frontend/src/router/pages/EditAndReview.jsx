@@ -20,10 +20,10 @@ function EditAndReview() {
   const filterOptions = filterOptionsData ?? {};
 
   const statusOptions = [
-    { value: "pending review", label: "Pending review" },
-    { value: "requested", label: "Requested" },
+    { value: "requested", label: "Requested by HQ" },
+    { value: "pending review", label: "Pending HQ review" },
     { value: "approved", label: "Approved" },
-    { value: "on API", label: "On API" },
+    { value: "published", label: "Published" },
   ];
 
   // table pagination

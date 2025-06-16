@@ -153,7 +153,7 @@ export default function SeasonPage() {
 
   async function saveAsDraft() {
     try {
-      if (["pending review", "approved", "on API"].includes(season.status)) {
+      if (["pending review", "approved", "published"].includes(season.status)) {
         const confirm = await confirmationDialog.openConfirmation(
           "Move back to draft?",
           "The dates will be moved back to draft and need to be submitted again to be reviewed.",
