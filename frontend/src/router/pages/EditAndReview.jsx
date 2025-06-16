@@ -20,8 +20,8 @@ function EditAndReview() {
   const filterOptions = filterOptionsData ?? {};
 
   const statusOptions = [
-    { value: "pending review", label: "Pending HQ review" },
     { value: "requested", label: "Requested by HQ" },
+    { value: "pending review", label: "Pending HQ review" },
     { value: "approved", label: "Approved" },
     { value: "published", label: "Published" },
   ];
