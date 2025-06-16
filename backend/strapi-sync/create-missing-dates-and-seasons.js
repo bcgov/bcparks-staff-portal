@@ -34,7 +34,6 @@ export async function createMissingDatesAndSeasons() {
         "parkId",
         "featureTypeId",
         "hasReservations",
-        "hasWinterFeeDates",
       ],
       include: [
         {
@@ -150,33 +149,35 @@ export async function createMissingDatesAndSeasons() {
     }
 
     // add winter fee seasons
-    if (feature.hasWinterFeeDates) {
-      const winterKey = `${feature.parkId}-${winterFeatureType.id}`;
+    // @TODO: reimplement winter fee dates logic for v2 data structure
+    // (winter fee dates are now at the Park level instead of Feature level)
+    // if (feature.hasWinterFeeDates) {
+    //   const winterKey = `${feature.parkId}-${winterFeatureType.id}`;
 
-      // get 2024 winter season
-      const winterSeason2024 = seasonMap2024.get(winterKey);
+    //   // get 2024 winter season
+    //   const winterSeason2024 = seasonMap2024.get(winterKey);
 
-      if (winterSeason2024) {
-        const winterSeason = await getOrCreateSeason(
-          feature.parkId,
-          winterFeatureType.id,
-        );
+    //   if (winterSeason2024) {
+    //     const winterSeason = await getOrCreateSeason(
+    //       feature.parkId,
+    //       winterFeatureType.id,
+    //     );
 
-        const existingWinterDates = feature.dateable.dateRanges.filter(
-          (dateRange) => dateRange.seasonId === winterSeason.id,
-        );
+    //     const existingWinterDates = feature.dateable.dateRanges.filter(
+    //       (dateRange) => dateRange.seasonId === winterSeason.id,
+    //     );
 
-        if (existingWinterDates.length === 0) {
-          datesToCreate.push({
-            startDate: null,
-            endDate: null,
-            dateTypeId: dateTypeMap.get("Winter fee").id,
-            dateableId: feature.dateable.id,
-            seasonId: winterSeason.id,
-          });
-        }
-      }
-    }
+    //     if (existingWinterDates.length === 0) {
+    //       datesToCreate.push({
+    //         startDate: null,
+    //         endDate: null,
+    //         dateTypeId: dateTypeMap.get("Winter fee").id,
+    //         dateableId: feature.dateable.id,
+    //         seasonId: winterSeason.id,
+    //       });
+    //     }
+    //   }
+    // }
   }
 
   if (datesToCreate.length > 0) {

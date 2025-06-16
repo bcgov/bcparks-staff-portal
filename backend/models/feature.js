@@ -51,7 +51,6 @@ export default (sequelize) => {
       parkAreaId: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
       strapiId: DataTypes.INTEGER,
-      hasWinterFeeDates: DataTypes.BOOLEAN,
       inReservationSystem: DataTypes.BOOLEAN,
     },
     {
