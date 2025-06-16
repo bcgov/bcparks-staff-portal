@@ -14,7 +14,7 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateRangeText } from "@/lib/utils";
 
 // Components
-function DateRangeFields() {
+function DateRangeFields({ dateRange }) {
   return (
     <Form>
       <div className="d-flex">
@@ -25,6 +25,7 @@ function DateRangeFields() {
               className={classNames({
                 "form-control": true,
               })}
+              selected={dateRange?.startDate}
               dateFormat="EEE, MMM d, yyyy"
               showMonthYearDropdown
             />
@@ -46,6 +47,7 @@ function DateRangeFields() {
               className={classNames({
                 "form-control": true,
               })}
+              selected={dateRange?.endDate}
               dateFormat="EEE, MMM d, yyyy"
               showMonthYearDropdown
             />
@@ -74,75 +76,146 @@ function DateRangeFields() {
   );
 }
 
+DateRangeFields.propTypes = {
+  dateRange: PropTypes.shape({
+    id: PropTypes.number,
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date),
+  }),
+};
+
 function DateRangeForm({
-  dateType,
   dateRanges,
   // seasons,
-  // currentYear,
+  currentYear,
   lastYear,
+  hasGateDates,
+  hasTier1Dates,
+  hasTier2Dates,
+  hasWinterDates,
 }) {
-  // if there are no date ranges
-  if (!dateRanges || Object.keys(dateRanges).length === 0) {
+  // Constants
+  // check if there are any date ranges
+  const hasDateRanges = dateRanges && Object.keys(dateRanges).length > 0;
+
+  // gate date range form
+  if (hasGateDates) {
     return (
       <div className="row mb-4">
-        <div key={dateType} className="col-lg-6">
+        <div className="col-lg-6">
           <h6 className="fw-normal">
-            {/* TODO: display date type even no date? */}
-            {dateType} {/* TODO: change content */}
+            Operating dates{" "}
             <TooltipWrapper placement="top" content="TEST">
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
           </h6>
-          <p>No dates available</p>
+          <p>Previous dates are not provided</p>
           <DateRangeFields />
         </div>
       </div>
     );
   }
-  return (
-    <div className="row">
-      {Object.entries(dateRanges).map(([dateTypeName, dateRange]) => {
-        const lastYearRanges = dateRange[lastYear] || [];
-        // const currentYearRanges = dateRange[currentYear] || [];
 
-        return (
-          <div key={dateTypeName} className="col-lg-6">
-            <h6 className="fw-normal">
-              {dateTypeName}{" "}
-              <TooltipWrapper placement="top" content="TEST">
-                <FontAwesomeIcon icon={faCircleInfo} />
-              </TooltipWrapper>
-            </h6>
-            {/* previous year dates */}
-            {lastYearRanges.length > 0 && (
-              <div className="d-flex">
-                <span className="me-2">Previous:</span>
-                {lastYearRanges.map((date) => (
-                  <span key={date.id}>
-                    {formatDateRangeText(date.startDate, date.endDate)}
-                  </span>
-                ))}
-              </div>
-            )}
-            {/* current year dates */}
-            <DateRangeFields />
-          </div>
-        );
-      })}
+  // date range form for seasons
+  return (
+    <div className="row mb-4">
+      {hasDateRanges ? (
+        Object.entries(dateRanges).map(([dateTypeName, dateRange]) => {
+          const lastYearRanges = dateRange[lastYear] || [];
+          const currentYearRanges = dateRange[currentYear] || [];
+          const hasCurrentYearRanges = currentYearRanges.length > 0;
+
+          // date ranges available
+          return (
+            <div key={dateTypeName} className="col-lg-6">
+              <h6 className="fw-normal">
+                {dateTypeName}{" "}
+                <TooltipWrapper placement="top" content={dateRange.description}>
+                  <FontAwesomeIcon icon={faCircleInfo} />
+                </TooltipWrapper>
+              </h6>
+              {/* previous year dates */}
+              {lastYearRanges.length > 0 ? (
+                <div className="d-flex mb-3">
+                  <span className="me-2">Previous:</span>
+                  {lastYearRanges.map((date) => (
+                    <span key={date.id}>
+                      {formatDateRangeText(date.startDate, date.endDate)}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <p>Previous dates are not provided</p>
+              )}
+              {/* current year dates */}
+              {/* pre-populate dates if current year date ranges are available */}
+              {hasCurrentYearRanges ? (
+                currentYearRanges.map((date) => (
+                  <DateRangeFields key={date.id} dateRange={date} />
+                ))
+              ) : (
+                <DateRangeFields />
+              )}
+            </div>
+          );
+        })
+      ) : (
+        // no date ranges available
+        <div className="col-lg-6">
+          It doesn&apos;t have any seasons in {lastYear}/{currentYear}.
+        </div>
+      )}
+
+      {/* TODO: replace them with real data */}
+      {hasTier1Dates && (
+        <div className="col-lg-6">
+          <h6 className="fw-normal">
+            Tier 1{" "}
+            <TooltipWrapper placement="top" content="TEST">
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+          <p>Previous dates are not provided</p>
+          <DateRangeFields />
+        </div>
+      )}
+      {hasTier2Dates && (
+        <div className="col-lg-6">
+          <h6 className="fw-normal">
+            Tier 2{" "}
+            <TooltipWrapper placement="top" content="TEST">
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+          <p>Previous dates are not provided</p>
+          <DateRangeFields />
+        </div>
+      )}
+      {hasWinterDates && (
+        <div className="col-lg-6">
+          <h6 className="fw-normal">
+            Winter{" "}
+            <TooltipWrapper placement="top" content="TEST">
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+          <p>Previous dates are not provided</p>
+          <DateRangeFields />
+        </div>
+      )}
     </div>
   );
 }
 
 DateRangeForm.propTypes = {
-  dateType: PropTypes.string,
   dateRanges: PropTypes.object,
-  // seasons: PropTypes.arrayOf(
-  //   PropTypes.shape({
-  //     id: PropTypes.number,
-  //   }),
-  // ),
-  // currentYear: PropTypes.number,
+  seasons: PropTypes.object,
+  currentYear: PropTypes.number,
   lastYear: PropTypes.number,
+  hasGateDates: PropTypes.bool,
+  hasTier1Dates: PropTypes.bool,
+  hasTier2Dates: PropTypes.bool,
+  hasWinterDates: PropTypes.bool,
 };
 
 export default DateRangeForm;

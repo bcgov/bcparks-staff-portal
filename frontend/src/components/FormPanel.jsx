@@ -23,7 +23,6 @@ function GateForm({
   hasGate,
   setHasGate,
   dateRanges,
-  seasons,
   level,
   currentYear,
   lastYear,
@@ -64,11 +63,10 @@ function GateForm({
         <div>
           {level === "park" && (
             <DateRangeForm
-              dateType="Operating dates"
               dateRanges={dateRanges}
-              seasons={seasons}
               currentYear={currentYear}
               lastYear={lastYear}
+              hasGateDates={true}
             />
           )}
           <h6 className="fw-normal">
@@ -118,7 +116,6 @@ GateForm.propTypes = {
   hasGate: PropTypes.bool,
   setHasGate: PropTypes.func.isRequired,
   dateRanges: PropTypes.object,
-  seasons: PropTypes.array,
   level: PropTypes.string,
   currentYear: PropTypes.number,
   lastYear: PropTypes.number,
@@ -235,16 +232,16 @@ function FormPanel({ show, setShow, formData, approver }) {
         {/* 1 - park level */}
         {data.level === "park" && (
           <>
-            {data.seasons.length > 0 && (
-              <FormContainer>
-                {/* tier 1 form */}
-                {data.hasTier1Dates && <DateRangeForm dateType="Tier 1" />}
-                {/* tier 2 form */}
-                {data.hasTier2Dates && <DateRangeForm dateType="Tier 2" />}
-                {/* TODO: winter fee form */}
-                <DateRangeForm dateType="Winter fee" />
-              </FormContainer>
-            )}
+            <FormContainer>
+              <DateRangeForm
+                dateRanges={data.groupedDateRanges}
+                currentYear={currentYear}
+                lastYear={lastYear}
+                hasTier1Dates={data.hasTier1Dates}
+                hasTier2Dates={data.hasTier2Dates}
+                hasWinterDates={data.hasWinterDates}
+              />
+            </FormContainer>
             <GateForm
               gateTitle="Park gate"
               gateDescription='Does this park have a single gated vehicle entrance? If there are
@@ -252,7 +249,6 @@ function FormPanel({ show, setShow, formData, approver }) {
               hasGate={park.hasGate}
               setHasGate={(value) => setPark({ ...park, hasGate: value })}
               dateRanges={data.groupedDateRanges}
-              seasons={data.seasons}
               level={data.level}
               currentYear={currentYear}
               lastYear={lastYear}
@@ -273,7 +269,17 @@ function FormPanel({ show, setShow, formData, approver }) {
         {data.level === "park-area" && (
           <>
             <FormContainer>
-              {/* features in park area */}
+              {/* park area dates */}
+              {data.groupedDateRanges &&
+                Object.keys(data.groupedDateRanges).length > 0 && (
+                  <DateRangeForm
+                    dateRanges={data.groupedDateRanges}
+                    seasons={seasonData}
+                    currentYear={currentYear}
+                    lastYear={lastYear}
+                  />
+                )}
+              {/* feature dates in park area */}
               {data.features.length > 0 &&
                 data.features.map((parkAreaFeature) => (
                   <div key={parkAreaFeature.id} className="mb-4">
@@ -281,7 +287,7 @@ function FormPanel({ show, setShow, formData, approver }) {
                     {parkAreaFeature.groupedDateRanges && (
                       <DateRangeForm
                         dateRanges={parkAreaFeature.groupedDateRanges}
-                        seasons={data.seasons}
+                        seasons={seasonData}
                         currentYear={currentYear}
                         lastYear={lastYear}
                       />
@@ -297,7 +303,6 @@ function FormPanel({ show, setShow, formData, approver }) {
                 setParkArea({ ...parkArea, hasGate: value })
               }
               dateRanges={data.groupedDateRanges}
-              seasons={data.seasons}
               level={data.level}
               currentYear={currentYear}
               lastYear={lastYear}
@@ -322,7 +327,7 @@ function FormPanel({ show, setShow, formData, approver }) {
               {data.groupedDateRanges && (
                 <DateRangeForm
                   dateRanges={data.groupedDateRanges}
-                  seasons={data.seasons}
+                  seasons={seasonData}
                   currentYear={currentYear}
                   lastYear={lastYear}
                 />
@@ -334,7 +339,6 @@ function FormPanel({ show, setShow, formData, approver }) {
               hasGate={feature.hasGate}
               setHasGate={(value) => setFeature({ ...feature, hasGate: value })}
               dateRanges={data.groupedDateRanges}
-              seasons={data.seasons}
               level={data.level}
               currentYear={currentYear}
               lastYear={lastYear}

@@ -89,10 +89,14 @@ function groupDateRangesByTypeAndYear(dateRanges) {
   // group by dateType name
   return _.mapValues(
     _.groupBy(validRanges, (dateRange) => dateRange.dateType.name),
-    (ranges) =>
-      _.groupBy(ranges, (dateRange) =>
+    (ranges) => {
+      const byYear = _.groupBy(ranges, (dateRange) =>
         new Date(dateRange.startDate).getFullYear(),
-      ),
+      );
+
+      byYear.description = ranges[0]?.dateType.description || "";
+      return byYear;
+    },
   );
 }
 
@@ -164,7 +168,10 @@ function buildFeatureOutput(feature, currentYear, includeCurrentSeason = true) {
   };
 
   if (includeCurrentSeason) {
-    output.currentSeason = buildCurrentSeasonOutput(feature.seasons, currentYear);
+    output.currentSeason = buildCurrentSeasonOutput(
+      feature.seasons,
+      currentYear,
+    );
   }
 
   return output;
