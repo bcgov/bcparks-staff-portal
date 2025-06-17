@@ -8,8 +8,7 @@ import {
   Feature,
   FeatureType,
 } from "../models/index.js";
-import APPROVED from "../constants/seasonStatus.js";
-import { all } from "axios";
+import { APPROVED } from "../constants/seasonStatus.js";
 
 // START: Helpers - @TODO: maybe move to a separate file
 
@@ -54,7 +53,11 @@ function frontcountryFeaturesQueryPart(featureTypeId) {
   };
 }
 
-async function getAllParkSeasons(park, operatingYear, transaction = null) {
+async function getAllFrontcountrySeasons(
+  park,
+  operatingYear,
+  transaction = null,
+) {
   // Find the FeatureTypeId for "Frontcountry campground"
   const frontcountryType = await FeatureType.findOne({
     where: { name: "Frontcountry campground" },
@@ -158,7 +161,7 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
   if (!park.hasWinterFeeDates) return false;
 
   // Get all Frontcountry camping Seasons in the Park (Park/Area/Feature) for the operating year
-  const allFrontcountrySeasons = await getAllParkSeasons(
+  const allFrontcountrySeasons = await getAllFrontcountrySeasons(
     park,
     operatingYear,
     transaction,
@@ -173,11 +176,14 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
     (frontcountrySeason) => frontcountrySeason.status === APPROVED,
   );
 
-  console.log(allFrontcountrySeasons);
+  console.log(allFrontcountrySeasons.map((s) => s.toJSON()));
 
   if (!allApproved) return false;
 
-  console.log();
+  console.log(
+    "\n\n\n\nallApproved",
+    allFrontcountrySeasons.map((s) => s.toJSON()),
+  );
 
   return true;
 }
