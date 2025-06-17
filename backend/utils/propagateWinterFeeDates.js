@@ -1,7 +1,15 @@
 // For Winter fee dates collected at the Park level,
 // This script will propagate the dates down to the Frontcountry camping Feature and Area levels.
 
-import { Season, Park, ParkArea, Feature } from "../models/index.js";
+import {
+  Season,
+  Park,
+  ParkArea,
+  Feature,
+  FeatureType,
+} from "../models/index.js";
+import APPROVED from "../constants/seasonStatus.js";
+import { all } from "axios";
 
 // START: Helpers - @TODO: maybe move to a separate file
 
@@ -37,7 +45,29 @@ function seasonsQueryPart(operatingYear) {
   };
 }
 
+function frontcountryFeaturesQueryPart(featureTypeId) {
+  return {
+    model: Feature,
+    as: "features",
+    where: { featureTypeId },
+    required: true,
+  };
+}
+
 async function getAllParkSeasons(park, operatingYear, transaction = null) {
+  // Find the FeatureTypeId for "Frontcountry campground"
+  const frontcountryType = await FeatureType.findOne({
+    where: { name: "Frontcountry campground" },
+    attributes: ["id"],
+    transaction,
+  });
+
+  if (!frontcountryType) {
+    throw new Error("Frontcountry campground FeatureType not found.");
+  }
+
+  const FRONTCOUNTRY_CAMPING_TYPE_ID = frontcountryType.id;
+
   // Get all Seasons in the Park for the operating year
   const parkSeasons = await Park.findByPk(park.id, {
     include: [
@@ -49,6 +79,9 @@ async function getAllParkSeasons(park, operatingYear, transaction = null) {
         model: ParkArea,
         as: "parkAreas",
         include: [
+          // Frontcountry camping Features within Areas
+          frontcountryFeaturesQueryPart(FRONTCOUNTRY_CAMPING_TYPE_ID),
+
           // Area seasons
           seasonsQueryPart(operatingYear),
         ],
@@ -56,8 +89,8 @@ async function getAllParkSeasons(park, operatingYear, transaction = null) {
 
       // Features directly in the Park, and Features within Areas
       {
-        model: Feature,
-        as: "features",
+        ...frontcountryFeaturesQueryPart(FRONTCOUNTRY_CAMPING_TYPE_ID),
+
         include: [
           // Feature seasons
           seasonsQueryPart(operatingYear),
@@ -66,6 +99,9 @@ async function getAllParkSeasons(park, operatingYear, transaction = null) {
     ],
     transaction,
   });
+
+  // If no season satisfies the criteria, return an empty array
+  if (!parkSeasons) return [];
 
   console.log("parkSeasons:", parkSeasons.toJSON());
 
@@ -121,15 +157,27 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
   // If the Park doesn't have winter fee dates, return false
   if (!park.hasWinterFeeDates) return false;
 
-  // Get all Seasons in the Park (Park/Area/Feature) for the operating year
-  const allParkSeasons = await getAllParkSeasons(
+  // Get all Frontcountry camping Seasons in the Park (Park/Area/Feature) for the operating year
+  const allFrontcountrySeasons = await getAllParkSeasons(
     park,
     operatingYear,
     transaction,
   );
 
-  console.log("allParkSeasons:", allParkSeasons.length);
-  console.log(allParkSeasons);
+  console.log("\n\n\nallParkSeasons:", allFrontcountrySeasons.length);
+
+  if (!allFrontcountrySeasons.length) return false;
+
+  // Check if all of the frontcountry camping seasons are approved
+  const allApproved = allFrontcountrySeasons.every(
+    (frontcountrySeason) => frontcountrySeason.status === APPROVED,
+  );
+
+  console.log(allFrontcountrySeasons);
+
+  if (!allApproved) return false;
+
+  console.log();
 
   return true;
 }
