@@ -11,10 +11,10 @@ import {
   faCalendarCheck,
 } from "@fa-kit/icons/classic/regular";
 import TooltipWrapper from "@/components/TooltipWrapper";
-import { formatDateRangeText } from "@/lib/utils";
+import { formatDateRange } from "@/lib/utils";
 
 // Components
-function DateRangeFields({ dateRange }) {
+function DateRangeFields({ dateRange, hasMultipleDates = true }) {
   return (
     <Form>
       <div className="d-flex">
@@ -59,13 +59,15 @@ function DateRangeFields({ dateRange }) {
         </div>
       </div>
 
-      {/* TODO */}
-      <button className="btn btn-text text-link">
-        <FontAwesomeIcon icon={faPlus} />
-        <span className="ms-1">Add more dates</span>
-      </button>
+      {/* TODO: add fields if the button is clicked */}
+      {hasMultipleDates && (
+        <button className="btn btn-text text-link">
+          <FontAwesomeIcon icon={faPlus} />
+          <span className="ms-1">Add more dates</span>
+        </button>
+      )}
 
-      {/* TODO */}
+      {/* TODO: CMS-872 - use isDateRangeAnnual */}
       <Form.Check
         type="checkbox"
         id="same-dates-every-year"
@@ -82,6 +84,7 @@ DateRangeFields.propTypes = {
     startDate: PropTypes.instanceOf(Date),
     endDate: PropTypes.instanceOf(Date),
   }),
+  hasMultipleDates: PropTypes.bool,
 };
 
 function DateRangeForm({
@@ -92,7 +95,7 @@ function DateRangeForm({
   hasGateDates,
   hasTier1Dates,
   hasTier2Dates,
-  hasWinterDates,
+  hasWinterFeeDates,
 }) {
   // Constants
   // check if there are any date ranges
@@ -139,9 +142,7 @@ function DateRangeForm({
                 <div className="d-flex mb-3">
                   <span className="me-2">Previous:</span>
                   {lastYearRanges.map((date) => (
-                    <span key={date.id}>
-                      {formatDateRangeText(date.startDate, date.endDate)}
-                    </span>
+                    <span key={date.id}>{formatDateRange(date)}</span>
                   ))}
                 </div>
               ) : (
@@ -161,8 +162,10 @@ function DateRangeForm({
         })
       ) : (
         // no date ranges available
-        <div className="col-lg-6">
-          It doesn&apos;t have any seasons in {lastYear}/{currentYear}.
+        <div className="col-12">
+          <p>
+            It doesn&apos;t have any seasons in {lastYear}/{currentYear}.
+          </p>
         </div>
       )}
 
@@ -176,7 +179,7 @@ function DateRangeForm({
             </TooltipWrapper>
           </h6>
           <p>Previous dates are not provided</p>
-          <DateRangeFields />
+          <DateRangeFields hasMultipleDates={false} />
         </div>
       )}
       {hasTier2Dates && (
@@ -191,7 +194,7 @@ function DateRangeForm({
           <DateRangeFields />
         </div>
       )}
-      {hasWinterDates && (
+      {hasWinterFeeDates && (
         <div className="col-lg-6">
           <h6 className="fw-normal">
             Winter{" "}
@@ -215,7 +218,7 @@ DateRangeForm.propTypes = {
   hasGateDates: PropTypes.bool,
   hasTier1Dates: PropTypes.bool,
   hasTier2Dates: PropTypes.bool,
-  hasWinterDates: PropTypes.bool,
+  hasWinterFeeDates: PropTypes.bool,
 };
 
 export default DateRangeForm;

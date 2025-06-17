@@ -13,9 +13,7 @@ function TimeRangeForm() {
           <label className="form-label d-lg-none">Start time</label>
           <div className="input-with-append">
             <DatePicker
-              className={classNames({
-                "form-control": true,
-              })}
+              className={classNames("form-control")}
               dateFormat="h:mm aa"
               showTimeSelect
               showTimeSelectOnly

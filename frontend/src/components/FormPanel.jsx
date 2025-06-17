@@ -239,7 +239,7 @@ function FormPanel({ show, setShow, formData, approver }) {
                 lastYear={lastYear}
                 hasTier1Dates={data.hasTier1Dates}
                 hasTier2Dates={data.hasTier2Dates}
-                hasWinterDates={data.hasWinterDates}
+                hasWinterFeeDates={data.hasWinterFeeDates}
               />
             </FormContainer>
             <GateForm

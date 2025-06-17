@@ -10,7 +10,11 @@ function InternalNotes({ errors = {}, notes = "", setNotes }) {
         explanation for why dates have changed. Provide any other notes about
         these dates if needed.
       </p>
-      <div className={`form-group mb-2 ${errors.notes ? "has-error" : ""}`}>
+      <div
+        className={classNames("form-group", "mb-2", {
+          "has-error": errors.notes,
+        })}
+      >
         <textarea
           id="internal-notes"
           rows="5"
