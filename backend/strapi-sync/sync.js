@@ -177,6 +177,8 @@ export async function createOrUpdatePark(item) {
     // Update it to false if inReservationSystem from Strapi returns null
     dbItem.inReservationSystem =
       item.attributes.parkOperation.inReservationSystem ?? false;
+    dbItem.isDateRangeAnnual =
+      item.attributes.parkOperation.isDateRangeAnnual ?? false;
 
     await dbItem.save();
   } else {
@@ -189,6 +191,8 @@ export async function createOrUpdatePark(item) {
       managementAreas: item.mgmtAreaAndSection,
       inReservationSystem:
         item.attributes.parkOperation.inReservationSystem ?? false,
+      isDateRangeAnnual:
+        item.attributes.parkOperation.isDateRangeAnnual ?? false
     };
 
     dbItem = await createModel(Park, data);
