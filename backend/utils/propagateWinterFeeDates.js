@@ -45,7 +45,7 @@ function frontcountryFeaturesQueryPart(featureTypeId) {
  * Returns the Park record associated with the given Season.
  * @param {Season} season Season record (could be Park, Area, or Feature Season)
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Park} Park record for the Season
+ * @returns {Promise<Park>} Park record for the Season
  */
 async function getSeasonPark(season, transaction = null) {
   // If the season is a Park season, return it directly
@@ -72,7 +72,7 @@ async function getSeasonPark(season, transaction = null) {
  * @param {Park} park The Park record to get Seasons for
  * @param {number} operatingYear The operating year to filter Seasons by
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Object} An object containing arrays of Seasons by level: park, parkArea, and feature.
+ * @returns {Promise<Object>} An object containing arrays of Seasons by level: park, parkArea, and feature.
  * @throws {Error} If the Frontcountry campground FeatureType is not found
  */
 async function getAllFrontcountrySeasons(
@@ -144,7 +144,18 @@ async function getAllFrontcountrySeasons(
   };
 }
 
-// @TODO: rename the two similarly-named functions
+/**
+ * Adds winter fee dates for a given Season. Winter fee DateRanges are created
+ * based on the overlapping date ranges between the provided winterDates and
+ * the operating dates for any Dateables in the Season.
+ * @param {Season} season Season record to add winter fee dates for
+ * @param {Array} winterDates array of Winter fee DateRanges to add to the Areas and Features
+ * @param {number} winterTypeId DB ID of the Winter fee DateType
+ * @param {number} operatingTypeId DB ID of the Operation dates DateType
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Array | boolean>} Array of results from bulkCreate
+ * for the winter fee DateRanges, or false if no dates need to be added
+ */
 async function addWinterFeeDatesForSeason(
   season,
   winterDates,
@@ -190,45 +201,56 @@ async function addWinterFeeDatesForSeason(
 
   console.log("\ngroupedOperatingDates:", groupedOperatingDates);
 
-  const foo = _.map(groupedOperatingDates, (dateRanges, dateableId) => {
-    console.log("\n\nin map", dateableId, dateRanges);
+  const creationResults = _.map(
+    groupedOperatingDates,
+    (dateRanges, dateableId) => {
+      console.log("\n\nin map", dateableId, dateRanges);
 
-    // Consolidate the operating date ranges for this dateableId
-    const operatingDates = consolidateRanges(
-      dateRanges.map((dateRange) => dateRange.toJSON()),
-    );
+      // Consolidate the operating date ranges for this dateableId
+      const operatingDates = consolidateRanges(
+        dateRanges.map((dateRange) => dateRange.toJSON()),
+      );
 
-    console.log("\n\noperatingDates:", operatingDates);
+      console.log("\n\noperatingDates:", operatingDates);
 
-    // Get an array of overlapping dates from winterDates and operatingDates
-    const overlappingDates = getOverlappingDateRanges(
-      winterDates,
-      operatingDates,
-    );
+      // Get an array of overlapping dates from winterDates and operatingDates
+      const overlappingDates = getOverlappingDateRanges(
+        winterDates,
+        operatingDates,
+      );
 
-    console.log("\n\noverlappingDates:", overlappingDates);
+      console.log("\n\noverlappingDates:", overlappingDates);
 
-    if (!overlappingDates.length) return false;
+      if (!overlappingDates.length) return false;
 
-    // @TODO: create winter dates for overlapping dates
-    console.log("add winter date range for overlappingDates for this season");
-    console.log("overlappingDates:", overlappingDates);
-    return DateRange.bulkCreate(
-      overlappingDates.map((dateRange) => ({
-        seasonId: season.id,
-        dateableId,
-        dateTypeId: winterTypeId,
-        startDate: dateRange.startDate,
-        endDate: dateRange.endDate,
-      })),
-      { transaction },
-    );
-  });
+      // @TODO: create winter dates for overlapping dates
+      console.log("add winter date range for overlappingDates for this season");
+      console.log("overlappingDates:", overlappingDates);
+      return DateRange.bulkCreate(
+        overlappingDates.map((dateRange) => ({
+          seasonId: season.id,
+          dateableId,
+          dateTypeId: winterTypeId,
+          startDate: dateRange.startDate,
+          endDate: dateRange.endDate,
+        })),
+        { transaction },
+      );
+    },
+  );
 
-  return Promise.all(foo);
+  return Promise.all(creationResults);
 }
 
-async function addWinterFeeDatesToSeasons(
+/**
+ * Processes the Area and Feature Seasons to add winter fee dates, if applicable.
+ * @param {Object} allSeasons object containing seasons organized by level (from `getAllFrontcountrySeasons`)
+ * @param {Park} park Park record for the Seasons
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Array>} Array of query results from calling `addWinterFeeDatesForSeason` for each Season
+ * @throws {Error} If the Winter fee DateType or Operating DateType is not found
+ */
+async function processAreaAndFeatureSeasons(
   allSeasons,
   park,
   transaction = null,
@@ -297,10 +319,16 @@ async function addWinterFeeDatesToSeasons(
   return addedDates;
 }
 
-// END: Helpers
-
+/**
+ * Propagates winter fee dates from the Park level down to Area and Feature Seasons.
+ * This happens if the park supports winter fee dates and all Frontcountry camping Seasons are approved.
+ * @param {number} seasonId The ID of the Season being approved
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<boolean | Array>} Returns false if no winter fee dates are added,
+ */
 export async function propagateWinterFeeDates(seasonId, transaction = null) {
-  // Get the current Season, along with its Park details
+  // Get details for the provided Season that was just approved, along with its Park details
+  // We'll use it to check all the other seasons for the Park and operatingYear
   const season = await Season.findByPk(seasonId, {
     include: [
       // Park details, if it's a Park season
@@ -371,7 +399,11 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
   );
 
   // All seasons are approved, so add winter fee dates to the Feature and Area seasons
-  return addWinterFeeDatesToSeasons(allFrontcountrySeasons, park, transaction);
+  return processAreaAndFeatureSeasons(
+    allFrontcountrySeasons,
+    park,
+    transaction,
+  );
 }
 
 // run it for testing
