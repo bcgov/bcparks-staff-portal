@@ -1,20 +1,25 @@
 // For Winter fee dates collected at the Park level,
 // This script will propagate the dates down to the Frontcountry camping Feature and Area levels.
 
+import { Op } from "sequelize";
+
 import {
   Season,
   Park,
   ParkArea,
   Feature,
   FeatureType,
+  DateRange,
+  DateType,
 } from "../models/index.js";
 import { APPROVED } from "../constants/seasonStatus.js";
+import consolidateRanges from "./consolidateDateRanges.js";
+
+const FRONTCOUNTRY_CAMPING_TYPE_NAME = "Frontcountry campground";
+const WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
+const OPERATING_DATE_TYPE_NAME = "Operation";
 
 // START: Helpers - @TODO: maybe move to a separate file
-
-async function getSeasonFeature(season, transaction = null) {}
-
-async function getSeasonArea(season, transaction = null) {}
 
 async function getSeasonPark(season, transaction = null) {
   // If the season is a Park season, return it directly
@@ -60,7 +65,7 @@ async function getAllFrontcountrySeasons(
 ) {
   // Find the FeatureTypeId for "Frontcountry campground"
   const frontcountryType = await FeatureType.findOne({
-    where: { name: "Frontcountry campground" },
+    where: { name: FRONTCOUNTRY_CAMPING_TYPE_NAME },
     attributes: ["id"],
     transaction,
   });
@@ -108,14 +113,117 @@ async function getAllFrontcountrySeasons(
 
   console.log("parkSeasons:", parkSeasons.toJSON());
 
-  // Return all of the Seasons in one array
-  return [
-    ...parkSeasons.seasons,
+  // Return all of the Seasons, organized by level
+  return {
+    park: parkSeasons.seasons,
 
-    ...parkSeasons.parkAreas.flatMap((parkArea) => parkArea.seasons),
+    parkArea: parkSeasons.parkAreas.flatMap((parkArea) => parkArea.seasons),
 
-    ...parkSeasons.features.flatMap((feature) => feature.seasons),
-  ];
+    feature: parkSeasons.features.flatMap((feature) => feature.seasons),
+  };
+}
+
+async function addWinterFeeDatesToSeasons(
+  allSeasons,
+  park,
+  transaction = null,
+) {
+  const areaAndFeatureSeasons = [...allSeasons.parkArea, ...allSeasons.feature];
+
+  const winterFeeType = await DateType.findOne({
+    attributes: ["id"],
+    where: { name: WINTER_FEE_DATE_TYPE_NAME },
+    transaction,
+  });
+
+  if (!winterFeeType) {
+    throw new Error("Winter fee DateType not found.");
+  }
+
+  const operatingDateType = await DateType.findOne({
+    attributes: ["id"],
+    where: { name: OPERATING_DATE_TYPE_NAME },
+    transaction,
+  });
+
+  if (!operatingDateType) {
+    throw new Error("Operating DateType not found.");
+  }
+
+  // Get all of the winter dates for the Park level
+  const parkWinterDates = await DateRange.findAll({
+    where: {
+      dateableId: park.dateableId,
+      dateTypeId: winterFeeType.id,
+    },
+    transaction,
+  });
+
+  console.log(
+    "\n\nparkWinterDates::",
+    `(id ${winterFeeType.id})`,
+    parkWinterDates,
+  );
+
+  const consolidatedWinterDates = consolidateRanges(
+    parkWinterDates.map((dateRange) => dateRange.toJSON()),
+  );
+
+  console.log("\n\nconsolidatedWinterDates:", consolidatedWinterDates);
+
+  if (!consolidatedWinterDates.length) return false;
+
+  // Find operating dates for every Area and Feature in the Park
+  const addedDates = areaAndFeatureSeasons.map((season) => {
+    console.log("\n\n\nloop a season here:", season.toJSON());
+    return addWinterFeeDatesForSeason(
+      season,
+      consolidatedWinterDates,
+      winterFeeType.id,
+      operatingDateType.id,
+      transaction,
+    );
+  });
+
+  // const operatingDates = await DateRange.findAll({
+  //   where: {
+  //     seasonId: {
+  //       [Op.in]: areaAndFeatureSeasons.map((s) => s.id),
+  //     },
+  //     dateTypeId: operatingDateType.id,
+  //   },
+  //   transaction,
+  // });
+
+  // console.log("\n\noperatingDates:", operatingDates);
+
+  return "TODO";
+}
+
+// @TODO: rename the two similarly-named functions
+async function addWinterFeeDatesForSeason(
+  season,
+  winterDates,
+  winterTypeId,
+  operatingTypeId,
+  transaction,
+) {
+  console.log("checking season:", season.toJSON());
+
+  // If the season has any winter dates already, skip it
+  const existingWinterDates = await DateRange.findAll({
+    where: {
+      seasonId: season.id,
+      dateTypeId: winterTypeId,
+    },
+    transaction,
+  });
+
+  console.log("existingWinterDates:", existingWinterDates);
+  if (existingWinterDates.length) {
+    console.log(`Season ${season.id} already has winter dates, skipping...`);
+    return false;
+  }
 }
 
 // END: Helpers
@@ -167,25 +275,32 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
     transaction,
   );
 
-  console.log("\n\n\nallParkSeasons:", allFrontcountrySeasons.length);
+  const combinedFrontcountrySeasons = [
+    ...allFrontcountrySeasons.park,
+    ...allFrontcountrySeasons.parkArea,
+    ...allFrontcountrySeasons.feature,
+  ];
 
-  if (!allFrontcountrySeasons.length) return false;
+  console.log("\n\n\nallParkSeasons:", combinedFrontcountrySeasons.length);
+
+  if (!combinedFrontcountrySeasons.length) return false;
 
   // Check if all of the frontcountry camping seasons are approved
-  const allApproved = allFrontcountrySeasons.every(
+  const allApproved = combinedFrontcountrySeasons.every(
     (frontcountrySeason) => frontcountrySeason.status === APPROVED,
   );
 
-  console.log(allFrontcountrySeasons.map((s) => s.toJSON()));
+  console.log(combinedFrontcountrySeasons.map((s) => s.toJSON()));
 
   if (!allApproved) return false;
 
   console.log(
     "\n\n\n\nallApproved",
-    allFrontcountrySeasons.map((s) => s.toJSON()),
+    combinedFrontcountrySeasons.map((s) => s.toJSON()),
   );
 
-  return true;
+  // All seasons are approved, so add winter fee dates to the Feature and Area seasons
+  return addWinterFeeDatesToSeasons(allFrontcountrySeasons, park, transaction);
 }
 
 // run it for testing
