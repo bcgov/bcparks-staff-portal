@@ -2,7 +2,6 @@
 // This script will propagate the dates down to the Frontcountry camping Feature and Area levels.
 
 import _ from "lodash";
-import { min, max, isBefore } from "date-fns";
 
 import {
   Season,
@@ -15,6 +14,7 @@ import {
 } from "../models/index.js";
 import { APPROVED } from "../constants/seasonStatus.js";
 import consolidateRanges from "./consolidateDateRanges.js";
+import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
 
 const FRONTCOUNTRY_CAMPING_TYPE_NAME = "Frontcountry campground";
 const WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
@@ -122,48 +122,6 @@ async function getAllFrontcountrySeasons(
 
     feature: parkSeasons.features.flatMap((feature) => feature.seasons),
   };
-}
-
-// returns an array of date @TODO: jsdocs
-function getOverlappingDateRanges(winterDates, operatingDates) {
-  console.log("finding overlaps between:");
-  console.log("winterDates:", winterDates);
-  console.log("operatingDates:", operatingDates);
-
-  const overlaps = _.flatMap(winterDates, (winterRange) => {
-    const winterStart = winterRange.startDate;
-    const winterEnd = winterRange.endDate;
-
-    // Return an array of overlapping ranges for this winter date range
-    const winterOverlaps = operatingDates
-      .map((operatingRange) => {
-        const operatingStart = operatingRange.startDate;
-        const operatingEnd = operatingRange.endDate;
-
-        // Find the latest start date and earliest end date to determine any overlap
-        const overlapStart = max([winterStart, operatingStart]);
-        const overlapEnd = min([winterEnd, operatingEnd]);
-
-        // Check for overlap (start <= end)
-        if (
-          isBefore(overlapStart, overlapEnd) ||
-          overlapStart.getTime() === overlapEnd.getTime()
-        ) {
-          return {
-            startDate: overlapStart,
-            endDate: overlapEnd,
-          };
-        }
-
-        // If no overlap, return null
-        return null;
-      })
-      .filter(Boolean); // Filter out null values
-
-    return winterOverlaps;
-  });
-
-  return overlaps;
 }
 
 // @TODO: rename the two similarly-named functions
