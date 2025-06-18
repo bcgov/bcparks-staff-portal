@@ -1,9 +1,8 @@
 // For Winter fee dates collected at the Park level,
 // This script will propagate the dates down to the Frontcountry camping Feature and Area levels.
 
-import { Op } from "sequelize";
 import _ from "lodash";
-import { parseISO, min, max, isBefore } from "date-fns";
+import { min, max, isBefore } from "date-fns";
 
 import {
   Season,
@@ -123,75 +122,6 @@ async function getAllFrontcountrySeasons(
 
     feature: parkSeasons.features.flatMap((feature) => feature.seasons),
   };
-}
-
-async function addWinterFeeDatesToSeasons(
-  allSeasons,
-  park,
-  transaction = null,
-) {
-  const areaAndFeatureSeasons = [...allSeasons.parkArea, ...allSeasons.feature];
-
-  const winterFeeType = await DateType.findOne({
-    attributes: ["id"],
-    where: { name: WINTER_FEE_DATE_TYPE_NAME },
-    transaction,
-  });
-
-  if (!winterFeeType) {
-    throw new Error("Winter fee DateType not found.");
-  }
-
-  const operatingDateType = await DateType.findOne({
-    attributes: ["id"],
-    where: { name: OPERATING_DATE_TYPE_NAME },
-    transaction,
-  });
-
-  if (!operatingDateType) {
-    throw new Error("Operating DateType not found.");
-  }
-
-  // Get all of the winter dates for the Park level
-  const parkWinterDates = await DateRange.findAll({
-    where: {
-      dateableId: park.dateableId,
-      dateTypeId: winterFeeType.id,
-    },
-    transaction,
-  });
-
-  console.log(
-    "\n\nparkWinterDates::",
-    `(id ${winterFeeType.id})`,
-    parkWinterDates,
-  );
-
-  const consolidatedWinterDates = consolidateRanges(
-    parkWinterDates.map((dateRange) => dateRange.toJSON()),
-  );
-
-  console.log("\n\nconsolidatedWinterDates:", consolidatedWinterDates);
-
-  if (!consolidatedWinterDates.length) return false;
-
-  // Find operating dates for every Area and Feature in the Park
-  const addedDates = [];
-
-  for (const season of areaAndFeatureSeasons) {
-    console.log("\n\n\nloop a season here:", season.toJSON());
-    const result = await addWinterFeeDatesForSeason(
-      season,
-      consolidatedWinterDates,
-      winterFeeType.id,
-      operatingDateType.id,
-      transaction,
-    );
-
-    addedDates.push(result);
-  }
-
-  return addedDates;
 }
 
 // returns an array of date @TODO: jsdocs
@@ -318,6 +248,75 @@ async function addWinterFeeDatesForSeason(
   });
 
   return Promise.all(foo);
+}
+
+async function addWinterFeeDatesToSeasons(
+  allSeasons,
+  park,
+  transaction = null,
+) {
+  const areaAndFeatureSeasons = [...allSeasons.parkArea, ...allSeasons.feature];
+
+  const winterFeeType = await DateType.findOne({
+    attributes: ["id"],
+    where: { name: WINTER_FEE_DATE_TYPE_NAME },
+    transaction,
+  });
+
+  if (!winterFeeType) {
+    throw new Error("Winter fee DateType not found.");
+  }
+
+  const operatingDateType = await DateType.findOne({
+    attributes: ["id"],
+    where: { name: OPERATING_DATE_TYPE_NAME },
+    transaction,
+  });
+
+  if (!operatingDateType) {
+    throw new Error("Operating DateType not found.");
+  }
+
+  // Get all of the winter dates for the Park level
+  const parkWinterDates = await DateRange.findAll({
+    where: {
+      dateableId: park.dateableId,
+      dateTypeId: winterFeeType.id,
+    },
+    transaction,
+  });
+
+  console.log(
+    "\n\nparkWinterDates::",
+    `(id ${winterFeeType.id})`,
+    parkWinterDates,
+  );
+
+  const consolidatedWinterDates = consolidateRanges(
+    parkWinterDates.map((dateRange) => dateRange.toJSON()),
+  );
+
+  console.log("\n\nconsolidatedWinterDates:", consolidatedWinterDates);
+
+  if (!consolidatedWinterDates.length) return false;
+
+  // Find operating dates for every Area and Feature in the Park
+  const addedDates = [];
+
+  for (const season of areaAndFeatureSeasons) {
+    console.log("\n\n\nloop a season here:", season.toJSON());
+    const result = await addWinterFeeDatesForSeason(
+      season,
+      consolidatedWinterDates,
+      winterFeeType.id,
+      operatingDateType.id,
+      transaction,
+    );
+
+    addedDates.push(result);
+  }
+
+  return addedDates;
 }
 
 // END: Helpers
