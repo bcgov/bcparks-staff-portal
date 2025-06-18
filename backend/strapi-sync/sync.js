@@ -176,9 +176,9 @@ export async function createOrUpdatePark(item) {
     dbItem.managementAreas = item.mgmtAreaAndSection;
     // Update it to false if inReservationSystem from Strapi returns null
     dbItem.inReservationSystem =
-      item.attributes.parkOperation.inReservationSystem ?? false;
-    dbItem.isDateRangeAnnual =
-      item.attributes.parkOperation.isDateRangeAnnual ?? false;
+      item.parkOperation.inReservationSystem ?? false;
+    // Update it to false if isDateRangeAnnual from Strapi returns null
+    dbItem.isDateRangeAnnual = item.parkOperation.isDateRangeAnnual ?? false;
 
     await dbItem.save();
   } else {
@@ -189,10 +189,8 @@ export async function createOrUpdatePark(item) {
       dateableId: dateable.id,
       strapiId: item.id,
       managementAreas: item.mgmtAreaAndSection,
-      inReservationSystem:
-        item.attributes.parkOperation.inReservationSystem ?? false,
-      isDateRangeAnnual:
-        item.attributes.parkOperation.isDateRangeAnnual ?? false
+      inReservationSystem: item.parkOperation.inReservationSystem ?? false,
+      isDateRangeAnnual: item.parkOperation.isDateRangeAnnual ?? false,
     };
 
     dbItem = await createModel(Park, data);
@@ -770,6 +768,7 @@ export async function syncData() {
   const parkData = getStrapiModelData(strapiData, "protected-area");
   const mgmtAreaData = getStrapiModelData(strapiData, "management-area");
   const sectionData = getStrapiModelData(strapiData, "section");
+  const parkOperationData = getStrapiModelData(strapiData, "park-operation");
 
   // Add mgmt area and section data to parkData
   parkData.items = parkData.items.map((park) => {
@@ -797,9 +796,22 @@ export async function syncData() {
       };
     });
 
+    // Add parkOperation data to the parkData
+    const parkOperationAttributes =
+      parkOperationData.items.find(
+        (operation) => operation.id === park.attributes.parkOperation.data?.id,
+      ) || {};
+
+    const parkOperation = parkOperationAttributes.attributes || {};
+    const { inReservationSystem, isDateRangeAnnual } = parkOperation;
+
     return {
       ...park,
       mgmtAreaAndSection,
+      parkOperation: {
+        inReservationSystem,
+        isDateRangeAnnual,
+      },
     };
   });
 

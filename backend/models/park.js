@@ -61,6 +61,7 @@ export default (sequelize) => {
       // since they're only needed for display in the CSV export
       managementAreas: DataTypes.JSONB,
       inReservationSystem: DataTypes.BOOLEAN,
+      isDateRangeAnnual: DataTypes.BOOLEAN,
 
       hasTier1Dates: {
         type: DataTypes.BOOLEAN,
