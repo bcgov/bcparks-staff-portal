@@ -51,8 +51,18 @@ export default (sequelize) => {
       parkAreaId: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
       strapiId: DataTypes.INTEGER,
-      inReservationSystem: DataTypes.BOOLEAN,
-      isDateRangeAnnual: DataTypes.BOOLEAN,
+
+      inReservationSystem: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+
+      isDateRangeAnnual: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

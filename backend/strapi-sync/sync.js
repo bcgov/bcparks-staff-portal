@@ -797,11 +797,11 @@ export async function syncData() {
     });
 
     // Add parkOperation data to the parkData
+    const parkOperationLookup = Object.fromEntries(
+      parkOperationData.items.map((item) => [item.id, item]),
+    );
     const parkOperationAttributes =
-      parkOperationData.items.find(
-        (operation) => operation.id === park.attributes.parkOperation.data?.id,
-      ) || {};
-
+      parkOperationLookup[park.attributes.parkOperation.data?.id] || {};
     const parkOperation = parkOperationAttributes.attributes || {};
     const { inReservationSystem, isDateRangeAnnual } = parkOperation;
 

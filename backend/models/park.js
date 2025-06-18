@@ -60,8 +60,18 @@ export default (sequelize) => {
       // store raw json for Management Area and Section names,
       // since they're only needed for display in the CSV export
       managementAreas: DataTypes.JSONB,
-      inReservationSystem: DataTypes.BOOLEAN,
-      isDateRangeAnnual: DataTypes.BOOLEAN,
+
+      inReservationSystem: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+
+      isDateRangeAnnual: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
 
       hasTier1Dates: {
         type: DataTypes.BOOLEAN,
