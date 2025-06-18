@@ -2,6 +2,8 @@
 // This script will propagate the dates down to the Frontcountry camping Feature and Area levels.
 
 import { Op } from "sequelize";
+import _ from "lodash";
+import { parseISO, min, max, isBefore } from "date-fns";
 
 import {
   Season,
@@ -174,30 +176,64 @@ async function addWinterFeeDatesToSeasons(
   if (!consolidatedWinterDates.length) return false;
 
   // Find operating dates for every Area and Feature in the Park
-  const addedDates = areaAndFeatureSeasons.map((season) => {
+  const addedDates = [];
+
+  for (const season of areaAndFeatureSeasons) {
     console.log("\n\n\nloop a season here:", season.toJSON());
-    return addWinterFeeDatesForSeason(
+    const result = await addWinterFeeDatesForSeason(
       season,
       consolidatedWinterDates,
       winterFeeType.id,
       operatingDateType.id,
       transaction,
     );
+
+    addedDates.push(result);
+  }
+
+  return addedDates;
+}
+
+// returns an array of date @TODO: jsdocs
+function getOverlappingDateRanges(winterDates, operatingDates) {
+  console.log("finding overlaps between:");
+  console.log("winterDates:", winterDates);
+  console.log("operatingDates:", operatingDates);
+
+  const overlaps = _.flatMap(winterDates, (winterRange) => {
+    const winterStart = winterRange.startDate;
+    const winterEnd = winterRange.endDate;
+
+    // Return an array of overlapping ranges for this winter date range
+    const winterOverlaps = operatingDates
+      .map((operatingRange) => {
+        const operatingStart = operatingRange.startDate;
+        const operatingEnd = operatingRange.endDate;
+
+        // Find the latest start date and earliest end date to determine any overlap
+        const overlapStart = max([winterStart, operatingStart]);
+        const overlapEnd = min([winterEnd, operatingEnd]);
+
+        // Check for overlap (start <= end)
+        if (
+          isBefore(overlapStart, overlapEnd) ||
+          overlapStart.getTime() === overlapEnd.getTime()
+        ) {
+          return {
+            startDate: overlapStart,
+            endDate: overlapEnd,
+          };
+        }
+
+        // If no overlap, return null
+        return null;
+      })
+      .filter(Boolean); // Filter out null values
+
+    return winterOverlaps;
   });
 
-  // const operatingDates = await DateRange.findAll({
-  //   where: {
-  //     seasonId: {
-  //       [Op.in]: areaAndFeatureSeasons.map((s) => s.id),
-  //     },
-  //     dateTypeId: operatingDateType.id,
-  //   },
-  //   transaction,
-  // });
-
-  // console.log("\n\noperatingDates:", operatingDates);
-
-  return "TODO";
+  return overlaps;
 }
 
 // @TODO: rename the two similarly-named functions
@@ -224,6 +260,64 @@ async function addWinterFeeDatesForSeason(
     console.log(`Season ${season.id} already has winter dates, skipping...`);
     return false;
   }
+
+  // Get operating dates for the season
+  const operatingDatesResults = await DateRange.findAll({
+    where: {
+      seasonId: season.id,
+      dateTypeId: operatingTypeId,
+    },
+    transaction,
+  });
+
+  console.log("\n\noperatingDatesResults:", operatingDatesResults);
+
+  if (!operatingDatesResults.length) return false;
+
+  // Group operating dates by dateableId
+  const groupedOperatingDates = _.groupBy(
+    operatingDatesResults,
+    (dateRange) => dateRange.dateableId,
+  );
+
+  console.log("\ngroupedOperatingDates:", groupedOperatingDates);
+
+  const foo = _.map(groupedOperatingDates, (dateRanges, dateableId) => {
+    console.log("\n\nin map", dateableId, dateRanges);
+
+    // Consolidate the operating date ranges for this dateableId
+    const operatingDates = consolidateRanges(
+      dateRanges.map((dateRange) => dateRange.toJSON()),
+    );
+
+    console.log("\n\noperatingDates:", operatingDates);
+
+    // Get an array of overlapping dates from winterDates and operatingDates
+    const overlappingDates = getOverlappingDateRanges(
+      winterDates,
+      operatingDates,
+    );
+
+    console.log("\n\noverlappingDates:", overlappingDates);
+
+    if (!overlappingDates.length) return false;
+
+    // @TODO: create winter dates for overlapping dates
+    console.log("add winter date range for overlappingDates for this season");
+    console.log("overlappingDates:", overlappingDates);
+    return DateRange.bulkCreate(
+      overlappingDates.map((dateRange) => ({
+        seasonId: season.id,
+        dateableId,
+        dateTypeId: winterTypeId,
+        startDate: dateRange.startDate,
+        endDate: dateRange.endDate,
+      })),
+      { transaction },
+    );
+  });
+
+  return Promise.all(foo);
 }
 
 // END: Helpers
