@@ -20,8 +20,33 @@ const FRONTCOUNTRY_CAMPING_TYPE_NAME = "Frontcountry campground";
 const WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
 const OPERATING_DATE_TYPE_NAME = "Operation";
 
-// START: Helpers - @TODO: maybe move to a separate file
+// Query part helpers
+function seasonsQueryPart(operatingYear) {
+  return {
+    model: Season,
+    as: "seasons",
+    where: { operatingYear },
+    required: false,
+  };
+}
 
+function frontcountryFeaturesQueryPart(featureTypeId) {
+  return {
+    model: Feature,
+    as: "features",
+    where: { featureTypeId },
+    required: true,
+  };
+}
+
+// Helper functions
+
+/**
+ * Returns the Park record associated with the given Season.
+ * @param {Season} season Season record (could be Park, Area, or Feature Season)
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Park} Park record for the Season
+ */
 async function getSeasonPark(season, transaction = null) {
   // If the season is a Park season, return it directly
   if (season.park) {
@@ -41,24 +66,15 @@ async function getSeasonPark(season, transaction = null) {
   throw new Error("Season does not have associated Park details.");
 }
 
-function seasonsQueryPart(operatingYear) {
-  return {
-    model: Season,
-    as: "seasons",
-    where: { operatingYear },
-    required: false,
-  };
-}
-
-function frontcountryFeaturesQueryPart(featureTypeId) {
-  return {
-    model: Feature,
-    as: "features",
-    where: { featureTypeId },
-    required: true,
-  };
-}
-
+/**
+ * Gets all Frontcountry camping Seasons in the Park for the operating year.
+ * This can include Park, Area, and Feature Seasons.
+ * @param {Park} park The Park record to get Seasons for
+ * @param {number} operatingYear The operating year to filter Seasons by
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Object} An object containing arrays of Seasons by level: park, parkArea, and feature.
+ * @throws {Error} If the Frontcountry campground FeatureType is not found
+ */
 async function getAllFrontcountrySeasons(
   park,
   operatingYear,
@@ -109,10 +125,14 @@ async function getAllFrontcountrySeasons(
     transaction,
   });
 
-  // If no season satisfies the criteria, return an empty array
-  if (!parkSeasons) return [];
-
-  console.log("parkSeasons:", parkSeasons.toJSON());
+  // If no season satisfies the criteria, return an empty structure
+  if (!parkSeasons) {
+    return {
+      park: [],
+      parkArea: [],
+      feature: [],
+    };
+  }
 
   // Return all of the Seasons, organized by level
   return {
