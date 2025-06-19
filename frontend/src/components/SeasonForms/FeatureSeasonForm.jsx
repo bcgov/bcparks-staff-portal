@@ -1,0 +1,229 @@
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { groupBy, set as lodashSet, cloneDeep } from "lodash-es";
+import { useMemo, useContext } from "react";
+import PropTypes from "prop-types";
+
+import DateRangeFields from "@/components/DateRangeFields";
+import FormContainer from "@/components/FormContainer";
+import GateForm from "@/components/GateForm";
+import ReadyToPublishBox from "@/components/ReadyToPublishBox";
+import TooltipWrapper from "@/components/TooltipWrapper";
+import PreviousDates from "@/components/SeasonForms/PreviousDates";
+
+import useAccess from "@/hooks/useAccess";
+import DataContext from "@/contexts/DataContext";
+
+export default function FeatureSeasonForm({
+  season,
+  previousSeasonDates,
+  dateTypes,
+}) {
+  const { ROLES, checkAccess } = useAccess();
+  const approver = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
+
+  const { setData, addDeletedDateRangeId } = useContext(DataContext);
+
+  const feature = season.feature;
+  const currentYear = season.operatingYear;
+  const lastYear = currentYear - 1;
+
+  const datesByType = useMemo(
+    () => groupBy(feature.dateable.dateRanges, "dateType.name"),
+    [feature.dateable.dateRanges],
+  );
+
+  const previousDatesByType = useMemo(
+    () => groupBy(previousSeasonDates, "dateType.name"),
+    [previousSeasonDates],
+  );
+
+  // Updates the date range in the parent component
+  function updateDateRange(id, dateField, dateObj, tempId = false) {
+    const { dateRanges } = season.feature.dateable;
+    // Find the dateRanges array index from the dateRange id or tempId
+    const dateRangeIndex = dateRanges.findIndex((range) => {
+      if (tempId) {
+        return range.tempId === id;
+      }
+
+      return range.id === id;
+    });
+
+    // Path to update to the DateRange object
+    const dateRangePath = [
+      "current",
+      "feature",
+      "dateable",
+      "dateRanges",
+      dateRangeIndex,
+    ];
+
+    // Update the local state (in the FormPanel component)
+    setData((prevData) => {
+      let updatedData = cloneDeep(prevData);
+
+      // Update the start or end date field
+      updatedData = lodashSet(
+        updatedData,
+        [...dateRangePath, dateField],
+        dateObj,
+      );
+
+      // Update the changed flag for the date range
+      return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+    });
+  }
+
+  // Adds a new date range to the Feature's dateable.dateRanges
+  function addDateRange(dateType) {
+    const newDateRange = {
+      // Add a temporary ID for records that haven't been saved yet
+      tempId: crypto.randomUUID(),
+      startDate: null,
+      endDate: null,
+      dateableId: feature.dateable.id,
+      dateType,
+      dateTypeId: dateType.id,
+      changed: true,
+    };
+
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.feature.dateable.dateRanges.push(newDateRange);
+      return updatedData;
+    });
+  }
+
+  // Removes a date range from the Feature's dateable.dateRanges by its ID or tempId
+  function removeDateRange(dateRange) {
+    // Track deleted date range IDs
+    if (dateRange.id) {
+      addDeletedDateRangeId(dateRange.id);
+    }
+
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+      const { dateRanges } = updatedData.current.feature.dateable;
+
+      const index = dateRanges.findIndex((range) => {
+        // Find by ID if dateRange has one
+        if (dateRange.id) {
+          return dateRange.id === range.id;
+        }
+
+        // Otherwise, find by tempId
+        if (dateRange.tempId) {
+          return dateRange.tempId === range.tempId;
+        }
+
+        return false;
+      });
+
+      if (index !== -1) {
+        dateRanges.splice(index, 1);
+      }
+
+      return updatedData;
+    });
+  }
+
+  // Updates the readyToPublish state in the season data object
+  function setReadyToPublish(value) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.readyToPublish = value;
+
+      return updatedData;
+    });
+  }
+
+  return (
+    <>
+      <FormContainer>
+        <div className="row mb-4">
+          {dateTypes.map((dateType) => (
+            <div key={dateType.name} className="col-lg-6">
+              <h6 className="fw-normal">
+                {dateType.name}{" "}
+                <TooltipWrapper placement="top" content={dateType.description}>
+                  <FontAwesomeIcon icon={faCircleInfo} />
+                </TooltipWrapper>
+              </h6>
+
+              <PreviousDates
+                dateRanges={previousDatesByType?.[dateType.name]}
+              />
+
+              <DateRangeFields
+                dateableId={feature.dateableId}
+                dateType={dateType}
+                dateRanges={datesByType[dateType.name] ?? []}
+                updateDateRange={updateDateRange}
+                addDateRange={addDateRange}
+                removeDateRange={removeDateRange}
+              />
+            </div>
+          ))}
+        </div>
+      </FormContainer>
+
+      <GateForm
+        gateTitle={`${feature.name} gate`}
+        gateDescription={`Does ${feature.name} have a gated entrance?`}
+        // hasGate={park.hasGate} @TODO: get this from the db
+        setHasGate={
+          (value) => console.log("TODO: setHasGate", value)
+          // setPark({ ...park, hasGate: value })
+        }
+        // @TODO: groupedDateRanges - just pass in the dateable?
+        // dateRanges={park.groupedDateRanges}
+        level={"feature"}
+        currentYear={currentYear}
+        lastYear={lastYear}
+      />
+
+      {/* Show Ready to Publish form input for approvers */}
+      {approver && (
+        <ReadyToPublishBox
+          readyToPublish={season.readyToPublish}
+          setReadyToPublish={setReadyToPublish}
+        />
+      )}
+    </>
+  );
+}
+
+// PropTypes validation
+FeatureSeasonForm.propTypes = {
+  season: PropTypes.shape({
+    feature: PropTypes.object.isRequired,
+    operatingYear: PropTypes.number.isRequired,
+    readyToPublish: PropTypes.bool.isRequired,
+  }).isRequired,
+
+  previousSeasonDates: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
+      dateType: PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        id: PropTypes.number.isRequired,
+      }),
+    }),
+  ).isRequired,
+
+  dateTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
+      description: PropTypes.string,
+    }),
+  ).isRequired,
+};

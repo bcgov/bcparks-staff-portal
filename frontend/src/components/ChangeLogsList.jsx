@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { formatDate } from "@/lib/utils";
 
-import "./ChangeLogsList.scss";
+// import "./ChangeLogsList.scss";
 
 // Displays season date changelogs (aka "notes")
 export default function ChangeLogsList({ changeLogs = [] }) {

@@ -1,127 +1,42 @@
-import { useState } from "react";
-import PropTypes from "prop-types";
-import Form from "react-bootstrap/Form";
+import { useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo } from "@fa-kit/icons/classic/regular";
-import DateRangeForm from "@/components/DateRangeForm";
+import PropTypes from "prop-types";
+import { omit } from "lodash-es";
+
 import FeatureIcon from "@/components/FeatureIcon";
-import FormContainer from "@/components/FormContainer";
 import InternalNotes from "@/components/InternalNotes";
-import RadioButtonGroup from "@/components/RadioButtonGroup";
-import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import TimeRangeForm from "@/components/TimeRangeForm";
-import TooltipWrapper from "@/components/TooltipWrapper";
-import { useApiGet } from "@/hooks/useApi";
+import LoadingBar from "@/components/LoadingBar";
+import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
+import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
+import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
+
+import { useApiGet, useApiPost } from "@/hooks/useApi";
+import useAccess from "@/hooks/useAccess";
+import DataContext from "@/contexts/DataContext";
+
 import "./FormPanel.scss";
 
 // Components
-// TODO: separate GateForm into its own file
-function GateForm({
-  gateTitle,
-  gateDescription,
-  hasGate,
-  setHasGate,
-  dateRanges,
-  level,
-  currentYear,
-  lastYear,
-}) {
-  // States
-  const [gateOptions, setGateOptions] = useState({
-    openAtDawn: false,
-    closedAtDusk: false,
-    sameHoursEveryYear: false,
-  });
 
-  // Functions
-  function handleCheckboxChange(e) {
-    const { name, checked } = e.target;
-
-    setGateOptions((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
+function ButtonLoading({ show }) {
+  if (show) {
+    return (
+      <span
+        className="spinner-border spinner-border-sm me-1"
+        role="status"
+        aria-hidden="true"
+      ></span>
+    );
   }
 
-  return (
-    <div className="mb-4">
-      <h6 className="fw-normal">{gateTitle}</h6>
-      <p>{gateDescription}</p>
-      <div className="mb-4">
-        <RadioButtonGroup
-          id="has-gate"
-          options={[
-            { value: true, label: "Yes" },
-            { value: false, label: "No" },
-          ]}
-          value={hasGate}
-          onChange={(value) => setHasGate(value)}
-        />
-      </div>
-      {hasGate && (
-        <div>
-          {level === "park" && (
-            <DateRangeForm
-              dateRanges={dateRanges}
-              currentYear={currentYear}
-              lastYear={lastYear}
-              hasGateDates={true}
-            />
-          )}
-          <h6 className="fw-normal">
-            Gate hours {/* TODO: change content */}
-            <TooltipWrapper placement="top" content="TEST">
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </TooltipWrapper>
-          </h6>
-          <Form>
-            <Form.Check
-              type="checkbox"
-              id="open-at-dawn"
-              name="openAtDawn"
-              label="Open at dawn"
-              className="mb-2"
-              checked={gateOptions.openAtDawn}
-              onChange={handleCheckboxChange}
-            />
-            <Form.Check
-              type="checkbox"
-              id="closed-at-dusk"
-              name="closedAtDusk"
-              label="Closed at dusk"
-              className="mb-2"
-              checked={gateOptions.closedAtDusk}
-              onChange={handleCheckboxChange}
-            />
-            <TimeRangeForm />
-            <Form.Check
-              type="checkbox"
-              id="same-hours-every-year"
-              name="sameHoursEveryYear"
-              label="Hours are the same every year"
-              checked={gateOptions.sameHoursEveryYear}
-              onChange={handleCheckboxChange}
-            />
-          </Form>
-        </div>
-      )}
-    </div>
-  );
+  return null;
 }
 
-GateForm.propTypes = {
-  gateTitle: PropTypes.string,
-  gateDescription: PropTypes.string,
-  hasGate: PropTypes.bool,
-  setHasGate: PropTypes.func.isRequired,
-  dateRanges: PropTypes.object,
-  level: PropTypes.string,
-  currentYear: PropTypes.number,
-  lastYear: PropTypes.number,
+ButtonLoading.propTypes = {
+  show: PropTypes.bool.isRequired,
 };
 
-function Buttons({ onSave, onSubmit, approver }) {
+function Buttons({ onSave, onSubmit, onApprove, approver, loading = false }) {
   return (
     <div>
       <button
@@ -134,8 +49,8 @@ function Buttons({ onSave, onSubmit, approver }) {
       {approver ? (
         <button
           type="button"
-          onClick={onSubmit}
-          className="btn btn-primary fw-bold"
+          onClick={onApprove}
+          className="btn btn-primary fw-bold me-2"
         >
           Mark approved
         </button>
@@ -143,11 +58,14 @@ function Buttons({ onSave, onSubmit, approver }) {
         <button
           type="button"
           onClick={onSubmit}
-          className="btn btn-primary fw-bold"
+          className="btn btn-primary fw-bold me-2"
         >
           Submit to HQ
         </button>
       )}
+
+      {/* Show one loader for any loading state */}
+      <ButtonLoading show={loading} />
     </div>
   );
 }
@@ -155,64 +73,177 @@ function Buttons({ onSave, onSubmit, approver }) {
 Buttons.propTypes = {
   onSave: PropTypes.func,
   onSubmit: PropTypes.func,
+  onApprove: PropTypes.func,
   approver: PropTypes.bool,
+  loading: PropTypes.bool,
 };
 
-function FormPanel({ show, setShow, formData, approver }) {
-  // Constants
-  const data = formData || {};
-  const currentYear = new Date().getFullYear();
-  const lastYear = currentYear - 1;
-
-  // States
-  const [park, setPark] = useState({
-    hasGate: false,
-    readyToPublish: false,
-  });
-  const [parkArea, setParkArea] = useState({
-    hasGate: false,
-    readyToPublish: false,
-  });
-  const [feature, setFeature] = useState({
-    hasGate: false,
-    readyToPublish: false,
-  });
-
+function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
   // Hooks
-  const endpoint =
-    data.level && data.currentSeason?.id
-      ? `/seasons/${data.level}/${data.currentSeason.id}`
-      : null;
+  const { ROLES, checkAccess } = useAccess();
+  const approver = useMemo(
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
+  );
 
-  const {
-    data: seasonData = {},
-    // loading: seasonLoading,
-    // error: seasonError,
-  } = useApiGet(endpoint);
+  const [data, setData] = useState(null);
+  const [notes, setNotes] = useState("");
+  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
 
-  // Functions
-  function handleClose() {
-    setShow(false);
+  const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
+    `/seasons/${seasonId}/approve/`,
+  );
+
+  const { sendData: sendSubmit, loading: sendingSubmit } = useApiPost(
+    `/seasons/${seasonId}/submit/`,
+  );
+
+  const { sendData: sendSave, loading: sendingSave } = useApiPost(
+    `/seasons/${seasonId}/save/`,
+  );
+
+  function addDeletedDateRangeId(id) {
+    setDeletedDateRangeIds((prev) => [...prev, id]);
   }
 
-  // TODO: hook seasonData into the form
+  const {
+    data: apiData,
+    loading,
+    error,
+    fetchData: refreshData,
+  } = useApiGet(`/seasons/${level}/${seasonId}`);
+
+  useEffect(() => {
+    if (apiData) {
+      setData(apiData);
+    }
+  }, [apiData]);
+
+  // Constants
+  const {
+    current: season,
+    previous: previousSeasonDates,
+    ...seasonMetadata
+  } = data || {};
+  const currentYear = season?.operatingYear;
+
+  // Clears and re-fetches the data
+  function resetData() {
+    setData(null);
+
+    // Refresh the data from the API
+    refreshData();
+  }
+
+  async function onSave(close = true) {
+    // Format the data for the API
+    const seasonDateRanges = [];
+
+    if (level === "park") {
+      seasonDateRanges.push(...season.park.dateable.dateRanges);
+    } else if (level === "feature") {
+      seasonDateRanges.push(...season.feature.dateable.dateRanges);
+    } else if (level === "park-area") {
+      // Area-level dates
+      const areaDateRanges = season.parkArea.dateable.dateRanges;
+
+      // Feature-level dates within the area
+      const featureDateRanges = season.parkArea.features.flatMap(
+        (feature) => feature.dateable.dateRanges,
+      );
+
+      // Combine area and feature date ranges
+      seasonDateRanges.push(...areaDateRanges, ...featureDateRanges);
+    }
+
+    const changedDateRanges = seasonDateRanges
+      .filter((range) => range.changed)
+      // We only need the dateTypeId, drop fields we don't need to send
+      .map((range) => omit(range, ["changed", "dateType"]));
+
+    const payload = {
+      dateRanges: changedDateRanges,
+      deletedDateRangeIds,
+      readyToPublish: season.readyToPublish,
+      notes,
+    };
+
+    await sendSave(payload);
+
+    // Start refreshing the main page data from the API
+    onDataUpdate();
+
+    // Reset the form state
+    setNotes("");
+    setDeletedDateRangeIds([]);
+
+    if (close) {
+      handleClose();
+    } else {
+      resetData();
+    }
+  }
+
+  async function onApprove() {
+    // Save first, then approve
+    await onSave(false); // Don't close the form after saving
+
+    await sendApprove();
+
+    // Start refreshing the main page data from the API
+    onDataUpdate();
+
+    handleClose();
+  }
+
+  async function onSubmit() {
+    // Save first, then submit
+    await onSave(false); // Don't close the form after saving
+
+    await sendSubmit();
+
+    // Start refreshing the main page data from the API
+    onDataUpdate();
+
+    handleClose();
+  }
+
+  if (loading) {
+    return (
+      <>
+        <Offcanvas.Header closeButton></Offcanvas.Header>
+        <Offcanvas.Body>
+          <LoadingBar />
+        </Offcanvas.Body>
+      </>
+    );
+  }
+
+  if (error || !season) {
+    return (
+      <>
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>Error loading season data</Offcanvas.Title>
+        </Offcanvas.Header>
+        <Offcanvas.Body></Offcanvas.Body>
+      </>
+    );
+  }
+
   return (
-    <Offcanvas
-      show={show}
-      onHide={handleClose}
-      placement="end"
-      className="form-panel"
-    >
+    <DataContext.Provider value={{ setData, addDeletedDateRangeId }}>
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>
-          {/* display feature type name and icon if the form is for park-area or feature */}
-          {(data.level === "park-area" || data.level === "feature") && (
+          {seasonMetadata.featureTypeName && (
             <h4 className="header-with-icon fw-normal">
-              <FeatureIcon iconName={data.featureType.icon} />
-              {data.featureType.name}
+              {seasonMetadata.icon && (
+                <FeatureIcon iconName={seasonMetadata.icon} />
+              )}
+              {seasonMetadata.featureTypeName}
             </h4>
           )}
-          <h2>{data.name}</h2>
+
+          <h2>{seasonMetadata.name}</h2>
           <h2 className="fw-normal">{currentYear} dates</h2>
           <p className="fs-6 fw-normal">
             <a
@@ -224,140 +255,87 @@ function FormPanel({ show, setShow, formData, approver }) {
           </p>
         </Offcanvas.Title>
       </Offcanvas.Header>
+
       <Offcanvas.Body>
         <h3>Public information</h3>
         <p>This information is displayed on bcpark.ca</p>
 
         {/* 1 - park level */}
-        {data.level === "park" && (
-          <>
-            <FormContainer>
-              <DateRangeForm
-                dateRanges={data.groupedDateRanges}
-                currentYear={currentYear}
-                lastYear={lastYear}
-                hasTier1Dates={data.hasTier1Dates}
-                hasTier2Dates={data.hasTier2Dates}
-                hasWinterFeeDates={data.hasWinterFeeDates}
-              />
-            </FormContainer>
-            <GateForm
-              gateTitle="Park gate"
-              gateDescription='Does this park have a single gated vehicle entrance? If there are
-              multiple vehicle entrances, select "No".'
-              hasGate={park.hasGate}
-              setHasGate={(value) => setPark({ ...park, hasGate: value })}
-              dateRanges={data.groupedDateRanges}
-              level={data.level}
-              currentYear={currentYear}
-              lastYear={lastYear}
-            />
-            {/* TODO: add Ready to Publish for approver */}
-            {approver && (
-              <ReadyToPublishBox
-                readyToPublish={park.readyToPublish}
-                setReadyToPublish={(value) =>
-                  setPark({ ...park, readyToPublish: value })
-                }
-              />
-            )}
-          </>
+        {level === "park" && (
+          <ParkSeasonForm
+            season={season}
+            previousSeasonDates={previousSeasonDates}
+            dateTypes={seasonMetadata.dateTypes}
+          />
         )}
 
-        {/* 2- park area level */}
-        {data.level === "park-area" && (
-          <>
-            <FormContainer>
-              {/* park area dates */}
-              {data.groupedDateRanges &&
-                Object.keys(data.groupedDateRanges).length > 0 && (
-                  <DateRangeForm
-                    dateRanges={data.groupedDateRanges}
-                    seasons={seasonData}
-                    currentYear={currentYear}
-                    lastYear={lastYear}
-                  />
-                )}
-              {/* feature dates in park area */}
-              {data.features.length > 0 &&
-                data.features.map((parkAreaFeature) => (
-                  <div key={parkAreaFeature.id} className="mb-4">
-                    <h5>{parkAreaFeature.name}</h5>
-                    {parkAreaFeature.groupedDateRanges && (
-                      <DateRangeForm
-                        dateRanges={parkAreaFeature.groupedDateRanges}
-                        seasons={seasonData}
-                        currentYear={currentYear}
-                        lastYear={lastYear}
-                      />
-                    )}
-                  </div>
-                ))}
-            </FormContainer>
-            <GateForm
-              gateTitle={`${data.name} gate`}
-              gateDescription={`Does ${data.name} have a gated entrance?`}
-              hasGate={parkArea.hasGate}
-              setHasGate={(value) =>
-                setParkArea({ ...parkArea, hasGate: value })
-              }
-              dateRanges={data.groupedDateRanges}
-              level={data.level}
-              currentYear={currentYear}
-              lastYear={lastYear}
-            />
-            {/* TODO: add Ready to Publish for approver */}
-            {approver && (
-              <ReadyToPublishBox
-                readyToPublish={parkArea.readyToPublish}
-                setReadyToPublish={(value) =>
-                  setParkArea({ ...parkArea, readyToPublish: value })
-                }
-              />
-            )}
-          </>
+        {/* 2 - park area level */}
+        {level === "park-area" && (
+          <AreaSeasonForm
+            season={season}
+            previousSeasonDates={previousSeasonDates}
+            // Individual date types for areas and features
+            areaDateTypes={seasonMetadata.areaDateTypes}
+            featureDateTypes={seasonMetadata.featureDateTypes}
+          />
         )}
 
         {/* 3 - feature level */}
-        {data.level === "feature" && (
-          <>
-            <FormContainer>
-              <h5>{data.name}</h5>
-              {data.groupedDateRanges && (
-                <DateRangeForm
-                  dateRanges={data.groupedDateRanges}
-                  seasons={seasonData}
-                  currentYear={currentYear}
-                  lastYear={lastYear}
-                />
-              )}
-            </FormContainer>
-            <GateForm
-              gateTitle={`${data.name} gate`}
-              gateDescription={`Does ${data.name} have a gated entrance?`}
-              hasGate={feature.hasGate}
-              setHasGate={(value) => setFeature({ ...feature, hasGate: value })}
-              dateRanges={data.groupedDateRanges}
-              level={data.level}
-              currentYear={currentYear}
-              lastYear={lastYear}
-            />
-            {/* TODO: add Ready to Publish for approver */}
-            {approver && (
-              <ReadyToPublishBox
-                readyToPublish={feature.readyToPublish}
-                setReadyToPublish={(value) =>
-                  setFeature({ ...feature, readyToPublish: value })
-                }
-              />
-            )}
-          </>
+        {level === "feature" && (
+          <FeatureSeasonForm
+            season={season}
+            previousSeasonDates={previousSeasonDates}
+            dateTypes={seasonMetadata.dateTypes}
+          />
         )}
 
         {/* TODO: add Public Notes for v3 */}
-        <InternalNotes />
-        <Buttons approver={approver} />
+        <InternalNotes
+          notes={notes}
+          setNotes={setNotes}
+          previousNotes={season.changeLogs}
+        />
+        <Buttons
+          approver={approver}
+          onApprove={onApprove}
+          onSave={() => onSave(false)}
+          onSubmit={onSubmit}
+          loading={sendingApprove || sendingSubmit || sendingSave}
+        />
       </Offcanvas.Body>
+    </DataContext.Provider>
+  );
+}
+
+SeasonForm.propTypes = {
+  seasonId: PropTypes.number.isRequired,
+  level: PropTypes.string.isRequired,
+  handleClose: PropTypes.func.isRequired,
+  onDataUpdate: PropTypes.func.isRequired,
+};
+
+function FormPanel({ show, setShow, formData, onDataUpdate }) {
+  // Functions
+  function handleClose() {
+    setShow(false);
+  }
+
+  // Hide the form if no seasonId is provided
+  return (
+    <Offcanvas
+      show={show}
+      onHide={handleClose}
+      placement="end"
+      className="form-panel"
+    >
+      {formData.seasonId && (
+        <SeasonForm
+          seasonId={formData.seasonId}
+          level={formData.level}
+          handleClose={handleClose}
+          onDataUpdate={onDataUpdate}
+        />
+      )}
     </Offcanvas>
   );
 }
@@ -368,5 +346,5 @@ FormPanel.propTypes = {
   show: PropTypes.bool.isRequired,
   setShow: PropTypes.func.isRequired,
   formData: PropTypes.object,
-  approver: PropTypes.bool,
+  onDataUpdate: PropTypes.func.isRequired,
 };
