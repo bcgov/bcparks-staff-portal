@@ -23,6 +23,7 @@ import {
   Section,
   ManagementArea,
   DateRangeAnnual,
+  GateDetail,
   AccessGroup,
   SeasonChangeLog,
   DateChangeLog,
@@ -283,6 +284,7 @@ const adminOptions = {
     Section,
     ManagementArea,
     DateRangeAnnual,
+    GateDetail,
     AccessGroup,
     // UserAccessGroup, -- doesn't work with the current version of AdminJS
     // AccessGroupPark, -- doesn't work with the current version of AdminJS
