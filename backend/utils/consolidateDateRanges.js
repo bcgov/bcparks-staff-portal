@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { isBefore, max } from "date-fns";
+import { isAfter, max } from "date-fns";
 
 /**
  * Returns a chronological list of date ranges with overlapping ranges combined
@@ -21,7 +21,7 @@ export default function consolidateRanges(ranges) {
 
     // If the start date of the current range is before the end date of the last range,
     // combine the ranges
-    if (lastRange && isBefore(current.startDate, lastRange.endDate)) {
+    if (lastRange && !isAfter(current.startDate, lastRange.endDate)) {
       lastRange.endDate = max([lastRange.endDate, current.endDate]);
     } else {
       merged.push(current);
