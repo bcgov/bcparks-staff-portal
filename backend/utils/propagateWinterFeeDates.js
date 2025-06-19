@@ -163,8 +163,6 @@ async function addWinterFeeDatesForSeason(
   operatingTypeId,
   transaction,
 ) {
-  console.log("checking season:", season.toJSON());
-
   // If the season has any winter dates already, skip it
   const existingWinterDates = await DateRange.findAll({
     where: {
@@ -174,11 +172,8 @@ async function addWinterFeeDatesForSeason(
     transaction,
   });
 
-  console.log("existingWinterDates:", existingWinterDates);
-  if (existingWinterDates.length) {
-    console.log(`Season ${season.id} already has winter dates, skipping...`);
-    return false;
-  }
+  // Skip if the season already has winter dates
+  if (existingWinterDates.length) return false;
 
   // Get operating dates for the season
   const operatingDatesResults = await DateRange.findAll({
@@ -189,8 +184,7 @@ async function addWinterFeeDatesForSeason(
     transaction,
   });
 
-  console.log("\n\noperatingDatesResults:", operatingDatesResults);
-
+  // Skip if the season has no Operating dates
   if (!operatingDatesResults.length) return false;
 
   // Group operating dates by dateableId
@@ -199,19 +193,13 @@ async function addWinterFeeDatesForSeason(
     (dateRange) => dateRange.dateableId,
   );
 
-  console.log("\ngroupedOperatingDates:", groupedOperatingDates);
-
   const creationResults = _.map(
     groupedOperatingDates,
     (dateRanges, dateableId) => {
-      console.log("\n\nin map", dateableId, dateRanges);
-
       // Consolidate the operating date ranges for this dateableId
       const operatingDates = consolidateRanges(
         dateRanges.map((dateRange) => dateRange.toJSON()),
       );
-
-      console.log("\n\noperatingDates:", operatingDates);
 
       // Get an array of overlapping dates from winterDates and operatingDates
       const overlappingDates = getOverlappingDateRanges(
@@ -219,13 +207,10 @@ async function addWinterFeeDatesForSeason(
         operatingDates,
       );
 
-      console.log("\n\noverlappingDates:", overlappingDates);
-
+      // Skip creating winter dates if there are no overlapping dates
       if (!overlappingDates.length) return false;
 
-      // @TODO: create winter dates for overlapping dates
-      console.log("add winter date range for overlappingDates for this season");
-      console.log("overlappingDates:", overlappingDates);
+      // Create winter fee DateRanges for the overlapping dates for this dateableId
       return DateRange.bulkCreate(
         overlappingDates.map((dateRange) => ({
           seasonId: season.id,
@@ -257,12 +242,14 @@ async function processAreaAndFeatureSeasons(
 ) {
   const areaAndFeatureSeasons = [...allSeasons.parkArea, ...allSeasons.feature];
 
+  // Get the IDs for the DateTypes we need in the queries
   const winterFeeType = await DateType.findOne({
     attributes: ["id"],
     where: { name: WINTER_FEE_DATE_TYPE_NAME },
     transaction,
   });
 
+  // Throw an error if the DateType isn't in the DB
   if (!winterFeeType) {
     throw new Error("Winter fee DateType not found.");
   }
@@ -286,25 +273,17 @@ async function processAreaAndFeatureSeasons(
     transaction,
   });
 
-  console.log(
-    "\n\nparkWinterDates::",
-    `(id ${winterFeeType.id})`,
-    parkWinterDates,
-  );
-
+  // Consolidate Winter fee dates (sort & remove duplicates)
   const consolidatedWinterDates = consolidateRanges(
     parkWinterDates.map((dateRange) => dateRange.toJSON()),
   );
 
-  console.log("\n\nconsolidatedWinterDates:", consolidatedWinterDates);
-
   if (!consolidatedWinterDates.length) return false;
 
-  // Find operating dates for every Area and Feature in the Park
+  // Loop through each Area and Feature Season and add winter fee dates
   const addedDates = [];
 
   for (const season of areaAndFeatureSeasons) {
-    console.log("\n\n\nloop a season here:", season.toJSON());
     const result = await addWinterFeeDatesForSeason(
       season,
       consolidatedWinterDates,
@@ -326,7 +305,10 @@ async function processAreaAndFeatureSeasons(
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean | Array>} Returns false if no winter fee dates are added,
  */
-export async function propagateWinterFeeDates(seasonId, transaction = null) {
+export default async function propagateWinterFeeDates(
+  seasonId,
+  transaction = null,
+) {
   // Get details for the provided Season that was just approved, along with its Park details
   // We'll use it to check all the other seasons for the Park and operatingYear
   const season = await Season.findByPk(seasonId, {
@@ -352,17 +334,9 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
     transaction,
   });
 
-  console.log("season:");
-  console.log(season.toJSON());
-
   // Get the Park details
   const park = await getSeasonPark(season, transaction);
   const operatingYear = season.operatingYear;
-
-  console.log("park:");
-  console.log(park.toJSON());
-
-  console.log("operatingYear:", operatingYear);
 
   // If the Park doesn't have winter fee dates, return false
   if (!park.hasWinterFeeDates) return false;
@@ -380,8 +354,7 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
     ...allFrontcountrySeasons.feature,
   ];
 
-  console.log("\n\n\nallParkSeasons:", combinedFrontcountrySeasons.length);
-
+  // If no Frontcountry camping Seasons are found, there's nothing to do, so return false
   if (!combinedFrontcountrySeasons.length) return false;
 
   // Check if all of the frontcountry camping seasons are approved
@@ -389,14 +362,9 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
     (frontcountrySeason) => frontcountrySeason.status === APPROVED,
   );
 
-  console.log(combinedFrontcountrySeasons.map((s) => s.toJSON()));
-
+  // If any of the seasons are still unapproved, return false
+  // Winter fee dates should only be propagated when all seasons are approved
   if (!allApproved) return false;
-
-  console.log(
-    "\n\n\n\nallApproved",
-    combinedFrontcountrySeasons.map((s) => s.toJSON()),
-  );
 
   // All seasons are approved, so add winter fee dates to the Feature and Area seasons
   return processAreaAndFeatureSeasons(
@@ -404,18 +372,4 @@ export async function propagateWinterFeeDates(seasonId, transaction = null) {
     park,
     transaction,
   );
-}
-
-// run it for testing
-try {
-  // await propagateWinterFeeDates(19533); // Park season
-  // await propagateWinterFeeDates(19534); // Area season
-  // await propagateWinterFeeDates(19535); // Area feature season "All sites"
-  const result = await propagateWinterFeeDates(19536); // Feature season "Duncan's test"
-
-  console.log("returned:", result);
-} catch (error) {
-  console.error("Error propagating winter fee dates:", error);
-} finally {
-  console.log("Winter fee dates propagation completed.");
 }
