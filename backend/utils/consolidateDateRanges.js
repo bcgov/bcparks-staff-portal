@@ -19,8 +19,8 @@ export default function consolidateRanges(ranges) {
   const consolidated = sorted.reduce((merged, current) => {
     const lastRange = merged.at(-1);
 
-    // If the start date of the current range is before the end date of the last range,
-    // combine the ranges
+    // If the start date of the current range is before (or the same as)
+    // the end date of the last range, combine the ranges
     if (lastRange && !isAfter(current.startDate, lastRange.endDate)) {
       lastRange.endDate = max([lastRange.endDate, current.endDate]);
     } else {
