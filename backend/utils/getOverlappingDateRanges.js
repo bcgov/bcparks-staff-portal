@@ -1,8 +1,6 @@
 import { min, max, isBefore } from "date-fns";
 import _ from "lodash";
 
-// returns an array of date @TODO: jsdocs
-
 /**
  * Returns an array of date ranges that are common to both sets of dates.
  * @param {Array} dateRangesA Array of objects with startDate and endDate properties
