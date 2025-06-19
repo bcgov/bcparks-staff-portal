@@ -164,7 +164,7 @@ async function addWinterFeeDatesForSeason(
   transaction,
 ) {
   // If the season has any winter dates already, skip it
-  const existingWinterDates = await DateRange.findAll({
+  const existingWinterDates = await DateRange.count({
     where: {
       seasonId: season.id,
       dateTypeId: winterTypeId,
@@ -173,7 +173,7 @@ async function addWinterFeeDatesForSeason(
   });
 
   // Skip if the season already has winter dates
-  if (existingWinterDates.length) return false;
+  if (existingWinterDates) return false;
 
   // Get operating dates for the season
   const operatingDatesResults = await DateRange.findAll({
