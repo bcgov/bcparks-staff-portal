@@ -44,7 +44,7 @@ function seasonModel(minYear, required = true) {
           {
             model: DateType,
             as: "dateType",
-            attributes: ["id", "name"],
+            attributes: ["id", "name", "description"],
           },
         ],
       },
@@ -70,7 +70,7 @@ function featureModel(minYear, where = {}) {
       {
         model: FeatureType,
         as: "featureType",
-        attributes: ["id", "publishableId", "name"],
+        attributes: ["id", "publishableId", "name", "icon"],
       },
       // Publishable Seasons for the Feature
       seasonModel(minYear, false),
@@ -89,10 +89,14 @@ function groupDateRangesByTypeAndYear(dateRanges) {
   // group by dateType name
   return _.mapValues(
     _.groupBy(validRanges, (dateRange) => dateRange.dateType.name),
-    (ranges) =>
-      _.groupBy(ranges, (dateRange) =>
+    (ranges) => {
+      const byYear = _.groupBy(ranges, (dateRange) =>
         new Date(dateRange.startDate).getFullYear(),
-      ),
+      );
+
+      byYear.description = ranges[0]?.dateType.description || "";
+      return byYear;
+    },
   );
 }
 
@@ -106,6 +110,7 @@ function buildDateRangeObject(dateRange, readyToPublish) {
       ? {
           id: dateRange.dateType.id,
           name: dateRange.dateType.name,
+          description: dateRange.dateType.description,
         }
       : null,
     readyToPublish,
@@ -156,13 +161,17 @@ function buildFeatureOutput(feature, currentYear, includeCurrentSeason = true) {
       id: feature.featureType.id,
       publishableId: feature.featureType.publishableId,
       name: feature.featureType.name,
+      icon: feature.featureType.icon,
     },
     seasons: feature.seasons,
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
   };
 
   if (includeCurrentSeason) {
-    output.currentSeason = buildCurrentSeasonOutput(feature.seasons, currentYear);
+    output.currentSeason = buildCurrentSeasonOutput(
+      feature.seasons,
+      currentYear,
+    );
   }
 
   return output;
@@ -216,6 +225,9 @@ router.get(
         "publishableId",
         "orcs",
         "name",
+        "hasTier1Dates",
+        "hasTier2Dates",
+        "hasWinterFeeDates",
         "managementAreas",
         "inReservationSystem",
       ],
@@ -261,6 +273,9 @@ router.get(
         publishableId: park.publishableId,
         name: park.name,
         orcs: park.orcs,
+        hasTier1Dates: park.hasTier1Dates,
+        hasTier2Dates: park.hasTier2Dates,
+        hasWinterFeeDates: park.hasWinterFeeDates,
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         inReservationSystem: park.inReservationSystem,

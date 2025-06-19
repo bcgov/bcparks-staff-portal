@@ -7,21 +7,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import TooltipWrapper from "@/components/TooltipWrapper";
-import { formatDateShort } from "@/lib/utils";
+import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import "./EditAndReviewTable.scss";
 
 // Constants
 const currentYear = new Date().getFullYear();
 const lastYear = currentYear - 1;
-
-// Functions
-// formats a single date range
-// e.g. startDate – endDate => Mon, 1 Jan – Tue, 31 Dec
-function formattedDateRange(startDate, endDate) {
-  if (!startDate || !endDate) return null;
-  return `${formatDateShort(startDate)} – ${formatDateShort(endDate)}`;
-}
 
 // Components
 function IconButton({ icon, label, onClick, textColor }) {
@@ -57,7 +49,7 @@ function DateRangesList({ dateRanges, isLastYear }) {
     <ul className="list-unstyled mb-0">
       {dateRanges.map((dateRange) => (
         <li key={dateRange.id}>
-          {formattedDateRange(dateRange.startDate, dateRange.endDate)}
+          {formatDateRange(dateRange)}
           <TooltipWrapper
             placement="top"
             content="Dates not ready to be made public"

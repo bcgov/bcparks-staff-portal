@@ -55,17 +55,17 @@ export function formatDateShortWithYear(date, timezone = "UTC") {
 }
 
 /**
- * Returns a string with the dates formatted "Weekday, Month Day, Year"
+ * Returns a string with the dates formatted "Weekday, Month Day"
  * @param {Object} dateRange object with startDate and endDate
  * @returns {string} formatted date range
  */
 export function formatDateRange(dateRange) {
   if (dateRange.startDate === null || dateRange.endDate === null) {
-    return "Not submitted";
+    return "Not provided";
   }
 
-  const startDate = formatDateShortWithYear(dateRange.startDate);
-  const endDate = formatDateShortWithYear(dateRange.endDate);
+  const startDate = formatDateShort(dateRange.startDate);
+  const endDate = formatDateShort(dateRange.endDate);
 
   return `${startDate} – ${endDate}`;
 }

@@ -60,6 +60,7 @@ export function useApiGet(endpoint, options = {}) {
 
   // Define fetchData as a callback so it can be used outside
   const fetchData = useCallback(async () => {
+    if (!endpoint) return;
     setLoading(true);
     setError(null);
 
