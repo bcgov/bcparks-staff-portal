@@ -57,12 +57,6 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
-
-      isDateRangeAnnual: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
     },
     {
       sequelize,

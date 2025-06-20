@@ -41,11 +41,6 @@ export default (sequelize) => {
       parkId: DataTypes.INTEGER,
       dateableId: DataTypes.INTEGER,
 
-      isDateRangeAnnual: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
     },
     {
       sequelize,

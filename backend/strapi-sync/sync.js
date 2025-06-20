@@ -92,7 +92,7 @@ export async function fetchAllModels() {
     {
       endpoint: "/park-operations",
       model: "park-operation",
-      fields: null,
+      fields: ["protectedArea"],
       items: [],
     },
     {
