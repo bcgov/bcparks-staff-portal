@@ -174,10 +174,10 @@ function SeasonForm({ seasonId, level }) {
 
   // Constants
   const { current, previous } = data || {};
-  const currentYear = new Date().getFullYear();
-  const lastYear = currentYear - 1;
+  const currentYear = current?.operatingYear;
+  const lastYear = currentYear && currentYear - 1;
 
-  // States
+  // States (@TODO: use the `current` data object)
   const [park, setPark] = useState({
     hasGate: false,
     readyToPublish: false,
@@ -223,10 +223,12 @@ function SeasonForm({ seasonId, level }) {
           {/* display feature type name and icon if the form is for park-area or feature */}
           {(current.level === "park-area" || current.level === "feature") && (
             <h4 className="header-with-icon fw-normal">
+              {/* TODO: fix this for all levels - include icon in API payload */}
               <FeatureIcon iconName={current.featureType.icon} />
               {current.featureType.name}
             </h4>
           )}
+
           <h2>{current.name}</h2>
           <h2 className="fw-normal">{currentYear} dates</h2>
           <p className="fs-6 fw-normal">
@@ -239,6 +241,7 @@ function SeasonForm({ seasonId, level }) {
           </p>
         </Offcanvas.Title>
       </Offcanvas.Header>
+
       <Offcanvas.Body>
         <h3>Public information</h3>
         <p>This information is displayed on bcpark.ca</p>
@@ -377,6 +380,11 @@ function SeasonForm({ seasonId, level }) {
   );
 }
 
+SeasonForm.propTypes = {
+  seasonId: PropTypes.string.isRequired,
+  level: PropTypes.string.isRequired,
+};
+
 function FormPanel({ show, setShow, formData }) {
   // Functions
   function handleClose() {
@@ -405,5 +413,4 @@ FormPanel.propTypes = {
   show: PropTypes.bool.isRequired,
   setShow: PropTypes.func.isRequired,
   formData: PropTypes.object,
-  approver: PropTypes.bool,
 };
