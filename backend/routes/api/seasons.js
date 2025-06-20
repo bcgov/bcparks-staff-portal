@@ -83,6 +83,8 @@ async function updateStatus(
  */
 async function getPreviousSeasonDates(currentSeason) {
   try {
+    // @TODO: the previous season dates here are not the same as the /park endpoint
+
     return await Season.findOne({
       where: {
         operatingYear: currentSeason.operatingYear - 1,

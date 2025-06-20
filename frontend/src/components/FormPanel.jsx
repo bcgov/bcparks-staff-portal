@@ -1,129 +1,20 @@
 import { useMemo, useState } from "react";
-import Form from "react-bootstrap/Form";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
 
-import { faCircleInfo } from "@fa-kit/icons/classic/regular";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useApiGet } from "@/hooks/useApi";
 import DateRangeForm from "@/components/DateRangeForm";
 import FeatureIcon from "@/components/FeatureIcon";
 import FormContainer from "@/components/FormContainer";
 import InternalNotes from "@/components/InternalNotes";
 import LoadingBar from "@/components/LoadingBar";
-import RadioButtonGroup from "@/components/RadioButtonGroup";
-import ReadyToPublishBox from "@/components/ReadyToPublishBox";
-import TimeRangeForm from "@/components/TimeRangeForm";
-import TooltipWrapper from "@/components/TooltipWrapper";
+
 import useAccess from "@/hooks/useAccess";
 
 import "./FormPanel.scss";
+import ParkSeasonForm from "./SeasonForms/ParkSeasonForm";
 
 // Components
-// TODO: separate GateForm into its own file
-function GateForm({
-  gateTitle,
-  gateDescription,
-  hasGate,
-  setHasGate,
-  dateRanges,
-  level,
-  currentYear,
-  lastYear,
-}) {
-  // States
-  const [gateOptions, setGateOptions] = useState({
-    openAtDawn: false,
-    closedAtDusk: false,
-    sameHoursEveryYear: false,
-  });
-
-  // Functions
-  function handleCheckboxChange(e) {
-    const { name, checked } = e.target;
-
-    setGateOptions((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
-  }
-
-  return (
-    <div className="mb-4">
-      <h6 className="fw-normal">{gateTitle}</h6>
-      <p>{gateDescription}</p>
-      <div className="mb-4">
-        <RadioButtonGroup
-          id="has-gate"
-          options={[
-            { value: true, label: "Yes" },
-            { value: false, label: "No" },
-          ]}
-          value={hasGate}
-          onChange={(value) => setHasGate(value)}
-        />
-      </div>
-      {hasGate && (
-        <div>
-          {level === "park" && (
-            <DateRangeForm
-              dateRanges={dateRanges}
-              currentYear={currentYear}
-              lastYear={lastYear}
-              hasGateDates={true}
-            />
-          )}
-          <h6 className="fw-normal">
-            Gate hours {/* TODO: change content */}
-            <TooltipWrapper placement="top" content="TEST">
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </TooltipWrapper>
-          </h6>
-          <Form>
-            <Form.Check
-              type="checkbox"
-              id="open-at-dawn"
-              name="openAtDawn"
-              label="Open at dawn"
-              className="mb-2"
-              checked={gateOptions.openAtDawn}
-              onChange={handleCheckboxChange}
-            />
-            <Form.Check
-              type="checkbox"
-              id="closed-at-dusk"
-              name="closedAtDusk"
-              label="Closed at dusk"
-              className="mb-2"
-              checked={gateOptions.closedAtDusk}
-              onChange={handleCheckboxChange}
-            />
-            <TimeRangeForm />
-            <Form.Check
-              type="checkbox"
-              id="same-hours-every-year"
-              name="sameHoursEveryYear"
-              label="Hours are the same every year"
-              checked={gateOptions.sameHoursEveryYear}
-              onChange={handleCheckboxChange}
-            />
-          </Form>
-        </div>
-      )}
-    </div>
-  );
-}
-
-GateForm.propTypes = {
-  gateTitle: PropTypes.string,
-  gateDescription: PropTypes.string,
-  hasGate: PropTypes.bool,
-  setHasGate: PropTypes.func.isRequired,
-  dateRanges: PropTypes.object,
-  level: PropTypes.string,
-  currentYear: PropTypes.number,
-  lastYear: PropTypes.number,
-};
 
 function Buttons({ onSave, onSubmit, approver }) {
   return (
@@ -173,15 +64,15 @@ function SeasonForm({ seasonId, level }) {
   const { data, loading, error } = useApiGet(`/seasons/${level}/${seasonId}`);
 
   // Constants
-  const { current, previous } = data || {};
-  const currentYear = current?.operatingYear;
+  const { current: season, previousSeasonDates } = data || {};
+  const currentYear = season?.operatingYear;
   const lastYear = currentYear && currentYear - 1;
 
   // States (@TODO: use the `current` data object)
-  const [park, setPark] = useState({
-    hasGate: false,
-    readyToPublish: false,
-  });
+  // const [park, setPark] = useState({
+  //   hasGate: false,
+  //   readyToPublish: false,
+  // });
   const [parkArea, setParkArea] = useState({
     hasGate: false,
     readyToPublish: false,
@@ -191,8 +82,8 @@ function SeasonForm({ seasonId, level }) {
     readyToPublish: false,
   });
 
-  console.log("current season:", current);
-  console.log("previous season:", previous);
+  console.log("current season:", season);
+  console.log("previous season dates:", previousSeasonDates);
 
   if (loading) {
     return (
@@ -205,7 +96,7 @@ function SeasonForm({ seasonId, level }) {
     );
   }
 
-  if (error || !current) {
+  if (error || !season) {
     return (
       <>
         <Offcanvas.Header closeButton>
@@ -221,15 +112,15 @@ function SeasonForm({ seasonId, level }) {
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>
           {/* display feature type name and icon if the form is for park-area or feature */}
-          {(current.level === "park-area" || current.level === "feature") && (
+          {(level === "park-area" || level === "feature") && (
             <h4 className="header-with-icon fw-normal">
               {/* TODO: fix this for all levels - include icon in API payload */}
-              <FeatureIcon iconName={current.featureType.icon} />
-              {current.featureType.name}
+              <FeatureIcon iconName={season.featureType.icon} />
+              {season.featureType.name}
             </h4>
           )}
 
-          <h2>{current.name}</h2>
+          <h2>{season.name} @TODO: season name? - add to API</h2>
           <h2 className="fw-normal">{currentYear} dates</h2>
           <p className="fs-6 fw-normal">
             <a
@@ -247,43 +138,10 @@ function SeasonForm({ seasonId, level }) {
         <p>This information is displayed on bcpark.ca</p>
 
         {/* 1 - park level */}
-        {current.level === "park" && (
-          <>
-            <FormContainer>
-              <DateRangeForm
-                dateRanges={current.groupedDateRanges}
-                currentYear={currentYear}
-                lastYear={lastYear}
-                hasTier1Dates={current.hasTier1Dates}
-                hasTier2Dates={current.hasTier2Dates}
-                hasWinterFeeDates={current.hasWinterFeeDates}
-              />
-            </FormContainer>
-            <GateForm
-              gateTitle="Park gate"
-              gateDescription='Does this park have a single gated vehicle entrance? If there are
-              multiple vehicle entrances, select "No".'
-              hasGate={park.hasGate}
-              setHasGate={(value) => setPark({ ...park, hasGate: value })}
-              dateRanges={current.groupedDateRanges}
-              level={current.level}
-              currentYear={currentYear}
-              lastYear={lastYear}
-            />
-            {/* TODO: add Ready to Publish for approver */}
-            {approver && (
-              <ReadyToPublishBox
-                readyToPublish={park.readyToPublish}
-                setReadyToPublish={(value) =>
-                  setPark({ ...park, readyToPublish: value })
-                }
-              />
-            )}
-          </>
-        )}
+        {level === "park" && <ParkSeasonForm season={season} />}
 
         {/* 2- park area level */}
-        {current.level === "park-area" && (
+        {level === "park-area" && (
           <>
             <FormContainer>
               {/* park area dates */}
@@ -320,7 +178,7 @@ function SeasonForm({ seasonId, level }) {
                 setParkArea({ ...parkArea, hasGate: value })
               }
               dateRanges={current.groupedDateRanges}
-              level={current.level}
+              level={level}
               currentYear={currentYear}
               lastYear={lastYear}
             />
@@ -337,7 +195,7 @@ function SeasonForm({ seasonId, level }) {
         )}
 
         {/* 3 - feature level */}
-        {current.level === "feature" && (
+        {level === "feature" && (
           <>
             <FormContainer>
               <h5>{current.name}</h5>
@@ -356,7 +214,7 @@ function SeasonForm({ seasonId, level }) {
               hasGate={feature.hasGate}
               setHasGate={(value) => setFeature({ ...feature, hasGate: value })}
               dateRanges={current.groupedDateRanges}
-              level={current.level}
+              level={level}
               currentYear={currentYear}
               lastYear={lastYear}
             />
