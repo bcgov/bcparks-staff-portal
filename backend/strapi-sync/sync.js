@@ -160,7 +160,10 @@ export async function fetchAllModels() {
             field.fields
           ) {
             field.fields.forEach((nestedField, index) => {
-              params.append(`populate[${field.relation}][fields][${index}]`, nestedField);
+              params.append(
+                `populate[${field.relation}][fields][${index}]`,
+                nestedField,
+              );
             });
           }
         }
@@ -187,8 +190,6 @@ export async function createOrUpdatePark(item) {
     // Update it to false if inReservationSystem from Strapi returns null
     dbItem.inReservationSystem =
       item.parkOperation.inReservationSystem ?? false;
-    // Update it to false if isDateRangeAnnual from Strapi returns null
-    dbItem.isDateRangeAnnual = item.parkOperation.isDateRangeAnnual ?? false;
 
     await dbItem.save();
   } else {
@@ -200,7 +201,6 @@ export async function createOrUpdatePark(item) {
       strapiId: item.id,
       managementAreas: item.mgmtAreaAndSection,
       inReservationSystem: item.parkOperation.inReservationSystem ?? false,
-      isDateRangeAnnual: item.parkOperation.isDateRangeAnnual ?? false,
     };
 
     dbItem = await createModel(Park, data);
@@ -813,14 +813,13 @@ export async function syncData() {
     const parkOperationAttributes =
       parkOperationLookup[park.attributes.parkOperation.data?.id] || {};
     const parkOperation = parkOperationAttributes.attributes || {};
-    const { inReservationSystem, isDateRangeAnnual } = parkOperation;
+    const { inReservationSystem } = parkOperation;
 
     return {
       ...park,
       mgmtAreaAndSection,
       parkOperation: {
         inReservationSystem,
-        isDateRangeAnnual,
       },
     };
   });

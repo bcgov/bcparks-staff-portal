@@ -2,7 +2,6 @@
 
 This script creates and updates `DateRangeAnnual` entries in the database based on existing `Publishable`, `Season`, `DateRange`, `DateType`, `Park`, and Strapi `park-operation` data. It ensures that each valid combination of `publishableId` and `dateTypeId` has a corresponding `DateRangeAnnual` entry, and that the `isDateRangeAnnual` field is kept in sync with Strapi.
 
----
 
 ## What does the script do?
 
@@ -19,14 +18,12 @@ This script creates and updates `DateRangeAnnual` entries in the database based 
 
 3. **All operations are performed inside a transaction** for safety and atomicity.
 
----
 
 ## How does it get Strapi data?
 
 - The script fetches Strapi data using the `/park-operations` endpoint, requesting the `orcs` field of the related `protectedArea`.
 - It builds a lookup of `orcs` to `isDateRangeAnnual` from the Strapi response, ensuring accurate mapping to each Park.
 
----
 
 ## How to run
 
@@ -36,7 +33,6 @@ From your project root, run:
 node backend/tasks/create-date-range-annual/create-date-range-annual.js
 ```
 
----
 
 ## Output
 
@@ -44,7 +40,6 @@ node backend/tasks/create-date-range-annual/create-date-range-annual.js
 - At the end, it logs `"DateRangeAnnual creation complete."`
 - If any error occurs, the transaction is rolled back and an error message is printed.
 
----
 
 ## Why is this useful?
 
@@ -53,12 +48,10 @@ node backend/tasks/create-date-range-annual/create-date-range-annual.js
 - Keeps the `isDateRangeAnnual` field in sync with the source of truth (Strapi).
 - Handles both general date ranges and the special `"Operating"` type for parks.
 
----
 
 ## Notes
 
 - The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project.
 - You can safely run this script multiple times; it will not create duplicates and will update `isDateRangeAnnual` as needed.
 - If you add new `Publishable`, `Season`, `DateRange`, `Park`, or update Strapi `park-operation` data, re-running this script will add or update any missing or changed `DateRangeAnnual` entries as needed.
-
----
+- Strapi has `isDateRangeAnnual` only for the park gate operating dates for now
