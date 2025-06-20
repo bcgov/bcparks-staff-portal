@@ -52,7 +52,6 @@ export async function createDateRangeAnnualEntries() {
     const parkOperationIsAnnualByOrcs = {};
 
     for (const parkOperation of parkOperationData.items) {
-      console.log("parkOperation", parkOperation);
       const orcs =
         parkOperation.attributes?.protectedArea?.data?.attributes?.orcs;
 

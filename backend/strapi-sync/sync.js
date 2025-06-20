@@ -92,7 +92,7 @@ export async function fetchAllModels() {
     {
       endpoint: "/park-operations",
       model: "park-operation",
-      fields: ["protectedArea"],
+      fields: [{ relation: "protectedArea", fields: ["orcs"] }],
       items: [],
     },
     {
@@ -152,7 +152,17 @@ export async function fetchAllModels() {
 
       if (item.fields) {
         for (const field of item.fields) {
-          params.append(`populate[${field}][fields]`, "id");
+          if (typeof field === "string") {
+            params.append(`populate[${field}][fields]`, "id");
+          } else if (
+            typeof field === "object" &&
+            field.relation &&
+            field.fields
+          ) {
+            field.fields.forEach((nestedField, index) => {
+              params.append(`populate[${field.relation}][fields][${index}]`, nestedField);
+            });
+          }
         }
       }
       item.items = await getData(currentUrl, params);
