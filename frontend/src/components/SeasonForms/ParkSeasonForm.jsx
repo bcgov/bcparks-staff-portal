@@ -1,17 +1,18 @@
-import { useMemo } from "react";
-import TooltipWrapper from "@/components/TooltipWrapper";
-import DateRangeFields from "@/components/DateRangeFields";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { groupBy } from "lodash-es";
+import { useMemo } from "react";
+import DateRangeFields from "@/components/DateRangeFields";
+import PropTypes from "prop-types";
+import TooltipWrapper from "@/components/TooltipWrapper";
 
 import FormContainer from "@/components/FormContainer";
-import DateRangeForm from "@/components/DateRangeForm";
 import GateForm from "@/components/GateForm";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 
 import useAccess from "@/hooks/useAccess";
 
-export default function ParkSeasonForm({ season }) {
+export default function ParkSeasonForm({ season, previousSeasonDates }) {
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
     () => checkAccess(ROLES.APPROVER),
@@ -21,8 +22,6 @@ export default function ParkSeasonForm({ season }) {
   const park = season.park;
   const currentYear = season.operatingYear;
   const lastYear = currentYear - 1;
-
-  console.log("current year", currentYear, season.operatingYear);
 
   // Order of date types to display on the form
   // @TODO: get this from the db
@@ -46,6 +45,19 @@ export default function ParkSeasonForm({ season }) {
     },
   ];
 
+  const datesByType = useMemo(
+    () => groupBy(park.dateable.dateRanges, "dateType.name"),
+    [park.dateable.dateRanges],
+  );
+
+  const previousDatesByType = useMemo(
+    () => groupBy(previousSeasonDates.dateRanges, "dateType.name"),
+    [previousSeasonDates.dateRanges],
+  );
+
+  console.log("datesByType:", datesByType);
+  console.log("previousDatesByType:", previousDatesByType);
+
   return (
     <>
       <FormContainer>
@@ -58,8 +70,11 @@ export default function ParkSeasonForm({ season }) {
                   <FontAwesomeIcon icon={faCircleInfo} />
                 </TooltipWrapper>
               </h6>
+              {/* TODO: previous dates from previousSeasonDates */}
               <p>Previous dates are not provided</p>
-              <DateRangeFields />
+              <DateRangeFields
+                dateRanges={datesByType[dateType.dbName] ?? []}
+              />
             </div>
           ))}
         </div>
@@ -94,3 +109,15 @@ export default function ParkSeasonForm({ season }) {
     </>
   );
 }
+
+// PropTypes validation
+ParkSeasonForm.propTypes = {
+  season: PropTypes.shape({
+    park: PropTypes.object.isRequired,
+    operatingYear: PropTypes.number.isRequired,
+    readyToPublish: PropTypes.bool.isRequired,
+  }).isRequired,
+  previousSeasonDates: PropTypes.shape({
+    dateRanges: PropTypes.arrayOf(PropTypes.object).isRequired,
+  }).isRequired,
+};

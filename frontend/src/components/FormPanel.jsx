@@ -64,7 +64,7 @@ function SeasonForm({ seasonId, level }) {
   const { data, loading, error } = useApiGet(`/seasons/${level}/${seasonId}`);
 
   // Constants
-  const { current: season, previousSeasonDates } = data || {};
+  const { current: season, previous: previousSeasonDates } = data || {};
   const currentYear = season?.operatingYear;
   const lastYear = currentYear && currentYear - 1;
 
@@ -138,7 +138,12 @@ function SeasonForm({ seasonId, level }) {
         <p>This information is displayed on bcpark.ca</p>
 
         {/* 1 - park level */}
-        {level === "park" && <ParkSeasonForm season={season} />}
+        {level === "park" && (
+          <ParkSeasonForm
+            season={season}
+            previousSeasonDates={previousSeasonDates}
+          />
+        )}
 
         {/* 2- park area level */}
         {level === "park-area" && (
@@ -239,7 +244,7 @@ function SeasonForm({ seasonId, level }) {
 }
 
 SeasonForm.propTypes = {
-  seasonId: PropTypes.string.isRequired,
+  seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
 };
 
