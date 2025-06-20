@@ -8,11 +8,13 @@ import FeatureIcon from "@/components/FeatureIcon";
 import FormContainer from "@/components/FormContainer";
 import InternalNotes from "@/components/InternalNotes";
 import LoadingBar from "@/components/LoadingBar";
+import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
+import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
+import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
 
 import useAccess from "@/hooks/useAccess";
 
 import "./FormPanel.scss";
-import ParkSeasonForm from "./SeasonForms/ParkSeasonForm";
 
 // Components
 
@@ -66,21 +68,6 @@ function SeasonForm({ seasonId, level }) {
   // Constants
   const { current: season, previous: previousSeasonDates } = data || {};
   const currentYear = season?.operatingYear;
-  const lastYear = currentYear && currentYear - 1;
-
-  // States (@TODO: use the `current` data object)
-  // const [park, setPark] = useState({
-  //   hasGate: false,
-  //   readyToPublish: false,
-  // });
-  const [parkArea, setParkArea] = useState({
-    hasGate: false,
-    readyToPublish: false,
-  });
-  const [feature, setFeature] = useState({
-    hasGate: false,
-    readyToPublish: false,
-  });
 
   console.log("current season:", season);
   console.log("previous season dates:", previousSeasonDates);
@@ -115,8 +102,9 @@ function SeasonForm({ seasonId, level }) {
           {(level === "park-area" || level === "feature") && (
             <h4 className="header-with-icon fw-normal">
               {/* TODO: fix this for all levels - include icon in API payload */}
-              <FeatureIcon iconName={season.featureType.icon} />
-              {season.featureType.name}
+              <FeatureIcon iconName={season.featureType?.icon} />
+              {season.featureType?.name}[@TODO: feature type name and icon in
+              API]
             </h4>
           )}
 
@@ -145,94 +133,20 @@ function SeasonForm({ seasonId, level }) {
           />
         )}
 
-        {/* 2- park area level */}
+        {/* TODO: 2 - park area level */}
         {level === "park-area" && (
-          <>
-            <FormContainer>
-              {/* park area dates */}
-              {current.groupedDateRanges &&
-                Object.keys(current.groupedDateRanges).length > 0 && (
-                  <DateRangeForm
-                    dateRanges={current.groupedDateRanges}
-                    seasons={data}
-                    currentYear={currentYear}
-                    lastYear={lastYear}
-                  />
-                )}
-              {/* feature dates in park area */}
-              {current.features.length > 0 &&
-                current.features.map((parkAreaFeature) => (
-                  <div key={parkAreaFeature.id} className="mb-4">
-                    <h5>{parkAreaFeature.name}</h5>
-                    {parkAreaFeature.groupedDateRanges && (
-                      <DateRangeForm
-                        dateRanges={parkAreaFeature.groupedDateRanges}
-                        seasons={data}
-                        currentYear={currentYear}
-                        lastYear={lastYear}
-                      />
-                    )}
-                  </div>
-                ))}
-            </FormContainer>
-            <GateForm
-              gateTitle={`${current.name} gate`}
-              gateDescription={`Does ${current.name} have a gated entrance?`}
-              hasGate={parkArea.hasGate}
-              setHasGate={(value) =>
-                setParkArea({ ...parkArea, hasGate: value })
-              }
-              dateRanges={current.groupedDateRanges}
-              level={level}
-              currentYear={currentYear}
-              lastYear={lastYear}
-            />
-            {/* TODO: add Ready to Publish for approver */}
-            {approver && (
-              <ReadyToPublishBox
-                readyToPublish={parkArea.readyToPublish}
-                setReadyToPublish={(value) =>
-                  setParkArea({ ...parkArea, readyToPublish: value })
-                }
-              />
-            )}
-          </>
+          <AreaSeasonForm
+            season={season}
+            previousSeasonDates={previousSeasonDates}
+          />
         )}
 
-        {/* 3 - feature level */}
+        {/* TODO: 3 - feature level */}
         {level === "feature" && (
-          <>
-            <FormContainer>
-              <h5>{current.name}</h5>
-              {current.groupedDateRanges && (
-                <DateRangeForm
-                  dateRanges={current.groupedDateRanges}
-                  seasons={data}
-                  currentYear={currentYear}
-                  lastYear={lastYear}
-                />
-              )}
-            </FormContainer>
-            <GateForm
-              gateTitle={`${current.name} gate`}
-              gateDescription={`Does ${current.name} have a gated entrance?`}
-              hasGate={feature.hasGate}
-              setHasGate={(value) => setFeature({ ...feature, hasGate: value })}
-              dateRanges={current.groupedDateRanges}
-              level={level}
-              currentYear={currentYear}
-              lastYear={lastYear}
-            />
-            {/* TODO: add Ready to Publish for approver */}
-            {approver && (
-              <ReadyToPublishBox
-                readyToPublish={feature.readyToPublish}
-                setReadyToPublish={(value) =>
-                  setFeature({ ...feature, readyToPublish: value })
-                }
-              />
-            )}
-          </>
+          <FeatureSeasonForm
+            season={season}
+            previousSeasonDates={previousSeasonDates}
+          />
         )}
 
         {/* TODO: add Public Notes for v3 */}

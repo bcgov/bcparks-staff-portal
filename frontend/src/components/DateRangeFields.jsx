@@ -6,52 +6,54 @@ import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 
 export default function DateRangeFields({
-  dateRange,
+  dateRanges,
   hasMultipleDates = true,
 }) {
   return (
-    <Form>
-      <div className="d-flex">
-        <div className="form-group">
-          <label className="form-label d-lg-none">Start date</label>
-          <div className="input-with-append">
-            <DatePicker
-              className={classNames({
-                "form-control": true,
-              })}
-              selected={dateRange?.startDate}
-              dateFormat="EEE, MMM d, yyyy"
-              showMonthYearDropdown
-            />
-            <FontAwesomeIcon
-              className="append-content"
-              icon={faCalendarCheck}
-            />
+    <>
+      {dateRanges.map((dateRange) => (
+        <div key={dateRange.id} className="d-flex">
+          <div className="form-group">
+            <label className="form-label d-lg-none">Start date</label>
+            <div className="input-with-append">
+              <DatePicker
+                className={classNames({
+                  "form-control": true,
+                })}
+                selected={dateRange?.startDate}
+                dateFormat="EEE, MMM d, yyyy"
+                showMonthYearDropdown
+              />
+              <FontAwesomeIcon
+                className="append-content"
+                icon={faCalendarCheck}
+              />
+            </div>
+          </div>
+
+          <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
+            <span>&ndash;</span>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label d-lg-none">End date</label>
+            <div className="input-with-append">
+              <DatePicker
+                className={classNames({
+                  "form-control": true,
+                })}
+                selected={dateRange?.endDate}
+                dateFormat="EEE, MMM d, yyyy"
+                showMonthYearDropdown
+              />
+              <FontAwesomeIcon
+                className="append-content"
+                icon={faCalendarCheck}
+              />
+            </div>
           </div>
         </div>
-
-        <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
-          <span>&ndash;</span>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label d-lg-none">End date</label>
-          <div className="input-with-append">
-            <DatePicker
-              className={classNames({
-                "form-control": true,
-              })}
-              selected={dateRange?.endDate}
-              dateFormat="EEE, MMM d, yyyy"
-              showMonthYearDropdown
-            />
-            <FontAwesomeIcon
-              className="append-content"
-              icon={faCalendarCheck}
-            />
-          </div>
-        </div>
-      </div>
+      ))}
 
       {/* TODO: add fields if the button is clicked */}
       {hasMultipleDates && (
@@ -68,15 +70,17 @@ export default function DateRangeFields({
         name="sameDatesEveryYear"
         label="Dates are the same every year"
       />
-    </Form>
+    </>
   );
 }
 
 DateRangeFields.propTypes = {
-  dateRange: PropTypes.shape({
-    id: PropTypes.number,
-    startDate: PropTypes.instanceOf(Date),
-    endDate: PropTypes.instanceOf(Date),
-  }),
+  dateRanges: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.string.isRequired,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
+    }),
+  ).isRequired,
   hasMultipleDates: PropTypes.bool,
 };
