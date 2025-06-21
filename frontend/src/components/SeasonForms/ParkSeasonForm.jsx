@@ -56,6 +56,13 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
     [previousSeasonDates.dateRanges],
   );
 
+  // Updates the date range in the parent component
+  function updateDateRange(id, dateField, dateObj) {
+    // @TODO: build the path to pass to lodash `set`
+    // (find the index from the dateRange.id)
+    console.log("updateDateRange", id, dateField, dateObj);
+  }
+
   console.log("datesByType:", datesByType);
   console.log("previousDatesByType:", previousDatesByType);
 
@@ -75,6 +82,7 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
               <p>Previous dates are not provided</p>
               <DateRangeFields
                 dateRanges={datesByType[dateType.dbName] ?? []}
+                updateDateRange={updateDateRange}
               />
             </div>
           ))}

@@ -1,18 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
 
-import { useApiGet } from "@/hooks/useApi";
-import DateRangeForm from "@/components/DateRangeForm";
 import FeatureIcon from "@/components/FeatureIcon";
-import FormContainer from "@/components/FormContainer";
 import InternalNotes from "@/components/InternalNotes";
 import LoadingBar from "@/components/LoadingBar";
 import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
 
+import { useApiGet } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
+import DataContext from "@/contexts/DataContext";
 
 import "./FormPanel.scss";
 
@@ -63,7 +62,23 @@ function SeasonForm({ seasonId, level }) {
   );
 
   // Hooks
-  const { data, loading, error } = useApiGet(`/seasons/${level}/${seasonId}`);
+
+  const [data, setData] = useState(null);
+
+  const {
+    data: apiData,
+    loading,
+    error,
+  } = useApiGet(`/seasons/${level}/${seasonId}`);
+
+  useEffect(() => {
+    console.log("re-rendering?");
+
+    if (apiData) {
+      console.log("set data");
+      setData(apiData);
+    }
+  }, [apiData]);
 
   // Constants
   const { current: season, previous: previousSeasonDates } = data || {};
@@ -95,7 +110,7 @@ function SeasonForm({ seasonId, level }) {
   }
 
   return (
-    <>
+    <DataContext.Provider value={{ setData }}>
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>
           {/* display feature type name and icon if the form is for park-area or feature */}
@@ -153,7 +168,7 @@ function SeasonForm({ seasonId, level }) {
         <InternalNotes />
         <Buttons approver={approver} />
       </Offcanvas.Body>
-    </>
+    </DataContext.Provider>
   );
 }
 
@@ -168,7 +183,7 @@ function FormPanel({ show, setShow, formData }) {
     setShow(false);
   }
 
-  // TODO: hook seasonData into the form
+  // Hide the form if no seasonId is provided
   return (
     <Offcanvas
       show={show}
