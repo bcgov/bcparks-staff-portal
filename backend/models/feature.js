@@ -38,6 +38,11 @@ export default (sequelize) => {
         sourceKey: "publishableId",
         as: "seasons",
       });
+
+      Feature.hasOne(models.GateDetail, {
+        foreignKey: "featureId",
+        as: "gateDetail",
+      });
     }
   }
   Feature.init(
