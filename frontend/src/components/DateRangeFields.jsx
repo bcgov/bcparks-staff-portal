@@ -15,6 +15,8 @@ import {
 function DateRange({ dateRange, updateDateRange }) {
   // const { setData } = useContext(DataContext);
 
+  const idOrTempId = dateRange.id || dateRange.tempId;
+
   // Keep local state until the field is blurred or Enter is pressed
   const [localDateRange, setLocalDateRange] = useState({ ...dateRange });
   const adjustedLocalStartDate = useMemo(
@@ -43,7 +45,13 @@ function DateRange({ dateRange, updateDateRange }) {
   function onSelect(dateField, dateObj) {
     const newValue = normalizeToUTCDate(dateObj);
 
-    return updateDateRange(dateRange.id, dateField, newValue);
+    // Existing ranges have an ID
+    if (dateField.id) {
+      return updateDateRange(dateRange.id, dateField, newValue);
+    }
+
+    // New ranges have a tempId
+    return updateDateRange(dateRange.tempId, dateField, newValue, true);
   }
 
   return (
@@ -52,18 +60,18 @@ function DateRange({ dateRange, updateDateRange }) {
         <label className="form-label d-lg-none">Start date</label>
         <div className="input-with-append">
           <DatePicker
-            id={`date-range-${dateRange.id}-start`}
+            id={`date-range-${idOrTempId}-start`}
             className="form-control start-date"
             selected={adjustedLocalStartDate}
             onChange={(date) => onDateChange("startDate", date)}
             onBlur={() => {
               // Update the `dates` object on blur
-              onSelect("endDate", adjustedLocalStartDate);
+              onSelect("startDate", adjustedLocalStartDate);
             }}
             onKeyDown={(event) => {
               // Update the `dates` object on Enter
               if (event.key === "Enter" && event.target.tagName === "INPUT") {
-                onSelect("endDate", adjustedLocalStartDate);
+                onSelect("startDate", adjustedLocalStartDate);
               }
             }}
             dateFormat="EEE, MMM d, yyyy"
@@ -83,7 +91,7 @@ function DateRange({ dateRange, updateDateRange }) {
         <label className="form-label d-lg-none">End date</label>
         <div className="input-with-append">
           <DatePicker
-            id={`date-range-${dateRange.id}-end`}
+            id={`date-range-${idOrTempId}-end`}
             className="form-control end-date"
             selected={adjustedLocalEndDate}
             onChange={(date) => onDateChange("endDate", date)}
@@ -112,13 +120,19 @@ function DateRange({ dateRange, updateDateRange }) {
 export default function DateRangeFields({
   dateRanges,
   updateDateRange,
+  addDateRange,
   hasMultipleDates = true,
+  dateableId,
+  dateType,
 }) {
+  console.log("dateableId", dateableId);
+  console.log("dateType", dateType);
+
   return (
     <>
       {dateRanges.map((dateRange) => (
         <DateRange
-          key={dateRange.id}
+          key={dateRange.id || dateRange.tempId}
           dateRange={dateRange}
           updateDateRange={updateDateRange}
         />
@@ -126,7 +140,11 @@ export default function DateRangeFields({
 
       {/* TODO: add fields if the button is clicked */}
       {hasMultipleDates && (
-        <button className="btn btn-text text-link">
+        <button
+          type="button"
+          className="btn btn-text text-link"
+          onClick={() => addDateRange(dateType)}
+        >
           <FontAwesomeIcon icon={faPlus} />
           <span className="ms-1">Add more dates</span>
         </button>
@@ -146,7 +164,12 @@ export default function DateRangeFields({
 DateRangeFields.propTypes = {
   dateRanges: PropTypes.arrayOf(
     PropTypes.shape({
-      id: PropTypes.number.isRequired,
+      // Existing date ranges have an ID
+      id: PropTypes.number,
+      // New date ranges have a tempId
+      tempId: PropTypes.string,
+      // either id or tempId is required
+
       startDate: PropTypes.instanceOf(Date),
       endDate: PropTypes.instanceOf(Date),
     }),

@@ -1,6 +1,6 @@
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { groupBy, get, set as lodashSet, cloneDeep } from "lodash-es";
+import { groupBy, get, set as lodashSet, cloneDeep, add } from "lodash-es";
 import { useMemo, useContext } from "react";
 import DateRangeFields from "@/components/DateRangeFields";
 import PropTypes from "prop-types";
@@ -28,24 +28,30 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
   const lastYear = currentYear - 1;
 
   // Order of date types to display on the form
-  // @TODO: get this from the db
+  // @TODO: get this from the db in the season endpoint
   const dateTypes = [
     {
       displayName: "Tier 1",
       tooltipText: "@TODO: tooltip text",
       dbName: "Tier 1",
+      name: "Tier 1",
+      id: 11,
     },
 
     {
       displayName: "Tier 2",
       tooltipText: "@TODO: tooltip text",
       dbName: "Tier 2",
+      name: "Tier 2",
+      id: 12,
     },
 
     {
       displayName: "Winter",
       tooltipText: "@TODO: tooltip text",
       dbName: "Winter fee",
+      name: "Winter fee",
+      id: 13,
     },
   ];
 
@@ -60,13 +66,27 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
   );
 
   // Updates the date range in the parent component
-  function updateDateRange(id, dateField, dateObj) {
-    const { dateRanges } = season.park.dateable;
-    // Find the dateRanges array index from the dateRange id
-    const dateRangeIndex = dateRanges.findIndex((range) => range.id === id);
+  function updateDateRange(id, dateField, dateObj, tempId = false) {
+    console.log(
+      "\n\nupdateDateRange called with:",
+      id,
+      dateField,
+      dateObj,
+      tempId,
+    );
 
-    // Path to update in the data API's data object
-    const updatePath = [
+    const { dateRanges } = season.park.dateable;
+    // Find the dateRanges array index from the dateRange id or tempId
+    const dateRangeIndex = dateRanges.findIndex((range) => {
+      if (tempId) {
+        return range.tempId === id;
+      }
+
+      return range.id === id;
+    });
+
+    // Path to update to the DateRange object
+    const dateRangePath = [
       "current",
       "park",
       "dateable",
@@ -77,9 +97,36 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
 
     // Update the local state (in the FormPanel component)
     setData((prevData) => {
+      let updatedData = cloneDeep(prevData);
+
+      // Update the start or end date field
+      updatedData = lodashSet(
+        updatedData,
+        [...dateRangePath, dateField],
+        dateObj,
+      );
+
+      // Update the changed flag for the date range
+      return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+    });
+  }
+
+  // Adds a new date range to the park's dateable.dateRanges
+  function addDateRange(dateType) {
+    const newDateRange = {
+      // Add a temporary ID for records that haven't been saved yet
+      tempId: crypto.randomUUID(),
+      startDate: null,
+      endDate: null,
+      dateableId: park.dateable.id,
+      dateType,
+    };
+
+    setData((prevData) => {
       const updatedData = cloneDeep(prevData);
 
-      return lodashSet(updatedData, updatePath, dateObj);
+      updatedData.current.park.dateable.dateRanges.push(newDateRange);
+      return updatedData;
     });
   }
 
@@ -98,8 +145,11 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
               {/* TODO: previous dates from previousSeasonDates */}
               <p>Previous dates are not provided</p>
               <DateRangeFields
+                dateableId={park.dateableId}
+                dateType={dateType}
                 dateRanges={datesByType[dateType.dbName] ?? []}
                 updateDateRange={updateDateRange}
+                addDateRange={addDateRange}
               />
             </div>
           ))}
