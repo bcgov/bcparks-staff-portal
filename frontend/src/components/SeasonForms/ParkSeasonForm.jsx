@@ -1,7 +1,7 @@
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { groupBy } from "lodash-es";
-import { useMemo } from "react";
+import { groupBy, get, set as lodashSet, cloneDeep } from "lodash-es";
+import { useMemo, useContext } from "react";
 import DateRangeFields from "@/components/DateRangeFields";
 import PropTypes from "prop-types";
 import TooltipWrapper from "@/components/TooltipWrapper";
@@ -11,6 +11,7 @@ import GateForm from "@/components/GateForm";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 
 import useAccess from "@/hooks/useAccess";
+import DataContext from "@/contexts/DataContext";
 
 export default function ParkSeasonForm({ season, previousSeasonDates }) {
   // @TODO: make this a prop again
@@ -19,6 +20,8 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
     () => checkAccess(ROLES.APPROVER),
     [checkAccess, ROLES.APPROVER],
   );
+
+  const { setData } = useContext(DataContext);
 
   const park = season.park;
   const currentYear = season.operatingYear;
@@ -58,13 +61,27 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
 
   // Updates the date range in the parent component
   function updateDateRange(id, dateField, dateObj) {
-    // @TODO: build the path to pass to lodash `set`
-    // (find the index from the dateRange.id)
-    console.log("updateDateRange", id, dateField, dateObj);
-  }
+    const { dateRanges } = season.park.dateable;
+    // Find the dateRanges array index from the dateRange id
+    const dateRangeIndex = dateRanges.findIndex((range) => range.id === id);
 
-  console.log("datesByType:", datesByType);
-  console.log("previousDatesByType:", previousDatesByType);
+    // Path to update in the data API's data object
+    const updatePath = [
+      "current",
+      "park",
+      "dateable",
+      "dateRanges",
+      dateRangeIndex,
+      dateField,
+    ];
+
+    // Update the local state (in the FormPanel component)
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      return lodashSet(updatedData, updatePath, dateObj);
+    });
+  }
 
   return (
     <>
