@@ -25,7 +25,7 @@ export async function createDateRangeAnnualEntries() {
   try {
     // get dateType "Operating"
     const operatingDateType = await DateType.findOne({
-      where: { name: "Operating" },
+      where: { name: "Operating", parkLevel: true },
       transaction,
     });
 
@@ -142,11 +142,11 @@ export async function createDateRangeAnnualEntries() {
         entry.isDateRangeAnnual = isDateRangeAnnual;
         await entry.save({ transaction });
         console.log(
-          `Updated isDateRangeAnnual for publishableId=${park.publishableId} to ${isDateRangeAnnual}`
+          `Updated isDateRangeAnnual for publishableId=${park.publishableId} to ${isDateRangeAnnual}`,
         );
       } else if (created) {
         console.log(
-          `Created DateRangeAnnual for publishableId=${park.publishableId}, dateTypeId=${operatingDateType.id}, isDateRangeAnnual=${isDateRangeAnnual}`
+          `Created DateRangeAnnual for publishableId=${park.publishableId}, dateTypeId=${operatingDateType.id}, isDateRangeAnnual=${isDateRangeAnnual}`,
         );
       }
     }
