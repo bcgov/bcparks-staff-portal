@@ -25,7 +25,6 @@ export async function createGateDetailsFromStrapi() {
     const parkOperationByOrcs = {};
 
     for (const parkOperation of parkOperationData.items) {
-      // console.log("PARK OPERATION", parkOperation);
       const orcs =
         parkOperation.attributes?.protectedArea?.data?.attributes?.orcs;
 
@@ -36,8 +35,7 @@ export async function createGateDetailsFromStrapi() {
     const parkOpeationSubAreaById = {};
 
     for (const subArea of parkOperationSubAreaData.items) {
-      // console.log("SUBAREA", subArea);
-      parkOpeationSubAreaById[subArea.id] = subArea.attributes;
+      parkOpeationSubAreaById[subArea.id] = subArea;
     }
 
     // 1 - get all parks with publishableId
@@ -63,11 +61,9 @@ export async function createGateDetailsFromStrapi() {
       // import Strapi park-operation data if orcs matches
       const parkOperation = parkOperationByOrcs[park.orcs];
 
-      console.log("PARK OPERATION FOR PARK", parkOperation);
-
       if (parkOperation) {
-        gateDetail.hasParkGate =
-          parkOperation.hasParkGate ?? gateDetail.hasParkGate;
+        gateDetail.hasGate =
+          parkOperation.hasParkGate ?? gateDetail.hasGate;
         gateDetail.gateOpenTime =
           parkOperation.gateOpenTime ?? gateDetail.gateOpenTime;
         gateDetail.gateCloseTime =
@@ -122,8 +118,6 @@ export async function createGateDetailsFromStrapi() {
 
       // import Strapi park-operation-sub-area data if strapiId matches
       const subArea = parkOpeationSubAreaById[feature.strapiId];
-
-      console.log("SUBAREA FOR FEATURE", subArea);
 
       if (subArea) {
         gateDetail.hasGate = subArea.hasGate ?? gateDetail.hasGate;
