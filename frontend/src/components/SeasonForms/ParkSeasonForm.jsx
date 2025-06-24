@@ -1,6 +1,6 @@
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { groupBy, get, set as lodashSet, cloneDeep, add } from "lodash-es";
+import { groupBy, set as lodashSet, cloneDeep } from "lodash-es";
 import { useMemo, useContext } from "react";
 import DateRangeFields from "@/components/DateRangeFields";
 import PropTypes from "prop-types";
@@ -21,7 +21,7 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
     [checkAccess, ROLES.APPROVER],
   );
 
-  const { setData } = useContext(DataContext);
+  const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
   const park = season.park;
   const currentYear = season.operatingYear;
@@ -132,6 +132,11 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
 
   // Removes a date range from the park's dateable.dateRanges by its ID or tempId
   function removeDateRange(dateRange) {
+    // Track deleted date range IDs
+    if (dateRange.id) {
+      addDeletedDateRangeId(dateRange.id);
+    }
+
     console.log("removeDateRange called", dateRange);
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
@@ -154,6 +159,17 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
       if (index !== -1) {
         dateRanges.splice(index, 1);
       }
+
+      return updatedData;
+    });
+  }
+
+  // Updates the readyToPublish state in the season data object
+  function setReadyToPublish(value) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.readyToPublish = value;
 
       return updatedData;
     });
@@ -206,10 +222,7 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
       {approver && (
         <ReadyToPublishBox
           readyToPublish={season.readyToPublish}
-          setReadyToPublish={(value) =>
-            // setPark({ ...park, readyToPublish: value })
-            console.log("TODO: setReadyToPublish", value)
-          }
+          setReadyToPublish={setReadyToPublish}
         />
       )}
     </>

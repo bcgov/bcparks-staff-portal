@@ -138,8 +138,6 @@ export default function DateRangeFields({
   dateableId,
   dateType,
 }) {
-  console.log("AAA dateRanges:", dateRanges);
-
   return (
     <>
       {dateRanges.map((dateRange) => (

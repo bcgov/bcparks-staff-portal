@@ -64,6 +64,11 @@ function SeasonForm({ seasonId, level }) {
   // Hooks
 
   const [data, setData] = useState(null);
+  const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
+
+  function addDeletedDateRangeId(id) {
+    setDeletedDateRangeIds((prev) => [...prev, id]);
+  }
 
   const {
     data: apiData,
@@ -72,10 +77,7 @@ function SeasonForm({ seasonId, level }) {
   } = useApiGet(`/seasons/${level}/${seasonId}`);
 
   useEffect(() => {
-    console.log("re-rendering?");
-
     if (apiData) {
-      console.log("set data");
       setData(apiData);
     }
   }, [apiData]);
@@ -110,7 +112,7 @@ function SeasonForm({ seasonId, level }) {
   }
 
   return (
-    <DataContext.Provider value={{ setData }}>
+    <DataContext.Provider value={{ setData, addDeletedDateRangeId }}>
       <Offcanvas.Header closeButton>
         <Offcanvas.Title>
           {/* display feature type name and icon if the form is for park-area or feature */}
