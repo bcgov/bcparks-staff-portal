@@ -137,31 +137,25 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
       const updatedData = cloneDeep(prevData);
       const { dateRanges } = updatedData.current.park.dateable;
 
-      console.log("dateRanges before removal", dateRanges);
-
-      const updatedDateRanges = dateRanges.filter((range) => {
-        console.log("oh test");
-
-        if (dateRange.id && range.id === dateRange.id) {
-          console.log("removing by id", dateRange.id);
-          return false; // Remove this range
+      const index = dateRanges.findIndex((range) => {
+        // Find by ID if dateRange has one
+        if (dateRange.id) {
+          return dateRange.id === range.id;
         }
 
-        if (dateRange.tempId && range.tempId === dateRange.tempId) {
-          console.log("removing by tempId", dateRange.tempId);
-          return false; // Remove this range
+        // Otherwise, find by tempId
+        if (dateRange.tempId) {
+          return dateRange.tempId === range.tempId;
         }
 
-        return true;
+        return false;
       });
 
-      console.log("updatedDateRanges", updatedDateRanges);
+      if (index !== -1) {
+        dateRanges.splice(index, 1);
+      }
 
-      return lodashSet(
-        updatedData,
-        ["current", "park", "dateable", "dateRanges"],
-        updatedDateRanges,
-      );
+      return updatedData;
     });
   }
 
