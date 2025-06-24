@@ -1,5 +1,9 @@
 import { useContext, useMemo, useState } from "react";
-import { faPlus, faCalendarCheck } from "@fa-kit/icons/classic/regular";
+import {
+  faPlus,
+  faXmark,
+  faCalendarCheck,
+} from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import DatePicker from "react-datepicker";
 import Form from "react-bootstrap/Form";
@@ -12,9 +16,10 @@ import {
 } from "@/lib/utils";
 // import DataContext from "@/contexts/DataContext";
 
-function DateRange({ dateRange, updateDateRange }) {
+function DateRange({ dateRange, updateDateRange, removeDateRange }) {
   // const { setData } = useContext(DataContext);
 
+  // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
   // Keep local state until the field is blurred or Enter is pressed
@@ -113,6 +118,13 @@ function DateRange({ dateRange, updateDateRange }) {
           <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
         </div>
       </div>
+
+      <button
+        className="btn btn-text text-link align-self-end"
+        onClick={() => removeDateRange(dateRange)}
+      >
+        <FontAwesomeIcon icon={faXmark} />
+      </button>
     </div>
   );
 }
@@ -120,13 +132,13 @@ function DateRange({ dateRange, updateDateRange }) {
 export default function DateRangeFields({
   dateRanges,
   updateDateRange,
+  removeDateRange,
   addDateRange,
   hasMultipleDates = true,
   dateableId,
   dateType,
 }) {
-  console.log("dateableId", dateableId);
-  console.log("dateType", dateType);
+  console.log("AAA dateRanges:", dateRanges);
 
   return (
     <>
@@ -135,6 +147,7 @@ export default function DateRangeFields({
           key={dateRange.id || dateRange.tempId}
           dateRange={dateRange}
           updateDateRange={updateDateRange}
+          removeDateRange={removeDateRange}
         />
       ))}
 
@@ -146,7 +159,7 @@ export default function DateRangeFields({
           onClick={() => addDateRange(dateType)}
         >
           <FontAwesomeIcon icon={faPlus} />
-          <span className="ms-1">Add more dates</span>
+          <span className="ms-1">Add more {dateType.displayName} dates</span>
         </button>
       )}
 

@@ -92,7 +92,6 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
       "dateable",
       "dateRanges",
       dateRangeIndex,
-      dateField,
     ];
 
     // Update the local state (in the FormPanel component)
@@ -120,12 +119,35 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
       endDate: null,
       dateableId: park.dateable.id,
       dateType,
+      changed: true,
     };
 
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
 
       updatedData.current.park.dateable.dateRanges.push(newDateRange);
+      return updatedData;
+    });
+  }
+
+  // Removes a date range from the park's dateable.dateRanges by its ID or tempId
+  function removeDateRange(dateRange) {
+    console.log("removeDateRange called", dateRange);
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+      const dateRanges = updatedData.current.park.dateable.dateRanges;
+
+      // Find the index of the date range to remove
+      const indexToRemove = dateRanges.findIndex(
+        (range) =>
+          range.id === dateRange.id || range.tempId === dateRange.tempId,
+      );
+
+      // Remove the date range if it exists
+      if (indexToRemove !== -1) {
+        dateRanges.splice(indexToRemove, 1);
+      }
+
       return updatedData;
     });
   }
@@ -150,6 +172,7 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
                 dateRanges={datesByType[dateType.dbName] ?? []}
                 updateDateRange={updateDateRange}
                 addDateRange={addDateRange}
+                removeDateRange={removeDateRange}
               />
             </div>
           ))}
