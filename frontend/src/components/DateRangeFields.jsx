@@ -143,12 +143,22 @@ export default function DateRangeFields({
   return (
     <>
       {dateRanges.map((dateRange) => (
-        <DateRange
-          key={dateRange.id || dateRange.tempId}
-          dateRange={dateRange}
-          updateDateRange={updateDateRange}
-          removeDateRange={removeDateRange}
-        />
+        <div key={dateRange.id || dateRange.tempId}>
+          {dateRange.id || dateRange.tempId}
+
+          <DateRange
+            key={dateRange.id || dateRange.tempId}
+            dateRange={dateRange}
+            updateDateRange={updateDateRange}
+            removeDateRange={removeDateRange}
+          />
+        </div>
+        // <DateRange
+        //   key={dateRange.id || dateRange.tempId}
+        //   dateRange={dateRange}
+        //   updateDateRange={updateDateRange}
+        //   removeDateRange={removeDateRange}
+        // />
       ))}
 
       {/* TODO: add fields if the button is clicked */}
