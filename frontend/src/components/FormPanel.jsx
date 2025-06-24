@@ -9,7 +9,7 @@ import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
 
-import { useApiGet } from "@/hooks/useApi";
+import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
 import DataContext from "@/contexts/DataContext";
 
@@ -17,7 +17,28 @@ import "./FormPanel.scss";
 
 // Components
 
-function Buttons({ onSave, onSubmit, approver }) {
+function ButtonLoading({ show }) {
+  if (show) {
+    return (
+      <span
+        className="spinner-border spinner-border-sm me-1"
+        role="status"
+        aria-hidden="true"
+      ></span>
+    );
+  }
+
+  return null;
+}
+
+function Buttons({
+  onSave,
+  onSubmit,
+  sendingSubmit,
+  onApprove,
+  sendingApprove,
+  approver,
+}) {
   return (
     <div>
       <button
@@ -30,9 +51,10 @@ function Buttons({ onSave, onSubmit, approver }) {
       {approver ? (
         <button
           type="button"
-          onClick={onSubmit}
+          onClick={onApprove}
           className="btn btn-primary fw-bold"
         >
+          <ButtonLoading show={sendingApprove} />
           Mark approved
         </button>
       ) : (
@@ -41,6 +63,7 @@ function Buttons({ onSave, onSubmit, approver }) {
           onClick={onSubmit}
           className="btn btn-primary fw-bold"
         >
+          <ButtonLoading show={sendingSubmit} />
           Submit to HQ
         </button>
       )}
@@ -51,21 +74,28 @@ function Buttons({ onSave, onSubmit, approver }) {
 Buttons.propTypes = {
   onSave: PropTypes.func,
   onSubmit: PropTypes.func,
+  onApprove: PropTypes.func,
   approver: PropTypes.bool,
 };
 
-function SeasonForm({ seasonId, level }) {
+function SeasonForm({ seasonId, level, handleClose }) {
+  // Hooks
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
     () => checkAccess(ROLES.APPROVER),
     [checkAccess, ROLES.APPROVER],
   );
 
-  // Hooks
-
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
+
+  const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
+    `/seasons/${seasonId}/approve/`,
+  );
+  const { sendData: sendSubmit, loading: sendingSubmit } = useApiPost(
+    `/seasons/${seasonId}/submit/`,
+  );
 
   function addDeletedDateRangeId(id) {
     setDeletedDateRangeIds((prev) => [...prev, id]);
@@ -86,6 +116,20 @@ function SeasonForm({ seasonId, level }) {
   // Constants
   const { current: season, previous: previousSeasonDates } = data || {};
   const currentYear = season?.operatingYear;
+
+  async function onApprove() {
+    await sendApprove(seasonId);
+    handleClose();
+  }
+
+  async function onSave() {
+    console.log("save here", data, notes, deletedDateRangeIds);
+  }
+
+  async function onSubmit() {
+    await sendSubmit(seasonId);
+    handleClose();
+  }
 
   console.log("current season:", season);
   console.log("previous season dates:", previousSeasonDates);
@@ -169,7 +213,14 @@ function SeasonForm({ seasonId, level }) {
 
         {/* TODO: add Public Notes for v3 */}
         <InternalNotes notes={notes} setNotes={setNotes} />
-        <Buttons approver={approver} />
+        <Buttons
+          approver={approver}
+          onApprove={onApprove}
+          sendingApprove={sendingApprove}
+          onSave={onSave}
+          onSubmit={onSubmit}
+          sendingSubmit={sendingSubmit}
+        />
       </Offcanvas.Body>
     </DataContext.Provider>
   );
@@ -184,6 +235,7 @@ function FormPanel({ show, setShow, formData }) {
   // Functions
   function handleClose() {
     setShow(false);
+    // @TODO: update the data in the parent
   }
 
   // Hide the form if no seasonId is provided
@@ -196,7 +248,11 @@ function FormPanel({ show, setShow, formData }) {
       className="form-panel"
     >
       {formData.seasonId && (
-        <SeasonForm seasonId={formData.seasonId} level={formData.level} />
+        <SeasonForm
+          seasonId={formData.seasonId}
+          level={formData.level}
+          handleClose={handleClose}
+        />
       )}
     </Offcanvas>
   );
