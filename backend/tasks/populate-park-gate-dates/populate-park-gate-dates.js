@@ -1,4 +1,4 @@
-// This script populates the Season and DateRange tables
+// This script populates the Season and DateRange
 // based on data from Strapi park-operation-date model.
 
 import "../../env.js";
@@ -31,7 +31,7 @@ export async function populateParkGateDates() {
 
     // get dateType "Operating"
     const operatingDateType = await DateType.findOne({
-      where: { name: "Operating" },
+      where: { name: "Operating", parkLevel: true },
       transaction,
     });
 
@@ -84,9 +84,12 @@ export async function populateParkGateDates() {
       });
 
       // if dateRange exists but dates differ, update them
-      if (dateRange.startDate !== startDate || dateRange.endDate !== endDate) {
-        dateRange.startDate = startDate;
-        dateRange.endDate = endDate;
+      if (
+        dateRange.startDate.getTime() !== new Date(startDate).getTime() ||
+        dateRange.endDate.getTime() !== new Date(endDate).getTime()
+      ) {
+        dateRange.startDate = new Date(startDate);
+        dateRange.endDate = new Date(endDate);
         await dateRange.save({ transaction });
       }
     }
@@ -102,6 +105,7 @@ export async function populateParkGateDates() {
 // run directly:
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   populateParkGateDates().catch((err) => {
+    console.error("Failed to populate Season and DateRange:", err);
     throw err;
   });
 }

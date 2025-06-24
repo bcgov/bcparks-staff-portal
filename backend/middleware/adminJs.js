@@ -263,9 +263,7 @@ const GateDetailResource = {
   options: {
     listProperties: [
       "id",
-      "parkId",
-      "parkAreaId",
-      "featureId",
+      "publishableId",
       "hasGate",
       "gateOpenTime",
       "gateCloseTime",

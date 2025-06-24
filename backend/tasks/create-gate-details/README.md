@@ -7,7 +7,7 @@ This script creates or updates `GateDetail` entries for all Parks, ParkAreas, an
 
 1. **For Parks:**
    - Finds all Parks with a non-null `publishableId`.
-   - For each Park, creates or updates a `GateDetail` entry linked by `parkId`.
+   - For each Park, creates or updates a `GateDetail` entry linked by `publishableId`.
    - If the Park’s `orcs` matches a Strapi `park-operation`’s `protectedArea.orcs`, it imports the following fields from Strapi and sets them on the `GateDetail`:
      - `hasParkGate`
      - `gateOpenTime`
@@ -19,13 +19,13 @@ This script creates or updates `GateDetail` entries for all Parks, ParkAreas, an
 
 2. **For ParkAreas:**
    - Finds all ParkAreas with a non-null `publishableId`.
-   - For each ParkArea, creates a `GateDetail` entry linked by `parkAreaId` if one does not exist.
+   - For each ParkArea, creates a `GateDetail` entry linked by `publishableId` if one does not exist.
    - (No Strapi import for ParkArea at this time.)
 
 
 3. **For Features:**
    - Finds all Features with a non-null `publishableId`.
-   - For each Feature, creates or updates a `GateDetail` entry linked by `featureId`.
+   - For each Feature, creates or updates a `GateDetail` entry linked by `publishableId`.
    - If the Feature’s `strapiId` matches a Strapi `park-operation-sub-area`’s `id`, it imports the following fields from Strapi and sets them on the `GateDetail`:
      - `hasGate`
      - `gateOpenTime`

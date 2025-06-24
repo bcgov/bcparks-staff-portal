@@ -8,27 +8,11 @@ module.exports = {
         primaryKey: true,
         type: Sequelize.INTEGER,
       },
-      parkId: {
+      publishableId: {
         type: Sequelize.INTEGER,
         allowNull: true,
         references: {
-          model: "Parks",
-          key: "id",
-        },
-      },
-      parkAreaId: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: "ParkAreas",
-          key: "id",
-        },
-      },
-      featureId: {
-        type: Sequelize.INTEGER,
-        allowNull: true,
-        references: {
-          model: "Features",
+          model: "Publishables",
           key: "id",
         },
       },

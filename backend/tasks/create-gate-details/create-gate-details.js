@@ -1,5 +1,5 @@
 // This script creates or updates GateDetail entries for parks, park areas, and features
-// and import data from Strap park-operation and park-operation-sub-area models.
+// and import data from Strapi park-operation and park-operation-sub-area models.
 
 import "../../env.js";
 
@@ -47,13 +47,13 @@ export async function createGateDetailsFromStrapi() {
     // create or update gateDetail for each park
     for (const park of parks) {
       let gateDetail = await GateDetail.findOne({
-        where: { parkId: park.id },
+        where: { publishableId: park.publishableId },
         transaction,
       });
 
       if (!gateDetail) {
         gateDetail = await GateDetail.create(
-          { parkId: park.id },
+          { publishableId: park.publishableId },
           { transaction },
         );
       }
@@ -62,8 +62,7 @@ export async function createGateDetailsFromStrapi() {
       const parkOperation = parkOperationByOrcs[park.orcs];
 
       if (parkOperation) {
-        gateDetail.hasGate =
-          parkOperation.hasParkGate ?? gateDetail.hasGate;
+        gateDetail.hasGate = parkOperation.hasParkGate ?? gateDetail.hasGate;
         gateDetail.gateOpenTime =
           parkOperation.gateOpenTime ?? gateDetail.gateOpenTime;
         gateDetail.gateCloseTime =
@@ -86,12 +85,15 @@ export async function createGateDetailsFromStrapi() {
 
     for (const parkArea of parkAreas) {
       const gateDetail = await GateDetail.findOne({
-        where: { parkAreaId: parkArea.id },
+        where: { publishableId: parkArea.publishableId },
         transaction,
       });
 
       if (!gateDetail) {
-        await GateDetail.create({ parkAreaId: parkArea.id }, { transaction });
+        await GateDetail.create(
+          { publishableId: parkArea.publishableId },
+          { transaction },
+        );
       }
       // no Strapi import for parkArea
     }
@@ -100,18 +102,17 @@ export async function createGateDetailsFromStrapi() {
     const features = await Feature.findAll({
       where: { publishableId: { [Op.ne]: null } },
       transaction,
-      include: ["gateDetail"],
     });
 
     for (const feature of features) {
       let gateDetail = await GateDetail.findOne({
-        where: { featureId: feature.id },
+        where: { publishableId: feature.publishableId },
         transaction,
       });
 
       if (!gateDetail) {
         gateDetail = await GateDetail.create(
-          { featureId: feature.id },
+          { publishableId: feature.publishableId },
           { transaction },
         );
       }
@@ -146,7 +147,7 @@ export async function createGateDetailsFromStrapi() {
 // run directly:
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   createGateDetailsFromStrapi().catch((err) => {
-    console.error("Failed to create gate details:", err);
+    console.error("Failed to create GateDetails:", err);
     throw err;
   });
 }

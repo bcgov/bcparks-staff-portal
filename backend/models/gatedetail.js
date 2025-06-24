@@ -3,30 +3,15 @@ import { Model, DataTypes } from "sequelize";
 export default (sequelize) => {
   class GateDetail extends Model {
     static associate(models) {
-      // one-to-one with Park
-      GateDetail.belongsTo(models.Park, {
-        foreignKey: "parkId",
-        as: "park",
-      });
-
-      // one-to-one with ParkArea
-      GateDetail.belongsTo(models.ParkArea, {
-        foreignKey: "parkAreaId",
-        as: "parkArea",
-      });
-
-      // one-to-one with Feature
-      GateDetail.belongsTo(models.Feature, {
-        foreignKey: "featureId",
-        as: "feature",
+      GateDetail.belongsTo(models.Publishable, {
+        foreignKey: "publishableId",
+        as: "publishable",
       });
     }
   }
   GateDetail.init(
     {
-      parkId: DataTypes.INTEGER,
-      parkAreaId: DataTypes.INTEGER,
-      featureId: DataTypes.INTEGER,
+      publishableId: DataTypes.INTEGER,
       hasGate: {
         type: DataTypes.BOOLEAN,
         allowNull: false,

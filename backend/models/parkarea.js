@@ -33,11 +33,6 @@ export default (sequelize) => {
         sourceKey: "publishableId",
         as: "seasons",
       });
-
-      ParkArea.hasOne(models.GateDetail, {
-        foreignKey: "parkAreaId",
-        as: "gateDetail",
-      });
     }
   }
   ParkArea.init(

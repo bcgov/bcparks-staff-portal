@@ -29,6 +29,11 @@ export default (sequelize) => {
         foreignKey: "publishableId",
         as: "seasons",
       });
+
+      Publishable.hasOne(models.GateDetail, {
+        foreignKey: "publishableId",
+        as: "gateDetail",
+      });
     }
   }
   Publishable.init(
