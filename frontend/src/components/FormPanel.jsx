@@ -64,6 +64,7 @@ function SeasonForm({ seasonId, level }) {
   // Hooks
 
   const [data, setData] = useState(null);
+  const [notes, setNotes] = useState("");
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
 
   function addDeletedDateRangeId(id) {
@@ -167,7 +168,7 @@ function SeasonForm({ seasonId, level }) {
         )}
 
         {/* TODO: add Public Notes for v3 */}
-        <InternalNotes />
+        <InternalNotes notes={notes} setNotes={setNotes} />
         <Buttons approver={approver} />
       </Offcanvas.Body>
     </DataContext.Provider>
