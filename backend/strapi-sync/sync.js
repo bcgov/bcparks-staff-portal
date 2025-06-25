@@ -92,7 +92,7 @@ export async function fetchAllModels() {
     {
       endpoint: "/park-operations",
       model: "park-operation",
-      fields: null,
+      fields: [{ relation: "protectedArea", fields: ["orcs"] }],
       items: [],
     },
     {
@@ -152,7 +152,20 @@ export async function fetchAllModels() {
 
       if (item.fields) {
         for (const field of item.fields) {
-          params.append(`populate[${field}][fields]`, "id");
+          if (typeof field === "string") {
+            params.append(`populate[${field}][fields]`, "id");
+          } else if (
+            typeof field === "object" &&
+            field.relation &&
+            field.fields
+          ) {
+            field.fields.forEach((nestedField, index) => {
+              params.append(
+                `populate[${field.relation}][fields][${index}]`,
+                nestedField,
+              );
+            });
+          }
         }
       }
       item.items = await getData(currentUrl, params);
@@ -176,7 +189,7 @@ export async function createOrUpdatePark(item) {
     dbItem.managementAreas = item.mgmtAreaAndSection;
     // Update it to false if inReservationSystem from Strapi returns null
     dbItem.inReservationSystem =
-      item.attributes.parkOperation.inReservationSystem ?? false;
+      item.parkOperation.inReservationSystem ?? false;
 
     await dbItem.save();
   } else {
@@ -187,8 +200,7 @@ export async function createOrUpdatePark(item) {
       dateableId: dateable.id,
       strapiId: item.id,
       managementAreas: item.mgmtAreaAndSection,
-      inReservationSystem:
-        item.attributes.parkOperation.inReservationSystem ?? false,
+      inReservationSystem: item.parkOperation.inReservationSystem ?? false,
     };
 
     dbItem = await createModel(Park, data);
@@ -766,6 +778,7 @@ export async function syncData() {
   const parkData = getStrapiModelData(strapiData, "protected-area");
   const mgmtAreaData = getStrapiModelData(strapiData, "management-area");
   const sectionData = getStrapiModelData(strapiData, "section");
+  const parkOperationData = getStrapiModelData(strapiData, "park-operation");
 
   // Add mgmt area and section data to parkData
   parkData.items = parkData.items.map((park) => {
@@ -793,9 +806,21 @@ export async function syncData() {
       };
     });
 
+    // Add parkOperation data to the parkData
+    const parkOperationLookup = Object.fromEntries(
+      parkOperationData.items.map((item) => [item.id, item]),
+    );
+    const parkOperationAttributes =
+      parkOperationLookup[park.attributes.parkOperation.data?.id] || {};
+    const parkOperation = parkOperationAttributes.attributes || {};
+    const { inReservationSystem } = parkOperation;
+
     return {
       ...park,
       mgmtAreaAndSection,
+      parkOperation: {
+        inReservationSystem,
+      },
     };
   });
 
