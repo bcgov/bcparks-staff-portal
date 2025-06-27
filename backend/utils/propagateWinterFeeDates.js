@@ -17,8 +17,9 @@ import consolidateRanges from "./consolidateDateRanges.js";
 import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
 
 const FRONTCOUNTRY_CAMPING_TYPE_NAME = "Frontcountry campground";
-const WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
-const OPERATING_DATE_TYPE_NAME = "Operation";
+const PARK_WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
+const FEATURE_WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
+const FEATURE_OPERATING_DATE_TYPE_NAME = "Operation";
 
 // Query part helpers
 function seasonsQueryPart(operatingYear) {
@@ -150,8 +151,8 @@ async function getAllFrontcountrySeasons(
  * the operating dates for any Dateables in the Season.
  * @param {Season} season Season record to add winter fee dates for
  * @param {Array} winterDates array of Winter fee DateRanges to add to the Areas and Features
- * @param {number} winterTypeId DB ID of the Winter fee DateType
- * @param {number} operatingTypeId DB ID of the Operation dates DateType
+ * @param {number} featureWinterTypeId DB ID of the Area/Feature-level Winter fee DateType
+ * @param {number} featureOperatingTypeId DB ID of the Area/Feature-level Operation dates DateType
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Array | boolean>} Array of results from bulkCreate
  * for the winter fee DateRanges, or false if no dates need to be added
@@ -159,27 +160,27 @@ async function getAllFrontcountrySeasons(
 async function addWinterFeeDatesForSeason(
   season,
   winterDates,
-  winterTypeId,
-  operatingTypeId,
+  featureWinterTypeId,
+  featureOperatingTypeId,
   transaction,
 ) {
-  // If the season has any winter dates already, skip it
+  // If the season has any Area/Feature-level winter dates already, skip it
   const existingWinterDates = await DateRange.count({
     where: {
       seasonId: season.id,
-      dateTypeId: winterTypeId,
+      dateTypeId: featureWinterTypeId,
     },
     transaction,
   });
 
-  // Skip if the season already has winter dates
+  // Skip if the season already has Area/Feature-level winter dates
   if (existingWinterDates) return false;
 
   // Get operating dates for the season
   const operatingDatesResults = await DateRange.findAll({
     where: {
       seasonId: season.id,
-      dateTypeId: operatingTypeId,
+      dateTypeId: featureOperatingTypeId,
     },
     transaction,
   });
@@ -215,7 +216,7 @@ async function addWinterFeeDatesForSeason(
         overlappingDates.map((dateRange) => ({
           seasonId: season.id,
           dateableId,
-          dateTypeId: winterTypeId,
+          dateTypeId: featureWinterTypeId,
           startDate: dateRange.startDate,
           endDate: dateRange.endDate,
         })),
@@ -243,24 +244,38 @@ async function processAreaAndFeatureSeasons(
   const areaAndFeatureSeasons = [...allSeasons.parkArea, ...allSeasons.feature];
 
   // Get the IDs for the DateTypes we need in the queries
-  const winterFeeType = await DateType.findOne({
+
+  // Park-level winter fees
+  const parkLevelWinterFeeType = await DateType.findOne({
     attributes: ["id"],
-    where: { name: WINTER_FEE_DATE_TYPE_NAME },
+    where: { name: PARK_WINTER_FEE_DATE_TYPE_NAME, parkLevel: true },
     transaction,
   });
 
   // Throw an error if the DateType isn't in the DB
-  if (!winterFeeType) {
-    throw new Error("Winter fee DateType not found.");
+  if (!parkLevelWinterFeeType) {
+    throw new Error("Park-level Winter fee DateType not found.");
   }
 
-  const operatingDateType = await DateType.findOne({
+  // Area/Feature-level winter fees
+  const featureLevelWinterFeeType = await DateType.findOne({
     attributes: ["id"],
-    where: { name: OPERATING_DATE_TYPE_NAME },
+    where: { name: FEATURE_WINTER_FEE_DATE_TYPE_NAME, featureLevel: true },
     transaction,
   });
 
-  if (!operatingDateType) {
+  if (!featureLevelWinterFeeType) {
+    throw new Error("Feature-level Winter fee DateType not found.");
+  }
+
+  // Area/Feature-level operating dates
+  const featureLevelOperatingType = await DateType.findOne({
+    attributes: ["id"],
+    where: { name: FEATURE_OPERATING_DATE_TYPE_NAME, featureLevel: true },
+    transaction,
+  });
+
+  if (!featureLevelOperatingType) {
     throw new Error("Operating DateType not found.");
   }
 
@@ -268,7 +283,7 @@ async function processAreaAndFeatureSeasons(
   const parkWinterDates = await DateRange.findAll({
     where: {
       dateableId: park.dateableId,
-      dateTypeId: winterFeeType.id,
+      dateTypeId: parkLevelWinterFeeType.id,
     },
     transaction,
   });
@@ -287,8 +302,8 @@ async function processAreaAndFeatureSeasons(
     const result = await addWinterFeeDatesForSeason(
       season,
       consolidatedWinterDates,
-      winterFeeType.id,
-      operatingDateType.id,
+      featureLevelWinterFeeType.id,
+      featureLevelOperatingType.id,
       transaction,
     );
 
