@@ -17,6 +17,7 @@ import {
   SeasonChangeLog,
   DateChangeLog,
   User,
+  DateRangeAnnual,
 } from "../../models/index.js";
 
 import {
@@ -110,6 +111,26 @@ async function getPreviousSeasonDates(currentSeason) {
     console.error("Error fetching previous season:", error);
     return null;
   }
+}
+
+/**
+ * Returns all DateRangeAnnuals for a given publishableId.
+ * @param {number} publishableId The ID of the Publishable to get DateRange
+ * @returns {Promise<Array>} An array of DateRangeAnnual models with their DateType
+ */
+async function getDateRangeAnnuals(publishableId) {
+  if (!publishableId) return [];
+  return await DateRangeAnnual.findAll({
+    where: { publishableId },
+    attributes: ["id", "isDateRangeAnnual"],
+    include: [
+      {
+        model: DateType,
+        as: "dateType",
+        attributes: ["id", "name"],
+      },
+    ],
+  });
 }
 
 /**
@@ -366,6 +387,11 @@ router.get(
 
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel);
+
+    // Add DateRangeAnnuals to seasonModel and previousSeason
+    seasonModel.dataValues.dateRangeAnnuals = await getDateRangeAnnuals(
+      seasonModel.publishableId,
+    );
 
     const output = { current: seasonModel, previous: previousSeason };
 

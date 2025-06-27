@@ -12,6 +12,10 @@ export default (sequelize) => {
         foreignKey: "dateTypeId",
         as: "dateRanges",
       });
+      DateType.hasOne(models.DateRangeAnnual, {
+        foreignKey: "dateTypeId",
+        as: "dateRangeAnnual",
+      });
     }
   }
   DateType.init(

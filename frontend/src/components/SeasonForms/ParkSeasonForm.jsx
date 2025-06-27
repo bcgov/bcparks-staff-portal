@@ -26,6 +26,7 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
   const park = season.park;
   const currentYear = season.operatingYear;
   const lastYear = currentYear - 1;
+  const dateRangeAnnuals = season.dateRangeAnnuals || [];
 
   // Order of date types to display on the form
   // @TODO: get this from the db in the season endpoint
@@ -175,6 +176,21 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
     });
   }
 
+  function updateDateRangeAnnual(updatedAnnual) {
+    setData((prev) => {
+      const updatedData = cloneDeep(prev);
+      const annuals = updatedData.current.dateRangeAnnuals;
+      const index = annuals.findIndex(
+        (annual) => annual.id === updatedAnnual.id,
+      );
+
+      if (index !== -1) {
+        annuals[index] = { ...annuals[index], ...updatedAnnual };
+      }
+      return updatedData;
+    });
+  }
+
   return (
     <>
       <FormContainer>
@@ -196,6 +212,8 @@ export default function ParkSeasonForm({ season, previousSeasonDates }) {
                 updateDateRange={updateDateRange}
                 addDateRange={addDateRange}
                 removeDateRange={removeDateRange}
+                dateRangeAnnuals={dateRangeAnnuals}
+                updateDateRangeAnnual={updateDateRangeAnnual}
               />
             </div>
           ))}
@@ -235,6 +253,7 @@ ParkSeasonForm.propTypes = {
     park: PropTypes.object.isRequired,
     operatingYear: PropTypes.number.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
+    dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   }).isRequired,
   previousSeasonDates: PropTypes.shape({
     dateRanges: PropTypes.arrayOf(PropTypes.object).isRequired,

@@ -137,7 +137,22 @@ export default function DateRangeFields({
   hasMultipleDates = true,
   dateableId,
   dateType,
+  dateRangeAnnuals,
+  updateDateRangeAnnual
 }) {
+  // Functions
+  // find the matching dateRangeAnnual for this dateType
+  const matchedDateRangeAnnual = useMemo(() => {
+    if (!dateType || !dateRangeAnnuals) return null;
+
+    return dateRangeAnnuals.find(
+      (dateRangeAnnual) => dateRangeAnnual.dateType?.name === dateType.name,
+    );
+  }, [dateType, dateRangeAnnuals]);
+
+  // Constants
+  const isDateRangeAnnual = matchedDateRangeAnnual?.isDateRangeAnnual ?? false;
+
   return (
     <>
       {dateRanges.map((dateRange) => (
@@ -164,9 +179,11 @@ export default function DateRangeFields({
       {/* TODO: CMS-872 - use isDateRangeAnnual */}
       <Form.Check
         type="checkbox"
-        id="same-dates-every-year"
+        id={`date-range-annual-${dateType.id}`}
         name="sameDatesEveryYear"
         label="Dates are the same every year"
+        checked={isDateRangeAnnual}
+        onChange={() => updateDateRangeAnnual(matchedDateRangeAnnual)}
       />
     </>
   );
@@ -185,5 +202,11 @@ DateRangeFields.propTypes = {
       endDate: PropTypes.instanceOf(Date),
     }),
   ).isRequired,
+  dateType: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    displayName: PropTypes.string.isRequired,
+  }).isRequired,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   hasMultipleDates: PropTypes.bool,
 };
