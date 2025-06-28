@@ -24,6 +24,7 @@ export default function FeatureSeasonForm({
   const feature = season.feature;
   const currentYear = season.operatingYear;
   const lastYear = currentYear - 1;
+  const dateRangeAnnuals = season.dateRangeAnnuals || [];
 
   const datesByType = useMemo(
     () => groupBy(feature.dateable.dateRanges, "dateType.name"),
@@ -137,6 +138,22 @@ export default function FeatureSeasonForm({
     });
   }
 
+  // Updates the isDateRangeAnnual state in the season data object
+  function updateDateRangeAnnual(updatedAnnual) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+      const annuals = updatedData.current.dateRangeAnnuals;
+      const index = annuals.findIndex(
+        (annual) => annual.id === updatedAnnual.id,
+      );
+
+      if (index !== -1) {
+        annuals[index] = { ...annuals[index], ...updatedAnnual };
+      }
+      return updatedData;
+    });
+  }
+
   return (
     <>
       <FormContainer>
@@ -161,6 +178,8 @@ export default function FeatureSeasonForm({
                 updateDateRange={updateDateRange}
                 addDateRange={addDateRange}
                 removeDateRange={removeDateRange}
+                dateRangeAnnuals={dateRangeAnnuals}
+                updateDateRangeAnnual={updateDateRangeAnnual}
               />
             </div>
           ))}
@@ -199,6 +218,7 @@ FeatureSeasonForm.propTypes = {
     feature: PropTypes.object.isRequired,
     operatingYear: PropTypes.number.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
+    dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   }).isRequired,
 
   previousSeasonDates: PropTypes.arrayOf(

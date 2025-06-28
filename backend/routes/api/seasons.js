@@ -12,6 +12,7 @@ import {
   Feature,
   DateType,
   DateRange,
+  DateRangeAnnual,
   Dateable,
   ParkArea,
   SeasonChangeLog,
@@ -133,6 +134,26 @@ async function getAllDateTypes(where = {}) {
     attributes: ["id", "name", "startDateLabel", "endDateLabel", "description"],
 
     where,
+  });
+}
+
+/**
+ * Returns all DateRangeAnnuals for a given publishableId.
+ * @param {number} publishableId The ID of the Publishable to get DateRange
+ * @returns {Promise<Array>} An array of DateRangeAnnual models with their DateType
+ */
+async function getDateRangeAnnuals(publishableId) {
+  if (!publishableId) return [];
+  return await DateRangeAnnual.findAll({
+    where: { publishableId },
+    attributes: ["id", "isDateRangeAnnual"],
+    include: [
+      {
+        model: DateType,
+        as: "dateType",
+        attributes: ["id", "name"],
+      },
+    ],
   });
 }
 
@@ -283,6 +304,11 @@ router.get(
       dateTypesByName["Backcountry registration"],
     ];
 
+    // Add DateRangeAnnuals to seasonModel
+    seasonModel.dataValues.dateRangeAnnuals = await getDateRangeAnnuals(
+      seasonModel.publishableId,
+    );
+
     const output = {
       current: seasonModel,
       previous: previousSeason,
@@ -378,6 +404,11 @@ router.get(
       icon = firstFeature.featureType.icon;
       featureTypeName = firstFeature.featureType.name;
     }
+
+    // Add DateRangeAnnuals to seasonModel
+    seasonModel.dataValues.dateRangeAnnuals = await getDateRangeAnnuals(
+      seasonModel.publishableId,
+    );
 
     const output = {
       current: seasonModel,
@@ -477,6 +508,11 @@ router.get(
       dateTypesByName["Winter fee"],
       dateTypesByName.Operating,
     ];
+
+    // Add DateRangeAnnuals to seasonModel
+    seasonModel.dataValues.dateRangeAnnuals = await getDateRangeAnnuals(
+      seasonModel.publishableId,
+    );
 
     const output = {
       current: seasonModel,

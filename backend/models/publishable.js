@@ -34,6 +34,11 @@ export default (sequelize) => {
         foreignKey: "publishableId",
         as: "gateDetail",
       });
+
+      Publishable.hasMany(models.DateRangeAnnual, {
+        foreignKey: "publishableId",
+        as: "dateRangeAnnual",
+      });
     }
   }
   Publishable.init(

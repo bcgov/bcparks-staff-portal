@@ -142,9 +142,34 @@ export default function DateRangeFields({
   updateDateRange,
   removeDateRange,
   addDateRange,
-  hasMultipleDates = true,
   dateType,
+  dateRangeAnnuals,
+  updateDateRangeAnnual,
+  hasMultipleDates = true,
 }) {
+  // Functions
+
+  // find the matching dateRangeAnnual for this dateType
+  const matchedDateRangeAnnual = useMemo(() => {
+    if (!dateType || !dateRangeAnnuals) return null;
+
+    return dateRangeAnnuals.find(
+      (dateRangeAnnual) => dateRangeAnnual.dateType?.name === dateType.name,
+    );
+  }, [dateType, dateRangeAnnuals]);
+
+  const isDateRangeAnnual = matchedDateRangeAnnual?.isDateRangeAnnual ?? false;
+
+  // toggle isDateRangeAnnual state
+  function handleDateRangeAnnualChange() {
+    if (!matchedDateRangeAnnual) return;
+
+    updateDateRangeAnnual({
+      ...matchedDateRangeAnnual,
+      isDateRangeAnnual: !isDateRangeAnnual,
+    });
+  }
+
   return (
     <>
       {dateRanges.map((dateRange) => (
@@ -168,12 +193,13 @@ export default function DateRangeFields({
         </button>
       )}
 
-      {/* TODO: CMS-872 - use isDateRangeAnnual */}
       <Form.Check
         type="checkbox"
-        id="same-dates-every-year"
-        name="sameDatesEveryYear"
+        id={`date-range-annual-${dateType.id}`}
+        name="DateRangeAnnual"
         label="Dates are the same every year"
+        checked={isDateRangeAnnual}
+        onChange={handleDateRangeAnnualChange}
       />
     </>
   );
@@ -192,6 +218,16 @@ DateRangeFields.propTypes = {
       endDate: PropTypes.instanceOf(Date),
     }),
   ).isRequired,
+  updateDateRange: PropTypes.func,
+  removeDateRange: PropTypes.func,
+  addDateRange: PropTypes.func,
+  dateType: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    displayName: PropTypes.string,
+  }).isRequired,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+  updateDateRangeAnnual: PropTypes.func.isRequired,
   hasMultipleDates: PropTypes.bool,
   dateType: PropTypes.shape({
     id: PropTypes.number.isRequired,
