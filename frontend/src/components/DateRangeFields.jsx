@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 
 import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
 
-function DateRange({ dateRange, updateDateRange, removeDateRange }) {
+function DateRange({ dateRange, updateDateRange, removeDateRange, isDateRangeAnnual }) {
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
@@ -75,6 +75,7 @@ function DateRange({ dateRange, updateDateRange, removeDateRange }) {
             dateFormat="EEE, MMM d, yyyy"
             // @TODO: the dropdown makes chrome hang??
             showMonthYearDropdown
+            disabled={isDateRangeAnnual}
           />
 
           <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
@@ -106,6 +107,7 @@ function DateRange({ dateRange, updateDateRange, removeDateRange }) {
             dateFormat="EEE, MMM d, yyyy"
             // @TODO: the dropdown makes chrome hang??
             showMonthYearDropdown
+            disabled={isDateRangeAnnual}
           />
 
           <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
@@ -135,6 +137,7 @@ DateRange.propTypes = {
   }).isRequired,
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
+  isDateRangeAnnual: PropTypes.bool.isRequired,
 };
 
 export default function DateRangeFields({
@@ -178,6 +181,7 @@ export default function DateRangeFields({
           dateRange={dateRange}
           updateDateRange={updateDateRange}
           removeDateRange={removeDateRange}
+          isDateRangeAnnual={isDateRangeAnnual}
         />
       ))}
 
@@ -218,9 +222,9 @@ DateRangeFields.propTypes = {
       endDate: PropTypes.instanceOf(Date),
     }),
   ).isRequired,
-  updateDateRange: PropTypes.func,
-  removeDateRange: PropTypes.func,
-  addDateRange: PropTypes.func,
+  updateDateRange: PropTypes.func.isRequired,
+  removeDateRange: PropTypes.func.isRequired,
+  addDateRange: PropTypes.func.isRequired,
   dateType: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
@@ -229,11 +233,4 @@ DateRangeFields.propTypes = {
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
   hasMultipleDates: PropTypes.bool,
-  dateType: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-  }).isRequired,
-  updateDateRange: PropTypes.func.isRequired,
-  removeDateRange: PropTypes.func.isRequired,
-  addDateRange: PropTypes.func.isRequired,
 };
