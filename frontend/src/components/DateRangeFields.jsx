@@ -12,8 +12,6 @@ import PropTypes from "prop-types";
 import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
 
 function DateRange({ dateRange, updateDateRange, removeDateRange }) {
-  // const { setData } = useContext(DataContext);
-
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
