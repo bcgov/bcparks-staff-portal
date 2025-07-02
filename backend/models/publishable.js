@@ -37,7 +37,7 @@ export default (sequelize) => {
 
       Publishable.hasMany(models.DateRangeAnnual, {
         foreignKey: "publishableId",
-        as: "dateRangeAnnual",
+        as: "dateRangeAnnuals",
       });
     }
   }

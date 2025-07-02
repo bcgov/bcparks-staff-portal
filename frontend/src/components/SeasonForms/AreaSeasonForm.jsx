@@ -31,6 +31,7 @@ export default function AreaSeasonForm({
   const parkArea = season.parkArea;
   const currentYear = season.operatingYear;
   const lastYear = currentYear - 1;
+  const dateRangeAnnuals = season.dateRangeAnnuals || [];
 
   const areaDatesByType = useMemo(
     () => groupBy(parkArea.dateable.dateRanges, "dateType.name"),
@@ -152,6 +153,22 @@ export default function AreaSeasonForm({
 
       updatedData.current.readyToPublish = value;
 
+      return updatedData;
+    });
+  }
+
+  // Updates the isDateRangeAnnual state in the season data object
+  function updateDateRangeAnnual(updatedAnnual) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+      const annuals = updatedData.current.dateRangeAnnuals;
+      const index = annuals.findIndex(
+        (annual) => annual.id === updatedAnnual.id,
+      );
+
+      if (index !== -1) {
+        annuals[index] = { ...annuals[index], ...updatedAnnual };
+      }
       return updatedData;
     });
   }
@@ -327,6 +344,8 @@ export default function AreaSeasonForm({
                 updateDateRange={updateAreaDateRange}
                 addDateRange={addAreaDateRange}
                 removeDateRange={removeAreaDateRange}
+                dateRangeAnnuals={dateRangeAnnuals}
+                updateDateRangeAnnual={updateDateRangeAnnual}
               />
             </div>
           ))}
@@ -417,6 +436,7 @@ AreaSeasonForm.propTypes = {
     parkArea: PropTypes.object.isRequired,
     operatingYear: PropTypes.number.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
+    dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   }).isRequired,
 
   previousSeasonDates: PropTypes.arrayOf(
