@@ -89,11 +89,39 @@ function EditAndReview() {
         }
 
         // filter by status
-        if (
-          filters.status.length > 0 &&
-          !filters.status.includes(park.status)
-        ) {
-          return false;
+        if (filters.status.length > 0) {
+          // gather all statuses to check
+          const statusesToCheck = [];
+
+          // check park.currentSeason
+          if (park.currentSeason?.status) {
+            statusesToCheck.push(park.currentSeason.status);
+          }
+
+          // check parkAreas.currentSeason
+          if (Array.isArray(park.parkAreas)) {
+            park.parkAreas.forEach((parkArea) => {
+              if (parkArea.currentSeason?.status) {
+                statusesToCheck.push(parkArea.currentSeason.status);
+              }
+            });
+          }
+
+          // check features.currentSeason
+          if (Array.isArray(park.features)) {
+            park.features.forEach((feature) => {
+              if (feature.currentSeason?.status) {
+                statusesToCheck.push(feature.currentSeason.status);
+              }
+            });
+          }
+
+          // if none of the statuses match, filter out
+          if (
+            !statusesToCheck.some((status) => filters.status.includes(status))
+          ) {
+            return false;
+          }
         }
 
         // TODO: CMS-324
@@ -126,13 +154,40 @@ function EditAndReview() {
         // filter by date types
         if (
           filters.dateTypes.length > 0 &&
-          !filters.dateTypes.some((filterDateType) =>
-            park.seasons.some((season) =>
-              season.dateRanges.some(
+          !filters.dateTypes.some((filterDateType) => {
+            // check park.seasons and dateTypes
+            const hasParkDateType = park.seasons?.some((season) =>
+              season.dateRanges?.some(
                 (dateRange) => dateRange.dateType.id === filterDateType.id,
               ),
-            ),
-          )
+            );
+
+            if (hasParkDateType) return true;
+
+            // check parkAreas.seasons and dateTypes
+            const hasParkAreaDateType = park.parkAreas?.some((parkArea) =>
+              parkArea.seasons?.some((season) =>
+                season.dateRanges?.some(
+                  (dateRange) => dateRange.dateType.id === filterDateType.id,
+                ),
+              ),
+            );
+
+            if (hasParkAreaDateType) return true;
+
+            // check features.seasons and dateTypes
+            const hasFeatureDateType = park.features?.some((feature) =>
+              feature.seasons?.some((season) =>
+                season.dateRanges?.some(
+                  (dateRange) => dateRange.dateType.id === filterDateType.id,
+                ),
+              ),
+            );
+
+            if (hasFeatureDateType) return true;
+
+            return false;
+          })
         ) {
           return false;
         }
@@ -140,10 +195,16 @@ function EditAndReview() {
         // filter by feature types
         if (
           filters.featureTypes.length > 0 &&
-          !filters.featureTypes.some((filterFeatureType) =>
-            park.features.some(
-              (feature) => feature.featureType.id === filterFeatureType.id,
-            ),
+          !filters.featureTypes.some(
+            (filterFeatureType) =>
+              // check features.featureTypes
+              park.features.some(
+                (feature) => feature.featureType.id === filterFeatureType.id,
+              ) ||
+              // check parkAreas.featureTypes
+              park.parkAreas?.some(
+                (parkArea) => parkArea.featureType.id === filterFeatureType.id,
+              ),
           )
         ) {
           return false;
