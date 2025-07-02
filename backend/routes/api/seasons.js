@@ -384,13 +384,24 @@ router.get(
       featureDateTypesByName["Backcountry registration"],
     ];
 
+    let icon = null;
+    let featureTypeName = null;
+
+    // If there are features in the Park Area, use the first feature's type
+    if (seasonModel.parkArea.features.length > 0) {
+      const firstFeature = seasonModel.parkArea.features[0];
+
+      icon = firstFeature.featureType.icon;
+      featureTypeName = firstFeature.featureType.name;
+    }
+
     const output = {
       current: seasonModel,
       previous: previousSeason,
       areaDateTypes: orderedAreaDateTypes,
       featureDateTypes: orderedFeatureDateTypes,
-      icon: null, // @TODO: Get icon from FeatureType
-      featureTypeName: null, // @TODO: Get FeatureType name
+      icon,
+      featureTypeName,
       name: seasonModel.parkArea.name,
     };
 
