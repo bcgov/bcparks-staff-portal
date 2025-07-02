@@ -13,7 +13,6 @@ import homeRoutes from "./routes/home.js";
 import userRoutes from "./routes/api/user.js";
 import parkRoutes from "./routes/api/parks.js";
 import seasonRoutes from "./routes/api/seasons.js";
-import winterSeasonRoutes from "./routes/api/winter-seasons.js";
 import exportRoutes from "./routes/api/export.js";
 import publishRoutes from "./routes/api/publish.js";
 import filterOptionsRoutes from "./routes/api/filter-options.js";
@@ -70,7 +69,6 @@ apiRouter.use("/user", userRoutes);
 apiRouter.use("/parks", parkRoutes);
 apiRouter.use("/seasons", seasonRoutes);
 apiRouter.use("/export", exportRoutes);
-apiRouter.use("/winter-fees", winterSeasonRoutes);
 apiRouter.use("/publish", publishRoutes);
 apiRouter.use("/filter-options", filterOptionsRoutes);
 
