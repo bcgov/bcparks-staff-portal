@@ -283,8 +283,8 @@ router.get(
       current: seasonModel,
       previous: previousSeason,
       dateTypes: orderedDateTypes,
-      icon: null, // @TODO: Get icon from FeatureType
-      featureTypeName: null, // @TODO: Get FeatureType name
+      icon: seasonModel.feature.featureType.icon,
+      featureTypeName: seasonModel.feature.featureType.name,
       name: seasonModel.feature.name,
     };
 
