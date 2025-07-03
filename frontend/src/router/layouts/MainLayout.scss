@@ -27,6 +27,10 @@
     flex: 1;
   }
 
+  & > .alert {
+    background-color: var(--support-border-color-danger);
+  }
+
   & > footer {
     min-height: 4.1rem;
 

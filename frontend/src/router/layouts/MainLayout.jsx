@@ -11,6 +11,9 @@ import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useFlashMessage from "@/hooks/useFlashMessage";
+import { Alert } from "react-bootstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
 
 export default function MainLayout() {
   const { logOut } = useAccess();
@@ -18,6 +21,11 @@ export default function MainLayout() {
 
   // Fetch the user name to display in the header
   const userDetails = useApiGet("/user");
+
+  // Check if the app is running in production
+  const isProduction =
+    typeof window !== "undefined" &&
+    window.location.hostname === "staff.bcparks.ca";
 
   // Show or hide the touch menu
   const [showTouchMenu, setShowTouchMenu] = useState(false);
@@ -93,6 +101,17 @@ export default function MainLayout() {
           logOut={logOut}
           userName={userName}
         />
+
+        {!isProduction && (
+          <Alert
+            variant="danger"
+            className="text-center text-white border-0 rounded-0 mb-0"
+          >
+            <FontAwesomeIcon className="me-2" icon={faCircleExclamation} />
+            Testing environment only. Information entered will not appear on the
+            live reservation site or on bcparks.ca.
+          </Alert>
+        )}
 
         <main className="p-0 d-flex flex-column flex-md-row">
           <NavSidebar />
