@@ -27,6 +27,7 @@ import {
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+import checkUserRoles from "../../utils/checkUserRoles.js";
 
 const router = Router();
 
@@ -523,9 +524,17 @@ router.post(
   sanitizePayload,
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
-    const { notes = "", deletedDateRangeIds = [], readyToPublish } = req.body;
+    const { notes = "", deletedDateRangeIds = [] } = req.body;
+    let { readyToPublish } = req.body;
 
-    // @TODO: If the user isn't an approver, they shouldn't be able to set readyToPublish
+    // If the user isn't an approver, they shouldn't be able to set readyToPublish
+    const isApprover = checkUserRoles(req.auth, ["doot-approver"]);
+
+    if (!isApprover) {
+      // Clear the value from the request body
+      // This will prevent the user from changing readyToPublish
+      readyToPublish = null;
+    }
 
     const transaction = await sequelize.transaction();
 
@@ -544,6 +553,9 @@ router.post(
 
       const newStatus = STATUS.REQUESTED;
 
+      // If readyToPublish is null or undefined, set it to the current value
+      const newReadyToPublish = readyToPublish ?? season.readyToPublish;
+
       // Create season change log with the notes
       const seasonChangeLog = await SeasonChangeLog.create(
         {
@@ -553,7 +565,7 @@ router.post(
           statusOldValue: season.status,
           statusNewValue: newStatus,
           readyToPublishOldValue: season.readyToPublish,
-          readyToPublishNewValue: readyToPublish,
+          readyToPublishNewValue: newReadyToPublish,
         },
         { transaction },
       );
