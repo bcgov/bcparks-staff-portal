@@ -16,9 +16,11 @@ import {
   DateChangeLog,
   Section,
   ManagementArea,
+  GateDetail,
 } from "../models/index.js";
 
 export async function deleteAllData() {
+  await GateDetail.destroy({ where: {} });
   await Section.destroy({ where: {} });
   await ManagementArea.destroy({ where: {} });
   await DateChangeLog.destroy({ where: {} });

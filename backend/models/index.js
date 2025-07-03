@@ -13,6 +13,7 @@ import DateRangeModel from "./daterange.js";
 import SectionModel from "./section.js";
 import ManagementAreaModel from "./managementarea.js";
 import DateRangeAnnualModel from "./daterangeannual.js";
+import GateDetailModel from "./gatedetail.js";
 import AccessGroupModel from "./accessgroup.js";
 import UserAccessGroupModel from "./useraccessgroup.js";
 import AccessGroupParkModel from "./accessgrouppark.js";
@@ -36,6 +37,7 @@ const DateRange = DateRangeModel(sequelize);
 const Section = SectionModel(sequelize);
 const ManagementArea = ManagementAreaModel(sequelize);
 const DateRangeAnnual = DateRangeAnnualModel(sequelize);
+const GateDetail = GateDetailModel(sequelize);
 const AccessGroup = AccessGroupModel(sequelize);
 const UserAccessGroup = UserAccessGroupModel(sequelize);
 const AccessGroupPark = AccessGroupParkModel(sequelize);
@@ -57,6 +59,7 @@ const models = {
   Section,
   ManagementArea,
   DateRangeAnnual,
+  GateDetail,
   AccessGroup,
   UserAccessGroup,
   AccessGroupPark,
@@ -86,6 +89,7 @@ export {
   Section,
   ManagementArea,
   DateRangeAnnual,
+  GateDetail,
   AccessGroup,
   UserAccessGroup,
   AccessGroupPark,

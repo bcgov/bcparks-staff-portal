@@ -23,6 +23,7 @@ import {
   Section,
   ManagementArea,
   DateRangeAnnual,
+  GateDetail,
   AccessGroup,
   SeasonChangeLog,
   DateChangeLog,
@@ -257,6 +258,26 @@ const ParkResource = {
   },
 };
 
+const GateDetailResource = {
+  resource: GateDetail,
+  options: {
+    listProperties: [
+      "id",
+      "publishableId",
+      "hasGate",
+      "gateOpenTime",
+      "gateCloseTime",
+      "gateOpensAtDawn",
+      "gateClosesAtDusk",
+      "gateOpen24Hours",
+      "isTimeRangeAnnual",
+      "createdAt",
+      "updatedAt",
+    ],
+  },
+};
+
+
 function getParkResource() {
   if (process.env.DEV_TEST_MODE === "true") {
     return ParkResource;
@@ -283,6 +304,7 @@ const adminOptions = {
     Section,
     ManagementArea,
     DateRangeAnnual,
+    GateDetailResource,
     AccessGroup,
     // UserAccessGroup, -- doesn't work with the current version of AdminJS
     // AccessGroupPark, -- doesn't work with the current version of AdminJS

@@ -128,7 +128,7 @@ export async function fetchAllModels() {
     {
       endpoint: "/park-operation-dates",
       model: "park-operation-date",
-      fields: ["protectedArea"],
+      fields: [{ relation: "protectedArea", fields: ["orcs"] }],
       items: [],
     },
     {
