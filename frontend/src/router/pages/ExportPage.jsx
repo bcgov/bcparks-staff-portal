@@ -4,7 +4,7 @@ import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useApiGet } from "@/hooks/useApi";
 import LoadingBar from "@/components/LoadingBar";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
+import useFlashMessage from "@/hooks/useFlashMessage";
 import FlashMessage from "@/components/FlashMessage";
 
 import "./ExportPage.scss";
@@ -90,14 +90,14 @@ function ExportPage() {
 
       saveAs(blob, filename);
 
-      successFlash.openFlashMessage(
+      successFlash.open(
         "Export complete",
         "Check your downloads for the Excel document.",
       );
     } catch (csvError) {
       console.error("Error generating CSV", csvError);
 
-      errorFlash.openFlashMessage(
+      errorFlash.open(
         "Export failed",
         "There was an error generating the Excel document. Please try again.",
       );
@@ -128,17 +128,17 @@ function ExportPage() {
     <div className="container">
       <div className="page export">
         <FlashMessage
-          title={successFlash.flashTitle}
-          message={successFlash.flashMessage}
-          isVisible={successFlash.isFlashOpen}
-          onClose={successFlash.handleFlashClose}
+          title={successFlash.title}
+          message={successFlash.message}
+          isVisible={successFlash.isOpen}
+          onClose={successFlash.close}
         />
 
         <FlashMessage
-          title={errorFlash.flashTitle}
-          message={errorFlash.flashMessage}
-          isVisible={errorFlash.isFlashOpen}
-          onClose={errorFlash.handleFlashClose}
+          title={errorFlash.title}
+          message={errorFlash.message}
+          isVisible={errorFlash.isOpen}
+          onClose={errorFlash.close}
           variant="error"
         />
 

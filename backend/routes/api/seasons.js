@@ -318,6 +318,7 @@ router.get(
       icon: seasonModel.feature.featureType.icon,
       featureTypeName: seasonModel.feature.featureType.name,
       name: seasonModel.feature.name,
+      parkName: seasonModel.feature.park.name,
     };
 
     res.json(output);
@@ -422,6 +423,7 @@ router.get(
       icon,
       featureTypeName,
       name: seasonModel.parkArea.name,
+      parkName: seasonModel.parkArea.park.name,
     };
 
     res.json(output);

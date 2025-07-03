@@ -8,9 +8,13 @@ import { useApiGet } from "@/hooks/useApi";
 import NavSidebar from "@/components/NavSidebar.jsx";
 import TouchMenu from "@/components/TouchMenu";
 import LoadingBar from "@/components/LoadingBar";
+import FlashMessage from "@/components/FlashMessage";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
+import useFlashMessage from "@/hooks/useFlashMessage";
 
 export default function MainLayout() {
   const { logOut } = useAccess();
+  const globalFlashMessage = useFlashMessage();
 
   // Fetch the user name to display in the header
   const userDetails = useApiGet("/user");
@@ -24,96 +28,113 @@ export default function MainLayout() {
     return userDetails.data.name;
   }, [userDetails]);
 
+  const flashMessageContextValue = useMemo(
+    () => ({
+      open: globalFlashMessage.open,
+      close: globalFlashMessage.close,
+    }),
+    [globalFlashMessage.open, globalFlashMessage.close],
+  );
+
   return (
-    <div className="layout main">
-      <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
-        <Link
-          to={`/`}
-          className="d-inline-block d-flex align-items-center align-items-md-end logo-link"
-          href="/"
-        >
-          <img
-            className="d-block d-md-none"
-            src={logoVertical}
-            height="60"
-            alt="BC Parks logo"
-          />
-          {/* swap logo images on larger screens */}
-          <img
-            className="d-none d-md-block"
-            src={logo}
-            height="60"
-            alt="BC Parks logo"
-          />
+    <FlashMessageContext.Provider value={flashMessageContextValue}>
+      <div className="layout main">
+        <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
+          <Link
+            to={`/`}
+            className="d-inline-block d-flex align-items-center align-items-md-end logo-link"
+            href="/"
+          >
+            <img
+              className="d-block d-md-none"
+              src={logoVertical}
+              height="60"
+              alt="BC Parks logo"
+            />
+            {/* swap logo images on larger screens */}
+            <img
+              className="d-none d-md-block"
+              src={logo}
+              height="60"
+              alt="BC Parks logo"
+            />
 
-          <div className="app-title text-white mx-3 mx-md-1">
-            Staff web portal
+            <div className="app-title text-white mx-3 mx-md-1">
+              Staff web portal
+            </div>
+          </Link>
+
+          <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
+            <div className="user-name me-3">{userName}</div>
+
+            <button
+              type="button"
+              onClick={logOut}
+              className="btn btn-text text-white"
+            >
+              Logout
+            </button>
           </div>
-        </Link>
-
-        <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
-          <div className="user-name me-3">{userName}</div>
 
           <button
+            className="navbar-toggler d-block d-lg-none"
             type="button"
-            onClick={logOut}
-            className="btn btn-text text-white"
+            data-toggle="collapse"
+            data-target="#touch-menu"
+            onClick={() => setShowTouchMenu(!showTouchMenu)}
           >
-            Logout
+            <span className="navbar-toggler-icon"></span>
           </button>
-        </div>
+        </header>
 
-        <button
-          className="navbar-toggler d-block d-lg-none"
-          type="button"
-          data-toggle="collapse"
-          data-target="#touch-menu"
-          onClick={() => setShowTouchMenu(!showTouchMenu)}
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-      </header>
+        <TouchMenu
+          show={showTouchMenu}
+          closeMenu={() => setShowTouchMenu(false)}
+          logOut={logOut}
+          userName={userName}
+        />
 
-      <TouchMenu
-        show={showTouchMenu}
-        closeMenu={() => setShowTouchMenu(false)}
-        logOut={logOut}
-        userName={userName}
-      />
+        <main className="p-0 d-flex flex-column flex-md-row">
+          <NavSidebar />
 
-      <main className="p-0 d-flex flex-column flex-md-row">
-        <NavSidebar />
-
-        <div className="flex-fill">
-          {/*
+          <div className="flex-fill">
+            {/*
             Don't render the body until userDetails are loaded.
             The body makes API requests, and race conditions could create duplicate User records.
           */}
-          {userDetails.loading ? (
-            <div className="container mt-3">
-              <LoadingBar />
-            </div>
-          ) : (
-            <Outlet />
-          )}
-        </div>
-      </main>
+            {userDetails.loading ? (
+              <div className="container mt-3">
+                <LoadingBar />
+              </div>
+            ) : (
+              <Outlet />
+            )}
+          </div>
+        </main>
 
-      <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">
-        <div className="quick-links d-flex flex-column flex-md-row me-md-4">
-          <span>Quick links:</span>
+        <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">
+          <div className="quick-links d-flex flex-column flex-md-row me-md-4">
+            <span>Quick links:</span>
 
-          <a href="https://attendance-revenue.bcparks.ca/">
-            Attendance and Revenue
-          </a>
+            <a href="https://attendance-revenue.bcparks.ca/">
+              Attendance and Revenue
+            </a>
 
-          <a href="https://reserve-admin.bcparks.ca/dayuse/">
-            Day-use Pass admin
-          </a>
+            <a href="https://reserve-admin.bcparks.ca/dayuse/">
+              Day-use Pass admin
+            </a>
 
-          <a href="mailto:parksweb@gov.bc.ca">Contact us</a>
-        </div>
-      </footer>
-    </div>
+            <a href="mailto:parksweb@gov.bc.ca">Contact us</a>
+          </div>
+        </footer>
+      </div>
+
+      <FlashMessage
+        title={globalFlashMessage.title}
+        message={globalFlashMessage.message}
+        isVisible={globalFlashMessage.isOpen}
+        onClose={globalFlashMessage.close}
+      />
+    </FlashMessageContext.Provider>
   );
 }
