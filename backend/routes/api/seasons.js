@@ -27,6 +27,7 @@ import {
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+import checkUserRoles from "../../utils/checkUserRoles.js";
 
 const router = Router();
 
@@ -80,11 +81,13 @@ async function updateStatus(
 /**
  * Returns the previous Season's dates for a given current Season.
  * @param {Season} currentSeason The current season object with operatingYear and publishableId
+ * @param {Object} dateTypeWhere Optional where clause for filtering DateTypes
  * @returns {Season} The previous season model with its Dateable and DateRanges
  */
-async function getPreviousSeasonDates(currentSeason) {
+async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
   try {
-    return await Season.findOne({
+    // @TODO: the previous season dates here are not the same as the /park endpoint
+    const prevSeason = await Season.findOne({
       where: {
         operatingYear: currentSeason.operatingYear - 1,
         publishableId: currentSeason.publishableId,
@@ -99,16 +102,38 @@ async function getPreviousSeasonDates(currentSeason) {
             {
               model: DateType,
               as: "dateType",
+              required: false,
               attributes: ["id", "name"],
+
+              // Filter DateTypes by level
+              where: dateTypeWhere,
             },
           ],
         },
       ],
     });
+
+    // If no previous season exists in the DB, return an empty array
+    if (!prevSeason) return [];
+
+    return prevSeason.dateRanges;
   } catch (error) {
     console.error("Error fetching previous season:", error);
-    return null;
+    throw error;
   }
+}
+
+/**
+ * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
+ * @param {Object} [where={}] Where clause to filter DateTypes (by level, etc.)
+ * @returns {Promise<Array<DateType>>} Array of DateTypes
+ */
+async function getAllDateTypes(where = {}) {
+  return DateType.findAll({
+    attributes: ["id", "name", "startDateLabel", "endDateLabel", "description"],
+
+    where,
+  });
 }
 
 /**
@@ -147,12 +172,12 @@ function dateRangesQueryPart(seasonId) {
   return {
     model: DateRange,
     as: "dateRanges",
-    attributes: ["id", "startDate", "endDate"],
+    attributes: ["id", "startDate", "endDate", "dateTypeId", "dateableId"],
     where: {
       seasonId,
     },
     required: false,
-    order: [["startDate", "ASC"]],
+    order: [["startDate", "ASC"]], // @TODO: This doesn't work?
     include: [
       {
         model: DateType,
@@ -184,7 +209,7 @@ function featureTypeQueryPart() {
   return {
     model: FeatureType,
     as: "featureType",
-    attributes: ["id", "name"],
+    attributes: ["id", "name", "icon"],
   };
 }
 
@@ -240,9 +265,32 @@ router.get(
     checkSeasonExists(seasonModel);
 
     // Get the previous year's Season Dates for this Feature
-    const previousSeason = await getPreviousSeasonDates(seasonModel);
+    const previousSeason = await getPreviousSeasonDates(seasonModel, {
+      featureLevel: true,
+    });
 
-    const output = { current: seasonModel, previous: previousSeason };
+    // Include all DateTypes for this Season level
+    const dateTypesArray = await getAllDateTypes({
+      featureLevel: true,
+    });
+
+    const dateTypesByName = _.keyBy(dateTypesArray, "name");
+
+    // Return the DateTypes in a specific order
+    const orderedDateTypes = [
+      dateTypesByName.Operation,
+      dateTypesByName.Reservation,
+      dateTypesByName["Backcountry registration"],
+    ];
+
+    const output = {
+      current: seasonModel,
+      previous: previousSeason,
+      dateTypes: orderedDateTypes,
+      icon: seasonModel.feature.featureType.icon,
+      featureTypeName: seasonModel.feature.featureType.name,
+      name: seasonModel.feature.name,
+    };
 
     res.json(output);
   }),
@@ -290,9 +338,56 @@ router.get(
     checkSeasonExists(seasonModel);
 
     // Get the previous year's Season Dates for this Feature
-    const previousSeason = await getPreviousSeasonDates(seasonModel);
+    const previousSeason = await getPreviousSeasonDates(seasonModel, {
+      [Op.or]: [{ parkAreaLevel: true }, { featureLevel: true }],
+    });
 
-    const output = { current: seasonModel, previous: previousSeason };
+    // Include all DateTypes for the Park Area level
+    const areaDateTypesArray = await getAllDateTypes({
+      parkAreaLevel: true,
+    });
+
+    // Include all DateTypes for the Feature level
+    const featureDateTypesArray = await getAllDateTypes({
+      featureLevel: true,
+    });
+
+    const areaDateTypesByName = _.keyBy(areaDateTypesArray, "name");
+    const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
+
+    // Return the DateTypes in a specific order
+    const orderedAreaDateTypes = [
+      areaDateTypesByName.Operation,
+      areaDateTypesByName.Reservation,
+      areaDateTypesByName["Backcountry registration"],
+    ];
+
+    const orderedFeatureDateTypes = [
+      featureDateTypesByName.Operation,
+      featureDateTypesByName.Reservation,
+      featureDateTypesByName["Backcountry registration"],
+    ];
+
+    let icon = null;
+    let featureTypeName = null;
+
+    // If there are features in the Park Area, use the first feature's type
+    if (seasonModel.parkArea.features.length > 0) {
+      const firstFeature = seasonModel.parkArea.features[0];
+
+      icon = firstFeature.featureType.icon;
+      featureTypeName = firstFeature.featureType.name;
+    }
+
+    const output = {
+      current: seasonModel,
+      previous: previousSeason,
+      areaDateTypes: orderedAreaDateTypes,
+      featureDateTypes: orderedFeatureDateTypes,
+      icon,
+      featureTypeName,
+      name: seasonModel.parkArea.name,
+    };
 
     res.json(output);
   }),
@@ -364,9 +459,33 @@ router.get(
     checkSeasonExists(seasonModel);
 
     // Get the previous year's Season Dates for this Feature
-    const previousSeason = await getPreviousSeasonDates(seasonModel);
+    const previousSeason = await getPreviousSeasonDates(seasonModel, {
+      parkLevel: true,
+    });
 
-    const output = { current: seasonModel, previous: previousSeason };
+    // Include all DateTypes for this Season level
+    const dateTypesArray = await getAllDateTypes({
+      parkLevel: true,
+    });
+
+    const dateTypesByName = _.keyBy(dateTypesArray, "name");
+
+    // Return the DateTypes in a specific order
+    const orderedDateTypes = [
+      dateTypesByName["Tier 1"],
+      dateTypesByName["Tier 2"],
+      dateTypesByName["Winter fee"],
+      dateTypesByName.Operating,
+    ];
+
+    const output = {
+      current: seasonModel,
+      previous: previousSeason,
+      dateTypes: orderedDateTypes,
+      icon: null,
+      featureTypeName: null,
+      name: seasonModel.park.name,
+    };
 
     res.json(output);
   }),
@@ -378,14 +497,26 @@ router.post(
   sanitizePayload,
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
-    const {
-      notes = "",
-      dateRanges = [],
-      deletedDateRangeIds = [],
-      readyToPublish,
-    } = req.body;
+    const { notes = "", deletedDateRangeIds = [] } = req.body;
+    let { readyToPublish } = req.body;
+
+    // If the user isn't an approver, they shouldn't be able to set readyToPublish
+    const isApprover = checkUserRoles(req.auth, ["doot-approver"]);
+
+    if (!isApprover) {
+      // Clear the value from the request body
+      // This will prevent the user from changing readyToPublish
+      readyToPublish = null;
+    }
 
     const transaction = await sequelize.transaction();
+
+    // Add seasonId to dateRanges
+    const dateRangePayload = req.body.dateRanges || [];
+    const dateRanges = dateRangePayload.map((dateRange) => ({
+      ...dateRange,
+      seasonId,
+    }));
 
     try {
       // Check if the season exists
@@ -394,6 +525,9 @@ router.post(
       checkSeasonExists(season);
 
       const newStatus = STATUS.REQUESTED;
+
+      // If readyToPublish is null or undefined, set it to the current value
+      const newReadyToPublish = readyToPublish ?? season.readyToPublish;
 
       // Create season change log with the notes
       const seasonChangeLog = await SeasonChangeLog.create(
@@ -404,7 +538,7 @@ router.post(
           statusOldValue: season.status,
           statusNewValue: newStatus,
           readyToPublishOldValue: season.readyToPublish,
-          readyToPublishNewValue: readyToPublish,
+          readyToPublishNewValue: newReadyToPublish,
         },
         { transaction },
       );

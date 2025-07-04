@@ -115,7 +115,7 @@ function StatusTableRow({
   nameCellClass,
   name,
   typeName,
-  status,
+  season,
   formPanelHandler,
   color,
 }) {
@@ -140,22 +140,29 @@ function StatusTableRow({
           </div>
         )}
       </th>
-      <th scope="col" className="align-middle text-end text-nowrap">
-        {status && (
+
+      {season ? (
+        <th scope="col" className="align-middle text-end text-nowrap">
           <div className="d-inline-block me-2">
-            <StatusBadge status={status} />
+            <StatusBadge status={season.status} />
           </div>
-        )}
-        <IconButton
-          icon={faPen}
-          label="Edit"
-          onClick={formPanelHandler}
-          textColor={color}
-        />
-        {approver && (
-          <IconButton icon={faCheck} label="Approve" textColor={color} />
-        )}
-      </th>
+
+          <IconButton
+            icon={faPen}
+            label="Edit"
+            onClick={formPanelHandler}
+            textColor={color}
+          />
+          {approver && (
+            <IconButton icon={faCheck} label="Approve" textColor={color} />
+          )}
+        </th>
+      ) : (
+        <th scope="col" className="align-middle text-end text-nowrap">
+          {/* No currentSeason: nothing to edit or approve */}
+          &nbsp;
+        </th>
+      )}
     </tr>
   );
 }
@@ -166,7 +173,7 @@ StatusTableRow.propTypes = {
   nameCellClass: PropTypes.string,
   name: PropTypes.string.isRequired,
   typeName: PropTypes.string,
-  status: PropTypes.string,
+  season: PropTypes.object,
   formPanelHandler: PropTypes.func,
   color: PropTypes.string,
 };
@@ -183,7 +190,7 @@ function Table({ park, formPanelHandler }) {
           level="park"
           nameCellClass="fw-normal text-white"
           name={park.name}
-          status={park.currentSeason?.status}
+          season={park.currentSeason}
           formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
@@ -202,7 +209,7 @@ function Table({ park, formPanelHandler }) {
               level="park-area"
               name={`${park.name} - ${parkArea.name}`}
               typeName={parkArea.featureType?.name}
-              status={parkArea.currentSeason?.status}
+              season={parkArea.currentSeason}
               formPanelHandler={() =>
                 formPanelHandler({ ...parkArea, level: "park-area" })
               }
@@ -240,7 +247,7 @@ function Table({ park, formPanelHandler }) {
               level="feature"
               name={`${park.name} - ${feature.name}`}
               typeName={feature.featureType.name}
-              status={feature.currentSeason?.status}
+              season={feature.currentSeason}
               formPanelHandler={() =>
                 formPanelHandler({ ...feature, level: "feature" })
               }

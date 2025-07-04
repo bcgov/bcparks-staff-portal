@@ -1,7 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
-import useAccess from "@/hooks/useAccess";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
@@ -11,7 +10,7 @@ import FilterPanel from "@/components/FilterPanel";
 import FormPanel from "@/components/FormPanel";
 
 function EditAndReview() {
-  const { data, loading, error } = useApiGet("/parks");
+  const { data, loading, error, fetchData } = useApiGet("/parks");
   const {
     data: filterOptionsData,
     loading: filterOptionsLoading,
@@ -19,13 +18,6 @@ function EditAndReview() {
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
-
-  // user role
-  const { ROLES, checkAccess } = useAccess();
-  const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
-  );
 
   const statusOptions = [
     { value: "requested", label: "Requested by HQ" },
@@ -56,8 +48,11 @@ function EditAndReview() {
 
   // open form panel when the Edit button is clicked
   function formPanelHandler(formDataObj) {
-    setFormData(formDataObj);
-    setShowFormPanel(!showFormPanel);
+    setFormData({
+      seasonId: formDataObj.currentSeason.id,
+      level: formDataObj.level,
+    });
+    setShowFormPanel(true);
   }
 
   function resetFilters() {
@@ -309,6 +304,11 @@ function EditAndReview() {
     );
   }
 
+  // Fetch all the data from the API when something changes
+  function refreshData() {
+    fetchData();
+  }
+
   return (
     <div className="container">
       <div className="page dates-management">
@@ -363,7 +363,7 @@ function EditAndReview() {
           show={showFormPanel}
           setShow={setShowFormPanel}
           formData={formData}
-          approver={approver}
+          onDataUpdate={refreshData}
         />
 
         <FilterPanel

@@ -1,3 +1,6 @@
+// Import the library styles
+@use "react-datepicker/dist/react-datepicker.css";
+
 // Overrides for the react-datepicker component package
 .react-datepicker {
   // Prevent the bootstrap theme from making the month name huge

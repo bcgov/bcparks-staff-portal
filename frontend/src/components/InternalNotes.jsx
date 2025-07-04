@@ -1,10 +1,35 @@
 import PropTypes from "prop-types";
 import classNames from "classnames";
 
-function InternalNotes({ errors = {}, notes = "", setNotes }) {
+import { formatDateShort } from "@/lib/utils";
+
+import "./InternalNotes.scss";
+
+function InternalNotes({
+  errors = {},
+  notes = "",
+  setNotes,
+  previousNotes = [],
+}) {
   return (
-    <div className="mb-4">
+    <div className="internal-notes mb-4">
       <h3>Internal notes</h3>
+
+      {previousNotes.map((previousNote) => (
+        <div className="previous-note" key={previousNote.id}>
+          <p>
+            <span className="note-content">{previousNote.notes}</span>
+
+            <br />
+
+            <span className="note-metadata">
+              {formatDateShort(previousNote.createdAt)} by{" "}
+              {previousNote.user.name}
+            </span>
+          </p>
+        </div>
+      ))}
+
       <p>
         If you are updating the current year&apos;s dates, provide an
         explanation for why dates have changed. Provide any other notes about
@@ -42,4 +67,15 @@ InternalNotes.propTypes = {
   errors: PropTypes.object,
   notes: PropTypes.string,
   setNotes: PropTypes.func,
+  previousNotes: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      notes: PropTypes.string.isRequired,
+      createdAt: PropTypes.instanceOf(Date),
+      user: PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+    }),
+  ),
 };

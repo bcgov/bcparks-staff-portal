@@ -1,105 +1,23 @@
 // Copied from /pages/SubmitDates.jsx
 
 import PropTypes from "prop-types";
-import classNames from "classnames";
-import DatePicker from "react-datepicker";
-import Form from "react-bootstrap/Form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faPlus,
-  faCircleInfo,
-  faCalendarCheck,
-} from "@fa-kit/icons/classic/regular";
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+
 import TooltipWrapper from "@/components/TooltipWrapper";
+import DateRangeFields from "@/components/DateRangeFields";
 import { formatDateRange } from "@/lib/utils";
-
-// Components
-function DateRangeFields({ dateRange, hasMultipleDates = true }) {
-  return (
-    <Form>
-      <div className="d-flex">
-        <div className="form-group">
-          <label className="form-label d-lg-none">Start date</label>
-          <div className="input-with-append">
-            <DatePicker
-              className={classNames({
-                "form-control": true,
-              })}
-              selected={dateRange?.startDate}
-              dateFormat="EEE, MMM d, yyyy"
-              showMonthYearDropdown
-            />
-            <FontAwesomeIcon
-              className="append-content"
-              icon={faCalendarCheck}
-            />
-          </div>
-        </div>
-
-        <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
-          <span>&ndash;</span>
-        </div>
-
-        <div className="form-group">
-          <label className="form-label d-lg-none">End date</label>
-          <div className="input-with-append">
-            <DatePicker
-              className={classNames({
-                "form-control": true,
-              })}
-              selected={dateRange?.endDate}
-              dateFormat="EEE, MMM d, yyyy"
-              showMonthYearDropdown
-            />
-            <FontAwesomeIcon
-              className="append-content"
-              icon={faCalendarCheck}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* TODO: add fields if the button is clicked */}
-      {hasMultipleDates && (
-        <button className="btn btn-text text-link">
-          <FontAwesomeIcon icon={faPlus} />
-          <span className="ms-1">Add more dates</span>
-        </button>
-      )}
-
-      {/* TODO: CMS-872 - use isDateRangeAnnual */}
-      <Form.Check
-        type="checkbox"
-        id="same-dates-every-year"
-        name="sameDatesEveryYear"
-        label="Dates are the same every year"
-      />
-    </Form>
-  );
-}
-
-DateRangeFields.propTypes = {
-  dateRange: PropTypes.shape({
-    id: PropTypes.number,
-    startDate: PropTypes.instanceOf(Date),
-    endDate: PropTypes.instanceOf(Date),
-  }),
-  hasMultipleDates: PropTypes.bool,
-};
 
 function DateRangeForm({
   dateRanges,
-  // seasons,
   currentYear,
   lastYear,
-  hasGateDates,
-  hasTier1Dates,
-  hasTier2Dates,
-  hasWinterFeeDates,
+  hasGateDates = false,
 }) {
   // Constants
   // check if there are any date ranges
-  const hasDateRanges = dateRanges && Object.keys(dateRanges).length > 0;
+  // const hasDateRanges = dateRanges && Object.keys(dateRanges).length > 0;
+  const hasDateRanges = false;
 
   // gate date range form
   if (hasGateDates) {
@@ -168,57 +86,15 @@ function DateRangeForm({
           </p>
         </div>
       )}
-
-      {/* TODO: replace them with real data */}
-      {hasTier1Dates && (
-        <div className="col-lg-6">
-          <h6 className="fw-normal">
-            Tier 1{" "}
-            <TooltipWrapper placement="top" content="TEST">
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </TooltipWrapper>
-          </h6>
-          <p>Previous dates are not provided</p>
-          <DateRangeFields hasMultipleDates={false} />
-        </div>
-      )}
-      {hasTier2Dates && (
-        <div className="col-lg-6">
-          <h6 className="fw-normal">
-            Tier 2{" "}
-            <TooltipWrapper placement="top" content="TEST">
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </TooltipWrapper>
-          </h6>
-          <p>Previous dates are not provided</p>
-          <DateRangeFields />
-        </div>
-      )}
-      {hasWinterFeeDates && (
-        <div className="col-lg-6">
-          <h6 className="fw-normal">
-            Winter{" "}
-            <TooltipWrapper placement="top" content="TEST">
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </TooltipWrapper>
-          </h6>
-          <p>Previous dates are not provided</p>
-          <DateRangeFields />
-        </div>
-      )}
     </div>
   );
 }
 
 DateRangeForm.propTypes = {
-  dateRanges: PropTypes.object,
-  seasons: PropTypes.object,
-  currentYear: PropTypes.number,
-  lastYear: PropTypes.number,
+  dateRanges: PropTypes.object.isRequired,
+  currentYear: PropTypes.string.isRequired,
+  lastYear: PropTypes.string.isRequired,
   hasGateDates: PropTypes.bool,
-  hasTier1Dates: PropTypes.bool,
-  hasTier2Dates: PropTypes.bool,
-  hasWinterFeeDates: PropTypes.bool,
 };
 
 export default DateRangeForm;

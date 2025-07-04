@@ -70,6 +70,22 @@ export function formatDateRange(dateRange) {
   return `${startDate} – ${endDate}`;
 }
 
+/**
+ * Returns a string with the dates formatted "Weekday, Month Day, Year"
+ * @param {Object} dateRange object with startDate and endDate
+ * @returns {string} formatted date range
+ */
+export function formatPreviousDateRange(dateRange) {
+  if (dateRange.startDate === null || dateRange.endDate === null) {
+    return "Not provided";
+  }
+
+  const startDate = formatDateShortWithYear(dateRange.startDate);
+  const endDate = formatDateShortWithYear(dateRange.endDate);
+
+  return `${startDate} – ${endDate}`;
+}
+
 // used to properly compare paths
 export function removeTrailingSlash(str) {
   if (str.endsWith("/")) {
