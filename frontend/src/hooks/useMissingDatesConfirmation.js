@@ -6,7 +6,7 @@ export function useMissingDatesConfirmation() {
   const [inputMessage, setInputMessage] = useState("");
   const [resolvePromise, setResolvePromise] = useState(null);
 
-  function openConfirmation(featureNameList) {
+  function open(featureNameList) {
     return new Promise((resolve) => {
       setFeatureNames(featureNameList);
       setResolvePromise(() => resolve); // Store the resolve function
@@ -16,14 +16,14 @@ export function useMissingDatesConfirmation() {
 
   function handleConfirm() {
     if (resolvePromise) {
-      resolvePromise({ confirm: true, confirmationMessage: inputMessage }); // Resolve with true
+      resolvePromise({ confirm: true, message: inputMessage }); // Resolve with true
     }
     setIsOpen(false);
   }
 
   function handleCancel() {
     if (resolvePromise) {
-      resolvePromise({ confirm: false, confirmationMessage: inputMessage }); // Resolve with false
+      resolvePromise({ confirm: false, message: inputMessage }); // Resolve with false
     }
     setIsOpen(false);
   }
@@ -34,7 +34,7 @@ export function useMissingDatesConfirmation() {
     inputMessage,
     setInputMessage,
 
-    openConfirmation,
+    open,
     handleConfirm,
     handleCancel,
     isOpen,

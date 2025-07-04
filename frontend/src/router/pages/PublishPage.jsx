@@ -1,4 +1,4 @@
-import { useConfirmation } from "@/hooks/useConfirmation";
+import useConfirmation from "@/hooks/useConfirmation";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 
@@ -13,11 +13,11 @@ function PublishPage() {
     message,
     confirmButtonText,
     cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
+    notes,
+    open: openConfirmation,
     handleConfirm,
     handleCancel,
-    isConfirmationOpen,
+    isOpen,
   } = useConfirmation();
 
   const successFlash = useFlashMessage();
@@ -92,14 +92,14 @@ function PublishPage() {
         />
 
         <ConfirmationDialog
-          isOpen={isConfirmationOpen}
+          isOpen={isOpen}
           onConfirm={handleConfirm}
           onCancel={handleCancel}
           title={title}
           message={message}
           confirmButtonText={confirmButtonText}
           cancelButtonText={cancelButtonText}
-          notes={confirmationDialogNotes}
+          notes={notes}
         />
 
         <div className="d-flex justify-content-end mb-2">
