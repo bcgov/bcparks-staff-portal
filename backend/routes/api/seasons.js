@@ -124,6 +124,19 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
 }
 
 /**
+ * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
+ * @param {Object} [where={}] Where clause to filter DateTypes (by level, etc.)
+ * @returns {Promise<Array<DateType>>} Array of DateTypes
+ */
+async function getAllDateTypes(where = {}) {
+  return DateType.findAll({
+    attributes: ["id", "name", "startDateLabel", "endDateLabel", "description"],
+
+    where,
+  });
+}
+
+/**
  * Returns a query part for including change logs associated with a Season.
  * @returns {Object} Sequelize query part for fetching change logs
  */
@@ -257,18 +270,8 @@ router.get(
     });
 
     // Include all DateTypes for this Season level
-    const dateTypesArray = await DateType.findAll({
-      attributes: [
-        "id",
-        "name",
-        "startDateLabel",
-        "endDateLabel",
-        "description",
-      ],
-
-      where: {
-        featureLevel: true,
-      },
+    const dateTypesArray = await getAllDateTypes({
+      featureLevel: true,
     });
 
     const dateTypesByName = _.keyBy(dateTypesArray, "name");
@@ -340,33 +343,13 @@ router.get(
     });
 
     // Include all DateTypes for the Park Area level
-    const areaDateTypesArray = await DateType.findAll({
-      attributes: [
-        "id",
-        "name",
-        "startDateLabel",
-        "endDateLabel",
-        "description",
-      ],
-
-      where: {
-        parkAreaLevel: true,
-      },
+    const areaDateTypesArray = await getAllDateTypes({
+      parkAreaLevel: true,
     });
 
     // Include all DateTypes for the Feature level
-    const featureDateTypesArray = await DateType.findAll({
-      attributes: [
-        "id",
-        "name",
-        "startDateLabel",
-        "endDateLabel",
-        "description",
-      ],
-
-      where: {
-        featureLevel: true,
-      },
+    const featureDateTypesArray = await getAllDateTypes({
+      featureLevel: true,
     });
 
     const areaDateTypesByName = _.keyBy(areaDateTypesArray, "name");
@@ -481,18 +464,8 @@ router.get(
     });
 
     // Include all DateTypes for this Season level
-    const dateTypesArray = await DateType.findAll({
-      attributes: [
-        "id",
-        "name",
-        "startDateLabel",
-        "endDateLabel",
-        "description",
-      ],
-
-      where: {
-        parkLevel: true,
-      },
+    const dateTypesArray = await getAllDateTypes({
+      parkLevel: true,
     });
 
     const dateTypesByName = _.keyBy(dateTypesArray, "name");
