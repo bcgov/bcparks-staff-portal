@@ -37,14 +37,14 @@ export default function useConfirmation() {
     ],
   );
 
-  function handleConfirm() {
+  function onConfirm() {
     if (resolvePromise) {
       resolvePromise(true); // Resolve with true
     }
     setIsOpen(false);
   }
 
-  function handleCancel() {
+  function onCancel() {
     if (resolvePromise) {
       resolvePromise(false); // Resolve with false
     }
@@ -52,14 +52,17 @@ export default function useConfirmation() {
   }
 
   return {
-    title: titleText,
-    message: messageText,
-    confirmButtonText,
-    cancelButtonText,
-    notes,
     open,
-    handleConfirm,
-    handleCancel,
-    isOpen,
+
+    props: {
+      title: titleText,
+      message: messageText,
+      confirmButtonText,
+      cancelButtonText,
+      notes,
+      isOpen,
+      onConfirm,
+      onCancel,
+    },
   };
 }

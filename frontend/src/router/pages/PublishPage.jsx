@@ -8,17 +8,7 @@ import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
 
 function PublishPage() {
-  const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    notes,
-    open: openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isOpen,
-  } = useConfirmation();
+  const confirmation = useConfirmation();
 
   const successFlash = useFlashMessage();
   const errorFlash = useFlashMessage();
@@ -46,7 +36,7 @@ function PublishPage() {
   }
 
   async function publishToApi() {
-    const confirm = await openConfirmation(
+    const confirm = await confirmation.open(
       "Publish dates to API?",
       "All parks that are not flagged will be made public. This cannot be undone.",
       "Publish",
@@ -91,16 +81,7 @@ function PublishPage() {
           variant="error"
         />
 
-        <ConfirmationDialog
-          isOpen={isOpen}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-          title={title}
-          message={message}
-          confirmButtonText={confirmButtonText}
-          cancelButtonText={cancelButtonText}
-          notes={notes}
-        />
+        <ConfirmationDialog {...confirmation.props} />
 
         <div className="d-flex justify-content-end mb-2">
           <button className="btn btn-primary" onClick={publishToApi}>

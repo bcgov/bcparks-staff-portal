@@ -14,14 +14,14 @@ export function useMissingDatesConfirmation() {
     });
   }
 
-  function handleConfirm() {
+  function onConfirm() {
     if (resolvePromise) {
       resolvePromise({ confirm: true, message: inputMessage }); // Resolve with true
     }
     setIsOpen(false);
   }
 
-  function handleCancel() {
+  function onCancel() {
     if (resolvePromise) {
       resolvePromise({ confirm: false, message: inputMessage }); // Resolve with false
     }
@@ -35,8 +35,8 @@ export function useMissingDatesConfirmation() {
     setInputMessage,
 
     open,
-    handleConfirm,
-    handleCancel,
+    onConfirm,
+    onCancel,
     isOpen,
   };
 }
