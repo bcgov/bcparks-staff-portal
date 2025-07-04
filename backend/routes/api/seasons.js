@@ -372,7 +372,7 @@ router.get(
     const areaDateTypesByName = _.keyBy(areaDateTypesArray, "name");
     const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
 
-    // // Return the DateTypes in a specific order
+    // Return the DateTypes in a specific order
     const orderedAreaDateTypes = [
       areaDateTypesByName.Operation,
       areaDateTypesByName.Reservation,
