@@ -17,7 +17,6 @@ import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import PreviousDates from "@/components/SeasonForms/PreviousDates";
 
-import useAccess from "@/hooks/useAccess";
 import DataContext from "@/contexts/DataContext";
 
 export default function AreaSeasonForm({
@@ -25,13 +24,8 @@ export default function AreaSeasonForm({
   previousSeasonDates,
   areaDateTypes,
   featureDateTypes,
+  approver,
 }) {
-  const { ROLES, checkAccess } = useAccess();
-  const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
-  );
-
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
   const parkArea = season.parkArea;
@@ -452,4 +446,6 @@ AreaSeasonForm.propTypes = {
       description: PropTypes.string,
     }),
   ).isRequired,
+
+  approver: PropTypes.bool.isRequired,
 };

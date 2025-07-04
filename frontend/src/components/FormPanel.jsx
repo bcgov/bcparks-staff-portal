@@ -266,6 +266,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
             season={season}
             previousSeasonDates={previousSeasonDates}
             dateTypes={seasonMetadata.dateTypes}
+            approver={approver}
           />
         )}
 
@@ -277,6 +278,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
             // Individual date types for areas and features
             areaDateTypes={seasonMetadata.areaDateTypes}
             featureDateTypes={seasonMetadata.featureDateTypes}
+            approver={approver}
           />
         )}
 
@@ -286,6 +288,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
             season={season}
             previousSeasonDates={previousSeasonDates}
             dateTypes={seasonMetadata.dateTypes}
+            approver={approver}
           />
         )}
 
