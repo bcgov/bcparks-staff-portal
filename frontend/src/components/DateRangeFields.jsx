@@ -11,7 +11,7 @@ import PropTypes from "prop-types";
 
 import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
 
-function DateRange({ dateRange, updateDateRange, removeDateRange }) {
+function DateRange({ dateRange, updateDateRange, removeDateRange, isDateRangeAnnual }) {
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
@@ -75,6 +75,7 @@ function DateRange({ dateRange, updateDateRange, removeDateRange }) {
             dateFormat="EEE, MMM d, yyyy"
             // @TODO: the dropdown makes chrome hang??
             showMonthYearDropdown
+            disabled={isDateRangeAnnual}
           />
 
           <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
@@ -106,6 +107,7 @@ function DateRange({ dateRange, updateDateRange, removeDateRange }) {
             dateFormat="EEE, MMM d, yyyy"
             // @TODO: the dropdown makes chrome hang??
             showMonthYearDropdown
+            disabled={isDateRangeAnnual}
           />
 
           <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
@@ -135,6 +137,7 @@ DateRange.propTypes = {
   }).isRequired,
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
+  isDateRangeAnnual: PropTypes.bool.isRequired,
 };
 
 export default function DateRangeFields({
@@ -142,9 +145,34 @@ export default function DateRangeFields({
   updateDateRange,
   removeDateRange,
   addDateRange,
-  hasMultipleDates = true,
   dateType,
+  dateRangeAnnuals,
+  updateDateRangeAnnual,
+  hasMultipleDates = true,
 }) {
+  // Functions
+
+  // find the matching dateRangeAnnual for this dateType
+  const matchedDateRangeAnnual = useMemo(() => {
+    if (!dateType || !dateRangeAnnuals) return null;
+
+    return dateRangeAnnuals.find(
+      (dateRangeAnnual) => dateRangeAnnual.dateType.name === dateType.name,
+    );
+  }, [dateType, dateRangeAnnuals]);
+
+  const isDateRangeAnnual = matchedDateRangeAnnual?.isDateRangeAnnual ?? false;
+
+  // toggle isDateRangeAnnual state
+  function handleDateRangeAnnualChange() {
+    if (!matchedDateRangeAnnual) return;
+
+    updateDateRangeAnnual({
+      ...matchedDateRangeAnnual,
+      isDateRangeAnnual: !isDateRangeAnnual,
+    });
+  }
+
   return (
     <>
       {dateRanges.map((dateRange) => (
@@ -153,6 +181,7 @@ export default function DateRangeFields({
           dateRange={dateRange}
           updateDateRange={updateDateRange}
           removeDateRange={removeDateRange}
+          isDateRangeAnnual={isDateRangeAnnual}
         />
       ))}
 
@@ -168,12 +197,13 @@ export default function DateRangeFields({
         </button>
       )}
 
-      {/* TODO: CMS-872 - use isDateRangeAnnual */}
       <Form.Check
         type="checkbox"
-        id="same-dates-every-year"
-        name="sameDatesEveryYear"
+        id={`date-range-annual-${dateType.id}`}
+        name={`date-range-annual-${dateType.id}`}
         label="Dates are the same every year"
+        checked={isDateRangeAnnual}
+        onChange={handleDateRangeAnnualChange}
       />
     </>
   );
@@ -192,12 +222,15 @@ DateRangeFields.propTypes = {
       endDate: PropTypes.instanceOf(Date),
     }),
   ).isRequired,
-  hasMultipleDates: PropTypes.bool,
-  dateType: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
-  }).isRequired,
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
   addDateRange: PropTypes.func.isRequired,
+  dateType: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    displayName: PropTypes.string,
+  }).isRequired,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+  updateDateRangeAnnual: PropTypes.func.isRequired,
+  hasMultipleDates: PropTypes.bool,
 };

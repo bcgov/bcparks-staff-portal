@@ -12,6 +12,7 @@ import {
   Feature,
   DateType,
   DateRange,
+  DateRangeAnnual,
   Dateable,
   ParkArea,
   SeasonChangeLog,
@@ -133,6 +134,26 @@ async function getAllDateTypes(where = {}) {
     attributes: ["id", "name", "startDateLabel", "endDateLabel", "description"],
 
     where,
+  });
+}
+
+/**
+ * Returns all DateRangeAnnuals for a given publishableId.
+ * @param {number} publishableId The ID of the Publishable to get DateRange
+ * @returns {Promise<Array>} An array of DateRangeAnnual models with their DateType
+ */
+async function getDateRangeAnnuals(publishableId) {
+  if (!publishableId) return [];
+  return await DateRangeAnnual.findAll({
+    where: { publishableId },
+    attributes: ["id", "isDateRangeAnnual"],
+    include: [
+      {
+        model: DateType,
+        as: "dateType",
+        attributes: ["id", "name"],
+      },
+    ],
   });
 }
 
@@ -283,8 +304,15 @@ router.get(
       dateTypesByName["Backcountry registration"],
     ];
 
+    // Get DateRangeAnnuals
+    const dateRangeAnnuals = await getDateRangeAnnuals(
+      seasonModel.publishableId,
+    );
+    // Add DateRangeAnnuals to seasonModel
+    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
+
     const output = {
-      current: seasonModel,
+      current: currentSeason,
       previous: previousSeason,
       dateTypes: orderedDateTypes,
       icon: seasonModel.feature.featureType.icon,
@@ -379,8 +407,15 @@ router.get(
       featureTypeName = firstFeature.featureType.name;
     }
 
+    // Get DateRangeAnnuals
+    const dateRangeAnnuals = await getDateRangeAnnuals(
+      seasonModel.publishableId,
+    );
+    // Add DateRangeAnnuals to seasonModel
+    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
+
     const output = {
-      current: seasonModel,
+      current: currentSeason,
       previous: previousSeason,
       areaDateTypes: orderedAreaDateTypes,
       featureDateTypes: orderedFeatureDateTypes,
@@ -478,8 +513,15 @@ router.get(
       dateTypesByName.Operating,
     ];
 
+    // Get DateRangeAnnuals
+    const dateRangeAnnuals = await getDateRangeAnnuals(
+      seasonModel.publishableId,
+    );
+    // Add DateRangeAnnuals to seasonModel
+    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
+
     const output = {
-      current: seasonModel,
+      current: currentSeason,
       previous: previousSeason,
       dateTypes: orderedDateTypes,
       icon: null,
