@@ -304,13 +304,15 @@ router.get(
       dateTypesByName["Backcountry registration"],
     ];
 
-    // Add DateRangeAnnuals to seasonModel
-    seasonModel.dataValues.dateRangeAnnuals = await getDateRangeAnnuals(
+    // Get DateRangeAnnuals
+    const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
+    // Add DateRangeAnnuals to seasonModel
+    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
 
     const output = {
-      current: seasonModel,
+      current: currentSeason,
       previous: previousSeason,
       dateTypes: orderedDateTypes,
       icon: seasonModel.feature.featureType.icon,
@@ -405,13 +407,15 @@ router.get(
       featureTypeName = firstFeature.featureType.name;
     }
 
-    // Add DateRangeAnnuals to seasonModel
-    seasonModel.dataValues.dateRangeAnnuals = await getDateRangeAnnuals(
+    // Get DateRangeAnnuals
+    const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
+    // Add DateRangeAnnuals to seasonModel
+    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
 
     const output = {
-      current: seasonModel,
+      current: currentSeason,
       previous: previousSeason,
       areaDateTypes: orderedAreaDateTypes,
       featureDateTypes: orderedFeatureDateTypes,
@@ -509,13 +513,15 @@ router.get(
       dateTypesByName.Operating,
     ];
 
-    // Add DateRangeAnnuals to seasonModel
-    seasonModel.dataValues.dateRangeAnnuals = await getDateRangeAnnuals(
+    // Get DateRangeAnnuals
+    const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
+    // Add DateRangeAnnuals to seasonModel
+    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
 
     const output = {
-      current: seasonModel,
+      current: currentSeason,
       previous: previousSeason,
       dateTypes: orderedDateTypes,
       icon: null,

@@ -157,7 +157,7 @@ export default function DateRangeFields({
     if (!dateType || !dateRangeAnnuals) return null;
 
     return dateRangeAnnuals.find(
-      (dateRangeAnnual) => dateRangeAnnual.dateType?.name === dateType.name,
+      (dateRangeAnnual) => dateRangeAnnual.dateType.name === dateType.name,
     );
   }, [dateType, dateRangeAnnuals]);
 
@@ -200,7 +200,7 @@ export default function DateRangeFields({
       <Form.Check
         type="checkbox"
         id={`date-range-annual-${dateType.id}`}
-        name="DateRangeAnnual"
+        name={`date-range-annual-${dateType.id}`}
         label="Dates are the same every year"
         checked={isDateRangeAnnual}
         onChange={handleDateRangeAnnualChange}
