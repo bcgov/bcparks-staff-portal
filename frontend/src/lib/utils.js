@@ -93,3 +93,32 @@ export function removeTrailingSlash(str) {
   }
   return str;
 }
+
+/**
+ * Converts a "HH:mm:ss" string (e.g. "14:30:00") to a Date object set to today's date
+ * @param {string} timeString "HH:mm:ss" formatted time string
+ * @returns {Date|null} Date object set to today's date with the specified time, or null if input is falsy.
+ */
+export function timeStringToDate(timeString) {
+  if (!timeString) return null;
+  const [hours, minutes, seconds] = timeString.split(":").map(Number);
+  const date = new Date();
+
+  date.setHours(hours, minutes, seconds || 0, 0);
+  return date;
+}
+
+/**
+ * Converts a Date object to a "HH:mm:ss" string (e.g. "14:30:00")
+ * @param {Date|null} date Date object to convert to time string
+ * @returns {string|null} "HH:mm:ss" formatted time string, or null if input is falsy.
+ */
+export function dateToTimeString(date) {
+  if (!date) return null;
+
+  function pad(n) {
+    return String(n).padStart(2, "0");
+  }
+
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+}

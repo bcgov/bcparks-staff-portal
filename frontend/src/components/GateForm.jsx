@@ -1,10 +1,10 @@
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 
-import DateRangeForm from "@/components/DateRangeForm";
+import DateRangeFields from "@/components/DateRangeFields";
+import PreviousDates from "@/components/SeasonForms/PreviousDates";
 import RadioButtonGroup from "@/components/RadioButtonGroup";
 import TimeRangeForm from "@/components/TimeRangeForm";
 import TooltipWrapper from "@/components/TooltipWrapper";
@@ -12,28 +12,24 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 export default function GateForm({
   gateTitle,
   gateDescription,
-  hasGate,
-  setHasGate,
+  gateDetail,
+  updateGateDetail,
+  dateableId,
+  dateType,
   dateRanges,
+  updateDateRange,
+  addDateRange,
+  removeDateRange,
+  dateRangeAnnuals,
+  updateDateRangeAnnual,
+  previousDateRanges,
   level,
-  currentYear,
-  lastYear,
 }) {
-  // States
-  const [gateOptions, setGateOptions] = useState({
-    openAtDawn: false,
-    closedAtDusk: false,
-    sameHoursEveryYear: false,
-  });
-
   // Functions
   function handleCheckboxChange(e) {
     const { name, checked } = e.target;
 
-    setGateOptions((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
+    updateGateDetail({ [name]: checked });
   }
 
   return (
@@ -43,56 +39,77 @@ export default function GateForm({
       <div className="mb-4">
         <RadioButtonGroup
           id="has-gate"
+          name="hasGate"
           options={[
             { value: true, label: "Yes" },
             { value: false, label: "No" },
           ]}
-          value={hasGate}
-          onChange={(value) => setHasGate(value)}
+          value={gateDetail.hasGate}
+          onChange={(value) => {
+            updateGateDetail({ hasGate: value });
+          }}
         />
       </div>
-      {hasGate && (
+      {gateDetail.hasGate && (
         <div>
           {level === "park" && (
-            <DateRangeForm
-              dateRanges={dateRanges}
-              currentYear={currentYear}
-              lastYear={lastYear}
-              hasGateDates={true}
-            />
+            <div className="mb-4">
+              <h6 className="fw-normal">
+                Operating dates{" "}
+                <TooltipWrapper placement="top" content={dateType.description}>
+                  <FontAwesomeIcon icon={faCircleInfo} />
+                </TooltipWrapper>
+              </h6>
+
+              <PreviousDates dateRanges={previousDateRanges} />
+
+              <DateRangeFields
+                dateableId={dateableId}
+                dateType={dateType}
+                dateRanges={dateRanges}
+                updateDateRange={updateDateRange}
+                addDateRange={addDateRange}
+                removeDateRange={removeDateRange}
+                dateRangeAnnuals={dateRangeAnnuals}
+                updateDateRangeAnnual={updateDateRangeAnnual}
+              />
+            </div>
           )}
           <h6 className="fw-normal">
             Gate hours {/* TODO: change content */}
-            <TooltipWrapper placement="top" content="TEST">
+            <TooltipWrapper placement="top" content="Gate hours">
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
           </h6>
           <Form>
             <Form.Check
               type="checkbox"
-              id="open-at-dawn"
-              name="openAtDawn"
-              label="Open at dawn"
+              id="opens-at-dawn"
+              name="gateOpensAtDawn"
+              label="Opens at dawn"
               className="mb-2"
-              checked={gateOptions.openAtDawn}
+              checked={gateDetail.gateOpensAtDawn}
               onChange={handleCheckboxChange}
             />
             <Form.Check
               type="checkbox"
-              id="closed-at-dusk"
-              name="closedAtDusk"
-              label="Closed at dusk"
+              id="closes-at-dusk"
+              name="gateClosesAtDusk"
+              label="Closes at dusk"
               className="mb-2"
-              checked={gateOptions.closedAtDusk}
+              checked={gateDetail.gateClosesAtDusk}
               onChange={handleCheckboxChange}
             />
-            <TimeRangeForm />
+            <TimeRangeForm
+              gateDetail={gateDetail}
+              updateGateDetail={updateGateDetail}
+            />
             <Form.Check
               type="checkbox"
-              id="same-hours-every-year"
-              name="sameHoursEveryYear"
+              id="is-time-range-annual"
+              name="isTimeRangeAnnual"
               label="Hours are the same every year"
-              checked={gateOptions.sameHoursEveryYear}
+              checked={gateDetail.isTimeRangeAnnual}
               onChange={handleCheckboxChange}
             />
           </Form>
@@ -105,10 +122,28 @@ export default function GateForm({
 GateForm.propTypes = {
   gateTitle: PropTypes.string,
   gateDescription: PropTypes.string,
-  hasGate: PropTypes.bool,
-  setHasGate: PropTypes.func.isRequired,
+  gateDetail: PropTypes.shape({
+    hasGate: PropTypes.bool,
+    gateOpenTime: PropTypes.string,
+    gateCloseTime: PropTypes.string,
+    gateOpensAtDawn: PropTypes.bool,
+    gateClosesAtDusk: PropTypes.bool,
+    gateOpen24Hours: PropTypes.bool,
+    isTimeRangeAnnual: PropTypes.bool,
+  }),
+  updateGateDetail: PropTypes.func.isRequired,
+  dateableId: PropTypes.number.isRequired,
+  dateType: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    description: PropTypes.string,
+  }).isRequired,
   dateRanges: PropTypes.object,
+  updateDateRange: PropTypes.func.isRequired,
+  addDateRange: PropTypes.func.isRequired,
+  removeDateRange: PropTypes.func.isRequired,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+  updateDateRangeAnnual: PropTypes.func.isRequired,
+  previousDateRanges: PropTypes.object,
   level: PropTypes.string,
-  currentYear: PropTypes.number,
-  lastYear: PropTypes.number,
 };

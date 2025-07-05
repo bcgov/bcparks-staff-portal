@@ -22,9 +22,14 @@ export default function ParkSeasonForm({
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
   const park = season.park;
-  const currentYear = season.operatingYear;
-  const lastYear = currentYear - 1;
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
+  const gateDetail = season.gateDetail || {};
+
+  const operatingDateType = dateTypes.find(
+    (dateType) => dateType.name === "Operating",
+  );
+
+  console.log("Gate:", gateDetail);
 
   const datesByType = useMemo(
     () => groupBy(park.dateable.dateRanges, "dateType.name"),
@@ -154,6 +159,19 @@ export default function ParkSeasonForm({
     });
   }
 
+  // Updates the gateDetail state in the season data object
+  function updateGateDetail(updatedGateDetail) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.gateDetail = {
+        ...updatedData.current.gateDetail,
+        ...updatedGateDetail,
+      };
+      return updatedData;
+    });
+  }
+
   return (
     <>
       <FormContainer>
@@ -190,16 +208,18 @@ export default function ParkSeasonForm({
         gateTitle="Park gate"
         gateDescription='Does this park have a single gated vehicle entrance? If there are
               multiple vehicle entrances, select "No".'
-        // hasGate={park.hasGate} @TODO: get this from the db
-        setHasGate={
-          (value) => console.log("TODO: setHasGate", value)
-          // setPark({ ...park, hasGate: value })
-        }
-        // @TODO: groupedDateRanges - just pass in the dateable?
-        // dateRanges={park.groupedDateRanges}
+        gateDetail={gateDetail}
+        updateGateDetail={updateGateDetail}
+        dateableId={park.dateableId}
+        dateType={operatingDateType}
+        dateRanges={datesByType.Operating ?? []}
+        updateDateRange={updateDateRange}
+        addDateRange={addDateRange}
+        removeDateRange={removeDateRange}
+        dateRangeAnnuals={dateRangeAnnuals}
+        updateDateRangeAnnual={updateDateRangeAnnual}
+        previousDateRanges={previousDatesByType?.Operating ?? []}
         level={"park"}
-        currentYear={currentYear}
-        lastYear={lastYear}
       />
 
       {/* Show Ready to Publish form input for approvers */}
@@ -220,6 +240,15 @@ ParkSeasonForm.propTypes = {
     operatingYear: PropTypes.number.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
     dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+    gateDetail: PropTypes.shape({
+      hasGate: PropTypes.bool,
+      gateOpenTime: PropTypes.string,
+      gateCloseTime: PropTypes.string,
+      gateOpensAtDawn: PropTypes.bool,
+      gateClosesAtDusk: PropTypes.bool,
+      gateOpen24Hours: PropTypes.bool,
+      isTimeRangeAnnual: PropTypes.bool,
+    }),
   }).isRequired,
 
   previousSeasonDates: PropTypes.arrayOf(
