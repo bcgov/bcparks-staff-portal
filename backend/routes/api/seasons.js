@@ -586,6 +586,7 @@ router.post(
       notes = "",
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
+      gateDetail = {}
     } = req.body;
     let { readyToPublish } = req.body;
 
@@ -635,6 +636,17 @@ router.post(
           transaction,
         },
       );
+      
+      // gateDetail
+      const gateDetailToSave = {
+        ...gateDetail,
+        publishableId: season.publishableId,
+      };
+
+      // Upsert gateDetail
+      const saveGateDetail = GateDetail.upsert(gateDetailToSave, {
+        transaction,
+      });
 
       // Create season change log with the notes
       const seasonChangeLog = await SeasonChangeLog.create(
@@ -714,6 +726,7 @@ router.post(
         createChangeLogs,
         deleteDates,
         saveDateRangeAnnuals,
+        saveGateDetail,
       ]);
 
       await transaction.commit();

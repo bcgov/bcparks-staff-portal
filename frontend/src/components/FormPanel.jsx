@@ -188,6 +188,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
       dateRanges: changedDateRanges,
       deletedDateRangeIds,
       dateRangeAnnuals: changedDateRangeAnnuals,
+      gateDetail: season.gateDetail,
       readyToPublish: season.readyToPublish,
       notes,
     };
