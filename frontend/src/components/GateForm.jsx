@@ -88,10 +88,10 @@ export default function GateForm({
             Gate hours{" "}
             <TooltipWrapper
               placement="top"
-              content="Gate Enter the hours the gate is open during the operating season.
+              content={`Gate Enter the hours the gate is open during the operating season.
               If the times change throughout the season,
               leave the times blank and list all the gate hours in the gate notes field.
-              If you do not want to display this information publicly, leave this blank."
+              If you do not want to display this information publicly, leave this blank.`}
             >
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
@@ -143,7 +143,6 @@ GateForm.propTypes = {
     gateCloseTime: PropTypes.string,
     gateOpensAtDawn: PropTypes.bool,
     gateClosesAtDusk: PropTypes.bool,
-    gateOpen24Hours: PropTypes.bool,
     isTimeRangeAnnual: PropTypes.bool,
   }),
   updateGateDetail: PropTypes.func.isRequired,

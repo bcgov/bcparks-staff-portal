@@ -119,6 +119,6 @@ export function dateToTimeString(date) {
   function pad(n) {
     return String(n).padStart(2, "0");
   }
-
+  // seconds are always set to "00"
   return `${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
 }
