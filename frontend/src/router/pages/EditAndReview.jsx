@@ -54,15 +54,27 @@ function EditAndReview() {
   async function formPanelHandler(formDataObj) {
     const status = formDataObj.currentSeason.status;
 
-    console.log("check stuff here", status, formDataObj);
-
-    // If the season is already published to the CMS, prompt to continue
-    if (status === "published") {
+    // If the season is already approved, prompt to continue
+    if (status === "approved") {
       const proceed = await modal.open(
-        "@TODO: text here",
-        "@TODO: text here",
-        "@TODO: text here",
-        "@TODO: text here",
+        "Edit approved dates?",
+        "Dates will need to be reviewed again to be approved.",
+        "Edit",
+        "Cancel",
+      );
+
+      // If the user cancels in the confirmation modal, don't open the edit form
+      if (!proceed) {
+        return;
+      }
+    }
+    // If the season is already published to the CMS, prompt to continue
+    else if (status === "published") {
+      const proceed = await modal.open(
+        "Edit public dates on API?",
+        "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
+        "Continue to edit",
+        "Cancel",
       );
 
       // If the user cancels in the confirmation modal, don't open the edit form
