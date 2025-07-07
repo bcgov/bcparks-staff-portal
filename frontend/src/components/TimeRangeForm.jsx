@@ -24,7 +24,12 @@ function TimeRangeForm({ gateDetail, updateGateDetail }) {
               showTimeSelectOnly
               timeIntervals={30}
               timeCaption="Time"
-              disabled={gateDetail.gateOpensAtDawn}
+              disabled={
+                gateDetail.gateOpensAtDawn || gateDetail.isTimeRangeAnnual
+              }
+              placeholderText={
+                gateDetail.gateOpensAtDawn ? "Dawn" : "Select start time"
+              }
               minTime={new Date(0, 0, 0, 7, 0)}
               maxTime={new Date(0, 0, 0, 23, 0)}
             />
@@ -52,7 +57,12 @@ function TimeRangeForm({ gateDetail, updateGateDetail }) {
               showTimeSelectOnly
               timeIntervals={30}
               showTimeCaption={false}
-              disabled={gateDetail.gateClosesAtDusk}
+              disabled={
+                gateDetail.gateClosesAtDusk || gateDetail.isTimeRangeAnnual
+              }
+              placeholderText={
+                gateDetail.gateClosesAtDusk ? "Dusk" : "Select end time"
+              }
               minTime={new Date(0, 0, 0, 7, 0)}
               maxTime={new Date(0, 0, 0, 23, 0)}
             />
@@ -70,6 +80,7 @@ TimeRangeForm.propTypes = {
     gateCloseTime: PropTypes.string,
     gateOpensAtDawn: PropTypes.bool,
     gateClosesAtDusk: PropTypes.bool,
+    isTimeRangeAnnual: PropTypes.bool,
   }).isRequired,
   updateGateDetail: PropTypes.func.isRequired,
 };

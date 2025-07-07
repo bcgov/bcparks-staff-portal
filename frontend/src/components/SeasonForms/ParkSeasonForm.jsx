@@ -29,8 +29,6 @@ export default function ParkSeasonForm({
     (dateType) => dateType.name === "Operating",
   );
 
-  console.log("Gate:", gateDetail);
-
   const datesByType = useMemo(
     () => groupBy(park.dateable.dateRanges, "dateType.name"),
     [park.dateable.dateRanges],

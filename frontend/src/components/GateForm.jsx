@@ -29,7 +29,14 @@ export default function GateForm({
   function handleCheckboxChange(e) {
     const { name, checked } = e.target;
 
-    updateGateDetail({ [name]: checked });
+    // if the gate opens at dawn or closes at dusk, clear the time fields
+    if (name === "gateOpensAtDawn" && checked) {
+      updateGateDetail({ gateOpensAtDawn: true, gateOpenTime: null });
+    } else if (name === "gateClosesAtDusk" && checked) {
+      updateGateDetail({ gateClosesAtDusk: true, gateCloseTime: null });
+    } else {
+      updateGateDetail({ [name]: checked });
+    }
   }
 
   return (
@@ -52,6 +59,7 @@ export default function GateForm({
       </div>
       {gateDetail.hasGate && (
         <div>
+          {/* display operating dates only at park level */}
           {level === "park" && (
             <div className="mb-4">
               <h6 className="fw-normal">
@@ -75,9 +83,16 @@ export default function GateForm({
               />
             </div>
           )}
+
           <h6 className="fw-normal">
-            Gate hours {/* TODO: change content */}
-            <TooltipWrapper placement="top" content="Gate hours">
+            Gate hours{" "}
+            <TooltipWrapper
+              placement="top"
+              content="Gate Enter the hours the gate is open during the operating season.
+              If the times change throughout the season,
+              leave the times blank and list all the gate hours in the gate notes field.
+              If you do not want to display this information publicly, leave this blank."
+            >
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
           </h6>
@@ -120,8 +135,8 @@ export default function GateForm({
 }
 
 GateForm.propTypes = {
-  gateTitle: PropTypes.string,
-  gateDescription: PropTypes.string,
+  gateTitle: PropTypes.string.isRequired,
+  gateDescription: PropTypes.string.isRequired,
   gateDetail: PropTypes.shape({
     hasGate: PropTypes.bool,
     gateOpenTime: PropTypes.string,
@@ -132,18 +147,18 @@ GateForm.propTypes = {
     isTimeRangeAnnual: PropTypes.bool,
   }),
   updateGateDetail: PropTypes.func.isRequired,
-  dateableId: PropTypes.number.isRequired,
+  dateableId: PropTypes.number,
   dateType: PropTypes.shape({
-    id: PropTypes.number.isRequired,
-    name: PropTypes.string.isRequired,
+    id: PropTypes.number,
+    name: PropTypes.string,
     description: PropTypes.string,
-  }).isRequired,
-  dateRanges: PropTypes.object,
-  updateDateRange: PropTypes.func.isRequired,
-  addDateRange: PropTypes.func.isRequired,
-  removeDateRange: PropTypes.func.isRequired,
-  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
-  updateDateRangeAnnual: PropTypes.func.isRequired,
-  previousDateRanges: PropTypes.object,
+  }),
+  dateRanges: PropTypes.arrayOf(PropTypes.object),
+  updateDateRange: PropTypes.func,
+  addDateRange: PropTypes.func,
+  removeDateRange: PropTypes.func,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object),
+  updateDateRangeAnnual: PropTypes.func,
+  previousDateRanges: PropTypes.arrayOf(PropTypes.object),
   level: PropTypes.string,
 };
