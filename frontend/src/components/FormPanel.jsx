@@ -164,6 +164,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     const payload = {
       dateRanges: changedDateRanges,
       deletedDateRangeIds,
+      dateRangeAnnuals: season.dateRangeAnnuals,
       readyToPublish: season.readyToPublish,
       notes,
     };
