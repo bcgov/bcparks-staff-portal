@@ -154,7 +154,10 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     setDeletedDateRangeIds((prev) => [...prev, id]);
   }
 
-  async function onSave(close = true) {
+  // Memoize the updated data for saving or detecting changes
+  const savePayload = useMemo(() => {
+    if (!season) return null;
+
     // Format the data for the API
     const seasonDateRanges = [];
 
@@ -193,7 +196,28 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
       notes,
     };
 
-    await sendSave(payload);
+    return payload;
+  }, [level, season, deletedDateRangeIds, notes]);
+
+  // Calculate if the form data has changed
+  const dataChanged = useMemo(() => {
+    if (!season) return false;
+
+    // Return true if date ranges were updated
+    if (savePayload.dateRanges.length) return true;
+
+    // Return true if date ranges were deleted
+    if (savePayload.deletedDateRangeIds.length) return true;
+
+    // Check if readyToPublish changed
+    if (season.readyToPublish !== apiData?.current?.readyToPublish) return true;
+
+    // If nothing else has changed, return true if notes are entered
+    return savePayload.notes.length > 0;
+  }, [season, savePayload, apiData]);
+
+  async function onSave(close = true) {
+    await sendSave(savePayload);
 
     // Start refreshing the main page data from the API
     onDataUpdate();
