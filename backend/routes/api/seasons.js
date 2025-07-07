@@ -576,13 +576,13 @@ router.post(
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
 
       // dateRangeAnnuals
-      const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
-        (dateRangeAnnual) => ({
+      const dateRangeAnnualsToSave = (dateRangeAnnuals || [])
+        .filter((dateRangeAnnual) => dateRangeAnnual.changed)
+        .map((dateRangeAnnual) => ({
           id: dateRangeAnnual.id,
           publishableId: season.publishableId,
           isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
-        }),
-      );
+        }));
 
       // Upsert dateRangeAnnuals
       const saveDateRangeAnnuals = DateRangeAnnual.bulkCreate(

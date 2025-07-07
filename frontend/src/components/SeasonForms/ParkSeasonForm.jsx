@@ -148,7 +148,7 @@ export default function ParkSeasonForm({
       );
 
       if (index !== -1) {
-        annuals[index] = { ...annuals[index], ...updatedAnnual };
+        annuals[index] = { ...annuals[index], ...updatedAnnual, changed: true };
       }
       return updatedData;
     });
