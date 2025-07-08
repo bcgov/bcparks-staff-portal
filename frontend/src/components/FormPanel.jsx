@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
 import { omit } from "lodash-es";
@@ -13,6 +13,7 @@ import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
 import DataContext from "@/contexts/DataContext";
+import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 
 import "./FormPanel.scss";
 
@@ -79,6 +80,9 @@ Buttons.propTypes = {
 };
 
 function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
+  // Global flash message context
+  const flashMessage = useContext(globalFlashMessageContext);
+
   // Hooks
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
@@ -102,10 +106,6 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     `/seasons/${seasonId}/save/`,
   );
 
-  function addDeletedDateRangeId(id) {
-    setDeletedDateRangeIds((prev) => [...prev, id]);
-  }
-
   const {
     data: apiData,
     loading,
@@ -127,12 +127,31 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
   } = data || {};
   const currentYear = season?.operatingYear;
 
+  const seasonTitle = useMemo(() => {
+    // Return blank while loading
+    if (!season || !seasonMetadata) return "";
+
+    // For Park-level seasons, return the park name
+    if (level === "park") {
+      return season.park.name;
+    }
+
+    // For Area/Feature-level seasons,
+    // Return Park and Area/Feature name
+    return `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
+  }, [level, season, seasonMetadata]);
+
   // Clears and re-fetches the data
   function resetData() {
     setData(null);
 
     // Refresh the data from the API
     refreshData();
+  }
+
+  // Track deleted date range IDs
+  function addDeletedDateRangeId(id) {
+    setDeletedDateRangeIds((prev) => [...prev, id]);
   }
 
   async function onSave(close = true) {
@@ -177,6 +196,11 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     setNotes("");
     setDeletedDateRangeIds([]);
 
+    flashMessage.open(
+      "Dates saved as draft",
+      `${seasonTitle} ${season.operatingYear} details saved`,
+    );
+
     if (close) {
       handleClose();
     } else {
@@ -192,6 +216,11 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
 
     // Start refreshing the main page data from the API
     onDataUpdate();
+
+    flashMessage.open(
+      "Dates approved",
+      `${seasonTitle} ${season.operatingYear} dates marked as approved`,
+    );
 
     handleClose();
   }
@@ -243,7 +272,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
             </h4>
           )}
 
-          <h2>{seasonMetadata.name}</h2>
+          <h2>{seasonTitle}</h2>
           <h2 className="fw-normal">{currentYear} dates</h2>
           <p className="fs-6 fw-normal">
             <a

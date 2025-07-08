@@ -1,5 +1,5 @@
 import { useConfirmation } from "@/hooks/useConfirmation";
-import { useFlashMessage } from "@/hooks/useFlashMessage";
+import useFlashMessage from "@/hooks/useFlashMessage";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -58,14 +58,14 @@ function PublishPage() {
       try {
         await publishData();
 
-        successFlash.openFlashMessage(
+        successFlash.open(
           "Dates publishing to API",
           "Approved dates publishing may take up to one hour.",
         );
       } catch (publishError) {
         console.error("Error publishing to API", publishError);
 
-        errorFlash.openFlashMessage(
+        errorFlash.open(
           "Publishing failed",
           "There was an error publishing data to the API. Please try again.",
         );
@@ -77,17 +77,17 @@ function PublishPage() {
     <div className="container">
       <div className="page publish">
         <FlashMessage
-          title={successFlash.flashTitle}
-          message={successFlash.flashMessage}
-          isVisible={successFlash.isFlashOpen}
-          onClose={successFlash.handleFlashClose}
+          title={successFlash.title}
+          message={successFlash.message}
+          isVisible={successFlash.isOpen}
+          onClose={successFlash.close}
         />
 
         <FlashMessage
-          title={errorFlash.flashTitle}
-          message={errorFlash.flashMessage}
-          isVisible={errorFlash.isFlashOpen}
-          onClose={errorFlash.handleFlashClose}
+          title={errorFlash.title}
+          message={errorFlash.message}
+          isVisible={errorFlash.isOpen}
+          onClose={errorFlash.close}
           variant="error"
         />
 

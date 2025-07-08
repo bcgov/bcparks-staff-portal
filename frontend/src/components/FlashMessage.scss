@@ -3,7 +3,8 @@
   position: fixed;
   top: var(--layout-margin-medium);
   right: var(--layout-margin-medium);
-  z-index: 1000;
+  // Display above the offcanvas panel
+  z-index: 1046;
   max-width: 75vw;
 
   display: flex;
