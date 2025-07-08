@@ -322,10 +322,10 @@ export default function AreaSeasonForm({
   return (
     <>
       <FormContainer>
-        <div className="row mb-4">
+        <div className="row">
           {/* Area-level dates */}
           {areaDateTypes.map((dateType) => (
-            <div key={dateType.name} className="col-lg-6">
+            <div key={dateType.name} className="col-lg-6 mb-4">
               <h6 className="fw-normal">
                 {dateType.name}{" "}
                 <TooltipWrapper placement="top" content={dateType.description}>
