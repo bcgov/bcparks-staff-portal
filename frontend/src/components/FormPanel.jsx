@@ -165,7 +165,7 @@ function SeasonForm({
   }
 
   // Memoize the updated data for saving or detecting changes
-  const savePayload = useMemo(() => {
+  const changesPayload = useMemo(() => {
     if (!season) return null;
 
     // Format the data for the API
@@ -214,17 +214,17 @@ function SeasonForm({
     if (!season) return false;
 
     // Return true if date ranges were updated
-    if (savePayload.dateRanges.length) return true;
+    if (changesPayload.dateRanges.length) return true;
 
     // Return true if date ranges were deleted
-    if (savePayload.deletedDateRangeIds.length) return true;
+    if (changesPayload.deletedDateRangeIds.length) return true;
 
     // Check if readyToPublish changed
     if (season.readyToPublish !== apiData?.current?.readyToPublish) return true;
 
     // If nothing else has changed, return true if notes are entered
-    return savePayload.notes.length > 0;
-  }, [season, savePayload, apiData]);
+    return changesPayload.notes.length > 0;
+  }, [season, changesPayload, apiData]);
 
   // Update the parent component when dataChanged is updated
   useEffect(() => {
@@ -232,7 +232,7 @@ function SeasonForm({
   }, [dataChanged, setDataChanged]);
 
   async function onSave(close = true) {
-    await sendSave(savePayload);
+    await sendSave(changesPayload);
 
     // Start refreshing the main page data from the API
     onDataUpdate();
