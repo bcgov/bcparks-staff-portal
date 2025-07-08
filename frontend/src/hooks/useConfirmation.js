@@ -54,6 +54,7 @@ export default function useConfirmation() {
   return {
     open,
 
+    // Export all the component props as one object for convenience
     props: {
       title: titleText,
       message: messageText,
