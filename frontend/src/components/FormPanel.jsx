@@ -388,6 +388,7 @@ SeasonForm.propTypes = {
   level: PropTypes.string.isRequired,
   closePanel: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
+  setDataChanged: PropTypes.func.isRequired,
 };
 
 function FormPanel({ show, setShow, formData, onDataUpdate }) {
