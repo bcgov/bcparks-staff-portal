@@ -88,6 +88,7 @@ function SeasonForm({
   closePanel,
   onDataUpdate,
   setDataChanged,
+  openModal,
 }) {
   // Global flash message context
   const flashMessage = useContext(globalFlashMessageContext);
@@ -252,6 +253,26 @@ function SeasonForm({
     }
   }
 
+  async function promptAndSave(close = true) {
+    if (dataChanged) {
+      const proceed = await openModal(
+        "Move back to draft?",
+        `The dates will be moved back to draft and need to be submitted again to be reviewed.
+
+If dates have already been published, they will not be updated until new dates are submitted, approved, and published. `,
+        "Move to draft",
+        "Cancel",
+      );
+
+      // If the user cancels in the confirmation modal, don't close the edit form
+      if (!proceed) {
+        return;
+      }
+    }
+
+    onSave(close);
+  }
+
   async function onApprove() {
     // Save first, then approve
     await onSave(false); // Don't close the form after saving
@@ -374,7 +395,7 @@ function SeasonForm({
         <Buttons
           approver={approver}
           onApprove={onApprove}
-          onSave={() => onSave(false)}
+          onSave={() => promptAndSave(false)}
           onSubmit={onSubmit}
           loading={sendingApprove || sendingSubmit || sendingSave}
         />
@@ -389,6 +410,7 @@ SeasonForm.propTypes = {
   closePanel: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
   setDataChanged: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
 };
 
 function FormPanel({ show, setShow, formData, onDataUpdate }) {
@@ -440,6 +462,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
             closePanel={closePanel}
             onDataUpdate={onDataUpdate}
             setDataChanged={setDataChanged}
+            openModal={modal.open}
           />
         )}
       </Offcanvas>

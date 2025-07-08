@@ -47,6 +47,9 @@
 
 .confirmation-dialog-message {
   margin-bottom: var(--layout-margin-large);
+
+  // Render line breaks in the message
+  white-space: pre-line;
 }
 
 .missing-dates-confirmation-dialog-message {
