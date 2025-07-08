@@ -423,11 +423,14 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   useNavigationGuard(dataChanged);
 
   // Functions
+
+  // Hides the form panel and resets the dataChanged state
   function closePanel() {
     setShow(false);
+    setDataChanged(false);
   }
 
-  // Prompt the user if data has changed before closing
+  // Prompts the user if data has changed before closing
   async function promptAndClose() {
     if (dataChanged) {
       const proceed = await modal.open(
