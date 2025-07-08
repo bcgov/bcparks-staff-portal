@@ -8,7 +8,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  // Above the Offcanvas panel (1045) and the Flash message (1046)
+  z-index: 1047;
 }
 
 .confirmation-dialog-container {

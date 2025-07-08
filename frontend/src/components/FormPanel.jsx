@@ -9,9 +9,11 @@ import LoadingBar from "@/components/LoadingBar";
 import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
+import useConfirmation from "@/hooks/useConfirmation";
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 
@@ -79,7 +81,13 @@ Buttons.propTypes = {
   loading: PropTypes.bool,
 };
 
-function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
+function SeasonForm({
+  seasonId,
+  level,
+  closePanel,
+  onDataUpdate,
+  setDataChanged,
+}) {
   // Global flash message context
   const flashMessage = useContext(globalFlashMessageContext);
 
@@ -216,6 +224,11 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     return savePayload.notes.length > 0;
   }, [season, savePayload, apiData]);
 
+  // Update the parent component when dataChanged is updated
+  useEffect(() => {
+    setDataChanged(dataChanged);
+  }, [dataChanged, setDataChanged]);
+
   async function onSave(close = true) {
     await sendSave(savePayload);
 
@@ -232,7 +245,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     );
 
     if (close) {
-      handleClose();
+      closePanel();
     } else {
       resetData();
     }
@@ -252,7 +265,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
       `${seasonTitle} ${season.operatingYear} dates marked as approved`,
     );
 
-    handleClose();
+    closePanel();
   }
 
   async function onSubmit() {
@@ -264,7 +277,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     // Start refreshing the main page data from the API
     onDataUpdate();
 
-    handleClose();
+    closePanel();
   }
 
   if (loading) {
@@ -372,33 +385,64 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
 SeasonForm.propTypes = {
   seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
-  handleClose: PropTypes.func.isRequired,
+  closePanel: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
 };
 
 function FormPanel({ show, setShow, formData, onDataUpdate }) {
+  // Track if the form data has changed.
+  // Synced with the computed value in the SeasonForm component
+  const [dataChanged, setDataChanged] = useState(false);
+  const modal = useConfirmation();
+
   // Functions
-  function handleClose() {
+  function closePanel() {
     setShow(false);
+  }
+
+  // Prompt the user if data has changed before closing
+  async function promptAndClose() {
+    console.log("prompt and close called");
+
+    if (dataChanged) {
+      const proceed = await modal.open(
+        "Discard changes?",
+        "Discarded changes will be permanently deleted.",
+        "Discard changes",
+        "Continue editing",
+      );
+
+      // If the user cancels in the confirmation modal, don't close the edit form
+      if (!proceed) {
+        return;
+      }
+    }
+
+    closePanel();
   }
 
   // Hide the form if no seasonId is provided
   return (
-    <Offcanvas
-      show={show}
-      onHide={handleClose}
-      placement="end"
-      className="form-panel"
-    >
-      {formData.seasonId && (
-        <SeasonForm
-          seasonId={formData.seasonId}
-          level={formData.level}
-          handleClose={handleClose}
-          onDataUpdate={onDataUpdate}
-        />
-      )}
-    </Offcanvas>
+    <>
+      <Offcanvas
+        show={show}
+        onHide={promptAndClose}
+        placement="end"
+        className="form-panel"
+      >
+        {formData.seasonId && (
+          <SeasonForm
+            seasonId={formData.seasonId}
+            level={formData.level}
+            closePanel={closePanel}
+            onDataUpdate={onDataUpdate}
+            setDataChanged={setDataChanged}
+          />
+        )}
+      </Offcanvas>
+
+      <ConfirmationDialog {...modal.props} />
+    </>
   );
 }
 
