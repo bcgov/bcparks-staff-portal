@@ -14,6 +14,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
 import useConfirmation from "@/hooks/useConfirmation";
+import useNavigationGuard from "@/hooks/useNavigationGuard";
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 
@@ -395,6 +396,9 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   const [dataChanged, setDataChanged] = useState(false);
   const modal = useConfirmation();
 
+  // Prevent navigating away if the data has changed
+  useNavigationGuard(dataChanged);
+
   // Functions
   function closePanel() {
     setShow(false);
@@ -402,8 +406,6 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
 
   // Prompt the user if data has changed before closing
   async function promptAndClose() {
-    console.log("prompt and close called");
-
     if (dataChanged) {
       const proceed = await modal.open(
         "Discard changes?",
