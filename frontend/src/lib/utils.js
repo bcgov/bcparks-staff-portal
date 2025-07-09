@@ -1,4 +1,4 @@
-import { format } from "date-fns";
+import { format, parse } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 
 // Month, day, year
@@ -102,11 +102,8 @@ export function removeTrailingSlash(str) {
  */
 export function timeStringToDate(timeString) {
   if (!timeString) return null;
-  const [hours, minutes, seconds] = timeString.split(":").map(Number);
-  const date = new Date();
 
-  date.setHours(hours, minutes, seconds || 0, 0);
-  return date;
+  return parse(timeString, "HH:mm:ss", new Date());
 }
 
 /**
