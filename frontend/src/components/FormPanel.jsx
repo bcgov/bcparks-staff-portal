@@ -161,10 +161,14 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
       // We only need the dateTypeId, drop fields we don't need to send
       .map((range) => omit(range, ["changed", "dateType"]));
 
+    const changedDateRangeAnnuals = season.dateRangeAnnuals.filter(
+      (dateRangeAnnual) => dateRangeAnnual.changed,
+    );
+
     const payload = {
       dateRanges: changedDateRanges,
       deletedDateRangeIds,
-      dateRangeAnnuals: season.dateRangeAnnuals,
+      dateRangeAnnuals: changedDateRangeAnnuals,
       readyToPublish: season.readyToPublish,
       notes,
     };
