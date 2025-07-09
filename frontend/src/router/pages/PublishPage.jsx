@@ -36,7 +36,7 @@ function PublishPage() {
   }
 
   async function publishToApi() {
-    const confirm = await confirmation.open(
+    const proceed = await confirmation.open(
       "Publish dates to API?",
       "All parks that are not flagged will be made public. This cannot be undone.",
       "Publish",
@@ -44,7 +44,7 @@ function PublishPage() {
       "Publishing may take up to one hour.",
     );
 
-    if (confirm) {
+    if (proceed) {
       try {
         await publishData();
 
