@@ -1,4 +1,4 @@
-import { useConfirmation } from "@/hooks/useConfirmation";
+import useConfirmation from "@/hooks/useConfirmation";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 
@@ -8,17 +8,7 @@ import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
 
 function PublishPage() {
-  const {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen,
-  } = useConfirmation();
+  const confirmation = useConfirmation();
 
   const successFlash = useFlashMessage();
   const errorFlash = useFlashMessage();
@@ -46,7 +36,7 @@ function PublishPage() {
   }
 
   async function publishToApi() {
-    const confirm = await openConfirmation(
+    const proceed = await confirmation.open(
       "Publish dates to API?",
       "All parks that are not flagged will be made public. This cannot be undone.",
       "Publish",
@@ -54,7 +44,7 @@ function PublishPage() {
       "Publishing may take up to one hour.",
     );
 
-    if (confirm) {
+    if (proceed) {
       try {
         await publishData();
 
@@ -91,16 +81,7 @@ function PublishPage() {
           variant="error"
         />
 
-        <ConfirmationDialog
-          isOpen={isConfirmationOpen}
-          onConfirm={handleConfirm}
-          onCancel={handleCancel}
-          title={title}
-          message={message}
-          confirmButtonText={confirmButtonText}
-          cancelButtonText={cancelButtonText}
-          notes={confirmationDialogNotes}
-        />
+        <ConfirmationDialog {...confirmation.props} />
 
         <div className="d-flex justify-content-end mb-2">
           <button className="btn btn-primary" onClick={publishToApi}>

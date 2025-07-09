@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
-import { omit } from "lodash-es";
+import { isEqual, omit } from "lodash-es";
 
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
@@ -9,9 +9,12 @@ import LoadingBar from "@/components/LoadingBar";
 import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
+import useConfirmation from "@/hooks/useConfirmation";
+import useNavigationGuard from "@/hooks/useNavigationGuard";
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 
@@ -79,7 +82,14 @@ Buttons.propTypes = {
   loading: PropTypes.bool,
 };
 
-function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
+function SeasonForm({
+  seasonId,
+  level,
+  closePanel,
+  onDataUpdate,
+  setDataChanged,
+  openModal,
+}) {
   // Global flash message context
   const flashMessage = useContext(globalFlashMessageContext);
 
@@ -154,7 +164,10 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     setDeletedDateRangeIds((prev) => [...prev, id]);
   }
 
-  async function onSave(close = true) {
+  // Memoize the updated data for saving or detecting changes
+  const changesPayload = useMemo(() => {
+    if (!season) return null;
+
     // Format the data for the API
     const seasonDateRanges = [];
 
@@ -193,7 +206,41 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
       notes,
     };
 
-    await sendSave(payload);
+    return payload;
+  }, [level, season, deletedDateRangeIds, notes]);
+
+  // Calculate if the form data has changed
+  const dataChanged = useMemo(() => {
+    if (!season) return false;
+
+    // Return true if date ranges were updated
+    if (changesPayload.dateRanges.length) return true;
+
+    // Return true if date ranges were deleted
+    if (changesPayload.deletedDateRangeIds.length) return true;
+
+    // Check if readyToPublish changed
+    if (changesPayload.readyToPublish !== apiData?.current?.readyToPublish)
+      return true;
+
+    // Check if any date annuals were updated
+    if (changesPayload.dateRangeAnnuals.length) return true;
+
+    // Check if any gateDetail values changed
+    if (!isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail))
+      return true;
+
+    // If nothing else has changed, return true if notes are entered
+    return changesPayload.notes.length > 0;
+  }, [season, changesPayload, apiData]);
+
+  // Update the parent component when dataChanged is updated
+  useEffect(() => {
+    setDataChanged(dataChanged);
+  }, [dataChanged, setDataChanged]);
+
+  async function onSave(close = true) {
+    await sendSave(changesPayload);
 
     // Start refreshing the main page data from the API
     onDataUpdate();
@@ -208,10 +255,30 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     );
 
     if (close) {
-      handleClose();
+      closePanel();
     } else {
       resetData();
     }
+  }
+
+  async function promptAndSave(close = true) {
+    if (dataChanged) {
+      const proceed = await openModal(
+        "Move back to draft?",
+        `The dates will be moved back to draft and need to be submitted again to be reviewed.
+
+If dates have already been published, they will not be updated until new dates are submitted, approved, and published. `,
+        "Move to draft",
+        "Cancel",
+      );
+
+      // If the user cancels in the confirmation modal, don't close the edit form
+      if (!proceed) {
+        return;
+      }
+    }
+
+    onSave(close);
   }
 
   async function onApprove() {
@@ -228,7 +295,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
       `${seasonTitle} ${season.operatingYear} dates marked as approved`,
     );
 
-    handleClose();
+    closePanel();
   }
 
   async function onSubmit() {
@@ -240,7 +307,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
     // Start refreshing the main page data from the API
     onDataUpdate();
 
-    handleClose();
+    closePanel();
   }
 
   if (loading) {
@@ -336,7 +403,7 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
         <Buttons
           approver={approver}
           onApprove={onApprove}
-          onSave={() => onSave(false)}
+          onSave={() => promptAndSave(false)}
           onSubmit={onSubmit}
           loading={sendingApprove || sendingSubmit || sendingSave}
         />
@@ -348,33 +415,71 @@ function SeasonForm({ seasonId, level, handleClose, onDataUpdate }) {
 SeasonForm.propTypes = {
   seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
-  handleClose: PropTypes.func.isRequired,
+  closePanel: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
+  setDataChanged: PropTypes.func.isRequired,
+  openModal: PropTypes.func.isRequired,
 };
 
 function FormPanel({ show, setShow, formData, onDataUpdate }) {
+  // Track if the form data has changed.
+  // Synced with the computed value in the SeasonForm component
+  const [dataChanged, setDataChanged] = useState(false);
+  const modal = useConfirmation();
+
+  // Prevent navigating away if the data has changed
+  useNavigationGuard(dataChanged);
+
   // Functions
-  function handleClose() {
+
+  // Hides the form panel and resets the dataChanged state
+  function closePanel() {
     setShow(false);
+    setDataChanged(false);
+  }
+
+  // Prompts the user if data has changed before closing
+  async function promptAndClose() {
+    if (dataChanged) {
+      const proceed = await modal.open(
+        "Discard changes?",
+        "Discarded changes will be permanently deleted.",
+        "Discard changes",
+        "Continue editing",
+      );
+
+      // If the user cancels in the confirmation modal, don't close the edit form
+      if (!proceed) {
+        return;
+      }
+    }
+
+    closePanel();
   }
 
   // Hide the form if no seasonId is provided
   return (
-    <Offcanvas
-      show={show}
-      onHide={handleClose}
-      placement="end"
-      className="form-panel"
-    >
-      {formData.seasonId && (
-        <SeasonForm
-          seasonId={formData.seasonId}
-          level={formData.level}
-          handleClose={handleClose}
-          onDataUpdate={onDataUpdate}
-        />
-      )}
-    </Offcanvas>
+    <>
+      <Offcanvas
+        show={show}
+        onHide={promptAndClose}
+        placement="end"
+        className="form-panel"
+      >
+        {formData.seasonId && (
+          <SeasonForm
+            seasonId={formData.seasonId}
+            level={formData.level}
+            closePanel={closePanel}
+            onDataUpdate={onDataUpdate}
+            setDataChanged={setDataChanged}
+            openModal={modal.open}
+          />
+        )}
+      </Offcanvas>
+
+      <ConfirmationDialog {...modal.props} />
+    </>
   );
 }
 

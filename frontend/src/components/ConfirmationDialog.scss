@@ -8,7 +8,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 100;
+  // Above the Offcanvas panel (1045) and the Flash message (1046)
+  z-index: 1047;
 }
 
 .confirmation-dialog-container {
@@ -46,6 +47,9 @@
 
 .confirmation-dialog-message {
   margin-bottom: var(--layout-margin-large);
+
+  // Render line breaks in the message
+  white-space: pre-line;
 }
 
 .missing-dates-confirmation-dialog-message {

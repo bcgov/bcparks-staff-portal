@@ -1,25 +1,25 @@
 import { useCallback, useState } from "react";
 
-export function useConfirmation() {
+export default function useConfirmation() {
   const [isOpen, setIsOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [message, setMessage] = useState("");
+  const [titleText, setTitleText] = useState("");
+  const [messageText, setMessageText] = useState("");
   const [notes, setNotes] = useState("");
   const [confirmButtonText, setConfirmButtonText] = useState("");
   const [cancelButtonText, setCancelButtonText] = useState("");
   const [resolvePromise, setResolvePromise] = useState(null);
 
-  const openConfirmation = useCallback(
+  const open = useCallback(
     (
-      confirmationTitle,
-      confirmationMessage,
+      title,
+      message,
       confirmText = "Confirm",
       cancelText = "Cancel",
       notesParam = "",
     ) =>
       new Promise((resolve) => {
-        setTitle(confirmationTitle);
-        setMessage(confirmationMessage);
+        setTitleText(title);
+        setMessageText(message);
         setNotes(notesParam);
         setConfirmButtonText(confirmText);
         setCancelButtonText(cancelText);
@@ -27,8 +27,8 @@ export function useConfirmation() {
         setIsOpen(true);
       }),
     [
-      setTitle,
-      setMessage,
+      setTitleText,
+      setMessageText,
       setNotes,
       setConfirmButtonText,
       setCancelButtonText,
@@ -37,14 +37,14 @@ export function useConfirmation() {
     ],
   );
 
-  function handleConfirm() {
+  function onConfirm() {
     if (resolvePromise) {
       resolvePromise(true); // Resolve with true
     }
     setIsOpen(false);
   }
 
-  function handleCancel() {
+  function onCancel() {
     if (resolvePromise) {
       resolvePromise(false); // Resolve with false
     }
@@ -52,14 +52,18 @@ export function useConfirmation() {
   }
 
   return {
-    title,
-    message,
-    confirmButtonText,
-    cancelButtonText,
-    confirmationDialogNotes: notes,
-    openConfirmation,
-    handleConfirm,
-    handleCancel,
-    isConfirmationOpen: isOpen,
+    open,
+
+    // Export all the component props as one object for convenience
+    props: {
+      title: titleText,
+      message: messageText,
+      confirmButtonText,
+      cancelButtonText,
+      notes,
+      isOpen,
+      onConfirm,
+      onCancel,
+    },
   };
 }

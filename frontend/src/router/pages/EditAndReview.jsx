@@ -1,6 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
+import useConfirmation from "@/hooks/useConfirmation";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
@@ -8,6 +9,7 @@ import { useMemo, useState } from "react";
 import PaginationBar from "@/components/PaginationBar";
 import FilterPanel from "@/components/FilterPanel";
 import FormPanel from "@/components/FormPanel";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 
 function EditAndReview() {
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -46,8 +48,41 @@ function EditAndReview() {
   const [showFormPanel, setShowFormPanel] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
+  const modal = useConfirmation();
+
   // open form panel when the Edit button is clicked
-  function formPanelHandler(formDataObj) {
+  async function formPanelHandler(formDataObj) {
+    const status = formDataObj.currentSeason.status;
+
+    // If the season is already approved, prompt to continue
+    if (status === "approved") {
+      const proceed = await modal.open(
+        "Edit approved dates?",
+        "Dates will need to be reviewed again to be approved.",
+        "Edit",
+        "Cancel",
+      );
+
+      // If the user cancels in the confirmation modal, don't open the edit form
+      if (!proceed) {
+        return;
+      }
+    }
+    // If the season is already published to the CMS, prompt to continue
+    else if (status === "published") {
+      const proceed = await modal.open(
+        "Edit public dates on API?",
+        "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
+        "Continue to edit",
+        "Cancel",
+      );
+
+      // If the user cancels in the confirmation modal, don't open the edit form
+      if (!proceed) {
+        return;
+      }
+    }
+
     setFormData({
       seasonId: formDataObj.currentSeason.id,
       level: formDataObj.level,
@@ -358,6 +393,8 @@ function EditAndReview() {
         </div>
 
         {renderTable()}
+
+        <ConfirmationDialog {...modal.props} />
 
         <FormPanel
           show={showFormPanel}

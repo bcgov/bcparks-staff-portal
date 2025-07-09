@@ -1,61 +1,22 @@
-import { useEffect, useCallback } from "react";
-import { useBlocker } from "react-router-dom";
-import { removeTrailingSlash } from "@/lib/utils";
+import { useEffect } from "react";
 
-export function useNavigationGuard(hasChanges, openConfirmation) {
-  const blocker = useBlocker(({ nextLocation }) => {
-    const nextPath = removeTrailingSlash(nextLocation.pathname);
+// adds a beforeunload event listener to the window
+// to prevent navigating away when hasChanges is true
 
-    // Get query string from nextPath
-    const queryString = new URLSearchParams(nextLocation.search);
-
-    // Bypass the blocker when saving or approving
-    if (
-      nextPath.includes("/preview") ||
-      nextPath.includes("/edit") ||
-      queryString.has("approved") ||
-      queryString.has("saved") ||
-      queryString.has("submitted")
-    ) {
-      return false;
-    }
-    return hasChanges;
-  });
-
+export default function useNavigationGuard(hasChanges) {
   useEffect(() => {
-    async function handleBlocker() {
-      if (blocker.state === "blocked") {
-        const proceed = await openConfirmation(
-          "Discard changes?",
-          "Discarded changes will be permanently deleted.",
-          "Discard changes",
-          "Continue editing",
-        );
-
-        if (proceed) {
-          blocker.proceed();
-        } else {
-          blocker.reset();
-        }
-      }
-    }
-
-    handleBlocker();
-  }, [blocker, openConfirmation]);
-
-  const handleBeforeUnload = useCallback(
-    async (e) => {
+    function handleBeforeUnload(event) {
       if (hasChanges) {
-        e.preventDefault();
-      }
-    },
-    [hasChanges],
-  );
+        event.preventDefault();
 
-  useEffect(() => {
+        // Included for legacy support, e.g. Chrome/Edge < 119
+        event.returnValue = "";
+      }
+    }
+
     window.addEventListener("beforeunload", handleBeforeUnload);
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [handleBeforeUnload]);
+  }, [hasChanges]);
 }
