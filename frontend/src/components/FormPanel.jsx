@@ -1,7 +1,7 @@
 import { useContext, useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
-import { omit } from "lodash-es";
+import { isEqual, omit } from "lodash-es";
 
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
@@ -228,8 +228,9 @@ function SeasonForm({
     // Check if any date annuals were updated
     if (changesPayload.dateRangeAnnuals.length) return true;
 
-    // Check if any gateDetails changed
-    // @TODO: check changesPayload.gateDetail against apiData.gateDetail
+    // Check if any gateDetail values changed
+    if (!isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail))
+      return true;
 
     // If nothing else has changed, return true if notes are entered
     return changesPayload.notes.length > 0;
