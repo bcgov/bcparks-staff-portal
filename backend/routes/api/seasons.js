@@ -541,7 +541,11 @@ router.post(
   sanitizePayload,
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
-    const { notes = "", deletedDateRangeIds = [] } = req.body;
+    const {
+      notes = "",
+      deletedDateRangeIds = [],
+      dateRangeAnnuals = [],
+    } = req.body;
     let { readyToPublish } = req.body;
 
     // If the user isn't an approver, they shouldn't be able to set readyToPublish
@@ -572,6 +576,24 @@ router.post(
 
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
+
+      // dateRangeAnnuals
+      const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
+        (dateRangeAnnual) => ({
+          id: dateRangeAnnual.id,
+          publishableId: season.publishableId,
+          isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
+        }),
+      );
+
+      // Upsert dateRangeAnnuals
+      const saveDateRangeAnnuals = DateRangeAnnual.bulkCreate(
+        dateRangeAnnualsToSave,
+        {
+          updateOnDuplicate: ["isDateRangeAnnual", "updatedAt"],
+          transaction,
+        },
+      );
 
       // Create season change log with the notes
       const seasonChangeLog = await SeasonChangeLog.create(
@@ -650,6 +672,7 @@ router.post(
         updateDates,
         createChangeLogs,
         deleteDates,
+        saveDateRangeAnnuals,
       ]);
 
       await transaction.commit();
