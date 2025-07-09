@@ -299,7 +299,7 @@ function EditAndReview() {
   }, [filteredParks, page, pageSize]);
 
   // components
-  function renderTable() {
+  function ParksTableWrapper() {
     if (loading) {
       return <LoadingBar />;
     }
@@ -412,7 +412,7 @@ function EditAndReview() {
           </div>
         </div>
 
-        {renderTable()}
+        <ParksTableWrapper />
 
         <ConfirmationDialog {...modal.props} />
 
