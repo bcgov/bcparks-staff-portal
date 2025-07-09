@@ -530,6 +530,8 @@ router.get(
 
     checkSeasonExists(seasonModel);
 
+    const { park } = seasonModel;
+
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel, {
       parkLevel: true,
@@ -543,12 +545,23 @@ router.get(
     const dateTypesByName = _.keyBy(dateTypesArray, "name");
 
     // Return the DateTypes in a specific order
-    const orderedDateTypes = [
-      dateTypesByName["Tier 1"],
-      dateTypesByName["Tier 2"],
-      dateTypesByName["Winter fee"],
-      dateTypesByName.Operating,
-    ];
+    const orderedDateTypes = [];
+
+    // Add applicable date types for the Park
+    if (park.hasTier1Dates) {
+      orderedDateTypes.push(dateTypesByName["Tier 1"]);
+    }
+    if (park.hasTier2Dates) {
+      orderedDateTypes.push(dateTypesByName["Tier 2"]);
+    }
+    if (park.hasWinterFeeDates) {
+      orderedDateTypes.push(dateTypesByName["Winter fee"]);
+    }
+
+    // Add Operating date type
+    // @TODO: This should be in its own property
+    // because it's used by gate details and not the Reservations section
+    orderedDateTypes.push(dateTypesByName.Operating);
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
