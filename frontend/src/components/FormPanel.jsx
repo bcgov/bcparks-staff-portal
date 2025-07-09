@@ -222,7 +222,14 @@ function SeasonForm({
     if (changesPayload.deletedDateRangeIds.length) return true;
 
     // Check if readyToPublish changed
-    if (season.readyToPublish !== apiData?.current?.readyToPublish) return true;
+    if (changesPayload.readyToPublish !== apiData?.current?.readyToPublish)
+      return true;
+
+    // Check if any date annuals were updated
+    if (changesPayload.dateRangeAnnuals.length) return true;
+
+    // Check if any gateDetails changed
+    // @TODO: check changesPayload.gateDetail against apiData.gateDetail
 
     // If nothing else has changed, return true if notes are entered
     return changesPayload.notes.length > 0;
