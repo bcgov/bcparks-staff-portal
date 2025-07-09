@@ -88,15 +88,10 @@ export async function createDateRangeAnnualEntries() {
 
           if (!dateTypeId) continue;
 
-          // skip if dateType name is "Tier 1" or "Tier 2" or "Operating"
+          // skip if dateType name is "Tier 1" or "Tier 2"
           const dateTypeName = dateTypeNameById[dateTypeId];
 
-          if (
-            dateTypeName === "Tier 1" ||
-            dateTypeName === "Tier 2" ||
-            dateTypeName === "Operating"
-          )
-            continue;
+          if (dateTypeName === "Tier 1" || dateTypeName === "Tier 2") continue;
 
           const [created] = await DateRangeAnnual.findOrCreate({
             where: {

@@ -11,7 +11,12 @@ import PropTypes from "prop-types";
 
 import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
 
-function DateRange({ dateRange, updateDateRange, removeDateRange, isDateRangeAnnual }) {
+function DateRange({
+  dateRange,
+  updateDateRange,
+  removeDateRange,
+  isDateRangeAnnual,
+}) {
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
@@ -189,7 +194,7 @@ export default function DateRangeFields({
       {hasMultipleDates && (
         <button
           type="button"
-          className="btn btn-text text-link"
+          className="btn btn-text text-link p-0"
           onClick={() => addDateRange(dateType)}
         >
           <FontAwesomeIcon icon={faPlus} />
@@ -197,14 +202,18 @@ export default function DateRangeFields({
         </button>
       )}
 
-      <Form.Check
-        type="checkbox"
-        id={`date-range-annual-${dateType.id}`}
-        name={`date-range-annual-${dateType.id}`}
-        label="Dates are the same every year"
-        checked={isDateRangeAnnual}
-        onChange={handleDateRangeAnnualChange}
-      />
+      {/* Display checkbox except for Tier 1 and Tier 2 */}
+      {!(dateType.name === "Tier 1" || dateType.name === "Tier 2") && (
+        <Form.Check
+          type="checkbox"
+          id={`date-range-annual-${dateType.id}`}
+          name={`date-range-annual-${dateType.id}`}
+          label="Dates are the same every year"
+          checked={isDateRangeAnnual}
+          onChange={handleDateRangeAnnualChange}
+          className="mt-2 mb-0"
+        />
+      )}
     </>
   );
 }
