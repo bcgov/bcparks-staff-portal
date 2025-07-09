@@ -204,6 +204,8 @@ function SeasonForm({
       gateDetail: season.gateDetail,
       readyToPublish: season.readyToPublish,
       notes,
+      dateRangeAnnuals: changedDateRangeAnnuals,
+      gateDetail: season.gateDetail,
     };
 
     return payload;
