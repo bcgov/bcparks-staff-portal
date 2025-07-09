@@ -14,6 +14,7 @@ import {
   DateRange,
   DateRangeAnnual,
   Dateable,
+  GateDetail,
   ParkArea,
   SeasonChangeLog,
   DateChangeLog,
@@ -153,6 +154,28 @@ async function getDateRangeAnnuals(publishableId) {
         as: "dateType",
         attributes: ["id", "name"],
       },
+    ],
+  });
+}
+
+/**
+ * Returns all GateDetails for a given publishableId.
+ * @param {number} publishableId The ID of the Publishable to get GateDetail
+ * @returns {Promise<Object|null>} GateDetail model, or null if not found
+ */
+async function getGateDetail(publishableId) {
+  if (!publishableId) return null;
+  return await GateDetail.findOne({
+    where: { publishableId },
+    attributes: [
+      "id",
+      "hasGate",
+      "gateOpenTime",
+      "gateCloseTime",
+      "gateOpensAtDawn",
+      "gateClosesAtDusk",
+      "gateOpen24Hours",
+      "isTimeRangeAnnual",
     ],
   });
 }
@@ -304,12 +327,18 @@ router.get(
       dateTypesByName["Backcountry registration"],
     ];
 
-    // Get DateRangeAnnuals
+    // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
+    const gateDetail = await getGateDetail(seasonModel.publishableId);
+
     // Add DateRangeAnnuals to seasonModel
-    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
+    const currentSeason = {
+      ...seasonModel.toJSON(),
+      dateRangeAnnuals,
+      gateDetail,
+    };
 
     const output = {
       current: currentSeason,
@@ -408,12 +437,18 @@ router.get(
       featureTypeName = firstFeature.featureType.name;
     }
 
-    // Get DateRangeAnnuals
+    // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
+    const gateDetail = await getGateDetail(seasonModel.publishableId);
+
     // Add DateRangeAnnuals to seasonModel
-    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
+    const currentSeason = {
+      ...seasonModel.toJSON(),
+      dateRangeAnnuals,
+      gateDetail,
+    };
 
     const output = {
       current: currentSeason,
@@ -515,12 +550,18 @@ router.get(
       dateTypesByName.Operating,
     ];
 
-    // Get DateRangeAnnuals
+    // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
+    const gateDetail = await getGateDetail(seasonModel.publishableId);
+
     // Add DateRangeAnnuals to seasonModel
-    const currentSeason = { ...seasonModel.toJSON(), dateRangeAnnuals };
+    const currentSeason = {
+      ...seasonModel.toJSON(),
+      dateRangeAnnuals,
+      gateDetail,
+    };
 
     const output = {
       current: currentSeason,
@@ -545,6 +586,7 @@ router.post(
       notes = "",
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
+      gateDetail = {}
     } = req.body;
     let { readyToPublish } = req.body;
 
@@ -594,6 +636,17 @@ router.post(
           transaction,
         },
       );
+      
+      // gateDetail
+      const gateDetailToSave = {
+        ...gateDetail,
+        publishableId: season.publishableId,
+      };
+
+      // Upsert gateDetail
+      const saveGateDetail = GateDetail.upsert(gateDetailToSave, {
+        transaction,
+      });
 
       // Create season change log with the notes
       const seasonChangeLog = await SeasonChangeLog.create(
@@ -673,6 +726,7 @@ router.post(
         createChangeLogs,
         deleteDates,
         saveDateRangeAnnuals,
+        saveGateDetail,
       ]);
 
       await transaction.commit();

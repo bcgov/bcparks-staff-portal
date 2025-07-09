@@ -1,3 +1,4 @@
+import { format, parse } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 
 // Month, day, year
@@ -92,4 +93,27 @@ export function removeTrailingSlash(str) {
     return str.slice(0, -1);
   }
   return str;
+}
+
+/**
+ * Converts a "HH:mm:ss" string (e.g. "14:30:00") to a Date object set to today's date
+ * @param {string} timeString "HH:mm:ss" formatted time string
+ * @returns {Date|null} Date object set to today's date with the specified time, or null if input is falsy.
+ */
+export function timeStringToDate(timeString) {
+  if (!timeString) return null;
+
+  return parse(timeString, "HH:mm:ss", new Date());
+}
+
+/**
+ * Converts a Date object to a "HH:mm:ss" string (e.g. "14:30:00")
+ * @param {Date|null} date Date object to convert to time string
+ * @returns {string|null} "HH:mm:ss" formatted time string, or null if input is falsy.
+ */
+export function dateToTimeString(date) {
+  if (!date) return null;
+
+  // seconds are always set to "00"
+  return format(date, "HH:mm:00");
 }

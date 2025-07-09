@@ -22,9 +22,8 @@ export default function FeatureSeasonForm({
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
   const feature = season.feature;
-  const currentYear = season.operatingYear;
-  const lastYear = currentYear - 1;
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
+  const gateDetail = season.gateDetail || {};
 
   const datesByType = useMemo(
     () => groupBy(feature.dateable.dateRanges, "dateType.name"),
@@ -154,6 +153,19 @@ export default function FeatureSeasonForm({
     });
   }
 
+  // Updates the gateDetail state in the season data object
+  function updateGateDetail(updatedGateDetail) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.gateDetail = {
+        ...updatedData.current.gateDetail,
+        ...updatedGateDetail,
+      };
+      return updatedData;
+    });
+  }
+
   return (
     <>
       <FormContainer>
@@ -189,16 +201,9 @@ export default function FeatureSeasonForm({
       <GateForm
         gateTitle={`${feature.name} gate`}
         gateDescription={`Does ${feature.name} have a gated entrance?`}
-        // hasGate={park.hasGate} @TODO: get this from the db
-        setHasGate={
-          (value) => console.log("TODO: setHasGate", value)
-          // setPark({ ...park, hasGate: value })
-        }
-        // @TODO: groupedDateRanges - just pass in the dateable?
-        // dateRanges={park.groupedDateRanges}
+        gateDetail={gateDetail}
+        updateGateDetail={updateGateDetail}
         level={"feature"}
-        currentYear={currentYear}
-        lastYear={lastYear}
       />
 
       {/* Show Ready to Publish form input for approvers */}
@@ -219,6 +224,15 @@ FeatureSeasonForm.propTypes = {
     operatingYear: PropTypes.number.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
     dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+    gateDetail: PropTypes.shape({
+      hasGate: PropTypes.bool,
+      gateOpenTime: PropTypes.string,
+      gateCloseTime: PropTypes.string,
+      gateOpensAtDawn: PropTypes.bool,
+      gateClosesAtDusk: PropTypes.bool,
+      gateOpen24Hours: PropTypes.bool,
+      isTimeRangeAnnual: PropTypes.bool,
+    }),
   }).isRequired,
 
   previousSeasonDates: PropTypes.arrayOf(
