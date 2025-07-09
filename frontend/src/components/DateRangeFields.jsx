@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   faPlus,
   faXmark,
@@ -13,6 +13,7 @@ import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
 
 function DateRange({
   dateRange,
+  previousDateRanges = [],
   updateDateRange,
   removeDateRange,
   isDateRangeAnnual,
@@ -56,6 +57,47 @@ function DateRange({
     // New ranges have a tempId
     return updateDateRange(dateRange.tempId, dateField, newValue, true);
   }
+
+  // Copy the previous year's date ranges if isDateRangeAnnual is TRUE
+  useEffect(() => {
+    if (
+      isDateRangeAnnual &&
+      !dateRange.startDate &&
+      !dateRange.endDate &&
+      previousDateRanges.length > 0
+    ) {
+      // Copy each date range from previous year and update to current year
+      previousDateRanges.forEach((prevDateRange) => {
+        if (prevDateRange.startDate && prevDateRange.endDate) {
+          // Create new dates for current year
+          const prevStartDate = normalizeToLocalDate(prevDateRange.startDate);
+          const prevEndDate = normalizeToLocalDate(prevDateRange.endDate);
+          const currentYear = prevStartDate.getFullYear() + 1;
+
+          // Update to current year while keeping month and day
+          const newStartDate = new Date(prevStartDate);
+          const newEndDate = new Date(prevEndDate);
+
+          newStartDate.setFullYear(currentYear);
+          newEndDate.setFullYear(currentYear);
+
+          // Update the new date range
+          if (dateRange.id) {
+            updateDateRange(dateRange.id, "startDate", newStartDate);
+            updateDateRange(dateRange.id, "endDate", newEndDate);
+          } else if (dateRange.tempId) {
+            updateDateRange(dateRange.tempId, "startDate", newStartDate, true);
+            updateDateRange(dateRange.tempId, "endDate", newEndDate, true);
+          }
+        }
+      });
+    }
+  }, [isDateRangeAnnual, dateRange, previousDateRanges, updateDateRange]);
+
+  // Update local state when the dateRange changes
+  useEffect(() => {
+    setLocalDateRange({ ...dateRange });
+  }, [dateRange]);
 
   return (
     <div className="d-flex mb-2">
@@ -140,6 +182,12 @@ DateRange.propTypes = {
     startDate: PropTypes.instanceOf(Date),
     endDate: PropTypes.instanceOf(Date),
   }).isRequired,
+  previousDateRanges: PropTypes.arrayOf(
+    PropTypes.shape({
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
+    }),
+  ),
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
   isDateRangeAnnual: PropTypes.bool.isRequired,
@@ -147,6 +195,7 @@ DateRange.propTypes = {
 
 export default function DateRangeFields({
   dateRanges,
+  previousDateRanges,
   updateDateRange,
   removeDateRange,
   addDateRange,
@@ -162,7 +211,7 @@ export default function DateRangeFields({
     if (!dateType || !dateRangeAnnuals) return null;
 
     return dateRangeAnnuals.find(
-      (dateRangeAnnual) => dateRangeAnnual.dateType.name === dateType.name,
+      (dateRangeAnnual) => dateRangeAnnual.dateType.id === dateType.id,
     );
   }, [dateType, dateRangeAnnuals]);
 
@@ -184,6 +233,7 @@ export default function DateRangeFields({
         <DateRange
           key={dateRange.id || dateRange.tempId}
           dateRange={dateRange}
+          previousDateRanges={previousDateRanges}
           updateDateRange={updateDateRange}
           removeDateRange={removeDateRange}
           isDateRangeAnnual={isDateRangeAnnual}
@@ -231,6 +281,12 @@ DateRangeFields.propTypes = {
       endDate: PropTypes.instanceOf(Date),
     }),
   ).isRequired,
+  previousDateRanges: PropTypes.arrayOf(
+    PropTypes.shape({
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
+    }),
+  ),
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
   addDateRange: PropTypes.func.isRequired,

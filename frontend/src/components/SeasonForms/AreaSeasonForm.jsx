@@ -353,6 +353,9 @@ export default function AreaSeasonForm({
                 dateableId={parkArea.dateableId}
                 dateType={dateType}
                 dateRanges={areaDatesByType[dateType.name] ?? []}
+                previousDateRanges={
+                  previousAreaDatesByType?.[dateType.name] ?? []
+                }
                 updateDateRange={updateAreaDateRange}
                 addDateRange={addAreaDateRange}
                 removeDateRange={removeAreaDateRange}
@@ -392,6 +395,9 @@ export default function AreaSeasonForm({
                     dateType={dateType}
                     dateRanges={
                       featureDatesByType[feature.dateableId][dateType.id]
+                    }
+                    previousDateRanges={
+                      previousFeatureDatesByType?.[dateType.name] ?? []
                     }
                     updateDateRange={(id, dateField, dateObj, tempId = false) =>
                       updateFeatureDateRange(

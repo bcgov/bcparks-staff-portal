@@ -52,7 +52,7 @@ TimePicker.propTypes = {
 function TimeRangeForm({ gateDetail, updateGateDetail }) {
   return (
     <div className="row gx-0 mb-3">
-      <div className="col-lg-4 d-flex">
+      <div className="col-lg-10 d-flex">
         <TimePicker
           value={gateDetail.gateOpenTime}
           onChange={(value) => updateGateDetail({ gateOpenTime: value })}
