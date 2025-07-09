@@ -1,3 +1,4 @@
+import { format } from "date-fns";
 import { formatInTimeZone } from "date-fns-tz";
 
 // Month, day, year
@@ -116,9 +117,6 @@ export function timeStringToDate(timeString) {
 export function dateToTimeString(date) {
   if (!date) return null;
 
-  function pad(n) {
-    return String(n).padStart(2, "0");
-  }
   // seconds are always set to "00"
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}:00`;
+  return format(date, "HH:mm:00");
 }
