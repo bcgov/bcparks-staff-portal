@@ -10,6 +10,7 @@ import PaginationBar from "@/components/PaginationBar";
 import FilterPanel from "@/components/FilterPanel";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import RefreshTableContext from "@/contexts/RefreshTableContext";
 import UserContext from "@/contexts/UserContext";
 
 function EditAndReview() {
@@ -286,6 +287,14 @@ function EditAndReview() {
     }));
   }
 
+  /**
+   * Fetches all the data from the API when something changes.
+   * @returns {void}
+   */
+  function refreshTable() {
+    fetchData();
+  }
+
   // Slice the list of parks for pagination
   const totalPages = useMemo(
     () => Math.ceil(filteredParks.length / pageSize),
@@ -311,11 +320,13 @@ function EditAndReview() {
     return (
       <div className="paginated-table">
         <div className="mb-3">
-          <EditAndReviewTable
-            data={pageData}
-            onResetFilters={resetFilters}
-            formPanelHandler={formPanelHandler}
-          />
+          <RefreshTableContext.Provider value={{ refreshTable }}>
+            <EditAndReviewTable
+              data={pageData}
+              onResetFilters={resetFilters}
+              formPanelHandler={formPanelHandler}
+            />
+          </RefreshTableContext.Provider>
         </div>
 
         <div className="d-flex justify-content-center">
@@ -357,11 +368,6 @@ function EditAndReview() {
         Clear filters
       </button>
     );
-  }
-
-  // Fetch all the data from the API when something changes
-  function refreshData() {
-    fetchData();
   }
 
   return (
@@ -420,7 +426,7 @@ function EditAndReview() {
           show={showFormPanel}
           setShow={setShowFormPanel}
           formData={formData}
-          onDataUpdate={refreshData}
+          onDataUpdate={refreshTable}
         />
 
         <FilterPanel
