@@ -1,16 +1,12 @@
-import { useMemo, useState } from "react";
-import {
-  faPlus,
-  faXmark,
-  faCalendarCheck,
-} from "@fa-kit/icons/classic/regular";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import DatePicker from "react-datepicker";
-import Form from "react-bootstrap/Form";
+import { useMemo } from "react";
 import PropTypes from "prop-types";
-
-import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
+import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
 import { startOfYear, endOfYear, addYears } from "date-fns";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Form from "react-bootstrap/Form";
+
+import DootDatePicker from "@/components/DatePicker";
+import { normalizeToUTCDate } from "@/lib/utils";
 
 function DateRange({
   dateRange,
@@ -20,30 +16,6 @@ function DateRange({
 }) {
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
-
-  // Keep local state until the field is blurred or Enter is pressed
-  const [localDateRange, setLocalDateRange] = useState({ ...dateRange });
-  const adjustedLocalStartDate = useMemo(
-    () => normalizeToLocalDate(localDateRange.startDate),
-    [localDateRange.startDate],
-  );
-  const adjustedLocalEndDate = useMemo(
-    () => normalizeToLocalDate(localDateRange.endDate),
-    [localDateRange.endDate],
-  );
-
-  // Updates the local date ranges to control the DatePickers
-  function onDateChange(dateField, dateObj) {
-    // Store as UTC time
-    const utcDateObj = normalizeToUTCDate(dateObj);
-
-    const updatedRange = {
-      ...localDateRange,
-      [dateField]: utcDateObj ?? null,
-    };
-
-    setLocalDateRange(updatedRange);
-  }
 
   // Min and max dates: Jan 1 of this year and Dec 31 of next year
   // @TODO: Update this when validation is implemented
@@ -68,30 +40,15 @@ function DateRange({
       <div className="form-group">
         <label className="form-label d-lg-none">Start date</label>
         <div className="input-with-append">
-          <DatePicker
-            id={`date-range-${idOrTempId}-start`}
-            portalId="date-picker-portal-start"
+          <DootDatePicker
+            id={idOrTempId}
+            dateField="startDate"
             minDate={minDate}
             maxDate={maxDate}
-            className="form-control start-date"
-            selected={adjustedLocalStartDate}
-            onChange={(date) => onDateChange("startDate", date)}
-            onBlur={() => {
-              // Update the `dates` object on blur
-              onSelect("startDate", adjustedLocalStartDate);
-            }}
-            onKeyDown={(event) => {
-              // Update the `dates` object on Enter
-              if (event.key === "Enter" && event.target.tagName === "INPUT") {
-                onSelect("startDate", adjustedLocalStartDate);
-              }
-            }}
-            dateFormat="EEE, MMM d, yyyy"
-            showMonthYearDropdown
             disabled={isDateRangeAnnual}
+            date={dateRange.startDate}
+            onSelect={onSelect}
           />
-
-          <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
         </div>
       </div>
 
@@ -102,30 +59,15 @@ function DateRange({
       <div className="form-group">
         <label className="form-label d-lg-none">End date</label>
         <div className="input-with-append">
-          <DatePicker
-            id={`date-range-${idOrTempId}-end`}
-            portalId="date-picker-portal-end"
+          <DootDatePicker
+            id={idOrTempId}
+            dateField="endDate"
             minDate={minDate}
             maxDate={maxDate}
-            className="form-control end-date"
-            selected={adjustedLocalEndDate}
-            onChange={(date) => onDateChange("endDate", date)}
-            onBlur={() => {
-              // Update the `dates` object on blur
-              onSelect("endDate", adjustedLocalEndDate);
-            }}
-            onKeyDown={(event) => {
-              // Update the `dates` object on Enter
-              if (event.key === "Enter" && event.target.tagName === "INPUT") {
-                onSelect("endDate", adjustedLocalEndDate);
-              }
-            }}
-            dateFormat="EEE, MMM d, yyyy"
-            showMonthYearDropdown
             disabled={isDateRangeAnnual}
+            date={dateRange.endDate}
+            onSelect={onSelect}
           />
-
-          <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
         </div>
       </div>
 
