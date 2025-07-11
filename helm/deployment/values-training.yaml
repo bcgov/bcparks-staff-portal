@@ -1,5 +1,5 @@
 cluster:
-  ssoAuthUrl: https://test.loginproxy.gov.bc.ca/auth
+  ssoAuthUrl: https://loginproxy.gov.bc.ca/auth
   cmsUrl: https://alpha-test-cms.bcparks.ca
 
 images:
