@@ -49,9 +49,9 @@ function frontcountryFeaturesQueryPart(featureTypeId) {
  * @returns {Promise<Park>} Park record for the Season
  */
 async function getSeasonPark(season, transaction = null) {
-  // If the season is a Park season, return it directly
+  // If the season is a Park season, return the Park directly
   if (season.park) {
-    return season;
+    return season.park;
   }
 
   // If the season is an Area season, get the Park details
