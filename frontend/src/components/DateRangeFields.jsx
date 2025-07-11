@@ -47,8 +47,8 @@ function DateRange({
 
   // Min and max dates: Jan 1 of this year and Dec 31 of next year
   // @TODO: Update this when validation is implemented
-  const minDate = startOfYear(new Date());
-  const maxDate = endOfYear(addYears(new Date(), 1));
+  const minDate = useMemo(() => startOfYear(new Date()), []);
+  const maxDate = useMemo(() => endOfYear(addYears(new Date(), 1)), []);
 
   // Convert to UTC if necessary, and call the update method from the parent
   function onSelect(dateField, dateObj) {
