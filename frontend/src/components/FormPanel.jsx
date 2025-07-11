@@ -261,8 +261,10 @@ function SeasonForm({
     }
   }
 
+  // If the season is not "requested" (eg it is submitted, approved, or published),
+  // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
-    if (dataChanged) {
+    if (season.status !== "requested") {
       const proceed = await openModal(
         "Move back to draft?",
         `The dates will be moved back to draft and need to be submitted again to be reviewed.
