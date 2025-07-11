@@ -35,7 +35,7 @@ function EditAndReview() {
   // table filter state
   const [filters, setFilters] = useState({
     name: "",
-    bundles: [],
+    accessGroups: [],
     status: [],
     sections: [],
     managementAreas: [],
@@ -94,7 +94,7 @@ function EditAndReview() {
     setPage(1);
     setFilters({
       name: "",
-      bundles: [],
+      accessGroups: [],
       status: [],
       sections: [],
       managementAreas: [],
@@ -154,8 +154,15 @@ function EditAndReview() {
           }
         }
 
-        // TODO: CMS-324
-        // filter by bundles
+        // filter by access groups
+        if (
+          filters.accessGroups.length > 0 &&
+          !filters.accessGroups.some((group) =>
+            park.accessGroups.some((parkGroup) => parkGroup.id === group.id),
+          )
+        ) {
+          return false;
+        }
 
         // filter by sections
         if (

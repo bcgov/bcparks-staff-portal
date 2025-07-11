@@ -60,12 +60,10 @@ export async function populateAccessGroups() {
       for (const park of parks) {
         await AccessGroupPark.findOrCreate({
           where: {
-            // id: park.id,
             accessGroupId: accessGroup.id,
             parkOrcs: park.orcs,
           },
           defaults: {
-            // id: park.id,
             accessGroupId: accessGroup.id,
             parkOrcs: park.orcs,
           },
@@ -95,12 +93,10 @@ export async function populateAccessGroups() {
 
           await UserAccessGroup.findOrCreate({
             where: {
-              // id: user.id,
               userEmail: user.email,
               accessGroupId: accessGroup.id,
             },
             defaults: {
-              // id: user.id,
               userEmail: user.email,
               accessGroupId: accessGroup.id,
             },
@@ -147,12 +143,10 @@ export async function populateAccessGroups() {
 
           await UserAccessGroup.findOrCreate({
             where: {
-              // id: user.id,
               userEmail: user.email,
               accessGroupId: accessGroup.id,
             },
             defaults: {
-              // id: user.id,
               userEmail: user.email,
               accessGroupId: accessGroup.id,
             },

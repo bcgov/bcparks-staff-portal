@@ -25,8 +25,6 @@ import {
   DateRangeAnnual,
   GateDetail,
   AccessGroup,
-  AccessGroupPark,
-  UserAccessGroup,
   SeasonChangeLog,
   DateChangeLog,
 } from "../models/index.js";
@@ -307,8 +305,8 @@ const adminOptions = {
     DateRangeAnnual,
     GateDetailResource,
     AccessGroup,
-    UserAccessGroup,
-    AccessGroupPark,
+    // UserAccessGroup, -- doesn't work with the current version of AdminJS
+    // AccessGroupPark, -- doesn't work with the current version of AdminJS
     SeasonChangeLog,
     DateChangeLog,
   ],
