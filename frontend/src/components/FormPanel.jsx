@@ -261,7 +261,7 @@ function SeasonForm({
     }
   }
 
-  // If the season is not "requested" (eg it is submitted, approved, or published),
+  // If the season is not "requested" (e.g. it is submitted, approved, or published),
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
     if (season.status !== "requested") {
