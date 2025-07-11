@@ -1,6 +1,11 @@
 // Import the library styles
 @use "react-datepicker/dist/react-datepicker.css";
 
+// Display the datepicker in a portal, above the Offcanvas panel (z-index 1045 + 1)
+.react-datepicker-popper {
+  z-index: 1046;
+}
+
 // Overrides for the react-datepicker component package
 .react-datepicker {
   // Prevent the bootstrap theme from making the month name huge

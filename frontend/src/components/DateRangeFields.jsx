@@ -10,6 +10,7 @@ import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 
 import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
+import { startOfYear, endOfYear, addYears } from "date-fns";
 
 function DateRange({
   dateRange,
@@ -44,6 +45,11 @@ function DateRange({
     setLocalDateRange(updatedRange);
   }
 
+  // Min and max dates: Jan 1 of this year and Dec 31 of next year
+  // @TODO: Update this when validation is implemented
+  const minDate = startOfYear(new Date());
+  const maxDate = endOfYear(addYears(new Date(), 1));
+
   // Convert to UTC if necessary, and call the update method from the parent
   function onSelect(dateField, dateObj) {
     const newValue = normalizeToUTCDate(dateObj);
@@ -64,6 +70,9 @@ function DateRange({
         <div className="input-with-append">
           <DatePicker
             id={`date-range-${idOrTempId}-start`}
+            portalId="date-picker-portal-start"
+            minDate={minDate}
+            maxDate={maxDate}
             className="form-control start-date"
             selected={adjustedLocalStartDate}
             onChange={(date) => onDateChange("startDate", date)}
@@ -78,7 +87,6 @@ function DateRange({
               }
             }}
             dateFormat="EEE, MMM d, yyyy"
-            // @TODO: the dropdown makes chrome hang??
             showMonthYearDropdown
             disabled={isDateRangeAnnual}
           />
@@ -96,6 +104,9 @@ function DateRange({
         <div className="input-with-append">
           <DatePicker
             id={`date-range-${idOrTempId}-end`}
+            portalId="date-picker-portal-end"
+            minDate={minDate}
+            maxDate={maxDate}
             className="form-control end-date"
             selected={adjustedLocalEndDate}
             onChange={(date) => onDateChange("endDate", date)}
@@ -110,7 +121,6 @@ function DateRange({
               }
             }}
             dateFormat="EEE, MMM d, yyyy"
-            // @TODO: the dropdown makes chrome hang??
             showMonthYearDropdown
             disabled={isDateRangeAnnual}
           />
