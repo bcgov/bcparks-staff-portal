@@ -56,7 +56,7 @@ export async function populateDateRangesForYear(targetYear) {
       });
 
       // check if target season already has DateRanges for this dateType
-      const targetDateRanges = await DateRange.findAll({
+      const targetDateRangeCount = await DateRange.count({
         where: {
           seasonId: targetSeason.id,
           dateTypeId: annual.dateTypeId,
@@ -65,7 +65,7 @@ export async function populateDateRangesForYear(targetYear) {
       });
 
       // skip if target season already has DateRanges
-      if (targetDateRanges.length > 0) continue;
+      if (targetDateRangeCount > 0) continue;
 
       // copy each previous DateRange to current season
       for (const prevRange of prevDateRanges) {
@@ -112,6 +112,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     console.error(
       "Please provide a target year, e.g. node populate-date-ranges.js 2026",
     );
+    throw new Error("Invalid or missing target year argument.");
   }
 
   populateDateRangesForYear(Number(targetYear)).catch((err) => {

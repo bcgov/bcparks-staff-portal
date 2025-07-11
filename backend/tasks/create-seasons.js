@@ -400,9 +400,9 @@ console.log(`Added ${seasonsAdded} new Group Camping Feature Seasons`);
 
 console.log("Committing transaction...");
 
+await transaction?.commit();
+
 // Populate DateRanges for the new seasons based on previous year if isDateRangeAnnual is TRUE
 await populateDateRangesForYear(operatingYear);
-
-await transaction?.commit();
 
 console.log("Done");
