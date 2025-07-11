@@ -166,7 +166,7 @@ export default function DateRangeFields({
     );
   }, [dateType, dateRangeAnnuals]);
 
-  const dateRangeAnnualId = matchedDateRangeAnnual?.id ?? null;
+  const dateRangeAnnualId = matchedDateRangeAnnual?.id ?? dateType.id ?? null;
   const isDateRangeAnnual = matchedDateRangeAnnual?.isDateRangeAnnual ?? false;
 
   // toggle isDateRangeAnnual state
