@@ -38,7 +38,7 @@ services:
     stop_signal: SIGKILL
 
   db:
-    image: postgres:15
+    image: postgres:17
     environment:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: user
