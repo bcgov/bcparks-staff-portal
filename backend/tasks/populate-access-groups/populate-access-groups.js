@@ -40,7 +40,7 @@ export async function populateAccessGroups() {
 
   try {
     // turn it on if you want to clean up existing data before populating
-    await cleanupAccessGroupData(transaction);
+    // await cleanupAccessGroupData(transaction);
 
     for (const agreement of agreements) {
       // 1 - create AccessGroup based on id and name
