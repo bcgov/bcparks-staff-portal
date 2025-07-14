@@ -5,8 +5,15 @@ import "../../env.js";
 
 import { Season, DateRange, DateRangeAnnual } from "../../models/index.js";
 
-// Function
-function normalizeToLocalDate(dateObject) {
+// Functions
+/**
+ * Converts a UTC Date to a local Date at midnight on the same day
+ * (Removes 7/8 hours from a UTC Date at midnight)
+ * @param {Date|null} dateObject UTC zoned date object
+ * @returns {Date|null} local date object
+ */
+export function normalizeToLocalDate(dateObject) {
+  // Allow null dates to pass through
   if (!dateObject) return null;
 
   return new Date(
@@ -16,15 +23,18 @@ function normalizeToLocalDate(dateObject) {
   );
 }
 
-export async function populateDateRangesForYear(targetYear) {
-  const transaction = await DateRange.sequelize.transaction();
-
+export async function populateDateRangesForYear(
+  targetYear,
+  transaction = null,
+) {
   try {
     // find all DateRangeAnnuals where isDateRangeAnnual is TRUE
     const annuals = await DateRangeAnnual.findAll({
       where: { isDateRangeAnnual: true },
       transaction,
     });
+
+    const dateRangesToCreate = [];
 
     for (const annual of annuals) {
       // find previous and target seasons for this publishable
@@ -79,19 +89,24 @@ export async function populateDateRangesForYear(targetYear) {
         newStartDate.setFullYear(currentYear);
         newEndDate.setFullYear(currentYear);
 
-        await DateRange.create(
-          {
-            seasonId: targetSeason.id,
-            dateTypeId: annual.dateTypeId,
-            startDate: newStartDate,
-            endDate: newEndDate,
-          },
-          { transaction },
-        );
+        dateRangesToCreate.push({
+          seasonId: targetSeason.id,
+          dateTypeId: annual.dateTypeId,
+          startDate: newStartDate,
+          endDate: newEndDate,
+        });
+
         console.log(
           `Copied DateRange from season ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${annual.publishableId}`,
         );
       }
+    }
+
+    if (dateRangesToCreate.length > 0) {
+      await DateRange.bulkCreate(dateRangesToCreate, { transaction });
+      console.log(`Created ${dateRangesToCreate.length} new DateRanges.`);
+    } else {
+      console.log("No new DateRanges to create.");
     }
 
     await transaction.commit();
@@ -107,6 +122,7 @@ export async function populateDateRangesForYear(targetYear) {
 // run directly:
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   const targetYear = process.argv[2];
+  const transaction = await DateRange.sequelize.transaction();
 
   if (!targetYear || isNaN(targetYear)) {
     console.error(
@@ -115,7 +131,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     throw new Error("Invalid or missing target year argument.");
   }
 
-  populateDateRangesForYear(Number(targetYear)).catch((err) => {
+  populateDateRangesForYear(Number(targetYear), transaction).catch((err) => {
     console.error("Unhandled error in  populateDateRangesFromAnnual:", err);
     throw err;
   });

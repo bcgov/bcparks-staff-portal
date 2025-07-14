@@ -398,11 +398,11 @@ console.log(
 console.log(`Added ${dateablesAdded} missing Group Camping Feature Dateables`);
 console.log(`Added ${seasonsAdded} new Group Camping Feature Seasons`);
 
+// Populate DateRanges for the new seasons based on previous year if isDateRangeAnnual is TRUE
+await populateDateRangesForYear(operatingYear, transaction);
+
 console.log("Committing transaction...");
 
 await transaction?.commit();
-
-// Populate DateRanges for the new seasons based on previous year if isDateRangeAnnual is TRUE
-await populateDateRangesForYear(operatingYear);
 
 console.log("Done");
