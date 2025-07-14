@@ -5,11 +5,12 @@ import useConfirmation from "@/hooks/useConfirmation";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useContext } from "react";
 import PaginationBar from "@/components/PaginationBar";
 import FilterPanel from "@/components/FilterPanel";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import UserContext from "@/contexts/UserContext";
 
 function EditAndReview() {
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -20,6 +21,7 @@ function EditAndReview() {
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
+  const userData = useContext(UserContext);
 
   const statusOptions = [
     { value: "requested", label: "Requested by HQ" },
@@ -158,6 +160,17 @@ function EditAndReview() {
         if (
           filters.accessGroups.length > 0 &&
           !filters.accessGroups.some((group) =>
+            park.accessGroups.some((parkGroup) => parkGroup.id === group.id),
+          )
+        ) {
+          return false;
+        }
+
+        // filter by user access groups through userData
+        if (
+          userData &&
+          userData.accessGroups?.length > 0 &&
+          !userData.accessGroups.some((group) =>
             park.accessGroups.some((parkGroup) => parkGroup.id === group.id),
           )
         ) {
