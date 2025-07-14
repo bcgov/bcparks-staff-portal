@@ -175,7 +175,6 @@ async function getGateDetail(publishableId) {
       "gateOpensAtDawn",
       "gateClosesAtDusk",
       "gateOpen24Hours",
-      "isTimeRangeAnnual",
     ],
   });
 }
@@ -599,7 +598,7 @@ router.post(
       notes = "",
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
-      gateDetail = {}
+      gateDetail = {},
     } = req.body;
     let { readyToPublish } = req.body;
 
@@ -649,7 +648,7 @@ router.post(
           transaction,
         },
       );
-      
+
       // gateDetail
       const gateDetailToSave = {
         ...gateDetail,

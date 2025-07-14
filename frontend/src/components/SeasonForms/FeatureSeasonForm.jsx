@@ -231,7 +231,6 @@ FeatureSeasonForm.propTypes = {
       gateOpensAtDawn: PropTypes.bool,
       gateClosesAtDusk: PropTypes.bool,
       gateOpen24Hours: PropTypes.bool,
-      isTimeRangeAnnual: PropTypes.bool,
     }),
   }).isRequired,
 

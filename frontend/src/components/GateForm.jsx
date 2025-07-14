@@ -98,8 +98,10 @@ export default function GateForm({
               If you do not want to display this information publicly, leave this blank.`}
               >
                 <FontAwesomeIcon icon={faCircleInfo} />
-              </TooltipWrapper>
+              </TooltipWrapper>{" "}
+              (Optional)
             </h6>
+            <p>Hours remain the same every year unless updated.</p>
             <Form>
               <Form.Check
                 type="checkbox"
@@ -123,14 +125,6 @@ export default function GateForm({
                 gateDetail={gateDetail}
                 updateGateDetail={updateGateDetail}
               />
-              <Form.Check
-                type="checkbox"
-                id="is-time-range-annual"
-                name="isTimeRangeAnnual"
-                label="Hours are the same every year"
-                checked={gateDetail.isTimeRangeAnnual}
-                onChange={handleCheckboxChange}
-              />
             </Form>
           </div>
         )}
@@ -148,7 +142,6 @@ GateForm.propTypes = {
     gateCloseTime: PropTypes.string,
     gateOpensAtDawn: PropTypes.bool,
     gateClosesAtDusk: PropTypes.bool,
-    isTimeRangeAnnual: PropTypes.bool,
   }),
   updateGateDetail: PropTypes.func.isRequired,
   dateableId: PropTypes.number,
