@@ -148,6 +148,7 @@ export default function DateRangeFields({
           type="button"
           className="btn btn-text text-link p-0"
           onClick={() => addDateRange(dateType)}
+          disabled={isDateRangeAnnual}
         >
           <FontAwesomeIcon icon={faPlus} />
           <span className="ms-1">Add more {dateType.name} dates</span>
