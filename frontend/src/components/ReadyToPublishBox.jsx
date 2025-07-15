@@ -12,12 +12,11 @@ export default function ReadyToPublishBox({
 
       <p>
         Are these dates ready to be made available to the public the next time
-        dates are published? When turned off, they will be flagged{" "}
+        dates are published? When ‘No’ is selected, they will be flagged{" "}
         <span className="text-nowrap">
           (<FontAwesomeIcon className="text-danger mx-1" icon={faFlag} />)
         </span>{" "}
-        and held in the ‘Approved’ state until it is marked ‘Ready to publish’.
-        Approved dates are included in exported files.
+        and held in the ‘Approved’ state until ‘Yes’ is selected.
       </p>
 
       <div className="form-check form-switch">
