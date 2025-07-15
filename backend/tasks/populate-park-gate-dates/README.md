@@ -2,7 +2,6 @@
 
 This script populates the `Season` and `DateRange` tables in your database based on Strapi `park-operation-date` data and existing Parks.
 
-
 ## What does the script do?
 
 1. **For each Park with a `publishableId`:**
@@ -26,28 +25,24 @@ This script populates the `Season` and `DateRange` tables in your database based
 4. **Transaction Safety:**
    - All operations are performed inside a transaction. If any error occurs, all changes are rolled back.
 
-
 ## How to run
 
 From your project root, run:
 
 ```sh
-node backend/tasks/populate-park-gate-dates/populate-park-gate-dates.js
+node tasks/populate-park-gate-dates/populate-park-gate-dates.js
 ```
-
 
 ## Output
 
 - The script logs `"Season and DateRange population complete."` on success.
 - If any error occurs, the transaction is rolled back and an error message is printed.
 
-
 ## Why is this useful?
 
 - Ensures every Park with a `publishableId` has a `Season` for each operating year found in Strapi.
 - Ensures each Season has a corresponding `DateRange` for the `"Operating"` date type, with dates matching Strapi.
 - Keeps your database in sync with Strapi's park operation date data.
-
 
 ## Notes
 

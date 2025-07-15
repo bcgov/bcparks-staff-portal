@@ -18,7 +18,7 @@ This script populates `DateRange` records for a given target year based on the p
 From your project root, run:
 
 ```sh
-node backend/tasks/populate-date-ranges/populate-date-ranges.js 2026
+node tasks/populate-date-ranges/populate-date-ranges.js 2026
 ```
 
 Replace 2026 with the year you want to populate.
