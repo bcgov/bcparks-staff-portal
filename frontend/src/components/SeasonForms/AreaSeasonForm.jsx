@@ -367,11 +367,11 @@ export default function AreaSeasonForm({
             (Features have their own add/update/delete functions)
           */}
           {features.map((feature) => (
-            <div className="area-feature my-3" key={feature.id}>
+            <div className="area-feature" key={feature.id}>
               <h4 className="feature-name">{feature.name}</h4>
 
               {featureDateTypes.map((dateType) => (
-                <div key={dateType.name} className="col-lg-6">
+                <div key={dateType.name} className="col-lg-6 mb-4">
                   <h6 className="fw-normal">
                     {dateType.name}{" "}
                     <TooltipWrapper

@@ -40,96 +40,101 @@ export default function GateForm({
   }
 
   return (
-    <div className="mb-4">
-      <h6 className="fw-normal">{gateTitle}</h6>
-      <p>{gateDescription}</p>
-      <div className="mb-4">
-        <RadioButtonGroup
-          id="has-gate"
-          name="hasGate"
-          options={[
-            { value: true, label: "Yes" },
-            { value: false, label: "No" },
-          ]}
-          value={gateDetail.hasGate}
-          onChange={(value) => {
-            updateGateDetail({ hasGate: value });
-          }}
-        />
-      </div>
-      {gateDetail.hasGate && (
-        <div>
-          {/* display operating dates only at park level */}
-          {level === "park" && (
-            <div className="mb-4">
-              <h6 className="fw-normal">
-                Operating dates{" "}
-                <TooltipWrapper placement="top" content={dateType.description}>
-                  <FontAwesomeIcon icon={faCircleInfo} />
-                </TooltipWrapper>
-              </h6>
+    <div className="row mb-4">
+      <div className="col-lg-6">
+        <h6 className="fw-normal">{gateTitle}</h6>
+        <p>{gateDescription}</p>
+        <div className="mb-4">
+          <RadioButtonGroup
+            id="has-gate"
+            name="hasGate"
+            options={[
+              { value: true, label: "Yes" },
+              { value: false, label: "No" },
+            ]}
+            value={gateDetail.hasGate}
+            onChange={(value) => {
+              updateGateDetail({ hasGate: value });
+            }}
+          />
+        </div>
+        {gateDetail.hasGate && (
+          <div>
+            {/* display operating dates only at park level */}
+            {level === "park" && (
+              <div className="mb-4">
+                <h6 className="fw-normal">
+                  Operating dates{" "}
+                  <TooltipWrapper
+                    placement="top"
+                    content={dateType.description}
+                  >
+                    <FontAwesomeIcon icon={faCircleInfo} />
+                  </TooltipWrapper>
+                </h6>
 
-              <PreviousDates dateRanges={previousDateRanges} />
+                <PreviousDates dateRanges={previousDateRanges} />
 
-              <DateRangeFields
-                dateableId={dateableId}
-                dateType={dateType}
-                dateRanges={dateRanges}
-                updateDateRange={updateDateRange}
-                addDateRange={addDateRange}
-                removeDateRange={removeDateRange}
-                dateRangeAnnuals={dateRangeAnnuals}
-                updateDateRangeAnnual={updateDateRangeAnnual}
-              />
-            </div>
-          )}
+                <DateRangeFields
+                  dateableId={dateableId}
+                  dateType={dateType}
+                  dateRanges={dateRanges}
+                  updateDateRange={updateDateRange}
+                  addDateRange={addDateRange}
+                  removeDateRange={removeDateRange}
+                  dateRangeAnnuals={dateRangeAnnuals}
+                  updateDateRangeAnnual={updateDateRangeAnnual}
+                />
+              </div>
+            )}
 
-          <h6 className="fw-normal">
-            Gate hours{" "}
-            <TooltipWrapper
-              placement="top"
-              content={`Gate Enter the hours the gate is open during the operating season.
+            <h6 className="fw-normal">
+              Gate hours{" "}
+              <TooltipWrapper
+                placement="top"
+                content={`Gate Enter the hours the gate is open during the operating season.
               If the times change throughout the season,
               leave the times blank and list all the gate hours in the gate notes field.
               If you do not want to display this information publicly, leave this blank.`}
-            >
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </TooltipWrapper>
-          </h6>
-          <Form>
-            <Form.Check
-              type="checkbox"
-              id="opens-at-dawn"
-              name="gateOpensAtDawn"
-              label="Opens at dawn"
-              className="mb-2"
-              checked={gateDetail.gateOpensAtDawn}
-              onChange={handleCheckboxChange}
-            />
-            <Form.Check
-              type="checkbox"
-              id="closes-at-dusk"
-              name="gateClosesAtDusk"
-              label="Closes at dusk"
-              className="mb-2"
-              checked={gateDetail.gateClosesAtDusk}
-              onChange={handleCheckboxChange}
-            />
-            <TimeRangeForm
-              gateDetail={gateDetail}
-              updateGateDetail={updateGateDetail}
-            />
-            <Form.Check
-              type="checkbox"
-              id="is-time-range-annual"
-              name="isTimeRangeAnnual"
-              label="Hours are the same every year"
-              checked={gateDetail.isTimeRangeAnnual}
-              onChange={handleCheckboxChange}
-            />
-          </Form>
-        </div>
-      )}
+              >
+                <FontAwesomeIcon icon={faCircleInfo} />
+              </TooltipWrapper>
+            </h6>
+            <Form>
+              <Form.Check
+                type="checkbox"
+                id="opens-at-dawn"
+                name="gateOpensAtDawn"
+                label="Opens at dawn"
+                className="mb-2"
+                checked={gateDetail.gateOpensAtDawn}
+                onChange={handleCheckboxChange}
+              />
+              <Form.Check
+                type="checkbox"
+                id="closes-at-dusk"
+                name="gateClosesAtDusk"
+                label="Closes at dusk"
+                className="mb-2"
+                checked={gateDetail.gateClosesAtDusk}
+                onChange={handleCheckboxChange}
+              />
+              <TimeRangeForm
+                gateDetail={gateDetail}
+                updateGateDetail={updateGateDetail}
+              />
+              <Form.Check
+                type="checkbox"
+                id="is-time-range-annual"
+                name="isTimeRangeAnnual"
+                label="Hours are the same every year"
+                checked={gateDetail.isTimeRangeAnnual}
+                onChange={handleCheckboxChange}
+              />
+            </Form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

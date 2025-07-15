@@ -114,10 +114,11 @@ export default function DateRangeFields({
     if (!dateType || !dateRangeAnnuals) return null;
 
     return dateRangeAnnuals.find(
-      (dateRangeAnnual) => dateRangeAnnual.dateType.name === dateType.name,
+      (dateRangeAnnual) => dateRangeAnnual.dateType.id === dateType.id,
     );
   }, [dateType, dateRangeAnnuals]);
 
+  const dateRangeAnnualId = matchedDateRangeAnnual?.id ?? dateType.id ?? null;
   const isDateRangeAnnual = matchedDateRangeAnnual?.isDateRangeAnnual ?? false;
 
   // toggle isDateRangeAnnual state
@@ -159,8 +160,8 @@ export default function DateRangeFields({
       {!(dateType.name === "Tier 1" || dateType.name === "Tier 2") && (
         <Form.Check
           type="checkbox"
-          id={`date-range-annual-${dateType.id}`}
-          name={`date-range-annual-${dateType.id}`}
+          id={`date-range-annual-${dateRangeAnnualId}`}
+          name={`date-range-annual-${dateRangeAnnualId}`}
           label="Dates are the same every year"
           checked={isDateRangeAnnual}
           onChange={handleDateRangeAnnualChange}
