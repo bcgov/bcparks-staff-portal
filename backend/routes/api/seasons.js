@@ -408,11 +408,6 @@ router.get(
     const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
 
     // Return the DateTypes in a specific order
-
-    // Don't include any Area-level dates.
-    // Area forms will only have Feature-level dates.
-    const orderedAreaDateTypes = [];
-
     const orderedFeatureDateTypes = [
       featureDateTypesByName.Operation,
       featureDateTypesByName.Reservation,
@@ -446,7 +441,9 @@ router.get(
     const output = {
       current: currentSeason,
       previous: previousSeason,
-      areaDateTypes: orderedAreaDateTypes,
+      // Don't include any Area-level dates.
+      // Area forms will only have Feature-level dates.
+      areaDateTypes: [],
       featureDateTypes: orderedFeatureDateTypes,
       icon,
       featureTypeName,
