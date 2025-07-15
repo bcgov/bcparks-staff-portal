@@ -400,25 +400,18 @@ router.get(
       [Op.or]: [{ parkAreaLevel: true }, { featureLevel: true }],
     });
 
-    // Include all DateTypes for the Park Area level
-    const areaDateTypesArray = await getAllDateTypes({
-      parkAreaLevel: true,
-    });
-
     // Include all DateTypes for the Feature level
     const featureDateTypesArray = await getAllDateTypes({
       featureLevel: true,
     });
 
-    const areaDateTypesByName = _.keyBy(areaDateTypesArray, "name");
     const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
 
     // Return the DateTypes in a specific order
-    const orderedAreaDateTypes = [
-      areaDateTypesByName.Operation,
-      areaDateTypesByName.Reservation,
-      areaDateTypesByName["Backcountry registration"],
-    ];
+
+    // Don't include any Area-level dates.
+    // Area forms will only have Feature-level dates.
+    const orderedAreaDateTypes = [];
 
     const orderedFeatureDateTypes = [
       featureDateTypesByName.Operation,
@@ -599,7 +592,7 @@ router.post(
       notes = "",
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
-      gateDetail = {}
+      gateDetail = {},
     } = req.body;
     let { readyToPublish } = req.body;
 
@@ -649,7 +642,7 @@ router.post(
           transaction,
         },
       );
-      
+
       // gateDetail
       const gateDetailToSave = {
         ...gateDetail,
