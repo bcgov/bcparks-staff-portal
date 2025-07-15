@@ -108,14 +108,12 @@ export async function populateDateRangesForYear(
     } else {
       console.log("No new DateRanges to create.");
     }
-
-    await transaction.commit();
     console.log(
       "DateRanges populated for new Seasons based on previous year's annual DateRanges.",
     );
   } catch (err) {
-    await transaction.rollback();
-    console.error("Error populating DateRanges from annual:", err);
+    console.error("Error populating DateRanges:", err);
+    throw err;
   }
 }
 
@@ -126,13 +124,18 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
 
   if (!targetYear || isNaN(targetYear)) {
     console.error(
-      "Please provide a target year, e.g. node populate-date-ranges.js 2026",
+      "Please provide a target year. e.g. node populate-date-ranges.js 2026",
     );
     throw new Error("Invalid or missing target year argument.");
   }
 
-  populateDateRangesForYear(Number(targetYear), transaction).catch((err) => {
-    console.error("Unhandled error in  populateDateRangesFromAnnual:", err);
+  try {
+    await populateDateRangesForYear(Number(targetYear), transaction);
+    await transaction.commit();
+    console.log("Transaction committed.");
+  } catch (err) {
+    await transaction.rollback();
+    console.error("Transaction rolled back due to error:", err);
     throw err;
-  });
+  }
 }
