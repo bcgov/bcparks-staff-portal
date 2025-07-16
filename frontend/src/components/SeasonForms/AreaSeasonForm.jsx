@@ -20,6 +20,94 @@ import PreviousDates from "@/components/SeasonForms/PreviousDates";
 
 import DataContext from "@/contexts/DataContext";
 
+// Individual Area-Feature form section
+function FeatureFormSection({
+  feature,
+  featureDateTypes,
+  previousFeatureDatesByType,
+  featureDatesByType,
+  updateFeatureDateRange,
+  addFeatureDateRange,
+  removeFeatureDateRange,
+}) {
+  return (
+    <div className="area-feature" key={feature.id}>
+      <h4 className="feature-name">{feature.name}</h4>
+
+      {featureDateTypes.map((dateType) => (
+        <div key={dateType.name} className="col-lg-6 mb-4">
+          <h6 className="fw-normal">
+            {dateType.name}{" "}
+            <TooltipWrapper placement="top" content={dateType.description}>
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+
+          {/* Show previous dates for this featureId/dateableId */}
+          <PreviousDates
+            dateRanges={previousFeatureDatesByType?.[dateType.name]}
+          />
+
+          <DateRangeFields
+            dateableId={feature.dateableId}
+            dateType={dateType}
+            dateRanges={featureDatesByType[feature.dateableId][dateType.id]}
+            updateDateRange={(id, dateField, dateObj, tempId = false) =>
+              updateFeatureDateRange(
+                feature.dateableId,
+                id,
+                dateField,
+                dateObj,
+                tempId,
+              )
+            }
+            addDateRange={() =>
+              addFeatureDateRange(feature.dateableId, dateType)
+            }
+            removeDateRange={(dateRange) =>
+              removeFeatureDateRange(feature.dateableId, dateRange)
+            }
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+FeatureFormSection.propTypes = {
+  feature: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    dateableId: PropTypes.number.isRequired,
+    dateable: PropTypes.shape({
+      dateRanges: PropTypes.arrayOf(
+        PropTypes.shape({
+          id: PropTypes.number,
+          tempId: PropTypes.string,
+          startDate: PropTypes.instanceOf(Date),
+          endDate: PropTypes.instanceOf(Date),
+          dateType: PropTypes.shape({
+            name: PropTypes.string.isRequired,
+            id: PropTypes.number.isRequired,
+          }),
+        }),
+      ),
+    }),
+  }).isRequired,
+  featureDateTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
+      description: PropTypes.string,
+    }),
+  ).isRequired,
+  previousFeatureDatesByType: PropTypes.object.isRequired,
+  featureDatesByType: PropTypes.object.isRequired,
+  updateFeatureDateRange: PropTypes.func.isRequired,
+  addFeatureDateRange: PropTypes.func.isRequired,
+  removeFeatureDateRange: PropTypes.func.isRequired,
+};
+
 export default function AreaSeasonForm({
   season,
   previousSeasonDates,
@@ -337,74 +425,6 @@ export default function AreaSeasonForm({
     });
   }
 
-  // Individual Area-Feature form section
-  function FeatureFormSection({ feature }) {
-    return (
-      <div className="area-feature" key={feature.id}>
-        <h4 className="feature-name">{feature.name}</h4>
-
-        {featureDateTypes.map((dateType) => (
-          <div key={dateType.name} className="col-lg-6 mb-4">
-            <h6 className="fw-normal">
-              {dateType.name}{" "}
-              <TooltipWrapper placement="top" content={dateType.description}>
-                <FontAwesomeIcon icon={faCircleInfo} />
-              </TooltipWrapper>
-            </h6>
-
-            {/* Show previous dates for this featureId/dateableId */}
-            <PreviousDates
-              dateRanges={previousFeatureDatesByType?.[dateType.name]}
-            />
-
-            <DateRangeFields
-              dateableId={feature.dateableId}
-              dateType={dateType}
-              dateRanges={featureDatesByType[feature.dateableId][dateType.id]}
-              updateDateRange={(id, dateField, dateObj, tempId = false) =>
-                updateFeatureDateRange(
-                  feature.dateableId,
-                  id,
-                  dateField,
-                  dateObj,
-                  tempId,
-                )
-              }
-              addDateRange={() =>
-                addFeatureDateRange(feature.dateableId, dateType)
-              }
-              removeDateRange={(dateRange) =>
-                removeFeatureDateRange(feature.dateableId, dateRange)
-              }
-            />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  FeatureFormSection.propTypes = {
-    feature: PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      name: PropTypes.string.isRequired,
-      dateableId: PropTypes.number.isRequired,
-      dateable: PropTypes.shape({
-        dateRanges: PropTypes.arrayOf(
-          PropTypes.shape({
-            id: PropTypes.number,
-            tempId: PropTypes.string,
-            startDate: PropTypes.instanceOf(Date),
-            endDate: PropTypes.instanceOf(Date),
-            dateType: PropTypes.shape({
-              name: PropTypes.string.isRequired,
-              id: PropTypes.number.isRequired,
-            }),
-          }),
-        ),
-      }),
-    }).isRequired,
-  };
-
   return (
     <>
       <FormContainer>
@@ -441,7 +461,16 @@ export default function AreaSeasonForm({
             (Features have their own add/update/delete functions)
           */}
           {bcpResFeatures.map((feature) => (
-            <FeatureFormSection feature={feature} key={feature.id} />
+            <FeatureFormSection
+              feature={feature}
+              featureDateTypes={featureDateTypes}
+              previousFeatureDatesByType={previousFeatureDatesByType}
+              featureDatesByType={featureDatesByType}
+              updateFeatureDateRange={updateFeatureDateRange}
+              addFeatureDateRange={addFeatureDateRange}
+              removeFeatureDateRange={removeFeatureDateRange}
+              key={feature.id}
+            />
           ))}
         </div>
       </FormContainer>
@@ -452,7 +481,16 @@ export default function AreaSeasonForm({
           (Features have their own add/update/delete functions)
         */}
         {nonBcpResFeatures.map((feature) => (
-          <FeatureFormSection feature={feature} key={feature.id} />
+          <FeatureFormSection
+            feature={feature}
+            featureDateTypes={featureDateTypes}
+            previousFeatureDatesByType={previousFeatureDatesByType}
+            featureDatesByType={featureDatesByType}
+            updateFeatureDateRange={updateFeatureDateRange}
+            addFeatureDateRange={addFeatureDateRange}
+            removeFeatureDateRange={removeFeatureDateRange}
+            key={feature.id}
+          />
         ))}
       </div>
 
