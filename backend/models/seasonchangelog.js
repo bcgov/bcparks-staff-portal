@@ -31,6 +31,8 @@ export default (sequelize) => {
       statusNewValue: DataTypes.STRING,
       readyToPublishOldValue: DataTypes.BOOLEAN,
       readyToPublishNewValue: DataTypes.BOOLEAN,
+      gateDetailOldValue: DataTypes.TEXT,
+      gateDetailNewValue: DataTypes.TEXT,
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE,
     },

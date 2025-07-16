@@ -660,6 +660,12 @@ router.post(
           statusNewValue: newStatus,
           readyToPublishOldValue: season.readyToPublish,
           readyToPublishNewValue: newReadyToPublish,
+          gateDetailOldValue: season.gateDetail
+            ? JSON.stringify(season.gateDetail.toJSON())
+            : null,
+          gateDetailNewValue: gateDetailToSave
+            ? JSON.stringify(gateDetailToSave)
+            : null,
         },
         { transaction },
       );
