@@ -21,7 +21,7 @@ function EditAndReview() {
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
-  const userData = useContext(UserContext);
+  const { data: userData } = useContext(UserContext);
 
   const statusOptions = [
     { value: "requested", label: "Requested by HQ" },

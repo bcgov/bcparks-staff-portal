@@ -37,17 +37,6 @@ export default function MainLayout() {
     return userDetails.data.name;
   }, [userDetails]);
 
-  const userEmail = useMemo(() => {
-    if (userDetails.loading || userDetails.error) return "";
-
-    return userDetails.data.email;
-  }, [userDetails]);
-
-  // hardcode user email for testing purposes
-  // const userEmail = ""
-
-  const { data: userData } = useApiGet(`/user/${userEmail}`);
-
   const flashMessageContextValue = useMemo(
     () => ({
       open: globalFlashMessage.open,
@@ -58,7 +47,7 @@ export default function MainLayout() {
 
   return (
     <FlashMessageContext.Provider value={flashMessageContextValue}>
-      <UserContext.Provider value={userData}>
+      <UserContext.Provider value={userDetails}>
         <div className="layout main">
           <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
             <Link

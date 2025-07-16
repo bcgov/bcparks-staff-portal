@@ -21,7 +21,7 @@ This script populates the `AccessGroup`, `AccessGroupPark`, `User`, and `UserAcc
 From your project root, run:
 
 ```sh
-node backend/tasks/populate-access-groups/populate-access-groups.js
+node tasks/populate-access-groups/populate-access-groups.js
 ```
 
 ## Output
