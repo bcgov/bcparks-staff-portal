@@ -1,4 +1,4 @@
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
 import { isEqual, omit } from "lodash-es";
@@ -160,9 +160,9 @@ function SeasonForm({
   }
 
   // Track deleted date range IDs
-  function addDeletedDateRangeId(id) {
+  const addDeletedDateRangeId = useCallback((id) => {
     setDeletedDateRangeIds((prev) => [...prev, id]);
-  }
+  }, []);
 
   // Memoize the updated data for saving or detecting changes
   const changesPayload = useMemo(() => {

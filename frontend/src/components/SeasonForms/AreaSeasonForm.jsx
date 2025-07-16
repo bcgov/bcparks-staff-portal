@@ -8,7 +8,7 @@ import {
   keyBy,
   partition,
 } from "lodash-es";
-import { useMemo, useContext } from "react";
+import { memo, useMemo, useContext, useCallback } from "react";
 import PropTypes from "prop-types";
 
 import DateRangeFields from "@/components/DateRangeFields";
@@ -21,7 +21,7 @@ import PreviousDates from "@/components/SeasonForms/PreviousDates";
 import DataContext from "@/contexts/DataContext";
 
 // Individual Area-Feature form section
-function FeatureFormSection({
+function FeatureFormSectionComponent({
   feature,
   featureDateTypes,
   previousFeatureDatesByType,
@@ -74,7 +74,7 @@ function FeatureFormSection({
   );
 }
 
-FeatureFormSection.propTypes = {
+FeatureFormSectionComponent.propTypes = {
   feature: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
@@ -107,6 +107,8 @@ FeatureFormSection.propTypes = {
   addFeatureDateRange: PropTypes.func.isRequired,
   removeFeatureDateRange: PropTypes.func.isRequired,
 };
+
+const FeatureFormSection = memo(FeatureFormSectionComponent);
 
 export default function AreaSeasonForm({
   season,
@@ -306,124 +308,127 @@ export default function AreaSeasonForm({
   }, [features, featureDateTypes]);
 
   // Adds a new date range to the Area's dateable.dateRanges
-  function addFeatureDateRange(dateableId, dateType) {
-    const newDateRange = {
-      // Add a temporary ID for records that haven't been saved yet
-      tempId: crypto.randomUUID(),
-      startDate: null,
-      endDate: null,
-      dateableId,
-      dateType,
-      dateTypeId: dateType.id,
-      changed: true,
-    };
+  const addFeatureDateRange = useCallback(
+    (dateableId, dateType) => {
+      const newDateRange = {
+        // Add a temporary ID for records that haven't been saved yet
+        tempId: crypto.randomUUID(),
+        startDate: null,
+        endDate: null,
+        dateableId,
+        dateType,
+        dateTypeId: dateType.id,
+        changed: true,
+      };
 
-    setData((prevData) => {
-      const updatedData = cloneDeep(prevData);
+      setData((prevData) => {
+        const updatedData = cloneDeep(prevData);
 
-      const areaFeatures = updatedData.current.parkArea.features;
+        const areaFeatures = updatedData.current.parkArea.features;
 
-      // Find the dateableId within the features array
-      const featureIndex = areaFeatures.findIndex(
-        (areaFeature) => areaFeature.dateableId === dateableId,
-      );
+        // Find the dateableId within the features array
+        const featureIndex = areaFeatures.findIndex(
+          (areaFeature) => areaFeature.dateableId === dateableId,
+        );
 
-      areaFeatures[featureIndex].dateable.dateRanges.push(newDateRange);
+        areaFeatures[featureIndex].dateable.dateRanges.push(newDateRange);
 
-      return updatedData;
-    });
-  }
+        return updatedData;
+      });
+    },
+    [setData],
+  );
 
   // Removes a date range from a Dateable's dateRanges by its ID or tempId
-  function removeFeatureDateRange(dateableId, dateRange) {
-    // Track deleted date range IDs
-    if (dateRange.id) {
-      addDeletedDateRangeId(dateRange.id);
-    }
+  const removeFeatureDateRange = useCallback(
+    (dateableId, dateRange) => {
+      // Track deleted date range IDs
+      if (dateRange.id) {
+        addDeletedDateRangeId(dateRange.id);
+      }
 
-    setData((prevData) => {
-      const updatedData = cloneDeep(prevData);
-      const areaFeatures = updatedData.current.parkArea.features;
+      setData((prevData) => {
+        const updatedData = cloneDeep(prevData);
+        const areaFeatures = updatedData.current.parkArea.features;
 
-      // Find the dateableId within the features array
+        // Find the dateableId within the features array
+        const featureIndex = areaFeatures.findIndex(
+          (areaFeature) => areaFeature.dateableId === dateableId,
+        );
+
+        const { dateRanges } = areaFeatures[featureIndex].dateable;
+
+        const index = dateRanges.findIndex((range) => {
+          // Find by ID if dateRange has one
+          if (dateRange.id) {
+            return dateRange.id === range.id;
+          }
+
+          // Otherwise, find by tempId
+          if (dateRange.tempId) {
+            return dateRange.tempId === range.tempId;
+          }
+
+          return false;
+        });
+
+        if (index !== -1) {
+          dateRanges.splice(index, 1);
+        }
+
+        return updatedData;
+      });
+    },
+    [setData, addDeletedDateRangeId],
+  );
+
+  // Updates the Feature's date range in the parent component
+  const updateFeatureDateRange = useCallback(
+    (dateableId, id, dateField, dateObj, tempId = false) => {
+      const areaFeatures = season.parkArea.features;
+      // Find the feature's dateableId
       const featureIndex = areaFeatures.findIndex(
-        (areaFeature) => areaFeature.dateableId === dateableId,
+        (feature) => feature.dateableId === dateableId,
       );
 
       const { dateRanges } = areaFeatures[featureIndex].dateable;
-
-      const index = dateRanges.findIndex((range) => {
-        // Find by ID if dateRange has one
-        if (dateRange.id) {
-          return dateRange.id === range.id;
+      // Find the index in dateRanges from the dateRange id or tempId
+      const dateRangeIndex = dateRanges.findIndex((range) => {
+        if (tempId) {
+          return range.tempId === id;
         }
 
-        // Otherwise, find by tempId
-        if (dateRange.tempId) {
-          return dateRange.tempId === range.tempId;
-        }
-
-        return false;
+        return range.id === id;
       });
 
-      if (index !== -1) {
-        dateRanges.splice(index, 1);
-      }
+      // Path to update to the DateRange object
+      const dateRangePath = [
+        "current",
+        "parkArea",
+        "features",
+        featureIndex,
+        "dateable",
+        "dateRanges",
+        dateRangeIndex,
+      ];
 
-      return updatedData;
-    });
-  }
+      // Update the local state (in the FormPanel component)
+      setData((prevData) => {
+        let updatedData = cloneDeep(prevData);
 
-  // Updates the Feature's date range in the parent component
-  function updateFeatureDateRange(
-    dateableId,
-    id,
-    dateField,
-    dateObj,
-    tempId = false,
-  ) {
-    const areaFeatures = season.parkArea.features;
-    // Find the feature's dateableId
-    const featureIndex = areaFeatures.findIndex(
-      (feature) => feature.dateableId === dateableId,
-    );
+        // Update the start or end date field
+        updatedData = lodashSet(
+          updatedData,
+          [...dateRangePath, dateField],
+          dateObj,
+        );
 
-    const { dateRanges } = areaFeatures[featureIndex].dateable;
-    // Find the index in dateRanges from the dateRange id or tempId
-    const dateRangeIndex = dateRanges.findIndex((range) => {
-      if (tempId) {
-        return range.tempId === id;
-      }
-
-      return range.id === id;
-    });
-
-    // Path to update to the DateRange object
-    const dateRangePath = [
-      "current",
-      "parkArea",
-      "features",
-      featureIndex,
-      "dateable",
-      "dateRanges",
-      dateRangeIndex,
-    ];
-
-    // Update the local state (in the FormPanel component)
-    setData((prevData) => {
-      let updatedData = cloneDeep(prevData);
-
-      // Update the start or end date field
-      updatedData = lodashSet(
-        updatedData,
-        [...dateRangePath, dateField],
-        dateObj,
-      );
-
-      // Update the changed flag for the date range
-      return lodashSet(updatedData, [...dateRangePath, "changed"], true);
-    });
-  }
+        // Update the changed flag for the date range
+        return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+      });
+    },
+    [setData, season.parkArea.features],
+  );
 
   return (
     <>
