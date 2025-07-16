@@ -166,37 +166,48 @@ export default function FeatureSeasonForm({
     });
   }
 
+  // Individual Feature form section
+  function FormSection() {
+    return (
+      <div className="row">
+        {dateTypes.map((dateType) => (
+          <div key={dateType.name} className="col-lg-6 mb-4">
+            <h6 className="fw-normal">
+              {dateType.name}{" "}
+              <TooltipWrapper placement="top" content={dateType.description}>
+                <FontAwesomeIcon icon={faCircleInfo} />
+              </TooltipWrapper>
+            </h6>
+
+            <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
+
+            <DateRangeFields
+              dateableId={feature.dateableId}
+              dateType={dateType}
+              dateRanges={datesByType[dateType.name] ?? []}
+              updateDateRange={updateDateRange}
+              addDateRange={addDateRange}
+              removeDateRange={removeDateRange}
+              dateRangeAnnuals={dateRangeAnnuals}
+              updateDateRangeAnnual={updateDateRangeAnnual}
+            />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <>
-      <FormContainer>
-        <div className="row">
-          {dateTypes.map((dateType) => (
-            <div key={dateType.name} className="col-lg-6 mb-4">
-              <h6 className="fw-normal">
-                {dateType.name}{" "}
-                <TooltipWrapper placement="top" content={dateType.description}>
-                  <FontAwesomeIcon icon={faCircleInfo} />
-                </TooltipWrapper>
-              </h6>
-
-              <PreviousDates
-                dateRanges={previousDatesByType?.[dateType.name]}
-              />
-
-              <DateRangeFields
-                dateableId={feature.dateableId}
-                dateType={dateType}
-                dateRanges={datesByType[dateType.name] ?? []}
-                updateDateRange={updateDateRange}
-                addDateRange={addDateRange}
-                removeDateRange={removeDateRange}
-                dateRangeAnnuals={dateRangeAnnuals}
-                updateDateRangeAnnual={updateDateRangeAnnual}
-              />
-            </div>
-          ))}
+      {feature.inReservationSystem ? (
+        <FormContainer>
+          <FormSection />
+        </FormContainer>
+      ) : (
+        <div className="non-bcp-reservations">
+          <FormSection />
         </div>
-      </FormContainer>
+      )}
 
       <GateForm
         gateTitle={`${feature.name} gate`}
