@@ -183,8 +183,6 @@ function Table({ park, formPanelHandler }) {
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
 
-  console.log("park:", park);
-
   return (
     <table key={park.id} className="table has-header-row mb-0">
       <thead>
