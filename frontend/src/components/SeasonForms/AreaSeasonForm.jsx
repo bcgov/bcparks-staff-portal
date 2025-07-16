@@ -74,24 +74,24 @@ function FeatureFormSectionComponent({
   );
 }
 
+const dateRangeShape = PropTypes.shape({
+  id: PropTypes.number,
+  tempId: PropTypes.string,
+  startDate: PropTypes.instanceOf(Date),
+  endDate: PropTypes.instanceOf(Date),
+  dateType: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
+  }),
+});
+
 FeatureFormSectionComponent.propTypes = {
   feature: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     dateableId: PropTypes.number.isRequired,
     dateable: PropTypes.shape({
-      dateRanges: PropTypes.arrayOf(
-        PropTypes.shape({
-          id: PropTypes.number,
-          tempId: PropTypes.string,
-          startDate: PropTypes.instanceOf(Date),
-          endDate: PropTypes.instanceOf(Date),
-          dateType: PropTypes.shape({
-            name: PropTypes.string.isRequired,
-            id: PropTypes.number.isRequired,
-          }),
-        }),
-      ),
+      dateRanges: PropTypes.arrayOf(dateRangeShape),
     }),
   }).isRequired,
   featureDateTypes: PropTypes.arrayOf(
@@ -101,8 +101,12 @@ FeatureFormSectionComponent.propTypes = {
       description: PropTypes.string,
     }),
   ).isRequired,
-  previousFeatureDatesByType: PropTypes.object.isRequired,
-  featureDatesByType: PropTypes.object.isRequired,
+  previousFeatureDatesByType: PropTypes.objectOf(
+    PropTypes.arrayOf(dateRangeShape),
+  ).isRequired,
+  featureDatesByType: PropTypes.objectOf(
+    PropTypes.objectOf(PropTypes.arrayOf(dateRangeShape)),
+  ).isRequired,
   updateFeatureDateRange: PropTypes.func.isRequired,
   addFeatureDateRange: PropTypes.func.isRequired,
   removeFeatureDateRange: PropTypes.func.isRequired,
