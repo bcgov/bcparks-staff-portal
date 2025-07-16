@@ -178,6 +178,7 @@ export default function ParkSeasonForm({
     });
   }
 
+  // Individual Park form section
   function FormSection() {
     return (
       <div className="row">
