@@ -65,7 +65,7 @@ function TimeRangeForm({ gateDetail, updateGateDetail }) {
         <TimePicker
           value={gateDetail.gateOpenTime}
           onChange={(value) => updateGateDetail({ gateOpenTime: value })}
-          disabled={gateDetail.gateOpensAtDawn || gateDetail.isTimeRangeAnnual}
+          disabled={gateDetail.gateOpensAtDawn}
           placeholder={
             gateDetail.gateOpensAtDawn ? "Dawn" : "Select start time"
           }
@@ -80,7 +80,7 @@ function TimeRangeForm({ gateDetail, updateGateDetail }) {
         <TimePicker
           value={gateDetail.gateCloseTime}
           onChange={(value) => updateGateDetail({ gateCloseTime: value })}
-          disabled={gateDetail.gateClosesAtDusk || gateDetail.isTimeRangeAnnual}
+          disabled={gateDetail.gateClosesAtDusk}
           placeholder={gateDetail.gateClosesAtDusk ? "Dusk" : "Select end time"}
           label="End time"
           defaultTime="23:00:00"
@@ -96,7 +96,6 @@ TimeRangeForm.propTypes = {
     gateCloseTime: PropTypes.string,
     gateOpensAtDawn: PropTypes.bool,
     gateClosesAtDusk: PropTypes.bool,
-    isTimeRangeAnnual: PropTypes.bool,
   }).isRequired,
   updateGateDetail: PropTypes.func.isRequired,
 };

@@ -270,7 +270,6 @@ const GateDetailResource = {
       "gateOpensAtDawn",
       "gateClosesAtDusk",
       "gateOpen24Hours",
-      "isTimeRangeAnnual",
       "createdAt",
       "updatedAt",
     ],
