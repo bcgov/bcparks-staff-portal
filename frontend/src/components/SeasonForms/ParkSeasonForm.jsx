@@ -44,6 +44,25 @@ export default function ParkSeasonForm({
     [dateTypes.length],
   );
 
+  // If this park is in the BCParks Reservations system,
+  // wrap the date inputs with FormContainer.
+  const useBcpReservationsSection = useMemo(() => {
+    if (park.inReservationSystem) return true;
+
+    // If inReservationSystem is false in the database,
+    // fall back to checking for Winter/T1/T2 dates as a workaround for incomplete data.
+    if (park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates) {
+      return true;
+    }
+
+    return false;
+  }, [
+    park.inReservationSystem,
+    park.hasTier1Dates,
+    park.hasTier2Dates,
+    park.hasWinterFeeDates,
+  ]);
+
   const datesByType = useMemo(
     () => groupBy(park.dateable.dateRanges, "dateType.name"),
     [park.dateable.dateRanges],
@@ -219,7 +238,7 @@ export default function ParkSeasonForm({
   return (
     <>
       {showDateFormSections &&
-        (park.inReservationSystem ? (
+        (useBcpReservationsSection ? (
           <FormContainer>
             <FormSection />
           </FormContainer>
