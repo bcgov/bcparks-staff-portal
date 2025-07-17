@@ -158,7 +158,10 @@ function buildFeatureOutput(
     ),
   );
   // get date ranges for park.feature
-  const featureDateRanges = getAllDateRanges(filteredSeasons);
+  const featureDateRanges = getAllDateRanges(filteredSeasons)
+    // Temporarily disabling display of Winter Fees
+    // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
+    .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
 
   const output = {
     id: feature.id,
@@ -190,7 +193,10 @@ function buildFeatureOutput(
 // build park area output object
 function buildParkAreaOutput(parkArea, currentYear) {
   // get date ranges for parkArea
-  const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
+  const parkAreaDateRanges = getAllDateRanges(parkArea.seasons)
+    // Temporarily disabling display of Winter Fees
+    // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
+    .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
 
   // add featureType to parkArea if all features have the same featureType
   let featureType = null;
