@@ -37,6 +37,13 @@ export default function ParkSeasonForm({
     return [operating, nonOperating];
   }, [allDateTypes]);
 
+  // Show the date form sections only if there are applicable date types for this park.
+  // If there are no date types to show, the section would be empty, so we won't render it.
+  const showDateFormSections = useMemo(
+    () => dateTypes.length > 0,
+    [dateTypes.length],
+  );
+
   const datesByType = useMemo(
     () => groupBy(park.dateable.dateRanges, "dateType.name"),
     [park.dateable.dateRanges],
@@ -211,15 +218,16 @@ export default function ParkSeasonForm({
 
   return (
     <>
-      {park.inReservationSystem ? (
-        <FormContainer>
-          <FormSection />
-        </FormContainer>
-      ) : (
-        <div className="non-bcp-reservations">
-          <FormSection />
-        </div>
-      )}
+      {showDateFormSections &&
+        (park.inReservationSystem ? (
+          <FormContainer>
+            <FormSection />
+          </FormContainer>
+        ) : (
+          <div className="non-bcp-reservations">
+            <FormSection />
+          </div>
+        ))}
 
       <GateForm
         gateTitle="Park gate"

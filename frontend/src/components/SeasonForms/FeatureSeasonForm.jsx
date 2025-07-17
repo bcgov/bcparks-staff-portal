@@ -25,6 +25,13 @@ export default function FeatureSeasonForm({
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
   const gateDetail = season.gateDetail || {};
 
+  // Show the date form sections only if there are applicable date types for this feature.
+  // If there are no date types to show, the section would be empty, so we won't render it.
+  const showDateFormSections = useMemo(
+    () => dateTypes.length > 0,
+    [dateTypes.length],
+  );
+
   const datesByType = useMemo(
     () => groupBy(feature.dateable.dateRanges, "dateType.name"),
     [feature.dateable.dateRanges],
@@ -199,15 +206,16 @@ export default function FeatureSeasonForm({
 
   return (
     <>
-      {feature.inReservationSystem ? (
-        <FormContainer>
-          <FormSection />
-        </FormContainer>
-      ) : (
-        <div className="non-bcp-reservations">
-          <FormSection />
-        </div>
-      )}
+      {showDateFormSections &&
+        (feature.inReservationSystem ? (
+          <FormContainer>
+            <FormSection />
+          </FormContainer>
+        ) : (
+          <div className="non-bcp-reservations">
+            <FormSection />
+          </div>
+        ))}
 
       <GateForm
         gateTitle={`${feature.name} gate`}
