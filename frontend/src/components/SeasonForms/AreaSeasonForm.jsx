@@ -6,8 +6,9 @@ import {
   cloneDeep,
   mapValues,
   keyBy,
+  partition,
 } from "lodash-es";
-import { useMemo, useContext } from "react";
+import { memo, useMemo, useContext, useCallback } from "react";
 import PropTypes from "prop-types";
 
 import DateRangeFields from "@/components/DateRangeFields";
@@ -18,6 +19,100 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 import PreviousDates from "@/components/SeasonForms/PreviousDates";
 
 import DataContext from "@/contexts/DataContext";
+
+// Individual Area-Feature form section
+function FeatureFormSectionComponent({
+  feature,
+  featureDateTypes,
+  previousFeatureDatesByType,
+  featureDatesByType,
+  updateFeatureDateRange,
+  addFeatureDateRange,
+  removeFeatureDateRange,
+}) {
+  return (
+    <div className="area-feature" key={feature.id}>
+      <h4 className="feature-name">{feature.name}</h4>
+
+      {featureDateTypes.map((dateType) => (
+        <div key={dateType.name} className="col-lg-6 mb-4">
+          <h6 className="fw-normal">
+            {dateType.name}{" "}
+            <TooltipWrapper placement="top" content={dateType.description}>
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+
+          {/* Show previous dates for this featureId/dateableId */}
+          <PreviousDates
+            dateRanges={previousFeatureDatesByType?.[dateType.name]}
+          />
+
+          <DateRangeFields
+            dateableId={feature.dateableId}
+            dateType={dateType}
+            dateRanges={featureDatesByType[feature.dateableId][dateType.id]}
+            updateDateRange={(id, dateField, dateObj, tempId = false) =>
+              updateFeatureDateRange(
+                feature.dateableId,
+                id,
+                dateField,
+                dateObj,
+                tempId,
+              )
+            }
+            addDateRange={() =>
+              addFeatureDateRange(feature.dateableId, dateType)
+            }
+            removeDateRange={(dateRange) =>
+              removeFeatureDateRange(feature.dateableId, dateRange)
+            }
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const dateRangeShape = PropTypes.shape({
+  id: PropTypes.number,
+  tempId: PropTypes.string,
+  startDate: PropTypes.instanceOf(Date),
+  endDate: PropTypes.instanceOf(Date),
+  dateType: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    id: PropTypes.number.isRequired,
+  }),
+});
+
+FeatureFormSectionComponent.propTypes = {
+  feature: PropTypes.shape({
+    id: PropTypes.number.isRequired,
+    name: PropTypes.string.isRequired,
+    dateableId: PropTypes.number.isRequired,
+    dateable: PropTypes.shape({
+      dateRanges: PropTypes.arrayOf(dateRangeShape),
+    }),
+  }).isRequired,
+  featureDateTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
+      description: PropTypes.string,
+    }),
+  ).isRequired,
+  previousFeatureDatesByType: PropTypes.objectOf(
+    PropTypes.arrayOf(dateRangeShape),
+  ).isRequired,
+  featureDatesByType: PropTypes.objectOf(
+    PropTypes.objectOf(PropTypes.arrayOf(dateRangeShape)),
+  ).isRequired,
+  updateFeatureDateRange: PropTypes.func.isRequired,
+  addFeatureDateRange: PropTypes.func.isRequired,
+  removeFeatureDateRange: PropTypes.func.isRequired,
+};
+
+const FeatureFormSection = memo(FeatureFormSectionComponent);
 
 export default function AreaSeasonForm({
   season,
@@ -187,6 +282,11 @@ export default function AreaSeasonForm({
 
   // Area-feature variables
   const features = useMemo(() => parkArea.features || [], [parkArea.features]);
+  const [bcpResFeatures, nonBcpResFeatures] = useMemo(
+    () => partition(features, (feature) => feature.inReservationSystem),
+    [features],
+  );
+
   const featureDatesByType = useMemo(() => {
     // Create objects with IDs as keys to loop over
     const featuresByDateableId = keyBy(features, "dateableId");
@@ -212,124 +312,127 @@ export default function AreaSeasonForm({
   }, [features, featureDateTypes]);
 
   // Adds a new date range to the Area's dateable.dateRanges
-  function addFeatureDateRange(dateableId, dateType) {
-    const newDateRange = {
-      // Add a temporary ID for records that haven't been saved yet
-      tempId: crypto.randomUUID(),
-      startDate: null,
-      endDate: null,
-      dateableId,
-      dateType,
-      dateTypeId: dateType.id,
-      changed: true,
-    };
+  const addFeatureDateRange = useCallback(
+    (dateableId, dateType) => {
+      const newDateRange = {
+        // Add a temporary ID for records that haven't been saved yet
+        tempId: crypto.randomUUID(),
+        startDate: null,
+        endDate: null,
+        dateableId,
+        dateType,
+        dateTypeId: dateType.id,
+        changed: true,
+      };
 
-    setData((prevData) => {
-      const updatedData = cloneDeep(prevData);
+      setData((prevData) => {
+        const updatedData = cloneDeep(prevData);
 
-      const areaFeatures = updatedData.current.parkArea.features;
+        const areaFeatures = updatedData.current.parkArea.features;
 
-      // Find the dateableId within the features array
-      const featureIndex = areaFeatures.findIndex(
-        (areaFeature) => areaFeature.dateableId === dateableId,
-      );
+        // Find the dateableId within the features array
+        const featureIndex = areaFeatures.findIndex(
+          (areaFeature) => areaFeature.dateableId === dateableId,
+        );
 
-      areaFeatures[featureIndex].dateable.dateRanges.push(newDateRange);
+        areaFeatures[featureIndex].dateable.dateRanges.push(newDateRange);
 
-      return updatedData;
-    });
-  }
+        return updatedData;
+      });
+    },
+    [setData],
+  );
 
   // Removes a date range from a Dateable's dateRanges by its ID or tempId
-  function removeFeatureDateRange(dateableId, dateRange) {
-    // Track deleted date range IDs
-    if (dateRange.id) {
-      addDeletedDateRangeId(dateRange.id);
-    }
+  const removeFeatureDateRange = useCallback(
+    (dateableId, dateRange) => {
+      // Track deleted date range IDs
+      if (dateRange.id) {
+        addDeletedDateRangeId(dateRange.id);
+      }
 
-    setData((prevData) => {
-      const updatedData = cloneDeep(prevData);
-      const areaFeatures = updatedData.current.parkArea.features;
+      setData((prevData) => {
+        const updatedData = cloneDeep(prevData);
+        const areaFeatures = updatedData.current.parkArea.features;
 
-      // Find the dateableId within the features array
+        // Find the dateableId within the features array
+        const featureIndex = areaFeatures.findIndex(
+          (areaFeature) => areaFeature.dateableId === dateableId,
+        );
+
+        const { dateRanges } = areaFeatures[featureIndex].dateable;
+
+        const index = dateRanges.findIndex((range) => {
+          // Find by ID if dateRange has one
+          if (dateRange.id) {
+            return dateRange.id === range.id;
+          }
+
+          // Otherwise, find by tempId
+          if (dateRange.tempId) {
+            return dateRange.tempId === range.tempId;
+          }
+
+          return false;
+        });
+
+        if (index !== -1) {
+          dateRanges.splice(index, 1);
+        }
+
+        return updatedData;
+      });
+    },
+    [setData, addDeletedDateRangeId],
+  );
+
+  // Updates the Feature's date range in the parent component
+  const updateFeatureDateRange = useCallback(
+    (dateableId, id, dateField, dateObj, tempId = false) => {
+      const areaFeatures = season.parkArea.features;
+      // Find the feature's dateableId
       const featureIndex = areaFeatures.findIndex(
-        (areaFeature) => areaFeature.dateableId === dateableId,
+        (feature) => feature.dateableId === dateableId,
       );
 
       const { dateRanges } = areaFeatures[featureIndex].dateable;
-
-      const index = dateRanges.findIndex((range) => {
-        // Find by ID if dateRange has one
-        if (dateRange.id) {
-          return dateRange.id === range.id;
+      // Find the index in dateRanges from the dateRange id or tempId
+      const dateRangeIndex = dateRanges.findIndex((range) => {
+        if (tempId) {
+          return range.tempId === id;
         }
 
-        // Otherwise, find by tempId
-        if (dateRange.tempId) {
-          return dateRange.tempId === range.tempId;
-        }
-
-        return false;
+        return range.id === id;
       });
 
-      if (index !== -1) {
-        dateRanges.splice(index, 1);
-      }
+      // Path to update to the DateRange object
+      const dateRangePath = [
+        "current",
+        "parkArea",
+        "features",
+        featureIndex,
+        "dateable",
+        "dateRanges",
+        dateRangeIndex,
+      ];
 
-      return updatedData;
-    });
-  }
+      // Update the local state (in the FormPanel component)
+      setData((prevData) => {
+        let updatedData = cloneDeep(prevData);
 
-  // Updates the Feature's date range in the parent component
-  function updateFeatureDateRange(
-    dateableId,
-    id,
-    dateField,
-    dateObj,
-    tempId = false,
-  ) {
-    const areaFeatures = season.parkArea.features;
-    // Find the feature's dateableId
-    const featureIndex = areaFeatures.findIndex(
-      (feature) => feature.dateableId === dateableId,
-    );
+        // Update the start or end date field
+        updatedData = lodashSet(
+          updatedData,
+          [...dateRangePath, dateField],
+          dateObj,
+        );
 
-    const { dateRanges } = areaFeatures[featureIndex].dateable;
-    // Find the index in dateRanges from the dateRange id or tempId
-    const dateRangeIndex = dateRanges.findIndex((range) => {
-      if (tempId) {
-        return range.tempId === id;
-      }
-
-      return range.id === id;
-    });
-
-    // Path to update to the DateRange object
-    const dateRangePath = [
-      "current",
-      "parkArea",
-      "features",
-      featureIndex,
-      "dateable",
-      "dateRanges",
-      dateRangeIndex,
-    ];
-
-    // Update the local state (in the FormPanel component)
-    setData((prevData) => {
-      let updatedData = cloneDeep(prevData);
-
-      // Update the start or end date field
-      updatedData = lodashSet(
-        updatedData,
-        [...dateRangePath, dateField],
-        dateObj,
-      );
-
-      // Update the changed flag for the date range
-      return lodashSet(updatedData, [...dateRangePath, "changed"], true);
-    });
-  }
+        // Update the changed flag for the date range
+        return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+      });
+    },
+    [setData, season.parkArea.features],
+  );
 
   return (
     <>
@@ -363,58 +466,42 @@ export default function AreaSeasonForm({
           ))}
 
           {/*
-            Feature-level dates within this Area
+            Feature-level dates within this Area with inReservationSystem=true
             (Features have their own add/update/delete functions)
           */}
-          {features.map((feature) => (
-            <div className="area-feature" key={feature.id}>
-              <h4 className="feature-name">{feature.name}</h4>
-
-              {featureDateTypes.map((dateType) => (
-                <div key={dateType.name} className="col-lg-6 mb-4">
-                  <h6 className="fw-normal">
-                    {dateType.name}{" "}
-                    <TooltipWrapper
-                      placement="top"
-                      content={dateType.description}
-                    >
-                      <FontAwesomeIcon icon={faCircleInfo} />
-                    </TooltipWrapper>
-                  </h6>
-
-                  {/* Show previous dates for this featureId/dateableId */}
-                  <PreviousDates
-                    dateRanges={previousFeatureDatesByType?.[dateType.name]}
-                  />
-
-                  <DateRangeFields
-                    dateableId={feature.dateableId}
-                    dateType={dateType}
-                    dateRanges={
-                      featureDatesByType[feature.dateableId][dateType.id]
-                    }
-                    updateDateRange={(id, dateField, dateObj, tempId = false) =>
-                      updateFeatureDateRange(
-                        feature.dateableId,
-                        id,
-                        dateField,
-                        dateObj,
-                        tempId,
-                      )
-                    }
-                    addDateRange={() =>
-                      addFeatureDateRange(feature.dateableId, dateType)
-                    }
-                    removeDateRange={(dateRange) =>
-                      removeFeatureDateRange(feature.dateableId, dateRange)
-                    }
-                  />
-                </div>
-              ))}
-            </div>
+          {bcpResFeatures.map((feature) => (
+            <FeatureFormSection
+              feature={feature}
+              featureDateTypes={featureDateTypes}
+              previousFeatureDatesByType={previousFeatureDatesByType}
+              featureDatesByType={featureDatesByType}
+              updateFeatureDateRange={updateFeatureDateRange}
+              addFeatureDateRange={addFeatureDateRange}
+              removeFeatureDateRange={removeFeatureDateRange}
+              key={feature.id}
+            />
           ))}
         </div>
       </FormContainer>
+
+      <div className="non-bcp-reservations">
+        {/*
+          Feature-level dates within this Area with inReservationSystem=false
+          (Features have their own add/update/delete functions)
+        */}
+        {nonBcpResFeatures.map((feature) => (
+          <FeatureFormSection
+            feature={feature}
+            featureDateTypes={featureDateTypes}
+            previousFeatureDatesByType={previousFeatureDatesByType}
+            featureDatesByType={featureDatesByType}
+            updateFeatureDateRange={updateFeatureDateRange}
+            addFeatureDateRange={addFeatureDateRange}
+            removeFeatureDateRange={removeFeatureDateRange}
+            key={feature.id}
+          />
+        ))}
+      </div>
 
       <GateForm
         gateTitle={`${parkArea.name} gate`}
