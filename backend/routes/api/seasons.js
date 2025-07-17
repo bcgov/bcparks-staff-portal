@@ -49,6 +49,34 @@ function checkSeasonExists(season) {
 }
 
 /**
+ * Serializes a GateDetail object to a JSON string, with optional size limit.
+ * If the object is a Sequelize instance, calls toJSON first.
+ * Truncates the string and adds "..." if it exceeds maxSize.
+ * @param {Object} gateDetail The GateDetail object or Sequelize instance
+ * @param {number} [maxSize=10000] Maximum allowed string length
+ * @returns {string|null} Serialized JSON string or null if input is falsy
+ */
+function serializeGateDetail(gateDetail, maxSize = 10000) {
+  if (!gateDetail) return null;
+
+  let string;
+
+  // If it's a Sequelize instance, call toJSON
+  if (typeof gateDetail.toJSON === "function") {
+    string = JSON.stringify(gateDetail.toJSON());
+  } else {
+    string = JSON.stringify(gateDetail);
+  }
+
+  // Truncate if too large
+  if (string.length > maxSize) {
+    return `${string.slice(0, maxSize)}...`;
+  }
+
+  return string;
+}
+
+/**
  * Updates the status of a Season.
  * If "save" is true, it will first save the changes to the Season.
  * @param {number} seasonId The ID of the season to update
@@ -174,7 +202,6 @@ async function getGateDetail(publishableId) {
       "gateCloseTime",
       "gateOpensAtDawn",
       "gateClosesAtDusk",
-      "gateOpen24Hours",
     ],
   });
 }
@@ -640,6 +667,8 @@ router.post(
       );
 
       // gateDetail
+      const oldGateDetail = await getGateDetail(season.publishableId);
+
       const gateDetailToSave = {
         ...gateDetail,
         publishableId: season.publishableId,
@@ -660,12 +689,8 @@ router.post(
           statusNewValue: newStatus,
           readyToPublishOldValue: season.readyToPublish,
           readyToPublishNewValue: newReadyToPublish,
-          gateDetailOldValue: season.gateDetail
-            ? JSON.stringify(season.gateDetail.toJSON())
-            : null,
-          gateDetailNewValue: gateDetailToSave
-            ? JSON.stringify(gateDetailToSave)
-            : null,
+          gateDetailOldValue: serializeGateDetail(oldGateDetail),
+          gateDetailNewValue: serializeGateDetail(gateDetailToSave),
         },
         { transaction },
       );

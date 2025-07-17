@@ -3,9 +3,13 @@ module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn("SeasonChangeLogs", "gateDetailOldValue", {
       type: Sequelize.TEXT,
+      allowNull: true,
+      defaultValue: null,
     });
     await queryInterface.addColumn("SeasonChangeLogs", "gateDetailNewValue", {
       type: Sequelize.TEXT,
+      allowNull: true,
+      defaultValue: null,
     });
   },
 
