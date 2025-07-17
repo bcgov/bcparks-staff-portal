@@ -28,7 +28,7 @@ import {
 } from "../../middleware/permissions.js";
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
-import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+// import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
 import checkUserRoles from "../../utils/checkUserRoles.js";
 
 const router = Router();
@@ -757,7 +757,8 @@ router.post(
       // await createFirstComeFirstServedDateRange(season, transaction);
 
       // Copy Winter fee dates from the Park level to Features and Park Areas
-      await propagateWinterFeeDates(seasonId, transaction);
+      // @TODO: Uncomment after revising the logic for Winter fees
+      // await propagateWinterFeeDates(seasonId, transaction);
 
       await transaction.commit();
       res.sendStatus(200);
