@@ -14,7 +14,8 @@ export default function AccessProvider({ children, auth }) {
     const payload = accessToken.split(".").at(1);
     const decodedPayload = atob(payload);
     const parsedPayload = JSON.parse(decodedPayload);
-    const payloadRoles = parsedPayload?.resource_access?.[clientId].roles ?? [];
+    const payloadRoles =
+      parsedPayload?.resource_access?.[clientId]?.roles ?? [];
 
     roles.push(...payloadRoles);
   }
