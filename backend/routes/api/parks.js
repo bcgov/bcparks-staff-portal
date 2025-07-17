@@ -153,6 +153,16 @@ function buildFeatureOutput(
 ) {
   // filter seasons if dateRange's dateableId matches feature's dateableId
   const filteredSeasons = (seasons || [])
+    // first, filter seasons that have at least one matching dateRange
+    .filter((season) => {
+      // convert to plain object if it's a Sequelize instance
+      const plainSeason =
+        typeof season.toJSON === "function" ? season.toJSON() : season;
+
+      return (plainSeason.dateRanges || []).some(
+        (dateRange) => dateRange.dateableId === feature.dateableId,
+      );
+    })
     .map((season) => {
       // convert to plain object if it's a Sequelize instance
       const plainSeason =
@@ -164,8 +174,7 @@ function buildFeatureOutput(
           (dateRange) => dateRange.dateableId === feature.dateableId,
         ),
       };
-    })
-    .filter((season) => season.dateRanges.length > 0);
+    });
 
   // get date ranges for park.feature
   const featureDateRanges = getAllDateRanges(filteredSeasons)
