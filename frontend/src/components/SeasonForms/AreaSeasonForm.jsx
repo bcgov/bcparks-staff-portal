@@ -287,6 +287,18 @@ export default function AreaSeasonForm({
     [features],
   );
 
+  // Show the BC Parks Reservations section if there are any area date types,
+  //  or any features with inReservationSystem
+  const showBcpResSection = useMemo(
+    () => areaDateTypes.length > 0 || bcpResFeatures.length > 0,
+    [areaDateTypes.length, bcpResFeatures.length],
+  );
+
+  const showNonBcpResSection = useMemo(
+    () => nonBcpResFeatures.length > 0,
+    [nonBcpResFeatures.length],
+  );
+
   const featureDatesByType = useMemo(() => {
     // Create objects with IDs as keys to loop over
     const featuresByDateableId = keyBy(features, "dateableId");
@@ -436,40 +448,66 @@ export default function AreaSeasonForm({
 
   return (
     <>
-      <FormContainer>
-        <div className="row">
-          {/* Area-level dates */}
-          {areaDateTypes.map((dateType) => (
-            <div key={dateType.name} className="col-lg-6 mb-4">
-              <h6 className="fw-normal">
-                {dateType.name}{" "}
-                <TooltipWrapper placement="top" content={dateType.description}>
-                  <FontAwesomeIcon icon={faCircleInfo} />
-                </TooltipWrapper>
-              </h6>
+      {showBcpResSection && (
+        <FormContainer>
+          <div className="row">
+            {/* Area-level dates */}
+            {areaDateTypes.map((dateType) => (
+              <div key={dateType.name} className="col-lg-6 mb-4">
+                <h6 className="fw-normal">
+                  {dateType.name}{" "}
+                  <TooltipWrapper
+                    placement="top"
+                    content={dateType.description}
+                  >
+                    <FontAwesomeIcon icon={faCircleInfo} />
+                  </TooltipWrapper>
+                </h6>
 
-              <PreviousDates
-                dateRanges={previousAreaDatesByType?.[dateType.name]}
-              />
+                <PreviousDates
+                  dateRanges={previousAreaDatesByType?.[dateType.name]}
+                />
 
-              <DateRangeFields
-                dateableId={parkArea.dateableId}
-                dateType={dateType}
-                dateRanges={areaDatesByType[dateType.name] ?? []}
-                updateDateRange={updateAreaDateRange}
-                addDateRange={addAreaDateRange}
-                removeDateRange={removeAreaDateRange}
-                dateRangeAnnuals={dateRangeAnnuals}
-                updateDateRangeAnnual={updateDateRangeAnnual}
-              />
-            </div>
-          ))}
+                <DateRangeFields
+                  dateableId={parkArea.dateableId}
+                  dateType={dateType}
+                  dateRanges={areaDatesByType[dateType.name] ?? []}
+                  updateDateRange={updateAreaDateRange}
+                  addDateRange={addAreaDateRange}
+                  removeDateRange={removeAreaDateRange}
+                  dateRangeAnnuals={dateRangeAnnuals}
+                  updateDateRangeAnnual={updateDateRangeAnnual}
+                />
+              </div>
+            ))}
 
-          {/*
+            {/*
             Feature-level dates within this Area with inReservationSystem=true
             (Features have their own add/update/delete functions)
-          */}
-          {bcpResFeatures.map((feature) => (
+            */}
+            {bcpResFeatures.map((feature) => (
+              <FeatureFormSection
+                feature={feature}
+                featureDateTypes={featureDateTypes}
+                previousFeatureDatesByType={previousFeatureDatesByType}
+                featureDatesByType={featureDatesByType}
+                updateFeatureDateRange={updateFeatureDateRange}
+                addFeatureDateRange={addFeatureDateRange}
+                removeFeatureDateRange={removeFeatureDateRange}
+                key={feature.id}
+              />
+            ))}
+          </div>
+        </FormContainer>
+      )}
+
+      {showNonBcpResSection && (
+        <div className="non-bcp-reservations">
+          {/*
+          Feature-level dates within this Area with inReservationSystem=false
+          (Features have their own add/update/delete functions)
+        */}
+          {nonBcpResFeatures.map((feature) => (
             <FeatureFormSection
               feature={feature}
               featureDateTypes={featureDateTypes}
@@ -482,26 +520,7 @@ export default function AreaSeasonForm({
             />
           ))}
         </div>
-      </FormContainer>
-
-      <div className="non-bcp-reservations">
-        {/*
-          Feature-level dates within this Area with inReservationSystem=false
-          (Features have their own add/update/delete functions)
-        */}
-        {nonBcpResFeatures.map((feature) => (
-          <FeatureFormSection
-            feature={feature}
-            featureDateTypes={featureDateTypes}
-            previousFeatureDatesByType={previousFeatureDatesByType}
-            featureDatesByType={featureDatesByType}
-            updateFeatureDateRange={updateFeatureDateRange}
-            addFeatureDateRange={addFeatureDateRange}
-            removeFeatureDateRange={removeFeatureDateRange}
-            key={feature.id}
-          />
-        ))}
-      </div>
+      )}
 
       <GateForm
         gateTitle={`${parkArea.name} gate`}
