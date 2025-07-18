@@ -214,8 +214,6 @@ function Table({ park, formPanelHandler }) {
                 formPanelHandler({ ...parkArea, level: "park-area" })
               }
             />
-            <DateTypeTableRow groupedDateRanges={parkArea.groupedDateRanges} />
-            <DateTableRow groupedDateRanges={parkArea.groupedDateRanges} />
 
             {/* features that belong to park area */}
             {/* these features might not be publishable */}
