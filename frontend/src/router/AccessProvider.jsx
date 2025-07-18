@@ -37,7 +37,14 @@ export default function AccessProvider({ children, auth }) {
 
   // Provide the context value to child components
   return (
-    <AccessContext.Provider value={{ roles, checkAccess, logOut }}>
+    <AccessContext.Provider
+      value={{
+        roles,
+        checkAccess,
+        logOut,
+        isAuthenticated: auth.isAuthenticated,
+      }}
+    >
       {children}
     </AccessContext.Provider>
   );
