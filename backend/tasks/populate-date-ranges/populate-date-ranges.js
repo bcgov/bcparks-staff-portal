@@ -4,6 +4,7 @@
 import "../../env.js";
 
 import { Season, DateRange, DateRangeAnnual } from "../../models/index.js";
+import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
 
 // Functions
 /**
@@ -53,6 +54,11 @@ export async function populateDateRangesForYear(
         transaction,
       });
 
+      // find dateableId for targetSeason's publishableId
+      const dateableId = await findDateableIdByPublishableId(
+        targetSeason.publishableId,
+      );
+
       // skip if no previous or target season found
       if (!prevSeason || !targetSeason) continue;
 
@@ -90,6 +96,7 @@ export async function populateDateRangesForYear(
         newEndDate.setFullYear(currentYear);
 
         dateRangesToCreate.push({
+          dateableId,
           seasonId: targetSeason.id,
           dateTypeId: annual.dateTypeId,
           startDate: newStartDate,
