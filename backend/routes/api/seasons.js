@@ -49,15 +49,6 @@ function checkSeasonExists(season) {
 }
 
 /**
- * Returns a plain JS object from a Sequelize instance or plain object.
- * @param {Object} obj Sequelize instance or plain object
- * @returns {Object} Plain JS object
- */
-function convertToPlainObject(obj) {
-  return obj && typeof obj.toJSON === "function" ? obj.toJSON() : obj;
-}
-
-/**
  * Updates the status of a Season.
  * If "save" is true, it will first save the changes to the Season.
  * @param {number} seasonId The ID of the season to update
@@ -670,8 +661,8 @@ router.post(
           statusNewValue: newStatus,
           readyToPublishOldValue: season.readyToPublish,
           readyToPublishNewValue: newReadyToPublish,
-          gateDetailOldValue: convertToPlainObject(oldGateDetail),
-          gateDetailNewValue: convertToPlainObject(gateDetailToSave),
+          gateDetailOldValue: oldGateDetail,
+          gateDetailNewValue: gateDetailToSave,
         },
         { transaction },
       );
