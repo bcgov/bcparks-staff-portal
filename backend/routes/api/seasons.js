@@ -174,7 +174,6 @@ async function getGateDetail(publishableId) {
       "gateCloseTime",
       "gateOpensAtDawn",
       "gateClosesAtDusk",
-      "gateOpen24Hours",
     ],
   });
 }
@@ -640,6 +639,8 @@ router.post(
       );
 
       // gateDetail
+      const oldGateDetail = await getGateDetail(season.publishableId);
+
       const gateDetailToSave = {
         ...gateDetail,
         publishableId: season.publishableId,
@@ -660,6 +661,8 @@ router.post(
           statusNewValue: newStatus,
           readyToPublishOldValue: season.readyToPublish,
           readyToPublishNewValue: newReadyToPublish,
+          gateDetailOldValue: oldGateDetail,
+          gateDetailNewValue: gateDetailToSave,
         },
         { transaction },
       );
