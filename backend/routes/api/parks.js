@@ -70,7 +70,7 @@ function featureModel(minYear, where = {}) {
       {
         model: FeatureType,
         as: "featureType",
-        attributes: ["id", "publishableId", "name", "icon"],
+        attributes: ["id", "publishableId", "name"],
       },
       // Publishable Seasons for the Feature
       seasonModel(minYear, false),
@@ -152,11 +152,30 @@ function buildFeatureOutput(
   includeCurrentSeason = true,
 ) {
   // filter seasons if dateRange's dateableId matches feature's dateableId
-  const filteredSeasons = seasons.filter((season) =>
-    (season.dateRanges || []).some(
-      (dateRange) => dateRange.dateableId === feature.dateableId,
-    ),
-  );
+  const filteredSeasons = (seasons || [])
+    // first, filter seasons that have at least one matching dateRange
+    .filter((season) => {
+      // convert to plain object if it's a Sequelize instance
+      const plainSeason =
+        typeof season.toJSON === "function" ? season.toJSON() : season;
+
+      return (plainSeason.dateRanges || []).some(
+        (dateRange) => dateRange.dateableId === feature.dateableId,
+      );
+    })
+    .map((season) => {
+      // convert to plain object if it's a Sequelize instance
+      const plainSeason =
+        typeof season.toJSON === "function" ? season.toJSON() : season;
+
+      return {
+        ...plainSeason,
+        dateRanges: (plainSeason.dateRanges || []).filter(
+          (dateRange) => dateRange.dateableId === feature.dateableId,
+        ),
+      };
+    });
+
   // get date ranges for park.feature
   const featureDateRanges = getAllDateRanges(filteredSeasons)
     // Temporarily disabling display of Winter Fees
@@ -174,7 +193,6 @@ function buildFeatureOutput(
       id: feature.featureType.id,
       publishableId: feature.featureType.publishableId,
       name: feature.featureType.name,
-      icon: feature.featureType.icon,
     },
     seasons: filteredSeasons,
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
