@@ -49,31 +49,12 @@ function checkSeasonExists(season) {
 }
 
 /**
- * Serializes a GateDetail object to a JSON string, with optional size limit.
- * If the object is a Sequelize instance, calls toJSON first.
- * Truncates the string and adds "..." if it exceeds maxSize.
- * @param {Object} gateDetail The GateDetail object or Sequelize instance
- * @param {number} [maxSize=10000] Maximum allowed string length
- * @returns {string|null} Serialized JSON string or null if input is falsy
+ * Returns a plain JS object from a Sequelize instance or plain object.
+ * @param {Object} obj Sequelize instance or plain object
+ * @returns {Object} Plain JS object
  */
-function serializeGateDetail(gateDetail, maxSize = 10000) {
-  if (!gateDetail) return null;
-
-  let string;
-
-  // If it's a Sequelize instance, call toJSON
-  if (typeof gateDetail.toJSON === "function") {
-    string = JSON.stringify(gateDetail.toJSON());
-  } else {
-    string = JSON.stringify(gateDetail);
-  }
-
-  // Truncate if too large
-  if (string.length > maxSize) {
-    return `${string.slice(0, maxSize)}...`;
-  }
-
-  return string;
+function convertToPlainObject(obj) {
+  return obj && typeof obj.toJSON === "function" ? obj.toJSON() : obj;
 }
 
 /**
@@ -689,8 +670,8 @@ router.post(
           statusNewValue: newStatus,
           readyToPublishOldValue: season.readyToPublish,
           readyToPublishNewValue: newReadyToPublish,
-          gateDetailOldValue: serializeGateDetail(oldGateDetail),
-          gateDetailNewValue: serializeGateDetail(gateDetailToSave),
+          gateDetailOldValue: convertToPlainObject(oldGateDetail),
+          gateDetailNewValue: convertToPlainObject(gateDetailToSave),
         },
         { transaction },
       );
