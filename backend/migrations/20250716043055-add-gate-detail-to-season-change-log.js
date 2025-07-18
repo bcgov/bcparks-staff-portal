@@ -2,12 +2,12 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.addColumn("SeasonChangeLogs", "gateDetailOldValue", {
-      type: Sequelize.TEXT,
+      type: Sequelize.JSONB,
       allowNull: true,
       defaultValue: null,
     });
     await queryInterface.addColumn("SeasonChangeLogs", "gateDetailNewValue", {
-      type: Sequelize.TEXT,
+      type: Sequelize.JSONB,
       allowNull: true,
       defaultValue: null,
     });
