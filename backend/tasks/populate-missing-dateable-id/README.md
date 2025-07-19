@@ -6,6 +6,7 @@ It does **not** create new `DateRange` records—only updates those where `datea
 ## What does the script do?
 
 1. **For each `DateRange` with a missing `dateableId`:**
+
    - Looks up the associated `Season` using `seasonId`.
    - Uses the `publishableId` from the `Season` to find the corresponding `dateableId` from the `Park`, `ParkArea`, or `Feature` tables.
    - Updates the `DateRange` with the found `dateableId`.
@@ -35,4 +36,4 @@ node tasks/populate-missing-dateable-id/populate-missing-dateable-id.js
 
 - The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project.
 - You can safely run this script multiple times; it will only update records where `dateableId` is missing.
-- If a `dateableId` cannot be found for a `DateRange`, the script will log a warning and
+- If a `dateableId` cannot be found for a `DateRange`, the script will log a warning and skip that record.

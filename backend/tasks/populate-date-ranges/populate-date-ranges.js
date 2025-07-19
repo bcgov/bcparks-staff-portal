@@ -54,13 +54,13 @@ export async function populateDateRangesForYear(
         transaction,
       });
 
+      // skip if no previous or target season found
+      if (!prevSeason || !targetSeason) continue;
+
       // find dateableId for targetSeason's publishableId
       const dateableId = await findDateableIdByPublishableId(
         targetSeason.publishableId,
       );
-
-      // skip if no previous or target season found
-      if (!prevSeason || !targetSeason) continue;
 
       // find DateRanges for previous season and this dateType
       const prevDateRanges = await DateRange.findAll({
