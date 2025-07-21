@@ -114,7 +114,7 @@ export default function DateRangeFields({
     if (!dateType || !dateRangeAnnuals) return null;
 
     return dateRangeAnnuals.find(
-      (dateRangeAnnual) => dateRangeAnnual.dateType.id === dateType.id,
+      (dateRangeAnnual) => dateRangeAnnual.dateType?.id === dateType.id,
     );
   }, [dateType, dateRangeAnnuals]);
 
@@ -123,12 +123,18 @@ export default function DateRangeFields({
 
   // toggle isDateRangeAnnual state
   function handleDateRangeAnnualChange() {
-    if (!matchedDateRangeAnnual) return;
-
-    updateDateRangeAnnual({
-      ...matchedDateRangeAnnual,
-      isDateRangeAnnual: !isDateRangeAnnual,
-    });
+    if (matchedDateRangeAnnual) {
+      updateDateRangeAnnual({
+        ...matchedDateRangeAnnual,
+        isDateRangeAnnual: !isDateRangeAnnual,
+      });
+    } else {
+      // if no match, create a new dateRangeAnnual with the current dateType
+      updateDateRangeAnnual({
+        isDateRangeAnnual: true,
+        dateType: { id: dateType.id, name: dateType.name },
+      });
+    }
   }
 
   return (

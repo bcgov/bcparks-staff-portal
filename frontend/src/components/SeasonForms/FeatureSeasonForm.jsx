@@ -150,11 +150,14 @@ export default function FeatureSeasonForm({
       const updatedData = cloneDeep(prevData);
       const annuals = updatedData.current.dateRangeAnnuals;
       const index = annuals.findIndex(
-        (annual) => annual.id === updatedAnnual.id,
+        (annual) => annual.id === updatedAnnual?.id,
       );
 
       if (index !== -1) {
         annuals[index] = { ...annuals[index], ...updatedAnnual, changed: true };
+      } else {
+        // add it if it doesn't exist
+        annuals.push({ ...updatedAnnual, changed: true });
       }
       return updatedData;
     });
