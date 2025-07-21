@@ -21,7 +21,6 @@ const jwtMiddleware = expressjwt({
   // Log expired token errors
   onExpired(req, err) {
     console.error("JWT expired:", err.message);
-    return err;
   },
 });
 
