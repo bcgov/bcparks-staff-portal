@@ -29,6 +29,8 @@ function FeatureFormSectionComponent({
   updateFeatureDateRange,
   addFeatureDateRange,
   removeFeatureDateRange,
+  dateRangeAnnuals,
+  updateDateRangeAnnual,
 }) {
   return (
     <div className="area-feature" key={feature.id}>
@@ -67,6 +69,8 @@ function FeatureFormSectionComponent({
             removeDateRange={(dateRange) =>
               removeFeatureDateRange(feature.dateableId, dateRange)
             }
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
           />
         </div>
       ))}
@@ -110,6 +114,8 @@ FeatureFormSectionComponent.propTypes = {
   updateFeatureDateRange: PropTypes.func.isRequired,
   addFeatureDateRange: PropTypes.func.isRequired,
   removeFeatureDateRange: PropTypes.func.isRequired,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+  updateDateRangeAnnual: PropTypes.func.isRequired,
 };
 
 const FeatureFormSection = memo(FeatureFormSectionComponent);
@@ -257,11 +263,14 @@ export default function AreaSeasonForm({
       const updatedData = cloneDeep(prevData);
       const annuals = updatedData.current.dateRangeAnnuals;
       const index = annuals.findIndex(
-        (annual) => annual.id === updatedAnnual.id,
+        (annual) => annual.id === updatedAnnual?.id,
       );
 
       if (index !== -1) {
         annuals[index] = { ...annuals[index], ...updatedAnnual, changed: true };
+      } else {
+        // add it if it doesn't exist
+        annuals.push({ ...updatedAnnual, changed: true });
       }
       return updatedData;
     });
@@ -494,6 +503,8 @@ export default function AreaSeasonForm({
                 updateFeatureDateRange={updateFeatureDateRange}
                 addFeatureDateRange={addFeatureDateRange}
                 removeFeatureDateRange={removeFeatureDateRange}
+                dateRangeAnnuals={dateRangeAnnuals}
+                updateDateRangeAnnual={updateDateRangeAnnual}
                 key={feature.id}
               />
             ))}
@@ -516,6 +527,8 @@ export default function AreaSeasonForm({
               updateFeatureDateRange={updateFeatureDateRange}
               addFeatureDateRange={addFeatureDateRange}
               removeFeatureDateRange={removeFeatureDateRange}
+              dateRangeAnnuals={dateRangeAnnuals}
+              updateDateRangeAnnual={updateDateRangeAnnual}
               key={feature.id}
             />
           ))}

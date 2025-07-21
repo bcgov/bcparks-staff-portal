@@ -624,6 +624,7 @@ router.post(
       const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
         (dateRangeAnnual) => ({
           id: dateRangeAnnual.id,
+          dateTypeId: dateRangeAnnual.dateType?.id,
           publishableId: season.publishableId,
           isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
         }),
