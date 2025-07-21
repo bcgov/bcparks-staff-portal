@@ -75,6 +75,7 @@ export async function populateParkGateDates() {
           dateTypeId: operatingDateType.id,
         },
         defaults: {
+          dateableId: park.dateableId,
           seasonId: season.id,
           dateTypeId: operatingDateType.id,
           startDate,
@@ -86,10 +87,12 @@ export async function populateParkGateDates() {
       // if dateRange exists but dates differ, update them
       if (
         dateRange.startDate.getTime() !== new Date(startDate).getTime() ||
-        dateRange.endDate.getTime() !== new Date(endDate).getTime()
+        dateRange.endDate.getTime() !== new Date(endDate).getTime() ||
+        dateRange.dateableId !== park.dateableId
       ) {
         dateRange.startDate = new Date(startDate);
         dateRange.endDate = new Date(endDate);
+        dateRange.dateableId = park.dateableId;
         await dateRange.save({ transaction });
       }
     }
