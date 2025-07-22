@@ -188,8 +188,8 @@ export async function createDateRangeAnnualEntries() {
         }
 
         // ensure dateableId is correct
-        if (entry.dateableId !== park.dateableId) {
-          entry.dateableId = park.dateableId;
+        if (entry.dateableId !== dateableId) {
+          entry.dateableId = dateableId;
           updated = true;
         }
 
