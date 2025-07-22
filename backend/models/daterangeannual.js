@@ -14,6 +14,12 @@ export default (sequelize) => {
         foreignKey: "publishableId",
         as: "publishable",
       });
+
+      // one-to-one with dateable
+      DateRangeAnnual.belongsTo(models.Dateable, {
+        foreignKey: "dateableId",
+        as: "dateable",
+      });
     }
   }
 
@@ -32,6 +38,14 @@ export default (sequelize) => {
         allowNull: false,
         references: {
           model: "Publishables",
+          key: "id",
+        },
+      },
+      dateableId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: "Dateables",
           key: "id",
         },
       },
