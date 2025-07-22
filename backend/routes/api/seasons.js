@@ -147,7 +147,7 @@ async function getDateRangeAnnuals(publishableId) {
   if (!publishableId) return [];
   return await DateRangeAnnual.findAll({
     where: { publishableId },
-    attributes: ["id", "isDateRangeAnnual"],
+    attributes: ["id", "dateableId", "isDateRangeAnnual"],
     include: [
       {
         model: DateType,
@@ -626,6 +626,7 @@ router.post(
           id: dateRangeAnnual.id,
           dateTypeId: dateRangeAnnual.dateType?.id,
           publishableId: season.publishableId,
+          dateableId: dateRangeAnnual.dateableId,
           isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
         }),
       );

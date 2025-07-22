@@ -98,6 +98,7 @@ DateRange.propTypes = {
 };
 
 export default function DateRangeFields({
+  dateableId,
   dateRanges,
   updateDateRange,
   removeDateRange,
@@ -109,16 +110,20 @@ export default function DateRangeFields({
 }) {
   // Functions
 
-  // find the matching dateRangeAnnual for this dateType
+  // find the matching dateRangeAnnual for this dateableId and dateType
   const matchedDateRangeAnnual = useMemo(() => {
-    if (!dateType || !dateRangeAnnuals) return null;
+    if (!dateableId || !dateType || !dateRangeAnnuals) return null;
 
     return dateRangeAnnuals.find(
-      (dateRangeAnnual) => dateRangeAnnual.dateType?.id === dateType.id,
+      (dateRangeAnnual) =>
+        dateRangeAnnual.dateableId === dateableId &&
+        dateRangeAnnual.dateType?.id === dateType.id,
     );
-  }, [dateType, dateRangeAnnuals]);
+  }, [dateableId, dateType, dateRangeAnnuals]);
 
-  const dateRangeAnnualId = matchedDateRangeAnnual?.id ?? dateType.id ?? null;
+  const dateRangeAnnualId = matchedDateRangeAnnual?.id
+    ? matchedDateRangeAnnual.id
+    : `${dateableId}-${dateType.id}`;
   const isDateRangeAnnual = matchedDateRangeAnnual?.isDateRangeAnnual ?? false;
 
   // toggle isDateRangeAnnual state
@@ -131,6 +136,7 @@ export default function DateRangeFields({
     } else {
       // if no match, create a new dateRangeAnnual with the current dateType
       updateDateRangeAnnual({
+        dateableId,
         isDateRangeAnnual: true,
         dateType: { id: dateType.id, name: dateType.name },
       });
@@ -179,6 +185,7 @@ export default function DateRangeFields({
 }
 
 DateRangeFields.propTypes = {
+  dateableId: PropTypes.number.isRequired,
   dateRanges: PropTypes.arrayOf(
     PropTypes.shape({
       // Existing date ranges have an ID

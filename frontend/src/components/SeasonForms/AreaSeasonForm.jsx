@@ -19,6 +19,7 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 import PreviousDates from "@/components/SeasonForms/PreviousDates";
 
 import DataContext from "@/contexts/DataContext";
+import { updateDateRangeAnnualsArray } from "@/lib/utils";
 
 // Individual Area-Feature form section
 function FeatureFormSectionComponent({
@@ -261,17 +262,11 @@ export default function AreaSeasonForm({
   function updateDateRangeAnnual(updatedAnnual) {
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
-      const annuals = updatedData.current.dateRangeAnnuals;
-      const index = annuals.findIndex(
-        (annual) => annual.id === updatedAnnual?.id,
-      );
 
-      if (index !== -1) {
-        annuals[index] = { ...annuals[index], ...updatedAnnual, changed: true };
-      } else {
-        // add it if it doesn't exist
-        annuals.push({ ...updatedAnnual, changed: true });
-      }
+      updatedData.current.dateRangeAnnuals = updateDateRangeAnnualsArray(
+        updatedData.current.dateRangeAnnuals,
+        updatedAnnual,
+      );
       return updatedData;
     });
   }
