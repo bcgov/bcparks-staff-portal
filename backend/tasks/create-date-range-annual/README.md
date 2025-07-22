@@ -33,6 +33,13 @@ From your project root, run:
 node tasks/create-date-range-annual/create-date-range-annual.js
 ```
 
+To **clean** all `DateRangeAnnual` records (delete all):
+
+```sh
+node tasks/create-date-range-annual/clean-all-date-range-annuals.js
+```
+
+
 ## Output
 
 - The script logs each new or updated `DateRangeAnnual` entry.

@@ -117,3 +117,36 @@ export function dateToTimeString(date) {
   // seconds are always set to "00"
   return format(date, "HH:mm:00");
 }
+
+/**
+ * Updates or adds a dateRangeAnnual in the provided array
+ * @param {Array} annuals Array of dateRangeAnnual objects
+ * @param {Object} updatedAnnual dateRangeAnnual object to update or add
+ * @returns {Array} A new array with the updated or added dateRangeAnnual
+ */
+export function updateDateRangeAnnualsArray(annuals, updatedAnnual) {
+  const index = annuals.findIndex((annual) => {
+    if (updatedAnnual?.id) {
+      return annual.id === updatedAnnual.id;
+    }
+    if (updatedAnnual?.tempId) {
+      return annual.tempId === updatedAnnual.tempId;
+    }
+    return false;
+  });
+
+  if (index !== -1) {
+    // Update existing
+    const updated = [...annuals];
+
+    updated[index] = { ...annuals[index], ...updatedAnnual, changed: true };
+    return updated;
+  }
+  // Add new, ensure tempId
+  let annualToAdd = updatedAnnual;
+
+  if (!updatedAnnual.tempId) {
+    annualToAdd = { ...updatedAnnual, tempId: crypto.randomUUID() };
+  }
+  return [...annuals, { ...annualToAdd, changed: true }];
+}

@@ -16,17 +16,6 @@ import { fetchAllModels } from "../../strapi-sync/sync.js";
 import { getStrapiModelData } from "../../strapi-sync/utils.js";
 
 // Functions
-// clean all DateRangeAnnual entries
-async function cleanAllDateRangeAnnuals() {
-  try {
-    await DateRangeAnnual.destroy({ where: {}, truncate: true });
-    console.log("All DateRangeAnnual records deleted.");
-  } catch (err) {
-    console.error("Error deleting DateRangeAnnual records:", err);
-    throw err;
-  }
-}
-
 // finds dateableId for a given park and "Operating" dateType
 // returns the first found dateableId or null if not found.
 async function findOperatingDateableId(park, operatingDateType, transaction) {
@@ -54,10 +43,6 @@ async function findOperatingDateableId(park, operatingDateType, transaction) {
 }
 
 export async function createDateRangeAnnualEntries() {
-  // TODO: comment this out after initial run
-  // clean existing DateRangeAnnual entries
-  await cleanAllDateRangeAnnuals();
-
   const transaction = await DateRangeAnnual.sequelize.transaction();
   // fetch all models from Strapi
   const strapiData = await fetchAllModels();
