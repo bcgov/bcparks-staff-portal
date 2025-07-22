@@ -262,14 +262,24 @@ export default function AreaSeasonForm({
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
       const annuals = updatedData.current.dateRangeAnnuals;
-      const index = annuals.findIndex(
-        (annual) => annual.id === updatedAnnual?.id,
-      );
+      const index = annuals.findIndex((annual) => {
+        if (updatedAnnual?.id) {
+          return annual.id === updatedAnnual.id;
+        }
+        if (updatedAnnual?.tempId) {
+          return annual.tempId === updatedAnnual.tempId;
+        }
+        return false;
+      });
 
       if (index !== -1) {
         annuals[index] = { ...annuals[index], ...updatedAnnual, changed: true };
       } else {
         // add it if it doesn't exist
+        // ensure it has a tempId if new
+        if (!updatedAnnual.tempId) {
+          updatedAnnual.tempId = crypto.randomUUID();
+        }
         annuals.push({ ...updatedAnnual, changed: true });
       }
       return updatedData;
