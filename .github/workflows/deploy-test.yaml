@@ -43,7 +43,12 @@ jobs:
           oc -n ${{ env.TOOLS_NAMESPACE }} tag frontend-main:${{ github.event.inputs.releaseTag }} frontend-main:${{ env.ENVIRONMENT }}
           oc -n ${{ env.TOOLS_NAMESPACE }} tag backend-main:${{ github.event.inputs.releaseTag }} backend-main:${{ env.ENVIRONMENT }}
 
-      - name: Trigger new rollout
+      - name: Trigger new rollout for test
         run: |
           oc -n ${{ env.NAMESPACE }} rollout restart deployment main-frontend
           oc -n ${{ env.NAMESPACE }} rollout restart deployment main-backend
+
+      - name: Trigger new rollout for training
+        run: |
+          oc -n ${{ env.NAMESPACE }} rollout restart deployment training-frontend
+          oc -n ${{ env.NAMESPACE }} rollout restart deployment training-backend
