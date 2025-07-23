@@ -10,6 +10,7 @@ import {
   Feature,
   ParkArea,
   AccessGroup,
+  GateDetail,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
@@ -81,11 +82,18 @@ function featureModel(minYear, where = {}) {
 
 // group dateRanges by date type name then by year
 // e.g. {Operation: {2024: [...], 2025: [...]}, Winter: {2024: [...], 2025: [...]}, ...}
-function groupDateRangesByTypeAndYear(dateRanges) {
+function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   // filter out invalid dateRanges
-  const validRanges = dateRanges.filter(
+  let validRanges = dateRanges.filter(
     (dateRange) => dateRange.dateType && dateRange.startDate,
   );
+
+  // filter out "Operating" dateType if hasGate is explicitly false at the park level
+  if (hasGate === false) {
+    validRanges = validRanges.filter(
+      (dateRange) => dateRange.dateType.name !== "Operating",
+    );
+  }
 
   // group by dateType name
   return _.mapValues(
@@ -295,7 +303,7 @@ router.get(
         {
           model: AccessGroup,
           as: "accessGroups",
-          attributes: ["id", "name"]
+          attributes: ["id", "name"],
         },
       ],
       order: [
@@ -305,44 +313,56 @@ router.get(
       ],
     });
 
-    const output = parks.map((park) => {
-      // get date ranges for park
-      const parkDateRanges = getAllDateRanges(park.seasons);
+    const output = await Promise.all(
+      parks.map(async (park) => {
+        // get date ranges for park
+        const parkDateRanges = getAllDateRanges(park.seasons);
 
-      return {
-        id: park.id,
-        dateableId: park.dateableId,
-        publishableId: park.publishableId,
-        name: park.name,
-        orcs: park.orcs,
-        hasTier1Dates: park.hasTier1Dates,
-        hasTier2Dates: park.hasTier2Dates,
-        hasWinterFeeDates: park.hasWinterFeeDates,
-        section: park.managementAreas.map((area) => area.section),
-        managementArea: park.managementAreas.map((area) => area.mgmtArea),
-        accessGroups: park.accessGroups,
-        inReservationSystem: park.inReservationSystem,
-        currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
-        groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
-        features: park.features.map((feature) =>
-          buildFeatureOutput(feature, feature.seasons, currentYear),
-        ),
-        parkAreas: park.parkAreas.map((parkArea) =>
-          buildParkAreaOutput(parkArea, currentYear),
-        ),
-        seasons: park.seasons.map((season) => ({
-          id: season.id,
-          publishableId: season.publishableId,
-          operatingYear: season.operatingYear,
-          status: season.status,
-          readyToPublish: season.readyToPublish,
-          dateRanges: season.dateRanges.map(
-            buildDateRangeObject,
-            season.readyToPublish,
+        // get gate detail for the park
+        const gateDetail = await GateDetail.findOne({
+          where: { publishableId: park.publishableId },
+          attributes: ["hasGate"],
+        });
+        const parkHasGate = gateDetail ? gateDetail.hasGate : null;
+
+        return {
+          id: park.id,
+          dateableId: park.dateableId,
+          publishableId: park.publishableId,
+          name: park.name,
+          orcs: park.orcs,
+          hasTier1Dates: park.hasTier1Dates,
+          hasTier2Dates: park.hasTier2Dates,
+          hasWinterFeeDates: park.hasWinterFeeDates,
+          section: park.managementAreas.map((area) => area.section),
+          managementArea: park.managementAreas.map((area) => area.mgmtArea),
+          accessGroups: park.accessGroups,
+          inReservationSystem: park.inReservationSystem,
+          currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
+          groupedDateRanges: groupDateRangesByTypeAndYear(
+            parkDateRanges,
+            parkHasGate,
           ),
-        })),
-      };
-    });
+          features: park.features.map((feature) =>
+            buildFeatureOutput(feature, feature.seasons, currentYear),
+          ),
+          parkAreas: park.parkAreas.map((parkArea) =>
+            buildParkAreaOutput(parkArea, currentYear),
+          ),
+          seasons: park.seasons.map((season) => ({
+            id: season.id,
+            publishableId: season.publishableId,
+            operatingYear: season.operatingYear,
+            status: season.status,
+            readyToPublish: season.readyToPublish,
+            dateRanges: season.dateRanges.map(
+              buildDateRangeObject,
+              season.readyToPublish,
+            ),
+          })),
+        };
+      }),
+    );
 
     // Return all rows
     res.json(output);
