@@ -9,6 +9,7 @@ import {
   DateType,
   Feature,
   ParkArea,
+  AccessGroup,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
@@ -289,6 +290,13 @@ router.get(
             [Op.ne]: null,
           },
         }),
+
+        // AccessGroups
+        {
+          model: AccessGroup,
+          as: "accessGroups",
+          attributes: ["id", "name"]
+        },
       ],
       order: [
         ["name", "ASC"],
@@ -312,6 +320,7 @@ router.get(
         hasWinterFeeDates: park.hasWinterFeeDates,
         section: park.managementAreas.map((area) => area.section),
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
+        accessGroups: park.accessGroups,
         inReservationSystem: park.inReservationSystem,
         currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
         groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),

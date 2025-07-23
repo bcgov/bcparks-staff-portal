@@ -1,4 +1,3 @@
-import { useState } from "react";
 import PropTypes from "prop-types";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import LoadingBar from "@/components/LoadingBar";
@@ -18,22 +17,13 @@ function FilterPanel({
   clearFilter,
 }) {
   // constants and states
-  const { sections, managementAreas, dateTypes, featureTypes } = filterOptions;
-  const [selectedBundles, setSelectedBundles] = useState([]);
+  const { sections, managementAreas, dateTypes, featureTypes, accessGroups } =
+    filterOptions;
 
   // functions
   function handleClose() {
     setShow(false);
   }
-
-  // dummy data
-  // TODO: replace with real data
-  // TODO: CMS-324
-  const bundleOptions = [
-    { value: "bundle1", label: "Bundle 1" },
-    { value: "bundle2", label: "Bundle 2" },
-    { value: "bundle3", label: "Bundle 3" },
-  ];
 
   return (
     <Offcanvas
@@ -57,14 +47,15 @@ function FilterPanel({
           <>
             <div className="mt-4">
               <h3>Area</h3>
-              {/* TODO: CMS-324 */}
               <MultiSelectField
                 id="bundle"
                 label="Bundle(s)"
-                options={bundleOptions}
-                value={selectedBundles}
-                onChange={(e) => setSelectedBundles(e)}
+                options={accessGroups}
+                value={filters.accessGroups}
+                onChange={(e) => updateFilter("accessGroups", e)}
                 placeholder="Select bundle(s)"
+                optionLabel="name"
+                optionValue="id"
               />
               <MultiSelectField
                 id="section"
@@ -164,6 +155,7 @@ FilterPanel.propTypes = {
     managementAreas: PropTypes.arrayOf(PropTypes.object),
     dateTypes: PropTypes.arrayOf(PropTypes.object),
     featureTypes: PropTypes.arrayOf(PropTypes.object),
+    accessGroups: PropTypes.arrayOf(PropTypes.object),
     isInReservationSystem: PropTypes.bool,
     hasDateNote: PropTypes.bool,
   }).isRequired,
@@ -173,6 +165,7 @@ FilterPanel.propTypes = {
     managementAreas: PropTypes.arrayOf(PropTypes.object),
     dateTypes: PropTypes.arrayOf(PropTypes.object),
     featureTypes: PropTypes.arrayOf(PropTypes.object),
+    accessGroups: PropTypes.arrayOf(PropTypes.object),
   }).isRequired,
   filterOptionsLoading: PropTypes.bool.isRequired,
   filterOptionsError: PropTypes.object,

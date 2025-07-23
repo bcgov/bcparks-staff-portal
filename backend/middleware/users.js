@@ -1,4 +1,4 @@
-import { User } from "../models/index.js";
+import { User, AccessGroup } from "../models/index.js";
 
 /**
  * Middleware to add DB user to request object
@@ -22,6 +22,13 @@ async function usersMiddleware(req, res, next) {
       attributes: ["id", "email", "name"],
       where: { email },
       defaults: { name },
+      include: [
+        {
+          model: AccessGroup,
+          as: "accessGroups",
+          attributes: ["id", "name"],
+        },
+      ],
     });
 
     req.user = user.toJSON();

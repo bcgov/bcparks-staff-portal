@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  AccessGroup,
   DateType,
   FeatureType,
   ManagementArea,
@@ -13,19 +14,27 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     // Run all queries concurrently
-    const [sections, managementAreas, dateTypes, featureTypes] =
+    const [sections, managementAreas, dateTypes, featureTypes, accessGroups] =
       await Promise.all([
         Section.findAll({
           attributes: ["id", "sectionNumber", "name"],
+          order: [["name", "ASC"]],
         }),
         ManagementArea.findAll({
           attributes: ["id", "managementAreaNumber", "name"],
+          order: [["name", "ASC"]],
         }),
         DateType.findAll({
           attributes: ["id", "name"],
+          order: [["name", "ASC"]],
         }),
         FeatureType.findAll({
           attributes: ["id", "name"],
+          order: [["name", "ASC"]],
+        }),
+        AccessGroup.findAll({
+          attributes: ["id", "name"],
+          order: [["name", "ASC"]],
         }),
       ]);
 
@@ -35,6 +44,7 @@ router.get(
       managementAreas,
       dateTypes,
       featureTypes,
+      accessGroups,
     };
 
     if (!filterOptions) {
