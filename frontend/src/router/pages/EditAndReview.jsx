@@ -277,7 +277,7 @@ function EditAndReview() {
 
         return true;
       }),
-    [parks, filters],
+    [parks, filters, userData],
   );
 
   function updateFilter(key, value) {
