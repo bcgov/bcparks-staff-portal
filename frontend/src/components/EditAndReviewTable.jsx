@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useContext } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { faCheck } from "@fa-kit/icons/classic/solid";
@@ -9,6 +9,9 @@ import NotReadyFlag from "@/components/NotReadyFlag";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
+import { useApiPost } from "@/hooks/useApi";
+import RefreshTableContext from "@/contexts/RefreshTableContext";
+import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
 
 // Constants
@@ -16,13 +19,18 @@ const currentYear = new Date().getFullYear();
 const lastYear = currentYear - 1;
 
 // Components
-function IconButton({ icon, label, onClick, textColor }) {
+function IconButton({ icon, label, onClick, textColor, loading = false }) {
   return (
     <button
       onClick={onClick}
       className={classNames("btn btn-text text-link", textColor)}
     >
-      <FontAwesomeIcon icon={icon} />
+      {/* Show a spinner instead of the icon while loading */}
+      {loading ? (
+        <span className="spinner-border spinner-border-sm me-1" role="status" />
+      ) : (
+        <FontAwesomeIcon icon={icon} />
+      )}
       <span className="ms-1">{label}</span>
     </button>
   );
@@ -33,6 +41,7 @@ IconButton.propTypes = {
   label: PropTypes.string.isRequired,
   onClick: PropTypes.func,
   textColor: PropTypes.string,
+  loading: PropTypes.bool,
 };
 
 // renders all date ranges for a given year as a list
@@ -109,6 +118,44 @@ DateTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
 };
 
+function ApproveButton({ seasonId, color = "", onApprove }) {
+  const { refreshTable } = useContext(RefreshTableContext);
+  const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
+    `/seasons/${seasonId}/approve/`,
+  );
+
+  async function approveSeason() {
+    try {
+      await sendApprove();
+
+      // Refresh the main page data from the API
+      await refreshTable();
+
+      // Emit success to the parent component (to show a flash message)
+      onApprove();
+    } catch (error) {
+      // @TODO: Catch API error and show a flash message
+      console.error("Error approving season:", error);
+    }
+  }
+
+  return (
+    <IconButton
+      icon={faCheck}
+      label="Approve"
+      textColor={color}
+      onClick={approveSeason}
+      loading={sendingApprove}
+    />
+  );
+}
+
+ApproveButton.propTypes = {
+  seasonId: PropTypes.number.isRequired,
+  color: PropTypes.string,
+  onApprove: PropTypes.func.isRequired,
+};
+
 function StatusTableRow({
   id,
   level,
@@ -119,12 +166,24 @@ function StatusTableRow({
   formPanelHandler,
   color,
 }) {
+  const flashMessage = useContext(globalFlashMessageContext);
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
     () => checkAccess(ROLES.APPROVER),
     [checkAccess, ROLES.APPROVER],
   );
+
+  /**
+   * Displays a flash message when the Season's Dates are approved.
+   * @returns {void}
+   */
+  function onApprove() {
+    flashMessage.open(
+      "Dates approved",
+      `${name} ${season.operatingYear} dates marked as approved`,
+    );
+  }
 
   return (
     <tr key={id} className={classNames(level && `table-row--${level}`)}>
@@ -153,8 +212,13 @@ function StatusTableRow({
             onClick={formPanelHandler}
             textColor={color}
           />
+
           {approver && (
-            <IconButton icon={faCheck} label="Approve" textColor={color} />
+            <ApproveButton
+              seasonId={season.id}
+              color={color}
+              onApprove={onApprove}
+            />
           )}
         </th>
       ) : (
