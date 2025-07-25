@@ -106,10 +106,11 @@ export default function DateRangeFields({
   dateType,
   dateRangeAnnuals,
   updateDateRangeAnnual,
-  hasMultipleDates = true,
 }) {
-  // Functions
+  // Constants
+  const hasMultipleDates = dateType.name !== "Tier 1";
 
+  // Functions
   // find the matching dateRangeAnnual for this dateableId and dateType
   const matchedDateRangeAnnual = useMemo(() => {
     if (!dateableId || !dateType || !dateRangeAnnuals) return null;
@@ -124,6 +125,7 @@ export default function DateRangeFields({
   const dateRangeAnnualId = matchedDateRangeAnnual?.id
     ? matchedDateRangeAnnual.id
     : `${dateableId}-${dateType.id}`;
+
   const isDateRangeAnnual = matchedDateRangeAnnual?.isDateRangeAnnual ?? false;
 
   // toggle isDateRangeAnnual state
@@ -155,8 +157,8 @@ export default function DateRangeFields({
         />
       ))}
 
-      {/* Add fields if the button is clicked */}
-      {hasMultipleDates && (
+      {/* display it if date type is not "Tier 1" or no dateRanges exist */}
+      {(hasMultipleDates || dateRanges.length === 0) && (
         <button
           type="button"
           className="btn btn-text text-link p-0"
@@ -208,5 +210,4 @@ DateRangeFields.propTypes = {
   }).isRequired,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
-  hasMultipleDates: PropTypes.bool,
 };
