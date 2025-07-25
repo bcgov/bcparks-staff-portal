@@ -318,12 +318,18 @@ router.get(
 
     const dateTypesByName = _.keyBy(dateTypesArray, "name");
 
+    const { feature } = seasonModel;
+
     // Return the DateTypes in a specific order
-    const orderedDateTypes = [
-      dateTypesByName.Operation,
-      dateTypesByName.Reservation,
-      dateTypesByName["Backcountry registration"],
-    ];
+    const orderedDateTypes = [dateTypesByName.Operation];
+
+    // Add applicable date types for the Park
+    if (feature.hasReservations) {
+      orderedDateTypes.push(dateTypesByName.Reservation);
+    }
+    if (feature.hasBackcountryPermits) {
+      orderedDateTypes.push(dateTypesByName["Backcountry registration"]);
+    }
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
