@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
+import { getAllDateTypes } from "../../utils/dateTypesHelpers.js";
 
 import {
   Park,
@@ -123,19 +124,6 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
     console.error("Error fetching previous season:", error);
     throw error;
   }
-}
-
-/**
- * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
- * @param {Object} [where={}] Where clause to filter DateTypes (by level, etc.)
- * @returns {Promise<Array<DateType>>} Array of DateTypes
- */
-async function getAllDateTypes(where = {}) {
-  return DateType.findAll({
-    attributes: ["id", "name", "startDateLabel", "endDateLabel", "description"],
-
-    where,
-  });
 }
 
 /**
@@ -323,7 +311,7 @@ router.get(
     // Return the DateTypes in a specific order
     const orderedDateTypes = [dateTypesByName.Operation];
 
-    // Add applicable date types for the Park
+    // Add applicable date types for the Feature
     if (feature.hasReservations) {
       orderedDateTypes.push(dateTypesByName.Reservation);
     }
