@@ -1,4 +1,4 @@
-# populate-date-ranges.js
+# populate-annual-date-ranges.js
 
 This script populates `DateRange` records for a given target year based on the previous year's `DateRange` entries, but **only if the associated `DateRangeAnnual` is marked as annual** (`isDateRangeAnnual` is `TRUE`). It copies the month and day from the previous year's dates, but updates the year to the target year.
 
@@ -18,7 +18,7 @@ This script populates `DateRange` records for a given target year based on the p
 From your project root, run:
 
 ```sh
-node tasks/populate-date-ranges/populate-date-ranges.js 2026
+node tasks/populate-date-ranges/populate-annual-date-ranges.js 2026
 ```
 
 Replace 2026 with the year you want to populate.

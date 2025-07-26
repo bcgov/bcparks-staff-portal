@@ -131,7 +131,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
 
   if (!targetYear || isNaN(targetYear)) {
     console.error(
-      "Please provide a target year. e.g. node populate-date-ranges.js 2026",
+      "Please provide a target year. e.g. node populate-annual-date-ranges.js 2026",
     );
     throw new Error("Invalid or missing target year argument.");
   }
