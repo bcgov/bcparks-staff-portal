@@ -188,7 +188,33 @@ function SeasonForm({
       seasonDateRanges.push(...areaDateRanges, ...featureDateRanges);
     }
 
-    const changedDateRanges = seasonDateRanges
+    // Find the "Operating" date type id
+    const operatingDateTypeId = seasonMetadata?.dateTypes?.find(
+      (dateType) => dateType.name === "Operating",
+    )?.id;
+
+    let gateDetail = season.gateDetail;
+    let filteredDateRanges = seasonDateRanges;
+    let deletedOperatingIds = [];
+
+    // Remove the "Operating" date ranges at park level if hasGate is false
+    if (level === "park" && gateDetail && gateDetail.hasGate === false) {
+      deletedOperatingIds = seasonDateRanges
+        .filter(
+          (dateRange) =>
+            dateRange.dateTypeId === operatingDateTypeId && dateRange.id,
+        )
+        .map((dateRange) => dateRange.id);
+
+      filteredDateRanges = seasonDateRanges.filter(
+        (dateRange) => dateRange.dateTypeId !== operatingDateTypeId,
+      );
+    }
+
+    // Merge deletedDateRangeIds with deletedOperatingIds
+    const allDeletedIds = [...deletedDateRangeIds, ...deletedOperatingIds];
+
+    const changedDateRanges = filteredDateRanges
       .filter((range) => range.changed)
       // We only need the dateTypeId, drop fields we don't need to send
       .map((range) => omit(range, ["changed", "dateType"]));
@@ -197,17 +223,29 @@ function SeasonForm({
       (dateRangeAnnual) => dateRangeAnnual.changed,
     );
 
+    // Clear gateDetail if hasGate is false
+    if (gateDetail && gateDetail.hasGate === false) {
+      gateDetail = {
+        id: gateDetail.id,
+        hasGate: false,
+        gateOpenTime: null,
+        gateCloseTime: null,
+        gateOpensAtDawn: false,
+        gateClosesAtDusk: false,
+      };
+    }
+
     const payload = {
       dateRanges: changedDateRanges,
-      deletedDateRangeIds,
+      deletedDateRangeIds: allDeletedIds,
       dateRangeAnnuals: changedDateRangeAnnuals,
-      gateDetail: season.gateDetail,
+      gateDetail,
       readyToPublish: season.readyToPublish,
       notes,
     };
 
     return payload;
-  }, [level, season, deletedDateRangeIds, notes]);
+  }, [level, season, deletedDateRangeIds, notes, seasonMetadata]);
 
   // Calculate if the form data has changed
   const dataChanged = useMemo(() => {

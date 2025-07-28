@@ -17,6 +17,15 @@ import asyncHandler from "express-async-handler";
 // Constants
 const router = Router();
 
+const allGateDetails = await GateDetail.findAll({
+  attributes: ["publishableId", "hasGate"],
+});
+const gateDetailMap = {};
+
+allGateDetails.forEach(gate => {
+  gateDetailMap[gate.publishableId] = gate.hasGate;
+});
+
 // Functions
 function seasonModel(minYear, required = true) {
   return {
@@ -317,13 +326,8 @@ router.get(
       parks.map(async (park) => {
         // get date ranges for park
         const parkDateRanges = getAllDateRanges(park.seasons);
-
-        // get gate detail for the park
-        const gateDetail = await GateDetail.findOne({
-          where: { publishableId: park.publishableId },
-          attributes: ["hasGate"],
-        });
-        const parkHasGate = gateDetail ? gateDetail.hasGate : null;
+        // get hasGate for park
+        const parkHasGate = gateDetailMap[park.publishableId] ?? null;
 
         return {
           id: park.id,
