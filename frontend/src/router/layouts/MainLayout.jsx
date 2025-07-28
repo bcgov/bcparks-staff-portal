@@ -22,6 +22,7 @@ export default function MainLayout() {
     logOut,
     roles: jwtRoles,
     ROLES: dootRoles,
+    isAuthenticated,
   } = useAccess();
   const globalFlashMessage = useFlashMessage();
 
@@ -89,27 +90,31 @@ export default function MainLayout() {
               </div>
             </Link>
 
-            <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
-              <div className="user-name me-3">{userName}</div>
+            {isAuthenticated && (
+              <>
+                <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
+                  <div className="user-name me-3">{userName}</div>
 
-              <button
-                type="button"
-                onClick={logOut}
-                className="btn btn-text text-white"
-              >
-                Logout
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={logOut}
+                    className="btn btn-text text-white"
+                  >
+                    Logout
+                  </button>
+                </div>
 
-            <button
-              className="navbar-toggler d-block d-lg-none"
-              type="button"
-              data-toggle="collapse"
-              data-target="#touch-menu"
-              onClick={() => setShowTouchMenu(!showTouchMenu)}
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
+                <button
+                  className="navbar-toggler d-block d-lg-none"
+                  type="button"
+                  data-toggle="collapse"
+                  data-target="#touch-menu"
+                  onClick={() => setShowTouchMenu(!showTouchMenu)}
+                >
+                  <span className="navbar-toggler-icon"></span>
+                </button>
+              </>
+            )}
           </header>
 
           <TouchMenu
@@ -132,6 +137,10 @@ export default function MainLayout() {
 
           <main className="p-0 d-flex flex-column flex-md-row">
             {(() => {
+              if (!isAuthenticated) {
+                // Use the layout with no sidebar for the login page
+                return <Outlet />;
+              }
               if (!hasAnyRole()) {
                 // Show unauthorized message if user lacks required roles
                 return <Unauthorized />;

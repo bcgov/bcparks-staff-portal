@@ -5,6 +5,7 @@ import ExportPage from "./pages/ExportPage";
 import MainLayout from "./layouts/MainLayout";
 import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
+import LoginPage from "./pages/LoginPage";
 
 const RouterConfig = createBrowserRouter(
   [
@@ -36,6 +37,10 @@ const RouterConfig = createBrowserRouter(
               element: <PublishPage />,
             },
           ],
+        },
+        {
+          path: "/login",
+          element: <LoginPage />,
         },
       ],
     },
