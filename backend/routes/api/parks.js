@@ -17,15 +17,6 @@ import asyncHandler from "express-async-handler";
 // Constants
 const router = Router();
 
-const allGateDetails = await GateDetail.findAll({
-  attributes: ["publishableId", "hasGate"],
-});
-const gateDetailMap = {};
-
-allGateDetails.forEach(gate => {
-  gateDetailMap[gate.publishableId] = gate.hasGate;
-});
-
 // Functions
 function seasonModel(minYear, required = true) {
   return {
@@ -322,51 +313,59 @@ router.get(
       ],
     });
 
-    const output = await Promise.all(
-      parks.map(async (park) => {
-        // get date ranges for park
-        const parkDateRanges = getAllDateRanges(park.seasons);
-        // get hasGate for park
-        const parkHasGate = gateDetailMap[park.publishableId] ?? null;
+    const allGateDetails = await GateDetail.findAll({
+      attributes: ["publishableId", "hasGate"],
+    });
 
-        return {
-          id: park.id,
-          dateableId: park.dateableId,
-          publishableId: park.publishableId,
-          name: park.name,
-          orcs: park.orcs,
-          hasTier1Dates: park.hasTier1Dates,
-          hasTier2Dates: park.hasTier2Dates,
-          hasWinterFeeDates: park.hasWinterFeeDates,
-          section: park.managementAreas.map((area) => area.section),
-          managementArea: park.managementAreas.map((area) => area.mgmtArea),
-          accessGroups: park.accessGroups,
-          inReservationSystem: park.inReservationSystem,
-          currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
-          groupedDateRanges: groupDateRangesByTypeAndYear(
-            parkDateRanges,
-            parkHasGate,
+    const gateDetailMap = {};
+    
+    allGateDetails.forEach((gate) => {
+      gateDetailMap[gate.publishableId] = gate.hasGate;
+    });
+
+    const output = parks.map((park) => {
+      // get date ranges for park
+      const parkDateRanges = getAllDateRanges(park.seasons);
+      // get hasGate for park
+      const parkHasGate = gateDetailMap[park.publishableId] ?? null;
+
+      return {
+        id: park.id,
+        dateableId: park.dateableId,
+        publishableId: park.publishableId,
+        name: park.name,
+        orcs: park.orcs,
+        hasTier1Dates: park.hasTier1Dates,
+        hasTier2Dates: park.hasTier2Dates,
+        hasWinterFeeDates: park.hasWinterFeeDates,
+        section: park.managementAreas.map((area) => area.section),
+        managementArea: park.managementAreas.map((area) => area.mgmtArea),
+        accessGroups: park.accessGroups,
+        inReservationSystem: park.inReservationSystem,
+        currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
+        groupedDateRanges: groupDateRangesByTypeAndYear(
+          parkDateRanges,
+          parkHasGate,
+        ),
+        features: park.features.map((feature) =>
+          buildFeatureOutput(feature, feature.seasons, currentYear),
+        ),
+        parkAreas: park.parkAreas.map((parkArea) =>
+          buildParkAreaOutput(parkArea, currentYear),
+        ),
+        seasons: park.seasons.map((season) => ({
+          id: season.id,
+          publishableId: season.publishableId,
+          operatingYear: season.operatingYear,
+          status: season.status,
+          readyToPublish: season.readyToPublish,
+          dateRanges: season.dateRanges.map(
+            buildDateRangeObject,
+            season.readyToPublish,
           ),
-          features: park.features.map((feature) =>
-            buildFeatureOutput(feature, feature.seasons, currentYear),
-          ),
-          parkAreas: park.parkAreas.map((parkArea) =>
-            buildParkAreaOutput(parkArea, currentYear),
-          ),
-          seasons: park.seasons.map((season) => ({
-            id: season.id,
-            publishableId: season.publishableId,
-            operatingYear: season.operatingYear,
-            status: season.status,
-            readyToPublish: season.readyToPublish,
-            dateRanges: season.dateRanges.map(
-              buildDateRangeObject,
-              season.readyToPublish,
-            ),
-          })),
-        };
-      }),
-    );
+        })),
+      };
+    });
 
     // Return all rows
     res.json(output);
