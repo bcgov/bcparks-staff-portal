@@ -317,17 +317,17 @@ router.get(
       attributes: ["publishableId", "hasGate"],
     });
 
-    const gateDetailMap = {};
-    
+    const gateDetailMap = new Map();
+
     allGateDetails.forEach((gate) => {
-      gateDetailMap[gate.publishableId] = gate.hasGate;
+      gateDetailMap.set(gate.publishableId, gate.hasGate);
     });
 
     const output = parks.map((park) => {
       // get date ranges for park
       const parkDateRanges = getAllDateRanges(park.seasons);
       // get hasGate for park
-      const parkHasGate = gateDetailMap[park.publishableId] ?? null;
+      const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
       return {
         id: park.id,
