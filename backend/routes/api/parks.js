@@ -130,11 +130,7 @@ function buildCurrentSeasonOutput(seasons) {
   if (!seasons || seasons.length === 0) return null;
 
   // find the most recent season (highest operatingYear)
-  const sortedSeasons = [...seasons].sort(
-    (a, b) => b.operatingYear - a.operatingYear,
-  );
-
-  return sortedSeasons[0] || null;
+  return _.maxBy(seasons, "operatingYear") || null;
 }
 
 // get all date ranges from seasons
