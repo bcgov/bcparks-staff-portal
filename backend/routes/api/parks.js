@@ -126,22 +126,29 @@ function buildDateRangeObject(dateRange, readyToPublish) {
 }
 
 // build a current season object
-function buildCurrentSeasonOutput(seasons, currentYear) {
+function buildCurrentSeasonOutput(seasons) {
   if (!seasons || seasons.length === 0) return null;
 
-  // get a season for current year
-  const currentSeason = seasons.find(
-    (season) => season.operatingYear === currentYear,
+  // find the most recent season (highest operatingYear)
+  const sortedSeasons = [...seasons].sort(
+    (a, b) => b.operatingYear - a.operatingYear,
   );
 
-  if (!currentSeason) return null;
+  return sortedSeasons[0] || null;
+}
 
-  return {
-    id: currentSeason.id,
-    publishableId: currentSeason.publishableId,
-    operatingYear: currentSeason.operatingYear,
-    status: currentSeason.status,
-  };
+// build a previous season object
+function buildPreviousSeasonOutput(seasons, currentSeason) {
+  if (!seasons || seasons.length === 0 || !currentSeason) return null;
+
+  // filter for Approved/Published seasons before current
+  const previousSeasons = seasons
+    .filter(
+      (season) => season.operatingYear === currentSeason.operatingYear - 1,
+    )
+    .sort((a, b) => b.operatingYear - a.operatingYear);
+
+  return previousSeasons[0] || null;
 }
 
 // get all date ranges from seasons
@@ -154,12 +161,7 @@ function getAllDateRanges(seasons) {
 }
 
 // build feature output object
-function buildFeatureOutput(
-  feature,
-  seasons,
-  currentYear,
-  includeCurrentSeason = true,
-) {
+function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
   // filter seasons if dateRange's dateableId matches feature's dateableId
   const filteredSeasons = (seasons || [])
     // first, filter seasons that have at least one matching dateRange
@@ -191,6 +193,13 @@ function buildFeatureOutput(
     // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
     .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
 
+  // get a current and previous season
+  const currentSeason = buildCurrentSeasonOutput(feature.seasons);
+  const previousSeason = buildPreviousSeasonOutput(
+    feature.seasons,
+    currentSeason,
+  );
+
   const output = {
     id: feature.id,
     dateableId: feature.dateableId,
@@ -208,17 +217,15 @@ function buildFeatureOutput(
   };
 
   if (includeCurrentSeason) {
-    output.currentSeason = buildCurrentSeasonOutput(
-      feature.seasons,
-      currentYear,
-    );
+    output.currentSeason = currentSeason;
+    output.previousSeason = previousSeason;
   }
 
   return output;
 }
 
 // build park area output object
-function buildParkAreaOutput(parkArea, currentYear) {
+function buildParkAreaOutput(parkArea) {
   // get date ranges for parkArea
   const parkAreaDateRanges = getAllDateRanges(parkArea.seasons)
     // Temporarily disabling display of Winter Fees
@@ -239,17 +246,25 @@ function buildParkAreaOutput(parkArea, currentYear) {
     featureType = parkArea.features[0].featureType.get({ plain: true });
   }
 
+  // get a current and previous season
+  const currentSeason = buildCurrentSeasonOutput(parkArea.seasons);
+  const previousSeason = buildPreviousSeasonOutput(
+    parkArea.seasons,
+    currentSeason,
+  );
+
   return {
     id: parkArea.id,
     dateableId: parkArea.dateableId,
     publishableId: parkArea.publishableId,
     name: parkArea.name,
     features: parkArea.features.map((feature) =>
-      buildFeatureOutput(feature, parkArea.seasons, currentYear, false),
+      buildFeatureOutput(feature, parkArea.seasons, false),
     ),
     featureType: featureType ?? null,
     seasons: parkArea.seasons,
-    currentSeason: buildCurrentSeasonOutput(parkArea.seasons, currentYear),
+    currentSeason,
+    previousSeason,
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
 }
@@ -258,8 +273,7 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     // Constants
-    const currentYear = new Date().getFullYear();
-    const minYear = currentYear - 1;
+    const minYear = new Date().getFullYear();
 
     const parks = await Park.findAll({
       attributes: [
@@ -337,6 +351,13 @@ router.get(
       // get hasGate for park
       const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
+      // get current and previous seasons
+      const currentSeason = buildCurrentSeasonOutput(park.seasons);
+      const previousSeason = buildPreviousSeasonOutput(
+        park.seasons,
+        currentSeason,
+      );
+
       return {
         id: park.id,
         dateableId: park.dateableId,
@@ -350,16 +371,17 @@ router.get(
         managementArea: park.managementAreas.map((area) => area.mgmtArea),
         accessGroups: park.accessGroups,
         inReservationSystem: park.inReservationSystem,
-        currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
+        currentSeason,
+        previousSeason,
         groupedDateRanges: groupDateRangesByTypeAndYear(
           parkDateRanges,
           parkHasGate,
         ),
         features: park.features.map((feature) =>
-          buildFeatureOutput(feature, feature.seasons, currentYear),
+          buildFeatureOutput(feature, feature.seasons, true),
         ),
         parkAreas: park.parkAreas.map((parkArea) =>
-          buildParkAreaOutput(parkArea, currentYear),
+          buildParkAreaOutput(parkArea),
         ),
         seasons: park.seasons.map((season) => ({
           id: season.id,

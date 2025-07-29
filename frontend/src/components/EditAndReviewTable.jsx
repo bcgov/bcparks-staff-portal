@@ -14,10 +14,6 @@ import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
 
-// Constants
-const currentYear = new Date().getFullYear();
-const lastYear = currentYear - 1;
-
 // Components
 function IconButton({ icon, label, onClick, textColor, loading = false }) {
   return (
@@ -83,13 +79,18 @@ DateRangesList.propTypes = {
   isLastYear: PropTypes.bool,
 };
 
-function DateTypeTableRow({ groupedDateRanges }) {
-  if (!groupedDateRanges || Object.keys(groupedDateRanges).length === 0)
+function DateTypeTableRow({ groupedDateRanges, currentYear }) {
+  if (
+    !currentYear ||
+    !groupedDateRanges ||
+    Object.keys(groupedDateRanges).length === 0
+  )
     return null;
+
   return (
     <tr className="table-row--date-type">
       <th scope="col">Type of date</th>
-      <th scope="col">{lastYear}</th>
+      <th scope="col">{currentYear - 1}</th>
       <th scope="col">{currentYear}</th>
     </tr>
   );
@@ -97,15 +98,20 @@ function DateTypeTableRow({ groupedDateRanges }) {
 
 DateTypeTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
+  currentYear: PropTypes.number,
 };
 
-function DateTableRow({ groupedDateRanges }) {
-  if (!groupedDateRanges) return null;
+function DateTableRow({ groupedDateRanges, currentYear }) {
+  if (!currentYear || !groupedDateRanges) return null;
+
   return Object.entries(groupedDateRanges).map(([dateTypeName, yearsObj]) => (
     <tr key={dateTypeName} className="table-row--date">
       <td className="fw-bold">{dateTypeName}</td>
       <td>
-        <DateRangesList dateRanges={yearsObj[lastYear]} isLastYear={true} />
+        <DateRangesList
+          dateRanges={yearsObj[currentYear - 1]}
+          isLastYear={true}
+        />
       </td>
       <td>
         <DateRangesList dateRanges={yearsObj[currentYear]} />
@@ -116,6 +122,7 @@ function DateTableRow({ groupedDateRanges }) {
 
 DateTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
+  currentYear: PropTypes.number,
 };
 
 function ApproveButton({ seasonId, color = "", onApprove }) {
@@ -262,8 +269,14 @@ function Table({ park, formPanelHandler }) {
 
       <tbody>
         {/* 1 - park level */}
-        <DateTypeTableRow groupedDateRanges={park.groupedDateRanges} />
-        <DateTableRow groupedDateRanges={park.groupedDateRanges} />
+        <DateTypeTableRow
+          groupedDateRanges={park.groupedDateRanges}
+          currentYear={park.currentSeason.operatingYear || null}
+        />
+        <DateTableRow
+          groupedDateRanges={park.groupedDateRanges}
+          currentYear={park.currentSeason.operatingYear || null}
+        />
 
         {/* 2 - park area level */}
         {parkAreas.map((parkArea) => (
@@ -290,9 +303,11 @@ function Table({ park, formPanelHandler }) {
                 </tr>
                 <DateTypeTableRow
                   groupedDateRanges={parkFeature.groupedDateRanges}
+                  currentYear={parkArea.currentSeason.operatingYear || null}
                 />
                 <DateTableRow
                   groupedDateRanges={parkFeature.groupedDateRanges}
+                  currentYear={parkArea.currentSeason.operatingYear || null}
                 />
               </React.Fragment>
             ))}
@@ -314,8 +329,14 @@ function Table({ park, formPanelHandler }) {
                 formPanelHandler({ ...feature, level: "feature" })
               }
             />
-            <DateTypeTableRow groupedDateRanges={feature.groupedDateRanges} />
-            <DateTableRow groupedDateRanges={feature.groupedDateRanges} />
+            <DateTypeTableRow
+              groupedDateRanges={feature.groupedDateRanges}
+              currentYear={feature.currentSeason.operatingYear || null}
+            />
+            <DateTableRow
+              groupedDateRanges={feature.groupedDateRanges}
+              currentYear={feature.currentSeason.operatingYear || null}
+            />
           </React.Fragment>
         ))}
       </tbody>
@@ -329,6 +350,7 @@ Table.propTypes = {
     name: PropTypes.string.isRequired,
     currentSeason: PropTypes.shape({
       status: PropTypes.string,
+      operatingYear: PropTypes.number,
     }),
     groupedDateRanges: PropTypes.object,
     parkAreas: PropTypes.arrayOf(
