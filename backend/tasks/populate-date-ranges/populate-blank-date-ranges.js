@@ -175,15 +175,19 @@ export async function populateBlankDateRangesForYear(
       `${dateRangeKeys.length} applicable DateRanges. Checking if any exist already...`,
     );
 
+    // Exclude the Operating date type, handled by Gate date scripts
+    const dateTypeIdWhere = parkDateTypesByName.Operating
+      ? {
+          [Op.not]: parkDateTypesByName.Operating.id,
+        }
+      : {};
+
     // Query existing DateRanges for these seasons
     const existingDateRanges = await DateRange.findAll({
       where: {
         seasonId: seasons.map((s) => s.id),
 
-        // Exclude the Operating date type, handled by Gate date scripts
-        dateTypeId: {
-          [Op.not]: parkDateTypesByName.Operating?.id ?? null,
-        },
+        dateTypeId: dateTypeIdWhere,
       },
       attributes: ["seasonId", "dateableId", "dateTypeId"],
       transaction,
