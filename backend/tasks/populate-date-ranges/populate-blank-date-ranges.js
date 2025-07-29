@@ -182,7 +182,7 @@ export async function populateBlankDateRangesForYear(
 
         // Exclude the Operating date type, handled by Gate date scripts
         dateTypeId: {
-          [Op.not]: parkDateTypesByName.Operating.id,
+          [Op.not]: parkDateTypesByName.Operating?.id ?? null,
         },
       },
       attributes: ["seasonId", "dateableId", "dateTypeId"],
