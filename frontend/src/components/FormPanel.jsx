@@ -403,7 +403,7 @@ If dates have already been published, they will not be updated until new dates a
 
       <Offcanvas.Body>
         <h3>Public information</h3>
-        <p>This information is displayed on bcpark.ca</p>
+        <p>This information is displayed on bcparks.ca</p>
 
         {/* 1 - park level */}
         {level === "park" && (
