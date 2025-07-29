@@ -129,14 +129,14 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const targetYear = process.argv[2];
   const transaction = await DateRange.sequelize.transaction();
 
-  if (!targetYear || isNaN(targetYear)) {
-    console.error(
-      "Please provide a target year. e.g. node populate-annual-date-ranges.js 2026",
-    );
-    throw new Error("Invalid or missing target year argument.");
-  }
-
   try {
+    if (!targetYear || isNaN(targetYear)) {
+      console.error(
+        "Please provide a target year. e.g. node populate-annual-date-ranges.js 2026",
+      );
+      throw new Error("Invalid or missing target year argument.");
+    }
+
     await populateAnnualDateRangesForYear(Number(targetYear), transaction);
     await transaction.commit();
     console.log("Transaction committed.");

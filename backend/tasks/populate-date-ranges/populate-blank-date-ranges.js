@@ -242,12 +242,12 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   // Run all queries in a transaction
   const transaction = await Season.sequelize.transaction();
 
-  if (!targetYear || isNaN(targetYear)) {
-    console.info("Usage example: node populate-blank-date-ranges.js 2097");
-    throw new Error("Missing year argument");
-  }
-
   try {
+    if (!targetYear || isNaN(targetYear)) {
+      console.info("Usage example: node populate-blank-date-ranges.js 2097");
+      throw new Error("Missing year argument");
+    }
+
     const createdRecords = await populateBlankDateRangesForYear(
       Number(targetYear),
       transaction,
