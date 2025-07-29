@@ -273,7 +273,7 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     // Constants
-    const minYear = new Date().getFullYear();
+    const currentYear = new Date().getFullYear();
 
     const parks = await Park.findAll({
       attributes: [
@@ -290,7 +290,7 @@ router.get(
       ],
       include: [
         // Publishable Seasons for the Park
-        seasonModel(minYear),
+        seasonModel(currentYear),
 
         // ParkAreas
         {
@@ -299,14 +299,14 @@ router.get(
           attributes: ["id", "dateableId", "publishableId", "name"],
           include: [
             // Features that are part of the ParkArea
-            featureModel(minYear),
+            featureModel(currentYear),
             // Publishable Seasons for the ParkArea
-            seasonModel(minYear),
+            seasonModel(currentYear),
           ],
         },
 
         // Publishable Features that aren't part of a ParkArea
-        featureModel(minYear, {
+        featureModel(currentYear, {
           parkAreaId: null,
           publishableId: {
             [Op.ne]: null,
