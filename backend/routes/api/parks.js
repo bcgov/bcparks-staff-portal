@@ -137,20 +137,6 @@ function buildCurrentSeasonOutput(seasons) {
   return sortedSeasons[0] || null;
 }
 
-// build a previous season object
-function buildPreviousSeasonOutput(seasons, currentSeason) {
-  if (!seasons || seasons.length === 0 || !currentSeason) return null;
-
-  // filter for Approved/Published seasons before current
-  const previousSeasons = seasons
-    .filter(
-      (season) => season.operatingYear === currentSeason.operatingYear - 1,
-    )
-    .sort((a, b) => b.operatingYear - a.operatingYear);
-
-  return previousSeasons[0] || null;
-}
-
 // get all date ranges from seasons
 function getAllDateRanges(seasons) {
   return _.flatMap(seasons, (season) =>
@@ -193,12 +179,8 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
     .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
 
-  // get a current and previous season
+  // get a current season
   const currentSeason = buildCurrentSeasonOutput(feature.seasons);
-  const previousSeason = buildPreviousSeasonOutput(
-    feature.seasons,
-    currentSeason,
-  );
 
   const output = {
     id: feature.id,
@@ -218,7 +200,6 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
 
   if (includeCurrentSeason) {
     output.currentSeason = currentSeason;
-    output.previousSeason = previousSeason;
   }
 
   return output;
@@ -246,12 +227,8 @@ function buildParkAreaOutput(parkArea) {
     featureType = parkArea.features[0].featureType.get({ plain: true });
   }
 
-  // get a current and previous season
+  // get a current season
   const currentSeason = buildCurrentSeasonOutput(parkArea.seasons);
-  const previousSeason = buildPreviousSeasonOutput(
-    parkArea.seasons,
-    currentSeason,
-  );
 
   return {
     id: parkArea.id,
@@ -264,7 +241,6 @@ function buildParkAreaOutput(parkArea) {
     featureType: featureType ?? null,
     seasons: parkArea.seasons,
     currentSeason,
-    previousSeason,
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
 }
@@ -351,12 +327,8 @@ router.get(
       // get hasGate for park
       const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
-      // get current and previous seasons
+      // get current season
       const currentSeason = buildCurrentSeasonOutput(park.seasons);
-      const previousSeason = buildPreviousSeasonOutput(
-        park.seasons,
-        currentSeason,
-      );
 
       return {
         id: park.id,
@@ -372,7 +344,6 @@ router.get(
         accessGroups: park.accessGroups,
         inReservationSystem: park.inReservationSystem,
         currentSeason,
-        previousSeason,
         groupedDateRanges: groupDateRangesByTypeAndYear(
           parkDateRanges,
           parkHasGate,
