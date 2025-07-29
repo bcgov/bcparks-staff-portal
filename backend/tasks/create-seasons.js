@@ -22,6 +22,14 @@ import { populateBlankDateRangesForYear } from "./populate-date-ranges/populate-
 // Run all queries in a transaction
 const transaction = await Season.sequelize.transaction();
 
+if (process.env.SEQUELIZE_LOGGING === "false") {
+  console.warn(
+    "SEQUELIZE_LOGGING is set to false. No SQL queries will be logged.",
+  );
+
+  Season.sequelize.options.logging = false;
+}
+
 // Print errors and roll back transaction on exceptions
 process.on("uncaughtException", (err) => {
   console.error(`\n${err.message}\n`);
