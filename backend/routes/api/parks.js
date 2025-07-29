@@ -313,8 +313,16 @@ router.get(
       ],
     });
 
+    // constrain GateDetail query to only publishableIds in parks
+    const publishableIds = parks.map((park) => park.publishableId);
+
     const allGateDetails = await GateDetail.findAll({
       attributes: ["publishableId", "hasGate"],
+      where: {
+        publishableId: {
+          [Op.in]: publishableIds,
+        },
+      },
     });
 
     const gateDetailMap = new Map();
