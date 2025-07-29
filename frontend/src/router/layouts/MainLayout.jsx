@@ -61,6 +61,9 @@ export default function MainLayout() {
     [globalFlashMessage.open, globalFlashMessage.close],
   );
 
+  const isUnauthorized = isAuthenticated && !hasAnyRole();
+  const isAuthenticatedAndAuthorized = isAuthenticated && hasAnyRole();
+
   return (
     <FlashMessageContext.Provider value={flashMessageContextValue}>
       <UserContext.Provider value={userDetails}>
@@ -136,31 +139,27 @@ export default function MainLayout() {
           )}
 
           <main className="p-0 d-flex flex-column flex-md-row">
-            {(() => {
-              if (!isAuthenticated) {
-                // Use the layout with no sidebar for the login page
-                return <Outlet />;
-              }
-              if (!hasAnyRole()) {
-                // Show unauthorized message if user lacks required roles
-                return <Unauthorized />;
-              }
-              // Authenticated user with roles: show sidebar and main content
-              return (
-                <>
-                  <NavSidebar />
-                  <div className="flex-fill">
-                    {userDetails.loading ? (
-                      <div className="container mt-3">
-                        <LoadingBar />
-                      </div>
-                    ) : (
-                      <Outlet />
-                    )}
-                  </div>
-                </>
-              );
-            })()}
+            {/* Use the layout with no sidebar for the login page */}
+            {!isAuthenticated && <Outlet />}
+
+            {/* Show unauthorized message if user lacks required roles */}
+            {isUnauthorized && <Unauthorized />}
+
+            {/* Authenticated user with roles: show sidebar and main content */}
+            {isAuthenticatedAndAuthorized && (
+              <>
+                <NavSidebar />
+                <div className="flex-fill">
+                  {userDetails.loading ? (
+                    <div className="container mt-3">
+                      <LoadingBar />
+                    </div>
+                  ) : (
+                    <Outlet />
+                  )}
+                </div>
+              </>
+            )}
           </main>
 
           <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">
