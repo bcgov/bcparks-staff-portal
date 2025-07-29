@@ -1,5 +1,5 @@
-// This script populates DateRanges for a given target year
-// based on previous year's DateRanges if isDateRangeAnnual is TRUE.
+// This script populates blank DateRanges for a given target year
+// in order to show blank date picker inputs on the frontend
 import "../../env.js";
 
 import _ from "lodash";
