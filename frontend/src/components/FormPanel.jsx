@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
-import { isEqual, omit } from "lodash-es";
+import { isEqual, omit, keyBy } from "lodash-es";
 
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
@@ -151,6 +151,11 @@ function SeasonForm({
     return `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
   }, [level, season, seasonMetadata]);
 
+  const dateTypesByName = useMemo(
+    () => keyBy(seasonMetadata?.dateTypes || [], "name"),
+    [seasonMetadata],
+  );
+
   // Clears and re-fetches the data
   function resetData() {
     setData(null);
@@ -188,7 +193,31 @@ function SeasonForm({
       seasonDateRanges.push(...areaDateRanges, ...featureDateRanges);
     }
 
-    const changedDateRanges = seasonDateRanges
+    // Find the "Operating" date type id
+    const operatingDateTypeId = dateTypesByName.Operating?.id;
+
+    let gateDetail = season.gateDetail;
+    let filteredDateRanges = seasonDateRanges;
+    let deletedOperatingIds = [];
+
+    // Remove the "Operating" date ranges at park level if hasGate is false
+    if (level === "park" && gateDetail && gateDetail.hasGate === false) {
+      deletedOperatingIds = seasonDateRanges
+        .filter(
+          (dateRange) =>
+            dateRange.dateTypeId === operatingDateTypeId && dateRange.id,
+        )
+        .map((dateRange) => dateRange.id);
+
+      filteredDateRanges = seasonDateRanges.filter(
+        (dateRange) => dateRange.dateTypeId !== operatingDateTypeId,
+      );
+    }
+
+    // Merge deletedDateRangeIds with deletedOperatingIds
+    const allDeletedIds = [...deletedDateRangeIds, ...deletedOperatingIds];
+
+    const changedDateRanges = filteredDateRanges
       .filter((range) => range.changed)
       // We only need the dateTypeId, drop fields we don't need to send
       .map((range) => omit(range, ["changed", "dateType"]));
@@ -197,17 +226,29 @@ function SeasonForm({
       (dateRangeAnnual) => dateRangeAnnual.changed,
     );
 
+    // Clear gateDetail if hasGate is false
+    if (gateDetail && gateDetail.hasGate === false) {
+      gateDetail = {
+        id: gateDetail.id,
+        hasGate: false,
+        gateOpenTime: null,
+        gateCloseTime: null,
+        gateOpensAtDawn: false,
+        gateClosesAtDusk: false,
+      };
+    }
+
     const payload = {
       dateRanges: changedDateRanges,
-      deletedDateRangeIds,
+      deletedDateRangeIds: allDeletedIds,
       dateRangeAnnuals: changedDateRangeAnnuals,
-      gateDetail: season.gateDetail,
+      gateDetail,
       readyToPublish: season.readyToPublish,
       notes,
     };
 
     return payload;
-  }, [level, season, deletedDateRangeIds, notes]);
+  }, [level, season, deletedDateRangeIds, notes, seasonMetadata]);
 
   // Calculate if the form data has changed
   const dataChanged = useMemo(() => {

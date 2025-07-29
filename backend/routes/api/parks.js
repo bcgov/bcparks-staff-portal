@@ -10,6 +10,7 @@ import {
   Feature,
   ParkArea,
   AccessGroup,
+  GateDetail,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 
@@ -81,11 +82,18 @@ function featureModel(minYear, where = {}) {
 
 // group dateRanges by date type name then by year
 // e.g. {Operation: {2024: [...], 2025: [...]}, Winter: {2024: [...], 2025: [...]}, ...}
-function groupDateRangesByTypeAndYear(dateRanges) {
+function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   // filter out invalid dateRanges
-  const validRanges = dateRanges.filter(
+  let validRanges = dateRanges.filter(
     (dateRange) => dateRange.dateType && dateRange.startDate,
   );
+
+  // filter out "Operating" dateType if hasGate is explicitly false at the park level
+  if (hasGate === false) {
+    validRanges = validRanges.filter(
+      (dateRange) => dateRange.dateType.name !== "Operating",
+    );
+  }
 
   // group by dateType name
   return _.mapValues(
@@ -295,7 +303,7 @@ router.get(
         {
           model: AccessGroup,
           as: "accessGroups",
-          attributes: ["id", "name"]
+          attributes: ["id", "name"],
         },
       ],
       order: [
@@ -305,9 +313,29 @@ router.get(
       ],
     });
 
+    // constrain GateDetail query to only publishableIds in parks
+    const publishableIds = parks.map((park) => park.publishableId);
+
+    const allGateDetails = await GateDetail.findAll({
+      attributes: ["publishableId", "hasGate"],
+      where: {
+        publishableId: {
+          [Op.in]: publishableIds,
+        },
+      },
+    });
+
+    const gateDetailMap = new Map();
+
+    allGateDetails.forEach((gate) => {
+      gateDetailMap.set(gate.publishableId, gate.hasGate);
+    });
+
     const output = parks.map((park) => {
       // get date ranges for park
       const parkDateRanges = getAllDateRanges(park.seasons);
+      // get hasGate for park
+      const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
       return {
         id: park.id,
@@ -323,7 +351,10 @@ router.get(
         accessGroups: park.accessGroups,
         inReservationSystem: park.inReservationSystem,
         currentSeason: buildCurrentSeasonOutput(park.seasons, currentYear),
-        groupedDateRanges: groupDateRangesByTypeAndYear(parkDateRanges),
+        groupedDateRanges: groupDateRangesByTypeAndYear(
+          parkDateRanges,
+          parkHasGate,
+        ),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, feature.seasons, currentYear),
         ),
