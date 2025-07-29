@@ -17,6 +17,7 @@ import {
 } from "../models/index.js";
 import * as STATUS from "../constants/seasonStatus.js";
 import { populateAnnualDateRangesForYear } from "./populate-date-ranges/populate-annual-date-ranges.js";
+import { populateBlankDateRangesForYear } from "./populate-date-ranges/populate-blank-date-ranges.js";
 
 // Run all queries in a transaction
 const transaction = await Season.sequelize.transaction();
@@ -400,6 +401,12 @@ console.log(`Added ${seasonsAdded} new Group Camping Feature Seasons`);
 
 // Populate DateRanges for the new seasons based on previous year if isDateRangeAnnual is TRUE
 await populateAnnualDateRangesForYear(operatingYear, transaction);
+
+// Populate blank DateRanges for the new seasons
+await populateBlankDateRangesForYear(operatingYear, transaction);
+
+// Populate blank DateRanges for the next year (which was just created for Group Camping)
+await populateBlankDateRangesForYear(nextYear, transaction);
 
 console.log("Committing transaction...");
 

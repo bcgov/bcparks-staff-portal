@@ -229,9 +229,6 @@ export async function populateBlankDateRangesForYear(
       `Created ${createdRecords.length} blank DateRanges for ${targetYear}`,
     );
 
-    // @TODO: Import and call this function in create-seasons.js
-    // @TODO: then update the Readme
-
     return createdRecords;
   } catch (err) {
     console.error("Error populating blank DateRanges:", err);
