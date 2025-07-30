@@ -57,6 +57,11 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      hasBackcountryPermits: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

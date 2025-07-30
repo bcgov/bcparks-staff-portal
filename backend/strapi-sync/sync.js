@@ -345,6 +345,7 @@ export async function createOrUpdateFeature(item) {
     dbItem.hasReservations = item.hasReservations;
     // Update it to false if inReservationSystem from Strapi returns null
     dbItem.inReservationSystem = item.inReservationSystem ?? false;
+    dbItem.hasBackcountryPermits = item.hasBackcountryPermits ?? false;
 
     await dbItem.save();
   } else {
@@ -363,6 +364,7 @@ export async function createOrUpdateFeature(item) {
       dateableId: dateable.id,
       hasReservations: item.hasReservations,
       inReservationSystem: item.inReservationSystem ?? false,
+      hasBackcountryPermits: item.hasBackcountryPermits ?? false,
       active: item.isActive,
       strapiId: item.id,
       strapiFeatureId: item.featureId,

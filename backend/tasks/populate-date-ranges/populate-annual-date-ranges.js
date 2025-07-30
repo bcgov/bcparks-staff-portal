@@ -24,7 +24,7 @@ export function normalizeToLocalDate(dateObject) {
   );
 }
 
-export async function populateDateRangesForYear(
+export async function populateAnnualDateRangesForYear(
   targetYear,
   transaction = null,
 ) {
@@ -119,7 +119,7 @@ export async function populateDateRangesForYear(
       "DateRanges populated for new Seasons based on previous year's annual DateRanges.",
     );
   } catch (err) {
-    console.error("Error populating DateRanges:", err);
+    console.error("Error populating annual DateRanges:", err);
     throw err;
   }
 }
@@ -129,15 +129,15 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const targetYear = process.argv[2];
   const transaction = await DateRange.sequelize.transaction();
 
-  if (!targetYear || isNaN(targetYear)) {
-    console.error(
-      "Please provide a target year. e.g. node populate-date-ranges.js 2026",
-    );
-    throw new Error("Invalid or missing target year argument.");
-  }
-
   try {
-    await populateDateRangesForYear(Number(targetYear), transaction);
+    if (!targetYear || isNaN(targetYear)) {
+      console.error(
+        "Please provide a target year. e.g. node populate-annual-date-ranges.js 2026",
+      );
+      throw new Error("Invalid or missing target year argument.");
+    }
+
+    await populateAnnualDateRangesForYear(Number(targetYear), transaction);
     await transaction.commit();
     console.log("Transaction committed.");
   } catch (err) {

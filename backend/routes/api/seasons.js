@@ -4,6 +4,11 @@ import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
+import {
+  getAllDateTypes,
+  getDateTypesForFeature,
+  getDateTypesForPark,
+} from "../../utils/dateTypesHelpers.js";
 
 import {
   Park,
@@ -123,19 +128,6 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
     console.error("Error fetching previous season:", error);
     throw error;
   }
-}
-
-/**
- * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
- * @param {Object} [where={}] Where clause to filter DateTypes (by level, etc.)
- * @returns {Promise<Array<DateType>>} Array of DateTypes
- */
-async function getAllDateTypes(where = {}) {
-  return DateType.findAll({
-    attributes: ["id", "name", "startDateLabel", "endDateLabel", "description"],
-
-    where,
-  });
 }
 
 /**
@@ -318,12 +310,10 @@ router.get(
 
     const dateTypesByName = _.keyBy(dateTypesArray, "name");
 
+    const { feature } = seasonModel;
+
     // Return the DateTypes in a specific order
-    const orderedDateTypes = [
-      dateTypesByName.Operation,
-      dateTypesByName.Reservation,
-      dateTypesByName["Backcountry registration"],
-    ];
+    const orderedDateTypes = getDateTypesForFeature(feature, dateTypesByName);
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
@@ -533,18 +523,7 @@ router.get(
     const dateTypesByName = _.keyBy(dateTypesArray, "name");
 
     // Return the DateTypes in a specific order
-    const orderedDateTypes = [];
-
-    // Add applicable date types for the Park
-    if (park.hasTier1Dates) {
-      orderedDateTypes.push(dateTypesByName["Tier 1"]);
-    }
-    if (park.hasTier2Dates) {
-      orderedDateTypes.push(dateTypesByName["Tier 2"]);
-    }
-    if (park.hasWinterFeeDates) {
-      orderedDateTypes.push(dateTypesByName["Winter fee"]);
-    }
+    const orderedDateTypes = getDateTypesForPark(park, dateTypesByName);
 
     // Add Operating date type
     // @TODO: This should be in its own property
