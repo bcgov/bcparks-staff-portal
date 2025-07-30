@@ -18,6 +18,15 @@ import {
   getDateTypesForPark,
 } from "../../utils/dateTypesHelpers.js";
 
+// Select the relevant attributes for Feature records
+const FEATURE_ATTRIBUTES = [
+  "id",
+  "dateableId",
+  "publishableId",
+  "hasReservations",
+  "hasBackcountryPermits",
+];
+
 /**
  * Returns a comparison key for a DateRange based on its season, dateable, and date type IDs.
  * @param {number} seasonId season ID from the DB
@@ -70,13 +79,7 @@ export async function populateBlankDateRangesForYear(
             {
               model: Feature,
               as: "features",
-              attributes: [
-                "id",
-                "dateableId",
-                "publishableId",
-                "hasReservations",
-                "hasBackcountryPermits",
-              ],
+              attributes: FEATURE_ATTRIBUTES,
             },
           ],
         },
@@ -84,13 +87,7 @@ export async function populateBlankDateRangesForYear(
         {
           model: Feature,
           as: "feature",
-          attributes: [
-            "id",
-            "dateableId",
-            "publishableId",
-            "hasReservations",
-            "hasBackcountryPermits",
-          ],
+          attributes: FEATURE_ATTRIBUTES,
         },
       ],
 
