@@ -25,7 +25,7 @@ export default function Error({ page: { error } }) {
     }
   };
 
-  if (toHome) {
+  if (toHome || error?.status === 401) {
     return <Redirect to="/" />;
   }
   let errorContent;

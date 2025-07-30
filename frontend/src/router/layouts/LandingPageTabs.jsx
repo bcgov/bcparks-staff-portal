@@ -4,13 +4,16 @@ import useAccess from "@/hooks/useAccess";
 import "./LandingPageTabs.scss";
 
 export default function LandingPageTabs() {
-  const { ROLES, checkAccess } = useAccess();
+  const { ROLES, checkAccess, isAuthenticated } = useAccess();
 
   // Check if the user has permission to approve the season
   const approver = useMemo(
     () => checkAccess(ROLES.APPROVER),
     [checkAccess, ROLES.APPROVER],
   );
+
+  // This prevents flashing the tabs layout to unauthenticated users
+  if (!isAuthenticated) return <></>;
 
   return (
     <div className="layout landing-page-tabs">
