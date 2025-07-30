@@ -53,7 +53,11 @@ export default function LoginPage() {
           </button>
         </p>
         <p>
-          <a href="https://www.bceid.ca/directories/bluepages/details.aspx?serviceId=7851&eServiceType=all">
+          <a
+            href="https://www.bceid.ca/os/?11849"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="me-1" />
             Register for a BCeID
           </a>

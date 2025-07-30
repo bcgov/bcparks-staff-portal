@@ -81,7 +81,9 @@ export default function Home({ page: { setError } }) {
                     />
                     <a
                       className="mt-1"
-                      href="https://www.bceid.ca/directories/bluepages/details.aspx?serviceId=7851&eServiceType=all"
+                      href="https://www.bceid.ca/os/?11849"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <OpenInNew className="me-1" />
                       Register for a BCeID
