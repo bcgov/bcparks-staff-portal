@@ -10,6 +10,7 @@ import TouchMenu from "@/components/TouchMenu";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
+import { Unauthorized } from "@/components/Unauthorized";
 import UserContext from "@/contexts/UserContext";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { Alert } from "react-bootstrap";
@@ -17,8 +18,22 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
 
 export default function MainLayout() {
-  const { logOut } = useAccess();
+  const {
+    logOut,
+    roles: jwtRoles,
+    ROLES: dootRoles,
+  } = useAccess();
   const globalFlashMessage = useFlashMessage();
+
+  // Returns true if the user has any DOOT role or any legacy staff portal role
+  function hasAnyRole() {
+    const allStaffPortalRoles = new Set([
+      ...["approver", "submitter"],
+      ...Object.values(dootRoles),
+    ]);
+
+    return jwtRoles.some((role) => allStaffPortalRoles.has(role));
+  }
 
   // Fetch the user name to display in the header
   const userDetails = useApiGet("/user");
@@ -116,21 +131,27 @@ export default function MainLayout() {
           )}
 
           <main className="p-0 d-flex flex-column flex-md-row">
-            <NavSidebar />
-
-            <div className="flex-fill">
-              {/*
-            Don't render the body until userDetails are loaded.
-            The body makes API requests, and race conditions could create duplicate User records.
-          */}
-              {userDetails.loading ? (
-                <div className="container mt-3">
-                  <LoadingBar />
-                </div>
-              ) : (
-                <Outlet />
-              )}
-            </div>
+            {(() => {
+              if (!hasAnyRole()) {
+                // Show unauthorized message if user lacks required roles
+                return <Unauthorized />;
+              }
+              // Authenticated user with roles: show sidebar and main content
+              return (
+                <>
+                  <NavSidebar />
+                  <div className="flex-fill">
+                    {userDetails.loading ? (
+                      <div className="container mt-3">
+                        <LoadingBar />
+                      </div>
+                    ) : (
+                      <Outlet />
+                    )}
+                  </div>
+                </>
+              );
+            })()}
           </main>
 
           <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">
