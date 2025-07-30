@@ -22,7 +22,7 @@ module.exports = {
     // Add back userEmail column
     await queryInterface.addColumn("UserAccessGroups", "userEmail", {
       type: Sequelize.STRING,
-      allowNull: true,
+      allowNull: false,
     });
 
     // Remove username foreign key constraint
