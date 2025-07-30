@@ -155,6 +155,8 @@ function SeasonForm({
     () => keyBy(seasonMetadata?.dateTypes || [], "name"),
     [seasonMetadata],
   );
+  // Find the "Operating" date type id
+  const operatingDateTypeId = dateTypesByName.Operating?.id;
 
   // Clears and re-fetches the data
   function resetData() {
@@ -192,9 +194,6 @@ function SeasonForm({
       // Combine area and feature date ranges
       seasonDateRanges.push(...areaDateRanges, ...featureDateRanges);
     }
-
-    // Find the "Operating" date type id
-    const operatingDateTypeId = dateTypesByName.Operating?.id;
 
     let gateDetail = season.gateDetail;
     let filteredDateRanges = seasonDateRanges;
@@ -281,7 +280,39 @@ function SeasonForm({
   }, [dataChanged, setDataChanged]);
 
   async function onSave(close = true) {
-    await sendSave(changesPayload);
+    // Clone the payload
+    const payload = { ...changesPayload };
+
+    // Update isDateRangeAnnual for "Operating" date if gateDetail.hasGate is false
+    if (
+      payload.gateDetail &&
+      payload.gateDetail.hasGate === false &&
+      Array.isArray(season.dateRangeAnnuals)
+    ) {
+      payload.dateRangeAnnuals = season.dateRangeAnnuals
+        .map((annual) => {
+          if (
+            operatingDateTypeId &&
+            annual.dateType.id === operatingDateTypeId
+          ) {
+            return {
+              ...annual,
+              isDateRangeAnnual: false,
+              changed: true,
+            };
+          }
+          return annual;
+        })
+        .filter(
+          (annual) =>
+            annual.changed ||
+            season.dateRangeAnnuals.some(
+              (original) => original.id === annual.id && original.changed,
+            ),
+        );
+    }
+
+    await sendSave(payload);
 
     // Start refreshing the main page data from the API
     onDataUpdate();
