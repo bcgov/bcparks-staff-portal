@@ -291,7 +291,10 @@ function SeasonForm({
     ) {
       payload.dateRangeAnnuals = season.dateRangeAnnuals
         .map((annual) => {
-          if (annual.dateType.id === operatingDateTypeId) {
+          if (
+            operatingDateTypeId &&
+            annual.dateType.id === operatingDateTypeId
+          ) {
             return {
               ...annual,
               isDateRangeAnnual: false,
@@ -300,7 +303,13 @@ function SeasonForm({
           }
           return annual;
         })
-        .filter((annual) => annual.changed);
+        .filter(
+          (annual) =>
+            annual.changed ||
+            season.dateRangeAnnuals.some(
+              (original) => original.id === annual.id && original.changed,
+            ),
+        );
     }
 
     await sendSave(payload);
