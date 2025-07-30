@@ -26,7 +26,7 @@ export default function LoginPage() {
     <div className="container">
       <div className="text-center login-page-content">
         <h2 className="mt-5 mb-2">Staff web portal</h2>
-        <p>Select the ID you want to use to log into the Staff web portal</p>
+        <p>Use one of the following methods to log in</p>
 
         {/* Uncomment the following section if you want to enable BC Services Card login */}
         {/* <p className="mt-5 mb-1">
