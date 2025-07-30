@@ -138,4 +138,7 @@ helm/crunchy-postgres/Chart.yaml
 helm/crunchy-postgres/values.yaml
 
 bcparks-staff-portal.code-workspace
-backend/tasks/populate-access-groups/agreement.json
+
+# Ignore Park AccessGroup data because it has user email addresses
+backend/tasks/populate-access-groups/agreement*.json
+!backend/tasks/populate-access-groups/agreement-example.json

@@ -1,10 +1,24 @@
 [
   {
-    "id": 1,
-    "agreement": "Example Agreement Name",
-    "park": ["Example Park One", "Example Park Two"],
-    "orcs": ["123", "456"],
-    "contactEmails": ["jane@email.com", "john@email.com"],
-    "contactNames": ["Jane Doe", "John Smith"]
+    "id": 123,
+    "name": "Agreement Name",
+    "parks": [
+      {
+        "orcs": "1",
+        "name": "Strathcona Park"
+      }
+    ],
+    "users": [
+      {
+        "username": "abcdefgh@bceidboth",
+        "email": "user@example.com",
+        "name": "Alice Smith"
+      },
+      {
+        "username": "xyz@bceidboth",
+        "email": "bob@example.com",
+        "name": "Bob Xylophone"
+      }
+    ]
   }
 ]
