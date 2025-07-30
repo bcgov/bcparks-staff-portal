@@ -1,18 +1,14 @@
 import { Model, DataTypes } from "sequelize";
 
-// Each UserAccessGroup association links one User (id) to one AccessGroup (id)
+// Each UserAccessGroup association links one User (username) to one AccessGroup (id)
 
 export default (sequelize) => {
   class UserAccessGroup extends Model {
-    // Helper method for defining associations.
-    // This method is not a part of Sequelize lifecycle.
-    // The `models/index` file will call this method automatically.
-    // @param models
     static associate(models) {
-      // Each UserAccessGroup entry belongs to one User, linked by the user's email
+      // Each UserAccessGroup entry belongs to one User, linked by the user's username
       UserAccessGroup.belongsTo(models.User, {
-        foreignKey: "userEmail",
-        targetKey: "email",
+        foreignKey: "username",
+        targetKey: "username",
         as: "user",
       });
 
@@ -43,12 +39,12 @@ export default (sequelize) => {
         },
       },
 
-      userEmail: {
+      username: {
         type: DataTypes.STRING,
         allowNull: false,
         references: {
           model: "Users",
-          key: "email",
+          key: "username",
         },
       },
     },

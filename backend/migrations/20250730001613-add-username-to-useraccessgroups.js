@@ -4,6 +4,7 @@ module.exports = {
     await queryInterface.addColumn("UserAccessGroups", "username", {
       type: Sequelize.STRING,
       // Keep nullable because we don't have all the usernames yet
+      // and some users who aren't in AccessGroups may not need them.
       allowNull: true,
     });
 
