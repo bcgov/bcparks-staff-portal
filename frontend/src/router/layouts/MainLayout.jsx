@@ -26,14 +26,9 @@ export default function MainLayout() {
   } = useAccess();
   const globalFlashMessage = useFlashMessage();
 
-  // Returns true if the user has any DOOT role or any legacy staff portal role
-  function hasAnyRole() {
-    const allStaffPortalRoles = new Set([
-      ...["approver", "submitter"],
-      ...Object.values(dootRoles),
-    ]);
-
-    return jwtRoles.some((role) => allStaffPortalRoles.has(role));
+  // Returns true if the user has the "doot-user" role
+  function isDootUser() {
+    return jwtRoles.has(dootRoles.DOOT_USER);
   }
 
   // Fetch the user name to display in the header
@@ -61,8 +56,8 @@ export default function MainLayout() {
     [globalFlashMessage.open, globalFlashMessage.close],
   );
 
-  const isUnauthorized = isAuthenticated && !hasAnyRole();
-  const isAuthenticatedAndAuthorized = isAuthenticated && hasAnyRole();
+  const isUnauthorized = isAuthenticated && !isDootUser();
+  const isAuthenticatedAndAuthorized = isAuthenticated && isDootUser();
 
   return (
     <FlashMessageContext.Provider value={flashMessageContextValue}>
