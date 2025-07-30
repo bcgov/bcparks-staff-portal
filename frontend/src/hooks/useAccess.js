@@ -3,7 +3,8 @@ import AccessContext from "@/contexts/AccessContext";
 import { ROLES } from "@/config/permissions";
 
 export default function useAccess() {
-  const { roles, checkAccess, logOut } = useContext(AccessContext);
+  const { roles, checkAccess, logOut, isAuthenticated } =
+    useContext(AccessContext);
 
-  return { roles, checkAccess, ROLES, logOut };
+  return { roles, checkAccess, ROLES, logOut, isAuthenticated };
 }

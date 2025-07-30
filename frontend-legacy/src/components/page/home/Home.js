@@ -43,7 +43,7 @@ export default function Home({ page: { setError } }) {
       <div className="Home" data-testid="Home">
         <div className="container hm-container">
           <h1>Staff web portal</h1>
-          <p>Select the ID you want to use to log into the Staff web portal</p>
+          <p>Use one of the following methods to log in</p>
           <div className="row">
             <div className="col-lg-4"></div>
             <div className="col-lg-4">
@@ -81,7 +81,9 @@ export default function Home({ page: { setError } }) {
                     />
                     <a
                       className="mt-1"
-                      href="https://www.bceid.ca/directories/bluepages/details.aspx?serviceId=7851&eServiceType=all"
+                      href="https://www.bceid.ca/os/?11849"
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
                       <OpenInNew className="me-1" />
                       Register for a BCeID

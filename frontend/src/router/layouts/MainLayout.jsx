@@ -22,6 +22,7 @@ export default function MainLayout() {
     logOut,
     roles: jwtRoles,
     ROLES: dootRoles,
+    isAuthenticated,
   } = useAccess();
   const globalFlashMessage = useFlashMessage();
 
@@ -60,6 +61,9 @@ export default function MainLayout() {
     [globalFlashMessage.open, globalFlashMessage.close],
   );
 
+  const isUnauthorized = isAuthenticated && !hasAnyRole();
+  const isAuthenticatedAndAuthorized = isAuthenticated && hasAnyRole();
+
   return (
     <FlashMessageContext.Provider value={flashMessageContextValue}>
       <UserContext.Provider value={userDetails}>
@@ -89,27 +93,31 @@ export default function MainLayout() {
               </div>
             </Link>
 
-            <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
-              <div className="user-name me-3">{userName}</div>
+            {isAuthenticated && (
+              <>
+                <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
+                  <div className="user-name me-3">{userName}</div>
 
-              <button
-                type="button"
-                onClick={logOut}
-                className="btn btn-text text-white"
-              >
-                Logout
-              </button>
-            </div>
+                  <button
+                    type="button"
+                    onClick={logOut}
+                    className="btn btn-text text-white"
+                  >
+                    Logout
+                  </button>
+                </div>
 
-            <button
-              className="navbar-toggler d-block d-lg-none"
-              type="button"
-              data-toggle="collapse"
-              data-target="#touch-menu"
-              onClick={() => setShowTouchMenu(!showTouchMenu)}
-            >
-              <span className="navbar-toggler-icon"></span>
-            </button>
+                <button
+                  className="navbar-toggler d-block d-lg-none"
+                  type="button"
+                  data-toggle="collapse"
+                  data-target="#touch-menu"
+                  onClick={() => setShowTouchMenu(!showTouchMenu)}
+                >
+                  <span className="navbar-toggler-icon"></span>
+                </button>
+              </>
+            )}
           </header>
 
           <TouchMenu
@@ -131,27 +139,27 @@ export default function MainLayout() {
           )}
 
           <main className="p-0 d-flex flex-column flex-md-row">
-            {(() => {
-              if (!hasAnyRole()) {
-                // Show unauthorized message if user lacks required roles
-                return <Unauthorized />;
-              }
-              // Authenticated user with roles: show sidebar and main content
-              return (
-                <>
-                  <NavSidebar />
-                  <div className="flex-fill">
-                    {userDetails.loading ? (
-                      <div className="container mt-3">
-                        <LoadingBar />
-                      </div>
-                    ) : (
-                      <Outlet />
-                    )}
-                  </div>
-                </>
-              );
-            })()}
+            {/* Use the layout with no sidebar for the login page */}
+            {!isAuthenticated && <Outlet />}
+
+            {/* Show unauthorized message if user lacks required roles */}
+            {isUnauthorized && <Unauthorized />}
+
+            {/* Authenticated user with roles: show sidebar and main content */}
+            {isAuthenticatedAndAuthorized && (
+              <>
+                <NavSidebar />
+                <div className="flex-fill">
+                  {userDetails.loading ? (
+                    <div className="container mt-3">
+                      <LoadingBar />
+                    </div>
+                  ) : (
+                    <Outlet />
+                  )}
+                </div>
+              </>
+            )}
           </main>
 
           <footer className="bcparks-global py-2 py-md-0 d-flex justify-content-md-end align-items-center container-fluid text-bg-primary-nav">
