@@ -28,7 +28,7 @@ export default function MainLayout() {
 
   // Returns true if the user has the "doot-user" role
   function isDootUser() {
-    return jwtRoles.has(dootRoles.DOOT_USER);
+    return jwtRoles.includes(dootRoles.DOOT_USER);
   }
 
   // Fetch the user name to display in the header
