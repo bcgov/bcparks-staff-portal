@@ -10,18 +10,20 @@ import { User, AccessGroup } from "../models/index.js";
  */
 async function usersMiddleware(req, res, next) {
   try {
-    // We need email from keycloak to identify the user
-    if (!req.auth?.email) {
+    // We need the "username" from keycloak to identify the user
+    if (!req.auth?.preferred_username) {
       throw new Error("Authentication data missing");
     }
 
-    const { email, name } = req.auth;
+    // Also get the name (for display)
+    // and email (shown in the CSV export)
+    const { preferred_username: username, email, name } = req.auth;
 
     // Find or create user in the database
     const [user] = await User.findOrCreate({
-      attributes: ["id", "email", "name"],
-      where: { email },
-      defaults: { name },
+      attributes: ["id", "username", "email", "name"],
+      where: { username },
+      defaults: { email, name },
       include: [
         {
           model: AccessGroup,

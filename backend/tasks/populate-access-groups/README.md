@@ -1,17 +1,19 @@
 # populate-access-groups.js
 
-This script populates the `AccessGroup`, `AccessGroupPark`, `User`, and `UserAccessGroup` tables in your database based on data from `agreement.json`.
+This script populates the `AccessGroup`, `AccessGroupPark`, `User`, and `UserAccessGroup` tables in your database based on data from `agreements-with-usernames.json`.
 
 ## What does the script do?
 
 1. **Cleanup Existing Data (optional):**
+
    - Deletes all records from `AccessGroup`, `AccessGroupPark`, and `UserAccessGroup` tables before populating new data.
 
-2. **For each agreement in `agreement.json`:**
-   - **Creates (or finds) an AccessGroup** using the agreement's `id` and `name`.
+2. **For each agreement in `agreements-with-usernames.json`:**
+
+   - **Creates (or updates) an AccessGroup** using the agreement's `id`, and updating the name if it has changed.
    - **Finds Parks** by their ORCS codes and links them to the AccessGroup via `AccessGroupPark`.
-   - **Creates (or finds) Users** using contact emails and names from the agreement.
-   - **Creates UserAccessGroup relations** to link Users to AccessGroups.
+   - **Creates (or finds) Users** using usernames, emails, and names from the agreement data. Skips users without a username.
+   - **Creates UserAccessGroup relations** to link each User to the AccessGroup by username.
 
 3. **Transaction Safety:**
    - All operations are performed inside a transaction. If any error occurs, all changes are rolled back.
@@ -38,5 +40,7 @@ node tasks/populate-access-groups/populate-access-groups.js
 
 - The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project.
 - You can safely run this script multiple times; it will not create duplicates and will update relationships as needed.
-- If you add new agreements, Parks, or Users, re-running this script will add or update any missing or changed entries as needed.
-- The script expects `UserAccessGroup` to use `userEmail` (string) as the foreign key to `User.email`.
+- If you add new agreements or Users, re-running this script will add or update any missing or changed entries as needed.
+- **The script uses username-based relationships:** `UserAccessGroup` uses `username` (string) as the foreign key to `User.username`.
+- **Users without usernames are skipped** - they will not have access until they get proper usernames assigned.
+- The script uses `upsert` for AccessGroups and `findOrCreate` for relationships to ensure data consistency.

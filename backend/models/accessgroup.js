@@ -15,8 +15,8 @@ export default (sequelize) => {
       AccessGroup.belongsToMany(models.User, {
         through: models.UserAccessGroup,
         foreignKey: "accessGroupId",
-        otherKey: "userEmail",
-        targetKey: "email",
+        otherKey: "username",
+        targetKey: "username",
         as: "users",
       });
 

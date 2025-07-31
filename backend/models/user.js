@@ -15,17 +15,17 @@ export default (sequelize) => {
 
       // Each User can have many UserAccessGroup associations to assocate with many AccessGroups
       User.hasMany(models.UserAccessGroup, {
-        foreignKey: "userEmail",
-        sourceKey: "email",
+        foreignKey: "username",
+        sourceKey: "username",
         as: "userAccessGroups",
       });
 
       // Each User can associate with many AccessGroups through UserAccessGroups
       User.belongsToMany(models.AccessGroup, {
         through: models.UserAccessGroup,
-        foreignKey: "userEmail",
+        foreignKey: "username",
         otherKey: "accessGroupId",
-        sourceKey: "email",
+        sourceKey: "username",
         as: "accessGroups",
       });
     }
@@ -33,6 +33,11 @@ export default (sequelize) => {
   User.init(
     {
       name: DataTypes.STRING,
+      username: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+      },
       email: DataTypes.STRING,
       staff: DataTypes.BOOLEAN,
     },

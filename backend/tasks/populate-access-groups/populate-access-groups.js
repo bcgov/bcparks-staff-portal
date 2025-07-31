@@ -11,7 +11,10 @@ import {
   UserAccessGroup,
 } from "../../models/index.js";
 
-const jsonPath = path.join(import.meta.dirname, "agreement.json");
+const jsonPath = path.join(
+  import.meta.dirname,
+  "agreements-with-usernames.json",
+);
 const agreements = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
 export async function cleanupAccessGroupData(transaction) {
@@ -43,16 +46,20 @@ export async function populateAccessGroups() {
     // await cleanupAccessGroupData(transaction);
 
     for (const agreement of agreements) {
+      const accessGroupId = agreement.id;
+
       // 1 - create AccessGroup based on id and name
-      const [accessGroup] = await AccessGroup.findOrCreate({
-        where: { id: agreement.id },
-        defaults: { name: agreement.agreement },
-        transaction,
-      });
+      await AccessGroup.upsert(
+        {
+          id: accessGroupId,
+          name: agreement.name,
+        },
+        { transaction },
+      );
 
       // 2 - find Parks by orcs
       const parks = await Park.findAll({
-        where: { orcs: { [Op.in]: agreement.orcs } },
+        where: { orcs: { [Op.in]: agreement.parks.map((park) => park.orcs) } },
         transaction,
       });
 
@@ -60,99 +67,39 @@ export async function populateAccessGroups() {
       for (const park of parks) {
         await AccessGroupPark.findOrCreate({
           where: {
-            accessGroupId: accessGroup.id,
+            accessGroupId,
             parkOrcs: park.orcs,
           },
           defaults: {
-            accessGroupId: accessGroup.id,
+            accessGroupId,
             parkOrcs: park.orcs,
           },
           transaction,
         });
       }
 
-      // 4 - create User based on contactEmails and contactNames
-      // 5 - create UserAccessGroup relations
-      const emails = Array.isArray(agreement.contactEmails)
-        ? agreement.contactEmails
-        : [];
-      const names = Array.isArray(agreement.contactNames)
-        ? agreement.contactNames
-        : [];
+      // 4 - create User records and relations for users with required details
+      const completeUsers = agreement.users.filter((user) => !!user.username);
 
-      // if no email, skip User creation
-      if (emails.length === 0) continue;
-      // only emails exist
-      else if (emails.length > 0 && names.length === 0) {
-        for (const email of emails) {
-          const [user] = await User.findOrCreate({
-            where: { email },
-            defaults: { name: null, email },
-            transaction,
-          });
+      for (const user of completeUsers) {
+        await User.findOrCreate({
+          where: { username: user.username },
+          defaults: { name: user.name, email: user.email },
+          transaction,
+        });
 
-          await UserAccessGroup.findOrCreate({
-            where: {
-              userEmail: user.email,
-              accessGroupId: accessGroup.id,
-            },
-            defaults: {
-              userEmail: user.email,
-              accessGroupId: accessGroup.id,
-            },
-            transaction,
-          });
-        }
-      }
-
-      // both emails and names exist, use matching logic
-      else {
-        const userNameMap = {};
-
-        // if only one email and one name, map them directly
-        // e.g. "contactEmails": ["jane@email.com"], "contactNames": ["Jane Doe"]
-        // User {email: "jane@email.com", name: "Jane Doe"}
-        if (emails.length === 1 && names.length === 1) {
-          userNameMap[emails[0]] = names[0];
-
-          // if multiple emails and one name, map all emails to that name
-          // e.g. "contactEmails": ["jane@email.com", "john@email.com"], "contactNames": ["Jane Doe"]
-          // User {email: "jane@email.com", name: "Jane Doe"}
-          // User {email: "john@email.com", name: "Jane Doe"}
-        } else if (emails.length > 1 && names.length === 1) {
-          for (const email of emails) {
-            userNameMap[email] = names[0];
-          }
-
-          // if multiple emails and names, set names to empty
-          // e.g. "contactEmails": ["jane@email.com", "john@email.com"], "contactNames": ["Jane Doe", "Alice", "John Smith"]
-          // User {email: "jane@email.com", name: ""}
-          // User {email: "john@email.com", name: ""}
-        } else {
-          for (const email of emails) {
-            userNameMap[email] = "";
-          }
-        }
-
-        for (const email of emails) {
-          const [user] = await User.findOrCreate({
-            where: { email },
-            defaults: { name: userNameMap[email] || null, email },
-            transaction,
-          });
-
-          await UserAccessGroup.findOrCreate({
-            where: {
-              userEmail: user.email,
-              accessGroupId: accessGroup.id,
-            },
-            defaults: {
-              userEmail: user.email,
-              accessGroupId: accessGroup.id,
-            },
-            transaction,
-          });
-        }
+        // 5 - create UserAccessGroup relations for the user
+        await UserAccessGroup.findOrCreate({
+          where: {
+            username: user.username,
+            accessGroupId,
+          },
+          defaults: {
+            username: user.username,
+            accessGroupId,
+          },
+          transaction,
+        });
       }
     }
 
