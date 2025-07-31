@@ -59,7 +59,7 @@ export async function populateAccessGroups() {
 
       // 2 - find Parks by orcs
       const parks = await Park.findAll({
-        where: { orcs: { [Op.in]: agreement.parks.map((p) => p.orcs) } },
+        where: { orcs: { [Op.in]: agreement.parks.map((park) => park.orcs) } },
         transaction,
       });
 
