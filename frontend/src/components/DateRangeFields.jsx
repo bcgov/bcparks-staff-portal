@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
 import { startOfYear, endOfYear, addYears } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -12,6 +13,7 @@ function DateRange({
   dateRange,
   updateDateRange,
   removeDateRange,
+  removable = true,
   isDateRangeAnnual,
 }) {
   // A unique ID for template loops and selectors
@@ -72,7 +74,11 @@ function DateRange({
       </div>
 
       <button
-        className="btn btn-text text-link align-self-end"
+        // Disable and hide the remove button if this is the first/only date range
+        className={classNames("btn btn-text text-link align-self-end", {
+          invisible: !removable,
+        })}
+        disabled={!removable}
         onClick={() => removeDateRange(dateRange)}
       >
         <FontAwesomeIcon icon={faXmark} />
@@ -94,6 +100,8 @@ DateRange.propTypes = {
   }).isRequired,
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
+  // Allow removal only if it's not the first date range
+  removable: PropTypes.bool,
   isDateRangeAnnual: PropTypes.bool.isRequired,
 };
 
@@ -106,6 +114,7 @@ export default function DateRangeFields({
   dateType,
   dateRangeAnnuals,
   updateDateRangeAnnual,
+  optional = false,
 }) {
   // Constants
   // Tier 1 only allows 1 date range
@@ -148,12 +157,13 @@ export default function DateRangeFields({
 
   return (
     <>
-      {dateRanges.map((dateRange) => (
+      {dateRanges.map((dateRange, index) => (
         <DateRange
           key={dateRange.id || dateRange.tempId}
           dateRange={dateRange}
           updateDateRange={updateDateRange}
           removeDateRange={removeDateRange}
+          removable={optional || index > 0}
           isDateRangeAnnual={isDateRangeAnnual}
         />
       ))}
@@ -211,4 +221,5 @@ DateRangeFields.propTypes = {
   }).isRequired,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
+  optional: PropTypes.bool,
 };

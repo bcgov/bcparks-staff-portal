@@ -13,6 +13,7 @@ import PreviousDates from "@/components/SeasonForms/PreviousDates";
 
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
+import isDateTypeOptional from "@/lib/isDateTypeOptional";
 
 export default function ParkSeasonForm({
   season,
@@ -215,6 +216,10 @@ export default function ParkSeasonForm({
               </TooltipWrapper>
             </h6>
 
+            {isDateTypeOptional(dateType.name, "park") && (
+              <div className="my-2 text-secondary-grey">(Optional)</div>
+            )}
+
             <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
 
             <DateRangeFields
@@ -226,6 +231,7 @@ export default function ParkSeasonForm({
               removeDateRange={removeDateRange}
               dateRangeAnnuals={dateRangeAnnuals}
               updateDateRangeAnnual={updateDateRangeAnnual}
+              optional={isDateTypeOptional(dateType.name, "park")}
             />
           </div>
         ))}

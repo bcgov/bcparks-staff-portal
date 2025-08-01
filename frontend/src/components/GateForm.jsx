@@ -9,6 +9,8 @@ import RadioButtonGroup from "@/components/RadioButtonGroup";
 import TimeRangeForm from "@/components/TimeRangeForm";
 import TooltipWrapper from "@/components/TooltipWrapper";
 
+import isDateTypeOptional from "@/lib/isDateTypeOptional";
+
 export default function GateForm({
   gateTitle,
   gateDescription,
@@ -73,6 +75,10 @@ export default function GateForm({
                   </TooltipWrapper>
                 </h6>
 
+                {isDateTypeOptional(dateType.name, level) && (
+                  <div className="my-2 text-secondary-grey">(Optional)</div>
+                )}
+
                 <PreviousDates dateRanges={previousDateRanges} />
 
                 <DateRangeFields
@@ -84,6 +90,7 @@ export default function GateForm({
                   removeDateRange={removeDateRange}
                   dateRangeAnnuals={dateRangeAnnuals}
                   updateDateRangeAnnual={updateDateRangeAnnual}
+                  optional={isDateTypeOptional(dateType.name, level)}
                 />
               </div>
             )}
@@ -99,8 +106,10 @@ export default function GateForm({
               >
                 <FontAwesomeIcon icon={faCircleInfo} />
               </TooltipWrapper>{" "}
-              (Optional)
             </h6>
+
+            <div className="my-2 text-secondary-grey">(Optional)</div>
+
             <p>Hours remain the same every year unless updated.</p>
             <Form>
               <Form.Check
