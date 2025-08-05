@@ -102,6 +102,18 @@ export async function fetchAllModels() {
       items: [],
     },
     {
+      endpoint: "/park-operation-sub-area-dates",
+      model: "park-operation-sub-area-date",
+      fields: [{ relation: "parkOperationSubArea", fields: ["id"] }],
+      items: [],
+    },
+    {
+      endpoint: "/park-feature-dates",
+      model: "park-feature-date",
+      fields: [{ relation: "parkOperationSubArea", fields: ["id"] }],
+      items: [],
+    },
+    {
       endpoint: "/protected-areas",
       model: "protected-area",
       fields: ["parkFacilities", "parkOperation", "managementAreas"],

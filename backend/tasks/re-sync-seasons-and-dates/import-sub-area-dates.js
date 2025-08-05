@@ -53,7 +53,6 @@ export async function importSubAreaDates() {
     const currentYear = new Date().getFullYear();
 
     for (const subAreaDate of subAreaDatesData.items) {
-      console.log("SUB AREA DATES:", subAreaDatesData);
       console.log("SUB AREA DATE:", subAreaDate);
       if (!subAreaDate.isActive) continue;
 

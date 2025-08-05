@@ -50,7 +50,7 @@ Imports dates from Strapi's `park-feature-date` collection:
 From your project root, run:
 
 ```sh
-node backend/tasks/re-sync-seasons-and-dates/re-sync-season-and-dates.js
+node tasks/re-sync-seasons-and-dates/re-sync-season-and-dates.js
 ```
 
 ---

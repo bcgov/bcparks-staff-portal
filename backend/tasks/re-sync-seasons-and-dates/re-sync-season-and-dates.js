@@ -4,9 +4,9 @@ import { importParkFeatureDates } from "./import-park-feature-dates.js";
 
 async function reSyncSeasonsAndDates() {
   try {
-    console.log("Starting: Delete all Seasons and DateRanges...");
+    console.log("Starting: Delete all Seasons, SeasonChangeLogs, and DateRanges...");
     await deleteSeasonsAndDates();
-    console.log("Finished: Delete all Seasons and DateRanges.\n");
+    console.log("Finished: Delete all Seasons, SeasonChangeLogs, and DateRanges.\n");
 
     console.log("Starting: Import sub-area dates...");
     await importSubAreaDates();
