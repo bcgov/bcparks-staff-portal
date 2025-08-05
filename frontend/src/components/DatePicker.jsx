@@ -5,6 +5,7 @@ import DatePicker from "react-datepicker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
+import ErrorSlot from "@/components/ValidationErrorSlot";
 
 function DootDatePickerComponent({
   id,
@@ -35,30 +36,34 @@ function DootDatePickerComponent({
 
   return (
     <>
-      <DatePicker
-        id={`date-range-${id}-${dateField}`}
-        portalId={`date-picker-portal-${dateField}`}
-        minDate={minDate}
-        maxDate={maxDate}
-        className={classNames("form-control", dateField)}
-        selected={adjustedLocalDate}
-        onChange={(newDate) => onDateChange(newDate)}
-        onBlur={() => {
-          // Update the `dates` object on blur
-          onSelect(dateField, adjustedLocalDate);
-        }}
-        onKeyDown={(event) => {
-          // Update the `dates` object on Enter
-          if (event.key === "Enter" && event.target.tagName === "INPUT") {
+      <div className="input-with-append">
+        <DatePicker
+          id={`date-range-${id}-${dateField}`}
+          portalId={`date-picker-portal-${dateField}`}
+          minDate={minDate}
+          maxDate={maxDate}
+          className={classNames("form-control", dateField)}
+          selected={adjustedLocalDate}
+          onChange={(newDate) => onDateChange(newDate)}
+          onBlur={() => {
+            // Update the `dates` object on blur
             onSelect(dateField, adjustedLocalDate);
-          }
-        }}
-        dateFormat="EEE, MMM d, yyyy"
-        showMonthYearDropdown
-        disabled={disabled}
-      />
+          }}
+          onKeyDown={(event) => {
+            // Update the `dates` object on Enter
+            if (event.key === "Enter" && event.target.tagName === "INPUT") {
+              onSelect(dateField, adjustedLocalDate);
+            }
+          }}
+          dateFormat="EEE, MMM d, yyyy"
+          showMonthYearDropdown
+          disabled={disabled}
+        />
 
-      <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
+        <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
+      </div>
+
+      <ErrorSlot element={`date-range-${id}-${dateField}`} />
     </>
   );
 }
