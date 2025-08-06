@@ -108,6 +108,7 @@ export default function DateRangeFields({
   updateDateRangeAnnual,
 }) {
   // Constants
+  // Tier 1 only allows 1 date range
   const hasMultipleDates = dateType.name !== "Tier 1";
 
   // Functions
