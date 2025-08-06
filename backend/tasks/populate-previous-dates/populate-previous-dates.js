@@ -11,7 +11,7 @@ import { Park, Season, DateRange, DateType } from "../../models/index.js";
 const jsonPath = path.join(import.meta.dirname, "previous-dates.json");
 const dateData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
 
-export async function populateParkGateDatesFromJson() {
+export async function populatePreviousDates() {
   const transaction = await Season.sequelize.transaction();
 
   try {
@@ -116,7 +116,7 @@ export async function populateParkGateDatesFromJson() {
 
 // run directly
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  populateParkGateDatesFromJson().catch((err) => {
+  populatePreviousDates().catch((err) => {
     console.error("Failed to populate Season and DateRange from JSON:", err);
     throw err;
   });

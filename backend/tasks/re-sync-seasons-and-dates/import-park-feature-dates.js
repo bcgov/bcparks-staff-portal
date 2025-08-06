@@ -43,8 +43,6 @@ export async function importParkFeatureDates() {
     const currentYear = new Date().getFullYear();
 
     for (const featureDate of featureDatesData.items) {
-      console.log("FEATURE DATE:", featureDate);
-      // const featureDate = featureDate.attributes || featureDate;
       if (!featureDate.isActive) continue;
 
       const operatingYear = featureDate.operatingYear;
@@ -104,6 +102,7 @@ export async function importParkFeatureDates() {
         // check for duplicate DateRange
         const existingDateRange = await DateRange.findOne({
           where: {
+            dateableId: feature.dateableId,
             seasonId: season.id,
             dateTypeId: dateTypeObj.id,
             startDate: new Date(featureDate.startDate),
@@ -117,6 +116,7 @@ export async function importParkFeatureDates() {
 
         let dateRange = await DateRange.findOne({
           where: {
+            dateableId: feature.dateableId,
             seasonId: season.id,
             dateTypeId: dateTypeObj.id,
           },

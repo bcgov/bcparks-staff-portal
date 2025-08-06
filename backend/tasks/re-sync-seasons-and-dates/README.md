@@ -1,51 +1,51 @@
 # Season and Date Re-Sync Scripts
 
 This folder contains scripts to manage and synchronize `Season` and `DateRange` data in the BC Parks Staff Portal database.
-These scripts are used to delete all existing season/date data and re-import it from Strapi sources.
+These scripts are used to delete all existing season/date data and re-import it from Strapi sources and other data files.
 
----
+## What do these scripts do?
 
-## Scripts Overview
+The main re-sync script (`re-sync-season-and-dates.js`) performs the following steps:
 
-### 1. `delete-seasons-and-dates.js`
+1. **Deletes all existing Seasons, SeasonChangeLogs, and DateRanges**
+   Ensures a clean slate before re-importing data.
 
-Deletes **all** entries from the `Season` and `DateRange` tables.
-Use this to clear out old or incorrect data before re-importing.
+2. **Creates blank seasons for 2025**
+   Runs the `create-seasons.js` script as a child process to ensure all necessary seasons exist for the upcoming operating year.
 
-### 2. `import-sub-area-dates.js`
+3. **Imports sub-area dates from Strapi**
 
-Imports dates from Strapi's `park-operation-sub-area-date` collection:
+   - Only imports entries where `isActive` is `true`.
+   - Creates or updates `Season` records based on `operatingYear`.
+   - Sets `Season.editable` to `false` if the year is in the past.
+   - Updates `Season.readyToPublish` and `Season.status`.
+   - Finds the correct `publishableId` from `Feature` or `ParkArea`.
+   - Creates or updates `DateRange` records for service and reservation dates.
 
-- Only imports entries where `isActive` is `true`.
-- Creates or updates `Season` records based on `operatingYear`.
-- Sets `Season.editable` to `false` if the year is in the past.
-- Updates `Season.readyToPublish` and `Season.status`.
-- Finds the correct `publishableId` from `Feature` or `ParkArea`.
-- Creates or updates `DateRange` records for service and reservation dates.
+4. **Imports park feature dates from Strapi**
 
-### 3. `import-park-feature-dates.js`
+   - Only imports entries where `isActive` is `true`.
+   - Creates or updates `Season` records based on `operatingYear`.
+   - Sets `Season.editable` to `false` if the year is in the past.
+   - Updates `Season.readyToPublish` and `Season.status`.
+   - Finds the correct `publishableId` from `Feature` or `ParkArea`.
+   - Creates or updates `DateRange` records for each feature date, using the correct `DateType`.
 
-Imports dates from Strapi's `park-feature-date` collection:
+5. **Imports park operating (gate) dates from Strapi**
 
-- Only imports entries where `isActive` is `true`.
-- Creates or updates `Season` records based on `operatingYear`.
-- Sets `Season.editable` to `false` if the year is in the past.
-- Updates `Season.readyToPublish` and `Season.status`.
-- Finds the correct `publishableId` from `Feature` or `ParkArea`.
-- Creates or updates `DateRange` records for each feature date, using the correct `DateType`.
+   - For each Park with a `publishableId`, finds all Strapi `park-operation-date` entries where `protectedArea.orcs` matches the Park's `orcs`.
+   - For each unique `operatingYear`, creates or finds a `Season`.
+   - For each Season, creates or updates a `DateRange` for the `"Operating"` date type.
+   - All operations are performed inside a transaction for safety.
 
-### 4. `re-sync-season-and-dates.js`
+6. **Imports previous dates from JSON**
 
-**Main runner script** that executes the above scripts in order:
+   - Imports previous dates from a JSON file and populates `Season` and `DateRange` records for historical data.
 
-1. Deletes all seasons and date ranges.
-2. Imports sub-area dates.
-3. Imports park feature dates.
-4. Logs progress before and after each step.
+7. **Logs progress before and after each step**
+   - Each step logs its start and completion for easier tracking and troubleshooting.
 
----
-
-## How to Run
+## How to run
 
 From your project root, run:
 
@@ -53,18 +53,25 @@ From your project root, run:
 node tasks/re-sync-seasons-and-dates/re-sync-season-and-dates.js
 ```
 
----
+This will execute all steps in order, fully resetting and re-importing all season and date data.
+
+## Output
+
+- The script logs progress before and after each step.
+- On success, you will see `"All re-sync season and date scripts completed."`
+- If any error occurs, the transaction is rolled back and an error message is printed.
+
+## Why is this useful?
+
+- Ensures every Park, ParkArea, and Feature with a `publishableId` has a `Season` for each operating year found in Strapi or the data files.
+- Ensures each Season has the correct `DateRange` records, matching Strapi and historical data.
+- Keeps your database in sync with Strapi's park operation, feature, and sub-area date data, as well as historical records.
+- You can safely run this script multiple times; it will not create duplicates and will update date ranges as needed.
 
 ## Notes
 
+- The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project.
 - All scripts use database transactions for safety.
-- You can safely re-run these scripts to refresh season and date data from Strapi.
 - Make sure your Strapi API and database are accessible before running.
-
----
-
-## Troubleshooting
-
-- If you encounter errors, check the console output for details.
-- Ensure your Sequelize models and Strapi endpoints are up-to-date.
+- If you add new Parks, ParkAreas, Features, or Strapi data, re-running this script will add or update any missing or changed `Season` and `DateRange` entries as needed.
 - Data will be deleted and re-imported, so backup if needed.

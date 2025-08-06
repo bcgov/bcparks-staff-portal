@@ -34,7 +34,7 @@ export async function importSubAreaDates() {
       parkAreas.map((parkArea) => [String(parkArea.id), parkArea]),
     );
 
-    // get DateTypes for Operation and Reservation
+    // get DateTypes for Operation, Reservation, and Backcountry
     const operationDateType = await DateType.findOne({
       where: { name: "Operation", featureLevel: true },
       transaction,
@@ -43,8 +43,12 @@ export async function importSubAreaDates() {
       where: { name: "Reservation", featureLevel: true },
       transaction,
     });
+    const backcountryDateType = await DateType.findOne({
+      where: { name: "Backcountry registration", featureLevel: true },
+      transaction,
+    });
 
-    if (!operationDateType || !reservationDateType) {
+    if (!operationDateType || !reservationDateType || !backcountryDateType) {
       throw new Error(
         'Required DateTypes "Operation" or "Reservation" not found.',
       );
@@ -53,7 +57,6 @@ export async function importSubAreaDates() {
     const currentYear = new Date().getFullYear();
 
     for (const subAreaDate of subAreaDatesData.items) {
-      console.log("SUB AREA DATE:", subAreaDate);
       if (!subAreaDate.isActive) continue;
 
       const operatingYear = subAreaDate.operatingYear;
@@ -108,6 +111,7 @@ export async function importSubAreaDates() {
       if (subAreaDate.serviceStartDate && subAreaDate.serviceEndDate) {
         let dateRange = await DateRange.findOne({
           where: {
+            dateableId: feature.dateableId,
             seasonId: season.id,
             dateTypeId: operationDateType.id,
           },
@@ -139,10 +143,16 @@ export async function importSubAreaDates() {
 
       // reservation dates (Reservation)
       if (subAreaDate.reservationStartDate && subAreaDate.reservationEndDate) {
+        // use backcountryDateType if subArea.hasBackcountryPermits is true
+        const chosenDateType = subArea.hasBackcountryPermits
+          ? backcountryDateType
+          : reservationDateType;
+
         let dateRange = await DateRange.findOne({
           where: {
+            dateableId: feature.dateableId,
             seasonId: season.id,
-            dateTypeId: reservationDateType.id,
+            dateTypeId: chosenDateType.id,
           },
           transaction,
         });
@@ -152,7 +162,7 @@ export async function importSubAreaDates() {
             {
               dateableId: feature.dateableId,
               seasonId: season.id,
-              dateTypeId: reservationDateType.id,
+              dateTypeId: chosenDateType.id,
               startDate: subAreaDate.reservationStartDate,
               endDate: subAreaDate.reservationEndDate,
             },
