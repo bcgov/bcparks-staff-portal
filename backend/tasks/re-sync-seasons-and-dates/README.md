@@ -10,7 +10,7 @@ The main re-sync script (`re-sync-season-and-dates.js`) performs the following s
 1. **Deletes all existing Seasons, SeasonChangeLogs, and DateRanges**
    Ensures a clean slate before re-importing data.
 
-2. **Creates blank seasons for 2025**
+2. **Creates blank seasons for 2026**
    Runs the `create-seasons.js` script as a child process to ensure all necessary seasons exist for the upcoming operating year.
 
 3. **Imports sub-area dates from Strapi**
