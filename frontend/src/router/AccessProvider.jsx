@@ -32,7 +32,15 @@ export default function AccessProvider({ children, auth }) {
   async function logOut() {
     auth.stopSilentRenew();
     await auth.clearStaleState();
-    await auth.signoutRedirect();
+
+    auth
+      .removeUser()
+      .then(() => {
+        auth.signoutRedirect();
+      })
+      .catch(() => {
+        auth.signoutRedirect();
+      });
   }
 
   // Provide the context value to child components
