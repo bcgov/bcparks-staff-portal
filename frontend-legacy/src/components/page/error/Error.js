@@ -47,14 +47,23 @@ export default function Error({ page: { error } }) {
     } else if (error.message === "Unauthorized") {
       errorContent = (
         <div>
-          <h1>Staff web portal</h1>
+          <h1>You are not authorized to log in yet</h1>
           <br />
           <p>
-            Please contact the web team at{" "}
-            <a href="mailto:parksweb@gov.bc.ca?subject=Access%20to%20BC%20Parks%20Staff%20Portal">
+            If this is your first time logging in to the staff web portal dates
+            of operation tool, you&#39;re in the right place! Email us at{" "}
+            <a href="mailto:parksweb@gov.bc.ca?subject=First%20login%20to%20Staff%20Portal">
               parksweb@gov.bc.ca
             </a>{" "}
-            to request access.
+            and we&#39;ll set up your account permissions.
+          </p>
+          <p>
+            If you&#39;re here for another reason and you&#39;re unable to log
+            in, contact{" "}
+            <a href="mailto:parksweb@gov.bc.ca?subject=Unable%20to%20log%20into%20Staff%20Portal">
+              parksweb@gov.bc.ca
+            </a>{" "}
+            and we&#39;ll help you out.
           </p>
         </div>
       );
