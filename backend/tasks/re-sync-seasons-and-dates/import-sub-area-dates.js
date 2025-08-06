@@ -50,7 +50,7 @@ export async function importSubAreaDates() {
 
     if (!operationDateType || !reservationDateType || !backcountryDateType) {
       throw new Error(
-        'Required DateTypes "Operation" or "Reservation" not found.',
+        'Required DateTypes "Operation", "Reservation", or "Backcountry registration" not found.',
       );
     }
 

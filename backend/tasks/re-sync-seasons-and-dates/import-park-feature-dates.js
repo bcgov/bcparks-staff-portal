@@ -99,50 +99,47 @@ export async function importParkFeatureDates() {
 
       // 2 - update or create DateRange
       if (featureDate.startDate && featureDate.endDate) {
-        // check for duplicate DateRange
-        const existingDateRange = await DateRange.findOne({
-          where: {
-            dateableId: feature.dateableId,
-            seasonId: season.id,
-            dateTypeId: dateTypeObj.id,
-            startDate: new Date(featureDate.startDate),
-            endDate: new Date(featureDate.endDate),
-          },
-          transaction,
-        });
-
-        // skip creation if duplicate found
-        if (existingDateRange) continue;
-
-        let dateRange = await DateRange.findOne({
-          where: {
-            dateableId: feature.dateableId,
-            seasonId: season.id,
-            dateTypeId: dateTypeObj.id,
-          },
-          transaction,
-        });
-
-        if (!dateRange) {
-          dateRange = await DateRange.create(
-            {
-              dateableId: feature.dateableId,
+        // fetch all DateRanges for this season and feature only once per loop iteration
+        if (!feature.dateRangesCache) {
+          const allRanges = await DateRange.findAll({
+            where: {
               seasonId: season.id,
-              dateTypeId: dateTypeObj.id,
-              startDate: featureDate.startDate,
-              endDate: featureDate.endDate,
+              dateableId: feature.dateableId,
             },
-            { transaction },
-          );
-        } else {
-          dateRange.dateableId = feature.dateableId;
-          dateRange.startDate = new Date(featureDate.startDate);
-          dateRange.endDate = new Date(featureDate.endDate);
-          await dateRange.save({ transaction });
+            transaction,
+          });
+
+          feature.dateRangesCache = allRanges;
         }
 
+        // check for duplicate DateRange
+        const exists = feature.dateRangesCache.some(
+          (dateRange) =>
+            dateRange.dateTypeId === dateTypeObj.id &&
+            new Date(dateRange.startDate).toISOString() ===
+              new Date(featureDate.startDate).toISOString() &&
+            new Date(dateRange.endDate).toISOString() ===
+              new Date(featureDate.endDate).toISOString(),
+        );
+
+        if (exists) continue;
+
+        // otherwise, create the DateRange and add to cache
+        const newRange = await DateRange.create(
+          {
+            dateableId: feature.dateableId,
+            seasonId: season.id,
+            dateTypeId: dateTypeObj.id,
+            startDate: featureDate.startDate,
+            endDate: featureDate.endDate,
+          },
+          { transaction },
+        );
+
+        feature.dateRangesCache.push(newRange);
+
         console.log(
-          `Processed feature date range for feature ${feature.id}: ${dateRange.startDate} to ${dateRange.endDate} (${dateTypeName})`,
+          `Processed feature date range for feature ${feature.id}: ${featureDate.startDate} to ${featureDate.endDate} (${dateTypeName})`,
         );
       }
     }
