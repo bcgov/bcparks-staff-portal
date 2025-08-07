@@ -104,6 +104,13 @@ a:not(.btn):focus {
   }
 }
 
+// custom bootstrap text color: "secondary-grey"
+// (The Bootstrap theme's "secondary" color is blue.
+// This uses the dark grey color from the design tokens.)
+.text-secondary-grey {
+  color: var(--typography-color-secondary) !important;
+}
+
 // override bootstrap button disabled styles
 .btn:disabled,
 .btn.disabled {

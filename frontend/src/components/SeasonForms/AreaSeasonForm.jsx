@@ -20,6 +20,7 @@ import PreviousDates from "@/components/SeasonForms/PreviousDates";
 
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
+import isDateTypeOptional from "@/lib/isDateTypeOptional";
 
 // Individual Area-Feature form section
 function FeatureFormSectionComponent({
@@ -45,6 +46,10 @@ function FeatureFormSectionComponent({
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>
           </h6>
+
+          {isDateTypeOptional(dateType.name, "feature") && (
+            <div className="my-2 text-secondary-grey">(Optional)</div>
+          )}
 
           {/* Show previous dates for this featureId/dateableId */}
           <PreviousDates
@@ -72,6 +77,7 @@ function FeatureFormSectionComponent({
             }
             dateRangeAnnuals={dateRangeAnnuals}
             updateDateRangeAnnual={updateDateRangeAnnual}
+            optional={isDateTypeOptional(dateType.name, "feature")}
           />
         </div>
       ))}
@@ -468,6 +474,10 @@ export default function AreaSeasonForm({
                   </TooltipWrapper>
                 </h6>
 
+                {isDateTypeOptional(dateType.name, "parkArea") && (
+                  <div className="my-2 text-secondary-grey">(Optional)</div>
+                )}
+
                 <PreviousDates
                   dateRanges={previousAreaDatesByType?.[dateType.name]}
                 />
@@ -481,6 +491,7 @@ export default function AreaSeasonForm({
                   removeDateRange={removeAreaDateRange}
                   dateRangeAnnuals={dateRangeAnnuals}
                   updateDateRangeAnnual={updateDateRangeAnnual}
+                  optional={isDateTypeOptional(dateType.name, "parkArea")}
                 />
               </div>
             ))}
