@@ -211,7 +211,6 @@ const SeasonResource = {
     listProperties: [
       "id",
       "publishableId",
-      "featureTypeId",
       "operatingYear",
       "status",
       "readyToPublish",

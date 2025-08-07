@@ -25,7 +25,6 @@ function seasonModel(minYear, required = true) {
     attributes: [
       "id",
       "publishableId",
-      "featureTypeId",
       "status",
       "readyToPublish",
       "operatingYear",
