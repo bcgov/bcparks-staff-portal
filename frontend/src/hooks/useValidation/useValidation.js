@@ -93,6 +93,11 @@ function validate(seasonData, seasonContext) {
  * - submitted: boolean indicating if the form has been submitted
  * - notes: internal notes text
  * @returns {Object} An object containing:
+ * - {boolean} isValid Whether the form is valid (no errors)
+ * - {Object} groupedErrors Errors grouped by element for display
+ * - {Array} errors Array of validation error objects
+ * - {Object} elements Constants for named validation error slots in the UI
+ * - {Function} validateForm Function to manually validate the form and throw if errors exist
  */
 export default function useValidation(seasonData, context) {
   // Re-validate when any form value changes, and update the errors array
