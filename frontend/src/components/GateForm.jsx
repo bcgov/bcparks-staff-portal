@@ -8,8 +8,10 @@ import PreviousDates from "@/components/SeasonForms/PreviousDates";
 import RadioButtonGroup from "@/components/RadioButtonGroup";
 import TimeRangeForm from "@/components/TimeRangeForm";
 import TooltipWrapper from "@/components/TooltipWrapper";
+import ErrorSlot from "@/components/ValidationErrorSlot";
 
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 export default function GateForm({
   gateTitle,
@@ -41,6 +43,8 @@ export default function GateForm({
     }
   }
 
+  const { elements } = useValidationContext();
+
   return (
     <div className="row mb-4">
       <div className="col-lg-6">
@@ -59,6 +63,8 @@ export default function GateForm({
               updateGateDetail({ hasGate: value });
             }}
           />
+
+          <ErrorSlot element={elements.HAS_GATE} />
         </div>
         {gateDetail.hasGate && (
           <div>
@@ -135,6 +141,8 @@ export default function GateForm({
                 updateGateDetail={updateGateDetail}
               />
             </Form>
+
+            <ErrorSlot element={elements.GATE_TIMES} />
           </div>
         )}
       </div>

@@ -89,7 +89,7 @@ async function updateStatus(
  * Returns the previous Season's dates for a given current Season.
  * @param {Season} currentSeason The current season object with operatingYear and publishableId
  * @param {Object} dateTypeWhere Optional where clause for filtering DateTypes
- * @returns {Season} The previous season model with its Dateable and DateRanges
+ * @returns {Array} Array with any DateRanges from the previous Season
  */
 async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
   try {

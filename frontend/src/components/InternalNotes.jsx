@@ -1,7 +1,10 @@
 import PropTypes from "prop-types";
 import classNames from "classnames";
 
+import ErrorSlot from "@/components/ValidationErrorSlot";
+
 import { formatDateShort } from "@/lib/utils";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 import "./InternalNotes.scss";
 
@@ -10,10 +13,15 @@ function InternalNotes({
   notes = "",
   setNotes,
   previousNotes = [],
+  optional = true,
 }) {
+  const { elements } = useValidationContext();
+
   return (
     <div className="internal-notes mb-4">
       <h3>Internal notes</h3>
+
+      {optional && <div className="my-2 text-secondary-grey">(Optional)</div>}
 
       {previousNotes.map((previousNote) => (
         <div className="previous-note" key={previousNote.id}>
@@ -54,6 +62,9 @@ function InternalNotes({
           })}
         ></textarea>
       </div>
+
+      <ErrorSlot element={elements.INTERNAL_NOTES} />
+
       <div>
         <small>Visible to all BC Parks staff and Park Operators</small>
       </div>
@@ -78,4 +89,5 @@ InternalNotes.propTypes = {
       }),
     }),
   ),
+  optional: PropTypes.bool,
 };
