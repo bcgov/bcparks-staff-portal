@@ -28,6 +28,15 @@ import {
 // First come 2: 2025-10-13 to 2025-10-30
 // => From Reservation end date plus 1 to Operation end date minus 1
 
+function isFCFSFeatureType(featureTypeName) {
+  if (!featureTypeName) return false;
+  // Handles both Sequelize instance and plain object
+  return (
+    featureTypeName === "Frontcountry campground" ||
+    featureTypeName === "Walk-in camping"
+  );
+}
+
 export async function createFirstComeFirstServedDateRange(
   seasonId,
   transaction = null,
@@ -70,9 +79,7 @@ export async function createFirstComeFirstServedDateRange(
     // Find any feature with the correct type
     const matchedFeature = parkArea.features.find(
       (feature) =>
-        feature.featureType &&
-        (feature.featureType.name === "Frontcountry campground" ||
-          feature.featureType.name === "Walk-in camping"),
+        feature.featureType && isFCFSFeatureType(feature.featureType.name),
     );
 
     if (matchedFeature && matchedFeature.featureType) {
@@ -92,8 +99,7 @@ export async function createFirstComeFirstServedDateRange(
     if (
       feature &&
       feature.featureType &&
-      (feature.featureType.name === "Frontcountry campground" ||
-        feature.featureType.name === "Walk-in camping")
+      isFCFSFeatureType(feature.featureType.name)
     ) {
       featureTypeName = feature.featureType.name;
       featureDateableId = feature.dateableId;
@@ -101,10 +107,7 @@ export async function createFirstComeFirstServedDateRange(
   }
 
   // Only proceed for Frontcountry campground or Walk-in camping
-  if (
-    featureTypeName === "Frontcountry campground" ||
-    featureTypeName === "Walk-in camping"
-  ) {
+  if (isFCFSFeatureType(featureTypeName)) {
     // Find the DateType IDs for "Operation", "Reservation", and "First come, first served"
     const dateTypes = await DateType.findAll({
       where: {
@@ -143,7 +146,7 @@ export async function createFirstComeFirstServedDateRange(
         // Reduce by one day
         firstComeEndDate.setDate(firstComeEndDate.getDate() - 1);
 
-        if (firstComeStartDate <= firstComeEndDate) {
+        if (firstComeStartDate < firstComeEndDate) {
           firstComeDateRanges.push({
             seasonId: season.id,
             dateableId: featureDateableId,
@@ -162,7 +165,7 @@ export async function createFirstComeFirstServedDateRange(
         firstComeStartDate.setDate(firstComeStartDate.getDate() + 1);
         firstComeEndDate.setDate(firstComeEndDate.getDate() - 1);
 
-        if (firstComeStartDate <= firstComeEndDate) {
+        if (firstComeStartDate < firstComeEndDate) {
           firstComeDateRanges.push({
             seasonId: season.id,
             dateableId: featureDateableId,
