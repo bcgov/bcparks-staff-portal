@@ -1,4 +1,11 @@
-import { DateRange, DateType } from "../models/index.js";
+import {
+  DateRange,
+  DateType,
+  Season,
+  ParkArea,
+  Feature,
+  FeatureType,
+} from "../models/index.js";
 
 // FCFS dates calculation helper function
 
@@ -22,13 +29,81 @@ import { DateRange, DateType } from "../models/index.js";
 // => From Reservation end date plus 1 to Operation end date minus 1
 
 export async function createFirstComeFirstServedDateRange(
-  season,
+  seasonId,
   transaction = null,
 ) {
-  // Check if the FeatureType is "Frontcountry camping" or "Walk-in camping"
+  // Fetch the season
+  const season = await Season.findOne({
+    where: { id: seasonId },
+    transaction,
+  });
+
+  if (!season) {
+    console.warn(`Season with id ${seasonId} not found.`);
+    return;
+  }
+
+  // Determine featureTypeName by publishableId
+  let featureTypeName = null;
+  let featureDateableId = null;
+
+  // Try to find a ParkArea with this publishableId first
+  const parkArea = await ParkArea.findOne({
+    where: { publishableId: season.publishableId },
+    include: [
+      {
+        model: Feature,
+        as: "features",
+        include: [
+          {
+            model: FeatureType,
+            as: "featureType",
+            attributes: ["id", "name"],
+          },
+        ],
+      },
+    ],
+    transaction,
+  });
+
+  if (parkArea && parkArea.features && parkArea.features.length > 0) {
+    // Find any feature with the correct type
+    const matchedFeature = parkArea.features.find(
+      (feature) =>
+        feature.featureType &&
+        (feature.featureType.name === "Frontcountry campground" ||
+          feature.featureType.name === "Walk-in camping"),
+    );
+
+    if (matchedFeature && matchedFeature.featureType) {
+      featureTypeName = matchedFeature.featureType.name;
+      featureDateableId = matchedFeature.dateableId;
+    }
+  }
+
+  // If not found, try to find a Feature with this publishableId
+  if (!featureTypeName) {
+    const feature = await Feature.findOne({
+      where: { publishableId: season.publishableId },
+      include: [{ model: FeatureType, as: "featureType" }],
+      transaction,
+    });
+
+    if (
+      feature &&
+      feature.featureType &&
+      (feature.featureType.name === "Frontcountry campground" ||
+        feature.featureType.name === "Walk-in camping")
+    ) {
+      featureTypeName = feature.featureType.name;
+      featureDateableId = feature.dateableId;
+    }
+  }
+
+  // Only proceed for Frontcountry campground or Walk-in camping
   if (
-    season.featureType.name === "Frontcountry camping" ||
-    season.featureType.name === "Walk-in camping"
+    featureTypeName === "Frontcountry campground" ||
+    featureTypeName === "Walk-in camping"
   ) {
     // Find the DateType IDs for "Operation", "Reservation", and "First come, first served"
     const dateTypes = await DateType.findAll({
@@ -36,7 +111,6 @@ export async function createFirstComeFirstServedDateRange(
         name: ["Operation", "Reservation", "First come, first served"],
       },
       attributes: ["id", "name"],
-
       transaction,
     });
 
@@ -44,10 +118,17 @@ export async function createFirstComeFirstServedDateRange(
       dateTypes.map((dateType) => [dateType.name, dateType.id]),
     );
 
-    const operationDateRange = season.dateRanges.find(
+    // Fetch all DateRanges for this season with their DateType
+    const dateRanges = await DateRange.findAll({
+      where: { seasonId: season.id, dateableId: featureDateableId },
+      include: [{ model: DateType, as: "dateType" }],
+      transaction,
+    });
+
+    const operationDateRange = dateRanges.find(
       (dateRange) => dateRange.dateType.name === "Operation",
     );
-    const reservationDateRange = season.dateRanges.find(
+    const reservationDateRange = dateRanges.find(
       (dateRange) => dateRange.dateType.name === "Reservation",
     );
 
@@ -62,31 +143,34 @@ export async function createFirstComeFirstServedDateRange(
         // Reduce by one day
         firstComeEndDate.setDate(firstComeEndDate.getDate() - 1);
 
-        firstComeDateRanges.push({
-          seasonId: season.id,
-          dateTypeId: dateTypeMap.get("First come, first served"),
-          startDate: firstComeStartDate,
-          endDate: firstComeEndDate,
-        });
+        if (firstComeStartDate <= firstComeEndDate) {
+          firstComeDateRanges.push({
+            seasonId: season.id,
+            dateableId: featureDateableId,
+            dateTypeId: dateTypeMap.get("First come, first served"),
+            startDate: firstComeStartDate,
+            endDate: firstComeEndDate,
+          });
+        }
       }
 
       // Calculate the second "First come, first served" DateRange (after Reservation)
       if (operationDateRange.endDate > reservationDateRange.endDate) {
         const firstComeStartDate = new Date(reservationDateRange.endDate);
-
-        firstComeStartDate.setDate(firstComeStartDate.getDate() + 1);
-
-        // Subtract one day from operation end date
         const firstComeEndDate = new Date(operationDateRange.endDate);
 
+        firstComeStartDate.setDate(firstComeStartDate.getDate() + 1);
         firstComeEndDate.setDate(firstComeEndDate.getDate() - 1);
 
-        firstComeDateRanges.push({
-          seasonId: season.id,
-          dateTypeId: dateTypeMap.get("First come, first served"),
-          startDate: firstComeStartDate,
-          endDate: firstComeEndDate,
-        });
+        if (firstComeStartDate <= firstComeEndDate) {
+          firstComeDateRanges.push({
+            seasonId: season.id,
+            dateableId: featureDateableId,
+            dateTypeId: dateTypeMap.get("First come, first served"),
+            startDate: firstComeStartDate,
+            endDate: firstComeEndDate,
+          });
+        }
       }
 
       // Create the new DateRanges in the database
