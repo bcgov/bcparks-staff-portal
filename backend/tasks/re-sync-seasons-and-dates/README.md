@@ -18,7 +18,7 @@ The main re-sync script (`re-sync-season-and-dates.js`) performs the following s
    - Only imports entries where `isActive` is `true`.
    - Creates or updates `Season` records based on `operatingYear`.
    - Sets `Season.editable` to `false` if the year is in the past.
-   - Updates `Season.readyToPublish` and `Season.status`.
+   - Sets `Season.readyToPublish` to `true` and `Season.status` to `published`.
    - Finds the correct `publishableId` from `Feature` or `ParkArea`.
    - Creates or updates `DateRange` records for service and reservation dates.
 
@@ -27,7 +27,7 @@ The main re-sync script (`re-sync-season-and-dates.js`) performs the following s
    - Only imports entries where `isActive` is `true`.
    - Creates or updates `Season` records based on `operatingYear`.
    - Sets `Season.editable` to `false` if the year is in the past.
-   - Updates `Season.readyToPublish` and `Season.status`.
+   - Sets `Season.readyToPublish` to `true` and `Season.status` to `published`.
    - Finds the correct `publishableId` from `Feature` or `ParkArea`.
    - Creates or updates `DateRange` records for each feature date, using the correct `DateType`.
 
@@ -63,10 +63,11 @@ This will execute all steps in order, fully resetting and re-importing all seaso
 
 ## Why is this useful?
 
-- Ensures every Park, ParkArea, and Feature with a `publishableId` has a `Season` for each operating year found in Strapi or the data files.
-- Ensures each Season has the correct `DateRange` records, matching Strapi and historical data.
-- Keeps your database in sync with Strapi's park operation, feature, and sub-area date data, as well as historical records.
-- You can safely run this script multiple times; it will not create duplicates and will update date ranges as needed.
+- Completely resets your `Season` and `DateRange` data by deleting all existing records and re-importing them from Strapi and historical data files.
+- Ensures every Park, ParkArea, and Feature with a `publishableId` has an up-to-date `Season` for each operating year found in Strapi or the data files.
+- Guarantees that each `Season` has the correct `DateRange` records, matching the latest Strapi and historical data.
+- Keeps your database fully synchronized with Strapi's park operation, feature, and sub-area date data, as well as any historical records.
+- The script is idempotent: you can safely run it multiple times. It will not create duplicates and will recreate date ranges as needed to match the source data.
 
 ## Notes
 
@@ -75,3 +76,4 @@ This will execute all steps in order, fully resetting and re-importing all seaso
 - Make sure your Strapi API and database are accessible before running.
 - If you add new Parks, ParkAreas, Features, or Strapi data, re-running this script will add or update any missing or changed `Season` and `DateRange` entries as needed.
 - Data will be deleted and re-imported, so backup if needed.
+- Any unpublished dates in the system will be deleted. Be sure to publish any dates you want to keep before running this script.

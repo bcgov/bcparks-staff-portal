@@ -5,6 +5,7 @@ import "../../env.js";
 
 import fs from "node:fs";
 import path from "node:path";
+import _ from "lodash";
 import { Op } from "sequelize";
 import { Park, Season, DateRange, DateType } from "../../models/index.js";
 
@@ -20,9 +21,7 @@ export async function populatePreviousDates() {
       where: { publishableId: { [Op.ne]: null } },
       transaction,
     });
-    const parkByOrcs = Object.fromEntries(
-      parks.map((park) => [String(park.orcs), park]),
-    );
+    const parkByOrcs = _.keyBy(parks, (park) => String(park.orcs));
 
     for (const entry of dateData) {
       const { orcs, operatingYear, dateType, startDate, endDate } = entry;
@@ -30,7 +29,7 @@ export async function populatePreviousDates() {
       if (!orcs || !operatingYear || !dateType || !startDate || !endDate)
         continue;
 
-      const park = parkByOrcs[String(orcs)];
+      const park = parkByOrcs[orcs];
 
       if (!park || !park.publishableId) continue;
 
@@ -48,7 +47,7 @@ export async function populatePreviousDates() {
           {
             publishableId: park.publishableId,
             operatingYear,
-            status: "published",
+            status: "requested",
             readyToPublish: true,
             seasonType: "regular",
           },
@@ -56,7 +55,7 @@ export async function populatePreviousDates() {
         );
       } else {
         // update status, readyToPublish, seasonType
-        season.status = "published";
+        season.status = "requested";
         season.readyToPublish = true;
         season.seasonType = "regular";
         await season.save({ transaction });

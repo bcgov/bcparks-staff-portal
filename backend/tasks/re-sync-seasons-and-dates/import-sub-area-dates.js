@@ -1,6 +1,7 @@
 // This script imports park-operation-sub-area-dates from Strapi into Season and DateRange.
 
 import "../../env.js";
+import _ from "lodash";
 
 import {
   ParkArea,
@@ -26,13 +27,11 @@ export async function importSubAreaDates() {
 
     // get all features and park areas for lookup
     const features = await Feature.findAll({ transaction });
-    const featureByStrapiId = Object.fromEntries(
-      features.map((feature) => [String(feature.strapiId), feature]),
+    const featureByStrapiId = _.keyBy(features, (feature) =>
+      String(feature.strapiId),
     );
     const parkAreas = await ParkArea.findAll({ transaction });
-    const parkAreaById = Object.fromEntries(
-      parkAreas.map((parkArea) => [String(parkArea.id), parkArea]),
-    );
+    const parkAreaById = _.keyBy(parkAreas, (parkArea) => String(parkArea.id));
 
     // get DateTypes for Operation, Reservation, and Backcountry
     const operationDateType = await DateType.findOne({
@@ -91,7 +90,7 @@ export async function importSubAreaDates() {
           {
             publishableId,
             operatingYear,
-            editable: !(operatingYear < currentYear),
+            editable: operatingYear >= currentYear,
             readyToPublish: true,
             seasonType: "regular",
             status: "published",
@@ -99,7 +98,7 @@ export async function importSubAreaDates() {
           { transaction },
         );
       } else {
-        season.editable = !(operatingYear < currentYear);
+        season.editable = operatingYear >= currentYear;
         season.readyToPublish = true;
         season.seasonType = "regular";
         season.status = "published";
