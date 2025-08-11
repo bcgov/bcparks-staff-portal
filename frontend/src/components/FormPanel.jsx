@@ -453,7 +453,9 @@ If dates have already been published, they will not be updated until new dates a
             previousSeasonDates={previousSeasonDates}
             // Individual date types for areas and features
             areaDateTypes={seasonMetadata.areaDateTypes}
-            featureDateTypes={seasonMetadata.featureDateTypes}
+            featureDateTypesByFeatureId={
+              seasonMetadata.featureDateTypesByFeatureId
+            }
             approver={approver}
           />
         )}
