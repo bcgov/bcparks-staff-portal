@@ -202,7 +202,7 @@ async function createTier2Dates(
 
     // Create the DateRange records in bulk
     numCreated += createData.length;
-    return DateRange.bulkCreate(createData);
+    return DateRange.bulkCreate(createData, { transaction });
   });
 
   const allDone = await Promise.all(insertQueries);

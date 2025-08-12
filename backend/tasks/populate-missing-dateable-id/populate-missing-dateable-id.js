@@ -31,6 +31,7 @@ export async function populateMissingDateableIdInDateRanges() {
       // find correct dateableId
       const dateableId = await findDateableIdByPublishableId(
         season.publishableId,
+        transaction,
       );
 
       if (!dateableId) {
