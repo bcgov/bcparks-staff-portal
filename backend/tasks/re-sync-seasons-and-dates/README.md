@@ -20,7 +20,7 @@ The main re-sync script (`re-sync-season-and-dates.js`) performs the following s
    - Sets `Season.editable` to `false` if the year is in the past.
    - Sets `Season.readyToPublish` to `true` and `Season.status` to `published`.
    - Finds the correct `publishableId` from `Feature` or `ParkArea`.
-   - Creates or updates `DateRange` records for service and reservation dates.
+   - Creates `DateRange` records for service and reservation dates.
 
 4. **Imports park feature dates from Strapi**
 
@@ -29,7 +29,7 @@ The main re-sync script (`re-sync-season-and-dates.js`) performs the following s
    - Sets `Season.editable` to `false` if the year is in the past.
    - Sets `Season.readyToPublish` to `true` and `Season.status` to `published`.
    - Finds the correct `publishableId` from `Feature` or `ParkArea`.
-   - Creates or updates `DateRange` records for each feature date, using the correct `DateType`.
+   - Creates `DateRange` records for each feature date, using the correct `DateType`.
 
 5. **Imports park operating (gate) dates from Strapi**
 

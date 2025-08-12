@@ -27,11 +27,9 @@ export async function importSubAreaDates() {
 
     // get all features and park areas for lookup
     const features = await Feature.findAll({ transaction });
-    const featureByStrapiId = _.keyBy(features, (feature) =>
-      String(feature.strapiId),
-    );
+    const featureByStrapiId = _.keyBy(features, "strapiId");
     const parkAreas = await ParkArea.findAll({ transaction });
-    const parkAreaById = _.keyBy(parkAreas, (parkArea) => String(parkArea.id));
+    const parkAreaById = _.keyBy(parkAreas, "id");
 
     // get DateTypes for Operation, Reservation, and Backcountry
     const operationDateType = await DateType.findOne({

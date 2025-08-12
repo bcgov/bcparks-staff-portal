@@ -27,15 +27,13 @@ export async function importParkFeatureDates() {
 
     // get all features and park areas for lookup
     const features = await Feature.findAll({ transaction });
-    const featureByStrapiId = _.keyBy(features, (feature) =>
-      String(feature.strapiId),
-    );
+    const featureByStrapiId = _.keyBy(features, "strapiId");
     const parkAreas = await ParkArea.findAll({ transaction });
-    const parkAreaById = _.keyBy(parkAreas, (parkArea) => String(parkArea.id));
+    const parkAreaById = _.keyBy(parkAreas, "id");
 
     // get all DateTypes for lookup by name
     const dateTypes = await DateType.findAll({ transaction });
-    const dateTypeByName = _.keyBy(dateTypes, (dateType) => dateType.name);
+    const dateTypeByName = _.keyBy(dateTypes, "name");
 
     const currentYear = new Date().getFullYear();
 

@@ -21,7 +21,7 @@ export async function populatePreviousDates() {
       where: { publishableId: { [Op.ne]: null } },
       transaction,
     });
-    const parkByOrcs = _.keyBy(parks, (park) => String(park.orcs));
+    const parkByOrcs = _.keyBy(parks, "orcs");
 
     for (const entry of dateData) {
       const { orcs, operatingYear, dateType, startDate, endDate } = entry;
