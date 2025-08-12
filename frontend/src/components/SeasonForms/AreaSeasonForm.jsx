@@ -17,6 +17,7 @@ import GateForm from "@/components/GateForm";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import PreviousDates from "@/components/SeasonForms/PreviousDates";
+import ErrorSlot from "@/components/ValidationErrorSlot";
 
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
@@ -81,6 +82,8 @@ function FeatureFormSectionComponent({
           />
         </div>
       ))}
+
+      <ErrorSlot element={`feature-form-section-${feature.dateableId}`} />
     </div>
   );
 }
