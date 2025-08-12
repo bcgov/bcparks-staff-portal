@@ -395,12 +395,17 @@ router.get(
 
     const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
 
-    // Return the DateTypes in a specific order
-    const orderedFeatureDateTypes = [
-      featureDateTypesByName.Operation,
-      featureDateTypesByName.Reservation,
-      featureDateTypesByName["Backcountry registration"],
-    ];
+    // Return the DateTypes in a specific order for each feature, keyed by ID
+    const orderedFeatureDateTypesEntries = seasonModel.parkArea.features.map(
+      (feature) => [
+        feature.id,
+        getDateTypesForFeature(feature, featureDateTypesByName),
+      ],
+    );
+
+    const featureDateTypesByFeatureId = Object.fromEntries(
+      orderedFeatureDateTypesEntries,
+    );
 
     let icon = null;
     let featureTypeName = null;
@@ -432,7 +437,7 @@ router.get(
       // Don't include any Area-level dates.
       // Area forms will only have Feature-level dates.
       areaDateTypes: [],
-      featureDateTypes: orderedFeatureDateTypes,
+      featureDateTypesByFeatureId,
       icon,
       featureTypeName,
       name: seasonModel.parkArea.name,

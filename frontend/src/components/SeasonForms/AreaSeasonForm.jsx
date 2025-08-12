@@ -131,7 +131,7 @@ export default function AreaSeasonForm({
   season,
   previousSeasonDates,
   areaDateTypes,
-  featureDateTypes,
+  featureDateTypesByFeatureId,
   approver,
 }) {
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
@@ -312,7 +312,6 @@ export default function AreaSeasonForm({
   const featureDatesByType = useMemo(() => {
     // Create objects with IDs as keys to loop over
     const featuresByDateableId = keyBy(features, "dateableId");
-    const dateTypesById = keyBy(featureDateTypes, "id");
 
     // Return an object of dateType groups, grouped by dateableId
     // obj[dateableId][dateTypeId] = dateRanges[]
@@ -325,13 +324,18 @@ export default function AreaSeasonForm({
         // Group date ranges by dateTypeId
         const rangesByType = groupBy(feature.dateable.dateRanges, "dateTypeId");
 
+        const dateTypesById = keyBy(
+          featureDateTypesByFeatureId[feature.id],
+          "id",
+        );
+
         return mapValues(
           dateTypesById,
           (dateType) => rangesByType[dateType.id] || [],
         );
       },
     );
-  }, [features, featureDateTypes]);
+  }, [features, featureDateTypesByFeatureId]);
 
   // Adds a new date range to the Area's dateable.dateRanges
   const addFeatureDateRange = useCallback(
@@ -503,7 +507,7 @@ export default function AreaSeasonForm({
             {bcpResFeatures.map((feature) => (
               <FeatureFormSection
                 feature={feature}
-                featureDateTypes={featureDateTypes}
+                featureDateTypes={featureDateTypesByFeatureId[feature.id]}
                 previousFeatureDatesByType={previousFeatureDatesByType}
                 featureDatesByType={featureDatesByType}
                 updateFeatureDateRange={updateFeatureDateRange}
@@ -527,7 +531,7 @@ export default function AreaSeasonForm({
           {nonBcpResFeatures.map((feature) => (
             <FeatureFormSection
               feature={feature}
-              featureDateTypes={featureDateTypes}
+              featureDateTypes={featureDateTypesByFeatureId[feature.id]}
               previousFeatureDatesByType={previousFeatureDatesByType}
               featureDatesByType={featureDatesByType}
               updateFeatureDateRange={updateFeatureDateRange}
@@ -597,12 +601,14 @@ AreaSeasonForm.propTypes = {
     }),
   ).isRequired,
 
-  featureDateTypes: PropTypes.arrayOf(
-    PropTypes.shape({
-      name: PropTypes.string.isRequired,
-      id: PropTypes.number.isRequired,
-      description: PropTypes.string,
-    }),
+  featureDateTypesByFeatureId: PropTypes.objectOf(
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        id: PropTypes.number.isRequired,
+        description: PropTypes.string,
+      }),
+    ),
   ).isRequired,
 
   approver: PropTypes.bool.isRequired,

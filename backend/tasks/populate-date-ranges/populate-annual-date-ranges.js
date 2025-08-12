@@ -60,6 +60,7 @@ export async function populateAnnualDateRangesForYear(
       // find dateableId for targetSeason's publishableId
       const dateableId = await findDateableIdByPublishableId(
         targetSeason.publishableId,
+        transaction,
       );
 
       // find DateRanges for previous season and this dateType
