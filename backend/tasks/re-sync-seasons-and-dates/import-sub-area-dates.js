@@ -62,18 +62,20 @@ export async function importSubAreaDates() {
       if (!subArea) continue;
 
       // find Feature by Strapi ID
-      const feature = featureByStrapiId[String(subArea.id)];
-      let publishableId = null;
+      const feature = featureByStrapiId[subArea.id];
 
       // determine publishableId based on feature or park area
-      if (feature && feature.publishableId) {
-        publishableId = feature.publishableId;
-      } else if (feature && feature.parkAreaId) {
-        const parkArea = parkAreaById[String(feature.parkAreaId)];
+      let publishableId = null;
+      let parkArea = null;
 
-        if (parkArea && parkArea.publishableId) {
-          publishableId = parkArea.publishableId;
-        }
+      if (feature && feature.parkAreaId) {
+        parkArea = parkAreaById[feature.parkAreaId];
+      }
+
+      if (parkArea && parkArea.publishableId) {
+        publishableId = parkArea.publishableId;
+      } else if (feature && feature.publishableId) {
+        publishableId = feature.publishableId;
       }
       if (!publishableId) continue;
 
