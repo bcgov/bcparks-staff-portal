@@ -19,8 +19,6 @@ export default function reservationWithinOperating(seasonData, context) {
 
   Object.entries(dateRangesByDateableId).forEach(
     ([dateableId, dateableDateRanges]) => {
-      console.log(`Dateable ID: ${dateableId}`, dateableDateRanges);
-
       // Group dateRanges by type so we can examine the reservation and operation dates
       const dateRangesByType = groupBy(dateableDateRanges, "dateType.name");
       const { Operation = [], Reservation = [] } = dateRangesByType;
@@ -50,7 +48,7 @@ export default function reservationWithinOperating(seasonData, context) {
         context.addError(
           // Show the error below the Dateable's form section
           `feature-form-section-${dateableId}`,
-          "Reservation dates must be within operating dates",
+          "Enter the reservation dates that fall within the operating dates selected.",
         );
       }
     },
