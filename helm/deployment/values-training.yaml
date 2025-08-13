@@ -4,9 +4,9 @@ cluster:
 
 images:
   frontend:
-    tag: test
+    tag: training
   backend:
-    tag: test
+    tag: training
 
 frontend:
   env:
