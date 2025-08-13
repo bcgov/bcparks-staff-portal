@@ -26,12 +26,6 @@ export default (sequelize) => {
         as: "feature",
       });
 
-      // Deprecated but not removed yet
-      // Season.belongsTo(models.FeatureType, {
-      //   foreignKey: "featureTypeId",
-      //   as: "featureType",
-      // });
-
       Season.belongsTo(models.Publishable, {
         foreignKey: "publishableId",
         as: "publishable",
@@ -53,8 +47,6 @@ export default (sequelize) => {
     {
       operatingYear: DataTypes.INTEGER,
       publishableId: DataTypes.INTEGER,
-      parkId: DataTypes.INTEGER, // deprecated: use publishableId instead
-      featureTypeId: DataTypes.INTEGER,
       status: DataTypes.STRING,
       readyToPublish: {
         type: DataTypes.BOOLEAN,
