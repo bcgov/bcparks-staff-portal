@@ -94,6 +94,12 @@ export default function reservationEndsBeforeOperatingEnds(
           `feature-form-section-${dateableId}`,
           "The reservation end date must be one or more days before the operating end date.",
         );
+
+        context.addError(
+          // Show the error below the Dateable's form section
+          `feature-form-section-${dateableId}`,
+          "The reservation end date must be on or before the operating end date.",
+        );
       }
     },
   );
