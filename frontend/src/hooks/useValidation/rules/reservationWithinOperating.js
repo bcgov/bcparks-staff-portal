@@ -1,6 +1,7 @@
 import { groupBy } from "lodash-es";
 import consolidateRanges from "@/lib/consolidateDateRanges";
 import isDateRangeWithinDateRange from "@/lib/isDateRangeWithinDateRange";
+import { isBefore } from "date-fns";
 
 /**
  * Validates that Feature/Area reservation dates must be within its operating dates.
@@ -49,6 +50,18 @@ export default function reservationWithinOperating(seasonData, context) {
           // Show the error below the Dateable's form section
           `feature-form-section-${dateableId}`,
           "Enter the reservation dates that fall within the operating dates selected.",
+        );
+      }
+
+      // Add an explicit message if the Reservation dates start before the Operating dates
+      const operatingStartDate = operationRanges.at(0).startDate;
+      const reservationStartDate = reservationRanges.at(0).startDate;
+
+      if (isBefore(reservationStartDate, operatingStartDate)) {
+        context.addError(
+          // Show the error below the Dateable's form section
+          `feature-form-section-${dateableId}`,
+          "The reservation start date must be on or after the operating start date.",
         );
       }
     },
