@@ -47,7 +47,7 @@ export async function populatePreviousDates() {
           {
             publishableId: park.publishableId,
             operatingYear,
-            status: "requested",
+            status: "approved",
             readyToPublish: true,
             seasonType: "regular",
           },
@@ -55,7 +55,7 @@ export async function populatePreviousDates() {
         );
       } else {
         // update status, readyToPublish, seasonType
-        season.status = "requested";
+        season.status = "approved";
         season.readyToPublish = true;
         season.seasonType = "regular";
         await season.save({ transaction });
