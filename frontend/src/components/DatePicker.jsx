@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
 import ErrorSlot from "@/components/ValidationErrorSlot";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 function DootDatePickerComponent({
   id,
@@ -20,6 +21,8 @@ function DootDatePickerComponent({
   // This is so we can control the DatePicker without modifying the parent data
   // until the field is blurred or Enter is pressed
   const [localDate, setLocalDate] = useState(date && new Date(date));
+
+  const { elements } = useValidationContext();
 
   const adjustedLocalDate = useMemo(
     () => normalizeToLocalDate(localDate),
@@ -63,7 +66,7 @@ function DootDatePickerComponent({
         <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
       </div>
 
-      <ErrorSlot element={`date-range-${id}-${dateField}`} />
+      <ErrorSlot element={elements.dateField(id, dateField)} />
     </>
   );
 }

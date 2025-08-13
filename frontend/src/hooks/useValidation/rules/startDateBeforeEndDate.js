@@ -8,7 +8,7 @@ import { isBefore } from "date-fns";
  * @returns {void}
  */
 export default function startDateBeforeEndDate(seasonData, context) {
-  const { dateRanges } = context;
+  const { dateRanges, elements } = context;
 
   // Add errors for all invalid dates (startDate >= endDate)
   dateRanges.forEach((dateRange) => {
@@ -18,7 +18,7 @@ export default function startDateBeforeEndDate(seasonData, context) {
     if (!isBefore(dateRange.startDate, dateRange.endDate)) {
       context.addError(
         // Show error below the date range
-        `date-range-${dateRange.id || dateRange.tempId}`,
+        elements.dateRange(dateRange.id || dateRange.tempId),
         "Enter an end date that comes after the start date",
       );
     }

@@ -44,7 +44,7 @@ export default function reservationEndsBeforeOperatingEnds(
   // This rule applies to the Feature and ParkArea level. Skip for Parks
   if (context.level === "park") return;
 
-  const { dateRanges } = context;
+  const { dateRanges, elements } = context;
 
   // Group dateRanges by dateableId so we can test each dateable feature
   const dateRangesByDateableId = groupBy(dateRanges, "dateableId");
@@ -91,13 +91,13 @@ export default function reservationEndsBeforeOperatingEnds(
       if (daysDifference < 1) {
         context.addError(
           // Show the error below the Dateable's form section
-          `feature-form-section-${dateableId}`,
+          elements.dateableSection(dateableId),
           "The reservation end date must be one or more days before the operating end date.",
         );
 
         context.addError(
           // Show the error below the Dateable's form section
-          `feature-form-section-${dateableId}`,
+          elements.dateableSection(dateableId),
           "The reservation end date must be on or before the operating end date.",
         );
       }

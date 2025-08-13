@@ -13,7 +13,7 @@ export default function reservationWithinOperating(seasonData, context) {
   // This rule applies to the Feature and ParkArea level. Skip for Parks
   if (context.level === "park") return;
 
-  const { dateRanges } = context;
+  const { dateRanges, elements } = context;
 
   // Group dateRanges by dateableId so we can test each dateable feature
   const dateRangesByDateableId = groupBy(dateRanges, "dateableId");
@@ -48,7 +48,7 @@ export default function reservationWithinOperating(seasonData, context) {
       if (!allWithin) {
         context.addError(
           // Show the error below the Dateable's form section
-          `feature-form-section-${dateableId}`,
+          elements.dateableSection(dateableId),
           "Enter the reservation dates that fall within the operating dates selected.",
         );
       }
@@ -60,7 +60,7 @@ export default function reservationWithinOperating(seasonData, context) {
       if (isBefore(reservationStartDate, operatingStartDate)) {
         context.addError(
           // Show the error below the Dateable's form section
-          `feature-form-section-${dateableId}`,
+          elements.dateableSection(dateableId),
           "The reservation start date must be on or after the operating start date.",
         );
       }

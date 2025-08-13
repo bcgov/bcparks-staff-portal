@@ -7,7 +7,7 @@ import { areIntervalsOverlapping } from "date-fns";
  * @returns {void}
  */
 export default function noOverlapPrevious(seasonData, context) {
-  const { dateRanges } = context;
+  const { dateRanges, elements } = context;
   const { previous } = seasonData;
 
   // This rule applies to the Feature and ParkArea level. Skip for Parks
@@ -43,7 +43,7 @@ export default function noOverlapPrevious(seasonData, context) {
     if (overlaps) {
       context.addError(
         // Show error below the date range
-        `date-range-${dateRange.id || dateRange.tempId}`,
+        elements.dateRange(dateRange.id || dateRange.tempId),
         "The dates must not overlap with existing dates submitted in the previous season.",
       );
     }

@@ -20,6 +20,15 @@ const elements = {
 
   // Under the "internal notes" textarea
   INTERNAL_NOTES: "internalNotes",
+
+  // Under an individual date range by its ID
+  dateRange: (idOrTempId) => `dateRange-${idOrTempId}`,
+
+  // Under an individual date input field by its dateRange ID and its field name
+  dateField: (idOrTempId, fieldName) => `dateField-${idOrTempId}-${fieldName}`,
+
+  // Under a form section for a dateable entity, such as a Feature, by its dateableId
+  dateableSection: (dateableId) => `formSection-${dateableId}`,
 };
 
 /**

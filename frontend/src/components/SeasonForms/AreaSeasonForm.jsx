@@ -22,6 +22,7 @@ import ErrorSlot from "@/components/ValidationErrorSlot";
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 // Individual Area-Feature form section
 function FeatureFormSectionComponent({
@@ -35,6 +36,8 @@ function FeatureFormSectionComponent({
   dateRangeAnnuals,
   updateDateRangeAnnual,
 }) {
+  const { elements } = useValidationContext();
+
   return (
     <div className="area-feature" key={feature.id}>
       <h4 className="feature-name">{feature.name}</h4>
@@ -83,7 +86,7 @@ function FeatureFormSectionComponent({
         </div>
       ))}
 
-      <ErrorSlot element={`feature-form-section-${feature.dateableId}`} />
+      <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
     </div>
   );
 }

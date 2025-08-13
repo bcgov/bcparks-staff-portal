@@ -9,6 +9,7 @@ import Form from "react-bootstrap/Form";
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
 import { normalizeToUTCDate } from "@/lib/utils";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 function DateRange({
   dateRange,
@@ -19,6 +20,8 @@ function DateRange({
 }) {
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
+
+  const { elements } = useValidationContext();
 
   // Min and max dates: Jan 1 of next year and Dec 31 of the year after next
   // @TODO: Update this when validation is implemented
@@ -85,7 +88,7 @@ function DateRange({
         </button>
       </div>
 
-      <ErrorSlot element={`date-range-${idOrTempId}`} />
+      <ErrorSlot element={elements.dateRange(idOrTempId)} />
     </div>
   );
 }
