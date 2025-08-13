@@ -65,6 +65,7 @@ function featureModel(minYear, where = {}) {
       "publishableId",
       "parkAreaId",
       "name",
+      "hasBackcountryPermits",
       "inReservationSystem",
     ],
     include: [
@@ -183,6 +184,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     publishableId: feature.publishableId,
     parkAreaId: feature.parkAreaId,
     name: feature.name,
+    hasBackcountryPermits: feature.hasBackcountryPermits,
     inReservationSystem: feature.inReservationSystem,
     featureType: {
       id: feature.featureType.id,

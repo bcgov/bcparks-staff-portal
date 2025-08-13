@@ -206,6 +206,27 @@ function EditAndReview() {
         if (
           filters.dateTypes.length > 0 &&
           !filters.dateTypes.some((filterDateType) => {
+            // check park.hasTier1Dates, park.hasTier2Dates, park.hasWinterFeeDates, and dateTypes
+            if (filterDateType.name === "Tier 1" && !park.hasTier1Dates) {
+              return false;
+            }
+            if (filterDateType.name === "Tier 2" && !park.hasTier2Dates) {
+              return false;
+            }
+            if (
+              filterDateType.name === "Winter fee" &&
+              !park.hasWinterFeeDates
+            ) {
+              return false;
+            }
+            // check feature.hasBackcountryPermits and dateTypes
+            if (
+              filterDateType.name === "Backcountry registration" &&
+              !park.features?.some((feature) => feature.hasBackcountryPermits)
+            ) {
+              return false;
+            }
+
             // check park.seasons and dateTypes
             const hasParkDateType = park.seasons?.some((season) =>
               season.dateRanges?.some(
