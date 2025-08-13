@@ -42,6 +42,7 @@ function TimePicker({
           disabled={disabled}
           placeholderText={placeholder}
         />
+
         <FontAwesomeIcon className="append-content" icon={faClock} />
       </div>
     </div>
@@ -73,7 +74,7 @@ function TimeRangeForm({ gateDetail, updateGateDetail }) {
           defaultTime="07:00:00"
         />
 
-        <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
+        <div className="date-range-dash d-none d-lg-flex align-items-start pt-2 px-lg-2">
           <span>&ndash;</span>
         </div>
 

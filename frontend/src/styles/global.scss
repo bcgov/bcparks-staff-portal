@@ -36,6 +36,11 @@ header.page-header {
 .input-with-append {
   position: relative;
 
+  // make the first child (input) take full width of this container
+  & > :first-child {
+    width: 100%;
+  }
+
   input {
     padding-right: calc(1.5em + 0.75rem);
   }

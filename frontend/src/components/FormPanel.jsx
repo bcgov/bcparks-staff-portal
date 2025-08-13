@@ -15,6 +15,9 @@ import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
 import useConfirmation from "@/hooks/useConfirmation";
 import useNavigationGuard from "@/hooks/useNavigationGuard";
+import useValidation, {
+  ValidationContext,
+} from "@/hooks/useValidation/useValidation";
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 
@@ -103,6 +106,14 @@ function SeasonForm({
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
+
+  // Track form submission state: run more validation rules after the first submit
+  const [submitted, setSubmitted] = useState(false);
+  const validationContext = useMemo(
+    () => ({ level, notes, submitted }),
+    [level, notes, submitted],
+  );
+  const validation = useValidation(data, validationContext);
 
   const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
     `/seasons/${seasonId}/approve/`,
@@ -280,6 +291,13 @@ function SeasonForm({
   }, [dataChanged, setDataChanged]);
 
   async function onSave(close = true) {
+    // onSave is called on any kind of form submission, so validation happens here
+    // If the form is submitted by some other means, call the validation function there too
+    setSubmitted(true);
+
+    // Validate the form before saving
+    validation.validateForm();
+
     // Clone the payload
     const payload = { ...changesPayload };
 
@@ -408,82 +426,87 @@ If dates have already been published, they will not be updated until new dates a
 
   return (
     <DataContext.Provider value={{ setData, addDeletedDateRangeId }}>
-      <Offcanvas.Header closeButton>
-        <Offcanvas.Title>
-          {seasonMetadata.featureTypeName && (
-            <h4 className="header-with-icon fw-normal">
-              {seasonMetadata.icon && (
-                <FeatureIcon iconName={seasonMetadata.icon} />
-              )}
-              {seasonMetadata.featureTypeName}
-            </h4>
+      <ValidationContext.Provider value={validation}>
+        <Offcanvas.Header closeButton>
+          <Offcanvas.Title>
+            {seasonMetadata.featureTypeName && (
+              <h4 className="header-with-icon fw-normal">
+                {seasonMetadata.icon && (
+                  <FeatureIcon iconName={seasonMetadata.icon} />
+                )}
+                {seasonMetadata.featureTypeName}
+              </h4>
+            )}
+
+            <h2>{seasonTitle}</h2>
+            <h2 className="fw-normal">{currentYear} dates</h2>
+            <p className="fs-6 fw-normal">
+              <a
+                href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
+                target="_blank"
+              >
+                View a list of all statutory holidays
+              </a>
+            </p>
+          </Offcanvas.Title>
+        </Offcanvas.Header>
+
+        <Offcanvas.Body>
+          <h3>Public information</h3>
+          <p>This information is displayed on bcparks.ca</p>
+
+          {/* 1 - park level */}
+          {level === "park" && (
+            <ParkSeasonForm
+              season={season}
+              previousSeasonDates={previousSeasonDates}
+              dateTypes={seasonMetadata.dateTypes}
+              approver={approver}
+            />
           )}
 
-          <h2>{seasonTitle}</h2>
-          <h2 className="fw-normal">{currentYear} dates</h2>
-          <p className="fs-6 fw-normal">
-            <a
-              href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
-              target="_blank"
-            >
-              View a list of all statutory holidays
-            </a>
-          </p>
-        </Offcanvas.Title>
-      </Offcanvas.Header>
+          {/* 2 - park area level */}
+          {level === "park-area" && (
+            <AreaSeasonForm
+              season={season}
+              previousSeasonDates={previousSeasonDates}
+              // Individual date types for areas and features
+              areaDateTypes={seasonMetadata.areaDateTypes}
+              featureDateTypesByFeatureId={
+                seasonMetadata.featureDateTypesByFeatureId
+              }
+              approver={approver}
+            />
+          )}
 
-      <Offcanvas.Body>
-        <h3>Public information</h3>
-        <p>This information is displayed on bcparks.ca</p>
+          {/* 3 - feature level */}
+          {level === "feature" && (
+            <FeatureSeasonForm
+              season={season}
+              previousSeasonDates={previousSeasonDates}
+              dateTypes={seasonMetadata.dateTypes}
+              approver={approver}
+            />
+          )}
 
-        {/* 1 - park level */}
-        {level === "park" && (
-          <ParkSeasonForm
-            season={season}
-            previousSeasonDates={previousSeasonDates}
-            dateTypes={seasonMetadata.dateTypes}
-            approver={approver}
-          />
-        )}
-
-        {/* 2 - park area level */}
-        {level === "park-area" && (
-          <AreaSeasonForm
-            season={season}
-            previousSeasonDates={previousSeasonDates}
-            // Individual date types for areas and features
-            areaDateTypes={seasonMetadata.areaDateTypes}
-            featureDateTypesByFeatureId={
-              seasonMetadata.featureDateTypesByFeatureId
+          {/* TODO: add Public Notes for v3 */}
+          <InternalNotes
+            notes={notes}
+            setNotes={setNotes}
+            previousNotes={season.changeLogs}
+            optional={
+              season.status !== "approved" && season.status !== "published"
             }
-            approver={approver}
           />
-        )}
-
-        {/* 3 - feature level */}
-        {level === "feature" && (
-          <FeatureSeasonForm
-            season={season}
-            previousSeasonDates={previousSeasonDates}
-            dateTypes={seasonMetadata.dateTypes}
+          <Buttons
             approver={approver}
+            onApprove={onApprove}
+            onSave={() => promptAndSave(false)}
+            onSubmit={onSubmit}
+            loading={sendingApprove || sendingSubmit || sendingSave}
           />
-        )}
-
-        {/* TODO: add Public Notes for v3 */}
-        <InternalNotes
-          notes={notes}
-          setNotes={setNotes}
-          previousNotes={season.changeLogs}
-        />
-        <Buttons
-          approver={approver}
-          onApprove={onApprove}
-          onSave={() => promptAndSave(false)}
-          onSubmit={onSubmit}
-          loading={sendingApprove || sendingSubmit || sendingSave}
-        />
-      </Offcanvas.Body>
+        </Offcanvas.Body>
+      </ValidationContext.Provider>
     </DataContext.Provider>
   );
 }

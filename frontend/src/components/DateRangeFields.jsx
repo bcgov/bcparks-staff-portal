@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Form from "react-bootstrap/Form";
 
 import DootDatePicker from "@/components/DatePicker";
+import ErrorSlot from "@/components/ValidationErrorSlot";
 import { normalizeToUTCDate } from "@/lib/utils";
 
 function DateRange({
@@ -38,10 +39,10 @@ function DateRange({
   }
 
   return (
-    <div className="d-flex mb-2">
-      <div className="form-group">
-        <label className="form-label d-lg-none">Start date</label>
-        <div className="input-with-append">
+    <div className="mb-2">
+      <div className="d-flex mb-2">
+        <div className="form-group">
+          <label className="form-label d-lg-none">Start date</label>
           <DootDatePicker
             id={idOrTempId}
             dateField="startDate"
@@ -52,15 +53,13 @@ function DateRange({
             onSelect={onSelect}
           />
         </div>
-      </div>
 
-      <div className="date-range-dash d-none d-lg-flex align-items-center px-lg-2">
-        <span>&ndash;</span>
-      </div>
+        <div className="date-range-dash d-none d-lg-flex align-items-start pt-2 px-lg-2">
+          <span>&ndash;</span>
+        </div>
 
-      <div className="form-group">
-        <label className="form-label d-lg-none">End date</label>
-        <div className="input-with-append">
+        <div className="form-group">
+          <label className="form-label d-lg-none">End date</label>
           <DootDatePicker
             id={idOrTempId}
             dateField="endDate"
@@ -71,18 +70,20 @@ function DateRange({
             onSelect={onSelect}
           />
         </div>
+
+        <button
+          // Disable and hide the remove button if this is the first/only date range
+          className={classNames("btn btn-text text-link align-self-start", {
+            invisible: !removable,
+          })}
+          disabled={!removable}
+          onClick={() => removeDateRange(dateRange)}
+        >
+          <FontAwesomeIcon icon={faXmark} />
+        </button>
       </div>
 
-      <button
-        // Disable and hide the remove button if this is the first/only date range
-        className={classNames("btn btn-text text-link align-self-end", {
-          invisible: !removable,
-        })}
-        disabled={!removable}
-        onClick={() => removeDateRange(dateRange)}
-      >
-        <FontAwesomeIcon icon={faXmark} />
-      </button>
+      <ErrorSlot element={`date-range-${idOrTempId}`} />
     </div>
   );
 }
