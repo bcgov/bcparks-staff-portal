@@ -41,7 +41,7 @@ export async function importData() {
   await oneTimeDataImport();
   await createSingleItemsCampgrounds();
   await createMultipleItemsCampgrounds();
-  await createMissingDatesAndSeasons();
+  // await createMissingDatesAndSeasons();
 }
 
 export async function resetScript() {

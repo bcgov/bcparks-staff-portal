@@ -104,7 +104,12 @@ export async function fetchAllModels() {
     {
       endpoint: "/park-operation-sub-area-dates",
       model: "park-operation-sub-area-date",
-      fields: [{ relation: "parkOperationSubArea", fields: ["id", "hasBackcountryPermits"] }],
+      fields: [
+        {
+          relation: "parkOperationSubArea",
+          fields: ["id", "hasBackcountryPermits"],
+        },
+      ],
       items: [],
     },
     {
@@ -867,16 +872,6 @@ async function createWinterFeatureType() {
   await createModel(FeatureType, data);
 }
 
-async function createTestUser() {
-  const data = {
-    name: "Test User",
-    email: "test@oxd.com",
-    staff: true,
-  };
-
-  await createModel(User, data);
-}
-
 /**
  * Syncs dates data from Strapi to our database
  * Only runs one time to import existing dates in Strapi
@@ -905,9 +900,8 @@ export async function oneTimeDataImport() {
 
   await createWinterFeatureType();
 
-  await createTestUser();
-
   datesData.items = await getData(currentUrl, params);
 
-  await createDatesAndSeasons(datesData);
+  // Don't call this anymore -- use tasks/create-seasons.js
+  // await createDatesAndSeasons(datesData);
 }
