@@ -195,6 +195,7 @@ export default function FeatureSeasonForm({
               dateableId={feature.dateableId}
               dateType={dateType}
               dateRanges={datesByType[dateType.name] ?? []}
+              previousDateRanges={previousDatesByType?.[dateType.name]}
               updateDateRange={updateDateRange}
               addDateRange={addDateRange}
               removeDateRange={removeDateRange}

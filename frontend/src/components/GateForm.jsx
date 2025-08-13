@@ -85,6 +85,7 @@ export default function GateForm({
                   dateableId={dateableId}
                   dateType={dateType}
                   dateRanges={dateRanges}
+                  previousDateRanges={previousDateRanges}
                   updateDateRange={updateDateRange}
                   addDateRange={addDateRange}
                   removeDateRange={removeDateRange}

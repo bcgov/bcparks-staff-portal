@@ -226,6 +226,7 @@ export default function ParkSeasonForm({
               dateableId={park.dateableId}
               dateType={dateType}
               dateRanges={datesByType[dateType.name] ?? []}
+              previousDateRanges={previousDatesByType?.[dateType.name]}
               updateDateRange={updateDateRange}
               addDateRange={addDateRange}
               removeDateRange={removeDateRange}

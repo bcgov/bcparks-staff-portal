@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
-import { startOfYear, endOfYear, addYears } from "date-fns";
+import { startOfYear, endOfYear, addYears, addDays } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Form from "react-bootstrap/Form";
 
@@ -11,6 +11,7 @@ import { normalizeToUTCDate } from "@/lib/utils";
 
 function DateRange({
   dateRange,
+  previousDateRange,
   updateDateRange,
   removeDateRange,
   removable = true,
@@ -19,9 +20,16 @@ function DateRange({
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
-  // Min and max dates: Jan 1 of this year and Dec 31 of next year
-  // @TODO: Update this when validation is implemented
-  const minDate = useMemo(() => startOfYear(new Date()), []);
+  // Set it to previousDateRange.endDate + 1 day
+  // Otherwise fallback to Jan 1 of next year
+  const minDate = useMemo(() => {
+    if (previousDateRange && previousDateRange.endDate) {
+      return addDays(previousDateRange.endDate, 1);
+    }
+    return startOfYear(addYears(new Date(), 1));
+  }, [previousDateRange]);
+
+  // Set it to Dec 31 of next year
   const maxDate = useMemo(() => endOfYear(addYears(new Date(), 1)), []);
 
   // Convert to UTC if necessary, and call the update method from the parent
@@ -64,7 +72,10 @@ function DateRange({
           <DootDatePicker
             id={idOrTempId}
             dateField="endDate"
-            minDate={minDate}
+            // Set it to one day after the start date
+            minDate={
+              dateRange.startDate ? addDays(dateRange.startDate, 1) : minDate
+            }
             maxDate={maxDate}
             disabled={isDateRangeAnnual}
             date={dateRange.endDate}
@@ -98,6 +109,10 @@ DateRange.propTypes = {
     startDate: PropTypes.instanceOf(Date),
     endDate: PropTypes.instanceOf(Date),
   }).isRequired,
+  previousDateRange: PropTypes.shape({
+    startDate: PropTypes.instanceOf(Date),
+    endDate: PropTypes.instanceOf(Date),
+  }),
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
   // Allow removal only if it's not the first date range
@@ -108,6 +123,7 @@ DateRange.propTypes = {
 export default function DateRangeFields({
   dateableId,
   dateRanges,
+  previousDateRanges = [],
   updateDateRange,
   removeDateRange,
   addDateRange,
@@ -161,6 +177,7 @@ export default function DateRangeFields({
         <DateRange
           key={dateRange.id || dateRange.tempId}
           dateRange={dateRange}
+          previousDateRange={previousDateRanges[previousDateRanges?.length - 1]}
           updateDateRange={updateDateRange}
           removeDateRange={removeDateRange}
           removable={optional || index > 0}
@@ -211,6 +228,12 @@ DateRangeFields.propTypes = {
       endDate: PropTypes.instanceOf(Date),
     }),
   ).isRequired,
+  previousDateRanges: PropTypes.arrayOf(
+    PropTypes.shape({
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
+    }),
+  ),
   updateDateRange: PropTypes.func.isRequired,
   removeDateRange: PropTypes.func.isRequired,
   addDateRange: PropTypes.func.isRequired,
