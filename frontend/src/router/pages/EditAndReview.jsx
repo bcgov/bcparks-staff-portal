@@ -222,7 +222,16 @@ function EditAndReview() {
             // check feature.hasBackcountryPermits and dateTypes
             if (
               filterDateType.name === "Backcountry registration" &&
-              !park.features?.some((feature) => feature.hasBackcountryPermits)
+              !(
+                park.features?.some(
+                  (feature) => feature.hasBackcountryPermits,
+                ) ||
+                park.parkAreas?.some((parkArea) =>
+                  parkArea.features?.some(
+                    (feature) => feature.hasBackcountryPermits,
+                  ),
+                )
+              )
             ) {
               return false;
             }
@@ -246,6 +255,21 @@ function EditAndReview() {
             );
 
             if (hasParkAreaDateType) return true;
+
+            // check parkAreas.features.seasons and dateTypes
+            const hasParkAreaFeatureDateType = park.parkAreas?.some(
+              (parkArea) =>
+                parkArea.features?.some((feature) =>
+                  feature.seasons?.some((season) =>
+                    season.dateRanges?.some(
+                      (dateRange) =>
+                        dateRange.dateType.id === filterDateType.id,
+                    ),
+                  ),
+                ),
+            );
+
+            if (hasParkAreaFeatureDateType) return true;
 
             // check features.seasons and dateTypes
             const hasFeatureDateType = park.features?.some((feature) =>
