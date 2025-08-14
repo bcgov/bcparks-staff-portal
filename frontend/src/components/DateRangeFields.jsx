@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
-import { startOfYear, endOfYear, addYears } from "date-fns";
+import { startOfYear, endOfYear, addYears, addDays } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Form from "react-bootstrap/Form";
 
@@ -20,10 +20,10 @@ function DateRange({
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
-  // Min and max dates: Jan 1 of this year and Dec 31 of next year
+  // Min and max dates: Jan 1 of next year and Dec 31 of the year after next
   // @TODO: Update this when validation is implemented
-  const minDate = useMemo(() => startOfYear(new Date()), []);
-  const maxDate = useMemo(() => endOfYear(addYears(new Date(), 1)), []);
+  const minDate = useMemo(() => startOfYear(addYears(new Date(), 1)), []);
+  const maxDate = useMemo(() => endOfYear(addYears(new Date(), 2)), []);
 
   // Convert to UTC if necessary, and call the update method from the parent
   function onSelect(dateField, dateObj) {
@@ -63,7 +63,9 @@ function DateRange({
           <DootDatePicker
             id={idOrTempId}
             dateField="endDate"
-            minDate={minDate}
+            minDate={
+              dateRange.startDate ? addDays(dateRange.startDate, 1) : minDate
+            }
             maxDate={maxDate}
             disabled={isDateRangeAnnual}
             date={dateRange.endDate}
