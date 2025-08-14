@@ -4,6 +4,7 @@ import "../../env.js";
 
 import _ from "lodash";
 import { Op } from "sequelize";
+import populateBlankGateOperatingDates from "./populate-blank-gate-dates.js";
 
 import {
   DateRange,
@@ -255,9 +256,21 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
       transaction,
     );
 
-    await transaction.commit();
     console.log("Done creating blank DateRanges for year", targetYear);
     console.log(`Created ${createdRecords.length} records`);
+
+    const createdGateDates = await populateBlankGateOperatingDates(
+      Number(targetYear),
+      transaction,
+    );
+
+    console.log(
+      "Done creating blank Gate Operating DateRanges for",
+      targetYear,
+    );
+    console.log(`Created ${createdGateDates.length} records`);
+
+    await transaction.commit();
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);
