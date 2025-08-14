@@ -172,7 +172,8 @@ export async function populateBlankDateRangesForYear(
       `${dateRangeKeys.length} applicable DateRanges. Checking if any exist already...`,
     );
 
-    // Exclude the Operating date type, handled by Gate date scripts
+    // Exclude the Operating date type,
+    // handled by `populateBlankGateOperatingDates` in ./populate-blank-gate-dates.js
     const dateTypeIdWhere = parkDateTypesByName.Operating
       ? {
           [Op.not]: parkDateTypesByName.Operating.id,
