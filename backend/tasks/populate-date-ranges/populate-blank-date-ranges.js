@@ -232,7 +232,16 @@ export async function populateBlankDateRangesForYear(
       `Created ${createdRecords.length} blank DateRanges for ${targetYear}`,
     );
 
-    return createdRecords;
+    const createdGateDates = await populateBlankGateOperatingDates(
+      Number(targetYear),
+      transaction,
+    );
+
+    console.log(
+      `Created ${createdGateDates.length} blank Park Gate Operating DateRanges for ${targetYear}`,
+    );
+
+    return [...createdRecords, ...createdGateDates];
   } catch (err) {
     console.error("Error populating blank DateRanges:", err);
     throw err;
@@ -256,21 +265,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
       transaction,
     );
 
+    await transaction.commit();
     console.log("Done creating blank DateRanges for year", targetYear);
     console.log(`Created ${createdRecords.length} records`);
-
-    const createdGateDates = await populateBlankGateOperatingDates(
-      Number(targetYear),
-      transaction,
-    );
-
-    console.log(
-      "Done creating blank Gate Operating DateRanges for",
-      targetYear,
-    );
-    console.log(`Created ${createdGateDates.length} records`);
-
-    await transaction.commit();
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

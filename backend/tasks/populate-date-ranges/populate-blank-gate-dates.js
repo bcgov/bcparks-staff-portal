@@ -9,6 +9,13 @@ import {
   Dateable,
 } from "../../models/index.js";
 
+/**
+ * Populates blank Park Operating DateRanges for a given year by creating DateRanges for all
+ * Park-level Seasons where the Park has Gate Details with "hasGate=TRUE"
+ * @param {number} targetYear The year for which to populate blank DateRanges
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Array>} Array of created DateRange records
+ */
 export default async function populateBlankGateOperatingDates(
   targetYear,
   transaction = null,
