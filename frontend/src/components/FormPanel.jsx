@@ -43,7 +43,14 @@ ButtonLoading.propTypes = {
   show: PropTypes.bool.isRequired,
 };
 
-function Buttons({ onSave, onSubmit, onApprove, approver, loading = false }) {
+function Buttons({
+  onSave,
+  onSubmit,
+  onApprove,
+  approver,
+  submitter,
+  loading = false,
+}) {
   return (
     <div>
       <button
@@ -98,10 +105,8 @@ function SeasonForm({
 
   // Hooks
   const { ROLES, checkAccess } = useAccess();
-  const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
-  );
+  const approver = checkAccess(ROLES.APPROVER);
+  const submitter = checkAccess(ROLES.SUBMITTER);
 
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
@@ -500,6 +505,7 @@ If dates have already been published, they will not be updated until new dates a
           />
           <Buttons
             approver={approver}
+            submitter={submitter}
             onApprove={onApprove}
             onSave={() => promptAndSave(false)}
             onSubmit={onSubmit}
