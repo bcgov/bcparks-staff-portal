@@ -90,10 +90,11 @@ function Buttons({
 }
 
 Buttons.propTypes = {
-  onSave: PropTypes.func,
-  onSubmit: PropTypes.func,
-  onApprove: PropTypes.func,
-  approver: PropTypes.bool,
+  onSave: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onApprove: PropTypes.func.isRequired,
+  approver: PropTypes.bool.isRequired,
+  submitter: PropTypes.bool.isRequired,
   loading: PropTypes.bool,
 };
 
