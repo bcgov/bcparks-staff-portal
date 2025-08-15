@@ -1,3 +1,4 @@
+import { useCallback, useMemo } from "react";
 import PropTypes from "prop-types";
 import getEnv from "@/config/getEnv";
 import { ROLES } from "@/config/permissions";
@@ -6,27 +7,31 @@ import AccessContext from "@/contexts/AccessContext";
 
 export default function AccessProvider({ children, auth }) {
   // Decode the token to get the user's roles
-  const roles = [];
-  const accessToken = auth?.user?.access_token;
-  const clientId = getEnv("VITE_OIDC_CLIENT_ID"); // "staff-portal"
+  const roles = useMemo(() => {
+    const accessToken = auth?.user?.access_token;
+    const clientId = getEnv("VITE_OIDC_CLIENT_ID"); // "staff-portal"
 
-  if (accessToken) {
+    if (!accessToken) return [];
+
     const payload = accessToken.split(".").at(1);
     const decodedPayload = atob(payload);
     const parsedPayload = JSON.parse(decodedPayload);
     const payloadRoles =
       parsedPayload?.resource_access?.[clientId]?.roles ?? [];
 
-    roles.push(...payloadRoles);
-  }
+    return [...payloadRoles];
+  }, [auth?.user?.access_token]);
 
   // @TODO: implement fine-grained permission checks here
-  function checkAccess(requiredRole) {
-    // Super admin can access everything
-    if (roles.includes(ROLES.SUPER_ADMIN)) return true;
+  const checkAccess = useCallback(
+    (requiredRole) => {
+      // Super admin can access everything
+      if (roles.includes(ROLES.SUPER_ADMIN)) return true;
 
-    return roles.includes(requiredRole);
-  }
+      return roles.includes(requiredRole);
+    },
+    [roles],
+  );
 
   // Log out of Keycloak (and show the login page again)
   async function logOut() {
