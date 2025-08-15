@@ -254,8 +254,7 @@ export default function ParkSeasonForm({
 
       <GateForm
         gateTitle="Park gate"
-        gateDescription='Does this park have a single gated vehicle entrance? If there are
-              multiple vehicle entrances, select "No".'
+        gateDescription="Does this park have a gate (or gates) that controls vehicle access to all or most of the park?"
         gateDetail={gateDetail}
         updateGateDetail={updateGateDetail}
         dateableId={park.dateableId}
