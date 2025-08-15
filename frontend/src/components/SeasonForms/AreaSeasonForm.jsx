@@ -39,7 +39,7 @@ function FeatureFormSectionComponent({
   const { elements } = useValidationContext();
 
   return (
-    <div className="area-feature" key={feature.id}>
+    <div className="area-feature mb-4" key={feature.id}>
       <h4 className="feature-name">{feature.name}</h4>
 
       {featureDateTypes.map((dateType) => (
