@@ -389,6 +389,22 @@ const groupCampingFeatures = await Feature.findAll({
 console.log(`Found ${groupCampingFeatures.length} Group Camping Features`);
 
 const groupCampingQueries = groupCampingFeatures.map(async (feature) => {
+  // If the feature belongs to a ParkArea, use the ParkArea's publishableId
+  if (feature.parkAreaId) {
+    let parkArea = feature.parkArea;
+
+    if (!parkArea) {
+      parkArea = await ParkArea.findByPk(feature.parkAreaId, { transaction });
+    }
+
+    if (parkArea) {
+      await createPublishable(parkArea);
+      await createDateable(parkArea);
+      await createSeason(parkArea.publishableId, nextYear);
+      return;
+    }
+  }
+
   // If the feature doesn't have a publishableId, add one and associate it
   await createPublishable(feature);
 
