@@ -60,7 +60,9 @@ function Buttons({
       >
         Save draft
       </button>
-      {approver ? (
+
+      {/* Show the Approve button for users with the approver role */}
+      {approver && (
         <button
           type="button"
           onClick={onApprove}
@@ -68,7 +70,10 @@ function Buttons({
         >
           Mark approved
         </button>
-      ) : (
+      )}
+
+      {/* Show the Submit button for submitters, but hide it for approvers */}
+      {submitter && !approver && (
         <button
           type="button"
           onClick={onSubmit}
