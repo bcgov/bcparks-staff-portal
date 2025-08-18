@@ -4,6 +4,7 @@ import "../../env.js";
 
 import _ from "lodash";
 import { Op } from "sequelize";
+import populateBlankGateOperatingDates from "./populate-blank-gate-dates.js";
 
 import {
   DateRange,
@@ -172,7 +173,8 @@ export async function populateBlankDateRangesForYear(
       `${dateRangeKeys.length} applicable DateRanges. Checking if any exist already...`,
     );
 
-    // Exclude the Operating date type, handled by Gate date scripts
+    // Exclude the Operating date type,
+    // handled by `populateBlankGateOperatingDates` in ./populate-blank-gate-dates.js
     const dateTypeIdWhere = parkDateTypesByName.Operating
       ? {
           [Op.not]: parkDateTypesByName.Operating.id,
@@ -230,7 +232,16 @@ export async function populateBlankDateRangesForYear(
       `Created ${createdRecords.length} blank DateRanges for ${targetYear}`,
     );
 
-    return createdRecords;
+    const createdGateDates = await populateBlankGateOperatingDates(
+      Number(targetYear),
+      transaction,
+    );
+
+    console.log(
+      `Created ${createdGateDates.length} blank Park Gate Operating DateRanges for ${targetYear}`,
+    );
+
+    return [...createdRecords, ...createdGateDates];
   } catch (err) {
     console.error("Error populating blank DateRanges:", err);
     throw err;

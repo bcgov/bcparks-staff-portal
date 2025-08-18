@@ -49,6 +49,13 @@ export default (sequelize) => {
         sourceKey: "orcs",
         as: "accessGroups",
       });
+
+      // A park has an associated GateDetail record
+      Park.hasOne(models.GateDetail, {
+        foreignKey: "publishableId",
+        sourceKey: "publishableId",
+        as: "gateDetails",
+      });
     }
   }
   Park.init(
