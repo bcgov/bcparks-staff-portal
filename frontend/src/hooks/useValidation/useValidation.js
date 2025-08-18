@@ -7,6 +7,8 @@ import startDateBeforeEndDate from "./rules/startDateBeforeEndDate.js";
 import dateInOperatingYear from "./rules/dateInOperatingYear.js";
 import noOverlapPrevious from "./rules/noOverlapPrevious.js";
 import changeNoteRequired from "./rules/changeNoteRequired.js";
+import reservationWithinOperating from "./rules/reservationWithinOperating.js";
+import reservationEndsBeforeOperatingEnds from "./rules/reservationEndsBeforeOperatingEnds.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -18,6 +20,15 @@ const elements = {
 
   // Under the "internal notes" textarea
   INTERNAL_NOTES: "internalNotes",
+
+  // Under an individual date range by its ID
+  dateRange: (idOrTempId) => `dateRange-${idOrTempId}`,
+
+  // Under an individual date input field by its dateRange ID and its field name
+  dateField: (idOrTempId, fieldName) => `dateField-${idOrTempId}-${fieldName}`,
+
+  // Under a form section for a dateable entity, such as a Feature, by its dateableId
+  dateableSection: (dateableId) => `formSection-${dateableId}`,
 };
 
 /**
@@ -79,6 +90,8 @@ function validate(seasonData, seasonContext) {
   dateInOperatingYear(seasonData, validationContext);
   noOverlapPrevious(seasonData, validationContext);
   changeNoteRequired(seasonData, validationContext);
+  reservationWithinOperating(seasonData, validationContext);
+  reservationEndsBeforeOperatingEnds(seasonData, validationContext);
 
   return errors;
 }

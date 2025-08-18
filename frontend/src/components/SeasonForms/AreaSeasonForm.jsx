@@ -17,10 +17,12 @@ import GateForm from "@/components/GateForm";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import PreviousDates from "@/components/SeasonForms/PreviousDates";
+import ErrorSlot from "@/components/ValidationErrorSlot";
 
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 // Individual Area-Feature form section
 function FeatureFormSectionComponent({
@@ -34,8 +36,10 @@ function FeatureFormSectionComponent({
   dateRangeAnnuals,
   updateDateRangeAnnual,
 }) {
+  const { elements } = useValidationContext();
+
   return (
-    <div className="area-feature" key={feature.id}>
+    <div className="area-feature mb-4" key={feature.id}>
       <h4 className="feature-name">{feature.name}</h4>
 
       {featureDateTypes.map((dateType) => (
@@ -81,6 +85,8 @@ function FeatureFormSectionComponent({
           />
         </div>
       ))}
+
+      <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
     </div>
   );
 }

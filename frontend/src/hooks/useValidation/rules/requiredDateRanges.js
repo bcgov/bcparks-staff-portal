@@ -8,7 +8,7 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
  * @returns {void}
  */
 export default function requiredDateRanges(seasonData, context) {
-  const { level } = context;
+  const { elements, level } = context;
 
   // Only validate after the form is submitted
   if (!context.submitted) return;
@@ -25,7 +25,7 @@ export default function requiredDateRanges(seasonData, context) {
     if (!dateRange.startDate) {
       context.addError(
         // Show the error below the end date field
-        `date-range-${dateRange.id || dateRange.tempId}-startDate`,
+        elements.dateField(dateRange.id || dateRange.tempId, "startDate"),
         "Required",
       );
     }
@@ -33,7 +33,7 @@ export default function requiredDateRanges(seasonData, context) {
     if (!dateRange.endDate) {
       context.addError(
         // Show the error below the end date field
-        `date-range-${dateRange.id || dateRange.tempId}-endDate`,
+        elements.dateField(dateRange.id || dateRange.tempId, "endDate"),
         "Required",
       );
     }

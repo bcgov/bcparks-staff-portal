@@ -9,7 +9,7 @@ import { normalizeToLocalDate } from "@/lib/utils";
  * @returns {void}
  */
 export default function dateInOperatingYear(seasonData, context) {
-  const { dateRanges } = context;
+  const { dateRanges, elements } = context;
   const { operatingYear } = seasonData.current;
 
   // Add errors for all invalid dates (dates must be within operatingYear)
@@ -24,7 +24,7 @@ export default function dateInOperatingYear(seasonData, context) {
     if (dateRange.startDate && getYear(localStartDate) !== operatingYear) {
       context.addError(
         // Show the error below the end date field
-        `date-range-${dateRange.id || dateRange.tempId}-startDate`,
+        elements.dateField(dateRange.id || dateRange.tempId, "startDate"),
         `Enter dates for ${operatingYear} only`,
       );
     }
@@ -32,7 +32,7 @@ export default function dateInOperatingYear(seasonData, context) {
     if (dateRange.endDate && getYear(localEndDate) !== operatingYear) {
       context.addError(
         // Show the error below the end date field
-        `date-range-${dateRange.id || dateRange.tempId}-endDate`,
+        elements.dateField(dateRange.id || dateRange.tempId, "endDate"),
         `Enter dates for ${operatingYear} only`,
       );
     }

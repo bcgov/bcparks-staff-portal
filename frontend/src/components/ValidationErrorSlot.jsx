@@ -12,7 +12,7 @@ export default function ValidationErrorSlot({ element }) {
 
   // Render all validation errors for this "element"
   return (
-    <div className="text-danger validation-errors">
+    <div className="text-danger validation-errors my-2">
       {errors.map((error, index) => (
         <div key={index}>{error.message}</div>
       ))}
