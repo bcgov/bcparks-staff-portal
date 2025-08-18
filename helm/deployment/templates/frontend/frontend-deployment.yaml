@@ -54,7 +54,7 @@ spec:
             - name: VITE_OIDC_CLIENT_ID
               value: {{ .Values.cluster.ssoClientId }}
             - name: VITE_OIDC_LOGIN_REDIRECT
-              value: {{ .Values.frontend.env.externalUrl }}/v2/
+              value: {{ .Values.frontend.env.externalUrl }}/dates/
             - name: VITE_OIDC_LOGOUT_REDIRECT
               value: {{ .Values.frontend.env.externalUrl }}
             - name: VITE_API_BASE_URL

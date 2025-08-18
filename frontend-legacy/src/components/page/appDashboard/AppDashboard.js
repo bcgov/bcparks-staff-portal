@@ -80,7 +80,7 @@ export default function AppDashboard({
               className="external-link"
               label="Dates of Operation"
               component="a"
-              href="/v2/"
+              href="/dates/"
             />
           </Tabs>
           <TabPanel value={tabIndex} index={0} label="dashboard">

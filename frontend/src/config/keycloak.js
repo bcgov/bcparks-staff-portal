@@ -6,7 +6,7 @@ export const oidcConfig = {
 
   // Redirect back to the page you were on after logging in
   redirect_uri: `${window.location.origin}${window.location.pathname}`,
-  post_logout_redirect_uri: `${window.location.origin}/v2/?logged-out`,
+  post_logout_redirect_uri: `${window.location.origin}/dates/?logged-out`,
 
   // Automatically renew the access token before it expires
   automaticSilentRenew: true,

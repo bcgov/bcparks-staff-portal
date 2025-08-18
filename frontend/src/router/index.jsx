@@ -46,7 +46,7 @@ const RouterConfig = createBrowserRouter(
     },
   ],
   {
-    basename: "/v2/",
+    basename: "/dates/",
 
     // future flags: disable warnings about v7 changes
     future: {
