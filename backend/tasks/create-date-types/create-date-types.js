@@ -4,9 +4,7 @@ import "../../env.js";
 import { DateType } from "../../models/index.js";
 import { dateTypesData } from "./date-types.js";
 
-export async function createDateTypes() {
-  const transaction = await DateType.sequelize.transaction();
-
+export async function createDateTypes(transaction = null) {
   try {
     for (const entry of dateTypesData) {
       // determine boolean fields based on level array
@@ -58,7 +56,9 @@ export async function createDateTypes() {
 
 // run directly
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  createDateTypes().catch((err) => {
+  const transaction = await DateType.sequelize.transaction();
+
+  createDateTypes(transaction).catch((err) => {
     console.error("Failed to create or update DateTypes:", err);
     throw err;
   });
