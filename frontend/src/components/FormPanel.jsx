@@ -43,7 +43,14 @@ ButtonLoading.propTypes = {
   show: PropTypes.bool.isRequired,
 };
 
-function Buttons({ onSave, onSubmit, onApprove, approver, loading = false }) {
+function Buttons({
+  onSave,
+  onSubmit,
+  onApprove,
+  approver,
+  submitter,
+  loading = false,
+}) {
   return (
     <div>
       <button
@@ -53,7 +60,9 @@ function Buttons({ onSave, onSubmit, onApprove, approver, loading = false }) {
       >
         Save draft
       </button>
-      {approver ? (
+
+      {/* Show the Approve button for users with the approver role */}
+      {approver && (
         <button
           type="button"
           onClick={onApprove}
@@ -61,7 +70,10 @@ function Buttons({ onSave, onSubmit, onApprove, approver, loading = false }) {
         >
           Mark approved
         </button>
-      ) : (
+      )}
+
+      {/* Show the Submit button for submitters, but hide it for approvers */}
+      {submitter && !approver && (
         <button
           type="button"
           onClick={onSubmit}
@@ -78,10 +90,11 @@ function Buttons({ onSave, onSubmit, onApprove, approver, loading = false }) {
 }
 
 Buttons.propTypes = {
-  onSave: PropTypes.func,
-  onSubmit: PropTypes.func,
-  onApprove: PropTypes.func,
-  approver: PropTypes.bool,
+  onSave: PropTypes.func.isRequired,
+  onSubmit: PropTypes.func.isRequired,
+  onApprove: PropTypes.func.isRequired,
+  approver: PropTypes.bool.isRequired,
+  submitter: PropTypes.bool.isRequired,
   loading: PropTypes.bool,
 };
 
@@ -98,10 +111,8 @@ function SeasonForm({
 
   // Hooks
   const { ROLES, checkAccess } = useAccess();
-  const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
-  );
+  const approver = checkAccess(ROLES.APPROVER);
+  const submitter = checkAccess(ROLES.SUBMITTER);
 
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
@@ -500,6 +511,7 @@ If dates have already been published, they will not be updated until new dates a
           />
           <Buttons
             approver={approver}
+            submitter={submitter}
             onApprove={onApprove}
             onSave={() => promptAndSave(false)}
             onSubmit={onSubmit}
