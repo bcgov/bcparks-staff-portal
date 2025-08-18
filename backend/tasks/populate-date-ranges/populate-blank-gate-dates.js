@@ -108,7 +108,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   try {
     if (!targetYear || isNaN(targetYear)) {
       console.info("Usage example: node populate-blank-gate-dates.js 2097");
-      throw new Error("Missing year argument");
+      throw new Error("Missing or invalid year argument");
     }
 
     const createdRecords = await populateBlankGateOperatingDates(
