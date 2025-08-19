@@ -337,6 +337,7 @@ router.get(
         publishableId: park.publishableId,
         name: park.name,
         orcs: park.orcs,
+        hasGate: parkHasGate,
         hasTier1Dates: park.hasTier1Dates,
         hasTier2Dates: park.hasTier2Dates,
         hasWinterFeeDates: park.hasWinterFeeDates,
