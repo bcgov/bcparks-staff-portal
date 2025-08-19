@@ -257,6 +257,64 @@ const SEASON_ATTRIBUTES = [
   "publishableId",
 ];
 
+/**
+ * Returns all reservation feature dates for a specific park and operating year.
+ * @param {Object} park Park model with features and parkAreas
+ * @param {number} operatingYear Operating year for the Seasons
+ * @returns {Promise<Array>} - Array of reservation feature dates
+ */
+async function getFeatureReservationDates(park, operatingYear) {
+  // Don't fetch other dates if the park doesn't have both Tier 1 and Tier 2 dates
+  if (!(park.hasTier1Dates && park.hasTier2Dates)) return [];
+
+  // Get the ID of the applicable Reservation date type
+  const reservationDateType = await DateType.findOne({
+    attributes: ["id"],
+
+    where: {
+      name: "Reservation",
+    },
+  });
+
+  const featurePublishableIds = park.features
+    // Filter out any park features without Publishable IDs
+    .filter((feature) => feature.publishableId)
+    .map((feature) => feature.publishableId);
+
+  const areaFeaturePublishableIds = park.parkAreas
+    // Filter out any park areas without Publishable IDs
+    .filter((parkArea) => parkArea.publishableId)
+    .map((parkArea) => parkArea.publishableId);
+
+  // Query the Season IDs for each publishable Feature in the Park,
+  // so we can look up their DateRanges
+  const featureSeasons = await Season.findAll({
+    attributes: ["id"],
+
+    where: {
+      operatingYear,
+
+      publishableId: {
+        [Op.in]: [...featurePublishableIds, ...areaFeaturePublishableIds],
+      },
+    },
+  });
+
+  const featureSeasonIds = featureSeasons.map((season) => season.id);
+
+  // Get all Reservation DateRanges for these Seasons
+  const reservationDateRanges = await DateRange.findAll({
+    where: {
+      seasonId: {
+        [Op.in]: featureSeasonIds,
+      },
+      dateTypeId: reservationDateType.id,
+    },
+  });
+
+  return reservationDateRanges;
+}
+
 // Get all form data and DateRanges for a Feature Season
 router.get(
   "/feature/:seasonId",
@@ -515,6 +573,13 @@ router.get(
 
     const { park } = seasonModel;
 
+    // Add the parkArea- and feature-level reservation dates to the payload
+    // (for Tier 1 and Tier 2 validation rules)
+    const featureReservationDates = getFeatureReservationDates(
+      park,
+      seasonModel.operatingYear,
+    );
+
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel, {
       parkLevel: true,
@@ -548,6 +613,13 @@ router.get(
       gateDetail,
     };
 
+    console.log(
+      "\n\n\n\npark",
+      park.hasTier1Dates,
+      park.hasTier2Dates,
+      "\n\n\n\n",
+    );
+
     const output = {
       current: currentSeason,
       previous: previousSeason,
@@ -555,6 +627,7 @@ router.get(
       icon: null,
       featureTypeName: null,
       name: seasonModel.park.name,
+      featureReservationDates: await featureReservationDates,
     };
 
     res.json(output);
