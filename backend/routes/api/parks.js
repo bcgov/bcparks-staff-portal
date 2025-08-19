@@ -232,6 +232,7 @@ function buildParkAreaOutput(parkArea) {
     dateableId: parkArea.dateableId,
     publishableId: parkArea.publishableId,
     name: parkArea.name,
+    inReservationSystem: parkArea.inReservationSystem,
     features: parkArea.features.map((feature) =>
       buildFeatureOutput(feature, parkArea.seasons, false),
     ),
@@ -269,7 +270,13 @@ router.get(
         {
           model: ParkArea,
           as: "parkAreas",
-          attributes: ["id", "dateableId", "publishableId", "name"],
+          attributes: [
+            "id",
+            "dateableId",
+            "publishableId",
+            "name",
+            "inReservationSystem",
+          ],
           include: [
             // Features that are part of the ParkArea
             featureModel(currentYear),
