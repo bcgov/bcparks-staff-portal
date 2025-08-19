@@ -84,9 +84,7 @@ function featureModel(minYear, where = {}) {
 // e.g. {Operation: {2024: [...], 2025: [...]}, Winter: {2024: [...], 2025: [...]}, ...}
 function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   // filter out invalid dateRanges
-  let validRanges = dateRanges.filter(
-    (dateRange) => dateRange.dateType && dateRange.startDate,
-  );
+  let validRanges = dateRanges.filter((dateRange) => dateRange.dateType);
 
   // filter out "Operating" dateType if hasGate is explicitly false at the park level
   if (hasGate === false) {

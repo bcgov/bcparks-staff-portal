@@ -303,22 +303,30 @@ const parkAreaFeatures = await Feature.findAll({
 const parkAreasMap = new Map(
   parkAreaFeatures.map((feature) => [feature.parkArea.id, feature.parkArea]),
 );
-const parkAreas = Array.from(parkAreasMap.values());
+const parkAreasWithFeatures = Array.from(parkAreasMap.values());
 
-console.log(`Found ${parkAreas.length} ParkAreas with Features`);
+console.log(`Found ${parkAreasWithFeatures.length} ParkAreas with Features`);
 
-const parkAreasQueries = parkAreas.map(async (parkArea) => {
-  // If the parkArea doesn't have a publishableId, add one and associate it
-  await createPublishable(parkArea);
+/**
+ * Creates new Seasons for each ParkArea in the provided array for the given year.
+ * @param {Array<ParkArea>} parkAreas Array of ParkArea records to process.
+ * @param {number} year The operating year for which to create seasons.
+ * @returns {Promise<void>}
+ */
+async function createSeasonsForParkAreas(parkAreas, year) {
+  for (const parkArea of parkAreas) {
+    // If the parkArea doesn't have a publishableId, add one and associate it
+    await createPublishable(parkArea);
 
-  // If the parkArea doesn't have a dateableId, add one and associate it
-  await createDateable(parkArea);
+    // If the parkArea doesn't have a dateableId, add one and associate it
+    await createDateable(parkArea);
 
-  // Create a season for this parkArea's Publishable ID and Operating Year, if it doesn't exist
-  await createSeason(parkArea.publishableId, operatingYear);
-});
+    // Create a season for this parkArea's Publishable ID and Operating Year, if it doesn't exist
+    await createSeason(parkArea.publishableId, year);
+  }
+}
 
-await Promise.all(parkAreasQueries);
+await createSeasonsForParkAreas(parkAreasWithFeatures, operatingYear);
 
 console.log(`Added ${publishablesAdded} missing ParkArea Publishables`);
 console.log(`Added ${dateablesAdded} missing ParkArea Dateables`);
@@ -330,7 +338,7 @@ publishablesAdded = 0;
 dateablesAdded = 0;
 seasonsAdded = 0;
 
-const features = await Feature.findAll({
+const featuresWithoutParkArea = await Feature.findAll({
   where: {
     active: true,
     // Find Features with null parkAreaId
@@ -340,20 +348,30 @@ const features = await Feature.findAll({
   transaction,
 });
 
-console.log(`Found ${features.length} Features with no ParkArea`);
+console.log(
+  `Found ${featuresWithoutParkArea.length} Features with no ParkArea`,
+);
 
-const featuresQueries = features.map(async (feature) => {
-  // If the feature doesn't have a publishableId, add one and associate it
-  await createPublishable(feature);
+/**
+ * Creates new Seasons for each Feature in the provided array for the given year.
+ * @param {Array<Feature>} features Array of Feature records to process.
+ * @param {number} year The operating year for which to create seasons.
+ * @returns {Promise<void>}
+ */
+async function createSeasonsForFeatures(features, year) {
+  for (const feature of features) {
+    // If the feature doesn't have a publishableId, add one and associate it
+    await createPublishable(feature);
 
-  // If the feature doesn't have a dateableId, add one and associate it
-  await createDateable(feature);
+    // If the feature doesn't have a dateableId, add one and associate it
+    await createDateable(feature);
 
-  // Create a season for this feature's Publishable ID and Operating Year, if it doesn't exist
-  await createSeason(feature.publishableId, operatingYear);
-});
+    // Create a season for this feature's Publishable ID and Operating Year, if it doesn't exist
+    await createSeason(feature.publishableId, year);
+  }
+}
 
-await Promise.all(featuresQueries);
+await createSeasonsForFeatures(featuresWithoutParkArea, operatingYear);
 
 console.log(`Added ${publishablesAdded} missing Feature Publishables`);
 console.log(`Added ${dateablesAdded} missing Feature Dateables`);
@@ -388,18 +406,29 @@ const groupCampingFeatures = await Feature.findAll({
 
 console.log(`Found ${groupCampingFeatures.length} Group Camping Features`);
 
-const groupCampingQueries = groupCampingFeatures.map(async (feature) => {
-  // If the feature doesn't have a publishableId, add one and associate it
-  await createPublishable(feature);
+// Collect unique parkAreaIds from group camping features that belong to a ParkArea
+const uniqueParkAreaIds = [
+  ...new Set(
+    groupCampingFeatures
+      .filter((feature) => feature.parkAreaId)
+      .map((feature) => feature.parkAreaId),
+  ),
+];
 
-  // If the feature doesn't have a dateableId, add one and associate it
-  await createDateable(feature);
-
-  // Create a season for this Feature's Publishable ID and next Operating Year, if it doesn't exist
-  await createSeason(feature.publishableId, nextYear);
+const groupCampingParkAreas = await ParkArea.findAll({
+  where: { id: uniqueParkAreaIds },
+  transaction,
 });
 
-await Promise.all(groupCampingQueries);
+// Create seasons for each unique ParkArea
+await createSeasonsForParkAreas(groupCampingParkAreas, nextYear);
+
+// For group camping features that do NOT belong to a ParkArea, create seasons for the feature itself
+const independentFeatures = groupCampingFeatures.filter(
+  (feature) => !feature.parkAreaId,
+);
+
+await createSeasonsForFeatures(independentFeatures, nextYear);
 
 console.log(
   `Added ${publishablesAdded} missing Group Camping Feature Publishables`,
