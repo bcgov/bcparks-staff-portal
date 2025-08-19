@@ -96,8 +96,14 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   }
 
   // group by dateType name
+  // TODO: CMS-1162 - update name in db
+  // "Operating" to "Gate" to display
   return _.mapValues(
-    _.groupBy(validRanges, (dateRange) => dateRange.dateType.name),
+    _.groupBy(validRanges, (dateRange) =>
+      dateRange.dateType.name === "Operating"
+        ? "Gate"
+        : dateRange.dateType.name,
+    ),
     (ranges) => {
       const byYear = _.groupBy(ranges, (dateRange) =>
         new Date(dateRange.startDate).getFullYear(),

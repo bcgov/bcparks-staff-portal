@@ -38,11 +38,19 @@ router.get(
         }),
       ]);
 
+    // TODO: CMS-1162 - update name in db
+    // "Operating" to "Gate" to display
+    const editedDateTypes = dateTypes.map((dateType) =>
+      dateType.name === "Operating"
+        ? { ...dateType.toJSON(), name: "Gate" }
+        : dateType,
+    );
+
     // Combine the results into a single object
     const filterOptions = {
       sections,
       managementAreas,
-      dateTypes,
+      dateTypes: editedDateTypes,
       featureTypes,
       accessGroups,
     };

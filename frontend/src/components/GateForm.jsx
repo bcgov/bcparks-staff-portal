@@ -68,11 +68,11 @@ export default function GateForm({
         </div>
         {gateDetail.hasGate && (
           <div>
-            {/* display operating dates only at park level */}
+            {/* display gate (operating) dates only at park level */}
             {level === "park" && (
               <div className="mb-4">
                 <h6 className="fw-normal">
-                  Operating dates{" "}
+                  Gate dates{" "}
                   <TooltipWrapper
                     placement="top"
                     content={dateType.description}
@@ -105,10 +105,10 @@ export default function GateForm({
               Gate hours{" "}
               <TooltipWrapper
                 placement="top"
-                content={`Gate Enter the hours the gate is open during the operating season.
-              If the times change throughout the season,
-              leave the times blank and list all the gate hours in the gate notes field.
-              If you do not want to display this information publicly, leave this blank.`}
+                content={`Regular daily hours the gate(s) is open.
+                  If hours are irregular, or change throughout the year,
+                  leave this blank and explain the gate schedule in ‘Internal notes’ below.
+                  If you would rather not publish gate hours, leave this blank.`}
               >
                 <FontAwesomeIcon icon={faCircleInfo} />
               </TooltipWrapper>{" "}

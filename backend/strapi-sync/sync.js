@@ -10,7 +10,6 @@ import {
   getFeatureTypeIcon,
 } from "./utils.js";
 import winterParks from "./park-winter-dates.js";
-import { dateTypesData } from "./date-types.js";
 import {
   Park,
   FeatureType,
@@ -283,51 +282,6 @@ export async function syncFeatureTypes(strapiData, featureTypeData) {
   await Promise.all(
     items.map((item) => createOrUpdateFeatureType(strapiData, item)),
   );
-}
-
-/**
- * These are not associated with any specific model in Strapi
- * We will create these manually
- * @param {Object} item dateType data from db
- * @returns {Promise<DateType>} dateType model
- */
-export async function createOrUpdateDateType(item) {
-  // determine boolean fields based on level array
-  const parkLevel = item.level?.includes("park") || false;
-  const featureLevel = item.level?.includes("feature") || false;
-  const parkAreaLevel = item.level?.includes("parkArea") || false;
-
-  let dbItem = await DateType.findOne({
-    where: { name: item.name, parkLevel, featureLevel, parkAreaLevel },
-  });
-
-  if (dbItem) {
-    dbItem.set({
-      startDateLabel: item.startDateLabel,
-      endDateLabel: item.endDateLabel,
-      description: item.description,
-      parkLevel,
-      featureLevel,
-      parkAreaLevel,
-    });
-    await dbItem.save();
-  } else {
-    dbItem = await createModel(DateType, {
-      name: item.name,
-      startDateLabel: item.startDateLabel,
-      endDateLabel: item.endDateLabel,
-      description: item.description,
-      parkLevel,
-      featureLevel,
-      parkAreaLevel,
-    });
-  }
-
-  return dbItem;
-}
-
-export async function syncDateTypes() {
-  await Promise.all(dateTypesData.map((item) => createOrUpdateDateType(item)));
 }
 
 /**
