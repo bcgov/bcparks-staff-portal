@@ -1,33 +1,10 @@
 import { Link } from "react-router-dom";
+import useAccess from "@/hooks/useAccess";
+import { ROLES } from "../config/permissions";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import "./TouchMenu.scss";
-
-const navItems = [
-  {
-    label: "Advisories",
-    Tag: "a",
-    href: "/advisories",
-  },
-  {
-    label: "Park Access Status",
-    Tag: "a",
-    href: "/park-access-status",
-  },
-  {
-    label: "Activities & Facilities",
-    Tag: "a",
-    href: "/activities-and-facilities",
-  },
-  {
-    label: "Dates of Operation",
-    Tag: Link,
-    to: "/",
-    // This menu only displays on DOOT right now,
-    // so Dates of Operation is always the active item.
-    active: true,
-  },
-];
+import navItems from "./shared/navItems";
 
 export default function TouchMenu({
   show = true,
@@ -40,6 +17,8 @@ export default function TouchMenu({
     logOut();
   }
 
+  const { hasAnyAccess } = useAccess();
+
   return (
     <div
       className={classNames("navbar-collapse collapse d-lg-none", {
@@ -48,20 +27,22 @@ export default function TouchMenu({
       id="touch-menu"
     >
       <ul className="navbar-nav">
-        {navItems.map(({ Tag, label, active, ...itemProps }) => (
-          <li key={label} className="nav-item">
-            {/* Use "a" for external links and Router Link components for internal links */}
-            <Tag
-              className={classNames("nav-link", {
-                active,
-              })}
-              {...itemProps}
-              onClick={closeMenu}
-            >
-              {label}
-            </Tag>
-          </li>
-        ))}
+        {navItems
+          .filter((item) => hasAnyAccess(item.allowedRoles))
+          .map(({ Tag, label, active, ...itemProps }) => (
+            <li key={label} className="nav-item">
+              {/* Use "a" for external links and Router Link components for internal links */}
+              <Tag
+                className={classNames("nav-link", {
+                  active,
+                })}
+                {...itemProps}
+                onClick={closeMenu}
+              >
+                {label}
+              </Tag>
+            </li>
+          ))}
         <li className="nav-item">
           {/* Full width logout button with the user's name */}
           <button

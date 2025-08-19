@@ -5,6 +5,7 @@ import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
 import Drawer from '@material-ui/core/Drawer';
 import MenuIcon from '@material-ui/icons/Menu';
+import PrivateElement from "../../../auth/PrivateElement";
 import CloseIcon from "@material-ui/icons/Close";
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -29,25 +30,32 @@ const ResponsiveDrawer = ({ handleTabChange }) => {
     setMobileOpen(false);
   };
 
-  const items = [
-    { value: 0, text: "Advisories" },
-    { value: 1, text: "Park Access Status" },
-    { value: 2, text: "Activities & Facilities" },
-    { value: 3, text: "Dates of Operation", href: "/dates/" },
+  const navItems = [
+    { value: 0, text: "Advisories", allowedRoles: ["submitter", "approver"] },
+    {
+      value: 1,
+      text: "Park Access Status",
+      allowedRoles: ["submitter", "approver"],
+    },
+    { value: 2, text: "Activities & Facilities", allowedRoles: ["approver"] },
+    {
+      value: 3,
+      text: "Dates of Operation",
+      href: "/dates/",
+      allowedRoles: ["doot-user"],
+    },
   ];
 
   const drawer = (
     <div>
       <List>
-        {items.map((item, index) => (
-          <ListItem
-            key={index}
-            button
-            onClick={() => handleClick(item)}
-          >
-            <ListItemText primary={item.text} />
-          </ListItem>
-        ))}
+        {navItems
+          .filter((item) => PrivateElement(item.allowedRoles))
+          .map((item, index) => (
+            <ListItem key={index} button onClick={() => handleClick(item)}>
+              <ListItemText primary={item.text} />
+            </ListItem>
+          ))}
         <ListItem>
           <AccountInfo />
         </ListItem>

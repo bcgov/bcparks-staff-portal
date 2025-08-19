@@ -65,23 +65,29 @@ export default function AppDashboard({
             className="app-tab"
             variant="fullWidth"
           >
-            <Tab label="Advisories" {...a11yProps(0, "dashboard-tab")} />
-            <Tab
-              label="Park Access Status"
-              {...a11yProps(1, "dashboard-tab")}
-            />
+            {PrivateElement(["submitter", "approver"]) && (
+              <Tab label="Advisories" {...a11yProps(0, "dashboard-tab")} />
+            )}
+            {PrivateElement(["submitter", "approver"]) && (
+              <Tab
+                label="Park Access Status"
+                {...a11yProps(1, "dashboard-tab")}
+              />
+            )}
             {PrivateElement(["approver"]) && (
               <Tab
                 label="Activities & Facilities"
                 {...a11yProps(2, "dashboard-tab")}
               />
             )}
-            <Tab
-              className="external-link"
-              label="Dates of Operation"
-              component="a"
-              href="/dates/"
-            />
+            {PrivateElement(["doot-user"]) && (
+              <Tab
+                className="external-link"
+                label="Dates of Operation"
+                component="a"
+                href="/dates/"
+              />
+            )}
           </Tabs>
           <TabPanel value={tabIndex} index={0} label="dashboard">
             <AdvisoryDashboard page={{ setError, cmsData, setCmsData }} />

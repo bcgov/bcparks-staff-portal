@@ -6,5 +6,9 @@ export default function useAccess() {
   const { roles, checkAccess, logOut, isAuthenticated } =
     useContext(AccessContext);
 
-  return { roles, checkAccess, ROLES, logOut, isAuthenticated };
+  function hasAnyAccess(rolesToCheck) {
+    return rolesToCheck.some((role) => checkAccess(role));
+  }
+
+  return { roles, checkAccess, ROLES, logOut, isAuthenticated, hasAnyAccess };
 }
