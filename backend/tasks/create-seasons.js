@@ -307,6 +307,12 @@ const parkAreasWithFeatures = Array.from(parkAreasMap.values());
 
 console.log(`Found ${parkAreasWithFeatures.length} ParkAreas with Features`);
 
+/**
+ * Creates new Seasons for each ParkArea in the provided array for the given year.
+ * @param {Array<ParkArea>} parkAreas Array of ParkArea records to process.
+ * @param {number} year The operating year for which to create seasons.
+ * @returns {Promise<void>}
+ */
 async function createSeasonsForParkAreas(parkAreas, year) {
   for (const parkArea of parkAreas) {
     // If the parkArea doesn't have a publishableId, add one and associate it
@@ -346,6 +352,12 @@ console.log(
   `Found ${featuresWithoutParkArea.length} Features with no ParkArea`,
 );
 
+/**
+ * Creates new Seasons for each Feature in the provided array for the given year.
+ * @param {Array<Feature>} features Array of Feature records to process.
+ * @param {number} year The operating year for which to create seasons.
+ * @returns {Promise<void>}
+ */
 async function createSeasonsForFeatures(features, year) {
   for (const feature of features) {
     // If the feature doesn't have a publishableId, add one and associate it
