@@ -21,7 +21,7 @@ RUN apk add --no-cache ca-certificates
 
 ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
-ENV V2_APP_ROOT=$APP_ROOT/v2
+ENV V2_APP_ROOT=$APP_ROOT/dates
 
 ADD frontend/Caddyfile /etc/caddy/Caddyfile
 RUN caddy fmt --overwrite /etc/caddy/Caddyfile

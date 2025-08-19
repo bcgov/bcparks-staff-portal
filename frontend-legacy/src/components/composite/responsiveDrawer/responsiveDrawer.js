@@ -30,10 +30,10 @@ const ResponsiveDrawer = ({ handleTabChange }) => {
   };
 
   const items = [
-    { "value": 0, "text": "Advisories" },
-    { "value": 1, "text": "Park Access Status" },
-    { "value": 2, "text": "Activities & Facilities" },
-    { "value": 3, "text": "Dates of Operation", "href": "/v2/" },
+    { value: 0, text: "Advisories" },
+    { value: 1, text: "Park Access Status" },
+    { value: 2, text: "Activities & Facilities" },
+    { value: 3, text: "Dates of Operation", href: "/dates/" },
   ];
 
   const drawer = (

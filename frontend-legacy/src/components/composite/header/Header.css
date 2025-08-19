@@ -24,6 +24,10 @@
   margin-left: 32px !important;
 }
 
+div.alert-danger {
+  background-color: #ce3e39;
+}
+
 @media (max-width: 768px) {
   header {
     position: fixed;

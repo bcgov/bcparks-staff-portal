@@ -4,6 +4,7 @@ import "./Header.css";
 import AccountInfo from "../accountInfo/AccountInfo";
 import config from "../../../utils/config";
 import ResponsiveDrawer from "../responsiveDrawer/responsiveDrawer";
+import InfoIcon from "@material-ui/icons/InfoOutlined";
 
 export const goHome = (e, history) => {
   e.stopPropagation();
@@ -30,6 +31,11 @@ export const goHome = (e, history) => {
 export default function Header({ handleTabChange }) {
   const history = useHistory();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
+  // Check if the app is running in production
+  const isProduction =
+    typeof window !== "undefined" &&
+    window.location.hostname === "staff.bcparks.ca";
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
@@ -70,7 +76,7 @@ export default function Header({ handleTabChange }) {
               onKeyDown={(e) => goHome(e, history)}
               tabIndex={0}
             >
-              Staff web portal v2
+              Staff web portal
             </div>
           </div>
           {windowWidth > 768 ?
@@ -80,6 +86,16 @@ export default function Header({ handleTabChange }) {
           }
         </div>
       </nav>
+      {!isProduction && (
+        <div
+          role="alert"
+          className="text-center text-white border-0 rounded-0 mb-0 alert alert-danger show"
+        >
+          <InfoIcon className="me-1" />
+          Testing environment only. Information entered will not appear on the
+          live reservation site or on bcparks.ca.
+        </div>
+      )}
     </header>
   );
 }
