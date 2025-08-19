@@ -122,6 +122,7 @@ export default function DateRangeFields({
   updateDateRangeAnnual,
   optional = false,
 }) {
+  const { elements } = useValidationContext();
   // Constants
   // Tier 1 only allows 1 date range
   const hasMultipleDates = dateType.name !== "Tier 1";
@@ -199,6 +200,10 @@ export default function DateRangeFields({
           className="mt-2 mb-0"
         />
       )}
+
+      <ErrorSlot
+        element={elements.dateableDateType(dateableId, dateType.name)}
+      />
     </>
   );
 }

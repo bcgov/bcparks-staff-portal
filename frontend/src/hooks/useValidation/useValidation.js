@@ -10,6 +10,7 @@ import changeNoteRequired from "./rules/changeNoteRequired.js";
 import reservationWithinOperating from "./rules/reservationWithinOperating.js";
 import reservationEndsBeforeOperatingEnds from "./rules/reservationEndsBeforeOperatingEnds.js";
 import completeDateRanges from "./rules/completeDateRanges.js";
+import tier1and2SameAsReservation from "./rules/tier1and2SameAsReservation.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -27,6 +28,10 @@ const elements = {
 
   // Under an individual date input field by its dateRange ID and its field name
   dateField: (idOrTempId, fieldName) => `dateField-${idOrTempId}-${fieldName}`,
+
+  // Under all the date ranges for a dateable feature, by date type
+  dateableDateType: (dateableId, dateTypeName) =>
+    `dateableDateType-${dateableId}-${dateTypeName}`,
 
   // Under a form section for a dateable entity, such as a Feature, by its dateableId
   dateableSection: (dateableId) => `formSection-${dateableId}`,
@@ -98,6 +103,7 @@ function validate(seasonData, seasonContext) {
   changeNoteRequired(seasonData, validationContext);
   reservationWithinOperating(seasonData, validationContext);
   reservationEndsBeforeOperatingEnds(seasonData, validationContext);
+  tier1and2SameAsReservation(seasonData, validationContext);
 
   return errors;
 }
