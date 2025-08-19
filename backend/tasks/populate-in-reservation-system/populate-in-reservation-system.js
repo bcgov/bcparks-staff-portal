@@ -33,7 +33,7 @@ export async function populateParkAreaInReservationSystem(transaction = null) {
       ) {
         newValue = false;
       } else {
-        // skip if there are no features
+        // skip if all features have null or undefined inReservationSystem values
         continue;
       }
 
@@ -48,10 +48,8 @@ export async function populateParkAreaInReservationSystem(transaction = null) {
       }
     }
 
-    await transaction.commit();
     console.log(`Finished. Updated ${updatedCount} ParkAreas.`);
   } catch (error) {
-    await transaction.rollback();
     console.error("Error populating ParkArea.inReservationSystem:", error);
     throw error;
   }
@@ -61,8 +59,12 @@ export async function populateParkAreaInReservationSystem(transaction = null) {
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await ParkArea.sequelize.transaction();
 
-  populateParkAreaInReservationSystem(transaction).catch((err) => {
+  try {
+    await populateParkAreaInReservationSystem(transaction);
+    await transaction.commit();
+  } catch (err) {
+    await transaction.rollback();
     console.error("Error populating ParkArea.inReservationSystem:", err);
     throw err;
-  });
+  }
 }
