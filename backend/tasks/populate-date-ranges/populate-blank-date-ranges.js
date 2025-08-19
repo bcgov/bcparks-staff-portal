@@ -218,10 +218,9 @@ export async function populateBlankDateRangesForYear(
 
     if (keysToCreate.length === 0) {
       console.log("All applicable DateRanges exist - none to create");
-      return [];
+    } else {
+      console.log(`Creating ${keysToCreate.length} missing DateRanges`);
     }
-
-    console.log(`Creating ${keysToCreate.length} missing DateRanges`);
 
     // Bulk insert the new DateRanges
     const createdRecords = await DateRange.bulkCreate(keysToCreate, {
