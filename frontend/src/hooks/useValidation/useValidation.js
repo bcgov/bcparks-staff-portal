@@ -61,6 +61,10 @@ function validate(seasonData, seasonContext) {
     errors.push({ element, message });
   };
 
+  // Provide the flat array of Feature Reservation dates in the context, for Park-level validation
+  validationContext.featureReservationDates =
+    seasonData.featureReservationDates ?? [];
+
   // Flatten the date ranges for looping in validation
   const dateRanges = [];
 
