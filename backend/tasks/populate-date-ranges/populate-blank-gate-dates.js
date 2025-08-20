@@ -1,6 +1,5 @@
 import "../../env.js";
 
-import { Sequelize } from "sequelize";
 import {
   DateType,
   DateRange,
@@ -63,11 +62,6 @@ export default async function populateBlankGateOperatingDates(
                 model: DateRange,
                 as: "dateRanges",
                 required: false,
-                where: {
-                  seasonId: {
-                    [Sequelize.Op.col]: "Season.id",
-                  },
-                },
               },
             ],
           },
@@ -82,10 +76,12 @@ export default async function populateBlankGateOperatingDates(
     `\nFound ${parkSeasons.length} park seasons with gates for year ${targetYear}`,
   );
 
-  // Filter for seasons that have no Operating DateRanges
+  // Filter for seasons that have no Operating DateRanges for this specific season
   const seasonsWithoutOperatingDates = parkSeasons.filter((season) => {
     const operatingDateRanges = season.park.dateable.dateRanges.filter(
-      (dateRange) => dateRange.dateTypeId === operatingDateType.id,
+      (dateRange) =>
+        dateRange.dateTypeId === operatingDateType.id &&
+        dateRange.seasonId === season.id,
     );
 
     return operatingDateRanges.length === 0;
