@@ -39,7 +39,7 @@ export default async function populateBlankGateOperatingDates(
       {
         model: Park,
         as: "park",
-        attributes: ["id", "name", "publishableId"],
+        attributes: ["id", "name"],
         required: true,
 
         include: [
