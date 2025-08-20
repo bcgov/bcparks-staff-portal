@@ -32,50 +32,49 @@ export default async function populateBlankGateOperatingDates(
   });
 
   // Get all Park Seasons with "HasGate = true"
-  const parkSeasons = await Season.findAll(
-    {
-      where: { operatingYear: targetYear },
+  const parkSeasons = await Season.findAll({
+    where: { operatingYear: targetYear },
 
-      include: [
-        {
-          model: Park,
-          as: "park",
-          attributes: ["id", "name"],
-          required: true,
+    include: [
+      {
+        model: Park,
+        as: "park",
+        attributes: ["id", "name"],
+        required: true,
 
-          include: [
-            {
-              model: GateDetail,
-              as: "gateDetails",
-              required: true,
-              where: {
-                hasGate: true,
-              },
+        include: [
+          {
+            model: GateDetail,
+            as: "gateDetails",
+            required: true,
+            where: {
+              hasGate: true,
             },
+          },
 
-            {
-              model: Dateable,
-              as: "dateable",
-              required: true,
+          {
+            model: Dateable,
+            as: "dateable",
+            required: true,
 
-              include: [
-                {
-                  model: DateRange,
-                  as: "dateRanges",
-                  required: false,
+            include: [
+              {
+                model: DateRange,
+                as: "dateRanges",
+                required: false,
 
-                  where: {
-                    dateTypeId: operatingDateType.id,
-                  },
+                where: {
+                  dateTypeId: operatingDateType.id,
                 },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    { transaction },
-  );
+              },
+            ],
+          },
+        ],
+      },
+    ],
+
+    transaction,
+  });
 
   // Filter a list of Park Seasons that have no Operating date ranges yet
   const seasonsWithoutDates = parkSeasons.filter(
