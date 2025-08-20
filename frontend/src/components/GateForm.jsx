@@ -154,7 +154,7 @@ GateForm.propTypes = {
   gateTitle: PropTypes.string.isRequired,
   gateDescription: PropTypes.string.isRequired,
   gateDetail: PropTypes.shape({
-    hasGate: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf([null])]),
+    hasGate: PropTypes.oneOf([true, false, null]),
     gateOpenTime: PropTypes.string,
     gateCloseTime: PropTypes.string,
     gateOpensAtDawn: PropTypes.bool,

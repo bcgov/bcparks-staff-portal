@@ -248,7 +248,7 @@ FeatureSeasonForm.propTypes = {
     readyToPublish: PropTypes.bool.isRequired,
     dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
     gateDetail: PropTypes.shape({
-      hasGate: PropTypes.oneOfType([PropTypes.bool, PropTypes.oneOf([null])]),
+      hasGate: PropTypes.oneOf([true, false, null]),
       gateOpenTime: PropTypes.string,
       gateCloseTime: PropTypes.string,
       gateOpensAtDawn: PropTypes.bool,
