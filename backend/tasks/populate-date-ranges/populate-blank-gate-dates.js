@@ -32,58 +32,74 @@ export default async function populateBlankGateOperatingDates(
   });
 
   // Get all Park Seasons with "HasGate = true"
-  const parkSeasons = await Season.findAll(
-    {
-      where: { operatingYear: targetYear },
+  const parkSeasons = await Season.findAll({
+    where: { operatingYear: targetYear },
 
-      include: [
-        {
-          model: Park,
-          as: "park",
-          attributes: ["id", "name"],
-          required: true,
+    include: [
+      {
+        model: Park,
+        as: "park",
+        attributes: ["id", "name"],
+        required: true,
 
-          include: [
-            {
-              model: GateDetail,
-              as: "gateDetails",
-              required: true,
-              where: {
-                hasGate: true,
+        include: [
+          {
+            model: GateDetail,
+            as: "gateDetails",
+            required: true,
+            where: {
+              hasGate: true,
+            },
+          },
+
+          {
+            model: Dateable,
+            as: "dateable",
+            required: true,
+
+            include: [
+              {
+                model: DateRange,
+                as: "dateRanges",
+                required: false,
               },
-            },
+            ],
+          },
+        ],
+      },
+    ],
 
-            {
-              model: Dateable,
-              as: "dateable",
-              required: true,
+    transaction,
+  });
 
-              include: [
-                {
-                  model: DateRange,
-                  as: "dateRanges",
-                  required: false,
-
-                  where: {
-                    dateTypeId: operatingDateType.id,
-                  },
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    { transaction },
+  console.log(
+    `\nFound ${parkSeasons.length} park seasons with gates for year ${targetYear}`,
   );
 
-  // Filter a list of Park Seasons that have no Operating date ranges yet
-  const seasonsWithoutDates = parkSeasons.filter(
-    (season) => season.park.dateable.dateRanges.length === 0,
+  // Filter for seasons that have no Operating DateRanges for this specific season
+  const seasonsWithoutOperatingDates = parkSeasons.filter((season) => {
+    const operatingDateRanges = season.park.dateable.dateRanges.filter(
+      (dateRange) =>
+        dateRange.dateTypeId === operatingDateType.id &&
+        dateRange.seasonId === season.id,
+    );
+
+    return operatingDateRanges.length === 0;
+  });
+
+  console.log(
+    `\n${seasonsWithoutOperatingDates.length} seasons need Operating DateRanges created`,
   );
+
+  if (seasonsWithoutOperatingDates.length === 0) {
+    console.log(
+      "No DateRanges to create - all parks already have Operating dates",
+    );
+    return [];
+  }
 
   // Build data for bulk inserting the missing Operating DateRanges
-  const insertData = seasonsWithoutDates.map((season) => ({
+  const insertData = seasonsWithoutOperatingDates.map((season) => ({
     startDate: null,
     endDate: null,
     dateTypeId: operatingDateType.id,
@@ -92,9 +108,15 @@ export default async function populateBlankGateOperatingDates(
     adminNote: null,
   }));
 
+  console.log(`\nCreating ${insertData.length} Operating DateRanges...`);
+
   const createdRecords = await DateRange.bulkCreate(insertData, {
     transaction,
   });
+
+  console.log(
+    `Successfully created ${createdRecords.length} Operating DateRanges`,
+  );
 
   return createdRecords;
 }
