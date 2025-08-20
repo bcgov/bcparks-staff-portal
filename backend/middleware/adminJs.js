@@ -36,6 +36,8 @@ AdminJS.registerAdapter({
   Database: AdminJSSequelize.Database,
 });
 
+const componentLoader = new ComponentLoader();
+
 // authenticate hardcoded credentials from environment variables
 const DEFAULT_ADMIN = {
   email: process.env.ADMIN_USER,
@@ -257,6 +259,12 @@ const ParkResource = {
   },
 };
 
+// Allow nullable booleans to be displayed as "Yes", "No", and "null"
+const nullableBooleanComponent = componentLoader.add(
+  "NullableBooleanList",
+  "../components/NullableBooleanList",
+);
+
 const GateDetailResource = {
   resource: GateDetail,
   options: {
@@ -268,13 +276,19 @@ const GateDetailResource = {
       "gateCloseTime",
       "gateOpensAtDawn",
       "gateClosesAtDusk",
-      "gateOpen24Hours",
       "createdAt",
       "updatedAt",
     ],
+    properties: {
+      hasGate: {
+        components: {
+          list: nullableBooleanComponent,
+          show: nullableBooleanComponent,
+        },
+      },
+    },
   },
 };
-
 
 function getParkResource() {
   if (process.env.DEV_TEST_MODE === "true") {
@@ -282,8 +296,6 @@ function getParkResource() {
   }
   return Park;
 }
-
-const componentLoader = new ComponentLoader();
 
 const adminOptions = {
   // We pass Category to `resources`

@@ -62,7 +62,11 @@ export async function createGateDetailsFromStrapi() {
       const parkOperation = parkOperationByOrcs[park.orcs];
 
       if (parkOperation) {
-        gateDetail.hasGate = parkOperation.hasParkGate ?? gateDetail.hasGate;
+        if (parkOperation.hasParkGate === null) {
+          gateDetail.hasGate = null;
+        } else {
+          gateDetail.hasGate = parkOperation.hasParkGate;
+        }
         gateDetail.gateOpenTime =
           parkOperation.gateOpenTime ?? gateDetail.gateOpenTime;
         gateDetail.gateCloseTime =
@@ -121,7 +125,11 @@ export async function createGateDetailsFromStrapi() {
       const subArea = parkOpeationSubAreaById[feature.strapiId];
 
       if (subArea) {
-        gateDetail.hasGate = subArea.hasGate ?? gateDetail.hasGate;
+        if (subArea.hasGate === null) {
+          gateDetail.hasGate = null;
+        } else {
+          gateDetail.hasGate = subArea.hasGate;
+        }
         gateDetail.gateOpenTime =
           subArea.gateOpenTime ?? gateDetail.gateOpenTime;
         gateDetail.gateCloseTime =
