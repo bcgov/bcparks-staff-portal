@@ -8,7 +8,7 @@ import consolidateRanges from "@/lib/consolidateDateRanges";
  * @param {Object} context Validation context with errors array
  * @returns {void}
  */
-export default function tier1and2NoOverlap(seasonData, context) {
+export default function tier1And2NoOverlap(seasonData, context) {
   const { dateRanges, elements } = context;
   const { current } = seasonData;
 

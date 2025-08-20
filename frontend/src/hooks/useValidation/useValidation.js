@@ -10,8 +10,8 @@ import changeNoteRequired from "./rules/changeNoteRequired.js";
 import reservationWithinOperating from "./rules/reservationWithinOperating.js";
 import reservationEndsBeforeOperatingEnds from "./rules/reservationEndsBeforeOperatingEnds.js";
 import completeDateRanges from "./rules/completeDateRanges.js";
-import tier1and2SameAsReservation from "./rules/tier1and2SameAsReservation.js";
-import tier1and2NoOverlap from "./rules/tier1and2NoOverlap.js";
+import tier1And2SameAsReservation from "./rules/tier1And2SameAsReservation.js";
+import tier1And2NoOverlap from "./rules/tier1And2NoOverlap.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -104,8 +104,8 @@ function validate(seasonData, seasonContext) {
   changeNoteRequired(seasonData, validationContext);
   reservationWithinOperating(seasonData, validationContext);
   reservationEndsBeforeOperatingEnds(seasonData, validationContext);
-  tier1and2SameAsReservation(seasonData, validationContext);
-  tier1and2NoOverlap(seasonData, validationContext);
+  tier1And2SameAsReservation(seasonData, validationContext);
+  tier1And2NoOverlap(seasonData, validationContext);
 
   return errors;
 }

@@ -8,7 +8,7 @@ import consolidateRanges from "@/lib/consolidateDateRanges";
  * @param {Object} context Validation context with errors array
  * @returns {void}
  */
-export default function tier1and2SameAsReservation(seasonData, context) {
+export default function tier1And2SameAsReservation(seasonData, context) {
   const { dateRanges, elements, featureReservationDates } = context;
   const { current } = seasonData;
 
