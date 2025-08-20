@@ -9,6 +9,7 @@ import noOverlapPrevious from "./rules/noOverlapPrevious.js";
 import changeNoteRequired from "./rules/changeNoteRequired.js";
 import reservationWithinOperating from "./rules/reservationWithinOperating.js";
 import reservationEndsBeforeOperatingEnds from "./rules/reservationEndsBeforeOperatingEnds.js";
+import completeDateRanges from "./rules/completeDateRanges.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -85,6 +86,7 @@ function validate(seasonData, seasonContext) {
   // Call the validation rules on the season data
   validGateTime(seasonData, validationContext);
   hasGateChosen(seasonData, validationContext);
+  completeDateRanges(seasonData, validationContext);
   requiredDateRanges(seasonData, validationContext);
   startDateBeforeEndDate(seasonData, validationContext);
   dateInOperatingYear(seasonData, validationContext);
