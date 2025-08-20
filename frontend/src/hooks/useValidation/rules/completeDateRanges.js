@@ -10,7 +10,7 @@ export default function completeDateRanges(seasonData, context) {
   // Only validate after the form is submitted
   if (!context.submitted) return;
 
-  // Add errors for all invalid dates (dates must be within operatingYear)
+  // Add errors for incomplete date ranges (missing startDate or endDate)
   dateRanges.forEach((dateRange) => {
     const idOrTempId = dateRange.id || dateRange.tempId;
 
