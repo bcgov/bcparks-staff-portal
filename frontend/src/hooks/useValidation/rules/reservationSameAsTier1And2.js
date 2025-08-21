@@ -50,7 +50,7 @@ export default function reservationSameAsTier1And2(seasonData, context) {
 
   if (!sameDates) {
     const errorText =
-      "The reservation dates must include all reservation dates. (To change tier 1 and tier 2 dates, edit the park)";
+      "The reservation dates must include all tier 1 and tier 2 dates. (To change tier 1 and tier 2 dates, edit the park)";
 
     // Show the error below the Reservation dates section
     if (context.level === "feature") {
