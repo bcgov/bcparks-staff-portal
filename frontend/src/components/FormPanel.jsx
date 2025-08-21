@@ -301,13 +301,26 @@ function SeasonForm({
     setDataChanged(dataChanged);
   }, [dataChanged, setDataChanged]);
 
-  async function onSave(close = true) {
+  /**
+   * Saves the form data to the DB.
+   * @param {boolean} close closes the form panel
+   * @param {boolean} allowInvalid allows saving even if the form has validation errors
+   * @returns {Promise<void>}
+   */
+  async function onSave(close = true, allowInvalid = false) {
     // onSave is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
 
     // Validate the form before saving
-    validation.validateForm();
+    const validationErrors = validation.validateForm();
+
+    if (validationErrors.length && !allowInvalid) {
+      // If there are validation errors and we're not allowing invalid saves, stop here
+      throw new Error(
+        `Validation failed with ${validationErrors.length} errors`,
+      );
+    }
 
     // Clone the payload
     const payload = { ...changesPayload };
@@ -381,36 +394,45 @@ If dates have already been published, they will not be updated until new dates a
       }
     }
 
-    onSave(close);
+    // Save draft, and allow saving with validation errors
+    onSave(close, true);
   }
 
   async function onApprove() {
-    // Save first, then approve
-    await onSave(false); // Don't close the form after saving
+    try {
+      // Save first, then approve
+      await onSave(false); // Don't close the form after saving
 
-    await sendApprove();
+      await sendApprove();
 
-    // Start refreshing the main page data from the API
-    onDataUpdate();
+      // Start refreshing the main page data from the API
+      onDataUpdate();
 
-    flashMessage.open(
-      "Dates approved",
-      `${seasonTitle} ${season.operatingYear} dates marked as approved`,
-    );
+      flashMessage.open(
+        "Dates approved",
+        `${seasonTitle} ${season.operatingYear} dates marked as approved`,
+      );
 
-    closePanel();
+      closePanel();
+    } catch (saveError) {
+      console.error("Error approving season:", saveError);
+    }
   }
 
   async function onSubmit() {
-    // Save first, then submit
-    await onSave(false); // Don't close the form after saving
+    try {
+      // Save first, then submit
+      await onSave(false); // Don't close the form after saving
 
-    await sendSubmit();
+      await sendSubmit();
 
-    // Start refreshing the main page data from the API
-    onDataUpdate();
+      // Start refreshing the main page data from the API
+      onDataUpdate();
 
-    closePanel();
+      closePanel();
+    } catch (saveError) {
+      console.error("Error submitting season:", saveError);
+    }
   }
 
   if (loading) {

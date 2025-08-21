@@ -112,7 +112,7 @@ function validate(seasonData, seasonContext) {
  * - {Object} groupedErrors Errors grouped by element for display
  * - {Array} errors Array of validation error objects
  * - {Object} elements Constants for named validation error slots in the UI
- * - {Function} validateForm Function to manually validate the form and throw if errors exist
+ * - {Function} validateForm Function to manually validate the form and return any errors found
  */
 export default function useValidation(seasonData, context) {
   // Re-validate when any form value changes, and update the errors array
@@ -123,9 +123,10 @@ export default function useValidation(seasonData, context) {
   );
 
   /**
-   * Validates the form data and throws an error if there are validation errors.
+   * Validates the form data and returns any validation errors.
    * This is used in the onSave function to ensure the form is valid before saving.
    * @param {boolean} [submitted=true] Whether the form has been submitted.
+   * @returns {Array} Array of validation error objects
    */
   const validateForm = useCallback(
     (submitted = true) => {
@@ -134,9 +135,8 @@ export default function useValidation(seasonData, context) {
 
       const errorResults = validate(seasonData, validationContext);
 
-      if (errorResults.length) {
-        throw new Error(`Validation failed with ${errorResults.length} errors`);
-      }
+      // Return the errors. Any length > 0 means the form is invalid.
+      return errorResults;
     },
     [seasonData, context],
   );
