@@ -12,6 +12,7 @@ import reservationEndsBeforeOperatingEnds from "./rules/reservationEndsBeforeOpe
 import completeDateRanges from "./rules/completeDateRanges.js";
 import tier1And2SameAsReservation from "./rules/tier1And2SameAsReservation.js";
 import tier1And2NoOverlap from "./rules/tier1And2NoOverlap.js";
+import reservationSameAsTier1And2 from "./rules/reservationSameAsTier1And2.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -71,6 +72,10 @@ function validate(seasonData, seasonContext) {
   validationContext.featureReservationDates =
     seasonData.featureReservationDates ?? [];
 
+  // Provide flat arrays of Tier 1 and 2 dates in the context, for Feature/Area Reservation validation
+  validationContext.parkTier1Dates = seasonData.parkTier1Dates ?? [];
+  validationContext.parkTier2Dates = seasonData.parkTier2Dates ?? [];
+
   // Flatten the date ranges for looping in validation
   const dateRanges = [];
 
@@ -106,6 +111,7 @@ function validate(seasonData, seasonContext) {
   reservationEndsBeforeOperatingEnds(seasonData, validationContext);
   tier1And2SameAsReservation(seasonData, validationContext);
   tier1And2NoOverlap(seasonData, validationContext);
+  reservationSameAsTier1And2(seasonData, validationContext);
 
   return errors;
 }
