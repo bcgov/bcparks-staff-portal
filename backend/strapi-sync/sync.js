@@ -20,7 +20,6 @@ import {
   DateRange,
   Section,
   ManagementArea,
-  User,
 } from "../models/index.js";
 import * as STATUS from "../constants/seasonStatus.js";
 
@@ -103,7 +102,12 @@ export async function fetchAllModels() {
     {
       endpoint: "/park-operation-sub-area-dates",
       model: "park-operation-sub-area-date",
-      fields: [{ relation: "parkOperationSubArea", fields: ["id", "hasBackcountryPermits"] }],
+      fields: [
+        {
+          relation: "parkOperationSubArea",
+          fields: ["id", "hasBackcountryPermits"],
+        },
+      ],
       items: [],
     },
     {
