@@ -20,7 +20,6 @@ import {
   DateRange,
   Section,
   ManagementArea,
-  User,
 } from "../models/index.js";
 import * as STATUS from "../constants/seasonStatus.js";
 
@@ -103,7 +102,12 @@ export async function fetchAllModels() {
     {
       endpoint: "/park-operation-sub-area-dates",
       model: "park-operation-sub-area-date",
-      fields: [{ relation: "parkOperationSubArea", fields: ["id", "hasBackcountryPermits"] }],
+      fields: [
+        {
+          relation: "parkOperationSubArea",
+          fields: ["id", "hasBackcountryPermits"],
+        },
+      ],
       items: [],
     },
     {
@@ -804,7 +808,6 @@ export async function syncData() {
   await syncFeatures(featureData);
   await syncSections(sectionData);
   await syncManagementAreas(mgmtAreaData);
-  await syncDateTypes();
 }
 
 /**
@@ -819,16 +822,6 @@ async function createWinterFeatureType() {
   };
 
   await createModel(FeatureType, data);
-}
-
-async function createTestUser() {
-  const data = {
-    name: "Test User",
-    email: "test@oxd.com",
-    staff: true,
-  };
-
-  await createModel(User, data);
 }
 
 /**
@@ -858,8 +851,6 @@ export async function oneTimeDataImport() {
   }
 
   await createWinterFeatureType();
-
-  await createTestUser();
 
   datesData.items = await getData(currentUrl, params);
 
