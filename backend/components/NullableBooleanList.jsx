@@ -1,0 +1,10 @@
+const NullableBooleanList = ({ record, property }) => {
+  const value = record.params[property.path];
+
+  if (value === null || value === undefined) {
+    return <span>null</span>;
+  }
+  return <span>{value ? "Yes" : "No"}</span>;
+};
+
+export default NullableBooleanList;

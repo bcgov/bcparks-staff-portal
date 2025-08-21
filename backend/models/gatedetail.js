@@ -14,8 +14,8 @@ export default (sequelize) => {
       publishableId: DataTypes.INTEGER,
       hasGate: {
         type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
+        allowNull: true,
+        defaultValue: null,
       },
       gateOpenTime: DataTypes.TIME,
       gateCloseTime: DataTypes.TIME,

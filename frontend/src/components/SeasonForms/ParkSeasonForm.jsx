@@ -288,7 +288,7 @@ ParkSeasonForm.propTypes = {
     readyToPublish: PropTypes.bool.isRequired,
     dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
     gateDetail: PropTypes.shape({
-      hasGate: PropTypes.bool,
+      hasGate: PropTypes.oneOf([true, false, null]),
       gateOpenTime: PropTypes.string,
       gateCloseTime: PropTypes.string,
       gateOpensAtDawn: PropTypes.bool,
