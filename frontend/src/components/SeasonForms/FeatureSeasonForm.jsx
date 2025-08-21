@@ -10,10 +10,12 @@ import GateForm from "@/components/GateForm";
 import ReadyToPublishBox from "@/components/ReadyToPublishBox";
 import TooltipWrapper from "@/components/TooltipWrapper";
 import PreviousDates from "@/components/SeasonForms/PreviousDates";
+import ErrorSlot from "@/components/ValidationErrorSlot";
 
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 export default function FeatureSeasonForm({
   season,
@@ -174,6 +176,8 @@ export default function FeatureSeasonForm({
 
   // Individual Feature form section
   function FormSection() {
+    const { elements } = useValidationContext();
+
     return (
       <div className="row">
         {dateTypes.map((dateType) => (
@@ -202,6 +206,8 @@ export default function FeatureSeasonForm({
               updateDateRangeAnnual={updateDateRangeAnnual}
               optional={isDateTypeOptional(dateType.name, "feature")}
             />
+
+            <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
           </div>
         ))}
       </div>
