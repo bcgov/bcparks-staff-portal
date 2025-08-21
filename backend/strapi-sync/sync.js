@@ -804,7 +804,6 @@ export async function syncData() {
   await syncFeatures(featureData);
   await syncSections(sectionData);
   await syncManagementAreas(mgmtAreaData);
-  await syncDateTypes();
 }
 
 /**
@@ -819,16 +818,6 @@ async function createWinterFeatureType() {
   };
 
   await createModel(FeatureType, data);
-}
-
-async function createTestUser() {
-  const data = {
-    name: "Test User",
-    email: "test@oxd.com",
-    staff: true,
-  };
-
-  await createModel(User, data);
 }
 
 /**
@@ -858,8 +847,6 @@ export async function oneTimeDataImport() {
   }
 
   await createWinterFeatureType();
-
-  await createTestUser();
 
   datesData.items = await getData(currentUrl, params);
 
