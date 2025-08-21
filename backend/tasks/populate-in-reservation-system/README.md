@@ -13,7 +13,6 @@ This script populates the `inReservationSystem` field on each `ParkArea` based o
    - If **any** child `Feature` has `inReservationSystem === true`, sets the parent `ParkArea.inReservationSystem` to `true`.
    - If **all** child `Feature` records have `inReservationSystem === false`, sets the parent to `false`.
    - If there are **no child features**, the script skips that `ParkArea`.
-   - If all child features are `null`/`undefined`, the script skips updating that `ParkArea`.
 
 3. **Transaction Safety:**
    - All operations are performed inside a transaction. If any error occurs, all changes are rolled back.

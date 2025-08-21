@@ -20,22 +20,13 @@ export async function populateParkAreaInReservationSystem(transaction = null) {
     });
 
     for (const parkArea of parkAreas) {
-      let newValue;
       const features = parkArea.features || [];
 
       if (features.length === 0) continue;
 
-      // set it true if any feature has inReservationSystem = true,
-      if (features.some((feature) => feature.inReservationSystem === true)) {
-        newValue = true;
-      } else if (
-        features.every((feature) => feature.inReservationSystem === false)
-      ) {
-        newValue = false;
-      } else {
-        // skip if all features have null or undefined inReservationSystem values
-        continue;
-      }
+      const newValue = features.some(
+        (feature) => feature.inReservationSystem === true,
+      );
 
       if (parkArea.inReservationSystem !== newValue) {
         parkArea.inReservationSystem = newValue;
