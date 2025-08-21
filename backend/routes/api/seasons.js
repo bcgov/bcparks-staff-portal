@@ -315,6 +315,50 @@ async function getFeatureReservationDates(park, operatingYear) {
   return reservationDateRanges;
 }
 
+/**
+ * Returns the Tier 1 and Tier 2 dates for a Park Season.
+ * @param {Object} park Park model with hasTier1Dates, hasTier2Dates, and publishableId
+ * @param {number} operatingYear Operating year for the Seasons
+ * @returns {Promise<Object>} - Object with parkTier1Dates and parkTier2Dates arrays
+ */
+async function getParkTier1And2Dates(park, operatingYear) {
+  // Don't fetch other dates if the park doesn't have both Tier 1 and Tier 2 dates
+  if (!(park.hasTier1Dates && park.hasTier2Dates)) {
+    return {
+      parkTier1Dates: [],
+      parkTier2Dates: [],
+    };
+  }
+
+  // Get the Park Season for the operating year
+  const parkSeason = await Season.findOne({
+    where: {
+      publishableId: park.publishableId,
+      operatingYear,
+    },
+
+    include: [
+      {
+        model: DateRange,
+        as: "dateRanges",
+        required: false,
+
+        include: [
+          { model: DateType, as: "dateType", attributes: ["id", "name"] },
+        ],
+      },
+    ],
+  });
+
+  // Group DateRanges by Type and get the Tier 1 and Tier 2 dates, if any
+  const datesByType = _.groupBy(parkSeason.dateRanges, "dateType.name");
+
+  return {
+    parkTier1Dates: datesByType["Tier 1"] ?? [],
+    parkTier2Dates: datesByType["Tier 2"] ?? [],
+  };
+}
+
 // Get all form data and DateRanges for a Feature Season
 router.get(
   "/feature/:seasonId",
@@ -370,6 +414,13 @@ router.get(
 
     const { feature } = seasonModel;
 
+    // Add the park-level Tier 1 and Tier 2 dates to the payload
+    // (for Tier 1 and Tier 2 / Reservation validation rules)
+    const parkTier1And2Dates = getParkTier1And2Dates(
+      feature.park,
+      seasonModel.operatingYear,
+    );
+
     // Return the DateTypes in a specific order
     const orderedDateTypes = getDateTypesForFeature(feature, dateTypesByName);
 
@@ -386,6 +437,8 @@ router.get(
       gateDetail,
     };
 
+    const { parkTier1Dates, parkTier2Dates } = await parkTier1And2Dates;
+
     const output = {
       current: currentSeason,
       previous: previousSeason,
@@ -394,6 +447,8 @@ router.get(
       featureTypeName: seasonModel.feature.featureType.name,
       name: seasonModel.feature.name,
       parkName: seasonModel.feature.park.name,
+      parkTier1Dates,
+      parkTier2Dates,
     };
 
     res.json(output);
@@ -453,6 +508,13 @@ router.get(
 
     const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
 
+    // Add the park-level Tier 1 and Tier 2 dates to the payload
+    // (for Tier 1 and Tier 2 / Reservation validation rules)
+    const parkTier1And2Dates = getParkTier1And2Dates(
+      seasonModel.parkArea.park,
+      seasonModel.operatingYear,
+    );
+
     // Return the DateTypes in a specific order for each feature, keyed by ID
     const orderedFeatureDateTypesEntries = seasonModel.parkArea.features.map(
       (feature) => [
@@ -489,6 +551,8 @@ router.get(
       gateDetail,
     };
 
+    const { parkTier1Dates, parkTier2Dates } = await parkTier1And2Dates;
+
     const output = {
       current: currentSeason,
       previous: previousSeason,
@@ -500,6 +564,8 @@ router.get(
       featureTypeName,
       name: seasonModel.parkArea.name,
       parkName: seasonModel.parkArea.park.name,
+      parkTier1Dates,
+      parkTier2Dates,
     };
 
     res.json(output);
@@ -612,13 +678,6 @@ router.get(
       dateRangeAnnuals,
       gateDetail,
     };
-
-    console.log(
-      "\n\n\n\npark",
-      park.hasTier1Dates,
-      park.hasTier2Dates,
-      "\n\n\n\n",
-    );
 
     const output = {
       current: currentSeason,
