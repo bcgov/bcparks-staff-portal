@@ -57,7 +57,9 @@ function FeatureFormSectionComponent({
 
           {/* Show previous dates for this featureId/dateableId */}
           <PreviousDates
-            dateRanges={previousFeatureDatesByType?.[dateType.name]}
+            dateRanges={previousFeatureDatesByType?.[dateType.name]?.filter(
+              (dateRange) => dateRange.dateableId === feature.dateableId,
+            )}
           />
 
           <DateRangeFields
