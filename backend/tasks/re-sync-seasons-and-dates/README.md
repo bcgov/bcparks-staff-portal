@@ -1,79 +1,98 @@
-# Season and Date Re-Sync Scripts
+# Re-sync All Script
 
-This folder contains scripts to manage and synchronize `Season` and `DateRange` data in the BC Parks Staff Portal database.
-These scripts are used to delete all existing season/date data and re-import it from Strapi sources and other data files.
+This script performs a complete database re-synchronization by importing data from Strapi and JSON files and populating various tables in the correct order.
 
-## What do these scripts do?
+## What does the script do?
 
-The main re-sync script (`re-sync-season-and-dates.js`) performs the following steps:
+1. **Cleanup Existing Data:**
 
-1. **Deletes all existing Seasons, SeasonChangeLogs, and DateRanges**
-   Ensures a clean slate before re-importing data.
+   - Deletes all records from all tables except the `User` table to preserve user accounts.
+   - Uses [`delete-all.js`](./delete-all.js) to perform this cleanup. This script carefully deletes tables in the correct order to respect foreign key constraints and ensure a clean slate for re-import.
 
-2. **Creates blank seasons for 2026**
-   Runs the `create-seasons.js` script as a child process to ensure all necessary seasons exist for the upcoming operating year.
+2. **Import Base Data from Strapi:**
 
-3. **Imports sub-area dates from Strapi**
+   - Imports core entities: Feature, FeatureType, Park, ParkArea, ManagementArea, Section
+   - Creates DateType definitions from configuration
 
-   - Only imports entries where `isActive` is `true`.
-   - Creates or updates `Season` records based on `operatingYear`.
-   - Sets `Season.editable` to `false` if the year is in the past.
-   - Sets `Season.readyToPublish` to `true` and `Season.status` to `published`.
-   - Finds the correct `publishableId` from `Feature` or `ParkArea`.
-   - Creates `DateRange` records for service and reservation dates.
+3. **Populate Park Flags:**
 
-4. **Imports park feature dates from Strapi**
+   - Sets `hasWinterFeeDates` flags from `2025-winter-parks.json`
+   - Sets `hasTier1Dates` and `hasTier2Dates` flags from `2025-tier-data.json`
+   - Sets `inReservationSystem` flags for ParkArea based on Feature data
 
-   - Only imports entries where `isActive` is `true`.
-   - Creates or updates `Season` records based on `operatingYear`.
-   - Sets `Season.editable` to `false` if the year is in the past.
-   - Sets `Season.readyToPublish` to `true` and `Season.status` to `published`.
-   - Finds the correct `publishableId` from `Feature` or `ParkArea`.
-   - Creates `DateRange` records for each feature date, using the correct `DateType`.
+4. **Setup Access Control:**
 
-5. **Imports park operating (gate) dates from Strapi**
+   - Creates AccessGroup, AccessGroupPark, and UserAccessGroup relationships from `agreements-with-usernames.json`
 
-   - For each Park with a `publishableId`, finds all Strapi `park-operation-date` entries where `protectedArea.orcs` matches the Park's `orcs`.
-   - For each unique `operatingYear`, creates or finds a `Season`.
-   - For each Season, creates or updates a `DateRange` for the `"Operating"` date type.
-   - All operations are performed inside a transaction for safety.
+5. **Import Gate Information:**
 
-6. **Imports previous dates from JSON**
+   - Creates GateDetail records from Strapi park-operation and park-operation-sub-area data
 
-   - Imports previous dates from a JSON file and populates `Season` and `DateRange` records for historical data.
+6. **Create Season Structure:**
 
-7. **Logs progress before and after each step**
-   - Each step logs its start and completion for easier tracking and troubleshooting.
+   - Generates blank Season records for 2026
+
+7. **Import Date Ranges:**
+
+   - Imports Season and DateRange data from multiple Strapi sources
+   - Imports historical dates from `previous-dates.json`
+
+8. **Setup Annual Date Configuration:**
+
+   - Creates DateRangeAnnual records from Strapi park-operation
+
+9. **Transaction Safety:**
+   - All operations are performed with proper error handling
+   - Failed operations log errors and stop the process
 
 ## How to run
 
 From your project root, run:
 
 ```sh
-node tasks/re-sync-seasons-and-dates/re-sync-season-and-dates.js
+node tasks/re-sync-all/re-sync-all.js
 ```
-
-This will execute all steps in order, fully resetting and re-importing all season and date data.
 
 ## Output
 
-- The script logs progress before and after each step.
-- On success, you will see `"All re-sync season and date scripts completed."`
-- If any error occurs, the transaction is rolled back and an error message is printed.
+The script provides detailed console logging for each step:
+
+```
+Starting: Delete all data...
+Finished: Delete all data.
+
+Starting: 1 - Import Feature, FeatureType, Park, ParkArea, ManagementArea, Section from Strapi...
+Finished: 1 - Import Feature, FeatureType, Park, ParkArea, ManagementArea, Section from Strapi.
+
+...
+
+All re-sync 14 steps completed.
+```
 
 ## Why is this useful?
 
-- Completely resets your `Season` and `DateRange` data by deleting all existing records and re-importing them from Strapi and historical data files.
-- Ensures every Park, ParkArea, and Feature with a `publishableId` has an up-to-date `Season` for each operating year found in Strapi or the data files.
-- Guarantees that each `Season` has the correct `DateRange` records, matching the latest Strapi and historical data.
-- Keeps your database fully synchronized with Strapi's park operation, feature, and sub-area date data, as well as any historical records.
-- The script is idempotent: you can safely run it multiple times. It will not create duplicates and will recreate date ranges as needed to match the source data.
+- **Environment Refresh:** Completely refreshes your database with the latest data from Strapi
+- **Data Consistency:** Ensures all relationships and derived data are properly synchronized
+- **Development Setup:** Quickly sets up a clean development environment with current data
+- **Major Updates:** Safely applies large-scale data changes across the entire system
+
+## Prerequisites
+
+Before running this script, ensure:
+
+- **Database connection** is configured and accessible
+- **Strapi CMS** is running and accessible
+- **Required JSON files** are present:
+  - `2025-winter-parks.json`
+  - `2025-tier-data.json`
+  - `agreements-with-usernames.json`
+  - `previous-dates.json`
+- **Node.js** version supports ES modules
 
 ## Notes
 
-- The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project.
-- All scripts use database transactions for safety.
-- Make sure your Strapi API and database are accessible before running.
-- If you add new Parks, ParkAreas, Features, or Strapi data, re-running this script will add or update any missing or changed `Season` and `DateRange` entries as needed.
-- Data will be deleted and re-imported, so backup if needed.
-- Any unpublished dates in the system will be deleted. Be sure to publish any dates you want to keep before running this script.
+- **Order Dependency:** The execution order is critical - dependencies must be created before dependent data
+- **Idempotent:** Safe to run multiple times; will not create duplicates
+- **User Preservation:** User accounts are preserved during the cleanup process
+- **Complete Reset:** Creates a fresh dataset from all source systems
+- **Error Recovery:** Script can be re-run safely if it fails partway through
