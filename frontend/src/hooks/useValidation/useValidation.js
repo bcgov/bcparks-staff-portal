@@ -14,6 +14,7 @@ import tier1And2SameAsReservation from "./rules/tier1And2SameAsReservation.js";
 import tier1And2NoOverlap from "./rules/tier1And2NoOverlap.js";
 import reservationSameAsTier1And2 from "./rules/reservationSameAsTier1And2.js";
 import winterAndReservationNoOverlap from "./rules/winterAndReservationNoOverlap.js";
+import winterDateYears from "./rules/winterDateYears.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -114,6 +115,7 @@ function validate(seasonData, seasonContext) {
   tier1And2NoOverlap(seasonData, validationContext);
   reservationSameAsTier1And2(seasonData, validationContext);
   winterAndReservationNoOverlap(seasonData, validationContext);
+  winterDateYears(seasonData, validationContext);
 
   return errors;
 }
