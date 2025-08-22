@@ -95,10 +95,9 @@ function FilterPanel({
                 </div>
               </div>
               <div className="mt-4">
-                {/* TODO: CMS-787 */}
                 <SwitchToggle
                   id="is-in-reservation-system"
-                  label="In BC Parks reservation system"
+                  label="BCP reservations only"
                   checked={filters.isInReservationSystem}
                   onChange={(e) =>
                     updateFilter("isInReservationSystem", e.target.checked)

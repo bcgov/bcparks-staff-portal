@@ -40,6 +40,12 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       parkId: DataTypes.INTEGER,
       dateableId: DataTypes.INTEGER,
+      
+      inReservationSystem: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,

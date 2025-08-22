@@ -314,10 +314,15 @@ function EditAndReview() {
         }
 
         // filter by isInReservationSystem
+        // park level - check if it has hasTier1Dates, hasTier2Dates, or hasWinterFeeDates
+        // area and feature level - check it it has inReservationSystem
         if (
           filters.isInReservationSystem &&
           !(
-            park.inReservationSystem ||
+            park.hasTier1Dates ||
+            park.hasTier2Dates ||
+            park.hasWinterFeeDates ||
+            park.parkAreas.some((parkArea) => parkArea.inReservationSystem) ||
             park.features.some((feature) => feature.inReservationSystem)
           )
         ) {
