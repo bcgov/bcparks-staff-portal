@@ -7,6 +7,7 @@ import fs from "node:fs";
 import path from "node:path";
 import _ from "lodash";
 import { Op } from "sequelize";
+import { fromZonedTime } from "date-fns-tz";
 import { Park, Season, DateRange, DateType } from "../../models/index.js";
 
 const jsonPath = path.join(import.meta.dirname, "previous-dates.json");
@@ -87,16 +88,16 @@ export async function populatePreviousDates() {
             dateableId: park.dateableId,
             seasonId: season.id,
             dateTypeId: dateTypeObj.id,
-            startDate,
-            endDate,
+            startDate: fromZonedTime(startDate, "America/Vancouver"),
+            endDate: fromZonedTime(endDate, "America/Vancouver"),
           },
           { transaction },
         );
       } else {
         // update startDate, endDate, dateableId
         dateRange.dateableId = park.dateableId;
-        dateRange.startDate = new Date(startDate);
-        dateRange.endDate = new Date(endDate);
+        dateRange.startDate = fromZonedTime(startDate, "America/Vancouver");
+        dateRange.endDate = fromZonedTime(endDate, "America/Vancouver");
         await dateRange.save({ transaction });
       }
 
