@@ -18,7 +18,7 @@ export default function tier1And2NoOverlap(seasonData, context) {
   // Skip if the Park doesn't have Tier 1 & Tier 2 dates
   if (!(current.park.hasTier1Dates && current.park.hasTier2Dates)) return;
 
-  // Skip if Tier 1 and Reservation dates are not provided
+  // Get separate lists of Tier 1 and 2 dates
   const tier1Dates = dateRanges.filter(
     (dateRange) =>
       dateRange.dateType.name === "Tier 1" &&
