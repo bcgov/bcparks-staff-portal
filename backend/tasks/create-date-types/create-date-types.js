@@ -58,8 +58,12 @@ export async function createDateTypes(transaction = null) {
 if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await DateType.sequelize.transaction();
 
-  createDateTypes(transaction).catch((err) => {
+  try {
+    await createDateTypes(transaction);
+    await transaction.commit();
+  } catch (err) {
+    await transaction.rollback();
     console.error("Failed to create or update DateTypes:", err);
     throw err;
-  });
+  }
 }
