@@ -76,16 +76,23 @@ function DateRange({
           />
         </div>
 
-        <button
-          // Disable and hide the remove button if this is the first/only date range
-          className={classNames("btn btn-text text-link align-self-start", {
-            invisible: !removable,
-          })}
-          disabled={!removable}
-          onClick={() => removeDateRange(dateRange)}
-        >
-          <FontAwesomeIcon icon={faXmark} />
-        </button>
+        <div className="align-self-start">
+          <div className="form-label d-lg-none">
+            &nbsp;
+            <span className="visually-hidden">Remove this date range</span>
+          </div>
+
+          <button
+            // Disable and hide the remove button if this is the first/only date range
+            className={classNames("btn btn-text text-link", {
+              invisible: !removable,
+            })}
+            disabled={!removable}
+            onClick={() => removeDateRange(dateRange)}
+          >
+            <FontAwesomeIcon icon={faXmark} />
+          </button>
+        </div>
       </div>
 
       <ErrorSlot element={elements.dateRange(idOrTempId)} />
@@ -122,6 +129,7 @@ export default function DateRangeFields({
   updateDateRangeAnnual,
   optional = false,
 }) {
+  const { elements } = useValidationContext();
   // Constants
   // Tier 1 only allows 1 date range
   const hasMultipleDates = dateType.name !== "Tier 1";
@@ -199,6 +207,10 @@ export default function DateRangeFields({
           className="mt-2 mb-0"
         />
       )}
+
+      <ErrorSlot
+        element={elements.dateableDateType(dateableId, dateType.name)}
+      />
     </>
   );
 }

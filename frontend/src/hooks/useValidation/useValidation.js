@@ -10,6 +10,9 @@ import changeNoteRequired from "./rules/changeNoteRequired.js";
 import reservationWithinOperating from "./rules/reservationWithinOperating.js";
 import reservationEndsBeforeOperatingEnds from "./rules/reservationEndsBeforeOperatingEnds.js";
 import completeDateRanges from "./rules/completeDateRanges.js";
+import tier1And2SameAsReservation from "./rules/tier1And2SameAsReservation.js";
+import tier1And2NoOverlap from "./rules/tier1And2NoOverlap.js";
+import reservationSameAsTier1And2 from "./rules/reservationSameAsTier1And2.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -27,6 +30,10 @@ const elements = {
 
   // Under an individual date input field by its dateRange ID and its field name
   dateField: (idOrTempId, fieldName) => `dateField-${idOrTempId}-${fieldName}`,
+
+  // Under all the date ranges for a dateable feature, by date type
+  dateableDateType: (dateableId, dateTypeName) =>
+    `dateableDateType-${dateableId}-${dateTypeName}`,
 
   // Under a form section for a dateable entity, such as a Feature, by its dateableId
   dateableSection: (dateableId) => `formSection-${dateableId}`,
@@ -61,6 +68,14 @@ function validate(seasonData, seasonContext) {
     errors.push({ element, message });
   };
 
+  // Provide the flat array of Feature Reservation dates in the context, for Park-level validation
+  validationContext.featureReservationDates =
+    seasonData.featureReservationDates ?? [];
+
+  // Provide flat arrays of Tier 1 and 2 dates in the context, for Feature/Area Reservation validation
+  validationContext.parkTier1Dates = seasonData.parkTier1Dates ?? [];
+  validationContext.parkTier2Dates = seasonData.parkTier2Dates ?? [];
+
   // Flatten the date ranges for looping in validation
   const dateRanges = [];
 
@@ -94,6 +109,9 @@ function validate(seasonData, seasonContext) {
   changeNoteRequired(seasonData, validationContext);
   reservationWithinOperating(seasonData, validationContext);
   reservationEndsBeforeOperatingEnds(seasonData, validationContext);
+  tier1And2SameAsReservation(seasonData, validationContext);
+  tier1And2NoOverlap(seasonData, validationContext);
+  reservationSameAsTier1And2(seasonData, validationContext);
 
   return errors;
 }
