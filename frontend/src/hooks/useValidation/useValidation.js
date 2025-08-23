@@ -75,7 +75,7 @@ function validate(seasonData, seasonContext) {
   validationContext.featureReservationDates =
     seasonData.featureReservationDates ?? [];
 
-  // Provide flat arrays of Tier 1 and 2 dates in the context, for Feature/Area Reservation validation
+  // Provide flat arrays of some Park-level dates in the context, for Feature/Area Reservation validation
   validationContext.parkTier1Dates = seasonData.parkTier1Dates ?? [];
   validationContext.parkTier2Dates = seasonData.parkTier2Dates ?? [];
   validationContext.parkWinterDates = seasonData.parkWinterDates ?? [];
