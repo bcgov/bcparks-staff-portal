@@ -15,6 +15,7 @@ import tier1And2NoOverlap from "./rules/tier1And2NoOverlap.js";
 import reservationSameAsTier1And2 from "./rules/reservationSameAsTier1And2.js";
 import winterAndReservationNoOverlap from "./rules/winterAndReservationNoOverlap.js";
 import winterDateYears from "./rules/winterDateYears.js";
+import reservationAndWinterNoOverlap from "./rules/reservationAndWinterNoOverlap.js";
 
 // Constants for named "validation error slots" in the UI
 const elements = {
@@ -77,6 +78,7 @@ function validate(seasonData, seasonContext) {
   // Provide flat arrays of Tier 1 and 2 dates in the context, for Feature/Area Reservation validation
   validationContext.parkTier1Dates = seasonData.parkTier1Dates ?? [];
   validationContext.parkTier2Dates = seasonData.parkTier2Dates ?? [];
+  validationContext.parkWinterDates = seasonData.parkWinterDates ?? [];
 
   // Flatten the date ranges for looping in validation
   const dateRanges = [];
@@ -116,6 +118,7 @@ function validate(seasonData, seasonContext) {
   reservationSameAsTier1And2(seasonData, validationContext);
   winterAndReservationNoOverlap(seasonData, validationContext);
   winterDateYears(seasonData, validationContext);
+  reservationAndWinterNoOverlap(seasonData, validationContext);
 
   return errors;
 }
