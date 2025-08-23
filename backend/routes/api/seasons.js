@@ -418,9 +418,14 @@ router.get(
 
     const { feature } = seasonModel;
 
-    // Add some park-level dates to the payload
+    // Add some Park-level dates to the payload
     // (for validation rules)
     const parkDates = getParkDates(feature.park, seasonModel.operatingYear);
+    // Also fetch Park-level dates for the previous season (for Winter fees)
+    const previousParkDates = getParkDates(
+      feature.park,
+      seasonModel.operatingYear - 1,
+    );
 
     // Return the DateTypes in a specific order
     const orderedDateTypes = getDateTypesForFeature(feature, dateTypesByName);
@@ -438,6 +443,12 @@ router.get(
       gateDetail,
     };
 
+    // Combine current and previous Park-level winter fee dates
+    const { parkWinterDates, ...otherParkDates } = await parkDates;
+    const previousParkWinterDates = (await previousParkDates).parkWinterDates;
+
+    parkWinterDates.push(...previousParkWinterDates);
+
     const output = {
       current: currentSeason,
       previous: previousSeason,
@@ -446,7 +457,8 @@ router.get(
       featureTypeName: seasonModel.feature.featureType.name,
       name: seasonModel.feature.name,
       parkName: seasonModel.feature.park.name,
-      ...(await parkDates),
+      parkWinterDates,
+      ...otherParkDates,
     };
 
     res.json(output);
@@ -506,11 +518,16 @@ router.get(
 
     const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
 
-    // Add some park-level dates to the payload
+    // Add some Park-level dates to the payload
     // (for validation rules)
     const parkDates = getParkDates(
       seasonModel.parkArea.park,
       seasonModel.operatingYear,
+    );
+    // Also fetch Park-level dates for the previous season (for Winter fees)
+    const previousParkDates = getParkDates(
+      seasonModel.parkArea.park,
+      seasonModel.operatingYear - 1,
     );
 
     // Return the DateTypes in a specific order for each feature, keyed by ID
@@ -549,6 +566,12 @@ router.get(
       gateDetail,
     };
 
+    // Combine current and previous Park-level winter fee dates
+    const { parkWinterDates, ...otherParkDates } = await parkDates;
+    const previousParkWinterDates = (await previousParkDates).parkWinterDates;
+
+    parkWinterDates.push(...previousParkWinterDates);
+
     const output = {
       current: currentSeason,
       previous: previousSeason,
@@ -560,7 +583,8 @@ router.get(
       featureTypeName,
       name: seasonModel.parkArea.name,
       parkName: seasonModel.parkArea.park.name,
-      ...(await parkDates),
+      parkWinterDates,
+      ...otherParkDates,
     };
 
     res.json(output);
