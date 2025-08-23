@@ -34,8 +34,6 @@ export default function winterDateYears(seasonData, context) {
     const endDate = normalizeToLocalDate(winterDateRange.endDate);
     const idOrTempId = winterDateRange.id || winterDateRange.tempId;
 
-    console.log(winterDateRange, "startDate", startDate, "endDate", endDate);
-
     // Start date must be October-December of the season operating year
     const validStartDates = {
       start: new Date(operatingYear, 9, 1), // October 1 of operating year
