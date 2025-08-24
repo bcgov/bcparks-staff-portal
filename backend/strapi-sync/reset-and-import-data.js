@@ -1,7 +1,8 @@
-import { syncData, oneTimeDataImport } from "./sync.js";
+import { syncData } from "./sync.js";
+// import { syncData, oneTimeDataImport } from "./sync.js";
 import { createSingleItemsCampgrounds } from "./create-single-item-campgrounds.js";
 import { createMultipleItemsCampgrounds } from "./create-multiple-item-campgrounds.js";
-import { createMissingDatesAndSeasons } from "./create-missing-dates-and-seasons.js";
+// import { createMissingDatesAndSeasons } from "./create-missing-dates-and-seasons.js";
 import {
   Dateable,
   Park,
@@ -36,12 +37,13 @@ export async function deleteAllData() {
   await User.destroy({ where: {} });
 }
 
+// TODO: clean up this function
 export async function importData() {
   await syncData();
-  await oneTimeDataImport();
+  // await oneTimeDataImport();
   await createSingleItemsCampgrounds();
   await createMultipleItemsCampgrounds();
-  await createMissingDatesAndSeasons();
+  // await createMissingDatesAndSeasons();
 }
 
 export async function resetScript() {

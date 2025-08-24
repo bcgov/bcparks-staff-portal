@@ -5,6 +5,14 @@ import { DateType } from "../../models/index.js";
 import { dateTypesData } from "./date-types.js";
 
 export async function createDateTypes(transaction = null) {
+  let localTransaction = transaction;
+  let createdTransaction = false;
+
+  if (!localTransaction) {
+    localTransaction = await DateType.sequelize.transaction();
+    createdTransaction = true;
+  }
+
   try {
     for (const entry of dateTypesData) {
       // determine boolean fields based on level array
@@ -16,7 +24,7 @@ export async function createDateTypes(transaction = null) {
       // find an existing DateType
       let dateType = await DateType.findOne({
         where: { name, parkLevel, featureLevel, parkAreaLevel },
-        transaction,
+        transaction: localTransaction,
       });
 
       // create or update DateType
@@ -31,7 +39,7 @@ export async function createDateTypes(transaction = null) {
             featureLevel,
             parkAreaLevel,
           },
-          { transaction },
+          { transaction: localTransaction },
         );
       } else {
         dateType.startDateLabel = startDateLabel;
@@ -40,15 +48,20 @@ export async function createDateTypes(transaction = null) {
         dateType.parkLevel = parkLevel;
         dateType.featureLevel = featureLevel;
         dateType.parkAreaLevel = parkAreaLevel;
-        await dateType.save({ transaction });
+        await dateType.save({ transaction: localTransaction });
       }
 
       console.log(`Created/Updated DateType: ${dateType.name}`);
     }
-    await transaction.commit();
+
+    if (createdTransaction) {
+      await localTransaction.commit();
+    }
     console.log("All DateTypes created or updated successfully.");
   } catch (err) {
-    await transaction.rollback();
+    if (createdTransaction && localTransaction) {
+      await localTransaction.rollback();
+    }
     console.error("Error creating or updating DateTypes:", err);
     throw err;
   }
@@ -56,10 +69,12 @@ export async function createDateTypes(transaction = null) {
 
 // run directly
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  const transaction = await DateType.sequelize.transaction();
-
-  createDateTypes(transaction).catch((err) => {
-    console.error("Failed to create or update DateTypes:", err);
-    throw err;
-  });
+  (async () => {
+    try {
+      await createDateTypes();
+    } catch (err) {
+      console.error("Failed to create or update DateTypes:", err);
+      throw err;
+    }
+  })();
 }

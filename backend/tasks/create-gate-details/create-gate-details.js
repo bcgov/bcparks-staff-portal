@@ -8,8 +8,14 @@ import { Op } from "sequelize";
 import { fetchAllModels } from "../../strapi-sync/sync.js";
 import { getStrapiModelData } from "../../strapi-sync/utils.js";
 
-export async function createGateDetailsFromStrapi() {
-  const transaction = await GateDetail.sequelize.transaction();
+export async function createGateDetailsFromStrapi(transaction = null) {
+  let localTransaction = transaction;
+  let createdTransaction = false;
+
+  if (!localTransaction) {
+    localTransaction = await GateDetail.sequelize.transaction();
+    createdTransaction = true;
+  }
 
   try {
     // fetch all models from Strapi
@@ -32,29 +38,29 @@ export async function createGateDetailsFromStrapi() {
     }
 
     // build lookup for park-operation-sub-area by id
-    const parkOpeationSubAreaById = {};
+    const parkOperationSubAreaById = {};
 
     for (const subArea of parkOperationSubAreaData.items) {
-      parkOpeationSubAreaById[subArea.id] = subArea;
+      parkOperationSubAreaById[subArea.id] = subArea;
     }
 
     // 1 - get all parks with publishableId
     const parks = await Park.findAll({
       where: { publishableId: { [Op.ne]: null } },
-      transaction,
+      transaction: localTransaction,
     });
 
     // create or update gateDetail for each park
     for (const park of parks) {
       let gateDetail = await GateDetail.findOne({
         where: { publishableId: park.publishableId },
-        transaction,
+        transaction: localTransaction,
       });
 
       if (!gateDetail) {
         gateDetail = await GateDetail.create(
           { publishableId: park.publishableId },
-          { transaction },
+          { transaction: localTransaction },
         );
       }
 
@@ -73,26 +79,26 @@ export async function createGateDetailsFromStrapi() {
           parkOperation.gateClosesAtDusk ?? gateDetail.gateClosesAtDusk;
         gateDetail.gateOpen24Hours =
           parkOperation.gateOpen24Hours ?? gateDetail.gateOpen24Hours;
-        await gateDetail.save({ transaction });
+        await gateDetail.save({ transaction: localTransaction });
       }
     }
 
     // 2 - get all parkAreas with publishableId
     const parkAreas = await ParkArea.findAll({
       where: { publishableId: { [Op.ne]: null } },
-      transaction,
+      transaction: localTransaction,
     });
 
     for (const parkArea of parkAreas) {
       const gateDetail = await GateDetail.findOne({
         where: { publishableId: parkArea.publishableId },
-        transaction,
+        transaction: localTransaction,
       });
 
       if (!gateDetail) {
         await GateDetail.create(
           { publishableId: parkArea.publishableId },
-          { transaction },
+          { transaction: localTransaction },
         );
       }
       // no Strapi import for parkArea
@@ -101,24 +107,24 @@ export async function createGateDetailsFromStrapi() {
     // 3 - get all features with publishableId
     const features = await Feature.findAll({
       where: { publishableId: { [Op.ne]: null } },
-      transaction,
+      transaction: localTransaction,
     });
 
     for (const feature of features) {
       let gateDetail = await GateDetail.findOne({
         where: { publishableId: feature.publishableId },
-        transaction,
+        transaction: localTransaction,
       });
 
       if (!gateDetail) {
         gateDetail = await GateDetail.create(
           { publishableId: feature.publishableId },
-          { transaction },
+          { transaction: localTransaction },
         );
       }
 
       // import Strapi park-operation-sub-area data if strapiId matches
-      const subArea = parkOpeationSubAreaById[feature.strapiId];
+      const subArea = parkOperationSubAreaById[feature.strapiId];
 
       if (subArea) {
         gateDetail.hasGate = subArea.hasGate;
@@ -132,22 +138,31 @@ export async function createGateDetailsFromStrapi() {
           subArea.gateClosesAtDusk ?? gateDetail.gateClosesAtDusk;
         gateDetail.gateOpen24Hours =
           subArea.gateOpen24Hours ?? gateDetail.gateOpen24Hours;
-        await gateDetail.save({ transaction });
+        await gateDetail.save({ transaction: localTransaction });
       }
     }
 
-    await transaction.commit();
+    if (createdTransaction) {
+      await localTransaction.commit();
+    }
     console.log("GateDetail creation and import complete.");
   } catch (err) {
-    await transaction.rollback();
+    if (createdTransaction && localTransaction) {
+      await localTransaction.rollback();
+    }
     console.error("Error creating GateDetail entries:", err);
+    throw err;
   }
 }
 
-// run directly:
+// run directly
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  createGateDetailsFromStrapi().catch((err) => {
-    console.error("Failed to create GateDetails:", err);
-    throw err;
-  });
+  (async () => {
+    try {
+      await createGateDetailsFromStrapi();
+    } catch (err) {
+      console.error("Failed to create GateDetails:", err);
+      throw err;
+    }
+  })();
 }
