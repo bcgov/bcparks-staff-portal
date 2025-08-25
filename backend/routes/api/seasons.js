@@ -342,6 +342,15 @@ async function getParkDates(park, operatingYear) {
     ],
   });
 
+  // Handle case where no park season exists
+  if (!parkSeason) {
+    return {
+      parkTier1Dates: [],
+      parkTier2Dates: [],
+      parkWinterDates: [],
+    };
+  }
+
   // Group DateRanges by Type and get the Tier 1 and Tier 2 dates, if any
   const datesByType = _.groupBy(parkSeason.dateRanges, "dateType.name");
 
