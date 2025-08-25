@@ -322,6 +322,11 @@ async function getFeatureReservationDates(park, operatingYear) {
  * @returns {Promise<Object>} - Object with parkTier1Dates, parkTier2Dates, and parkWinterDates arrays
  */
 async function getParkDates(park, operatingYear) {
+  console.log("getParkDates called with:", {
+    publishableId: park.publishableId,
+    operatingYear,
+  });
+
   // Get the Park Season for the operating year
   const parkSeason = await Season.findOne({
     where: {
@@ -341,6 +346,23 @@ async function getParkDates(park, operatingYear) {
       },
     ],
   });
+
+  console.log("parkSeason result:", {
+    found: !!parkSeason,
+    parkSeason: parkSeason ? parkSeason.toJSON() : null,
+  });
+
+  // Handle case where no park season exists
+  if (!parkSeason) {
+    console.log("No park season found, returning empty arrays");
+    return {
+      parkTier1Dates: [],
+      parkTier2Dates: [],
+      parkWinterDates: [],
+    };
+  }
+
+  console.log("parkSeason.dateRanges:", parkSeason.dateRanges);
 
   // Group DateRanges by Type and get the Tier 1 and Tier 2 dates, if any
   const datesByType = _.groupBy(parkSeason.dateRanges, "dateType.name");
