@@ -89,10 +89,18 @@ export default function reservationEndsBeforeOperatingEnds(
 
       // Add an error if the difference between operating and reservation end dates is 1+ days
       if (daysDifference < 1) {
+        const errorText =
+          "The reservation end date must be one or more days before the operating end date.";
+
+        // Show the error below the Operation and Reservation date range sections
         context.addError(
-          // Show the error below the Dateable's form section
-          elements.dateableSection(dateableId),
-          "The reservation end date must be one or more days before the operating end date.",
+          elements.dateableDateType(dateableId, "Operation"),
+          errorText,
+        );
+
+        context.addError(
+          elements.dateableDateType(dateableId, "Reservation"),
+          errorText,
         );
       }
     },
