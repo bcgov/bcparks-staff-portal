@@ -78,6 +78,8 @@ export async function populatePreviousDates() {
         where: {
           seasonId: season.id,
           dateTypeId: dateTypeObj.id,
+          startDate: fromZonedTime(startDate, "America/Vancouver"),
+          endDate: fromZonedTime(endDate, "America/Vancouver"),
         },
         transaction,
       });
@@ -93,12 +95,6 @@ export async function populatePreviousDates() {
           },
           { transaction },
         );
-      } else {
-        // update startDate, endDate, dateableId
-        dateRange.dateableId = park.dateableId;
-        dateRange.startDate = fromZonedTime(startDate, "America/Vancouver");
-        dateRange.endDate = fromZonedTime(endDate, "America/Vancouver");
-        await dateRange.save({ transaction });
       }
 
       console.log(
