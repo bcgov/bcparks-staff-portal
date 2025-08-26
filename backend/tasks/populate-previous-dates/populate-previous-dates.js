@@ -12,6 +12,7 @@ import { Park, Season, DateRange, DateType } from "../../models/index.js";
 
 const jsonPath = path.join(import.meta.dirname, "previous-dates.json");
 const dateData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));
+const TIMEZONE = "America/Vancouver";
 
 export async function populatePreviousDates() {
   const transaction = await Season.sequelize.transaction();
@@ -78,8 +79,8 @@ export async function populatePreviousDates() {
         where: {
           seasonId: season.id,
           dateTypeId: dateTypeObj.id,
-          startDate: fromZonedTime(startDate, "America/Vancouver"),
-          endDate: fromZonedTime(endDate, "America/Vancouver"),
+          startDate: fromZonedTime(startDate, TIMEZONE),
+          endDate: fromZonedTime(endDate, TIMEZONE),
         },
         transaction,
       });
@@ -90,8 +91,8 @@ export async function populatePreviousDates() {
             dateableId: park.dateableId,
             seasonId: season.id,
             dateTypeId: dateTypeObj.id,
-            startDate: fromZonedTime(startDate, "America/Vancouver"),
-            endDate: fromZonedTime(endDate, "America/Vancouver"),
+            startDate: fromZonedTime(startDate, TIMEZONE),
+            endDate: fromZonedTime(endDate, TIMEZONE),
           },
           { transaction },
         );
