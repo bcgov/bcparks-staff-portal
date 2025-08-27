@@ -149,7 +149,7 @@ export default function useValidation(seasonData, context) {
 
   /**
    * Validates the form data and returns any validation errors.
-   * This is used in the onSave function to ensure the form is valid before saving.
+   * This is used in the saveForm function to ensure the form is valid before saving.
    * @param {boolean} [submitted=true] Whether the form has been submitted.
    * @returns {Array} Array of validation error objects
    */
