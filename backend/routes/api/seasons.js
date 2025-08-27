@@ -264,8 +264,10 @@ const SEASON_ATTRIBUTES = [
  * @returns {Promise<Array>} - Array of reservation feature dates
  */
 async function getFeatureReservationDates(park, operatingYear) {
-  // Don't fetch other dates if the park doesn't have both Tier 1 and Tier 2 dates
-  if (!(park.hasTier1Dates && park.hasTier2Dates)) return [];
+  // Only fetch dates if the park has Winter fee dates or both Tier 1 and Tier 2 dates.
+  // This data is needed for Winter/Tier date validation.
+  if (!(park.hasWinterFeeDates || (park.hasTier1Dates && park.hasTier2Dates)))
+    return [];
 
   // Get the ID of the applicable Reservation date type
   const reservationDateType = await DateType.findOne({
