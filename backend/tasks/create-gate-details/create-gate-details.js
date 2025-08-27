@@ -8,6 +8,23 @@ import { Op } from "sequelize";
 import { fetchAllModels } from "../../strapi-sync/sync.js";
 import { getStrapiModelData } from "../../strapi-sync/utils.js";
 
+async function updateGateDetailFromStrapi(gateDetail, strapiData, transaction) {
+  // park-operation uses "hasParkGate"
+  // park-operation-sub-area uses "hasGate"
+  gateDetail.hasGate = strapiData.hasGate ?? strapiData.hasParkGate;
+  gateDetail.gateOpenTime = strapiData.gateOpenTime ?? gateDetail.gateOpenTime;
+  gateDetail.gateCloseTime =
+    strapiData.gateCloseTime ?? gateDetail.gateCloseTime;
+  gateDetail.gateOpensAtDawn =
+    strapiData.gateOpensAtDawn ?? gateDetail.gateOpensAtDawn;
+  gateDetail.gateClosesAtDusk =
+    strapiData.gateClosesAtDusk ?? gateDetail.gateClosesAtDusk;
+  gateDetail.gateOpen24Hours =
+    strapiData.gateOpen24Hours ?? gateDetail.gateOpen24Hours;
+
+  await gateDetail.save({ transaction });
+}
+
 export async function createGateDetailsFromStrapi(transaction = null) {
   let localTransaction = transaction;
   let createdTransaction = false;
@@ -37,11 +54,11 @@ export async function createGateDetailsFromStrapi(transaction = null) {
       if (orcs) parkOperationByOrcs[orcs] = parkOperation.attributes;
     }
 
-    // build lookup for park-operation-sub-area by id
-    const parkOperationSubAreaById = {};
+    // build lookup for park-operation-sub-area by name (parkSubArea)
+    const parkOperationSubAreaByName = {};
 
     for (const subArea of parkOperationSubAreaData.items) {
-      parkOperationSubAreaById[subArea.id] = subArea;
+      parkOperationSubAreaByName[subArea.parkSubArea] = subArea;
     }
 
     // 1 - get all parks with publishableId
@@ -68,18 +85,11 @@ export async function createGateDetailsFromStrapi(transaction = null) {
       const parkOperation = parkOperationByOrcs[park.orcs];
 
       if (parkOperation) {
-        gateDetail.hasGate = parkOperation.hasParkGate;
-        gateDetail.gateOpenTime =
-          parkOperation.gateOpenTime ?? gateDetail.gateOpenTime;
-        gateDetail.gateCloseTime =
-          parkOperation.gateCloseTime ?? gateDetail.gateCloseTime;
-        gateDetail.gateOpensAtDawn =
-          parkOperation.gateOpensAtDawn ?? gateDetail.gateOpensAtDawn;
-        gateDetail.gateClosesAtDusk =
-          parkOperation.gateClosesAtDusk ?? gateDetail.gateClosesAtDusk;
-        gateDetail.gateOpen24Hours =
-          parkOperation.gateOpen24Hours ?? gateDetail.gateOpen24Hours;
-        await gateDetail.save({ transaction: localTransaction });
+        await updateGateDetailFromStrapi(
+          gateDetail,
+          parkOperation,
+          localTransaction,
+        );
       }
     }
 
@@ -90,18 +100,24 @@ export async function createGateDetailsFromStrapi(transaction = null) {
     });
 
     for (const parkArea of parkAreas) {
-      const gateDetail = await GateDetail.findOne({
+      let gateDetail = await GateDetail.findOne({
         where: { publishableId: parkArea.publishableId },
         transaction: localTransaction,
       });
 
       if (!gateDetail) {
-        await GateDetail.create(
+        gateDetail = await GateDetail.create(
           { publishableId: parkArea.publishableId },
           { transaction: localTransaction },
         );
       }
-      // no Strapi import for parkArea
+
+      // import Strapi park-operation-sub-area data if parkArea name matches
+      const subArea = parkOperationSubAreaByName[parkArea.name];
+
+      if (subArea) {
+        await updateGateDetailFromStrapi(gateDetail, subArea, localTransaction);
+      }
     }
 
     // 3 - get all features with publishableId
@@ -123,22 +139,11 @@ export async function createGateDetailsFromStrapi(transaction = null) {
         );
       }
 
-      // import Strapi park-operation-sub-area data if strapiId matches
-      const subArea = parkOperationSubAreaById[feature.strapiId];
+      // import Strapi park-operation-sub-area data if feature name matches
+      const subArea = parkOperationSubAreaByName[feature.name];
 
       if (subArea) {
-        gateDetail.hasGate = subArea.hasGate;
-        gateDetail.gateOpenTime =
-          subArea.gateOpenTime ?? gateDetail.gateOpenTime;
-        gateDetail.gateCloseTime =
-          subArea.gateCloseTime ?? gateDetail.gateCloseTime;
-        gateDetail.gateOpensAtDawn =
-          subArea.gateOpensAtDawn ?? gateDetail.gateOpensAtDawn;
-        gateDetail.gateClosesAtDusk =
-          subArea.gateClosesAtDusk ?? gateDetail.gateClosesAtDusk;
-        gateDetail.gateOpen24Hours =
-          subArea.gateOpen24Hours ?? gateDetail.gateOpen24Hours;
-        await gateDetail.save({ transaction: localTransaction });
+        await updateGateDetailFromStrapi(gateDetail, subArea, localTransaction);
       }
     }
 
