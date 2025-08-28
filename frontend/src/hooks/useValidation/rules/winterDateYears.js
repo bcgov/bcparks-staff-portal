@@ -21,8 +21,8 @@ export default function winterDateYears(seasonData, context) {
   const winterDates = dateRanges.filter(
     (dateRange) =>
       dateRange.dateType.name === "Winter fee" &&
-      dateRange.startDate &&
-      dateRange.endDate,
+      // Check if either start or end date is present
+      (dateRange.startDate || dateRange.endDate),
   );
 
   // Get the operating year from the current season data
@@ -34,13 +34,12 @@ export default function winterDateYears(seasonData, context) {
     const endDate = normalizeToLocalDate(winterDateRange.endDate);
     const idOrTempId = winterDateRange.id || winterDateRange.tempId;
 
-    // Start date must be October-December of the season operating year
+    if (startDate && !isWithinInterval(startDate, validStartDates)) {
     const validStartDates = {
       start: new Date(operatingYear, 9, 1), // October 1 of operating year
       end: new Date(operatingYear, 11, 31), // December 31 of operating year
     };
 
-    if (!isWithinInterval(startDate, validStartDates)) {
       context.addError(
         // Show the error below the empty end date field
         elements.dateField(idOrTempId, "startDate"),
@@ -48,10 +47,9 @@ export default function winterDateYears(seasonData, context) {
       );
     }
 
-    // End date must be before April of the next year
+    if (endDate && !isBefore(endDate, april1)) {
     const april1 = new Date(operatingYear + 1, 3, 1);
 
-    if (!isBefore(endDate, april1)) {
       context.addError(
         // Show the error below the empty end date field
         elements.dateField(idOrTempId, "endDate"),
