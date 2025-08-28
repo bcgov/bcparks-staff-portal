@@ -307,8 +307,8 @@ function SeasonForm({
    * @param {boolean} allowInvalid allows saving even if the form has validation errors
    * @returns {Promise<void>}
    */
-  async function onSave(close = true, allowInvalid = false) {
-    // onSave is called on any kind of form submission, so validation happens here
+  async function saveForm(close = true, allowInvalid = false) {
+    // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
 
@@ -363,11 +363,6 @@ function SeasonForm({
     setNotes("");
     setDeletedDateRangeIds([]);
 
-    flashMessage.open(
-      "Dates saved as draft",
-      `${seasonTitle} ${season.operatingYear} details saved`,
-    );
-
     if (close) {
       closePanel();
     } else {
@@ -395,13 +390,18 @@ If dates have already been published, they will not be updated until new dates a
     }
 
     // Save draft, and allow saving with validation errors
-    onSave(close, true);
+    await saveForm(close, true);
+
+    flashMessage.open(
+      "Dates saved as draft",
+      `${seasonTitle} ${season.operatingYear} details saved`,
+    );
   }
 
   async function onApprove() {
     try {
       // Save first, then approve
-      await onSave(false); // Don't close the form after saving
+      await saveForm(false); // Don't close the form after saving
 
       await sendApprove();
 
@@ -422,7 +422,7 @@ If dates have already been published, they will not be updated until new dates a
   async function onSubmit() {
     try {
       // Save first, then submit
-      await onSave(false); // Don't close the form after saving
+      await saveForm(false); // Don't close the form after saving
 
       await sendSubmit();
 
