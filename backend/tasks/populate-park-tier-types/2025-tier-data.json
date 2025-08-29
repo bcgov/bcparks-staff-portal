@@ -8,6 +8,14 @@
     "endDate": "2025-11-02"
   },
   {
+    "parkName": "Bear Creek Park",
+    "orcs": "307",
+    "note": "T1 in effect March 21, 2025 - Oct 13, 2025",
+    "tierType": "t1",
+    "startDate": "2025-03-21",
+    "endDate": "2025-10-13"
+  },
+  {
     "parkName": "Cultus Lake Park",
     "orcs": "41",
     "note": "T2 in effect January 1, 2025 - March 27, 2025",
