@@ -15,8 +15,8 @@ export default function tier1And2SameAsReservation(seasonData, context) {
   // This rule applies to the Park level. Skip for other levels
   if (context.level !== "park") return;
 
-  // Skip if the Park doesn't have Tier 1 & Tier 2 dates
-  if (!(current.park.hasTier1Dates && current.park.hasTier2Dates)) return;
+  // Skip if the Park doesn't have Tier 1 or Tier 2 dates
+  if (!(current.park.hasTier1Dates || current.park.hasTier2Dates)) return;
 
   // Skip if Tier 1 and Reservation dates are not provided
   const tier1Dates = dateRanges.filter(
@@ -26,10 +26,11 @@ export default function tier1And2SameAsReservation(seasonData, context) {
       dateRange.endDate,
   );
   const tier2Dates = dateRanges.filter(
-    (dateRange) => dateRange.dateType.name === "Tier 2",
+    (dateRange) =>
+      dateRange.dateType.name === "Tier 2" &&
+      dateRange.startDate &&
+      dateRange.endDate,
   );
-
-  if (featureReservationDates.length === 0 || tier1Dates.length === 0) return;
 
   // Consolidate Tier 1 + 2 ranges for comparison
   const consolidatedTierDates = consolidateRanges([
@@ -41,6 +42,10 @@ export default function tier1And2SameAsReservation(seasonData, context) {
   const consolidatedReservationDates = consolidateRanges(
     featureReservationDates,
   );
+
+  // Skip if there are no reservation dates, or if the Park doesn't have Tier 1 dates
+  if (consolidatedReservationDates.length === 0 || tier1Dates.length === 0)
+    return;
 
   // Compare consolidated date arrays
   const sameDates =
