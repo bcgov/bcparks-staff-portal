@@ -314,7 +314,10 @@ async function getFeatureReservationDates(park, operatingYear) {
     },
   });
 
-  return reservationDateRanges;
+  // Filter out blank date ranges (null startDate and endDate) and return
+  return reservationDateRanges.filter(
+    (dateRange) => dateRange.startDate && dateRange.endDate,
+  );
 }
 
 /**
@@ -353,8 +356,13 @@ async function getParkDates(park, operatingYear) {
     };
   }
 
+  // Filter out blank date ranges (null startDate and endDate)
+  const dateRanges = parkSeason.dateRanges.filter(
+    (range) => range.startDate && range.endDate,
+  );
+
   // Group DateRanges by Type and get the Tier 1 and Tier 2 dates, if any
-  const datesByType = _.groupBy(parkSeason.dateRanges, "dateType.name");
+  const datesByType = _.groupBy(dateRanges, "dateType.name");
 
   const {
     "Tier 1": tier1Dates = [],
