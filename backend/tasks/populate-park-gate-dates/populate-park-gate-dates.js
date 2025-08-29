@@ -3,10 +3,27 @@
 
 import "../../env.js";
 
-import { Park, Season, DateRange, DateType } from "../../models/index.js";
-import { Op } from "sequelize";
+import {
+  Park,
+  Season,
+  DateRange,
+  DateType,
+  Publishable,
+} from "../../models/index.js";
 import { fetchAllModels } from "../../strapi-sync/sync.js";
 import { getStrapiModelData } from "../../strapi-sync/utils.js";
+
+async function createPublishableForPark(park, transaction) {
+  if (park.publishableId) return park.publishableId;
+  // create a new Publishable record
+  const publishable = await Publishable.create({}, { transaction });
+
+  // update the park with the new publishableId
+  park.publishableId = publishable.id;
+  await park.save({ transaction });
+
+  return publishable.id;
+}
 
 export async function populateParkGateDates() {
   const transaction = await Season.sequelize.transaction();
@@ -21,10 +38,7 @@ export async function populateParkGateDates() {
     );
 
     // build lookup for park by orcs
-    const parks = await Park.findAll({
-      where: { publishableId: { [Op.ne]: null } },
-      transaction,
-    });
+    const parks = await Park.findAll({ transaction });
     const parkByOrcs = Object.fromEntries(
       parks.map((p) => [String(p.orcs), p]),
     );
@@ -51,16 +65,19 @@ export async function populateParkGateDates() {
 
       const park = parkByOrcs[String(orcs)];
 
-      if (!park || !park.publishableId) continue;
+      if (!park) continue;
+
+      // ensure park has a publishableId (create one if needed)
+      const publishableId = await createPublishableForPark(park, transaction);
 
       // find or create season for this publishableId and operatingYear
       const [season] = await Season.findOrCreate({
         where: {
-          publishableId: park.publishableId,
+          publishableId,
           operatingYear,
         },
         defaults: {
-          publishableId: park.publishableId,
+          publishableId,
           operatingYear,
           status: "published",
           readyToPublish: true,
