@@ -56,9 +56,18 @@ export async function createGateDetailsFromStrapi(transaction = null) {
 
     // build lookup for park-operation-sub-area by name (parkSubArea)
     const parkOperationSubAreaByName = {};
+    // build lookup for park-operation-sub-area by id
+    const parkOperationSubAreaById = {};
 
     for (const subArea of parkOperationSubAreaData.items) {
-      parkOperationSubAreaByName[subArea.parkSubArea] = subArea;
+      // index by name
+      if (subArea.parkSubArea) {
+        parkOperationSubAreaByName[subArea.parkSubArea] = subArea;
+      }
+      // index by id
+      if (subArea.id) {
+        parkOperationSubAreaById[subArea.id] = subArea;
+      }
     }
 
     // 1 - get all parks with publishableId
@@ -93,54 +102,48 @@ export async function createGateDetailsFromStrapi(transaction = null) {
       }
     }
 
-    // 2 - get all parkAreas with publishableId
-    const parkAreas = await ParkArea.findAll({
-      where: { publishableId: { [Op.ne]: null } },
-      transaction: localTransaction,
-    });
-
-    for (const parkArea of parkAreas) {
-      let gateDetail = await GateDetail.findOne({
-        where: { publishableId: parkArea.publishableId },
-        transaction: localTransaction,
-      });
-
-      if (!gateDetail) {
-        gateDetail = await GateDetail.create(
-          { publishableId: parkArea.publishableId },
-          { transaction: localTransaction },
-        );
-      }
-
-      // import Strapi park-operation-sub-area data if parkArea name matches
-      const subArea = parkOperationSubAreaByName[parkArea.name];
-
-      if (subArea) {
-        await updateGateDetailFromStrapi(gateDetail, subArea, localTransaction);
-      }
-    }
-
-    // 3 - get all features with publishableId
+    // 2 - get all features
     const features = await Feature.findAll({
-      where: { publishableId: { [Op.ne]: null } },
+      include: [
+        {
+          model: ParkArea,
+          as: "parkArea",
+          attributes: ["id", "name", "publishableId"],
+          required: false,
+        },
+      ],
       transaction: localTransaction,
     });
 
     for (const feature of features) {
+      // use parkArea's publishableId if feature belongs to a parkArea
+      // otherwise use feature's publishableId
+      const targetPublishableId =
+        feature.parkArea?.publishableId || feature.publishableId;
+
+      if (!targetPublishableId) continue;
+
       let gateDetail = await GateDetail.findOne({
-        where: { publishableId: feature.publishableId },
+        where: {
+          publishableId: targetPublishableId,
+        },
         transaction: localTransaction,
       });
 
       if (!gateDetail) {
         gateDetail = await GateDetail.create(
-          { publishableId: feature.publishableId },
+          {
+            publishableId: targetPublishableId,
+          },
           { transaction: localTransaction },
         );
       }
 
-      // import Strapi park-operation-sub-area data if feature name matches
-      const subArea = parkOperationSubAreaByName[feature.name];
+      // import Strapi park-operation-sub-area data if area/feature name or strapiId matches
+      const subArea =
+        parkOperationSubAreaByName[feature.parkArea?.name] ||
+        parkOperationSubAreaByName[feature.name] ||
+        parkOperationSubAreaById[feature.strapiId];
 
       if (subArea) {
         await updateGateDetailFromStrapi(gateDetail, subArea, localTransaction);

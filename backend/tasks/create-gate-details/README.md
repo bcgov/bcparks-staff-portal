@@ -1,6 +1,6 @@
 # create-gate-details.js
 
-This script creates or updates `GateDetail` entries for all Parks, ParkAreas, and Features with a `publishableId` in your database, and imports gate-related data from Strapi’s `park-operation` and `park-operation-sub-area` models.
+This script creates or updates `GateDetail` entries for all Parks, ParkAreas, and Features in your database, and imports gate-related data from Strapi’s `park-operation` and `park-operation-sub-area` models.
 
 ## What does the script do?
 
@@ -16,25 +16,27 @@ This script creates or updates `GateDetail` entries for all Parks, ParkAreas, an
      - `gateClosesAtDusk`
      - `gateOpen24Hours`
 
-2. **For ParkAreas:**
+2. **For ParkAreas and Features:**
 
-   - Finds all ParkAreas with a non-null `publishableId`.
-   - For each ParkArea, creates a `GateDetail` entry linked by `publishableId` if one does not exist.
-   - (No Strapi import for ParkArea at this time.)
+- Finds all Features (with or without `publishableId`)
+- For each Feature, determines the target `publishableId`:
+  - Uses the Feature's own `publishableId` if it exists
+  - **OR** uses the parent ParkArea's `publishableId` if the Feature belongs to a ParkArea
+- Creates or updates a `GateDetail` entry for the target `publishableId`
+- Matches Features to Strapi `park-operation-sub-area` data by:
+  1. **ParkArea name** (if Feature belongs to a ParkArea)
+  2. **Feature name**
+  3. **Feature strapiId**
+- If a match is found, imports the following fields:
+  - `hasGate`
+  - `gateOpenTime`
+  - `gateCloseTime`
+  - `gateOpensAtDawn`
+  - `gateClosesAtDusk`
+  - `gateOpen24Hours`
 
-3. **For Features:**
 
-   - Finds all Features with a non-null `publishableId`.
-   - For each Feature, creates or updates a `GateDetail` entry linked by `publishableId`.
-   - If the Feature’s `strapiId` matches a Strapi `park-operation-sub-area`’s `id`, it imports the following fields from Strapi and sets them on the `GateDetail`:
-     - `hasGate`
-     - `gateOpenTime`
-     - `gateCloseTime`
-     - `gateOpensAtDawn`
-     - `gateClosesAtDusk`
-     - `gateOpen24Hours`
-
-4. **Transaction Safety:**
+3. **Transaction Safety:**
    - All operations are performed inside a transaction. If any error occurs, all changes are rolled back.
 
 ## How to run
@@ -52,8 +54,8 @@ node tasks/create-gate-details/create-gate-details.js
 
 ## Why is this useful?
 
-- Ensures every Park, ParkArea, and Feature with a `publishableId` has a corresponding `GateDetail` entry.
-- Keeps gate-related fields in sync with Strapi data for Parks and Features.
+- Ensures Park, ParkArea, and Feature has a corresponding `GateDetail` entry.
+- Keeps gate-related fields in sync with Strapi data for Parks, ParkAreas, and Features.
 - Prevents duplicate entries and ensures data consistency.
 
 ## Notes
