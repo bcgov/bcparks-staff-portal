@@ -264,9 +264,9 @@ const SEASON_ATTRIBUTES = [
  * @returns {Promise<Array>} - Array of reservation feature dates
  */
 async function getFeatureReservationDates(park, operatingYear) {
-  // Only fetch dates if the park has Winter fee dates or both Tier 1 and Tier 2 dates.
+  // Only fetch dates if the park has Winter fee dates or either Tier 1 or Tier 2 dates.
   // This data is needed for Winter/Tier date validation.
-  if (!(park.hasWinterFeeDates || (park.hasTier1Dates && park.hasTier2Dates)))
+  if (!(park.hasWinterFeeDates || park.hasTier1Dates || park.hasTier2Dates))
     return [];
 
   // Get the ID of the applicable Reservation date type
@@ -362,10 +362,9 @@ async function getParkDates(park, operatingYear) {
     "Winter fee": parkWinterDates = [],
   } = datesByType;
 
-  // Only include tier dates if park supports both tiers
-  const hasTierDates = park.hasTier1Dates && park.hasTier2Dates;
-  const parkTier1Dates = hasTierDates ? tier1Dates : [];
-  const parkTier2Dates = hasTierDates ? tier2Dates : [];
+  // Only include tier dates if park supports them
+  const parkTier1Dates = park.hasTier1Dates ? tier1Dates : [];
+  const parkTier2Dates = park.hasTier2Dates ? tier2Dates : [];
 
   return {
     parkTier1Dates,
@@ -501,6 +500,11 @@ router.get(
             {
               model: Feature,
               as: "features",
+
+              where: {
+                active: true,
+              },
+
               include: [
                 featureTypeQueryPart(),
 
@@ -633,6 +637,11 @@ router.get(
                 {
                   model: Feature,
                   as: "features",
+
+                  where: {
+                    active: true,
+                  },
+
                   include: [
                     featureTypeQueryPart(),
 
@@ -649,6 +658,7 @@ router.get(
               as: "features",
               where: {
                 parkAreaId: null, // Only get Features not in a Park Area
+                active: true,
               },
               required: false,
               include: [

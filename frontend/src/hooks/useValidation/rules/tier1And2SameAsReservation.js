@@ -15,8 +15,8 @@ export default function tier1And2SameAsReservation(seasonData, context) {
   // This rule applies to the Park level. Skip for other levels
   if (context.level !== "park") return;
 
-  // Skip if the Park doesn't have Tier 1 & Tier 2 dates
-  if (!(current.park.hasTier1Dates && current.park.hasTier2Dates)) return;
+  // Skip if the Park doesn't have Tier 1 or Tier 2 dates
+  if (!(current.park.hasTier1Dates || current.park.hasTier2Dates)) return;
 
   // Skip if Tier 1 and Reservation dates are not provided
   const tier1Dates = dateRanges.filter(
