@@ -43,8 +43,11 @@ export default function tier1And2SameAsReservation(seasonData, context) {
     featureReservationDates,
   );
 
-  // Skip if there are no reservation dates, or if the Park doesn't have Tier 1 dates
-  if (consolidatedReservationDates.length === 0 || tier1Dates.length === 0)
+  // Skip if there are no reservation dates, or if the Park doesn't have Tier 1 or 2 dates
+  if (
+    consolidatedReservationDates.length === 0 ||
+    consolidatedTierDates.length === 0
+  )
     return;
 
   // Compare consolidated date arrays
