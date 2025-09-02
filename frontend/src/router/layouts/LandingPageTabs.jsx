@@ -34,12 +34,14 @@ export default function LandingPageTabs() {
                   Publish
                 </NavLink>
               </li>
+            )} */}
+            {approver && (
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/export">
+                  Export
+                </NavLink>
+              </li>
             )}
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/export">
-                Export
-              </NavLink>
-            </li> */}
           </ul>
         </div>
       </header>

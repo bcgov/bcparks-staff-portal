@@ -16,12 +16,15 @@ function ExportPage() {
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
   const [exportFeatures, setExportFeatures] = useState([]);
-  const exportTypes = [
-    { value: "all", label: "All dates" },
-    { value: "bcp-only", label: "BCP reservations only" },
-  ];
+  // TODO: CMS-1142 Update export page - use eventTypes once we have filters
+  // const exportTypes = [
+  //   { value: "all", label: "All dates" },
+  //   { value: "bcp-only", label: "BCP reservations only" },
+  // ];
   const [exportDateTypes, setExportDateTypes] = useState([]);
-  const [exportType, setExportType] = useState("all");
+  // TODO: CMS-1142 Update export page - use useState instead of a constant
+  // const [exportType, setExportType] = useState("all");
+  const exportType = "all";
 
   const { generating, fetchData: fetchCsv } = useApiGet("/export/csv", {
     instant: false,
@@ -39,31 +42,43 @@ function ExportPage() {
     if (options?.years) {
       setExportYear(options.years.at(-1));
     }
-  }, [options]);
-
-  // Selects every feature type's ID
-  function selectAllFeatures() {
+    // TODO: CMS-1142 Update export page - no need to pre-select once we have filters
+    // Pre-select all feature types
     if (options?.featureTypes?.length) {
       setExportFeatures(options.featureTypes.map((feature) => feature.id));
     }
-  }
+    // TODO: CMS-1142 Update export page - no need to pre-select once we have filters
+    // Pre-select all date types
+    if (options?.dateTypes?.length) {
+      setExportDateTypes(options.dateTypes.map((dateType) => dateType.id));
+    }
+  }, [options]);
 
+  // TODO: CMS-1142 Update export page - use this function once we have filters
+  // Selects every feature type's ID
+  // function selectAllFeatures() {
+  //   if (options?.featureTypes?.length) {
+  //     setExportFeatures(options.featureTypes.map((feature) => feature.id));
+  //   }
+  // }
+
+  // TODO: CMS-1142 Update export page - use this function once we have filters
   // Returns a function to handle checkbox group changes
-  function onCheckboxGroupChange(setter) {
-    // Adds or removes an value from the selection array
-    return function (event) {
-      const { checked } = event.target;
-      const value = +event.target.value;
+  // function onCheckboxGroupChange(setter) {
+  //   // Adds or removes an value from the selection array
+  //   return function (event) {
+  //     const { checked } = event.target;
+  //     const value = +event.target.value;
 
-      setter((previousValues) => {
-        if (checked) {
-          return [...previousValues, value];
-        }
+  //     setter((previousValues) => {
+  //       if (checked) {
+  //         return [...previousValues, value];
+  //       }
 
-        return previousValues.filter((feature) => feature !== value);
-      });
-    };
-  }
+  //       return previousValues.filter((feature) => feature !== value);
+  //     });
+  //   };
+  // }
 
   // Fetches the CSV as plain text, and then saves it as a file.
   async function getCsv() {
@@ -146,7 +161,8 @@ function ExportPage() {
 
         <div className="row">
           <div className="col-md-6 col-lg-5">
-            <fieldset className="section-spaced">
+            {/* TODO: CMS-1142 Update export page */}
+            {/* <fieldset className="section-spaced">
               <legend className="append-required">Export type</legend>
               {exportTypes.map((option) => (
                 <div className="form-check" key={option.value}>
@@ -167,7 +183,7 @@ function ExportPage() {
                   </label>
                 </div>
               ))}
-            </fieldset>
+            </fieldset> */}
             <fieldset className="section-spaced">
               <legend className="append-required">Year</legend>
               <div className="input-with-append col-8 col-sm-6">
@@ -190,7 +206,8 @@ function ExportPage() {
                 />
               </div>
             </fieldset>
-            <fieldset className="section-spaced">
+            {/* TODO: CMS-1142 Update export page */}
+            {/* <fieldset className="section-spaced">
               <legend className="append-required">Park features</legend>
 
               <div className="mb-2">
@@ -253,7 +270,7 @@ function ExportPage() {
                   </label>
                 </div>
               ))}
-            </fieldset>
+            </fieldset> */}
             <fieldset className="d-flex">
               <button
                 role="button"
