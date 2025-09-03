@@ -17,7 +17,7 @@ function ExportPage() {
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
   const [exportFeatures, setExportFeatures] = useState([]);
-  // TODO: CMS-1142 Update export page - use eventTypes once we have filters
+  // TODO: CMS-1142 Update export page - use exportTypes once we have filters
   // const exportTypes = [
   //   { value: "all", label: "All dates" },
   //   { value: "bcp-only", label: "BCP reservations only" },
@@ -158,6 +158,7 @@ function ExportPage() {
         />
 
         <p>Select the format of your export:</p>
+        <h3 className="mb-4">Dates</h3>
 
         <div className="row">
           <div className="col-md-6 col-lg-5">
@@ -185,12 +186,12 @@ function ExportPage() {
               ))}
             </fieldset> */}
             <fieldset className="section-spaced">
-              <legend className="append-required">Year</legend>
+              <h6 className="fw-normal append-required">Operating year</h6>
               <div className="input-with-append col-8 col-sm-6">
                 <Select
                   id="year"
                   value={exportYear}
-                  options={options.years}
+                  options={options?.years || []}
                   placeholder="Select year"
                   className="select-year-field"
                   classNamePrefix="select-year"
@@ -204,6 +205,12 @@ function ExportPage() {
                   }}
                 />
               </div>
+              {/* TODO: Add export validation */}
+              {!exportYear && (
+                <div className="text-danger validation-errors my-2">
+                  Required
+                </div>
+              )}
             </fieldset>
             {/* TODO: CMS-1142 Update export page */}
             {/* <fieldset className="section-spaced">
