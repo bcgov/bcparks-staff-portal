@@ -46,10 +46,18 @@ export default function reservationWithinOperating(seasonData, context) {
       );
 
       if (!allWithin) {
+        const errorText =
+          "Enter the reservation dates that fall within the operating dates selected.";
+
+        // Show the error below the Operation and Reservation date range sections
         context.addError(
-          // Show the error below the Dateable's form section
-          elements.dateableSection(dateableId),
-          "Enter the reservation dates that fall within the operating dates selected.",
+          elements.dateableDateType(dateableId, "Operation"),
+          errorText,
+        );
+
+        context.addError(
+          elements.dateableDateType(dateableId, "Reservation"),
+          errorText,
         );
       }
 
@@ -58,10 +66,18 @@ export default function reservationWithinOperating(seasonData, context) {
       const reservationStartDate = reservationRanges.at(0).startDate;
 
       if (isBefore(reservationStartDate, operatingStartDate)) {
+        const errorText =
+          "The reservation start date must be on or after the operating start date.";
+
+        // Show the error below the Operation and Reservation date range sections
         context.addError(
-          // Show the error below the Dateable's form section
-          elements.dateableSection(dateableId),
-          "The reservation start date must be on or after the operating start date.",
+          elements.dateableDateType(dateableId, "Operation"),
+          errorText,
+        );
+
+        context.addError(
+          elements.dateableDateType(dateableId, "Reservation"),
+          errorText,
         );
       }
     },
