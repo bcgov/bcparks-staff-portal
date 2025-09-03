@@ -5,6 +5,7 @@ import "../../env.js";
 
 import { Season, DateRange, DateRangeAnnual } from "../../models/index.js";
 import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
+import * as STATUS from "../../constants/seasonStatus.js";
 
 // Functions
 /**
@@ -46,7 +47,7 @@ export async function populateAnnualDateRangesForYear(
         },
         transaction,
       });
-      const targetSeason = await Season.findOne({
+      let targetSeason = await Season.findOne({
         where: {
           publishableId: annual.publishableId,
           operatingYear: targetYear,
@@ -54,8 +55,21 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
-      // skip if no previous or target season found
-      if (!prevSeason || !targetSeason) continue;
+      // skip if no previous season found
+      if (!prevSeason) continue;
+
+      // create season if no target season found
+      if (!targetSeason) {
+        targetSeason = await Season.create(
+          {
+            publishableId: annual.publishableId,
+            operatingYear: targetYear,
+            status: STATUS.APPROVED,
+            readyToPublish: true,
+          },
+          { transaction },
+        );
+      }
 
       // find dateableId for targetSeason's publishableId
       const dateableId = await findDateableIdByPublishableId(
