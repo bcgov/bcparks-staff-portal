@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { saveAs } from "file-saver";
+import Select from "react-select";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useApiGet } from "@/hooks/useApi";
@@ -30,7 +31,7 @@ function ExportPage() {
     instant: false,
     params: {
       type: exportType,
-      year: exportYear,
+      year: exportYear?.value,
       "features[]": exportFeatures,
       "dateTypes[]": exportDateTypes,
     },
@@ -38,10 +39,6 @@ function ExportPage() {
 
   // Set the initial values when options are loaded
   useEffect(() => {
-    // Initially select the latest year from the data
-    if (options?.years) {
-      setExportYear(options.years.at(-1));
-    }
     // TODO: CMS-1142 Update export page - no need to pre-select once we have filters
     // Pre-select all feature types
     if (options?.featureTypes?.length) {
@@ -98,7 +95,7 @@ function ExportPage() {
           .join(", ");
       }
 
-      const filename = `${exportYear} season - ${displayType} - ${dateTypes}.csv`;
+      const filename = `${exportYear?.value} season - ${displayType} - ${dateTypes}.csv`;
 
       // Convert CSV string to blob and save in the browser
       const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
@@ -137,7 +134,10 @@ function ExportPage() {
     );
 
   const disableButton =
-    exportFeatures.length === 0 || exportDateTypes.length === 0 || generating;
+    !exportYear ||
+    exportFeatures.length === 0 ||
+    exportDateTypes.length === 0 ||
+    generating;
 
   return (
     <div className="container">
@@ -187,22 +187,21 @@ function ExportPage() {
             <fieldset className="section-spaced">
               <legend className="append-required">Year</legend>
               <div className="input-with-append col-8 col-sm-6">
-                <select
+                <Select
                   id="year"
-                  className="form-select"
                   value={exportYear}
-                  onChange={(ev) => setExportYear(+ev.target.value)}
-                >
-                  {options.years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </select>
-
-                <FontAwesomeIcon
-                  className="append-content"
-                  icon={faCalendarCheck}
+                  options={options.years}
+                  placeholder="Select year"
+                  className="select-year-field"
+                  classNamePrefix="select-year"
+                  onChange={(selectedOption) => setExportYear(selectedOption)}
+                  components={{
+                    DropdownIndicator: () => (
+                      <div className="select-year__dropdown-indicator">
+                        <FontAwesomeIcon icon={faCalendarCheck} />
+                      </div>
+                    ),
+                  }}
                 />
               </div>
             </fieldset>

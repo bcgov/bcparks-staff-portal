@@ -2,4 +2,19 @@
   .section-spaced {
     margin-bottom: var(--layout-margin-xxlarge);
   }
+
+  .select-year-field {
+    .select-year {
+      &__indicator-separator {
+        display: none;
+      }
+      &__dropdown-indicator {
+        padding: 8px;
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+  }
 }
