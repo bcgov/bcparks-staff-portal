@@ -19,6 +19,12 @@ export async function populateParkTierTypes() {
         throw new Error(`Park with orcs ${orcs} not found.`);
       }
 
+      // Skip updating if the field is already set
+      if (park[columnName] === true) {
+        console.log(`Park ${orcs} already has ${tierType} dates.`);
+        return null;
+      }
+
       // Update the park with the appropriate tier type
       const updateQuery = await park.update({
         [columnName]: true,
@@ -37,9 +43,15 @@ export async function populateParkTierTypes() {
   await Promise.all(updateQueries);
 }
 
-// run directly
+// Run directly
 if (process.argv[1] === new URL(import.meta.url).pathname) {
-  populateParkTierTypes().then(() => {
+  try {
+    await populateParkTierTypes();
     console.log("Done");
-  });
+  } catch (error) {
+    console.error("Error:", error);
+  } finally {
+    // Close the database connection
+    await Park.sequelize.close();
+  }
 }
