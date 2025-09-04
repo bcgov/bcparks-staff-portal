@@ -229,6 +229,11 @@ router.get(
               model: Feature,
               as: "feature",
               required: false,
+
+              where: {
+                active: true,
+              },
+
               include: [
                 {
                   model: Park,
