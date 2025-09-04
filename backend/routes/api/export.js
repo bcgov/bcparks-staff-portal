@@ -23,7 +23,7 @@ import {
 const router = Router();
 
 // Define the column names as constants.
-// Use this to print the column header row.
+// Use this to match values to columns and print the column header row.
 const colNames = {
   SECTION: "Section",
   MGMT_AREA: "Management area",
