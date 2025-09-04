@@ -74,6 +74,14 @@
   {
     "parkName": "Golden Ears Park",
     "orcs": "8",
+    "note": "T1 added by request in CMS-1215 for consistency / validation logic",
+    "tierType": "t1",
+    "startDate": "2025-01-01",
+    "endDate": "2026-01-01"
+  },
+  {
+    "parkName": "Golden Ears Park",
+    "orcs": "8",
     "note": "T2 in effect **Note: Golden Ears will remain in Tier 2 until further notice due to internet connectivity issues.",
     "tierType": "t2",
     "startDate": "2025-01-01",
