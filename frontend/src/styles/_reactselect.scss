@@ -1,6 +1,7 @@
 .react-select {
-  // Focus state
   &__control {
+    border-radius: var(--bs-border-radius) !important;
+    // Focus state
     &--is-focused {
       border-color: #8099b3 !important;
       box-shadow: 0 0 0 0.25rem rgba(1, 51, 102, 0.25) !important;
