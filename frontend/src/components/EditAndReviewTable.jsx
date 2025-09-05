@@ -15,11 +15,19 @@ import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
 
 // Components
-function IconButton({ icon, label, onClick, textColor, loading = false }) {
+function IconButton({
+  icon,
+  label,
+  onClick,
+  textColor,
+  loading = false,
+  disabled = false,
+}) {
   return (
     <button
       onClick={onClick}
       className={classNames("btn btn-text text-link", textColor)}
+      disabled={disabled}
     >
       {/* Show a spinner instead of the icon while loading */}
       {loading ? (
@@ -38,6 +46,7 @@ IconButton.propTypes = {
   onClick: PropTypes.func,
   textColor: PropTypes.string,
   loading: PropTypes.bool,
+  disabled: PropTypes.bool,
 };
 
 // renders all date ranges for a given year as a list
@@ -125,7 +134,9 @@ DateTableRow.propTypes = {
   currentYear: PropTypes.number,
 };
 
-function ApproveButton({ seasonId, color = "", onApprove }) {
+function ApproveButton({ seasonId, status, color = "", onApprove }) {
+  // disable the approve button if a season is already approved, published, or requested by HQ
+  const isDisabled = status !== "submitted";
   const { refreshTable } = useContext(RefreshTableContext);
   const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
     `/seasons/${seasonId}/approve/`,
@@ -153,12 +164,14 @@ function ApproveButton({ seasonId, color = "", onApprove }) {
       textColor={color}
       onClick={approveSeason}
       loading={sendingApprove}
+      disabled={isDisabled}
     />
   );
 }
 
 ApproveButton.propTypes = {
   seasonId: PropTypes.number.isRequired,
+  status: PropTypes.string.isRequired,
   color: PropTypes.string,
   onApprove: PropTypes.func.isRequired,
 };
@@ -223,6 +236,7 @@ function StatusTableRow({
           {approver && (
             <ApproveButton
               seasonId={season.id}
+              status={season.status}
               color={color}
               onApprove={onApprove}
             />
