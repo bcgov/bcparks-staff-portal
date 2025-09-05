@@ -26,6 +26,7 @@ function MultiSelectField({
         getOptionLabel={(e) => e[optionLabel]}
         getOptionValue={(e) => e[optionValue]}
         className="multi-select-field"
+        classNamePrefix="react-select"
       />
     </div>
   );

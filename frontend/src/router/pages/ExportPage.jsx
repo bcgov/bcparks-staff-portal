@@ -194,11 +194,11 @@ function ExportPage() {
                   options={options?.years || []}
                   placeholder="Select year"
                   className="select-year-field"
-                  classNamePrefix="select-year"
+                  classNamePrefix="react-select"
                   onChange={(selectedOption) => setExportYear(selectedOption)}
                   components={{
                     DropdownIndicator: () => (
-                      <div className="select-year__dropdown-indicator">
+                      <div className="react-select__dropdown-indicator">
                         <FontAwesomeIcon icon={faCalendarCheck} />
                       </div>
                     ),

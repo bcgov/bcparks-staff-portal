@@ -1,0 +1,27 @@
+.react-select {
+  // Focus state
+  &__control {
+    &--is-focused {
+      border-color: #8099b3 !important;
+      box-shadow: 0 0 0 0.25rem rgba(1, 51, 102, 0.25) !important;
+    }
+  }
+}
+
+// Custom styles for the year select field
+.select-year-field {
+  .react-select {
+    // Hide the separator line
+    &__indicator-separator {
+      display: none;
+    }
+    // Customize the dropdown icon
+    &__dropdown-indicator {
+      padding: 8px;
+      svg {
+        width: 16px;
+        height: 16px;
+      }
+    }
+  }
+}

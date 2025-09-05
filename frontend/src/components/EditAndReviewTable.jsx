@@ -177,9 +177,8 @@ function StatusTableRow({
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
-    () =>
-      checkAccess([ROLES.APPROVER, ROLES.SUPER_ADMIN, ROLES.ALL_PARK_ACCESS]),
-    [checkAccess, ROLES.APPROVER, ROLES.SUPER_ADMIN, ROLES.ALL_PARK_ACCESS],
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
   );
 
   /**
