@@ -1,8 +1,10 @@
 // This script creates new blank seasons for upcoming years in the DOOT database.
 // It will skip creating a season if one already exists for the given operating year and publishable.
-// Also creates Group Camping seasons for the year after the operating year.
+// Also creates Group Camping and Picnic Shelter seasons for the year after the operating year.
 
 import "../env.js";
+
+import { Op } from "sequelize";
 
 import {
   Dateable,
@@ -377,16 +379,19 @@ console.log(`Added ${publishablesAdded} missing Feature Publishables`);
 console.log(`Added ${dateablesAdded} missing Feature Dateables`);
 console.log(`Added ${seasonsAdded} new Feature Seasons`);
 
-// Step 4: Create new seasons for the following year for every Group Camping Feature
+// Step 4: Create new seasons for the following year for every Group Camping or Picnic Shelter Feature
 const nextYear = operatingYear + 1;
 
-console.log(`Creating Group Camping seasons for ${nextYear}`);
+console.log(
+  `Creating Group Camping and Picnic Shelter seasons for ${nextYear}`,
+);
 
 publishablesAdded = 0;
 dateablesAdded = 0;
 seasonsAdded = 0;
 
-const groupCampingFeatures = await Feature.findAll({
+// Find all features that need to request dates for next year
+const nextYearFeatures = await Feature.findAll({
   where: {
     active: true,
   },
@@ -397,44 +402,52 @@ const groupCampingFeatures = await Feature.findAll({
     required: true,
 
     where: {
-      name: "Group campground",
+      name: {
+        [Op.in]: ["Group campground", "Picnic shelter"],
+      },
     },
   },
 
   transaction,
 });
 
-console.log(`Found ${groupCampingFeatures.length} Group Camping Features`);
+console.log(
+  `Found ${nextYearFeatures.length} Group Camping/Picnic Shelter Features`,
+);
 
-// Collect unique parkAreaIds from group camping features that belong to a ParkArea
+// Collect unique parkAreaIds from Group Camping/Picnic Shelter features that belong to a ParkArea
 const uniqueParkAreaIds = [
   ...new Set(
-    groupCampingFeatures
+    nextYearFeatures
       .filter((feature) => feature.parkAreaId)
       .map((feature) => feature.parkAreaId),
   ),
 ];
 
-const groupCampingParkAreas = await ParkArea.findAll({
+const nextYearParkAreas = await ParkArea.findAll({
   where: { id: uniqueParkAreaIds },
   transaction,
 });
 
 // Create seasons for each unique ParkArea
-await createSeasonsForParkAreas(groupCampingParkAreas, nextYear);
+await createSeasonsForParkAreas(nextYearParkAreas, nextYear);
 
-// For group camping features that do NOT belong to a ParkArea, create seasons for the feature itself
-const independentFeatures = groupCampingFeatures.filter(
+// For Group Camping/Picnic Shelter features that do NOT belong to a ParkArea, create seasons for the feature itself
+const independentFeatures = nextYearFeatures.filter(
   (feature) => !feature.parkAreaId,
 );
 
 await createSeasonsForFeatures(independentFeatures, nextYear);
 
 console.log(
-  `Added ${publishablesAdded} missing Group Camping Feature Publishables`,
+  `Added ${publishablesAdded} missing Group Camping/Picnic Shelter Feature Publishables`,
 );
-console.log(`Added ${dateablesAdded} missing Group Camping Feature Dateables`);
-console.log(`Added ${seasonsAdded} new Group Camping Feature Seasons`);
+console.log(
+  `Added ${dateablesAdded} missing Group Camping/Picnic Shelter Feature Dateables`,
+);
+console.log(
+  `Added ${seasonsAdded} new Group Camping/Picnic Shelter Feature Seasons`,
+);
 
 // Populate DateRanges for the new seasons based on previous year if isDateRangeAnnual is TRUE
 await populateAnnualDateRangesForYear(operatingYear, transaction);
