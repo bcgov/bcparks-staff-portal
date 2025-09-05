@@ -136,9 +136,7 @@ DateTableRow.propTypes = {
 
 function ApproveButton({ seasonId, status, color = "", onApprove }) {
   // disable the approve button if a season is already approved, published, or requested by HQ
-  const isDisabled = ["approved", "published", "requested"].includes(
-    status?.toLowerCase(),
-  );
+  const isDisabled = status !== "submitted";
   const { refreshTable } = useContext(RefreshTableContext);
   const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
     `/seasons/${seasonId}/approve/`,
