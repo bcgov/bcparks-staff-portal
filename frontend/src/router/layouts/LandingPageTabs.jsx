@@ -11,6 +11,11 @@ export default function LandingPageTabs() {
     () => checkAccess(ROLES.APPROVER),
     [checkAccess, ROLES.APPROVER],
   );
+  // Check if the user has permission to access export page
+  const userExportPermission = useMemo(
+    () => checkAccess([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
+    [checkAccess, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
+  );
 
   // This prevents flashing the tabs layout to unauthenticated users
   if (!isAuthenticated) return <></>;
@@ -34,12 +39,14 @@ export default function LandingPageTabs() {
                   Publish
                 </NavLink>
               </li>
+            )} */}
+            {userExportPermission && (
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/export">
+                  Export
+                </NavLink>
+              </li>
             )}
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/export">
-                Export
-              </NavLink>
-            </li> */}
           </ul>
         </div>
       </header>
