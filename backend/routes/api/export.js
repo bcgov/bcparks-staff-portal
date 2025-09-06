@@ -75,7 +75,10 @@ router.get(
 
         order: [[Sequelize.col("operatingYear"), "ASC"]],
       })
-    ).map((year) => year.operatingYear);
+    ).map((year) => ({
+      label: year.operatingYear.toString(),
+      value: year.operatingYear,
+    }));
 
     res.json({
       years,
