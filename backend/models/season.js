@@ -31,6 +31,12 @@ export default (sequelize) => {
         as: "publishable",
       });
 
+      Season.hasOne(models.GateDetail, {
+        foreignKey: "publishableId",
+        sourceKey: "publishableId",
+        as: "gateDetail",
+      });
+
       Season.hasMany(models.SeasonChangeLog, {
         foreignKey: "seasonId",
         as: "changeLogs",

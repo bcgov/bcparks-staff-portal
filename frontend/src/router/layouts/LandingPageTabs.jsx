@@ -32,7 +32,7 @@ export default function LandingPageTabs() {
                 Edit{approver && " and review"}
               </NavLink>
             </li>
-            {/* Hidden temporarily until the Publish and Export pages are re-implemented */}
+            {/* Hidden temporarily until the Publish page is re-implemented */}
             {/* {approver && (
               <li className="nav-item">
                 <NavLink className="nav-link" to="/publish">
