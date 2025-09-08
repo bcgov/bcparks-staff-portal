@@ -192,11 +192,14 @@ router.get(
 
     // Query for all DateRanges for the given operating year
     const dateRanges = await DateRange.findAll({
+      attributes: ["id", "startDate", "endDate", "dateableId", "dateTypeId"],
+
       include: [
         // Only include dates in a season for the given year
         {
           model: Season,
           as: "season",
+          attributes: ["id", "operatingYear", "status", "readyToPublish"],
 
           where: { operatingYear },
           required: true,
@@ -206,6 +209,13 @@ router.get(
             {
               model: Park,
               as: "park",
+              attributes: [
+                "id",
+                "name",
+                "orcs",
+                "managementAreas",
+                "inReservationSystem",
+              ],
               required: false,
             },
 
@@ -213,12 +223,20 @@ router.get(
             {
               model: ParkArea,
               as: "parkArea",
+              attributes: ["id", "name", "inReservationSystem"],
               required: false,
 
               include: [
                 {
                   model: Park,
                   as: "park",
+                  attributes: [
+                    "id",
+                    "name",
+                    "orcs",
+                    "managementAreas",
+                    "inReservationSystem",
+                  ],
                   required: false,
                 },
               ],
@@ -228,6 +246,12 @@ router.get(
             {
               model: Feature,
               as: "feature",
+              attributes: [
+                "id",
+                "name",
+                "strapiFeatureId",
+                "inReservationSystem",
+              ],
               required: false,
 
               where: {
@@ -238,6 +262,13 @@ router.get(
                 {
                   model: Park,
                   as: "park",
+                  attributes: [
+                    "id",
+                    "name",
+                    "orcs",
+                    "managementAreas",
+                    "inReservationSystem",
+                  ],
                   required: false,
                 },
 
@@ -254,6 +285,7 @@ router.get(
             {
               model: GateDetail,
               as: "gateDetail",
+              attributes: ["id", "hasGate", "gateOpenTime", "gateCloseTime"],
               required: false,
             },
 
@@ -262,8 +294,8 @@ router.get(
               model: SeasonChangeLog,
               as: "changeLogs",
               attributes: ["id", "notes", "createdAt"],
-              // Filter out empty notes
 
+              // Filter out empty notes
               where: {
                 notes: {
                   [Op.ne]: "",
