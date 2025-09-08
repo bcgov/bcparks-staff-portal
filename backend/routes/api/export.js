@@ -190,6 +190,14 @@ router.get(
       throw error;
     }
 
+    const parkAttributes = [
+      "id",
+      "name",
+      "orcs",
+      "managementAreas",
+      "inReservationSystem",
+    ];
+
     // Query for all DateRanges for the given operating year
     const dateRanges = await DateRange.findAll({
       attributes: ["id", "startDate", "endDate", "dateableId", "dateTypeId"],
@@ -209,13 +217,7 @@ router.get(
             {
               model: Park,
               as: "park",
-              attributes: [
-                "id",
-                "name",
-                "orcs",
-                "managementAreas",
-                "inReservationSystem",
-              ],
+              attributes: parkAttributes,
               required: false,
             },
 
@@ -230,13 +232,7 @@ router.get(
                 {
                   model: Park,
                   as: "park",
-                  attributes: [
-                    "id",
-                    "name",
-                    "orcs",
-                    "managementAreas",
-                    "inReservationSystem",
-                  ],
+                  attributes: parkAttributes,
                   required: false,
                 },
               ],
@@ -262,13 +258,7 @@ router.get(
                 {
                   model: Park,
                   as: "park",
-                  attributes: [
-                    "id",
-                    "name",
-                    "orcs",
-                    "managementAreas",
-                    "inReservationSystem",
-                  ],
+                  attributes: parkAttributes,
                   required: false,
                 },
 
