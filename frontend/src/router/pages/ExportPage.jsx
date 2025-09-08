@@ -3,6 +3,8 @@ import { saveAs } from "file-saver";
 import Select from "react-select";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { format } from "date-fns";
+
 import { useApiGet } from "@/hooks/useApi";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import LoadingBar from "@/components/LoadingBar";
@@ -28,7 +30,9 @@ function ExportPage() {
   async function getCsv() {
     try {
       const csvData = await fetchCsv();
-      const filename = `${exportYear?.value} season.csv`;
+
+      const exportDate = format(new Date(), "yyyyMMdd");
+      const filename = `DOOT ${exportYear.value} - all dates - exported ${exportDate}.csv`;
 
       // Convert CSV string to blob and save in the browser
       const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
