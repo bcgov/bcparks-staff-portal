@@ -190,7 +190,7 @@ router.get(
       throw error;
     }
 
-    const parkAttributes = [
+    const PARK_ATTRIBUTES = [
       "id",
       "name",
       "orcs",
@@ -217,7 +217,7 @@ router.get(
             {
               model: Park,
               as: "park",
-              attributes: parkAttributes,
+              attributes: PARK_ATTRIBUTES,
               required: false,
             },
 
@@ -232,7 +232,7 @@ router.get(
                 {
                   model: Park,
                   as: "park",
-                  attributes: parkAttributes,
+                  attributes: PARK_ATTRIBUTES,
                   required: false,
                 },
               ],
@@ -258,7 +258,7 @@ router.get(
                 {
                   model: Park,
                   as: "park",
-                  attributes: parkAttributes,
+                  attributes: PARK_ATTRIBUTES,
                   required: false,
                 },
 
