@@ -87,7 +87,7 @@ export async function populateAnnualDateRangesForYear(
       });
 
       // check if target season already has DateRanges for this dateType
-      const targetDateRangeCount = await DateRange.count({
+      const existingTargetDateRanges = await DateRange.findAll({
         where: {
           seasonId: targetSeason.id,
           dateTypeId: annual.dateTypeId,
@@ -95,8 +95,12 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
-      // skip if target season already has DateRanges
-      if (targetDateRangeCount > 0) continue;
+      // skip if one existing DateRange has both startDate and endDate
+      const hasCompleteRange = existingTargetDateRanges.some(
+        (dateRange) => dateRange.startDate && dateRange.endDate
+      );
+
+      if (hasCompleteRange) continue;
 
       // copy each previous DateRange to current season
       for (const prevRange of prevDateRanges) {
