@@ -392,8 +392,10 @@ seasonsAdded = 0;
 
 // Find all features that need to request dates for next year
 const nextYearFeatures = await Feature.findAll({
+  // Only active features in the BC Parks reservation system
   where: {
     active: true,
+    inReservationSystem: true,
   },
 
   include: {
