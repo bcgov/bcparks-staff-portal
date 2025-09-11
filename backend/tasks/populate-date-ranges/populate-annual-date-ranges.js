@@ -95,12 +95,14 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
-      // skip if one existing DateRange has both startDate and endDate
-      const hasCompleteRange = existingTargetDateRanges.some(
-        (dateRange) => dateRange.startDate && dateRange.endDate
-      );
+      // skip only if all existing DateRanges have both startDate and endDate
+      const allRangesComplete =
+        existingTargetDateRanges.length > 0 &&
+        existingTargetDateRanges.every(
+          (dateRange) => dateRange.startDate && dateRange.endDate,
+        );
 
-      if (hasCompleteRange) continue;
+      if (allRangesComplete) continue;
 
       // copy each previous DateRange to current season
       for (const prevRange of prevDateRanges) {
