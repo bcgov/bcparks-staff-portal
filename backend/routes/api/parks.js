@@ -57,7 +57,7 @@ function featureModel(minYear, where = {}) {
   return {
     model: Feature,
     as: "features",
-    where: { ...where },
+    where: { ...where, active: true },
     required: false,
     attributes: [
       "id",
