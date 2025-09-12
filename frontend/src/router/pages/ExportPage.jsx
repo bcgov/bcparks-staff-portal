@@ -90,7 +90,7 @@ function ExportPage() {
           variant="error"
         />
 
-        <p>Select the format of your export:</p>
+        <p>Select the information to include in your export:</p>
         <h3 className="mb-4">Dates</h3>
 
         <div className="row">
@@ -129,7 +129,7 @@ function ExportPage() {
                 disabled={disableButton}
                 onClick={getCsv}
               >
-                Export report
+                Export dates
               </button>
 
               {generating && (
