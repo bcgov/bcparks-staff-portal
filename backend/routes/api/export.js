@@ -316,8 +316,6 @@ router.get(
     const dateRangeAnnuals = await getDateRangeAnnualsMap();
 
     const rows = dateRanges
-      // Filter out incomplete date ranges
-      .filter((dateRange) => dateRange.startDate && dateRange.endDate)
       // Format into a flat array for CSV output
       .map((dateRange) => {
         const { season } = dateRange;
