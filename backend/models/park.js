@@ -36,17 +36,17 @@ export default (sequelize) => {
 
       // Each Park can have many AccessGroupParks associations to associate with many AccessGroups
       Park.hasMany(models.AccessGroupPark, {
-        foreignKey: "parkOrcs",
-        sourceKey: "orcs",
+        foreignKey: "parkId",
+        sourceKey: "id",
         as: "accessGroupParks",
       });
 
       // Each Park can associate with many AccessGroups through AccessGroupParks
       Park.belongsToMany(models.AccessGroup, {
         through: models.AccessGroupPark,
-        foreignKey: "parkOrcs",
+        foreignKey: "parkId",
         otherKey: "accessGroupId",
-        sourceKey: "orcs",
+        sourceKey: "id",
         as: "accessGroups",
       });
 

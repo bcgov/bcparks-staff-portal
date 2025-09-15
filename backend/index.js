@@ -31,6 +31,9 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
+// AdminJS routes
+app.use(admin.options.rootPath, adminRouter);
+
 // JSON parsing middleware
 app.use(express.json());
 
@@ -73,9 +76,6 @@ apiRouter.use("/publish", publishRoutes);
 apiRouter.use("/filter-options", filterOptionsRoutes);
 
 app.use("/api", apiRouter);
-
-// AdminJS routes
-app.use(admin.options.rootPath, adminRouter);
 
 // error handling middleware
 // eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware
