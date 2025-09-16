@@ -90,11 +90,11 @@ export async function populateAccessGroups() {
         // 5 - create UserAccessGroup relations for the user
         await UserAccessGroup.findOrCreate({
           where: {
-            id: user.id,
+            userId: user.id,
             accessGroupId,
           },
           defaults: {
-            id: user.id,
+            userId: user.id,
             accessGroupId,
           },
           transaction,
