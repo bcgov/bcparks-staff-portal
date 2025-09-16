@@ -182,7 +182,7 @@ async function getDateRangeAnnualsMap() {
  * with its associated Feature or ParkArea details
  * @returns {string} The name of the feature type or an empty string
  */
-function getFeatureType(season) {
+function getFeatureTypeForSeason(season) {
   // For Feature Seasons, return the Feature's type
   if (season.feature) {
     return season.feature.featureType.name;
@@ -198,31 +198,30 @@ function getFeatureType(season) {
 }
 
 /**
- * Gets the name of the Feature associated with a DateRange.
+ * Returns the Feature associated with a DateRange, or null if not applicable.
  * @param {DateRange} dateRange The DateRange with its season details
- * @returns {string} The name of the Feature or an empty string
+ * @returns {Feature|null} The Feature or null if not applicable
  */
-function getFeatureName(dateRange) {
-  // For Feature Seasons, return the Feature's name
+function getFeatureForDateRange(dateRange) {
+  // For Feature Seasons, return the Feature
   if (dateRange.season.feature) {
-    return dateRange.season.feature.name;
+    return dateRange.season.feature;
   }
 
   // For ParkArea Seasons, find the Feature that this DateRange applies to
   if (dateRange.season.parkArea?.features?.length) {
-    // Find the Feature in the ParkArea with the matching Dateable ID for this DateRange
+    // Return Feature in the ParkArea with the matching Dateable ID for this DateRange
     const dateRangeFeature = dateRange.season.parkArea.features.find(
       (feature) => feature.dateableId === dateRange.dateableId,
     );
 
-    // If the DateRange's dateableId matches a Feature, return its name
     if (dateRangeFeature) {
-      return dateRangeFeature.name;
+      return dateRangeFeature;
     }
   }
 
-  // Return an empty string if not applicable (e.g., Park seasons)
-  return "";
+  // Return null if not applicable (e.g., Park seasons)
+  return null;
 }
 
 // Export all dates for a given operatingYear to CSV
@@ -289,7 +288,7 @@ router.get(
                 {
                   model: Feature,
                   as: "features",
-                  attributes: ["id", "name", "dateableId"],
+                  attributes: ["id", "name", "dateableId", "strapiFeatureId"],
                   required: false,
 
                   include: [
@@ -392,6 +391,9 @@ router.get(
           `${dateRange.dateableId}-${dateRange.dateTypeId}`,
         );
 
+        // Get the Feature for this DateRange, if there is one
+        const feature = getFeatureForDateRange(dateRange);
+
         return {
           // Get park management area and section names from jsonb field
           [colNames.SECTION]: park.managementAreas
@@ -404,9 +406,9 @@ router.get(
           [colNames.ORCS]: park.orcs,
           [colNames.PARK_NAME]: park.name,
           [colNames.AREA]: season.parkArea?.name ?? "",
-          [colNames.FEATURE]: getFeatureName(dateRange),
-          [colNames.FEATURE_ID]: season.feature?.strapiFeatureId ?? "",
-          [colNames.FEATURE_TYPE]: getFeatureType(season),
+          [colNames.FEATURE]: feature?.name ?? "",
+          [colNames.FEATURE_ID]: feature?.strapiFeatureId ?? "",
+          [colNames.FEATURE_TYPE]: getFeatureTypeForSeason(season),
           [colNames.OPERATING_YEAR]: season.operatingYear,
           [colNames.DATE_TYPE]: dateRange.dateType.name,
           [colNames.START_DATE]: formatDate(dateRange.startDate),
