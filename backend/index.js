@@ -4,6 +4,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import RateLimit from "express-rate-limit";
+import bodyParser from "body-parser";
 
 import "./env.js";
 import checkJwt from "./middleware/checkJwt.js";
@@ -31,11 +32,7 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-// AdminJS routes
-app.use(admin.options.rootPath, adminRouter);
-
 // JSON parsing middleware
-app.use(express.json());
 
 // Logging middleware
 app.use(morgan("dev"));
@@ -58,6 +55,12 @@ const limiter = RateLimit({
 });
 
 app.use(limiter);
+
+// AdminJS routes
+app.use(admin.options.rootPath, adminRouter);
+
+// app.use(express.json());
+app.use(bodyParser.json());
 
 // Public routes
 app.use("/", homeRoutes); // Health check route(s)
