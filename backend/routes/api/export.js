@@ -176,6 +176,27 @@ async function getDateRangeAnnualsMap() {
   );
 }
 
+/**
+ * Gets the feature type for a given season.
+ * @param {Season} season The season to get the feature type for,
+ * with its associated Feature or ParkArea details
+ * @returns {string} The name of the feature type or an empty string
+ */
+function getFeatureType(season) {
+  // For Feature Seasons, return the Feature's type
+  if (season.feature) {
+    return season.feature.featureType.name;
+  }
+
+  // For ParkArea Seasons, return the type of the first Feature in the ParkArea
+  if (season.parkArea?.features?.length) {
+    return season.parkArea.features[0].featureType.name;
+  }
+
+  // Return an empty string if not applicable
+  return "";
+}
+
 // Export all dates for a given operatingYear to CSV
 router.get(
   "/csv",
@@ -221,7 +242,7 @@ router.get(
               required: false,
             },
 
-            // ParkArea with its park
+            // ParkArea with its park and features
             {
               model: ParkArea,
               as: "parkArea",
@@ -234,6 +255,23 @@ router.get(
                   as: "park",
                   attributes: PARK_ATTRIBUTES,
                   required: false,
+                },
+
+                // Include the feature types to display as the "parkArea type"
+                {
+                  model: Feature,
+                  as: "features",
+                  attributes: ["id", "name"],
+                  required: false,
+
+                  include: [
+                    {
+                      model: FeatureType,
+                      as: "featureType",
+                      attributes: ["id", "name"],
+                      required: true,
+                    },
+                  ],
                 },
               ],
             },
@@ -340,7 +378,7 @@ router.get(
           [colNames.AREA]: season.parkArea?.name ?? "",
           [colNames.FEATURE]: season.feature?.name ?? "",
           [colNames.FEATURE_ID]: season.feature?.strapiFeatureId ?? "",
-          [colNames.FEATURE_TYPE]: season.feature?.featureType?.name ?? "",
+          [colNames.FEATURE_TYPE]: getFeatureType(season),
           [colNames.OPERATING_YEAR]: season.operatingYear,
           [colNames.DATE_TYPE]: dateRange.dateType.name,
           [colNames.START_DATE]: formatDate(dateRange.startDate),
