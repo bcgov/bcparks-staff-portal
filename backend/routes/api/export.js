@@ -182,7 +182,7 @@ async function getDateRangeAnnualsMap() {
  * with its associated Feature or ParkArea details
  * @returns {string} The name of the feature type or an empty string
  */
-function getFeatureType(season) {
+function getFeatureTypeForSeason(season) {
   // For Feature Seasons, return the Feature's type
   if (season.feature) {
     return season.feature.featureType.name;
@@ -406,7 +406,7 @@ router.get(
           [colNames.AREA]: season.parkArea?.name ?? "",
           [colNames.FEATURE]: getFeatureName(dateRange),
           [colNames.FEATURE_ID]: season.feature?.strapiFeatureId ?? "",
-          [colNames.FEATURE_TYPE]: getFeatureType(season),
+          [colNames.FEATURE_TYPE]: getFeatureTypeForSeason(season),
           [colNames.OPERATING_YEAR]: season.operatingYear,
           [colNames.DATE_TYPE]: dateRange.dateType.name,
           [colNames.START_DATE]: formatDate(dateRange.startDate),
