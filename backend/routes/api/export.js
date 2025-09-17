@@ -156,8 +156,20 @@ function getInReservationSystem(season) {
   // Feature seasons: return the Feature's inReservationSystem value
   if (season.feature) return season.feature.inReservationSystem;
 
-  // Park seasons: return the Park's inReservationSystem value
-  return season.park.inReservationSystem;
+  // Park seasons: use special logic to determine the value
+  // If inReservationSystem is false in the database,
+  // fall back to checking for Winter/T1/T2 dates as a workaround for incomplete data.
+  // (Same logic as the "BC Parks Reservations" box on the frontend Park season form)
+  const {
+    inReservationSystem,
+    hasTier1Dates,
+    hasTier2Dates,
+    hasWinterFeeDates,
+  } = season.park;
+
+  return (
+    inReservationSystem || hasTier1Dates || hasTier2Dates || hasWinterFeeDates
+  );
 }
 
 /**
@@ -244,6 +256,9 @@ router.get(
       "orcs",
       "managementAreas",
       "inReservationSystem",
+      "hasTier1Dates",
+      "hasTier2Dates",
+      "hasWinterFeeDates",
     ];
 
     // Query for all DateRanges for the given operating year
