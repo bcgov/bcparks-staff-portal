@@ -109,11 +109,6 @@ const campgrounds = [
         featureId: "199_65",
       },
       {
-        strapiName: "Cathedral core area backcountry",
-        newName: "Core area",
-        featureId: "199_66",
-      },
-      {
         strapiName: "Ashnola Forest Service Road",
         newName: "Ashnola Forest Service Road",
         featureId: "199_11",
@@ -504,13 +499,23 @@ async function createCampground(item) {
     orcs: item.orcs.toString(),
   });
 
-  // create campground with FK to Park
-  const data = {
-    name: item.campgroundName,
-    parkId: park.id,
-  };
+  // check if ParkArea with the same name and parkId already exists
+  let campground = await ParkArea.findOne({
+    where: {
+      name: item.campgroundName,
+      parkId: park.id,
+    },
+  });
 
-  const campground = await createModel(ParkArea, data);
+  // if it exists, skip creating ParkArea
+  if (!campground) {
+    const data = {
+      name: item.campgroundName,
+      parkId: park.id,
+    };
+
+    campground = await createModel(ParkArea, data);
+  }
 
   await Promise.all(
     item.items.map(async (feature) => updateFeature(feature, campground.id)),

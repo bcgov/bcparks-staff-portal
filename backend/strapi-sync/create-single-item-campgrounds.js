@@ -60,6 +60,21 @@ const campgrounds = [
     orcs: 199,
   },
   {
+    campgroundName: "Lake of the Woods Campground",
+    items: [{ featureName: "All sites", featureId: "199_66" }],
+    orcs: 199,
+  },
+  {
+    campgroundName: "Quiniscoe Lake Campground",
+    items: [{ featureName: "All sites", featureId: "199_970" }],
+    orcs: 199,
+  },
+  {
+    campgroundName: "Pyramid Campground",
+    items: [{ featureName: "All sites", featureId: "199_972" }],
+    orcs: 199,
+  },
+  {
     campgroundName: "Atnarko Campground",
     items: [{ featureName: "All sites", featureId: "19_12" }],
     orcs: 19,
@@ -1757,22 +1772,27 @@ async function createCampground(item) {
     orcs: item.orcs.toString(),
   });
 
-  // create campground with FK to Park
-  const data = {
-    name: item.campgroundName,
-    parkId: park.id,
-  };
+  // check if ParkArea with the same name and parkId already exists
+  let campground = await ParkArea.findOne({
+    where: {
+      name: item.campgroundName,
+      parkId: park.id,
+    },
+  });
 
-  const campground = await createModel(ParkArea, data);
+  // if it exists, skip creating ParkArea
+  if (!campground) {
+    const data = {
+      name: item.campgroundName,
+      parkId: park.id,
+    };
+
+    campground = await createModel(ParkArea, data);
+  }
 
   const feature = await getItemByAttributes(Feature, {
     strapiFeatureId: item.items[0].featureId,
   });
-  // const strapiId = parseInt(item.items[0].featureId.split("_")[1], 10);
-
-  // const feature = await getItemByAttributes(Feature, {
-  //   strapiId,
-  // });
 
   feature.parkAreaId = campground.id;
   feature.name = "All sites";
