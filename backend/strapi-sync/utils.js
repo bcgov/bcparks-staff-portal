@@ -1,3 +1,5 @@
+import { ParkArea, Park } from "../models/index.js";
+
 /**
  * Creates model in our local DB
  * @param {Model} model Sequelize model
@@ -106,4 +108,36 @@ export async function getItemByAttributes(model, attributes) {
     );
     throw error;
   }
+}
+
+/**
+ * Finds or creates a ParkArea for a given campground item
+ * @param {Object} item Campground item from JSON data
+ * @returns {Promise<Model>} A found or newly created ParkArea
+ */
+export async function findOrCreateParkArea(item) {
+  // get park by orcs
+  const park = await getItemByAttributes(Park, {
+    orcs: item.orcs.toString(),
+  });
+
+  // check if ParkArea with the same name and parkId already exists
+  let campground = await ParkArea.findOne({
+    where: {
+      name: item.campgroundName,
+      parkId: park.id,
+    },
+  });
+
+  // if it exists, skip creating ParkArea
+  if (!campground) {
+    const data = {
+      name: item.campgroundName,
+      parkId: park.id,
+    };
+
+    campground = await createModel(ParkArea, data);
+  }
+
+  return campground;
 }

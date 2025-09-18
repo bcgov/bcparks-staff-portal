@@ -1,7 +1,7 @@
 import "../env.js";
-import { ParkArea, Feature, Park } from "../models/index.js";
+import { Feature } from "../models/index.js";
 
-import { getItemByAttributes, createModel } from "./utils.js";
+import { getItemByAttributes, findOrCreateParkArea } from "./utils.js";
 
 const campgrounds = [
   {
@@ -475,16 +475,10 @@ const campgrounds = [
 ];
 
 async function updateFeature(item, parkAreaId) {
-  // const strapiId = parseInt(item.featureId.split("_")[1], 10);
-
   // get feature by featureId
   const feature = await getItemByAttributes(Feature, {
     strapiFeatureId: item.featureId,
   });
-
-  // const feature = await getItemByAttributes(Feature, {
-  //   strapiId,
-  // });
 
   // set parkAreaId and name
   feature.parkAreaId = parkAreaId;
@@ -494,28 +488,7 @@ async function updateFeature(item, parkAreaId) {
 }
 
 async function createCampground(item) {
-  // get park by orcs
-  const park = await getItemByAttributes(Park, {
-    orcs: item.orcs.toString(),
-  });
-
-  // check if ParkArea with the same name and parkId already exists
-  let campground = await ParkArea.findOne({
-    where: {
-      name: item.campgroundName,
-      parkId: park.id,
-    },
-  });
-
-  // if it exists, skip creating ParkArea
-  if (!campground) {
-    const data = {
-      name: item.campgroundName,
-      parkId: park.id,
-    };
-
-    campground = await createModel(ParkArea, data);
-  }
+  const campground = await findOrCreateParkArea(item);
 
   await Promise.all(
     item.items.map(async (feature) => updateFeature(feature, campground.id)),

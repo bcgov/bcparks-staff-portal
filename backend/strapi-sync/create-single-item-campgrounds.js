@@ -1,7 +1,7 @@
 import "../env.js";
-import { ParkArea, Feature, Park } from "../models/index.js";
+import { Feature } from "../models/index.js";
 
-import { getItemByAttributes, createModel } from "./utils.js";
+import { getItemByAttributes, findOrCreateParkArea } from "./utils.js";
 
 const campgrounds = [
   {
@@ -1768,27 +1768,7 @@ const campgrounds = [
 ];
 
 async function createCampground(item) {
-  const park = await getItemByAttributes(Park, {
-    orcs: item.orcs.toString(),
-  });
-
-  // check if ParkArea with the same name and parkId already exists
-  let campground = await ParkArea.findOne({
-    where: {
-      name: item.campgroundName,
-      parkId: park.id,
-    },
-  });
-
-  // if it exists, skip creating ParkArea
-  if (!campground) {
-    const data = {
-      name: item.campgroundName,
-      parkId: park.id,
-    };
-
-    campground = await createModel(ParkArea, data);
-  }
+  const campground = await findOrCreateParkArea(item);
 
   const feature = await getItemByAttributes(Feature, {
     strapiFeatureId: item.items[0].featureId,
