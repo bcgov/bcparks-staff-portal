@@ -5,10 +5,10 @@ import { Model, DataTypes } from "sequelize";
 export default (sequelize) => {
   class UserAccessGroup extends Model {
     static associate(models) {
-      // Each UserAccessGroup entry belongs to one User, linked by the user's username
+      // Each UserAccessGroup entry belongs to one User, linked by the user's id
       UserAccessGroup.belongsTo(models.User, {
-        foreignKey: "username",
-        targetKey: "username",
+        foreignKey: "userId",
+        targetKey: "id",
         as: "user",
       });
 
@@ -39,12 +39,12 @@ export default (sequelize) => {
         },
       },
 
-      username: {
-        type: DataTypes.STRING,
+      userId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: "Users",
-          key: "username",
+          key: "id",
         },
       },
     },

@@ -15,17 +15,17 @@ export default (sequelize) => {
 
       // Each User can have many UserAccessGroup associations to assocate with many AccessGroups
       User.hasMany(models.UserAccessGroup, {
-        foreignKey: "username",
-        sourceKey: "username",
+        foreignKey: "userId",
+        sourceKey: "id",
         as: "userAccessGroups",
       });
 
       // Each User can associate with many AccessGroups through UserAccessGroups
       User.belongsToMany(models.AccessGroup, {
         through: models.UserAccessGroup,
-        foreignKey: "username",
+        foreignKey: "userId",
         otherKey: "accessGroupId",
-        sourceKey: "username",
+        sourceKey: "id",
         as: "accessGroups",
       });
     }
