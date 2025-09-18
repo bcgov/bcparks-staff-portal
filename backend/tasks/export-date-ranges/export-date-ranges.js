@@ -12,12 +12,12 @@ import { post } from "../../routes/api/strapi-api.js";
 // Run once to migrate DateRange, Season, and DateRangeAnnual from doot to strapi park-dates
 async function getDatesToSend() {
   const dateRanges = await DateRange.findAll({
-    attributes: ["startDate", "endDate", "adminNote"],
+    attributes: ["startDate", "endDate", "adminNote", "dateableId"],
     include: [
       {
         model: DateType,
         as: "dateType",
-        attributes: ["name"],
+        attributes: ["id", "name"],
       },
       {
         model: Dateable,
@@ -34,11 +34,6 @@ async function getDatesToSend() {
             as: "feature",
             attributes: ["id", "name", "strapiId"],
           },
-          {
-            model: DateRangeAnnual,
-            as: "dateRangeAnnual",
-            attributes: ["isDateRangeAnnual"],
-          },
         ],
       },
       {
@@ -50,24 +45,41 @@ async function getDatesToSend() {
     ],
   });
 
+  // Fetch all DateRangeAnnuals
+  const dateRangeAnnuals = await DateRangeAnnual.findAll({
+    attributes: ["dateableId", "dateTypeId", "isDateRangeAnnual"],
+  });
+
+  // Build a lookup map for fast access
+  const annualMap = new Map();
+
+  dateRangeAnnuals.forEach((annual) => {
+    annualMap.set(
+      `${annual.dateableId}_${annual.dateTypeId}`,
+      annual.isDateRangeAnnual,
+    );
+  });
+
   const dateRangesToPublish = dateRanges.map((dateRange) => {
     const hasPark = !!dateRange.dateable.park;
     const hasFeature =
       Array.isArray(dateRange.dateable.feature) &&
       dateRange.dateable.feature.length > 0;
 
-    console.log("DATE RANGE PARK", dateRange.dateable?.park.orc);
-    console.log("DATE RANGE FEATURE", dateRange.dateable?.feature);
+    // Find matching DateRangeAnnual
+    const annualKey = `${dateRange.dateableId}_${dateRange.dateType.id}`;
+    const isDateRangeAnnual = annualMap.get(annualKey) ?? false;
 
     return {
+      dateable: dateRange.dateableId,
       isActive: true,
-      isDateRangeAnnual: dateRange.dateable.dateRangeAnnual.isDateRangeAnnual,
+      isDateRangeAnnual,
       operatingYear: dateRange.season.operatingYear,
       startDate: new Date(dateRange.startDate).toISOString().split("T")[0],
       endDate: new Date(dateRange.endDate).toISOString().split("T")[0],
       parkDateType: dateRange.dateType.name,
-    protectedArea: hasPark ? dateRange.dateable.park.orcs : null,
-    parkFeature: hasFeature ? dateRange.dateable.feature[0].strapiId : null,
+      protectedArea: hasPark ? dateRange.dateable.park.orcs : null,
+      parkFeature: hasFeature ? dateRange.dateable.feature.strapiId : null,
       adminNote: dateRange.adminNote,
     };
   });
