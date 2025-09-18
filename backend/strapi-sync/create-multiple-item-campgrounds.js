@@ -1,7 +1,7 @@
 import "../env.js";
-import { ParkArea, Feature, Park } from "../models/index.js";
+import { Feature } from "../models/index.js";
 
-import { getItemByAttributes, createModel } from "./utils.js";
+import { getItemByAttributes, findOrCreateParkArea } from "./utils.js";
 
 const campgrounds = [
   {
@@ -107,11 +107,6 @@ const campgrounds = [
         strapiName: "Cathedral other backcountry",
         newName: "Other backcountry",
         featureId: "199_65",
-      },
-      {
-        strapiName: "Cathedral core area backcountry",
-        newName: "Core area",
-        featureId: "199_66",
       },
       {
         strapiName: "Ashnola Forest Service Road",
@@ -480,16 +475,10 @@ const campgrounds = [
 ];
 
 async function updateFeature(item, parkAreaId) {
-  // const strapiId = parseInt(item.featureId.split("_")[1], 10);
-
   // get feature by featureId
   const feature = await getItemByAttributes(Feature, {
     strapiFeatureId: item.featureId,
   });
-
-  // const feature = await getItemByAttributes(Feature, {
-  //   strapiId,
-  // });
 
   // set parkAreaId and name
   feature.parkAreaId = parkAreaId;
@@ -499,18 +488,7 @@ async function updateFeature(item, parkAreaId) {
 }
 
 async function createCampground(item) {
-  // get park by orcs
-  const park = await getItemByAttributes(Park, {
-    orcs: item.orcs.toString(),
-  });
-
-  // create campground with FK to Park
-  const data = {
-    name: item.campgroundName,
-    parkId: park.id,
-  };
-
-  const campground = await createModel(ParkArea, data);
+  const campground = await findOrCreateParkArea(item);
 
   await Promise.all(
     item.items.map(async (feature) => updateFeature(feature, campground.id)),
