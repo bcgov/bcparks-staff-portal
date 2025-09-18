@@ -355,7 +355,14 @@ router.get(
             {
               model: GateDetail,
               as: "gateDetail",
-              attributes: ["id", "hasGate", "gateOpenTime", "gateCloseTime"],
+              attributes: [
+                "id",
+                "hasGate",
+                "gateOpenTime",
+                "gateCloseTime",
+                "gateOpensAtDawn",
+                "gateClosesAtDusk",
+              ],
               required: false,
             },
 
@@ -432,8 +439,12 @@ router.get(
             annualData?.isDateRangeAnnual,
           ),
           [colNames.HAS_GATE]: formatBoolean(gateDetail?.hasGate),
-          [colNames.GATE_START_TIME]: formatTime(gateDetail?.gateOpenTime),
-          [colNames.GATE_END_TIME]: formatTime(gateDetail?.gateCloseTime),
+          [colNames.GATE_START_TIME]: gateDetail?.gateOpensAtDawn
+            ? "Opens at dawn"
+            : formatTime(gateDetail?.gateOpenTime),
+          [colNames.GATE_END_TIME]: gateDetail?.gateClosesAtDusk
+            ? "Closes at dusk"
+            : formatTime(gateDetail?.gateCloseTime),
           [colNames.IN_BCP_RESERVATION_SYSTEM]: formatBoolean(
             getInReservationSystem(season),
           ),
