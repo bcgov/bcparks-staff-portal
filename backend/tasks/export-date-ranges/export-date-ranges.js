@@ -61,10 +61,10 @@ async function getDatesToSend() {
   });
 
   const dateRangesToPublish = dateRanges.map((dateRange) => {
-    const hasPark = !!dateRange.dateable.park;
-    const hasFeature =
-      Array.isArray(dateRange.dateable.feature) &&
-      dateRange.dateable.feature.length > 0;
+    const hasPark = dateRange.dateable?.park;
+    const hasFeature = dateRange.dateable?.feature;
+    const parkId = hasPark ? dateRange.dateable.park.orcs : null;
+    const featureId = hasFeature ? dateRange.dateable.feature.strapiId : null;
 
     // Find matching DateRangeAnnual
     const annualKey = `${dateRange.dateableId}_${dateRange.dateType.id}`;
@@ -78,8 +78,8 @@ async function getDatesToSend() {
       startDate: new Date(dateRange.startDate).toISOString().split("T")[0],
       endDate: new Date(dateRange.endDate).toISOString().split("T")[0],
       parkDateType: dateRange.dateType.name,
-      protectedArea: hasPark ? dateRange.dateable.park.orcs : null,
-      parkFeature: hasFeature ? dateRange.dateable.feature.strapiId : null,
+      protectedArea: parkId,
+      parkFeature: featureId,
       adminNote: dateRange.adminNote,
     };
   });
@@ -100,7 +100,11 @@ async function createParkFeatureDatesInStrapi(dates) {
 
         return await post(endpoint, data);
       } catch (error) {
-        console.error(`Error creating date for ${date.dateable.id}`, error);
+        console.error(
+          `Error creating date for dateable ${date.dateable}:`,
+          error.response?.data || error.message,
+        );
+        console.error("Payload was:", JSON.stringify(date, null, 2));
         return null;
       }
     }),
