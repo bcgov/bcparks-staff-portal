@@ -111,33 +111,37 @@ export async function getItemByAttributes(model, attributes) {
 }
 
 /**
- * Finds or creates a ParkArea for a given campground item
- * @param {Object} item Campground item from JSON data
+ * Finds or creates a ParkArea for a given parkArea item
+ * @param {Object} item parkArea item from JSON data
  * @returns {Promise<Model>} A found or newly created ParkArea
  */
 export async function findOrCreateParkArea(item) {
   // get park by orcs
   const park = await getItemByAttributes(Park, {
-    orcs: item.orcs.toString(),
+    orcs: String(item.orcs),
   });
 
+  if (!park) {
+    throw new Error(`Park with ORCS ${item.orcs} not found`);
+  }
+
   // check if ParkArea with the same name and parkId already exists
-  let campground = await ParkArea.findOne({
+  let parkArea = await ParkArea.findOne({
     where: {
       name: item.campgroundName,
       parkId: park.id,
     },
   });
 
-  // if it exists, skip creating ParkArea
-  if (!campground) {
+  // if it doesn't exist, create it
+  if (!parkArea) {
     const data = {
       name: item.campgroundName,
       parkId: park.id,
     };
 
-    campground = await createModel(ParkArea, data);
+    parkArea = await createModel(ParkArea, data);
   }
 
-  return campground;
+  return parkArea;
 }
