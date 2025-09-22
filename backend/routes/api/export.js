@@ -462,7 +462,7 @@ router.get(
           gateStartTime,
           gateEndTime,
           sameEveryYear: gateSameEveryYear,
-        } = getGateDisplayValues(dateRange, season.gateDetail, annualData);
+        } = getGateDisplayValues(dateRange, gateDetail, annualData);
 
         // Get the final sameEveryYear value
         // For gate (operating) date type, use the value from getGateDisplayValues
@@ -495,7 +495,7 @@ router.get(
           [colNames.START_DATE]: formatDate(dateRange.startDate),
           [colNames.END_DATE]: formatDate(dateRange.endDate),
           [colNames.SAME_EVERY_YEAR]: sameEveryYear,
-          [colNames.HAS_GATE]: formatBoolean(gateDetail?.hasGate),
+          [colNames.HAS_GATE]: formatBoolean(hasGate),
           [colNames.GATE_START_TIME]: gateStartTime,
           [colNames.GATE_END_TIME]: gateEndTime,
           [colNames.IN_BCP_RESERVATION_SYSTEM]: formatBoolean(
