@@ -4,7 +4,6 @@ import morgan from "morgan";
 import helmet from "helmet";
 import compression from "compression";
 import RateLimit from "express-rate-limit";
-import bodyParser from "body-parser";
 
 import "./env.js";
 import checkJwt from "./middleware/checkJwt.js";
@@ -58,7 +57,7 @@ app.use(limiter);
 app.use(admin.options.rootPath, adminRouter);
 
 // JSON parsing middleware
-app.use(bodyParser.json());
+app.use(express.json());
 
 // Public routes
 app.use("/", homeRoutes); // Health check route(s)
