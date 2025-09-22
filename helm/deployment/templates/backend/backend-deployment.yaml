@@ -75,8 +75,6 @@ spec:
                   key: STRAPI_TOKEN
             - name: STRAPI_URL
               value: {{ .Values.cluster.cmsUrl }}
-            - name: ADMINJS_RELATIONS_LICENSE_KEY
-              value: ""
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-adminjs-secret
