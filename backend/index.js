@@ -32,8 +32,6 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-// JSON parsing middleware
-
 // Logging middleware
 app.use(morgan("dev"));
 
@@ -59,7 +57,7 @@ app.use(limiter);
 // AdminJS routes
 app.use(admin.options.rootPath, adminRouter);
 
-// app.use(express.json());
+// JSON parsing middleware
 app.use(bodyParser.json());
 
 // Public routes
