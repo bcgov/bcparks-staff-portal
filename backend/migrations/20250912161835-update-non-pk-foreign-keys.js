@@ -1,5 +1,4 @@
 /** @type {import('sequelize-cli').Migration} */
-/** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
     // 1. Add new userId column (nullable at first)
