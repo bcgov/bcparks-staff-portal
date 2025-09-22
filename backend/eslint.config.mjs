@@ -5,8 +5,20 @@ import eslintConfigESLintFormatting from "eslint-config-eslint/formatting";
 import babelParser from "@babel/eslint-parser";
 
 export default [
-  { files: ["**/*.{js,mjs,cjs,jsx}"] },
   {
+    files: ["**/*.{js,mjs,cjs}"],
+    languageOptions: {
+      globals: { ...globals.node },
+      parserOptions: {
+        sourceType: "module",
+        ecmaVersion: "latest",
+      },
+    },
+  },
+
+  // JSX files (custom components for AdminJS)
+  {
+    files: ["**/*.jsx"],
     languageOptions: {
       globals: { ...globals.node, ...globals.browser },
       parser: babelParser,
@@ -23,6 +35,7 @@ export default [
       },
     },
   },
+
   ...eslintConfigESLint,
   eslintConfigESLintFormatting,
   eslintConfigPrettier,
