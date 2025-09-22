@@ -236,6 +236,45 @@ function getFeatureForDateRange(dateRange) {
   return null;
 }
 
+/**
+ * Calculates the GateDetail display values for a DateRange.
+ * @param {DateRange} dateRange The DateRange object
+ * @param {Object} gateDetail The GateDetail object from the season
+ * @param {DateRangeAnnual|undefined} annualData The DateRangeAnnual for this DateRange
+ * @returns {Object} Object containing gate start time, end time, and same every year values
+ */
+function getGateDisplayValues(dateRange, gateDetail, annualData) {
+  const isGateType = dateRange.dateType.name === "Operating";
+  const hasGate = gateDetail?.hasGate === true;
+
+  let gateStartTime = "";
+  let gateEndTime = "";
+  let sameEveryYear = "";
+
+  if (hasGate) {
+    gateStartTime = gateDetail?.gateOpensAtDawn
+      ? "Opens at dawn"
+      : formatTime(gateDetail?.gateOpenTime);
+
+    gateEndTime = gateDetail?.gateClosesAtDusk
+      ? "Closes at dusk"
+      : formatTime(gateDetail?.gateCloseTime);
+
+    // Only show isDateRangeAnnual if hasGate is true AND it's a gate type
+    if (isGateType) {
+      sameEveryYear = formatBoolean(annualData?.isDateRangeAnnual);
+    }
+  }
+
+  return {
+    isGateType,
+    hasGate,
+    gateStartTime,
+    gateEndTime,
+    sameEveryYear,
+  };
+}
+
 // Export all dates for a given operatingYear to CSV
 router.get(
   "/csv",
@@ -416,6 +455,26 @@ router.get(
         // Get the Feature for this DateRange, if there is one
         const feature = getFeatureForDateRange(dateRange);
 
+        // Get the GateDetail display values
+        const {
+          isGateType,
+          hasGate,
+          gateStartTime,
+          gateEndTime,
+          sameEveryYear: gateSameEveryYear,
+        } = getGateDisplayValues(dateRange, gateDetail, annualData);
+
+        // Get the final sameEveryYear value
+        // For gate (operating) date type, use the value from getGateDisplayValues
+        // For other date types, always show the isDateRangeAnnual value
+        const sameEveryYear = isGateType ?
+          gateSameEveryYear : formatBoolean(annualData?.isDateRangeAnnual);
+
+        // Skip this row if this is a gate type and hasGate is false
+        if (isGateType && !hasGate) {
+          return null;
+        }
+
         return {
           // Get park management area and section names from jsonb field
           [colNames.SECTION]: park.managementAreas
@@ -435,16 +494,10 @@ router.get(
           [colNames.DATE_TYPE]: dateRange.dateType.name,
           [colNames.START_DATE]: formatDate(dateRange.startDate),
           [colNames.END_DATE]: formatDate(dateRange.endDate),
-          [colNames.SAME_EVERY_YEAR]: formatBoolean(
-            annualData?.isDateRangeAnnual,
-          ),
-          [colNames.HAS_GATE]: formatBoolean(gateDetail?.hasGate),
-          [colNames.GATE_START_TIME]: gateDetail?.gateOpensAtDawn
-            ? "Opens at dawn"
-            : formatTime(gateDetail?.gateOpenTime),
-          [colNames.GATE_END_TIME]: gateDetail?.gateClosesAtDusk
-            ? "Closes at dusk"
-            : formatTime(gateDetail?.gateCloseTime),
+          [colNames.SAME_EVERY_YEAR]: sameEveryYear,
+          [colNames.HAS_GATE]: formatBoolean(hasGate),
+          [colNames.GATE_START_TIME]: gateStartTime,
+          [colNames.GATE_END_TIME]: gateEndTime,
           [colNames.IN_BCP_RESERVATION_SYSTEM]: formatBoolean(
             getInReservationSystem(season),
           ),
