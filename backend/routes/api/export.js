@@ -236,6 +236,42 @@ function getFeatureForDateRange(dateRange) {
   return null;
 }
 
+/**
+ * Calculates the GateDetail display values for a DateRange.
+ * @param {Object} gateDetail The GateDetail object from the season
+ * @param {DateRangeAnnual|undefined} annualData The DateRangeAnnual for this DateRange
+ * @param {boolean} isGateType Whether this DateRange is for a gate type
+ * @returns {Object} Object containing gate start time, end time, and same every year values
+ */
+function getGateDisplayValues(gateDetail, annualData, isGateType) {
+  const hasGate = gateDetail?.hasGate === true;
+
+  let gateStartTime = "";
+  let gateEndTime = "";
+  let sameEveryYear = "";
+
+  if (hasGate) {
+    gateStartTime = gateDetail?.gateOpensAtDawn
+      ? "Opens at dawn"
+      : formatTime(gateDetail?.gateOpenTime);
+
+    gateEndTime = gateDetail?.gateClosesAtDusk
+      ? "Closes at dusk"
+      : formatTime(gateDetail?.gateCloseTime);
+
+    // Only show isDateRangeAnnual if hasGate is true AND it's a gate type
+    if (isGateType) {
+      sameEveryYear = formatBoolean(annualData?.isDateRangeAnnual);
+    }
+  }
+
+  return {
+    gateStartTime,
+    gateEndTime,
+    sameEveryYear,
+  };
+}
+
 // Export all dates for a given operatingYear to CSV
 router.get(
   "/csv",
@@ -416,31 +452,18 @@ router.get(
         // Get the Feature for this DateRange, if there is one
         const feature = getFeatureForDateRange(dateRange);
 
-        // Pre-calculate GateDetail
+        // Check if we should skip gate-type rows without gates
         const isGateType = dateRange.dateType.name === "Operating (Gate)";
         const hasGate = gateDetail?.hasGate === true;
-
-        let gateStartTime = "";
-        let gateEndTime = "";
-        let sameEveryYear = "";
-
-        if (hasGate) {
-          gateStartTime = gateDetail?.gateOpensAtDawn
-            ? "Opens at dawn"
-            : formatTime(gateDetail?.gateOpenTime);
-
-          gateEndTime = gateDetail?.gateClosesAtDusk
-            ? "Closes at dusk"
-            : formatTime(gateDetail?.gateCloseTime);
-
-          // Only show isDateRangeAnnual if hasGate is true
-          sameEveryYear = formatBoolean(annualData?.isDateRangeAnnual);
-        }
 
         // Skip this row if this is a gate type and hasGate is false
         if (isGateType && !hasGate) {
           return null;
         }
+
+        // Get the GateDetail display values
+        const { gateStartTime, gateEndTime, sameEveryYear } =
+          getGateDisplayValues(season.gateDetail, annualData, isGateType);
 
         return {
           // Get park management area and section names from jsonb field
