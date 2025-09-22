@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const JsonEdit = (props) => {
+function JsonEdit(props) {
   const { property, record, onChange } = props;
 
   // get current value
@@ -18,16 +18,19 @@ const JsonEdit = (props) => {
       }
       setError("");
     } catch (err) {
+      console.error("JSON parse error:", err);
       setError("Invalid JSON");
     }
   }, [value]);
 
-  const handleChange = (e) => {
+  function handleChange(e) {
     const val = e.target.value;
+
     setValue(val);
 
     try {
       const parsed = val.trim() ? JSON.parse(val) : null;
+
       // Notify AdminJS of the change
       onChange(property.path, JSON.stringify(parsed));
       setError("");
@@ -35,7 +38,7 @@ const JsonEdit = (props) => {
       // keep showing error until valid JSON
       console.error("JSON parse error:", err);
     }
-  };
+  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
@@ -57,6 +60,6 @@ const JsonEdit = (props) => {
       {error && <span style={{ color: "red", marginTop: "4px" }}>{error}</span>}
     </div>
   );
-};
+}
 
 export default JsonEdit;

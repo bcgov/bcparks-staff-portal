@@ -1,17 +1,20 @@
-const JsonShow = (props) => {
+function JsonShow(props) {
   const { property, record } = props;
 
   const rawValue = record.params[property.path];
 
   let displayValue = "—";
+
   try {
     if (rawValue) {
       // Handle case where admin js gives back a stringified json
       const parsed =
         typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
+
       displayValue = JSON.stringify(parsed, null, 2);
     }
   } catch (err) {
+    console.error("Failed to parse JSON:", err);
     // fallback to raw value if parsing fails
     displayValue = rawValue;
   }
@@ -36,6 +39,6 @@ const JsonShow = (props) => {
       </pre>
     </div>
   );
-};
+}
 
 export default JsonShow;
