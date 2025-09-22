@@ -453,7 +453,7 @@ router.get(
         const feature = getFeatureForDateRange(dateRange);
 
         // Check if we should skip gate-type rows without gates
-        const isGateType = dateRange.dateType.name === "Operating (Gate)";
+        const isGateType = dateRange.dateType.name === "Operating";
         const hasGate = gateDetail?.hasGate === true;
 
         // Skip this row if this is a gate type and hasGate is false
