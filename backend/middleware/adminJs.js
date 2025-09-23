@@ -8,7 +8,7 @@ import session from "express-session";
 import { Op } from "sequelize";
 import * as STATUS from "../constants/seasonStatus.js";
 import "../env.js";
-import set from "lodash.set";
+import _ from "lodash";
 
 import {
   Dateable,
@@ -358,7 +358,7 @@ function expandDotNotation(flat) {
   const result = {};
 
   for (const [key, value] of Object.entries(flat)) {
-    set(result, key, value);
+    _.set(result, key, value);
   }
   return result;
 }
