@@ -8,6 +8,7 @@ import session from "express-session";
 import { Op } from "sequelize";
 import * as STATUS from "../constants/seasonStatus.js";
 import "../env.js";
+import set from "lodash.set";
 
 import {
   Dateable,
@@ -353,6 +354,15 @@ const GateDetailResource = {
   },
 };
 
+function expandDotNotation(flat) {
+  const result = {};
+
+  for (const [key, value] of Object.entries(flat)) {
+    set(result, key, value);
+  }
+  return result;
+}
+
 const ParkResource = {
   resource: Park,
   options: {
@@ -366,6 +376,36 @@ const ParkResource = {
         },
         props: {
           label: "Management Areas",
+        },
+      },
+    },
+    actions: {
+      show: {
+        async after(response) {
+          if (response.record?.params) {
+            const expanded = expandDotNotation(response.record.params);
+
+            if (expanded.managementAreas) {
+              response.record.params.managementAreas = JSON.stringify(
+                expanded.managementAreas,
+              );
+            }
+          }
+          return response;
+        },
+      },
+      edit: {
+        async after(response) {
+          if (response.record?.params) {
+            const expanded = expandDotNotation(response.record.params);
+
+            if (expanded.managementAreas) {
+              response.record.params.managementAreas = JSON.stringify(
+                expanded.managementAreas,
+              );
+            }
+          }
+          return response;
         },
       },
     },

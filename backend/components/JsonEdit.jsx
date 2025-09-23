@@ -32,7 +32,7 @@ function JsonEdit(props) {
       const parsed = val.trim() ? JSON.parse(val) : null;
 
       // Notify AdminJS of the change
-      onChange(property.path, JSON.stringify(parsed));
+      onChange(property.path, parsed);
       setError("");
     } catch (err) {
       // keep showing error until valid JSON
