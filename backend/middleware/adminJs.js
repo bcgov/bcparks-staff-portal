@@ -6,7 +6,7 @@ import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
 import { Op } from "sequelize";
-import { unflatten } from "flat";
+import flat from "flat";
 import * as STATUS from "../constants/seasonStatus.js";
 import "../env.js";
 
@@ -374,7 +374,7 @@ const ParkResource = {
       show: {
         async after(response) {
           if (response.record?.params) {
-            const unflattened = unflatten(response.record.params);
+            const unflattened = flat.unflatten(response.record.params);
 
             if (unflattened.managementAreas) {
               response.record.params.managementAreas =
@@ -405,7 +405,7 @@ const ParkResource = {
               }
             }
 
-            const unflattened = unflatten(processedPayload);
+            const unflattened = flat.unflatten(processedPayload);
 
             if (unflattened.managementAreas) {
               request.payload.managementAreas = unflattened.managementAreas;
@@ -415,7 +415,7 @@ const ParkResource = {
         },
         async after(response) {
           if (response.record?.params) {
-            const unflattened = unflatten(response.record.params);
+            const unflattened = flat.unflatten(response.record.params);
 
             if (unflattened.managementAreas) {
               response.record.params.managementAreas =
