@@ -9,10 +9,10 @@ export default (sequelize) => {
     // The `models/index` file will call this method automatically.
     // @param models
     static associate(models) {
-      // Each AccessGroupPark entry belongs to one Park, linked by parkOrcs
+      // Each AccessGroupPark entry belongs to one Park, linked by parkId
       AccessGroupPark.belongsTo(models.Park, {
-        foreignKey: "parkOrcs",
-        targetKey: "orcs",
+        foreignKey: "parkId",
+        targetKey: "id",
       });
 
       // Each AccessGroupPark entry belongs to one AccessGroup, linked by accessGroupId
@@ -41,12 +41,12 @@ export default (sequelize) => {
         },
       },
 
-      parkOrcs: {
-        type: DataTypes.STRING,
+      parkId: {
+        type: DataTypes.INTEGER,
         allowNull: false,
         references: {
           model: "Parks",
-          key: "orcs",
+          key: "id",
         },
       },
     },

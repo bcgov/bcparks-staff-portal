@@ -17,6 +17,9 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/eslint-parser": "^7.28.4",
+    "@babel/preset-react": "^7.27.1",
     "eslint": "^9.9.1",
     "eslint-config-eslint": "^11.0.0",
     "eslint-config-prettier": "^9.1.0",
@@ -26,6 +29,7 @@
   },
   "dependencies": {
     "@adminjs/express": "^6.1.0",
+    "@adminjs/relations": "^1.1.2",
     "@adminjs/sequelize": "^4.1.1",
     "@dotenvx/dotenvx": "^1.33.0",
     "@fast-csv/format": "^5.0.2",
@@ -42,6 +46,7 @@
     "express-jwt": "^8.4.1",
     "express-rate-limit": "^7.4.0",
     "express-session": "^1.18.0",
+    "flat": "^5.0.2",
     "helmet": "^7.1.0",
     "jwks-rsa": "^3.1.0",
     "lodash": "^4.17.21",

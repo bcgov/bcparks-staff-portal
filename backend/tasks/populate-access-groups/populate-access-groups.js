@@ -67,11 +67,11 @@ export async function populateAccessGroups() {
         await AccessGroupPark.findOrCreate({
           where: {
             accessGroupId,
-            parkOrcs: park.orcs,
+            parkId: park.id,
           },
           defaults: {
             accessGroupId,
-            parkOrcs: park.orcs,
+            parkId: park.id,
           },
           transaction,
         });
@@ -90,11 +90,11 @@ export async function populateAccessGroups() {
         // 5 - create UserAccessGroup relations for the user
         await UserAccessGroup.findOrCreate({
           where: {
-            username: user.username,
+            userId: user.id,
             accessGroupId,
           },
           defaults: {
-            username: user.username,
+            userId: user.id,
             accessGroupId,
           },
           transaction,

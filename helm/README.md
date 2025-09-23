@@ -31,15 +31,18 @@ oc -n a7dd13-dev create secret generic main-strapi-token  --from-literal STRAPI_
 
 #### AdminJS access
 
-Create a secret with the password you'll use to access AdminJS
+Create a secret with the values you'll use to access AdminJS
 
 ```sh
+# Generate random passwords and secrets.
+# Don't forget to replace the value for ADMINJS_RELATIONS_LICENSE_KEY
 oc create secret generic main-adminjs-secret \
   --from-literal=ADMIN_USER=admin \
   --from-literal=ADMIN_PASSWORD=$(openssl rand -base64 32) \
   --from-literal=ADMIN_COOKIE_NAME=adminjs \
   --from-literal=ADMIN_COOKIE_PASSWORD=$(openssl rand -base64 32) \
   --from-literal=ADMIN_SESSION_SECRET=$(openssl rand -base64 32) \
+  --from-literal=ADMINJS_RELATIONS_LICENSE_KEY="value-from-password-vault" \
   -n a7dd13-dev # replace with the your namespace
 ```
 

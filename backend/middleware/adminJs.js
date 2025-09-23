@@ -1,10 +1,12 @@
 import AdminJSExpress from "@adminjs/express";
 import AdminJS from "adminjs";
+import { owningRelationSettingsFeature } from "@adminjs/relations";
 import { ComponentLoader } from "adminjs";
 import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
 import { Op } from "sequelize";
+import flat from "flat";
 import * as STATUS from "../constants/seasonStatus.js";
 import "../env.js";
 
@@ -26,6 +28,8 @@ import {
   AccessGroup,
   SeasonChangeLog,
   DateChangeLog,
+  UserAccessGroup,
+  AccessGroupPark,
 } from "../models/index.js";
 
 import { connectionConfig } from "../db/connection.js";
@@ -204,6 +208,77 @@ function getSeasonActions() {
   return actions;
 }
 
+const LICENSE_KEY = process.env.ADMINJS_RELATIONS_LICENSE_KEY;
+
+const AccessGroupResource = {
+  resource: AccessGroup,
+  options: {
+    properties: {
+      id: { isId: true },
+      name: { isTitle: true },
+    },
+  },
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        users: {
+          type: "many-to-many",
+          junction: {
+            joinKey: "accessGroupId",
+            inverseJoinKey: "userId",
+            throughResourceId: "UserAccessGroups",
+          },
+          target: {
+            resourceId: "Users",
+            joinKey: "id",
+            targetPropertyKey: "id",
+          },
+        },
+        parks: {
+          type: "many-to-many",
+          junction: {
+            joinKey: "accessGroupId",
+            inverseJoinKey: "parkId",
+            throughResourceId: "AccessGroupParks",
+          },
+          target: {
+            resourceId: "Parks",
+            joinKey: "id",
+            targetPropertyKey: "id",
+          },
+        },
+      },
+    }),
+  ],
+};
+
+const UserResource = {
+  resource: User,
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        accessGroups: {
+          type: "many-to-many",
+          junction: {
+            joinKey: "userId",
+            inverseJoinKey: "accessGroupId",
+            throughResourceId: "UserAccessGroups",
+          },
+          target: {
+            resourceId: "AccessGroups",
+            joinKey: "id",
+            targetPropertyKey: "id",
+          },
+        },
+      },
+    }),
+  ],
+};
+
 const SeasonResource = {
   resource: Season,
 
@@ -228,6 +303,16 @@ const nullableBooleanComponent = componentLoader.add(
   "../components/NullableBooleanList",
 );
 
+const jsonShowComponent = componentLoader.add(
+  "JsonShow",
+  "../components/JsonShow",
+);
+
+const jsonEditComponent = componentLoader.add(
+  "JsonEdit",
+  "../components/JsonEdit",
+);
+
 const GateDetailResource = {
   resource: GateDetail,
   options: {
@@ -249,8 +334,120 @@ const GateDetailResource = {
           show: nullableBooleanComponent,
         },
       },
+      gateDetailOldValue: {
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        type: "mixed",
+        components: {
+          show: jsonShowComponent,
+          edit: jsonEditComponent,
+        },
+      },
+      gateDetailNewValue: {
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        type: "mixed",
+        components: {
+          show: jsonShowComponent,
+          edit: jsonEditComponent,
+        },
+      },
     },
   },
+};
+
+const ParkResource = {
+  resource: Park,
+  options: {
+    properties: {
+      managementAreas: {
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        type: "mixed",
+        components: {
+          show: jsonShowComponent,
+          edit: jsonEditComponent,
+        },
+        props: {
+          label: "Management Areas",
+        },
+      },
+    },
+    actions: {
+      show: {
+        async after(response) {
+          if (response.record?.params) {
+            const unflattened = flat.unflatten(response.record.params);
+
+            if (unflattened.managementAreas) {
+              response.record.params.managementAreas =
+                unflattened.managementAreas;
+            }
+          }
+          return response;
+        },
+      },
+      edit: {
+        async before(request) {
+          if (request.payload) {
+            // Handle JSON string markers to preserve types
+            const processedPayload = { ...request.payload };
+
+            for (const [key, value] of Object.entries(processedPayload)) {
+              if (
+                typeof value === "string" &&
+                value.startsWith("__JSON_STRING__")
+              ) {
+                const jsonString = value.replace("__JSON_STRING__", "");
+
+                try {
+                  processedPayload[key] = JSON.parse(jsonString);
+                } catch (err) {
+                  console.error("Failed to parse JSON string:", err);
+                }
+              }
+            }
+
+            const unflattened = flat.unflatten(processedPayload);
+
+            if (unflattened.managementAreas) {
+              request.payload.managementAreas = unflattened.managementAreas;
+            }
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            const unflattened = flat.unflatten(response.record.params);
+
+            if (unflattened.managementAreas) {
+              response.record.params.managementAreas =
+                unflattened.managementAreas;
+            }
+          }
+          return response;
+        },
+      },
+    },
+  },
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        accessGroups: {
+          type: "many-to-many",
+          junction: {
+            joinKey: "parkId",
+            inverseJoinKey: "accessGroupId",
+            throughResourceId: "AccessGroupParks",
+          },
+          target: {
+            resourceId: "AccessGroups",
+            joinKey: "id",
+            targetPropertyKey: "id",
+          },
+        },
+      },
+    }),
+  ],
 };
 
 const adminOptions = {
@@ -259,8 +456,8 @@ const adminOptions = {
   resources: [
     Dateable,
     Publishable,
-    Park,
-    User,
+    ParkResource,
+    UserResource,
     ParkArea,
     FeatureType,
     Feature,
@@ -271,9 +468,9 @@ const adminOptions = {
     ManagementArea,
     DateRangeAnnual,
     GateDetailResource,
-    AccessGroup,
-    // UserAccessGroup, -- doesn't work with the current version of AdminJS
-    // AccessGroupPark, -- doesn't work with the current version of AdminJS
+    AccessGroupResource,
+    UserAccessGroup,
+    AccessGroupPark,
     SeasonChangeLog,
     DateChangeLog,
   ],
