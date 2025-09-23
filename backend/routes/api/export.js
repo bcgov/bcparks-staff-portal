@@ -467,8 +467,9 @@ router.get(
         // Get the final sameEveryYear value
         // For gate (operating) date type, use the value from getGateDisplayValues
         // For other date types, always show the isDateRangeAnnual value
-        const sameEveryYear = isGateType ?
-          gateSameEveryYear : formatBoolean(annualData?.isDateRangeAnnual);
+        const sameEveryYear = isGateType
+          ? gateSameEveryYear
+          : formatBoolean(annualData?.isDateRangeAnnual);
 
         // Skip this row if this is a gate type and hasGate is false
         if (isGateType && !hasGate) {
@@ -507,7 +508,8 @@ router.get(
             .map(formatChangeLog)
             .join("\n"),
         };
-      });
+      })
+      .filter(Boolean);
 
     // Sort results
     const sortedRows = _.sortBy(rows, [
