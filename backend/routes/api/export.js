@@ -335,7 +335,7 @@ router.get(
                   model: Park,
                   as: "park",
                   attributes: PARK_ATTRIBUTES,
-                  required: false,
+                  required: true,
                 },
 
                 // Include the feature types to display as the "parkArea type"
@@ -378,7 +378,7 @@ router.get(
                   model: Park,
                   as: "park",
                   attributes: PARK_ATTRIBUTES,
-                  required: false,
+                  required: true,
                 },
 
                 {
