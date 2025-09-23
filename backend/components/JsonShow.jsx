@@ -1,22 +1,33 @@
+import _ from "lodash";
+
 function JsonShow(props) {
   const { property, record } = props;
 
-  const rawValue = record.params[property.path];
+  console.log("JsonShow props:", props);
+
+  // Collect all properties that start with the property path
+  const fieldData = [];
+  const pathPrefix = `${property.path}.`;
+
+  Object.keys(record.params).forEach((key) => {
+    if (key.startsWith(pathPrefix)) {
+      // Remove the prefix to get the relative path
+      const relativePath = key.slice(pathPrefix.length);
+
+      // Use lodash setWith to handle arrays properly
+      _.set(fieldData, relativePath, record.params[key]);
+    }
+  });
 
   let displayValue = "—";
 
   try {
-    if (rawValue) {
-      // Handle case where admin js gives back a stringified json
-      const parsed =
-        typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
-
-      displayValue = JSON.stringify(parsed, null, 2);
+    if (Object.keys(fieldData).length > 0) {
+      displayValue = JSON.stringify(fieldData, null, 2);
     }
   } catch (err) {
     console.error("Failed to parse JSON:", err);
-    // fallback to raw value if parsing fails
-    displayValue = rawValue;
+    displayValue = "Error parsing data";
   }
 
   return (
