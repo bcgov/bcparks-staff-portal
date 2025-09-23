@@ -283,7 +283,11 @@ router.get(
           ],
           include: [
             // Features that are part of the ParkArea
-            featureModel(currentYear),
+            {
+              ...featureModel(currentYear),
+              // Exclude parkAreas with no active features
+              required: true,
+            },
             // Publishable Seasons for the ParkArea
             seasonModel(currentYear),
           ],
