@@ -363,6 +363,19 @@ function expandDotNotation(flat) {
   return result;
 }
 
+function expandAndCoerce(flat) {
+  const result = {};
+
+  for (const [key, value] of Object.entries(flat)) {
+    // convert numeric strings to numbers
+    const num = Number(value);
+    const coerced = !isNaN(num) && value !== "" ? num : value;
+
+    _.set(result, key, coerced);
+  }
+  return result;
+}
+
 const ParkResource = {
   resource: Park,
   options: {
@@ -386,23 +399,30 @@ const ParkResource = {
             const expanded = expandDotNotation(response.record.params);
 
             if (expanded.managementAreas) {
-              response.record.params.managementAreas = JSON.stringify(
-                expanded.managementAreas,
-              );
+              response.record.params.managementAreas = expanded.managementAreas;
             }
           }
           return response;
         },
       },
       edit: {
+        async before(request) {
+          if (request.payload) {
+            const expanded = expandAndCoerce(request.payload);
+
+            if (expanded.managementAreas) {
+              // replace payload with the proper nested structure
+              request.payload.managementAreas = expanded.managementAreas;
+            }
+          }
+          return request;
+        },
         async after(response) {
           if (response.record?.params) {
             const expanded = expandDotNotation(response.record.params);
 
             if (expanded.managementAreas) {
-              response.record.params.managementAreas = JSON.stringify(
-                expanded.managementAreas,
-              );
+              response.record.params.managementAreas = expanded.managementAreas;
             }
           }
           return response;
