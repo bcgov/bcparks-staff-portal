@@ -364,6 +364,9 @@ const ParkResource = {
           show: jsonShowComponent,
           edit: jsonEditComponent,
         },
+        props: {
+          label: "Management Areas",
+        },
       },
     },
   },

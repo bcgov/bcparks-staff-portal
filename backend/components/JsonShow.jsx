@@ -23,11 +23,19 @@ function JsonShow(props) {
     <div
       style={{ display: "flex", flexDirection: "column", marginBottom: "1rem" }}
     >
-      <label style={{ fontWeight: "bold", marginBottom: "4px" }}>
-        {property.label}
+      <label
+        style={{
+          fontWeight: 300,
+          marginBottom: "4px",
+          color: "#898a9a",
+          fontSize: "12px",
+        }}
+      >
+        {property?.props?.label ?? property.label}
       </label>
       <pre
         style={{
+          fontFamily: "monospace",
           whiteSpace: "pre-wrap",
           wordBreak: "break-word",
           background: "#f9f9f9",
