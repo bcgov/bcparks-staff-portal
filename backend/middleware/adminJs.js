@@ -6,9 +6,9 @@ import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
 import { Op } from "sequelize";
+import { unflatten } from "flat";
 import * as STATUS from "../constants/seasonStatus.js";
 import "../env.js";
-import _ from "lodash";
 
 import {
   Dateable,
@@ -354,28 +354,6 @@ const GateDetailResource = {
   },
 };
 
-function expandDotNotation(flat) {
-  const result = {};
-
-  for (const [key, value] of Object.entries(flat)) {
-    _.set(result, key, value);
-  }
-  return result;
-}
-
-function expandAndCoerce(flat) {
-  const result = {};
-
-  for (const [key, value] of Object.entries(flat)) {
-    // convert numeric strings to numbers
-    const num = Number(value);
-    const coerced = !isNaN(num) && value !== "" ? num : value;
-
-    _.set(result, key, coerced);
-  }
-  return result;
-}
-
 const ParkResource = {
   resource: Park,
   options: {
@@ -396,10 +374,11 @@ const ParkResource = {
       show: {
         async after(response) {
           if (response.record?.params) {
-            const expanded = expandDotNotation(response.record.params);
+            const unflattened = unflatten(response.record.params);
 
-            if (expanded.managementAreas) {
-              response.record.params.managementAreas = expanded.managementAreas;
+            if (unflattened.managementAreas) {
+              response.record.params.managementAreas =
+                unflattened.managementAreas;
             }
           }
           return response;
@@ -408,21 +387,39 @@ const ParkResource = {
       edit: {
         async before(request) {
           if (request.payload) {
-            const expanded = expandAndCoerce(request.payload);
+            // Handle JSON string markers to preserve types
+            const processedPayload = { ...request.payload };
 
-            if (expanded.managementAreas) {
-              // replace payload with the proper nested structure
-              request.payload.managementAreas = expanded.managementAreas;
+            for (const [key, value] of Object.entries(processedPayload)) {
+              if (
+                typeof value === "string" &&
+                value.startsWith("__JSON_STRING__")
+              ) {
+                const jsonString = value.replace("__JSON_STRING__", "");
+
+                try {
+                  processedPayload[key] = JSON.parse(jsonString);
+                } catch (err) {
+                  console.error("Failed to parse JSON string:", err);
+                }
+              }
+            }
+
+            const unflattened = unflatten(processedPayload);
+
+            if (unflattened.managementAreas) {
+              request.payload.managementAreas = unflattened.managementAreas;
             }
           }
           return request;
         },
         async after(response) {
           if (response.record?.params) {
-            const expanded = expandDotNotation(response.record.params);
+            const unflattened = unflatten(response.record.params);
 
-            if (expanded.managementAreas) {
-              response.record.params.managementAreas = expanded.managementAreas;
+            if (unflattened.managementAreas) {
+              response.record.params.managementAreas =
+                unflattened.managementAreas;
             }
           }
           return response;

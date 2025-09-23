@@ -29,11 +29,18 @@ function JsonEdit(props) {
     setValue(val);
 
     try {
-      const parsed = val.trim() ? JSON.parse(val) : null;
+      if (val.trim() === "") {
+        // Send null for empty values
+        onChange(property.path, null);
+        setError("");
+      } else {
+        // Parse to validate, but send as JSON string to preserve types
+        JSON.parse(val);
 
-      // Notify AdminJS of the change
-      onChange(property.path, parsed);
-      setError("");
+        // Send the raw JSON string with a special marker
+        onChange(property.path, `__JSON_STRING__${val}`);
+        setError("");
+      }
     } catch (err) {
       // keep showing error until valid JSON
       console.error("JSON parse error:", err);
