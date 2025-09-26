@@ -14,6 +14,9 @@ function PublishPage() {
   const errorFlash = useFlashMessage();
 
   const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
+  const { seasons = [] } = data ?? {};
+
+  console.log("seasons", seasons);
 
   const { sendData: publishData, loading: saving } = useApiPost(
     "/publish/publish-to-api/",
@@ -101,21 +104,31 @@ function PublishPage() {
             <thead>
               <tr>
                 <th scope="col">Park name</th>
+                <th scope="col">Area</th>
                 <th scope="col">Feature</th>
                 <th scope="col">Year</th>
               </tr>
             </thead>
             <tbody>
-              {data?.features.map((feature) => (
-                <tr key={`${feature.id}-${feature.season}`}>
-                  <td>{feature.park.name}</td>
-                  <td>{feature.name}</td>
-                  <td>
-                    {feature.season}
-                    <NotReadyFlag show={!feature.readyToPublish} />
-                  </td>
+              {seasons.length > 0 ? (
+                seasons.map((season) => (
+                  <tr key={season.id}>
+                    <td>{season.parkName}</td>
+                    <td>{season.parkAreaName ? season.parkAreaName : ""}</td>
+                    <td>
+                      {season.parkFeatureName ? season.parkFeatureName : ""}
+                    </td>
+                    <td>
+                      {season.operatingYear}
+                      <NotReadyFlag show={!season.readyToPublish} />
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan="4">No seasons ready to publish</td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

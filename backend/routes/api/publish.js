@@ -56,126 +56,123 @@ function getSeasonKey(season) {
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
-    // @TODO: Reimplement this endpoint to use the publishable model
-    const error = new Error("Not implemented yet");
-
-    error.status = 501;
-    throw error;
-
-    // get all seasons that are approved and ready to be published
+    // Get all seasons that are approved and ready to be published
     const approvedSeasons = await Season.findAll({
       where: {
         status: STATUS.APPROVED,
+        // readyToPublish: true,
       },
-      attributes: ["id", "parkId", "operatingYear", "readyToPublish"],
+      attributes: [
+        "id",
+        "publishableId",
+        "operatingYear",
+        "status",
+        "readyToPublish",
+      ],
       include: [
         {
-          model: FeatureType,
-          as: "featureType",
-          attributes: ["id", "name"],
+          model: DateRange,
+          as: "dateRanges",
+          attributes: ["id", "startDate", "endDate", "dateTypeId", "adminNote"],
+          include: [
+            {
+              model: DateType,
+              as: "dateType",
+              attributes: ["id", "name"],
+            },
+          ],
         },
       ],
     });
 
-    const seasonMap = {};
+    // Return if no seasons found
+    if (!approvedSeasons || approvedSeasons.length === 0) {
+      return res.send({ seasons: [] });
+    }
 
-    approvedSeasons.forEach((season) => {
-      // winter seasons are grouped by parkId, regular seasons by parkId and featureTypeId
-      const key = getSeasonKey(season);
+    // Get all publishableIds and build a lookup
+    const publishableIds = approvedSeasons.map((s) => s.publishableId);
+    const publishableMap = new Map();
 
-      if (!seasonMap[key]) {
-        // fetch conditions are different for winter seasons
-        // we use the `hasWinterFeeDates` flag instead of the `featureTypeId`
-        if (season.featureType.name === "Winter fee") {
-          seasonMap[key] = {
-            fetchConditions: {
-              parkId: season.parkId,
-              // hasWinterFeeDates: true, // removed in v2 data model
-            },
-            seasons: [],
-          };
-        } else {
-          seasonMap[key] = {
-            fetchConditions: {
-              parkId: season.parkId,
-              featureTypeId: season.featureType.id,
-            },
-            seasons: [],
-          };
-        }
-      }
+    // Return if no valid publishableIds
+    if (publishableIds.length === 0) {
+      return res.send({ seasons: [] });
+    }
 
-      // each park-featureType pair can have multiple seasons
-      seasonMap[key].seasons.push({
-        operatingYear: season.operatingYear,
-        readyToPublish: season.readyToPublish,
-        isWinterSeason: season.featureType.name === "Winter fee",
-      });
-    });
+    // Find all parks, parkAreas, and features with matching publishableId
+    const [parks, parkAreas, features] = await Promise.all([
+      Park.findAll({
+        where: { publishableId: { [Op.in]: publishableIds } },
+        attributes: ["id", "publishableId", "name"],
+      }),
+      ParkArea.findAll({
+        where: { publishableId: { [Op.in]: publishableIds } },
+      }),
+      Feature.findAll({
+        where: { publishableId: { [Op.in]: publishableIds } },
+      }),
+    ]);
 
-    const parkFeaturePairs = Object.values(seasonMap).map(
-      (season) => season.fetchConditions,
+    parks.forEach((park) =>
+      publishableMap.set(park.publishableId, {
+        type: "park",
+        ...park.toJSON(),
+      }),
+    );
+    parkAreas.forEach((parkArea) =>
+      publishableMap.set(parkArea.publishableId, {
+        type: "parkArea",
+        ...parkArea.toJSON(),
+      }),
+    );
+    features.forEach((feature) =>
+      publishableMap.set(feature.publishableId, {
+        type: "feature",
+        ...feature.toJSON(),
+      }),
     );
 
-    // get all features that are part of the approved and ready to be published seasons
-    const matchingFeatures = await Feature.findAll({
-      where: {
-        [Op.or]: parkFeaturePairs,
-      },
-      attributes: ["id", "name", "strapiId", "featureTypeId"],
-      include: [
-        {
-          model: Park,
-          as: "park",
-          attributes: ["id", "orcs", "name"],
-        },
-        {
-          model: ParkArea,
-          as: "parkArea",
-          attributes: ["id", "name"],
-        },
-      ],
-    });
+    // Build output
+    const output = approvedSeasons?.map((season) => {
+      const publishable = publishableMap.get(season.publishableId);
 
-    const features = matchingFeatures.map((feature) => feature.toJSON());
-
-    const output = [];
-
-    features.forEach((feature) => {
-      const { featureTypeId } = feature;
-      const parkId = feature.park.id;
-
-      const key = `${parkId}-${featureTypeId}`;
-      const seasonData = seasonMap[key];
-
-      // for this feature, try to add a row for every regular season that has it
-      if (seasonData) {
-        seasonData.seasons.forEach((season) => {
-          output.push({
-            ...feature,
-            name: getFeatureName(feature),
-            season: getSeasonName(season),
-            readyToPublish: season.readyToPublish,
-          });
-        });
+      if (!publishable) {
+        console.warn(
+          `No publishable object found for publishableId: ${season.publishableId}`,
+        );
       }
 
-      // if this feature has winter fee dates, add a row for every winter season that has it
-      if (feature.hasWinterFeeDates && seasonMap[parkId]) {
-        const winterFeeSeasons = seasonMap[parkId].seasons;
+      // Extract names based on publishable type
+      let parkName = null;
+      let parkAreaName = null;
+      let featureName = null;
 
-        winterFeeSeasons.forEach((season) => {
-          output.push({
-            ...feature,
-            name: getFeatureName(feature),
-            season: getSeasonName(season),
-            readyToPublish: season.readyToPublish,
-          });
-        });
+      if (publishable?.type === "park") {
+        parkName = publishable.name;
+      } else if (publishable?.type === "parkArea") {
+        parkName = publishable.park?.name ?? null;
+        parkAreaName = publishable.name;
+        // featureName = publishable.name;
+      } else if (publishable?.type === "feature") {
+        parkName = publishable.park?.name ?? null;
+        parkAreaName = publishable.parkArea?.name ?? null;
+        featureName = publishable.name;
       }
+
+      return {
+        seasonId: season.id,
+        operatingYear: season.operatingYear,
+        readyToPublish: season.readyToPublish,
+        publishableType: publishable?.type ?? null,
+        publishable: publishable ?? null,
+        dateRanges: season.dateRanges,
+        parkName,
+        parkAreaName,
+        featureName,
+      };
     });
 
-    res.send({ features: output });
+    return res.send({ seasons: output });
   }),
 );
 
