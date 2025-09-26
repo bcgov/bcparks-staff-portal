@@ -63,8 +63,10 @@ async function getDatesToSend() {
   const dateRangesToPublish = dateRanges.map((dateRange) => {
     const hasPark = dateRange.dateable?.park;
     const hasFeature = dateRange.dateable?.feature;
-    const parkId = hasPark ? dateRange.dateable.park.orcs : null;
-    const featureId = hasFeature ? dateRange.dateable.feature.strapiId : null;
+    const parkId = hasPark ? Number(dateRange.dateable.park.orcs) : null;
+    const featureId = hasFeature
+      ? Number(dateRange.dateable.feature.strapiId)
+      : null;
 
     // Find matching DateRangeAnnual
     const annualKey = `${dateRange.dateableId}_${dateRange.dateType.id}`;
@@ -115,6 +117,7 @@ async function migrate() {
   const dates = await getDatesToSend();
 
   await createParkFeatureDatesInStrapi(dates);
+  console.log(`Migration completed. Total: ${dates.length} records created.`);
 }
 
 migrate();
