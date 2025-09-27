@@ -107,9 +107,19 @@ router.get(
       }),
       ParkArea.findAll({
         where: { publishableId: { [Op.in]: publishableIds } },
+        attributes: ["id", "publishableId", "name"],
+        include: [
+          { model: Park, as: "park", attributes: ["id", "name"] },
+          { model: Feature, as: "features", attributes: ["id", "name"] },
+        ],
       }),
       Feature.findAll({
         where: { publishableId: { [Op.in]: publishableIds } },
+        attributes: ["id", "publishableId", "name"],
+        include: [
+          { model: Park, as: "park", attributes: ["id", "name"] },
+          { model: ParkArea, as: "parkArea", attributes: ["id", "name"] },
+        ],
       }),
     ]);
 
@@ -143,20 +153,26 @@ router.get(
       }
 
       // Extract names based on publishable type
-      let parkName = null;
-      let parkAreaName = null;
-      let featureName = null;
+      let parkName = "-";
+      let parkAreaName = "-";
+      let featureNames = [];
 
       if (publishable?.type === "park") {
-        parkName = publishable.name;
+        parkName = publishable.name || "-";
       } else if (publishable?.type === "parkArea") {
-        parkName = publishable.park?.name ?? null;
-        parkAreaName = publishable.name;
-        // featureName = publishable.name;
+        parkName = publishable.park?.name || "-";
+        parkAreaName = publishable.name || "-";
+        const parkAreaFeatures = publishable.features;
+
+        featureNames = Array.isArray(parkAreaFeatures)
+          ? parkAreaFeatures
+              .filter((parkFeature) => parkFeature && parkFeature.name)
+              .map((parkFeature) => parkFeature.name)
+          : [];
       } else if (publishable?.type === "feature") {
-        parkName = publishable.park?.name ?? null;
-        parkAreaName = publishable.parkArea?.name ?? null;
-        featureName = publishable.name;
+        parkName = publishable.park?.name || "-";
+        parkAreaName = publishable.parkArea?.name || "-";
+        featureNames = publishable.name ? [publishable.name] : [];
       }
 
       return {
@@ -168,7 +184,7 @@ router.get(
         dateRanges: season.dateRanges,
         parkName,
         parkAreaName,
-        featureName,
+        featureNames,
       };
     });
 

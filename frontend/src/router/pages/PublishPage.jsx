@@ -114,9 +114,15 @@ function PublishPage() {
                 seasons.map((season) => (
                   <tr key={season.id}>
                     <td>{season.parkName}</td>
-                    <td>{season.parkAreaName ? season.parkAreaName : ""}</td>
+                    <td className="fw-bold">{season.parkAreaName}</td>
                     <td>
-                      {season.parkFeatureName ? season.parkFeatureName : ""}
+                      <ul className="list-unstyled mb-0">
+                        {season.featureNames.length > 0
+                          ? season.featureNames.map((name, index) => (
+                              <li key={index}>{name}</li>
+                            ))
+                          : "-"}
+                      </ul>
                     </td>
                     <td>
                       {season.operatingYear}
