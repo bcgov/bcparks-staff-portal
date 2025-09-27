@@ -10,7 +10,7 @@ export function NoParkAccess() {
         <p>
           If this message continues to appear after a couple of days, please
           contact{" "}
-          <a href="mailto:parksweb@gov.bc.ca?subject=No%park%20access%assigned">
+          <a href="mailto:parksweb@gov.bc.ca?subject=No%20park%20access%20assigned">
             parksweb@gov.bc.ca
           </a>
           .
