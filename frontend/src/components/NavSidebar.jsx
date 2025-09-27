@@ -12,7 +12,8 @@ export default function NavSidebar() {
       <ul className="nav flex-column mb-auto">
         {navItems
           .filter((item) => hasAnyAccess(item.allowedRoles))
-          .map(({ Tag, label, active, ...itemProps }) => (
+          // eslint-disable-next-line no-unused-vars -- allowedRoles is intentionally destructured to avoid passing it to DOM elements
+          .map(({ Tag, label, active, allowedRoles, ...itemProps }) => (
             <li key={label} className="nav-item">
               <Tag
                 className={classNames("nav-link text-truncate", {

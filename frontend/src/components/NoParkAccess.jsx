@@ -1,0 +1,21 @@
+export function NoParkAccess() {
+  return (
+    <div className="layout my-5">
+      <div className="container">
+        <h4 className="my-3">Access Pending</h4>
+        <p>
+          You’ve successfully signed in, but your account hasn’t yet been
+          granted access to any parks.
+        </p>
+        <p>
+          If this message continues to appear after a couple of days, please
+          contact{" "}
+          <a href="mailto:parksweb@gov.bc.ca?subject=No%park%20access%assigned">
+            parksweb@gov.bc.ca
+          </a>
+          .
+        </p>
+      </div>
+    </div>
+  );
+}

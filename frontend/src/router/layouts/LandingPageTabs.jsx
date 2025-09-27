@@ -1,10 +1,14 @@
-import { useMemo } from "react";
+import { useMemo, useContext } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import useAccess from "@/hooks/useAccess";
 import "./LandingPageTabs.scss";
+import UserContext from "@/contexts/UserContext";
+import { NoParkAccess } from "../../components/NoParkAccess";
 
 export default function LandingPageTabs() {
   const { ROLES, checkAccess, hasAnyAccess, isAuthenticated } = useAccess();
+
+  const { data: userData } = useContext(UserContext);
 
   // Check if the user has permission to approve the season
   const approver = useMemo(
@@ -17,8 +21,19 @@ export default function LandingPageTabs() {
     [hasAnyAccess, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
   );
 
+  // Check if the user has access to all parks
+  const allParkAccess = useMemo(
+    () => checkAccess(ROLES.ALL_PARK_ACCESS),
+    [checkAccess, ROLES.ALL_PARK_ACCESS],
+  );
+
   // This prevents flashing the tabs layout to unauthenticated users
   if (!isAuthenticated) return <></>;
+
+  // If this user has no access to any parks, show "Access Pending"
+  if (!allParkAccess && userData?.accessGroups?.length === 0) {
+    return <NoParkAccess />;
+  }
 
   return (
     <div className="layout landing-page-tabs">
