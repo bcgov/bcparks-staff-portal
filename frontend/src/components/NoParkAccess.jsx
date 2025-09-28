@@ -2,7 +2,7 @@ export function NoParkAccess() {
   return (
     <div className="layout my-5">
       <div className="container">
-        <h4 className="my-3">Access Pending</h4>
+        <h1 className="mt-3 mb-4">Access pending</h1>
         <p>
           You’ve successfully signed in, but your account hasn’t yet been
           granted access to any parks.
