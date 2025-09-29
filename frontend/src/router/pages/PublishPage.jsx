@@ -16,8 +16,6 @@ function PublishPage() {
   const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
   const { seasons = [] } = data ?? {};
 
-  console.log("seasons", seasons);
-
   const { sendData: publishData, loading: saving } = useApiPost(
     "/publish/publish-to-api/",
   );
@@ -87,7 +85,11 @@ function PublishPage() {
         <ConfirmationDialog {...confirmation.props} />
 
         <div className="d-flex justify-content-end mb-2">
-          <button className="btn btn-primary" onClick={publishToApi}>
+          <button
+            onClick={publishToApi}
+            disabled={seasons.length === 0}
+            className="btn btn-primary"
+          >
             Publish to API
           </button>
 

@@ -60,29 +60,10 @@ router.get(
     const approvedSeasons = await Season.findAll({
       where: {
         status: STATUS.APPROVED,
+        // TODO: CMS-1153
         // readyToPublish: true,
       },
-      attributes: [
-        "id",
-        "publishableId",
-        "operatingYear",
-        "status",
-        "readyToPublish",
-      ],
-      include: [
-        {
-          model: DateRange,
-          as: "dateRanges",
-          attributes: ["id", "startDate", "endDate", "dateTypeId", "adminNote"],
-          include: [
-            {
-              model: DateType,
-              as: "dateType",
-              attributes: ["id", "name"],
-            },
-          ],
-        },
-      ],
+      attributes: ["id", "publishableId", "operatingYear", "readyToPublish"],
     });
 
     // Return if no seasons found
@@ -181,7 +162,6 @@ router.get(
         readyToPublish: season.readyToPublish,
         publishableType: publishable?.type ?? null,
         publishable: publishable ?? null,
-        dateRanges: season.dateRanges,
         parkName,
         parkAreaName,
         featureNames,
