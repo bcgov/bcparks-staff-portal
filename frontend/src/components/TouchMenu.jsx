@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
 import useAccess from "@/hooks/useAccess";
-import { ROLES } from "../config/permissions";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import "./TouchMenu.scss";
@@ -17,7 +16,7 @@ export default function TouchMenu({
     logOut();
   }
 
-  const { hasAnyAccess } = useAccess();
+  const { hasAnyRole } = useAccess();
 
   return (
     <div
@@ -28,8 +27,9 @@ export default function TouchMenu({
     >
       <ul className="navbar-nav">
         {navItems
-          .filter((item) => hasAnyAccess(item.allowedRoles))
-          .map(({ Tag, label, active, ...itemProps }) => (
+          .filter((item) => hasAnyRole(item.allowedRoles))
+          // eslint-disable-next-line no-unused-vars -- allowedRoles is intentionally destructured to avoid passing it to DOM elements
+          .map(({ Tag, label, active, allowedRoles, ...itemProps }) => (
             <li key={label} className="nav-item">
               {/* Use "a" for external links and Router Link components for internal links */}
               <Tag
