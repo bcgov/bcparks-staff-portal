@@ -1,24 +1,32 @@
-import { useMemo } from "react";
+import { useMemo, useContext } from "react";
 import { Outlet, NavLink } from "react-router-dom";
 import useAccess from "@/hooks/useAccess";
 import "./LandingPageTabs.scss";
+import UserContext from "@/contexts/UserContext";
+import { NoParkAccess } from "../../components/NoParkAccess";
 
 export default function LandingPageTabs() {
-  const { ROLES, checkAccess, hasAnyAccess, isAuthenticated } = useAccess();
+  const { ROLES, checkAccess, hasAnyRole, isAuthenticated } = useAccess();
 
-  // Check if the user has permission to approve the season
-  const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
-  );
-  // Check if the user has permission to access export page
-  const userExportPermission = useMemo(
-    () => hasAnyAccess([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
-    [hasAnyAccess, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
+  const { data: userData } = useContext(UserContext);
+
+  // Check user permissions
+  const { isApprover, canExport, hasAllParkAccess } = useMemo(
+    () => ({
+      isApprover: checkAccess(ROLES.APPROVER),
+      canExport: hasAnyRole([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
+      hasAllParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
+    }),
+    [checkAccess, hasAnyRole, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
   );
 
   // This prevents flashing the tabs layout to unauthenticated users
   if (!isAuthenticated) return <></>;
+
+  // If this user has no access to any parks, show "Access Pending"
+  if (!hasAllParkAccess && userData?.accessGroups?.length === 0) {
+    return <NoParkAccess />;
+  }
 
   return (
     <div className="layout landing-page-tabs">
@@ -29,7 +37,7 @@ export default function LandingPageTabs() {
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
               <NavLink className="nav-link" to="/">
-                Edit{approver && " and review"}
+                Edit{isApprover && " and review"}
               </NavLink>
             </li>
             {/* Hidden temporarily until the Publish page is re-implemented */}
@@ -40,7 +48,7 @@ export default function LandingPageTabs() {
                 </NavLink>
               </li>
             )} */}
-            {userExportPermission && (
+            {canExport && (
               <li className="nav-item">
                 <NavLink className="nav-link" to="/export">
                   Export
