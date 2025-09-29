@@ -10,21 +10,17 @@ export default function LandingPageTabs() {
 
   const { data: userData } = useContext(UserContext);
 
-  // Check if the user has permission to approve the season
-  const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
-  );
-  // Check if the user has permission to access export page
-  const userExportPermission = useMemo(
-    () => hasAnyAccess([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
-    [hasAnyAccess, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
-  );
-
-  // Check if the user has access to all parks
-  const allParkAccess = useMemo(
-    () => checkAccess(ROLES.ALL_PARK_ACCESS),
-    [checkAccess, ROLES.ALL_PARK_ACCESS],
+  // Check user has permissions
+  const { approver, userExportPermission, allParkAccess } = useMemo(
+    () => ({
+      approver: checkAccess(ROLES.APPROVER),
+      userExportPermission: hasAnyAccess([
+        ROLES.APPROVER,
+        ROLES.ALL_PARK_ACCESS,
+      ]),
+      allParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
+    }),
+    [checkAccess, hasAnyAccess, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
   );
 
   // This prevents flashing the tabs layout to unauthenticated users
