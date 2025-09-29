@@ -26,12 +26,17 @@ async function deleteReservationDateRanges(transaction = null) {
     });
     const featureDateableIds = features.map((feature) => feature.dateableId);
 
+    if (featureDateableIds.length === 0) {
+      console.log("No Features found with hasReservations: false");
+      return 0;
+    }
+
     // Delete reservation DateRanges for features
     const deleteCount = await DateRange.destroy({
       where: {
         dateTypeId: reservationDateType.id,
         dateableId: {
-          [Op.in]: [...featureDateableIds],
+          [Op.in]: featureDateableIds,
         },
       },
       transaction,
