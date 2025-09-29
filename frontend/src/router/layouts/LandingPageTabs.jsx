@@ -6,28 +6,25 @@ import UserContext from "@/contexts/UserContext";
 import { NoParkAccess } from "../../components/NoParkAccess";
 
 export default function LandingPageTabs() {
-  const { ROLES, checkAccess, hasAnyAccess, isAuthenticated } = useAccess();
+  const { ROLES, checkAccess, hasAnyRole, isAuthenticated } = useAccess();
 
   const { data: userData } = useContext(UserContext);
 
-  // Check user has permissions
-  const { approver, userExportPermission, allParkAccess } = useMemo(
+  // Check user permissions
+  const { isApprover, canExport, hasAllParkAccess } = useMemo(
     () => ({
-      approver: checkAccess(ROLES.APPROVER),
-      userExportPermission: hasAnyAccess([
-        ROLES.APPROVER,
-        ROLES.ALL_PARK_ACCESS,
-      ]),
-      allParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
+      isApprover: checkAccess(ROLES.APPROVER),
+      canExport: hasAnyRole([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
+      hasAllParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
     }),
-    [checkAccess, hasAnyAccess, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
+    [checkAccess, hasAnyRole, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
   );
 
   // This prevents flashing the tabs layout to unauthenticated users
   if (!isAuthenticated) return <></>;
 
   // If this user has no access to any parks, show "Access Pending"
-  if (!allParkAccess && userData?.accessGroups?.length === 0) {
+  if (!hasAllParkAccess && userData?.accessGroups?.length === 0) {
     return <NoParkAccess />;
   }
 
@@ -40,7 +37,7 @@ export default function LandingPageTabs() {
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
               <NavLink className="nav-link" to="/">
-                Edit{approver && " and review"}
+                Edit{isApprover && " and review"}
               </NavLink>
             </li>
             {/* Hidden temporarily until the Publish page is re-implemented */}
@@ -51,7 +48,7 @@ export default function LandingPageTabs() {
                 </NavLink>
               </li>
             )} */}
-            {userExportPermission && (
+            {canExport && (
               <li className="nav-item">
                 <NavLink className="nav-link" to="/export">
                   Export
