@@ -63,7 +63,7 @@ async function getDatesToSend() {
   const dateRangesToPublish = dateRanges.map((dateRange) => {
     const hasPark = dateRange.dateable?.park;
     const hasFeature = dateRange.dateable?.feature;
-    const parkId = hasPark ? Number(dateRange.dateable.park.orcs) : null;
+    const parkId = hasPark ? Number(dateRange.dateable.park.strapiId) : null;
     const featureId = hasFeature
       ? Number(dateRange.dateable.feature.strapiId)
       : null;
@@ -73,13 +73,12 @@ async function getDatesToSend() {
     const isDateRangeAnnual = annualMap.get(annualKey) ?? false;
 
     return {
-      dateable: dateRange.dateableId,
       isActive: true,
       isDateRangeAnnual,
       operatingYear: dateRange.season.operatingYear,
       startDate: new Date(dateRange.startDate).toISOString().split("T")[0],
       endDate: new Date(dateRange.endDate).toISOString().split("T")[0],
-      parkDateType: dateRange.dateType.name,
+      parkDateType: dateRange.dateType.strapiId,
       protectedArea: parkId,
       parkFeature: featureId,
       adminNote: dateRange.adminNote,
@@ -115,6 +114,21 @@ async function createParkFeatureDatesInStrapi(dates) {
 
 async function migrate() {
   const dates = await getDatesToSend();
+
+  // For testing with a single record:
+  // const dates = [
+  //   {
+  //     isActive: true,
+  //     isDateAnnual: true,
+  //     operatingYear: 2026,
+  //     startDate: "2026-03-15",
+  //     endDate: "2026-10-15",
+  //     parkDateType: 11,
+  //     protectedArea: 2,
+  //     parkFeature: null,
+  //     adminNote: "Sample note",
+  //   },
+  // ];
 
   await createParkFeatureDatesInStrapi(dates);
   console.log(`Migration completed. Total: ${dates.length} records created.`);
