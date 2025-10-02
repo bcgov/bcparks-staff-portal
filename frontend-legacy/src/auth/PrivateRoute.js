@@ -41,18 +41,26 @@ export function PrivateRoute({ component: Component, roles, props, ...rest }) {
         <Route
           {...rest}
           render={() => {
-            return isAuthorized ? (
-              <Component {...props} />
-            ) : (
-              <Error
-                page={{
-                  error: {
-                    status: 403,
-                    message: "Unauthorized",
-                  },
-                }}
-              />
-            );
+            if (isAuthorized) {
+              return <Component {...props} />;
+            } else {
+              if (hasRole(initialized, keycloak, ["doot-user"])) {
+                // if the user doesn't have staff portal access but they have DOOT access
+                // send them to the DOOT app
+                window.location.replace("/dates");
+                return null;
+              }
+              return (
+                <Error
+                  page={{
+                    error: {
+                      status: 403,
+                      message: "Unauthorized",
+                    },
+                  }}
+                />
+              );
+            }
           }}
         />
       )}
