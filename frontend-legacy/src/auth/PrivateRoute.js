@@ -47,7 +47,7 @@ export function PrivateRoute({ component: Component, roles, props, ...rest }) {
               if (hasRole(initialized, keycloak, ["doot-user"])) {
                 // if the user doesn't have staff portal access but they have DOOT access
                 // send them to the DOOT app
-                window.location.replace("/dates");
+                window.location.replace("/dates/");
                 return null;
               }
               return (

@@ -7,7 +7,6 @@ import Header from "../../composite/header/Header";
 import "./Home.css";
 import config from "../../../utils/config";
 import OpenInNew from "@material-ui/icons/OpenInNew";
-import { hasRole } from "../../../utils/AuthenticationUtil";
 
 export default function Home({ page: { setError } }) {
   const { initialized, keycloak } = useKeycloak();
@@ -28,15 +27,6 @@ export default function Home({ page: { setError } }) {
   }, [initialized, keycloak]);
 
   if (toDashboard) {
-    // if the user only has the doot-user role, send them to the doot app
-    if (
-      hasRole(initialized, keycloak, ["doot-user"]) &&
-      !hasRole(initialized, keycloak, ["approver", "submitter"])
-    ) {
-      window.location.replace("/dates");
-      return null;
-    }
-
     return (
       <Redirect
         to={{
