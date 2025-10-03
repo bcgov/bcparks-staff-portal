@@ -13,8 +13,10 @@
         try_files {path} /index.html
     }
 
-    header /dates/* Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
+    header /* Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
     header /dates/assets/* -Cache-Control
+    header /static/* -Cache-Control
+    header /images/* -Cache-Control
 
     encode gzip
 
