@@ -78,6 +78,9 @@ function AppRouter() {
           <Route path="/error">
             <Error page={{ error }} />
           </Route>
+          <Route path="/dates">
+            <p>/dates</p>
+          </Route>
           <Redirect from="*" to="/" />
         </Switch>
       </BrowserRouter>
