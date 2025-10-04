@@ -124,7 +124,7 @@ router.get(
     );
 
     // Build output
-    const output = approvedSeasons?.map((season) => {
+    const output = approvedSeasons.map((season) => {
       const publishable = publishableMap.get(season.publishableId);
 
       if (!publishable) {

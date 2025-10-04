@@ -102,7 +102,7 @@ function PublishPage() {
         </div>
 
         <div className="table-responsive">
-          <table className="table table-striped">
+          <table className="table table-striped table-publish">
             <thead>
               <tr>
                 <th scope="col">Park name</th>
@@ -112,27 +112,25 @@ function PublishPage() {
               </tr>
             </thead>
             <tbody>
-              {seasons.length > 0 ? (
-                seasons.map((season) => (
-                  <tr key={season.id}>
-                    <td>{season.parkName}</td>
-                    <td className="fw-bold">{season.parkAreaName}</td>
-                    <td>
-                      <ul className="list-unstyled mb-0">
-                        {season.featureNames.length > 0
-                          ? season.featureNames.map((name, index) => (
-                              <li key={index}>{name}</li>
-                            ))
-                          : "-"}
-                      </ul>
-                    </td>
-                    <td>
-                      {season.operatingYear}
-                      <NotReadyFlag show={!season.readyToPublish} />
-                    </td>
-                  </tr>
-                ))
-              ) : (
+              {seasons.map((season) => (
+                <tr key={season.id}>
+                  <td>{season.parkName}</td>
+                  <td className="fw-bold">{season.parkAreaName}</td>
+                  <td>
+                    <ul className="list-unstyled mb-0">
+                      {season.featureNames.map((name, index) => (
+                        <li key={index}>{name}</li>
+                      ))}
+                      {season.featureNames.length === 0 && <li>-</li>}
+                    </ul>
+                  </td>
+                  <td>
+                    {season.operatingYear}
+                    <NotReadyFlag show={!season.readyToPublish} />
+                  </td>
+                </tr>
+              ))}
+              {seasons.length === 0 && (
                 <tr>
                   <td colSpan="4">No seasons ready to publish</td>
                 </tr>
