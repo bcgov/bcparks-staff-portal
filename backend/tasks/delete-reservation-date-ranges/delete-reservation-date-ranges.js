@@ -3,7 +3,7 @@
 import "../../env.js";
 
 import { Op } from "sequelize";
-import { DateType, DateRange, Feature } from "../../models/index.js";
+import { DateType, DateRange, Feature, Season } from "../../models/index.js";
 
 async function deleteReservationDateRanges(transaction = null) {
   try {
@@ -31,19 +31,65 @@ async function deleteReservationDateRanges(transaction = null) {
       return 0;
     }
 
-    // Delete reservation DateRanges for features
-    const deleteCount = await DateRange.destroy({
+    // Find all DateRanges for these features and reservation type
+    const dateRanges = await DateRange.findAll({
       where: {
         dateTypeId: reservationDateType.id,
         dateableId: {
           [Op.in]: featureDateableIds,
         },
       },
+      include: [
+        {
+          model: Season,
+          as: "season",
+          attributes: ["operatingYear"],
+        },
+      ],
+      transaction,
+    });
+
+    // Group by feature (dateableId), find max operatingYear per feature
+    const latestDateRangeIds = [];
+    const grouped = {};
+
+    dateRanges.forEach((dateRange) => {
+      const key = dateRange.dateableId;
+
+      if (!grouped[key]) grouped[key] = [];
+      grouped[key].push(dateRange);
+    });
+    Object.values(grouped).forEach((ranges) => {
+      // Find max operatingYear
+      const maxYear = Math.max(
+        ...ranges.map((range) => range.season?.operatingYear || 0),
+      );
+
+      // Find all dateRanges for that year
+      ranges.forEach((range) => {
+        if (range.season?.operatingYear === maxYear) {
+          latestDateRangeIds.push(range.id);
+        }
+      });
+    });
+
+    if (latestDateRangeIds.length === 0) {
+      console.log("No Reservation DateRanges found for latest season.");
+      return 0;
+    }
+
+    // Delete only the latest season's reservation DateRanges
+    const deleteCount = await DateRange.destroy({
+      where: {
+        id: {
+          [Op.in]: latestDateRangeIds,
+        },
+      },
       transaction,
     });
 
     console.log(
-      `Deleted ${deleteCount} Reservation DateRanges where hasReservations is false.`,
+      `Deleted ${deleteCount} Reservation DateRanges for latest season where hasReservations is false.`,
     );
     return deleteCount;
   } catch (err) {

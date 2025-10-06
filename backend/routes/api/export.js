@@ -342,7 +342,13 @@ router.get(
                 {
                   model: Feature,
                   as: "features",
-                  attributes: ["id", "name", "dateableId", "strapiFeatureId"],
+                  attributes: [
+                    "id",
+                    "name",
+                    "dateableId",
+                    "strapiFeatureId",
+                    "hasReservations",
+                  ],
                   required: false,
 
                   include: [
@@ -365,6 +371,7 @@ router.get(
                 "id",
                 "name",
                 "strapiFeatureId",
+                "hasReservations",
                 "inReservationSystem",
               ],
               required: false,
@@ -473,6 +480,14 @@ router.get(
 
         // Skip this row if this is a gate type and hasGate is false
         if (isGateType && !hasGate) {
+          return null;
+        }
+
+        // Skip reservation dates if feature has hasReservations=false
+        if (
+          dateRange.dateType.name === "Reservation" &&
+          feature?.hasReservations === false
+        ) {
           return null;
         }
 
