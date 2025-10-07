@@ -37,8 +37,6 @@ function EditAndReview() {
   const [page, setPage] = useState(1);
   const pageSize = 5;
 
-  const hasAllParkAccess = checkAccess(ROLES.ALL_PARK_ACCESS);
-
   // table filter state
   const [filters, setFilters] = useState({
     name: "",
@@ -111,6 +109,10 @@ function EditAndReview() {
       hasDateNote: false,
     });
   }
+  const hasAllParkAccess = useMemo(
+    () => checkAccess(ROLES.ALL_PARK_ACCESS),
+    [checkAccess, ROLES.ALL_PARK_ACCESS],
+  );
 
   const filteredParks = useMemo(
     () =>
@@ -341,7 +343,7 @@ function EditAndReview() {
 
         return true;
       }),
-    [parks, filters, userData],
+    [parks, filters, userData, hasAllParkAccess],
   );
 
   function updateFilter(key, value) {
