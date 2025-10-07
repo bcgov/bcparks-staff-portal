@@ -11,10 +11,10 @@ export default function LandingPageTabs() {
   const { data: userData } = useContext(UserContext);
 
   // Check user permissions
-  const { isApprover, canExport, hasAllParkAccess } = useMemo(
+  const { isApprover, hqStaff, hasAllParkAccess } = useMemo(
     () => ({
       isApprover: checkAccess(ROLES.APPROVER),
-      canExport: hasAnyRole([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
+      hqStaff: hasAnyRole([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
       hasAllParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
     }),
     [checkAccess, hasAnyRole, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
@@ -40,20 +40,19 @@ export default function LandingPageTabs() {
                 Edit{isApprover && " and review"}
               </NavLink>
             </li>
-            {/* Hidden temporarily until the Publish page is re-implemented */}
-            {/* {approver && (
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/publish">
-                  Publish
-                </NavLink>
-              </li>
-            )} */}
-            {canExport && (
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/export">
-                  Export
-                </NavLink>
-              </li>
+            {hqStaff && (
+              <>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/publish">
+                    Publish
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/export">
+                    Export
+                  </NavLink>
+                </li>
+              </>
             )}
           </ul>
         </div>

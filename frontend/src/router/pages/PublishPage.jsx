@@ -6,6 +6,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
+import "./PublishPage.scss";
 
 function PublishPage() {
   const confirmation = useConfirmation();
@@ -14,6 +15,7 @@ function PublishPage() {
   const errorFlash = useFlashMessage();
 
   const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
+  const { seasons = [] } = data ?? {};
 
   const { sendData: publishData, loading: saving } = useApiPost(
     "/publish/publish-to-api/",
@@ -84,7 +86,11 @@ function PublishPage() {
         <ConfirmationDialog {...confirmation.props} />
 
         <div className="d-flex justify-content-end mb-2">
-          <button className="btn btn-primary" onClick={publishToApi}>
+          <button
+            onClick={publishToApi}
+            disabled={seasons.length === 0}
+            className="btn btn-primary"
+          >
             Publish to API
           </button>
 
@@ -97,25 +103,39 @@ function PublishPage() {
         </div>
 
         <div className="table-responsive">
-          <table className="table table-striped">
+          <table className="table table-striped table-publish">
             <thead>
               <tr>
                 <th scope="col">Park name</th>
+                <th scope="col">Area</th>
                 <th scope="col">Feature</th>
                 <th scope="col">Year</th>
               </tr>
             </thead>
             <tbody>
-              {data?.features.map((feature) => (
-                <tr key={`${feature.id}-${feature.season}`}>
-                  <td>{feature.park.name}</td>
-                  <td>{feature.name}</td>
+              {seasons.map((season) => (
+                <tr key={season.id}>
+                  <td>{season.parkName}</td>
+                  <td className="fw-bold">{season.parkAreaName}</td>
                   <td>
-                    {feature.season}
-                    <NotReadyFlag show={!feature.readyToPublish} />
+                    <ul className="list-unstyled mb-0">
+                      {season.featureNames.map((name, index) => (
+                        <li key={index}>{name}</li>
+                      ))}
+                      {season.featureNames.length === 0 && <li>-</li>}
+                    </ul>
+                  </td>
+                  <td>
+                    {season.operatingYear}
+                    <NotReadyFlag show={!season.readyToPublish} />
                   </td>
                 </tr>
               ))}
+              {seasons.length === 0 && (
+                <tr>
+                  <td colSpan="4">No seasons ready to publish</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
