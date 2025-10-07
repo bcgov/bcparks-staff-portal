@@ -12,6 +12,7 @@ import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import UserContext from "@/contexts/UserContext";
+import useAccess from "@/hooks/useAccess";
 
 function EditAndReview() {
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -23,6 +24,7 @@ function EditAndReview() {
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
   const { data: userData } = useContext(UserContext);
+  const { ROLES, checkAccess } = useAccess();
 
   const statusOptions = [
     { value: "requested", label: "Requested by HQ" },
@@ -34,6 +36,8 @@ function EditAndReview() {
   // table pagination
   const [page, setPage] = useState(1);
   const pageSize = 5;
+
+  const hasAllParkAccess = checkAccess(ROLES.ALL_PARK_ACCESS);
 
   // table filter state
   const [filters, setFilters] = useState({
@@ -158,6 +162,8 @@ function EditAndReview() {
         }
 
         // filter by access groups
+        // filters.accessGroups is called "Bundle(s)" in the UI and it allows users to
+        // filter parks by bundles. It is not for security purposes.
         if (
           filters.accessGroups.length > 0 &&
           !filters.accessGroups.some((group) =>
@@ -167,8 +173,9 @@ function EditAndReview() {
           return false;
         }
 
-        // filter by user access groups through userData
+        // filter by user access groups through userData (this is for security purposes)
         if (
+          !hasAllParkAccess &&
           userData &&
           userData.accessGroups?.length > 0 &&
           !userData.accessGroups.some((group) =>
