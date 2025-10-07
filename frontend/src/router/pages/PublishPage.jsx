@@ -6,6 +6,7 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
+import "./PublishPage.scss";
 
 function PublishPage() {
   const confirmation = useConfirmation();
