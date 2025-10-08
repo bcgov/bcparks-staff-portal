@@ -24,20 +24,24 @@ export default (sequelize) => {
       startDateLabel: DataTypes.STRING,
       endDateLabel: DataTypes.STRING,
       description: DataTypes.TEXT,
-      parkLevel:  {
+      parkLevel: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
       },
-      featureLevel:  {
+      featureLevel: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
       },
-      parkAreaLevel:  {
+      parkAreaLevel: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
+      },
+      strapiId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
     },
     {
