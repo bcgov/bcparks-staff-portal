@@ -171,10 +171,10 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
         dateRanges: (plainSeason.dateRanges || [])
           .filter((dateRange) => dateRange.dateableId === feature.dateableId)
           // Remove reservation date ranges if hasReservations is false
-          .filter((dateRange) =>
-            feature.hasReservations === false
-              ? dateRange.dateType?.name !== "Reservation"
-              : true,
+          .filter(
+            (dateRange) =>
+              feature.hasReservations ||
+              dateRange.dateType?.name !== "Reservation",
           ),
       };
     });

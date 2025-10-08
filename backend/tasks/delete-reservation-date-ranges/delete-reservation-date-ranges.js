@@ -3,6 +3,7 @@
 import "../../env.js";
 
 import { Op } from "sequelize";
+import _ from "lodash";
 import { DateType, DateRange, Feature, Season } from "../../models/index.js";
 
 async function deleteReservationDateRanges(transaction = null) {
@@ -49,47 +50,36 @@ async function deleteReservationDateRanges(transaction = null) {
       transaction,
     });
 
-    // Group by feature (dateableId), find max operatingYear per feature
-    const latestDateRangeIds = [];
-    const grouped = {};
+    // Group by feature (dateableId)
+    const dateRangeIds = [];
+    const grouped = _.groupBy(dateRanges, 'dateableId');
 
-    dateRanges.forEach((dateRange) => {
-      const key = dateRange.dateableId;
-
-      if (!grouped[key]) grouped[key] = [];
-      grouped[key].push(dateRange);
-    });
     Object.values(grouped).forEach((ranges) => {
-      // Find max operatingYear
-      const maxYear = Math.max(
-        ...ranges.map((range) => range.season?.operatingYear || 0),
-      );
-
-      // Find all dateRanges for that year
+      // Find all dateRanges for operating year 2026
       ranges.forEach((range) => {
-        if (range.season?.operatingYear === maxYear) {
-          latestDateRangeIds.push(range.id);
+        if (range.season?.operatingYear === 2026) {
+          dateRangeIds.push(range.id);
         }
       });
     });
 
-    if (latestDateRangeIds.length === 0) {
-      console.log("No Reservation DateRanges found for latest season.");
+    if (dateRangeIds.length === 0) {
+      console.log("No Reservation DateRanges found for 2026 season.");
       return 0;
     }
 
-    // Delete only the latest season's reservation DateRanges
+    // Delete only the 2026 season's reservation DateRanges
     const deleteCount = await DateRange.destroy({
       where: {
         id: {
-          [Op.in]: latestDateRangeIds,
+          [Op.in]: dateRangeIds,
         },
       },
       transaction,
     });
 
     console.log(
-      `Deleted ${deleteCount} Reservation DateRanges for latest season where hasReservations is false.`,
+      `Deleted ${deleteCount} Reservation DateRanges for 2026 season where hasReservations is false.`,
     );
     return deleteCount;
   } catch (err) {
