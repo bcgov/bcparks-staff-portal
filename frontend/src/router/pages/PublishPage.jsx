@@ -5,6 +5,7 @@ import { useApiGet, useApiPost } from "@/hooks/useApi";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
+import TooltipWrapper from "@/components/TooltipWrapper";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import "./PublishPage.scss";
 
@@ -127,7 +128,12 @@ function PublishPage() {
                   </td>
                   <td>
                     {season.operatingYear}
-                    <NotReadyFlag show={!season.readyToPublish} />
+                    <TooltipWrapper
+                      placement="top"
+                      content="Dates not ready to be made public"
+                    >
+                      <NotReadyFlag show={!season.readyToPublish} />
+                    </TooltipWrapper>
                   </td>
                 </tr>
               ))}
