@@ -48,7 +48,12 @@ function PublishPage() {
 
     if (proceed) {
       try {
-        await publishData();
+        // Send an array of ready-to-publish Season IDs to the API to for publishing
+        const seasonIds = seasons
+          .filter((season) => season.readyToPublish)
+          .map((season) => season.id);
+
+        await publishData({ seasonIds });
 
         successFlash.open(
           "Dates publishing to API",
