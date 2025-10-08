@@ -252,6 +252,23 @@ function EditAndReview() {
               return false;
             }
 
+            // check feature.hasReservations and dateTypes
+            if (
+              filterDateType.name === "Reservation" &&
+              !(
+                park.features?.some(
+                  (feature) => feature.hasReservations,
+                ) ||
+                park.parkAreas?.some((parkArea) =>
+                  parkArea.features?.some(
+                    (feature) => feature.hasReservations,
+                  ),
+                )
+              )
+            ) {
+              return false;
+            }
+
             // check park.seasons and dateTypes
             const hasParkDateType = park.seasons?.some((season) =>
               season.dateRanges?.some(

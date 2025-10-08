@@ -66,6 +66,7 @@ function featureModel(minYear, where = {}) {
       "parkAreaId",
       "name",
       "hasBackcountryPermits",
+      "hasReservations",
       "inReservationSystem",
     ],
     include: [
@@ -167,9 +168,14 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
 
       return {
         ...plainSeason,
-        dateRanges: (plainSeason.dateRanges || []).filter(
-          (dateRange) => dateRange.dateableId === feature.dateableId,
-        ),
+        dateRanges: (plainSeason.dateRanges || [])
+          .filter((dateRange) => dateRange.dateableId === feature.dateableId)
+          // Remove reservation date ranges if hasReservations is false
+          .filter(
+            (dateRange) =>
+              feature.hasReservations ||
+              dateRange.dateType?.name !== "Reservation",
+          ),
       };
     });
 
@@ -189,6 +195,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     parkAreaId: feature.parkAreaId,
     name: feature.name,
     hasBackcountryPermits: feature.hasBackcountryPermits,
+    hasReservations: feature.hasReservations,
     inReservationSystem: feature.inReservationSystem,
     featureType: {
       id: feature.featureType.id,
