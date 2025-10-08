@@ -3,14 +3,15 @@ import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 
 import {
-  Park,
-  Season,
-  Feature,
+  Dateable,
   DateRange,
   DateType,
-  Dateable,
-  ParkArea,
+  Feature,
   FeatureType,
+  GateDetail,
+  Park,
+  ParkArea,
+  Season,
 } from "../../models/index.js";
 
 import {
@@ -128,7 +129,7 @@ router.get(
       }
 
       return {
-        seasonId: season.id,
+        id: season.id,
         operatingYear: season.operatingYear,
         readyToPublish: season.readyToPublish,
         publishableType: publishable?.type ?? null,
@@ -148,7 +149,54 @@ router.post(
   "/publish-to-api/",
   checkPermissions(adminsAndApprovers),
   asyncHandler(async (req, res) => {
-    console.log("Publishing to API...");
+    const seasonIds = req.body.seasonIds;
+
+    console.log("Publishing to API...", seasonIds);
+
+    const seasons = await Season.findAll({
+      where: {
+        id: { [Op.in]: seasonIds },
+        status: STATUS.APPROVED,
+        readyToPublish: true,
+      },
+
+      include: [
+        // Entity details for park/area/feature
+        {
+          model: Park,
+          as: "park",
+          attributes: ["id", "publishableId", "name"],
+        },
+        {
+          model: ParkArea,
+          as: "parkArea",
+          attributes: ["id", "publishableId", "name"],
+        },
+        {
+          model: Feature,
+          as: "feature",
+          attributes: ["id", "publishableId", "name"],
+        },
+
+        // Gate details
+        { model: GateDetail, as: "gateDetail" },
+      ],
+    });
+
+    console.log("seasons");
+    console.log(seasons);
+
+    console.log(`Found ${seasons.length} seasons to publish`);
+
+    // Build array of details for each season to be published, including:
+    // - park/area/feature ID
+    // - date ranges for the season
+    // - gate details
+
+    // foreach season ID:
+    // - get all the dateranges for the season
+    // get the park/area/feature for the season from the publishableId so we can get the orcs/id for strapi
+    // get the gate info for the park/area/feature, also by publishableId
 
     // send 200 OK response with empty body
     res.send();
