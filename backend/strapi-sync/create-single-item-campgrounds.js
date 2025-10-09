@@ -398,13 +398,13 @@ const campgrounds = [
     campgroundName: "Conkle Lake Campground",
     items: [{ featureName: "All sites", featureId: "244_79" }],
     orcs: 244,
-    orcsAreaNumber: "244-1",
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Conkle Lake groupsites",
     items: [{ featureName: "All sites", featureId: "244_80" }],
     orcs: 244,
-    orcsAreaNumber: "244-1",
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Conrad Kain Hut",
@@ -2130,9 +2130,15 @@ async function createCampground(item) {
     strapiFeatureId: item.items[0].featureId,
   });
 
-  feature.parkAreaId = campground.id;
-  feature.name = "All sites";
-  await feature.save();
+  if (!feature) {
+    console.error(
+      `Feature not found for featureId: ${item.items[0].featureId}`,
+    );
+  } else {
+    feature.parkAreaId = campground.id;
+    feature.name = "All sites";
+    await feature.save();
+  }
 }
 
 export async function createSingleItemsCampgrounds() {
