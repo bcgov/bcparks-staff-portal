@@ -19,6 +19,7 @@ const campgrounds = [
       },
     ],
     orcs: 90,
+    orcsAreaNumber: "90-1",
   },
   {
     campgroundName: "Alice Lake Groupsites",
@@ -35,6 +36,7 @@ const campgrounds = [
       },
     ],
     orcs: 90,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Berg Lake Trail",
@@ -51,6 +53,7 @@ const campgrounds = [
       },
     ],
     orcs: 2,
+    orcsAreaNumber: "2-1",
   },
   {
     campgroundName: "Big Bar Lake Campground",
@@ -67,6 +70,7 @@ const campgrounds = [
       },
     ],
     orcs: 213,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Bighorn Campground",
@@ -83,6 +87,7 @@ const campgrounds = [
       },
     ],
     orcs: 202,
+    orcsAreaNumber: "202-1",
   },
   {
     campgroundName: "Birkenhead Campground",
@@ -99,6 +104,7 @@ const campgrounds = [
       },
     ],
     orcs: 152,
+    orcsAreaNumber: "152-1",
   },
   {
     campgroundName: "Cathedral backcountry",
@@ -115,6 +121,7 @@ const campgrounds = [
       },
     ],
     orcs: 199,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Furlong Bay Campground",
@@ -131,6 +138,7 @@ const campgrounds = [
       },
     ],
     orcs: 70,
+    orcsAreaNumber: "70-1",
   },
   {
     campgroundName: "Honeymoon Bay Groupsites",
@@ -147,6 +155,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Kettle River Campground",
@@ -163,6 +172,7 @@ const campgrounds = [
       },
     ],
     orcs: 236,
+    orcsAreaNumber: "236-1",
   },
   {
     campgroundName: "Lightning Lake Campground",
@@ -179,6 +189,7 @@ const campgrounds = [
       },
     ],
     orcs: 33,
+    orcsAreaNumber: "33-5",
   },
   {
     campgroundName: "Little Qualicum Falls Campground",
@@ -195,6 +206,7 @@ const campgrounds = [
       },
     ],
     orcs: 30,
+    orcsAreaNumber: "30-1",
   },
   {
     campgroundName: "Lone Duck Groupsites",
@@ -211,6 +223,7 @@ const campgrounds = [
       },
     ],
     orcs: 33,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Maple Bay Campground",
@@ -227,6 +240,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
+    orcsAreaNumber: "41-5",
   },
   {
     campgroundName: "Miracle Beach Campground",
@@ -253,6 +267,7 @@ const campgrounds = [
       },
     ],
     orcs: 45,
+    orcsAreaNumber: "45-2",
   },
   {
     campgroundName: "Okanagan Lake Campground",
@@ -269,6 +284,7 @@ const campgrounds = [
       },
     ],
     orcs: 54,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Porpoise Bay Campground",
@@ -285,6 +301,7 @@ const campgrounds = [
       },
     ],
     orcs: 221,
+    orcsAreaNumber: "221-1",
   },
   {
     campgroundName: "Quinsam Campground",
@@ -306,6 +323,7 @@ const campgrounds = [
       },
     ],
     orcs: 28,
+    orcsAreaNumber: "28-1",
   },
   {
     campgroundName: "Rathtrevor Beach Campground",
@@ -322,6 +340,7 @@ const campgrounds = [
       },
     ],
     orcs: 193,
+    orcsAreaNumber: "193-1",
   },
   {
     campgroundName: "Robson River Campground",
@@ -338,6 +357,7 @@ const campgrounds = [
       },
     ],
     orcs: 2,
+    orcsAreaNumber: "2-5",
   },
   {
     campgroundName: "Roche Lake Campground",
@@ -354,6 +374,7 @@ const campgrounds = [
       },
     ],
     orcs: 6892,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Sandspit Campground",
@@ -370,6 +391,7 @@ const campgrounds = [
       },
     ],
     orcs: 52,
+    orcsAreaNumber: "52-7",
   },
   {
     campgroundName: "Shuswap Lake Campground",
@@ -391,6 +413,7 @@ const campgrounds = [
       },
     ],
     orcs: 89,
+    orcsAreaNumber: "89-2",
   },
   {
     campgroundName: "Sproat Lake Campground",
@@ -407,6 +430,7 @@ const campgrounds = [
       },
     ],
     orcs: 182,
+    orcsAreaNumber: "182-1",
   },
   {
     campgroundName: "s\u1e83i\u1e83s Campground",
@@ -423,6 +447,7 @@ const campgrounds = [
       },
     ],
     orcs: 142,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "Texas Creek Campground",
@@ -439,6 +464,7 @@ const campgrounds = [
       },
     ],
     orcs: 9549,
+    orcsAreaNumber: "9549-1",
   },
   {
     campgroundName: "West Side Groupsites",
@@ -455,6 +481,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
+    orcsAreaNumber: null,
   },
   {
     campgroundName: "White Spruce Island",
@@ -471,6 +498,7 @@ const campgrounds = [
       },
     ],
     orcs: 251,
+    orcsAreaNumber: null,
   },
 ];
 
