@@ -6,7 +6,6 @@ import { faPen } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
-import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
@@ -264,8 +263,6 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
   const features = park.features || [];
   const isParkInReservationSystem =
     park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
-
-    console.log("PARK", park)
 
   return (
     <table key={park.id} className="table has-header-row mb-0">
