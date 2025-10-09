@@ -5,6 +5,7 @@ This script creates or updates `DateType` records in your database based on the 
 ## What does the script do?
 
 1. **For each entry in `date-types.js`:**
+
    - Checks if a `DateType` with the same `name` and level flags (`parkLevel`, `featureLevel`, `parkAreaLevel`) exists.
    - If not found, creates a new `DateType` record with the provided details.
    - If found, updates the existing record with the latest labels, description, and level flags.
@@ -23,6 +24,7 @@ node tasks/create-date-types/create-date-types.js
 ## Input
 
 - The script reads from `tasks/create-date-types/date-types.js`, which should export an array of objects like:
+
   ```js
   export const dateTypesData = [
     {
@@ -30,8 +32,9 @@ node tasks/create-date-types/create-date-types.js
       level: ["park"],
       startDateLabel: "Start",
       endDateLabel: "End",
-      description: "Winter fee period"
-    }
+      description: "Winter fee period",
+      strapiId: 123,
+    },
     // ... more entries ...
   ];
   ```
