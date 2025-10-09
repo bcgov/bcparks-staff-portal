@@ -518,6 +518,10 @@ async function updateFeature(item, parkAreaId) {
 async function createCampground(item) {
   const campground = await findOrCreateParkArea(item);
 
+  // Update with additional details
+  campground.orcsAreaNumber = item.orcsAreaNumber;
+  await campground.save();
+
   await Promise.all(
     item.items.map(async (feature) => updateFeature(feature, campground.id)),
   );

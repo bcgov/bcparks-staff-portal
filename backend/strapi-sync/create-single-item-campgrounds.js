@@ -2122,6 +2122,10 @@ const campgrounds = [
 async function createCampground(item) {
   const campground = await findOrCreateParkArea(item);
 
+  // Update with additional details
+  campground.orcsAreaNumber = item.orcsAreaNumber;
+  await campground.save();
+
   const feature = await getItemByAttributes(Feature, {
     strapiFeatureId: item.items[0].featureId,
   });
