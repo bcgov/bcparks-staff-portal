@@ -57,7 +57,7 @@ export default (sequelize) => {
       readyToPublish: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
-        defaultValue: false,
+        defaultValue: true,
       },
       editable: {
         type: DataTypes.BOOLEAN,

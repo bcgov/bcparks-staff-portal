@@ -128,12 +128,7 @@ function PublishPage() {
                   </td>
                   <td>
                     {season.operatingYear}
-                    <TooltipWrapper
-                      placement="top"
-                      content="Dates not ready to be made public"
-                    >
-                      <NotReadyFlag show={!season.readyToPublish} />
-                    </TooltipWrapper>
+                    <NotReadyFlag show={!season.readyToPublish} />
                   </td>
                 </tr>
               ))}

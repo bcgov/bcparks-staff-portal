@@ -120,6 +120,7 @@ async function createSeason(publishableId, year) {
       publishableId,
       operatingYear: year,
       status: STATUS.REQUESTED,
+      readyToPublish: true,
     },
 
     { transaction },

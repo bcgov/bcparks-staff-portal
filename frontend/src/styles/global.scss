@@ -247,6 +247,7 @@ table {
 
 // custom tooltip styles
 .tooltip {
+  opacity: 1 !important;
   .tooltip-inner {
     background-color: var(--theme-primary-blue);
   }

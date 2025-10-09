@@ -64,12 +64,7 @@ function DateRangesList({ dateRanges, isLastYear }) {
       {dateRanges.map((dateRange) => (
         <li key={dateRange.id}>
           {formatDateRange(dateRange)}
-          <TooltipWrapper
-            placement="top"
-            content="Dates not ready to be made public"
-          >
-            <NotReadyFlag show={!dateRange.readyToPublish} />
-          </TooltipWrapper>
+          <NotReadyFlag show={!dateRange.readyToPublish} />
         </li>
       ))}
     </ul>
@@ -269,6 +264,8 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
   const features = park.features || [];
   const isParkInReservationSystem =
     park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
+
+    console.log("PARK", park)
 
   return (
     <table key={park.id} className="table has-header-row mb-0">
