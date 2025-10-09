@@ -36,7 +36,7 @@ const campgrounds = [
       },
     ],
     orcs: 90,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "90-2",
   },
   {
     campgroundName: "Berg Lake Trail",
@@ -121,7 +121,7 @@ const campgrounds = [
       },
     ],
     orcs: 199,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "199-2",
   },
   {
     campgroundName: "Furlong Bay Campground",
@@ -155,7 +155,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "41-4",
   },
   {
     campgroundName: "Kettle River Campground",
@@ -223,7 +223,7 @@ const campgrounds = [
       },
     ],
     orcs: 33,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "33-6",
   },
   {
     campgroundName: "Maple Bay Campground",
@@ -447,7 +447,7 @@ const campgrounds = [
       },
     ],
     orcs: 142,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "142-1",
   },
   {
     campgroundName: "Texas Creek Campground",
@@ -481,7 +481,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "41-6",
   },
   {
     campgroundName: "White Spruce Island",
