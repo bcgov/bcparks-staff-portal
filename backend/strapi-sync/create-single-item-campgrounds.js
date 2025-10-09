@@ -20,7 +20,7 @@ const campgrounds = [
     campgroundName: "Akamina Creek backcountry",
     items: [{ featureName: "All sites", featureId: "338_3" }],
     orcs: 338,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "338-1",
   },
   {
     campgroundName: "Alces Lake Campground",
@@ -50,7 +50,7 @@ const campgrounds = [
     campgroundName: "Alouette groupsite",
     items: [{ featureName: "All sites", featureId: "8_8" }],
     orcs: 8,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "8-2",
   },
   {
     campgroundName: "Applebee Dome Campground",
@@ -182,13 +182,13 @@ const campgrounds = [
     campgroundName: "Blanket Creek groupsites",
     items: [{ featureName: "All sites", featureId: "323_179" }],
     orcs: 323,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "323-2",
   },
   {
     campgroundName: "Blanket Creek sites 1-105",
     items: [{ featureName: "All sites", featureId: "323_394" }],
     orcs: 323,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "323-1",
   },
   {
     campgroundName: "Blue Earth Lake Campground",
@@ -254,13 +254,13 @@ const campgrounds = [
     campgroundName: "Bromley Rock Campground sites 1-17",
     items: [{ featureName: "All sites", featureId: "58_538" }],
     orcs: 58,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "58-1",
   },
   {
     campgroundName: "Buckhorn Campground",
     items: [{ featureName: "All sites", featureId: "33_793" }],
     orcs: 33,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "33-3",
   },
   {
     campgroundName: "Buckinghorse River Campground",
@@ -278,7 +278,7 @@ const campgrounds = [
     campgroundName: "Bush Creek Site",
     items: [{ featureName: "All sites", featureId: "361_51" }],
     orcs: 361,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "361-1",
   },
   {
     campgroundName: "Buttle Lake Campground",
@@ -296,19 +296,19 @@ const campgrounds = [
     campgroundName: "Cambie Creek (groupsite 3)",
     items: [{ featureName: "All sites", featureId: "33_57" }],
     orcs: 33,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "33-1",
   },
   {
     campgroundName: "Cape Scott backcountry",
     items: [{ featureName: "All sites", featureId: "250_62" }],
     orcs: 250,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "250-1",
   },
   {
     campgroundName: "Carmanah Walbran backcountry",
     items: [{ featureName: "All sites", featureId: "383_63" }],
     orcs: 383,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "383-1",
   },
   {
     campgroundName: "Carp Lake (Kettle Bay) Campground",
@@ -320,7 +320,7 @@ const campgrounds = [
     campgroundName: "Cave Creek backcountry",
     items: [{ featureName: "All sites", featureId: "287_67" }],
     orcs: 287,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "287-6",
   },
   {
     campgroundName: "Cedar Point Campground",
@@ -350,7 +350,7 @@ const campgrounds = [
     campgroundName: "Chilliwack Lake backcountry",
     items: [{ featureName: "All sites", featureId: "258_72" }],
     orcs: 258,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "258-1",
   },
   {
     campgroundName: "China Beach Campground",
@@ -362,7 +362,7 @@ const campgrounds = [
     campgroundName: "Cinnemousun Narrows marine-accessible camping",
     items: [{ featureName: "All sites", featureId: "85_74" }],
     orcs: 85,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "85-1",
   },
   {
     campgroundName: "Cinnemousun Narrows shelters",
@@ -404,7 +404,7 @@ const campgrounds = [
     campgroundName: "Conkle Lake groupsites",
     items: [{ featureName: "All sites", featureId: "244_80" }],
     orcs: 244,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "244-1",
   },
   {
     campgroundName: "Conrad Kain Hut",
@@ -422,7 +422,7 @@ const campgrounds = [
     campgroundName: "Croteau Lake backcountry groupsite",
     items: [{ featureName: "All sites", featureId: "1_84" }],
     orcs: 1,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "1-2",
   },
   {
     campgroundName: "Dark Creek Campground",
@@ -452,13 +452,13 @@ const campgrounds = [
     campgroundName: "Dionisio Point backcountry",
     items: [{ featureName: "All sites", featureId: "384_97" }],
     orcs: 384,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "384-1",
   },
   {
     campgroundName: "Discovery Island backcountry",
     items: [{ featureName: "All sites", featureId: "237_98" }],
     orcs: 237,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "237-1",
   },
   {
     campgroundName: "Downing Campground",
@@ -470,7 +470,7 @@ const campgrounds = [
     campgroundName: "Driftwood Bay groupsite",
     items: [{ featureName: "All sites", featureId: "1_100" }],
     orcs: 1,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "1-3",
   },
   {
     campgroundName: "Dry Gulch Campground",
@@ -488,7 +488,7 @@ const campgrounds = [
     campgroundName: "East Curme Island",
     items: [{ featureName: "All sites", featureId: "252_106" }],
     orcs: 252,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "252-1",
   },
   {
     campgroundName: "Elfin Lakes Campground",
@@ -512,7 +512,7 @@ const campgrounds = [
     campgroundName: "Elk Lakes backcountry",
     items: [{ featureName: "All sites", featureId: "253_109" }],
     orcs: 253,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "253-1",
   },
   {
     campgroundName: "Elk River",
@@ -566,7 +566,7 @@ const campgrounds = [
     campgroundName: "Fillongley Campground sites 1-10",
     items: [{ featureName: "All sites", featureId: "48_121" }],
     orcs: 48,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "48-1",
   },
   {
     campgroundName: "Fintry Campground sites 1-160",
@@ -578,7 +578,7 @@ const campgrounds = [
     campgroundName: "Fintry groupsites",
     items: [{ featureName: "All sites", featureId: "9213_123" }],
     orcs: 9213,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "9213-2",
   },
   {
     campgroundName: "Fish Lake Cabin",
@@ -614,7 +614,7 @@ const campgrounds = [
     campgroundName: "French Beach groupsite",
     items: [{ featureName: "All sites", featureId: "262_130" }],
     orcs: 262,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "262-1",
   },
   {
     campgroundName: "Friends Campground",
@@ -638,7 +638,7 @@ const campgrounds = [
     campgroundName: "Gibson marine backcountry",
     items: [{ featureName: "All sites", featureId: "196_135" }],
     orcs: 196,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "196-1",
   },
   {
     campgroundName: "Gold Creek Campground",
@@ -650,19 +650,19 @@ const campgrounds = [
     campgroundName: "Golden Ears backcountry",
     items: [{ featureName: "All sites", featureId: "8_139" }],
     orcs: 8,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "8-4",
   },
   {
     campgroundName: "Golden Ears groupsite",
     items: [{ featureName: "All sites", featureId: "8_140" }],
     orcs: 8,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "8-5",
   },
   {
     campgroundName: "Golden Ears marine backcountry",
     items: [{ featureName: "All sites", featureId: "8_141" }],
     orcs: 8,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "8-6",
   },
   {
     campgroundName: "Goldminer Groupsite",
@@ -692,7 +692,7 @@ const campgrounds = [
     campgroundName: "Gordon Bay groupsite",
     items: [{ featureName: "All sites", featureId: "210_146" }],
     orcs: 210,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "210-2",
   },
   {
     campgroundName: "Grace Harbour",
@@ -740,7 +740,7 @@ const campgrounds = [
     campgroundName: "Halkett Bay marine backcountry",
     items: [{ featureName: "All sites", featureId: "365_189" }],
     orcs: 365,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "365-1",
   },
   {
     campgroundName: "Hampton Campground",
@@ -770,7 +770,7 @@ const campgrounds = [
     campgroundName: "Hicks Lake groupsite",
     items: [{ featureName: "All sites", featureId: "200_197" }],
     orcs: 200,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "200-2",
   },
   {
     campgroundName: "Home Basin Campground",
@@ -806,7 +806,7 @@ const campgrounds = [
     campgroundName: "Horseshoe Bend groupsite",
     items: [{ featureName: "All sites", featureId: "6161_203" }],
     orcs: 6161,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "6161-1",
   },
   {
     campgroundName: "Horseshoe Lake Campground",
@@ -830,7 +830,7 @@ const campgrounds = [
     campgroundName: "Inland Lake backcountry",
     items: [{ featureName: "All sites", featureId: "6197_206" }],
     orcs: 6197,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "6197-1",
   },
   {
     campgroundName: "Inlet Creek Campground",
@@ -842,7 +842,7 @@ const campgrounds = [
     campgroundName: "Jedediah Island marine backcountry",
     items: [{ featureName: "All sites", featureId: "9512_211" }],
     orcs: 9512,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "9512-1",
   },
   {
     campgroundName: "Jewel Lake Campground",
@@ -860,7 +860,7 @@ const campgrounds = [
     campgroundName: "Joffre Lakes Backcountry Campground",
     items: [{ featureName: "All sites", featureId: "363_215" }],
     orcs: 363,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "363-1",
   },
   {
     campgroundName: "Johnstone Creek Campground",
@@ -872,7 +872,7 @@ const campgrounds = [
     campgroundName: "Juan de Fuca Marine Trail backcountry",
     items: [{ featureName: "All sites", featureId: "9398_217" }],
     orcs: 9398,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "9398-2",
   },
   {
     campgroundName: "Juniper Beach Campground",
@@ -890,13 +890,13 @@ const campgrounds = [
     campgroundName: "Karst Creek groupsite",
     items: [{ featureName: "All sites", featureId: "1_223" }],
     orcs: 1,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "1-4",
   },
   {
     campgroundName: "Kekuli Bay Campground sites 1-73",
     items: [{ featureName: "All sites", featureId: "378_530" }],
     orcs: 378,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "378-1",
   },
   {
     campgroundName: "Kekuli Bay walk-in sites 74-77",
@@ -914,13 +914,13 @@ const campgrounds = [
     campgroundName: "Kentucky-Alleyne groupsite",
     items: [{ featureName: "All sites", featureId: "306_225" }],
     orcs: 306,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "306-1",
   },
   {
     campgroundName: "Kettle River groupsite",
     items: [{ featureName: "All sites", featureId: "236_227" }],
     orcs: 236,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "236-2",
   },
   {
     campgroundName: "Kicking Horse Campground",
@@ -932,7 +932,7 @@ const campgrounds = [
     campgroundName: "Kikomun groupsites",
     items: [{ featureName: "All sites", featureId: "235_229" }],
     orcs: 235,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "235-3",
   },
   {
     campgroundName: "Kilby Campground",
@@ -980,7 +980,7 @@ const campgrounds = [
     campgroundName: "Kokanee Glacier backcountry",
     items: [{ featureName: "All sites", featureId: "4_236" }],
     orcs: 4,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "4-1",
   },
   {
     campgroundName: "Kootenay Lake groupsite",
@@ -1064,7 +1064,7 @@ const campgrounds = [
     campgroundName: "Loveland Bay groupsites",
     items: [{ featureName: "All sites", featureId: "189_181" }],
     orcs: 189,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "189-2",
   },
   {
     campgroundName: "Lucerne Campground",
@@ -1076,7 +1076,7 @@ const campgrounds = [
     campgroundName: "Mabel Lake groupsite",
     items: [{ featureName: "All sites", featureId: "241_168" }],
     orcs: 241,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "241-2",
   },
   {
     campgroundName: "MacDonald Campground",
@@ -1088,7 +1088,7 @@ const campgrounds = [
     campgroundName: "Magog Lake",
     items: [{ featureName: "All sites", featureId: "5_263" }],
     orcs: 5,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "5-1",
   },
   {
     campgroundName: "Mahood Lake Campground",
@@ -1106,19 +1106,19 @@ const campgrounds = [
     campgroundName: "Mahood Lake groupsites",
     items: [{ featureName: "All sites", featureId: "24_266" }],
     orcs: 24,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "24-4",
   },
   {
     campgroundName: "Main Campground sites 1-61",
     items: [{ featureName: "All sites", featureId: "202_267" }],
     orcs: 202,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "202-2",
   },
   {
     campgroundName: "Main Lake backcountry",
     items: [{ featureName: "All sites", featureId: "6093_268" }],
     orcs: 6093,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "6093-1",
   },
   {
     campgroundName: "Maple Bay Campground Cabins",
@@ -1166,13 +1166,13 @@ const campgrounds = [
     campgroundName: "Midge Creek backcountry",
     items: [{ featureName: "All sites", featureId: "357_280" }],
     orcs: 357,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "357-4",
   },
   {
     campgroundName: "Miracle Beach groupsite",
     items: [{ featureName: "All sites", featureId: "45_169" }],
     orcs: 45,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "45-1",
   },
   {
     campgroundName: "Misty Meadows Campground",
@@ -1202,13 +1202,13 @@ const campgrounds = [
     campgroundName: "Monashee Loop sites 1-36",
     items: [{ featureName: "All sites", featureId: "241_290" }],
     orcs: 241,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "241-1",
   },
   {
     campgroundName: "Monashee backcountry",
     items: [{ featureName: "All sites", featureId: "143_289" }],
     orcs: 143,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "143-1",
   },
   {
     campgroundName: "Monck Campground",
@@ -1232,7 +1232,7 @@ const campgrounds = [
     campgroundName: "Montague Harbour groupsite",
     items: [{ featureName: "All sites", featureId: "104_170" }],
     orcs: 104,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "104-1",
   },
   {
     campgroundName: "Morton Lake Campground",
@@ -1256,7 +1256,7 @@ const campgrounds = [
     campgroundName: "Mount Seymour groupsite",
     items: [{ featureName: "All sites", featureId: "15_171" }],
     orcs: 15,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "15-1",
   },
   {
     campgroundName: "Moyie Lake Campground",
@@ -1286,7 +1286,7 @@ const campgrounds = [
     campgroundName: "Nairn Campground",
     items: [{ featureName: "All sites", featureId: "179_299" }],
     orcs: 179,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "179-1",
   },
   {
     campgroundName: "Naiset Huts",
@@ -1328,7 +1328,7 @@ const campgrounds = [
     campgroundName: "North Copeland Island",
     items: [{ featureName: "All sites", featureId: "228_308" }],
     orcs: 228,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "228-1",
   },
   {
     campgroundName: "North Thompson River Campground",
@@ -1352,7 +1352,7 @@ const campgrounds = [
     campgroundName: "Og Lake",
     items: [{ featureName: "All sites", featureId: "5_313" }],
     orcs: 5,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "5-2",
   },
   {
     campgroundName: "Okanagan Lake South Campground walk-in sites 89-96",
@@ -1370,7 +1370,7 @@ const campgrounds = [
     campgroundName: "Okeover Arm",
     items: [{ featureName: "All sites", featureId: "294_314" }],
     orcs: 294,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "294-1",
   },
   {
     campgroundName: "Olympic Legacy Cabins",
@@ -1437,13 +1437,13 @@ const campgrounds = [
     campgroundName: "Paleface Loop",
     items: [{ featureName: "All sites", featureId: "258_325" }],
     orcs: 258,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "258-2",
   },
   {
     campgroundName: "Paradise Meadows area",
     items: [{ featureName: "All sites", featureId: "1_503" }],
     orcs: 1,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "1-6",
   },
   {
     campgroundName: "Paul Lake Campground",
@@ -1455,7 +1455,7 @@ const campgrounds = [
     campgroundName: "Paul Lake groupsite",
     items: [{ featureName: "All sites", featureId: "127_327" }],
     orcs: 127,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "127-1",
   },
   {
     campgroundName: "Pendleton Bay",
@@ -1473,7 +1473,7 @@ const campgrounds = [
     campgroundName: "Pilot Bay backcountry",
     items: [{ featureName: "All sites", featureId: "163_334" }],
     orcs: 163,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "163-1",
   },
   {
     campgroundName: "Pinkut Creek",
@@ -1485,7 +1485,7 @@ const campgrounds = [
     campgroundName: "Pirates Cove backcountry",
     items: [{ featureName: "All sites", featureId: "198_335" }],
     orcs: 198,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "198-1",
   },
   {
     campgroundName: "Plumper Cove marine-accessible camping",
@@ -1527,13 +1527,13 @@ const campgrounds = [
     campgroundName: "Porpoise Bay groupsite",
     items: [{ featureName: "All sites", featureId: "221_173" }],
     orcs: 221,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "221-2",
   },
   {
     campgroundName: "Porteau Cove Campground vehicle accessible sites",
     items: [{ featureName: "All sites", featureId: "314_914" }],
     orcs: 314,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "314-1",
   },
   {
     campgroundName: "Porteau Cove walk-in sites",
@@ -1587,7 +1587,7 @@ const campgrounds = [
     campgroundName: "Raft Cove backcountry",
     items: [{ featureName: "All sites", featureId: "377_354" }],
     orcs: 377,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "377-1",
   },
   {
     campgroundName: "Ralph River Campground",
@@ -1605,7 +1605,7 @@ const campgrounds = [
     campgroundName: "Rathtrevor Beach groupsites",
     items: [{ featureName: "All sites", featureId: "193_182" }],
     orcs: 193,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "193-2",
   },
   {
     campgroundName: "Rathtrevor Beach walk-in sites",
@@ -1659,7 +1659,7 @@ const campgrounds = [
     campgroundName: "Robson Meadows groupsite",
     items: [{ featureName: "All sites", featureId: "2_366" }],
     orcs: 2,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "2-4",
   },
   {
     campgroundName: "Rolley Lake Campground",
@@ -1671,7 +1671,7 @@ const campgrounds = [
     campgroundName: "Roscoe Bay",
     items: [{ featureName: "All sites", featureId: "373_372" }],
     orcs: 373,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "373-1",
   },
   {
     campgroundName: "Rosebery Campground",
@@ -1689,7 +1689,7 @@ const campgrounds = [
     campgroundName: "Ross Lake groupsite",
     items: [{ featureName: "All sites", featureId: "261_375" }],
     orcs: 261,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "261-1",
   },
   {
     campgroundName: "Ruckle Campground RV sites",
@@ -1701,13 +1701,13 @@ const campgrounds = [
     campgroundName: "Ruckle Campground walk-in sites",
     items: [{ featureName: "All sites", featureId: "267_376" }],
     orcs: 267,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "267-1",
   },
   {
     campgroundName: "Ruckle groupsites",
     items: [{ featureName: "All sites", featureId: "267_183" }],
     orcs: 267,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "267-2",
   },
   {
     campgroundName: "Russet Lake Campground",
@@ -1749,7 +1749,7 @@ const campgrounds = [
     campgroundName: "Shuswap Lake groupsite",
     items: [{ featureName: "All sites", featureId: "89_174" }],
     orcs: 89,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "89-1",
   },
   {
     campgroundName: "Silver Beach Campground",
@@ -1869,7 +1869,7 @@ const campgrounds = [
     campgroundName: "Stoltz Pool groupsite",
     items: [{ featureName: "All sites", featureId: "6161_431" }],
     orcs: 6161,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "6161-2",
   },
   {
     campgroundName: "Strawberry Flats Campground",
@@ -1881,13 +1881,13 @@ const campgrounds = [
     campgroundName: "Sturgeon Point groupsite",
     items: [{ featureName: "All sites", featureId: "202_436" }],
     orcs: 202,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "202-3",
   },
   {
     campgroundName: "Summit Lake Campground",
     items: [{ featureName: "All sites", featureId: "156_438" }],
     orcs: 156,
-    orcsAreaNumber: "94-1",
+    orcsAreaNumber: "156-1",
   },
   {
     campgroundName: "Summit Lake Campground",
@@ -1899,13 +1899,13 @@ const campgrounds = [
     campgroundName: "Sunset View Campground sites 1-54",
     items: [{ featureName: "All sites", featureId: "273_439" }],
     orcs: 273,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "273-3",
   },
   {
     campgroundName: "Sunset View groupsite",
     items: [{ featureName: "All sites", featureId: "273_441" }],
     orcs: 273,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "273-4",
   },
   {
     campgroundName: "Sunset View walk-in sites",
@@ -1935,7 +1935,7 @@ const campgrounds = [
     campgroundName: "Taylor Arm groupsites G1-G3",
     items: [{ featureName: "All sites", featureId: "296_184" }],
     orcs: 296,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "296-1",
   },
   {
     campgroundName: "Taylor Creek Loop sites 85-114",
@@ -1959,7 +1959,7 @@ const campgrounds = [
     campgroundName: "Top of the World backcountry",
     items: [{ featureName: "All sites", featureId: "247_452" }],
     orcs: 247,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "247-1",
   },
   {
     campgroundName: "Touring Campground",
@@ -1977,7 +1977,7 @@ const campgrounds = [
     campgroundName: "Trophy Mountain backcountry",
     items: [{ featureName: "All sites", featureId: "24_456" }],
     orcs: 24,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "24-5",
   },
   {
     campgroundName: "Ts'il?os backcountry",
@@ -2001,7 +2001,7 @@ const campgrounds = [
     campgroundName: "Tweedsmuir backcountry",
     items: [{ featureName: "All sites", featureId: "19_460" }],
     orcs: 19,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "19-3",
   },
   {
     campgroundName: "Tyhee Lake Campground",
@@ -2013,7 +2013,7 @@ const campgrounds = [
     campgroundName: "Tyhee Lake groupsite",
     items: [{ featureName: "All sites", featureId: "84_175" }],
     orcs: 84,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "84-1",
   },
   {
     campgroundName: "Vaseux Lake Campground",
@@ -2031,7 +2031,7 @@ const campgrounds = [
     campgroundName: "Wallace Island backcountry",
     items: [{ featureName: "All sites", featureId: "382_477" }],
     orcs: 382,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "382-1",
   },
   {
     campgroundName: "War Lake Campground",
@@ -2049,7 +2049,7 @@ const campgrounds = [
     campgroundName: "Wedgemount Lake Campground",
     items: [{ featureName: "All sites", featureId: "7_482" }],
     orcs: 7,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "7-11",
   },
   {
     campgroundName: "West Curme Island",
@@ -2091,7 +2091,7 @@ const campgrounds = [
     campgroundName: "Wilderness Camping Area",
     items: [{ featureName: "All sites", featureId: "7_492" }],
     orcs: 7,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "7-4",
   },
   {
     campgroundName: "Woodbury Cabin",
@@ -2115,7 +2115,7 @@ const campgrounds = [
     campgroundName: "sx\u030c\u02b7\u0259x\u030c\u02b7nitk\u02b7 Campground",
     items: [{ featureName: "All sites", featureId: "73_446" }],
     orcs: 73,
-    orcsAreaNumber: null,
+    orcsAreaNumber: "73-1",
   },
 ];
 
