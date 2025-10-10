@@ -4,7 +4,7 @@
 export const dateTypesData = [
   {
     name: "Backcountry registration",
-    strapiId: 8,
+    strapiDateTypeId: 8,
     startDateLabel: "Backcountry registration start date",
     endDateLabel: "Backcountry registration end date",
     description:
@@ -13,7 +13,7 @@ export const dateTypesData = [
   },
   {
     name: "First come, first served",
-    strapiId: 9,
+    strapiDateTypeId: 9,
     startDateLabel: "First come first served start date",
     endDateLabel: "First come first served end date",
     description: "Dates when the campground is FCFS only.",
@@ -21,7 +21,7 @@ export const dateTypesData = [
   },
   {
     name: "Full services and fees",
-    strapiId: 10,
+    strapiDateTypeId: 10,
     startDateLabel: "Full services and fees start date",
     endDateLabel: "Full services and fees end date",
     description: "The PO is operating and charging regular fees.",
@@ -29,7 +29,7 @@ export const dateTypesData = [
   },
   {
     name: "Operating",
-    strapiId: 1,
+    strapiDateTypeId: 1,
     startDateLabel: "Operating start date",
     endDateLabel: "Operating end date",
     description:
@@ -38,7 +38,7 @@ export const dateTypesData = [
   },
   {
     name: "Operation",
-    strapiId: 6,
+    strapiDateTypeId: 6,
     startDateLabel: "Service Start Date",
     endDateLabel: "Service End Date",
     description:
@@ -47,7 +47,7 @@ export const dateTypesData = [
   },
   {
     name: "Reservation",
-    strapiId: 7,
+    strapiDateTypeId: 7,
     startDateLabel: "Reservation Start Date",
     endDateLabel: "Reservation End Date",
     description: "Enter dates when reservations are available.",
@@ -55,7 +55,7 @@ export const dateTypesData = [
   },
   {
     name: "Tier 1",
-    strapiId: 2,
+    strapiDateTypeId: 2,
     startDateLabel: "Tier 1 start date",
     endDateLabel: "Tier 1 end date",
     description: "Enter dates when this park accepts same-day reservations.",
@@ -63,7 +63,7 @@ export const dateTypesData = [
   },
   {
     name: "Tier 2",
-    strapiId: 3,
+    strapiDateTypeId: 3,
     startDateLabel: "Tier 2 start date",
     endDateLabel: "Tier 2 end date",
     description:
@@ -72,7 +72,7 @@ export const dateTypesData = [
   },
   {
     name: "Winter fee",
-    strapiId: 4,
+    strapiDateTypeId: 4,
     startDateLabel: "Winter fee start date",
     endDateLabel: "Winter fee end date",
     description:
@@ -82,7 +82,7 @@ export const dateTypesData = [
   // TODO: may not be needed but it has been used in the first release
   {
     name: "Winter fee",
-    strapiId: 4,
+    strapiDateTypeId: 4,
     startDateLabel: "Winter start date",
     endDateLabel: "Winter end date",
     description: "Reduced services and reduced legislated winter fees.",

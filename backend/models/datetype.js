@@ -45,7 +45,7 @@ export default (sequelize) => {
 
       // Stable ID for lookups and publishing
       // Links to the dateTypeId field in Strapi
-      strapiId: {
+      strapiDateTypeId: {
         type: DataTypes.INTEGER,
         allowNull: true,
       },

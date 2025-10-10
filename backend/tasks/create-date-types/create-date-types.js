@@ -22,7 +22,7 @@ export async function createDateTypes(transaction = null) {
         startDateLabel,
         endDateLabel,
         description,
-        strapiId,
+        strapiDateTypeId,
       } = entry;
       const parkLevel = level?.includes("park") || false;
       const featureLevel = level?.includes("feature") || false;
@@ -45,7 +45,7 @@ export async function createDateTypes(transaction = null) {
             parkLevel,
             featureLevel,
             parkAreaLevel,
-            strapiId,
+            strapiDateTypeId,
           },
           { transaction: localTransaction },
         );
@@ -56,7 +56,7 @@ export async function createDateTypes(transaction = null) {
         dateType.parkLevel = parkLevel;
         dateType.featureLevel = featureLevel;
         dateType.parkAreaLevel = parkAreaLevel;
-        dateType.strapiId = strapiId;
+        dateType.strapiDateTypeId = strapiDateTypeId;
         await dateType.save({ transaction: localTransaction });
       }
 

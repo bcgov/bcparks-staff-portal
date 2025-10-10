@@ -33,7 +33,7 @@ node tasks/create-date-types/create-date-types.js
       startDateLabel: "Start",
       endDateLabel: "End",
       description: "Winter fee period",
-      strapiId: 123,
+      strapiDateTypeId: 123,
     },
     // ... more entries ...
   ];

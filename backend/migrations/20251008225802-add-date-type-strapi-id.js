@@ -2,15 +2,15 @@
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    // Add strapiId field to DateTypes
-    await queryInterface.addColumn("DateTypes", "strapiId", {
+    // Add strapiDateTypeId field to DateTypes
+    await queryInterface.addColumn("DateTypes", "strapiDateTypeId", {
       type: Sequelize.INTEGER,
       allowNull: true,
     });
   },
 
   async down(queryInterface, Sequelize) {
-    // Remove strapiId field from DateTypes
-    await queryInterface.removeColumn("DateTypes", "strapiId");
+    // Remove strapiDateTypeId field from DateTypes
+    await queryInterface.removeColumn("DateTypes", "strapiDateTypeId");
   },
 };
