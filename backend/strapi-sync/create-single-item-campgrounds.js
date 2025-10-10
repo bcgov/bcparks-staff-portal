@@ -2134,11 +2134,12 @@ async function createCampground(item) {
     console.error(
       `Feature not found for featureId: ${item.items[0].featureId}`,
     );
-  } else {
-    feature.parkAreaId = campground.id;
-    feature.name = "All sites";
-    await feature.save();
+    return;
   }
+
+  feature.parkAreaId = campground.id;
+  feature.name = "All sites";
+  await feature.save();
 }
 
 export async function createSingleItemsCampgrounds() {
