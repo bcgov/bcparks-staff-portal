@@ -47,7 +47,7 @@ export default (sequelize) => {
         defaultValue: false,
       },
 
-      orcsAreaNumber: {
+      strapiOrcsAreaNumber: {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null,

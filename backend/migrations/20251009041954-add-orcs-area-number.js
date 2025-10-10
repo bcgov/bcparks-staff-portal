@@ -1,7 +1,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
-    await queryInterface.addColumn("ParkAreas", "orcsAreaNumber", {
+    await queryInterface.addColumn("ParkAreas", "strapiOrcsAreaNumber", {
       type: Sequelize.STRING,
       allowNull: true,
       unique: true,
@@ -9,6 +9,6 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("ParkAreas", "orcsAreaNumber");
+    await queryInterface.removeColumn("ParkAreas", "strapiOrcsAreaNumber");
   },
 };
