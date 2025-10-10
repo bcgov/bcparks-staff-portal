@@ -19,6 +19,7 @@ const campgrounds = [
       },
     ],
     orcs: 90,
+    strapiOrcsAreaNumber: "90-1",
   },
   {
     campgroundName: "Alice Lake Groupsites",
@@ -35,6 +36,7 @@ const campgrounds = [
       },
     ],
     orcs: 90,
+    strapiOrcsAreaNumber: "90-2",
   },
   {
     campgroundName: "Berg Lake Trail",
@@ -51,6 +53,7 @@ const campgrounds = [
       },
     ],
     orcs: 2,
+    strapiOrcsAreaNumber: "2-1",
   },
   {
     campgroundName: "Big Bar Lake Campground",
@@ -67,6 +70,7 @@ const campgrounds = [
       },
     ],
     orcs: 213,
+    strapiOrcsAreaNumber: null,
   },
   {
     campgroundName: "Bighorn Campground",
@@ -83,6 +87,7 @@ const campgrounds = [
       },
     ],
     orcs: 202,
+    strapiOrcsAreaNumber: "202-1",
   },
   {
     campgroundName: "Birkenhead Campground",
@@ -99,6 +104,7 @@ const campgrounds = [
       },
     ],
     orcs: 152,
+    strapiOrcsAreaNumber: "152-1",
   },
   {
     campgroundName: "Cathedral backcountry",
@@ -115,6 +121,7 @@ const campgrounds = [
       },
     ],
     orcs: 199,
+    strapiOrcsAreaNumber: "199-2",
   },
   {
     campgroundName: "Furlong Bay Campground",
@@ -131,6 +138,7 @@ const campgrounds = [
       },
     ],
     orcs: 70,
+    strapiOrcsAreaNumber: "70-1",
   },
   {
     campgroundName: "Honeymoon Bay Groupsites",
@@ -147,6 +155,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
+    strapiOrcsAreaNumber: "41-4",
   },
   {
     campgroundName: "Kettle River Campground",
@@ -163,6 +172,7 @@ const campgrounds = [
       },
     ],
     orcs: 236,
+    strapiOrcsAreaNumber: "236-1",
   },
   {
     campgroundName: "Lightning Lake Campground",
@@ -179,6 +189,7 @@ const campgrounds = [
       },
     ],
     orcs: 33,
+    strapiOrcsAreaNumber: "33-5",
   },
   {
     campgroundName: "Little Qualicum Falls Campground",
@@ -195,6 +206,7 @@ const campgrounds = [
       },
     ],
     orcs: 30,
+    strapiOrcsAreaNumber: "30-1",
   },
   {
     campgroundName: "Lone Duck Groupsites",
@@ -211,6 +223,7 @@ const campgrounds = [
       },
     ],
     orcs: 33,
+    strapiOrcsAreaNumber: "33-6",
   },
   {
     campgroundName: "Maple Bay Campground",
@@ -227,6 +240,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
+    strapiOrcsAreaNumber: "41-5",
   },
   {
     campgroundName: "Miracle Beach Campground",
@@ -253,6 +267,7 @@ const campgrounds = [
       },
     ],
     orcs: 45,
+    strapiOrcsAreaNumber: "45-2",
   },
   {
     campgroundName: "Okanagan Lake Campground",
@@ -269,6 +284,7 @@ const campgrounds = [
       },
     ],
     orcs: 54,
+    strapiOrcsAreaNumber: null,
   },
   {
     campgroundName: "Porpoise Bay Campground",
@@ -285,6 +301,7 @@ const campgrounds = [
       },
     ],
     orcs: 221,
+    strapiOrcsAreaNumber: "221-1",
   },
   {
     campgroundName: "Quinsam Campground",
@@ -306,6 +323,7 @@ const campgrounds = [
       },
     ],
     orcs: 28,
+    strapiOrcsAreaNumber: "28-1",
   },
   {
     campgroundName: "Rathtrevor Beach Campground",
@@ -322,6 +340,7 @@ const campgrounds = [
       },
     ],
     orcs: 193,
+    strapiOrcsAreaNumber: "193-1",
   },
   {
     campgroundName: "Robson River Campground",
@@ -338,6 +357,7 @@ const campgrounds = [
       },
     ],
     orcs: 2,
+    strapiOrcsAreaNumber: "2-5",
   },
   {
     campgroundName: "Roche Lake Campground",
@@ -354,6 +374,7 @@ const campgrounds = [
       },
     ],
     orcs: 6892,
+    strapiOrcsAreaNumber: null,
   },
   {
     campgroundName: "Sandspit Campground",
@@ -370,6 +391,7 @@ const campgrounds = [
       },
     ],
     orcs: 52,
+    strapiOrcsAreaNumber: "52-7",
   },
   {
     campgroundName: "Shuswap Lake Campground",
@@ -391,6 +413,7 @@ const campgrounds = [
       },
     ],
     orcs: 89,
+    strapiOrcsAreaNumber: "89-2",
   },
   {
     campgroundName: "Sproat Lake Campground",
@@ -407,6 +430,7 @@ const campgrounds = [
       },
     ],
     orcs: 182,
+    strapiOrcsAreaNumber: "182-1",
   },
   {
     campgroundName: "s\u1e83i\u1e83s Campground",
@@ -423,6 +447,7 @@ const campgrounds = [
       },
     ],
     orcs: 142,
+    strapiOrcsAreaNumber: "142-1",
   },
   {
     campgroundName: "Texas Creek Campground",
@@ -439,6 +464,7 @@ const campgrounds = [
       },
     ],
     orcs: 9549,
+    strapiOrcsAreaNumber: "9549-1",
   },
   {
     campgroundName: "West Side Groupsites",
@@ -455,6 +481,7 @@ const campgrounds = [
       },
     ],
     orcs: 41,
+    strapiOrcsAreaNumber: "41-6",
   },
   {
     campgroundName: "White Spruce Island",
@@ -471,6 +498,7 @@ const campgrounds = [
       },
     ],
     orcs: 251,
+    strapiOrcsAreaNumber: null,
   },
 ];
 
@@ -489,6 +517,10 @@ async function updateFeature(item, parkAreaId) {
 
 async function createCampground(item) {
   const campground = await findOrCreateParkArea(item);
+
+  // Update with additional details
+  campground.strapiOrcsAreaNumber = item.strapiOrcsAreaNumber;
+  await campground.save();
 
   await Promise.all(
     item.items.map(async (feature) => updateFeature(feature, campground.id)),
