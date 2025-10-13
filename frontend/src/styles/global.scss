@@ -10,6 +10,8 @@
 @use "datepicker";
 // React-select component custom styles
 @use "reactselect";
+// Tooltip component custom styles
+@use "tooltip";
 
 // Break inside words on when nevessary on top-level headings
 h1 {
@@ -242,25 +244,5 @@ table {
       border-bottom: var(--layout-border-width-small) solid
         var(--surface-color-border-default);
     }
-  }
-}
-
-// custom tooltip styles
-.tooltip {
-  opacity: 1 !important;
-  .tooltip-inner {
-    background-color: var(--theme-primary-blue);
-  }
-  &.bs-tooltip-top .tooltip-arrow::before {
-    border-top-color: var(--theme-primary-blue);
-  }
-  &.bs-tooltip-bottom .tooltip-arrow::before {
-    border-bottom-color: var(--theme-primary-blue);
-  }
-  &.bs-tooltip-start .tooltip-arrow::before {
-    border-left-color: var(--theme-primary-blue);
-  }
-  &.bs-tooltip-end .tooltip-arrow::before {
-    border-right-color: var(--theme-primary-blue);
   }
 }

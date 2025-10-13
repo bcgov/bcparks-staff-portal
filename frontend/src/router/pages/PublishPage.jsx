@@ -5,7 +5,6 @@ import { useApiGet, useApiPost } from "@/hooks/useApi";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
-import TooltipWrapper from "@/components/TooltipWrapper";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import "./PublishPage.scss";
 
