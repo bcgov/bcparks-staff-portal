@@ -4,24 +4,25 @@ This directory contains scripts for importing data from Strapi CMS into the DOOT
 
 ## import-park-areas.js
 
-Imports and updates `ParkArea` records from Strapi's `park-area` collection by matching the `orcsAreaNumber` with existing park areas in the DOOT database.
+Imports and updates `ParkArea` records from Strapi's `park-area` collection by matching the `orcsAreaNumber` with existing park areas in the DOOT database, and sets the `parkId` relation by matching Strapi `protectedArea.orcs` to DOOT `park.orcs`.
 
 **The script:**
 
-- Fetches park area data from Strapi using existing sync utilities
-- Matches existing park areas by comparing the `orcsAreaNumber` from Strapi with the `strapiOrcsAreaNumber` field in DOOT park areas
-- Creates or updates park area records with name, active status, and reservation system flags
+- Fetches park area data from Strapi using sync utilities
+- Matches existing DOOT park areas by comparing Strapi `orcsAreaNumber` with DOOT `strapiOrcsAreaNumber`
+- Sets the `parkId` field in DOOT ParkArea by matching Strapi `protectedArea.orcs` to DOOT `park.orcs`
+- Creates or updates park area records with name, active status, reservation system flags, and park relation
 - Uses efficient Map-based lookup for fast matching between systems
 
 **Data mapping:**
 
-| Strapi Field            | DOOT Field             | Notes                                    |
-| ----------------------- | ---------------------- | ---------------------------------------- |
-| `parkAreaName`          | `name`                 | Park area name                           |
-| `isActive`              | `active`               | Defaults to `true` if not provided       |
-| `inReservationSystem`   | `inReservationSystem`  | Defaults to `false` if not provided      |
-| `orcsAreaNumber`        | `strapiOrcsAreaNumber` | Used for matching existing records       |
-| `protectedArea.data.id` | `parkId`               | Park relationship ID from protected area |
+| Strapi Field          | DOOT Field             | Notes                               |
+| --------------------- | ---------------------- | ----------------------------------- |
+| `parkAreaName`        | `name`                 | Park area name                      |
+| `isActive`            | `active`               | Defaults to `true` if not provided  |
+| `inReservationSystem` | `inReservationSystem`  | Defaults to `false` if not provided |
+| `orcsAreaNumber`      | `strapiOrcsAreaNumber` | Used for matching existing records  |
+| `protectedArea.orcs`  | `parkId`               | DOOT Park ID, matched by ORCS value |
 
 ## Transaction Safety
 
@@ -36,10 +37,11 @@ node tasks/import-park-areas/import-park-areas.js
 
 ## Output
 
-The script logs progress and provides summary counts of created, updated, and skipped records. Park areas without valid `orcsAreaNumber` values are skipped with warnings. The script shows:
+The script logs progress and provides summary counts of created, updated, and skipped records. Park areas without valid `orcsAreaNumber` values or without a matching DOOT Park for `parkId` are skipped with warnings. The script shows:
 
 - Number of park areas found in Strapi
 - Existing `strapiOrcsAreaNumber` values in DOOT for debugging
+- Existing DOOT Park ORCS values for parkId matching
 - Per-record lookup results and processing status
 - Final summary with counts of created, updated, and skipped records
 
@@ -56,4 +58,5 @@ The script logs progress and provides summary counts of created, updated, and sk
 - Uses efficient Map-based lookup to avoid multiple database queries per record
 - Only processes park areas with valid `orcsAreaNumber` values from Strapi
 - Converts integer `orcsAreaNumber` to string for consistent database field matching
+- Only sets `parkId` if a matching DOOT Park exists for the Strapi `protectedArea.orcs` value
 - Environment variables for Strapi API access must be configured

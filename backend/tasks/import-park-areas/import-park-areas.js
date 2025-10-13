@@ -64,10 +64,11 @@ export default async function importParkAreasFromStrapi(transaction = null) {
 
       // Get the parkId from the related protectedArea
       let parkId = null;
-      const protectedAreaOrcs = String(protectedArea?.data?.attributes.orcs);
+      const protectedAreaOrcs = protectedArea?.data?.attributes.orcs ?? null;
+      const protectedAreaOrcsString = String(protectedAreaOrcs);
 
-      if (protectedAreaOrcs) {
-        const matchedPark = parkLookup.get(protectedAreaOrcs) ?? null;
+      if (protectedAreaOrcsString) {
+        const matchedPark = parkLookup.get(protectedAreaOrcsString) ?? null;
 
         parkId = matchedPark?.id ?? null;
       }
