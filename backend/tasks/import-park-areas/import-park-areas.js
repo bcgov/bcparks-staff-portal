@@ -1,6 +1,6 @@
 import "../../env.js";
 
-import { ParkArea } from "../../models/index.js";
+import { Park, ParkArea } from "../../models/index.js";
 import { fetchAllModels } from "../../strapi-sync/sync.js";
 import { getStrapiModelData } from "../../strapi-sync/utils.js";
 
@@ -11,8 +11,6 @@ import { getStrapiModelData } from "../../strapi-sync/utils.js";
  */
 export default async function importParkAreasFromStrapi(transaction = null) {
   try {
-    console.log("Fetching park-area data from Strapi...");
-
     // Fetch all models from Strapi
     const strapiData = await fetchAllModels();
 
@@ -27,27 +25,35 @@ export default async function importParkAreasFromStrapi(transaction = null) {
 
     console.log(`Found ${strapiParkAreas.length} park areas in Strapi`);
 
-    // Get all ParkAreas from DOOT to match against strapiOrcsAreaNumber
-    const dootParkAreas = await ParkArea.findAll({
-      attributes: ["id", "strapiOrcsAreaNumber"],
-      transaction,
-    });
-
-    const parkAreasByOrcsAreaNumber = new Map(
-      dootParkAreas.map((parkArea) => [
-        parkArea.id,
-        parkArea.strapiOrcsAreaNumber,
-      ]),
+    // Get all DOOT ParkAreas for strapiOrcsAreaNumber
+    const dootParkAreas = await ParkArea.findAll({ transaction });
+    const parkAreaLookup = new Map(
+      dootParkAreas
+        .filter((parkArea) => parkArea.strapiOrcsAreaNumber)
+        .map((parkArea) => [
+          parkArea.strapiOrcsAreaNumber, // Key: e.g. "1234-1"
+          parkArea, // Value: ParkArea record
+        ]),
     );
 
-    console.log("parkAreasByOrcsAreaNumber", parkAreasByOrcsAreaNumber)
+    console.log(`Found ${dootParkAreas.length} existing park areas in DOOT`);
+
+    // Get all DOOT Parks for orcs lookup
+    const dootParks = await Park.findAll({ transaction });
+    const parkLookup = new Map(
+      dootParks
+        .filter((park) => park.orcs)
+        .map((park) => [
+          park.orcs, // Key: e.g. "1234"
+          park, // Value: park
+        ]),
+    );
 
     let createdCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
 
     for (const strapiParkArea of strapiParkAreas) {
-
       const {
         orcsAreaNumber,
         parkAreaName,
@@ -57,24 +63,14 @@ export default async function importParkAreasFromStrapi(transaction = null) {
       } = strapiParkArea.attributes;
 
       // Get the parkId from the related protectedArea
-      const parkId = protectedArea?.data?.id;
+      let parkId = null;
+      const protectedAreaOrcs = String(protectedArea?.data?.attributes.orcs);
 
+      if (protectedAreaOrcs) {
+        const matchedPark = parkLookup.get(protectedAreaOrcs) ?? null;
 
-      // console.log("=== EXTRACTED CONSTANTS ===");
-      // console.log("orcsAreaNumber:", orcsAreaNumber);
-      // console.log("parkAreaName:", parkAreaName);
-      // console.log("isActive:", isActive);
-      // console.log("inReservationSystem:", inReservationSystem);
-      // // console.log("protectedArea:", protectedArea)
-
-      // console.log("=== DERIVED VALUES ===");
-      // console.log("parkId from protectedArea?.data?.id:", parkId);
-
-      // console.log("=== DOOT MAPPING DATA ===");
-      // console.log("parkAreasByOrcsAreaNumber Map keys:", Array.from(parkAreasByOrcsAreaNumber.keys()));
-      // console.log("matchingOrcsAreaNumber for", orcsAreaNumber, ":", parkAreasByOrcsAreaNumber.get(orcsAreaNumber));
-
-      // console.log("========================\n");
+        parkId = matchedPark?.id ?? null;
+      }
 
       if (!orcsAreaNumber) {
         console.warn(
@@ -84,44 +80,30 @@ export default async function importParkAreasFromStrapi(transaction = null) {
         continue;
       }
 
-      // Find matching ParkArea in DOOT by orcsAreaNumber
-      const matchingOrcsAreaNumber =
-        parkAreasByOrcsAreaNumber.get(orcsAreaNumber);
-
-      if (!matchingOrcsAreaNumber) {
-        console.warn(
-          `Skipping park area "${parkAreaName}" - no matching park found for orcsAreaNumber ${orcsAreaNumber}`,
-        );
-        skippedCount++;
-        continue;
-      }
-
-      // Check if park area already exists in DOOT
-      const existingParkArea = await ParkArea.findOne({
-        where: {
-          name: parkAreaName,
-          strapiOrcsAreaNumber: matchingOrcsAreaNumber,
-        },
-        transaction,
-      });
+      // Find matched ParkArea by strapiOrcsAreaNumber
+      const matchedParkArea = parkAreaLookup.get(orcsAreaNumber);
 
       const parkAreaToSave = {
         name: parkAreaName,
-        strapiOrcsAreaNumber: matchingOrcsAreaNumber,
+        strapiOrcsAreaNumber: orcsAreaNumber,
         active: isActive ?? true,
         inReservationSystem: inReservationSystem ?? false,
-        parkId: parkId ?? null,
+        parkId,
       };
 
-      if (existingParkArea) {
-        // Update existing park area
-        await existingParkArea.update(parkAreaToSave, { transaction });
-        console.log(`Updated park area: ${parkAreaName} (orcsAreaNumber: ${matchingOrcsAreaNumber})`);
+      if (matchedParkArea) {
+        // Update matched park area
+        await matchedParkArea.update(parkAreaToSave, { transaction });
+        console.log(
+          `Updated park area: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+        );
         updatedCount++;
       } else {
         // Create new park area
         await ParkArea.create(parkAreaToSave, { transaction });
-        console.log(`Created park area: ${parkAreaName} (orcsAreaNumber: ${matchingOrcsAreaNumber})`);
+        console.log(
+          `Created park area: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+        );
         createdCount++;
       }
     }
