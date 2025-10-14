@@ -1,18 +1,17 @@
 .tooltip {
-  opacity: 1 !important;
   .tooltip-inner {
-    background-color: var(--theme-primary-blue);
+    background-color: #1a1a1a;
   }
   &.bs-tooltip-top .tooltip-arrow::before {
-    border-top-color: var(--theme-primary-blue);
+    border-top-color: #1a1a1a;
   }
   &.bs-tooltip-bottom .tooltip-arrow::before {
-    border-bottom-color: var(--theme-primary-blue);
+    border-bottom-color: #1a1a1a;
   }
   &.bs-tooltip-start .tooltip-arrow::before {
-    border-left-color: var(--theme-primary-blue);
+    border-left-color: #1a1a1a;
   }
   &.bs-tooltip-end .tooltip-arrow::before {
-    border-right-color: var(--theme-primary-blue);
+    border-right-color: #1a1a1a;
   }
 }
