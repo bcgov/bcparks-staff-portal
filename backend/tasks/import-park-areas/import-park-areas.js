@@ -1,5 +1,6 @@
 import "../../env.js";
 
+import { Op } from "sequelize";
 import { Park, ParkArea } from "../../models/index.js";
 import { fetchAllModels } from "../../strapi-sync/sync.js";
 import { getStrapiModelData } from "../../strapi-sync/utils.js";
@@ -20,33 +21,35 @@ export default async function importParkAreasFromStrapi(transaction = null) {
 
     if (strapiParkAreas.length === 0) {
       console.log("No park-area data found in Strapi");
-      return { created: 0, updated: 0 };
+      return { created: 0, skipped: 0, updated: 0 };
     }
 
     console.log(`Found ${strapiParkAreas.length} park areas in Strapi`);
 
-    // Get all DOOT ParkAreas for strapiOrcsAreaNumber
-    const dootParkAreas = await ParkArea.findAll({ transaction });
+    // Get all DOOT ParkAreas for strapiOrcsAreaNumber lookup
+    const dootParkAreas = await ParkArea.findAll({
+      where: { strapiOrcsAreaNumber: { [Op.ne]: null } },
+      transaction,
+    });
     const parkAreaLookup = new Map(
-      dootParkAreas
-        .filter((parkArea) => parkArea.strapiOrcsAreaNumber)
-        .map((parkArea) => [
-          parkArea.strapiOrcsAreaNumber, // Key: e.g. "1234-1"
-          parkArea, // Value: ParkArea record
-        ]),
+      dootParkAreas.map((parkArea) => [
+        parkArea.strapiOrcsAreaNumber, // Key: e.g. "1234-1"
+        parkArea, // Value: ParkArea record
+      ]),
     );
 
     console.log(`Found ${dootParkAreas.length} existing park areas in DOOT`);
 
     // Get all DOOT Parks for orcs lookup
-    const dootParks = await Park.findAll({ transaction });
+    const dootParks = await Park.findAll({
+      where: { orcs: { [Op.ne]: null } },
+      transaction,
+    });
     const parkLookup = new Map(
-      dootParks
-        .filter((park) => park.orcs)
-        .map((park) => [
-          park.orcs, // Key: e.g. "1234"
-          park, // Value: park
-        ]),
+      dootParks.map((park) => [
+        park.orcs, // Key: e.g. "1234"
+        park, // Value: park
+      ]),
     );
 
     let createdCount = 0;
@@ -64,10 +67,10 @@ export default async function importParkAreasFromStrapi(transaction = null) {
 
       // Get the parkId from the related protectedArea
       let parkId = null;
-      const protectedAreaOrcs = protectedArea?.data?.attributes.orcs ?? null;
-      const protectedAreaOrcsString = String(protectedAreaOrcs);
+      const protectedAreaOrcs = protectedArea?.data?.attributes.orcs;
 
-      if (protectedAreaOrcsString) {
+      if (protectedAreaOrcs !== null) {
+        const protectedAreaOrcsString = String(protectedAreaOrcs);
         const matchedPark = parkLookup.get(protectedAreaOrcsString) ?? null;
 
         parkId = matchedPark?.id ?? null;
