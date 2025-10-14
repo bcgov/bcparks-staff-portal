@@ -6,7 +6,6 @@ import { faPen } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
-import TooltipWrapper from "@/components/TooltipWrapper";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
@@ -64,12 +63,7 @@ function DateRangesList({ dateRanges, isLastYear }) {
       {dateRanges.map((dateRange) => (
         <li key={dateRange.id}>
           {formatDateRange(dateRange)}
-          <TooltipWrapper
-            placement="top"
-            content="Dates not ready to be made public"
-          >
-            <NotReadyFlag show={!dateRange.readyToPublish} />
-          </TooltipWrapper>
+          <NotReadyFlag show={!dateRange.readyToPublish} />
         </li>
       ))}
     </ul>
