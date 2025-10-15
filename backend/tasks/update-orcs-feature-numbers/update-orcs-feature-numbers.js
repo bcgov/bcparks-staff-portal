@@ -33,6 +33,8 @@ export default async function updateOrcsFeatureNumbers(transaction = null) {
     // Fetch all Feature records in the DOOT db
     const dootFeatures = await Feature.findAll({
       attributes: ["id", "strapiFeatureId", "strapiOrcsFeatureNumber"],
+
+      transaction,
     });
 
     for (const feature of dootFeatures) {
@@ -47,7 +49,7 @@ export default async function updateOrcsFeatureNumbers(transaction = null) {
 
       // Update and save the feature record
       feature.strapiOrcsFeatureNumber = orcsFeatureNumber;
-      await feature.save();
+      await feature.save({ transaction });
 
       updateCount += 1;
     }
