@@ -57,10 +57,18 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+
       hasBackcountryPermits: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,
+      },
+
+      strapiOrcsFeatureNumber: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+        unique: true,
       },
     },
     {
