@@ -51,8 +51,16 @@ strapiApi.interceptors.response.use(
   },
 );
 
-// @TODO: jsdoc
-export async function getAllPages(endpoint, params = {}) {
+/**
+ * Fetches all pages of paginated data from a Strapi API endpoint.
+ * Sends multiple GET requests as needed to retrieve all records.
+ * Waits for a delay between requests to avoid rate limiting. (Default: 1 second)
+ * @param {string} endpoint The Strapi API endpoint to fetch data from
+ * @param {Object} params Query parameters to include in the request
+ * @param {number} delay The delay between requests in milliseconds
+ * @returns {Promise<Array>} - A promise that resolves to an array of all fetched data.
+ */
+export async function getAllPages(endpoint, params = {}, delay = 1000) {
   let allData = [];
   let currentPage = 1;
   let hasMore = true;
@@ -79,6 +87,12 @@ export async function getAllPages(endpoint, params = {}) {
       currentPage++;
 
       console.log(`Fetched page ${page}/${pageCount} from ${endpoint}`);
+
+      // Wait for the specified delay before the next request
+      // to prevent overloading the API server
+      if (hasMore && delay > 0) {
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
     } catch (error) {
       console.error(
         `Error fetching page ${currentPage} from ${endpoint}:`,
