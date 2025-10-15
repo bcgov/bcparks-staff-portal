@@ -100,6 +100,12 @@ export async function fetchAllModels() {
       items: [],
     },
     {
+      endpoint: "/park-areas",
+      model: "park-area",
+      fields: [{ relation: "protectedArea", fields: ["orcs"] }],
+      items: [],
+    },
+    {
       endpoint: "/park-operation-sub-area-dates",
       model: "park-operation-sub-area-date",
       fields: [
