@@ -32,7 +32,7 @@ import {
   sanitizePayload,
 } from "../../middleware/permissions.js";
 
-import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
+// import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 // import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
 import checkUserRoles from "../../utils/checkUserRoles.js";
 
@@ -921,7 +921,8 @@ router.post(
     try {
       await updateStatus(seasonId, STATUS.APPROVED, null, transaction);
 
-      await createFirstComeFirstServedDateRange(seasonId, transaction);
+      // @TODO: Uncomment after revising the logic for FCFS
+      // await createFirstComeFirstServedDateRange(seasonId, transaction);
 
       // Copy Winter fee dates from the Park level to Features and Park Areas
       // @TODO: Uncomment after revising the logic for Winter fees
