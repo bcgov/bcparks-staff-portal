@@ -1,17 +1,17 @@
 .tooltip {
   .tooltip-inner {
-    background-color: #1a1a1a;
+    background-color: var(--typography-color-primary);
   }
   &.bs-tooltip-top .tooltip-arrow::before {
-    border-top-color: #1a1a1a;
+    border-top-color: var(--typography-color-primary);
   }
   &.bs-tooltip-bottom .tooltip-arrow::before {
-    border-bottom-color: #1a1a1a;
+    border-bottom-color: var(--typography-color-primary);
   }
   &.bs-tooltip-start .tooltip-arrow::before {
-    border-left-color: #1a1a1a;
+    border-left-color: var(--typography-color-primary);
   }
   &.bs-tooltip-end .tooltip-arrow::before {
-    border-right-color: #1a1a1a;
+    border-right-color: var(--typography-color-primary);
   }
 }
