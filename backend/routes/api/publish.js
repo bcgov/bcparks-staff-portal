@@ -4,12 +4,10 @@ import { Op } from "sequelize";
 import { format } from "date-fns";
 
 import {
-  Dateable,
   DateRange,
   DateRangeAnnual,
   DateType,
   Feature,
-  FeatureType,
   GateDetail,
   Park,
   ParkArea,
