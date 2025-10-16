@@ -182,12 +182,12 @@ function formatDate(date) {
 }
 
 /**
- * Fetches and formats Park-level data for publishing.
- * @param {Park} park The Park object for the season
+ * Fetches date ranges for an entity and season, and formats them for publishing.
+ * @param {Object} entity The entity object (e.g., Park, Feature)
  * @param {Season} season The season object
- * @returns {Object} Formatted park data for publishing
+ * @returns {Array} Array of formatted DateRange objects
  */
-async function formatParkData(park, season) {
+async function formatDateRanges(entity, season) {
   // Fetch all date ranges for this season
   const dateRangesRows = await DateRange.findAll({
     attributes: ["startDate", "endDate", "dateTypeId"],
@@ -205,10 +205,10 @@ async function formatParkData(park, season) {
     ],
   });
 
-  // Get all the DateRangeAnnual data for this season/park
+  // Get all the DateRangeAnnual data for this season/entity
   const dateRangeAnnualsRows = await DateRangeAnnual.findAll({
     where: {
-      dateableId: park.dateableId,
+      dateableId: entity.dateableId,
       publishableId: season.publishableId,
     },
   });
@@ -222,7 +222,7 @@ async function formatParkData(park, season) {
   );
 
   // Transform date ranges to API format
-  const dateRanges = dateRangesRows.map((dateRange) => {
+  return dateRangesRows.map((dateRange) => {
     // Look for a matching DateRangeAnnual entry for this date type
     let isDateAnnual = false;
     const dateRangeAnnualData = dateRangeAnnualsByDateType.get(
@@ -234,7 +234,7 @@ async function formatParkData(park, season) {
     }
 
     return {
-      isActive: true, // Must be true if the park has dates being published
+      isActive: true, // Must be true if the entity has dates being published
       isDateAnnual,
       startDate: formatDate(dateRange.startDate),
       endDate: formatDate(dateRange.endDate),
@@ -242,11 +242,15 @@ async function formatParkData(park, season) {
       dateTypeId: dateRange.dateType.strapiDateTypeId,
     };
   });
+}
 
-  // Extract gate information with defaults for missing data
-  const gateDetails = park.gateDetails ?? {};
-
-  const gateInfo = {
+/**
+ * Formats gate details with default values for missing fields.
+ * @param {GateDetail} [gateDetails={}] The gate details object (or null, if not found)
+ * @returns {Object} Formatted gate info with all required fields
+ */
+function formatGateInfo(gateDetails = {}) {
+  return {
     hasGate: gateDetails.hasGate ?? false,
     gateOpenTime: gateDetails.gateOpenTime ?? null,
     gateCloseTime: gateDetails.gateCloseTime ?? null,
@@ -255,6 +259,17 @@ async function formatParkData(park, season) {
     gateOpen24Hours: gateDetails.gateOpen24Hours ?? false,
     gateNote: "", // Currently no note field in GateDetails
   };
+}
+
+/**
+ * Fetches and formats Park-level data for publishing.
+ * @param {Park} park The Park object for the season
+ * @param {Season} season The season object
+ * @returns {Object} Formatted park data for publishing
+ */
+async function formatParkData(park, season) {
+  const dateRanges = await formatDateRanges(park, season);
+  const gateInfo = formatGateInfo(park.gateDetails);
 
   // Return formatted park data
   return {
@@ -266,76 +281,15 @@ async function formatParkData(park, season) {
   };
 }
 
+/**
+ * Fetches and formats Feature-level data for publishing.
+ * @param {Feature} feature The Feature object for the season
+ * @param {Season} season The season object
+ * @returns {Object} Formatted feature data for publishing
+ */
 async function formatFeatureData(feature, season) {
-  // Fetch all date ranges for this season
-  const dateRangesRows = await DateRange.findAll({
-    attributes: ["startDate", "endDate", "dateTypeId"],
-
-    where: {
-      seasonId: season.id,
-    },
-
-    include: [
-      {
-        model: DateType,
-        as: "dateType",
-        attributes: ["id", "strapiDateTypeId"],
-      },
-    ],
-  });
-
-  // Get all the DateRangeAnnual data for this season/park
-  const dateRangeAnnualsRows = await DateRangeAnnual.findAll({
-    where: {
-      dateableId: feature.dateableId,
-      publishableId: season.publishableId,
-    },
-  });
-
-  // Create a map to look up dateRangeAnnual by dateTypeId
-  const dateRangeAnnualsByDateType = new Map(
-    dateRangeAnnualsRows.map((dateRangeAnnual) => [
-      dateRangeAnnual.dateTypeId,
-      dateRangeAnnual,
-    ]),
-  );
-
-  // Transform date ranges to API format
-  const dateRanges = dateRangesRows.map((dateRange) => {
-    // Look for a matching DateRangeAnnual entry for this date type
-    let isDateAnnual = false;
-    const dateRangeAnnualData = dateRangeAnnualsByDateType.get(
-      dateRange.dateTypeId,
-    );
-
-    if (dateRangeAnnualData) {
-      isDateAnnual = dateRangeAnnualData.isDateRangeAnnual;
-    }
-
-    return {
-      isActive: true, // Must be true if the park has dates being published
-      isDateAnnual,
-      startDate: formatDate(dateRange.startDate),
-      endDate: formatDate(dateRange.endDate),
-      adminNote: "", // Currently no admin note field in DateRange
-      dateTypeId: dateRange.dateType.strapiDateTypeId,
-    };
-  });
-
-  // @TODO: refactor the code above to DRY it up
-
-  // Extract gate information with defaults for missing data
-  const gateDetails = feature.gateDetails ?? {};
-
-  const gateInfo = {
-    hasGate: gateDetails.hasGate ?? false,
-    gateOpenTime: gateDetails.gateOpenTime ?? null,
-    gateCloseTime: gateDetails.gateCloseTime ?? null,
-    gateOpensAtDawn: gateDetails.gateOpensAtDawn ?? false,
-    gateClosesAtDusk: gateDetails.gateClosesAtDusk ?? false,
-    gateOpen24Hours: gateDetails.gateOpen24Hours ?? false,
-    gateNote: "", // Currently no note field in GateDetails
-  };
+  const dateRanges = await formatDateRanges(feature, season);
+  const gateInfo = formatGateInfo(feature.gateDetails);
 
   // Return formatted park data
   return {
