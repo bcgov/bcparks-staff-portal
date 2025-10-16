@@ -179,11 +179,15 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
       };
     });
 
+  // Temporarily disabling display of excluded types
+  // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
+  // @TODO: Remove this filter when FCFS logic is revised
+  const excludedDateTypes = new Set(["Winter fee", "First come, first served"]);
+
   // get date ranges for park.feature
-  const featureDateRanges = getAllDateRanges(filteredSeasons)
-    // Temporarily disabling display of Winter Fees
-    // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
-    .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
+  const featureDateRanges = getAllDateRanges(filteredSeasons).filter(
+    (dateRange) => !excludedDateTypes.has(dateRange.dateType?.name),
+  );
 
   // get a current season
   const currentSeason = buildCurrentSeasonOutput(feature.seasons);
