@@ -1,10 +1,12 @@
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
+import { format } from "date-fns";
 
 import {
   Dateable,
   DateRange,
+  DateRangeAnnual,
   DateType,
   Feature,
   FeatureType,
@@ -19,8 +21,6 @@ import {
   checkPermissions,
 } from "../../middleware/permissions.js";
 
-// @TODO: delete this deprecated file
-import { get, post, put } from "./strapi-api.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 
 const router = Router();
@@ -101,7 +101,7 @@ router.get(
 
       if (!publishable) {
         console.warn(
-          `No publishable object found for publishableId: ${season.publishableId}`,
+          `No publishable entity found for publishableId: ${season.publishableId}`,
         );
       }
 
@@ -144,6 +144,37 @@ router.get(
   }),
 );
 
+// Returns the publishable entity (park, park area, or feature) for a given season
+function getPublishableEntity(season) {
+  if (season?.feature) {
+    return {
+      type: "feature",
+      feature: season.feature,
+    };
+  }
+
+  if (season?.parkArea) {
+    return {
+      type: "parkArea",
+      parkArea: season.parkArea,
+    };
+  }
+
+  if (season?.park) {
+    return {
+      type: "park",
+      park: season.park,
+    };
+  }
+
+  return null;
+}
+
+// Formats a Date object to 'YYYY-MM-DD' string format
+function formatDate(date) {
+  return format(date, "yyyy-MM-dd");
+}
+
 // - send data to the API
 router.post(
   "/publish-to-api/",
@@ -151,8 +182,7 @@ router.post(
   asyncHandler(async (req, res) => {
     const seasonIds = req.body.seasonIds;
 
-    console.log("Publishing to API...", seasonIds);
-
+    // Fetch all approved seasons that are ready to publish
     const seasons = await Season.findAll({
       where: {
         id: { [Op.in]: seasonIds },
@@ -165,40 +195,135 @@ router.post(
         {
           model: Park,
           as: "park",
-          attributes: ["id", "publishableId", "name"],
+          attributes: ["id", "orcs", "publishableId", "dateableId", "name"],
+
+          include: [
+            {
+              model: GateDetail,
+              as: "gateDetails",
+            },
+          ],
         },
+
         {
           model: ParkArea,
           as: "parkArea",
           attributes: ["id", "publishableId", "name"],
         },
+
         {
           model: Feature,
           as: "feature",
           attributes: ["id", "publishableId", "name"],
         },
-
-        // Gate details
-        { model: GateDetail, as: "gateDetail" },
       ],
     });
 
-    console.log("seasons");
-    console.log(seasons);
+    // Build array of details for each season to be published
+    const publishData = [];
 
-    console.log(`Found ${seasons.length} seasons to publish`);
+    for (const season of seasons) {
+      const publishableEntity = getPublishableEntity(season);
 
-    // Build array of details for each season to be published, including:
-    // - park/area/feature ID
-    // - date ranges for the season
-    // - gate details
+      if (!publishableEntity) {
+        console.warn(
+          `No publishable entity found for publishableId: ${season.publishableId} (season ID: ${season.id})`,
+        );
+        continue;
+      }
 
-    // foreach season ID:
-    // - get all the dateranges for the season
-    // get the park/area/feature for the season from the publishableId so we can get the orcs/id for strapi
-    // get the gate info for the park/area/feature, also by publishableId
+      // If the Season is for a Park, fetch the Park-level dates and format the data
+      if (publishableEntity.type === "park") {
+        const park = publishableEntity.park;
 
-    // send 200 OK response with empty body
+        // Fetch all date ranges for this season
+        const dateRangesRows = await DateRange.findAll({
+          attributes: ["startDate", "endDate", "dateTypeId"],
+
+          where: {
+            seasonId: season.id,
+          },
+
+          include: [
+            {
+              model: DateType,
+              as: "dateType",
+              attributes: ["id", "strapiDateTypeId"],
+            },
+          ],
+        });
+
+        // Get all the DateRangeAnnual data for this season/park
+        const dateRangeAnnualsRows = await DateRangeAnnual.findAll({
+          where: {
+            dateableId: park.dateableId,
+            publishableId: season.publishableId,
+          },
+        });
+
+        // Create a map to look up dateRangeAnnual by dateTypeId
+        const dateRangeAnnualsByDateType = new Map(
+          dateRangeAnnualsRows.map((dateRangeAnnual) => [
+            dateRangeAnnual.dateTypeId,
+            dateRangeAnnual,
+          ]),
+        );
+
+        // Transform date ranges to API format
+        const dateRanges = dateRangesRows.map((dateRange) => {
+          // Look for a matching DateRangeAnnual entry for this date type
+          let isDateAnnual = false;
+          const dateRangeAnnualData = dateRangeAnnualsByDateType.get(
+            dateRange.dateTypeId,
+          );
+
+          if (dateRangeAnnualData) {
+            isDateAnnual = dateRangeAnnualData.isDateRangeAnnual;
+          }
+
+          return {
+            isActive: true, // Must be true if the park has dates being published
+            isDateAnnual,
+            startDate: formatDate(dateRange.startDate),
+            endDate: formatDate(dateRange.endDate),
+            adminNote: "", // Currently no admin note field in DateRange
+            dateTypeId: dateRange.dateType.strapiDateTypeId,
+          };
+        });
+
+        // Extract gate information with defaults for missing data
+        const gateDetails = park.gateDetails ?? {};
+
+        const gateInfo = {
+          hasGate: gateDetails.hasGate ?? false,
+          gateOpenTime: gateDetails.gateOpenTime ?? null,
+          gateCloseTime: gateDetails.gateCloseTime ?? null,
+          gateOpensAtDawn: gateDetails.gateOpensAtDawn ?? false,
+          gateClosesAtDusk: gateDetails.gateClosesAtDusk ?? false,
+          gateOpen24Hours: gateDetails.gateOpen24Hours ?? false,
+          gateNote: "", // Currently no note field in GateDetails
+        };
+
+        // Add formatted park data to publish array
+        publishData.push({
+          // Strapi expects the ORCS code as a number
+          orcs: Number(park.orcs),
+          operatingYear: season.operatingYear,
+          dateRanges,
+          gateInfo,
+        });
+      }
+
+      // @TODO: If the season is for a Park Area, fetch the Park Area's feature dates and format the data
+
+      // @TODO: If the season is for a Feature, fetch the Feature's dates and format the data
+    }
+
+    // TODO: Send publishData to Strapi API
+    console.log("Prepared publish data:");
+    console.log(JSON.stringify(publishData, null, 2));
+
+    // Send 200 OK response with empty body
     res.send();
   }),
 );
