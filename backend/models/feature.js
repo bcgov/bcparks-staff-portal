@@ -39,7 +39,7 @@ export default (sequelize) => {
         as: "seasons",
       });
 
-      // A park has an associated GateDetail record
+      // A feature has an associated GateDetail record
       Feature.hasOne(models.GateDetail, {
         foreignKey: "publishableId",
         sourceKey: "publishableId",

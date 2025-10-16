@@ -271,7 +271,7 @@ async function formatParkData(park, season) {
   const dateRanges = await formatDateRanges(park, season);
   const gateInfo = formatGateInfo(park.gateDetails);
 
-  // Return formatted park data
+  // Return formatted Park data
   return {
     // Strapi expects the ORCS code as a number
     orcs: Number(park.orcs),
@@ -291,9 +291,8 @@ async function formatFeatureData(feature, season) {
   const dateRanges = await formatDateRanges(feature, season);
   const gateInfo = formatGateInfo(feature.gateDetails);
 
-  // Return formatted park data
+  // Return formatted Feature data
   return {
-    // Strapi expects the ORCS code as a number
     orcsFeatureNumber: feature.strapiOrcsFeatureNumber,
     operatingYear: season.operatingYear,
     dateRanges,
@@ -382,7 +381,6 @@ router.post(
         publishedSeasonIds.push(season.id);
       } else if (publishableEntity.type === "feature") {
         // If the season is for a Feature, fetch the Feature's dates and format the data
-        console.log("this one is a feature");
         const featureData = await formatFeatureData(
           publishableEntity.feature,
           season,
