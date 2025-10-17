@@ -20,6 +20,7 @@ import {
 } from "../../middleware/permissions.js";
 
 import * as STATUS from "../../constants/seasonStatus.js";
+import strapiApi from "../../utils/strapiApi.js";
 
 const router = Router();
 
@@ -456,8 +457,13 @@ router.post(
     // TODO: Send publishData to Strapi API
     console.log("Prepared publish data:");
     console.log(JSON.stringify(publishData, null, 2));
+    await strapiApi.post("/TODO:-populate-endpoint", { data: publishData });
 
-    // @TODO: Update season status from publishedSeasonIds
+    // Update season status from publishedSeasonIds
+    await Season.update(
+      { status: STATUS.PUBLISHED },
+      { where: { id: { [Op.in]: publishedSeasonIds } } },
+    );
 
     // Send 200 OK response with empty body
     res.send();
