@@ -98,7 +98,7 @@ function PublishPage() {
         <div className="d-flex justify-content-end mb-2">
           <button
             onClick={publishToApi}
-            disabled={seasons.length === 0}
+            disabled={saving || seasons.length === 0}
             className="btn btn-primary"
           >
             Publish to API
