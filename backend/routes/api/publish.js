@@ -21,6 +21,7 @@ import {
 
 import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 const router = Router();
 
@@ -202,6 +203,13 @@ async function formatDateRanges(entity, season) {
         model: DateType,
         as: "dateType",
         attributes: ["id", "strapiDateTypeId"],
+
+        where: {
+          // @TEMP: Filter out FCFS dates while they're being hidden in the UI
+          strapiDateTypeId: {
+            [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
+          },
+        },
       },
     ],
   });
