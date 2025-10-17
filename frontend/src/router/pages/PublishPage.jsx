@@ -14,7 +14,9 @@ function PublishPage() {
   const successFlash = useFlashMessage();
   const errorFlash = useFlashMessage();
 
-  const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
+  const { data, fetchData, loading, error } = useApiGet(
+    "/publish/ready-to-publish/",
+  );
   const { seasons = [] } = data ?? {};
 
   const { sendData: publishData, loading: saving } = useApiPost(
@@ -59,6 +61,9 @@ function PublishPage() {
           "Dates publishing to API",
           "Approved dates publishing may take up to one hour.",
         );
+
+        // Update the table by re-fetching the data
+        await fetchData();
       } catch (publishError) {
         console.error("Error publishing to API", publishError);
 
