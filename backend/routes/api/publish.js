@@ -190,7 +190,7 @@ function formatDate(date) {
 async function formatDateRanges(entity, season) {
   // Fetch all date ranges for this season
   const dateRangesRows = await DateRange.findAll({
-    attributes: ["startDate", "endDate", "dateTypeId"],
+    attributes: ["startDate", "endDate", "dateTypeId", "adminNote"],
 
     where: {
       seasonId: season.id,
@@ -238,7 +238,7 @@ async function formatDateRanges(entity, season) {
       isDateAnnual,
       startDate: formatDate(dateRange.startDate),
       endDate: formatDate(dateRange.endDate),
-      adminNote: "", // Currently no admin note field in DateRange
+      adminNote: dateRange.adminNote ?? "",
       dateTypeId: dateRange.dateType.strapiDateTypeId,
     };
   });
@@ -300,7 +300,48 @@ async function formatFeatureData(feature, season) {
   };
 }
 
-// - send data to the API
+/**
+ * Formats ParkArea data for publishing, including all Features within the ParkArea.
+ * @param {ParkArea} parkArea The ParkArea object
+ * @param {Season} season The season object
+ * @returns {Array} Array of formatted data objects for the Area and its Features
+ */
+async function formatParkAreaData(parkArea, season) {
+  const gateInfo = formatGateInfo(parkArea.gateDetails);
+
+  // Format ParkArea data
+  const formattedParkArea = {
+    orcsAreaNumber: parkArea.strapiOrcsAreaNumber,
+    operatingYear: season.operatingYear,
+    gateInfo,
+  };
+
+  // Get all Features in this ParkArea
+  const features = await parkArea.getFeatures({
+    attributes: [
+      "id",
+      "publishableId",
+      "dateableId",
+      "strapiOrcsFeatureNumber",
+    ],
+
+    where: { active: true },
+  });
+
+  // Fetch and format data for each Feature in the ParkArea
+  const formattedFeatures = [];
+
+  for (const feature of features) {
+    const featureData = await formatFeatureData(feature, season);
+
+    formattedFeatures.push(featureData);
+  }
+
+  return [formattedParkArea, ...formattedFeatures];
+}
+
+// Send data to the API
+// For a list of season IDs, fetch the season data from our DB and send it to Strapi
 router.post(
   "/publish-to-api/",
   checkPermissions(adminsAndApprovers),
@@ -320,6 +361,7 @@ router.post(
         {
           model: Park,
           as: "park",
+
           attributes: ["id", "orcs", "publishableId", "dateableId"],
 
           include: [
@@ -333,12 +375,21 @@ router.post(
         {
           model: ParkArea,
           as: "parkArea",
-          attributes: ["id", "publishableId"],
+
+          attributes: ["id", "publishableId", "strapiOrcsAreaNumber"],
+
+          include: [
+            {
+              model: GateDetail,
+              as: "gateDetails",
+            },
+          ],
         },
 
         {
           model: Feature,
           as: "feature",
+
           attributes: [
             "id",
             "publishableId",
@@ -390,7 +441,15 @@ router.post(
         publishData.push(featureData);
         publishedSeasonIds.push(season.id);
       } else if (publishableEntity.type === "parkArea") {
-        // @TODO: If the season is for a Park Area, fetch the Park Area's feature dates and format the data
+        // If the season is for a Park Area, fetch the Park Area's feature dates and format the data
+        const parkAreaData = await formatParkAreaData(
+          publishableEntity.parkArea,
+          season,
+        );
+
+        // Add formatted park area and feature data to publishing payload
+        publishData.push(...parkAreaData);
+        publishedSeasonIds.push(season.id);
       }
     }
 
