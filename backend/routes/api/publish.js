@@ -470,9 +470,7 @@ router.post(
       }
     }
 
-    // TODO: Send publishData to Strapi API
-    console.log("Prepared publish data:");
-    console.log(JSON.stringify(publishData, null, 2));
+    // Send publishData to Strapi API
     await strapiApi.post("/queued-tasks", {
       data: {
         action: "doot publish",
