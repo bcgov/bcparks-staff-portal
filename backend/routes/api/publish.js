@@ -422,6 +422,14 @@ router.post(
     // Keep an array of processed season IDs so we can update the status
     const publishedSeasonIds = [];
 
+    if (seasons.length === 0) {
+      // Skip sending to Strapi if there are no seasons to publish
+      console.error("No seasons found to publish.");
+      return res.status(400).json({
+        error: "No seasons found to publish.",
+      });
+    }
+
     for (const season of seasons) {
       const publishableEntity = getPublishableEntity(season);
 
@@ -465,7 +473,13 @@ router.post(
     // TODO: Send publishData to Strapi API
     console.log("Prepared publish data:");
     console.log(JSON.stringify(publishData, null, 2));
-    await strapiApi.post("/TODO:-populate-endpoint", { data: publishData });
+    await strapiApi.post("/queued-tasks", {
+      data: {
+        action: "doot publish",
+        numericData: publishData[0].operatingYear,
+        jsonData: publishData,
+      },
+    });
 
     // Update season status from publishedSeasonIds
     await Season.update(
