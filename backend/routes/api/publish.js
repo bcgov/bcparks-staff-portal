@@ -22,6 +22,7 @@ import {
 import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import splitArray from "../../utils/splitArray.js";
 
 const router = Router();
 
@@ -498,14 +499,28 @@ router.post(
       }
     }
 
-    // Send publishData to Strapi API
-    await strapiApi.post("/queued-tasks", {
-      data: {
-        action: "doot publish",
-        numericData: publishData[0].operatingYear,
-        jsonData: publishData,
-      },
-    });
+    // Split publishData into chunks of ~500KB to avoid exceeding Strapi API limits
+    const publishDataChunks = splitArray(publishData, 500 * 1024);
+
+    // Use the first item's operating year as numericData for all chunks
+    const numericData = publishData[0].operatingYear;
+
+    // Send each chunk to the Strapi API with a brief delay
+    for (const [index, chunk] of publishDataChunks.entries()) {
+      // Send chunk of publish data to Strapi API
+      await strapiApi.post("/queued-tasks", {
+        data: {
+          action: "doot publish",
+          numericData,
+          jsonData: chunk,
+        },
+      });
+
+      // Sleep if there are more chunks remaining
+      if (index < publishDataChunks.length - 1) {
+        await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms
+      }
+    }
 
     // Update season status from publishedSeasonIds
     await Season.update(
