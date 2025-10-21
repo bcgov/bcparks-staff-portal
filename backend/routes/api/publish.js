@@ -274,9 +274,13 @@ function formatGateInfo(gateDetails = {}) {
  * Fetches and formats Park-level data for publishing.
  * @param {Park} park The Park object for the season
  * @param {Season} season The season object
- * @returns {Object} Formatted park data for publishing
+ * @returns {Object|null} Formatted park data for publishing, or null to skip publishing
  */
 async function formatParkData(park, season) {
+  // Return null to skip publishing if the ORCS code is missing
+  // We can't connect to anything in Strapi without this key
+  if (!park.orcs) return null;
+
   const dateRanges = await formatDateRanges(park, season);
   const gateInfo = formatGateInfo(park.gateDetails);
 
@@ -294,9 +298,13 @@ async function formatParkData(park, season) {
  * Fetches and formats Feature-level data for publishing.
  * @param {Feature} feature The Feature object for the season
  * @param {Season} season The season object
- * @returns {Object} Formatted feature data for publishing
+ * @returns {Object|null} Formatted feature data for publishing, or null to skip publishing
  */
 async function formatFeatureData(feature, season) {
+  // Return null to skip publishing if the ORCS Feature Number is missing
+  // We can't connect to anything in Strapi without this key
+  if (!feature.strapiOrcsFeatureNumber) return null;
+
   const dateRanges = await formatDateRanges(feature, season);
   const gateInfo = formatGateInfo(feature.gateDetails);
 
@@ -313,9 +321,13 @@ async function formatFeatureData(feature, season) {
  * Formats ParkArea data for publishing, including all Features within the ParkArea.
  * @param {ParkArea} parkArea The ParkArea object
  * @param {Season} season The season object
- * @returns {Array} Array of formatted data objects for the Area and its Features
+ * @returns {Array|null} Array of formatted data objects for the Area and its Features, or null to skip publishing
  */
 async function formatParkAreaData(parkArea, season) {
+  // Return null to skip publishing if the ORCS Area Number is missing
+  // We can't connect to anything in Strapi without this key
+  if (!parkArea.strapiOrcsAreaNumber) return null;
+
   const gateInfo = formatGateInfo(parkArea.gateDetails);
 
   // Format ParkArea data
@@ -342,6 +354,10 @@ async function formatParkAreaData(parkArea, season) {
 
   for (const feature of features) {
     const featureData = await formatFeatureData(feature, season);
+
+    // If the formatting function returned null for any reason,
+    // skip publishing this Feature
+    if (!featureData) continue;
 
     formattedFeatures.push(featureData);
   }
@@ -444,6 +460,10 @@ router.post(
         // If the Season is for a Park, fetch the Park-level dates and format the data
         const parkData = await formatParkData(publishableEntity.park, season);
 
+        // If the formatting function returned null for any reason,
+        // skip publishing this Park
+        if (!parkData) continue;
+
         // Add formatted park data to publishing payload
         publishData.push(parkData);
         publishedSeasonIds.push(season.id);
@@ -454,6 +474,10 @@ router.post(
           season,
         );
 
+        // If the formatting function returned null for any reason,
+        // skip publishing this Feature
+        if (!featureData) continue;
+
         // Add formatted feature data to publishing payload
         publishData.push(featureData);
         publishedSeasonIds.push(season.id);
@@ -463,6 +487,10 @@ router.post(
           publishableEntity.parkArea,
           season,
         );
+
+        // If the formatting function returned null for any reason,
+        // skip publishing this Park Area and its Features
+        if (!parkAreaData) continue;
 
         // Add formatted park area and feature data to publishing payload
         publishData.push(...parkAreaData);
