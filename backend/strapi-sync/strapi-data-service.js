@@ -1,5 +1,6 @@
 import "../env.js";
 import { getData } from "./strapi-client.js";
+import qs from "qs";
 
 // Cache for individual model collections
 const modelCache = new Map();
@@ -79,34 +80,7 @@ const MODEL_CONFIG = {
  * @returns {URLSearchParams} Properly formatted query parameters
  */
 function buildStrapiParams(populate) {
-  const params = new URLSearchParams();
-
-  if (!populate) {
-    return params;
-  }
-
-  // Handle different populate formats
-  if (Array.isArray(populate)) {
-    // Simple array: ["relation1", "relation2"]
-    populate.forEach((relation) => {
-      params.append(`populate[${relation}]`, "*");
-    });
-  } else if (typeof populate === "object") {
-    // Object with nested configuration
-    Object.entries(populate).forEach(([relation, config]) => {
-      if (typeof config === "object" && config.fields) {
-        // Specific fields: { relation: { fields: ["field1", "field2"] } }
-        config.fields.forEach((field, index) => {
-          params.append(`populate[${relation}][fields][${index}]`, field);
-        });
-      } else {
-        // Simple populate: { relation: true } or { relation: "*" }
-        params.append(`populate[${relation}]`, "*");
-      }
-    });
-  }
-
-  return params;
+  return qs.stringify({ populate });
 }
 
 /**

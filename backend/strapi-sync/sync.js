@@ -77,7 +77,7 @@ export async function syncParks(parkData) {
 export async function createOrUpdateFeatureType(strapiData, item) {
   let dbItem = await getItemByAttributes(FeatureType, { strapiId: item.id });
 
-  const icon = await getFeatureTypeIcon(strapiData, item);
+  const icon = await getFeatureTypeIcon(item);
 
   if (dbItem) {
     dbItem.name = item.attributes.subAreaType;
@@ -634,7 +634,7 @@ export async function syncData() {
 
   await syncParks(parkData);
   // featureTypes need other strapi data to get the icon from campingType or facilityType
-  await syncFeatureTypes(featureTypeData);
+  await syncFeatureTypes(featureTypeData, featureTypeData);
   await syncFeatures(featureData);
   await syncSections(sectionData);
   await syncManagementAreas(mgmtAreaData);
