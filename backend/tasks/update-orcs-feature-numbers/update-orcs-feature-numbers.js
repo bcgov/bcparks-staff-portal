@@ -6,7 +6,7 @@ import { Feature } from "../../models/index.js";
 export default async function updateOrcsFeatureNumbers(transaction = null) {
   // Get all feature data from Strapi
   const strapiFeatures = await strapiApi.getAllPages(
-    "/api/park-features",
+    "/park-features",
     // We just need the ID and the featureId & orcsFeatureNumber attributes
     { fields: ["featureId", "orcsFeatureNumber"] },
   );
