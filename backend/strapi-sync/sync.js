@@ -2,11 +2,7 @@ import "../env.js";
 
 import { Op } from "sequelize";
 
-import {
-  getItemByAttributes,
-  createModel,
-  getFeatureTypeIcon,
-} from "./utils.js";
+import { getItemByAttributes, createModel } from "./utils.js";
 import winterParks from "./park-winter-dates.js";
 import {
   Park,
@@ -22,6 +18,9 @@ import {
 import * as STATUS from "../constants/seasonStatus.js";
 import { getAllPages } from "../utils/strapiApi.js";
 import { getStrapiModelData } from "./strapi-data-service.js";
+import { importStrapiParkAreas } from "../tasks/import-park-areas/import-park-areas.js";
+import { importFeatureTypes } from "../tasks/import-feature-types/import-feature-types.js";
+import { importFeatures } from "../tasks/import-features/import-features.js";
 
 /**
  * For the park in strapi, create a new park or update its corresponding existing park
@@ -68,36 +67,6 @@ export async function syncParks(parkData) {
   await Promise.all(items.map((item) => createOrUpdatePark(item)));
 }
 
-/**
- * For the featureType in strapi, create a new featureType or update its corresponding existing featureType
- * @param {Array} strapiData all strapi data
- * @param {Object} item featureType data from Strapi
- * @returns {FeatureType} featureType model
- */
-export async function createOrUpdateFeatureType(strapiData, item) {
-  let dbItem = await getItemByAttributes(FeatureType, { strapiId: item.id });
-
-  const icon = await getFeatureTypeIcon(item);
-
-  if (dbItem) {
-    dbItem.name = item.attributes.subAreaType;
-    dbItem.icon = icon;
-
-    await dbItem.save();
-  } else {
-    const data = {
-      name: item.attributes.subAreaType,
-      strapiId: item.id,
-      isCampingType: item.attributes.campingType.data !== null,
-      icon,
-    };
-
-    dbItem = await createModel(FeatureType, data);
-  }
-
-  return dbItem;
-}
-
 function getSeasonStatus(operatingYear) {
   // if operating year is in the past, set status to published, else set to requested
   const currentYear = new Date().getFullYear();
@@ -105,89 +74,6 @@ function getSeasonStatus(operatingYear) {
     operatingYear < currentYear ? STATUS.PUBLISHED : STATUS.REQUESTED;
 
   return status;
-}
-
-/**
- * Sync featureTypes from strapi to our database
- * @param {Object} strapiData all strapi data
- * @param {Object} featureTypeData  featureType data from strapi with items to sync
- * @returns {Promise[Object]} resolves when all featureTypes have been synced
- */
-export async function syncFeatureTypes(strapiData, featureTypeData) {
-  const items = featureTypeData.items;
-
-  await Promise.all(
-    items.map((item) => createOrUpdateFeatureType(strapiData, item)),
-  );
-}
-
-/**
- * For the feature in strapi, create a new feature or update its corresponding existing feature
- * @param {Object} item feature data from Strapi
- * @returns {Feature} feature model
- */
-export async function createOrUpdateFeature(item) {
-  let dbItem = await getItemByAttributes(Feature, { strapiId: item.id });
-
-  if (dbItem) {
-    // if dbItems has parkAreaId, don't update the name
-    // there is a script to create parkAreas and assign features to them
-    // this script will rename the feature to fit within the parkArea
-    if (!dbItem.parkAreaId) {
-      dbItem.name = item.parkSubArea;
-    }
-
-    const featureType = await getItemByAttributes(FeatureType, {
-      strapiId: item.parkSubAreaType.id,
-    });
-
-    dbItem.featureTypeId = featureType.id;
-    dbItem.active = item.isActive;
-    dbItem.strapiFeatureId = item.featureId;
-
-    dbItem.hasReservations = item.hasReservations;
-    // Update it to false if inReservationSystem from Strapi returns null
-    dbItem.inReservationSystem = item.inReservationSystem ?? false;
-    dbItem.hasBackcountryPermits = item.hasBackcountryPermits ?? false;
-
-    await dbItem.save();
-  } else {
-    const dateable = await createModel(Dateable);
-    const park = await getItemByAttributes(Park, {
-      strapiId: item.protectedArea.id,
-    });
-    const featureType = await getItemByAttributes(FeatureType, {
-      strapiId: item.parkSubAreaType.id,
-    });
-
-    const data = {
-      name: item.parkSubArea,
-      parkId: park.id,
-      featureTypeId: featureType.id,
-      dateableId: dateable.id,
-      hasReservations: item.hasReservations,
-      inReservationSystem: item.inReservationSystem ?? false,
-      hasBackcountryPermits: item.hasBackcountryPermits ?? false,
-      active: item.isActive,
-      strapiId: item.id,
-      strapiFeatureId: item.featureId,
-    };
-
-    dbItem = await createModel(Feature, data);
-  }
-
-  return dbItem;
-}
-
-/**
- * sync features from strapi to our database
- * @param {Object} featureData feature data from strapi with items to sync
- * @returns {Promise[Object]} resolves when all features have been synced
- */
-export async function syncFeatures(featureData) {
-  const items = featureData.items;
-
-  await Promise.all(items.map((item) => createOrUpdateFeature(item)));
 }
 
 /**
@@ -627,15 +513,13 @@ export async function syncData() {
     };
   });
 
-  const featureTypeData = await getStrapiModelData(
-    "park-operation-sub-area-type",
-  );
-  const featureData = await getStrapiModelData("park-operation-sub-area");
-
   await syncParks(parkData);
   // featureTypes need other strapi data to get the icon from campingType or facilityType
-  await syncFeatureTypes(featureTypeData, featureTypeData);
-  await syncFeatures(featureData);
+
+  await importStrapiParkAreas();
+  await importFeatureTypes();
+  await importFeatures();
+
   await syncSections(sectionData);
   await syncManagementAreas(mgmtAreaData);
 }

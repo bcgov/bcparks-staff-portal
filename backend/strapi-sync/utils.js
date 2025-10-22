@@ -38,17 +38,17 @@ export async function getStrapiModelDataById(modelName, id) {
  * @returns {string} the icon for the feature type
  */
 export async function getFeatureTypeIcon(featureType) {
-  if (featureType.attributes.campingType.data !== null) {
+  if (featureType.campingType.data !== null) {
     const campingType = await getStrapiModelDataById(
       "camping-type",
-      featureType.attributes.campingType.data.id,
+      featureType.campingType.data.id,
     );
 
     return campingType?.attributes.icon;
   }
   const facilityType = await getStrapiModelDataById(
     "facility-type",
-    featureType.attributes.facilityType.data.id,
+    featureType.facilityType.data.id,
   );
 
   return facilityType?.attributes.icon;
