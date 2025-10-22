@@ -5,8 +5,7 @@ import "../../env.js";
 
 import { Park, ParkArea, Feature, GateDetail } from "../../models/index.js";
 import { Op } from "sequelize";
-import { fetchAllModels } from "../../strapi-sync/sync.js";
-import { getStrapiModelData } from "../../strapi-sync/utils.js";
+import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
 
 async function updateGateDetailFromStrapi(gateDetail, strapiData, transaction) {
   // park-operation uses "hasParkGate"
@@ -35,12 +34,9 @@ export async function createGateDetailsFromStrapi(transaction = null) {
   }
 
   try {
-    // fetch all models from Strapi
-    const strapiData = await fetchAllModels();
     // get park-operation and park-operation-sub-area data from Strapi
-    const parkOperationData = getStrapiModelData(strapiData, "park-operation");
-    const parkOperationSubAreaData = getStrapiModelData(
-      strapiData,
+    const parkOperationData = await getStrapiModelData("park-operation");
+    const parkOperationSubAreaData = await getStrapiModelData(
       "park-operation-sub-area",
     );
 

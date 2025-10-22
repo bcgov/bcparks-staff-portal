@@ -10,8 +10,7 @@ import {
   DateType,
   Publishable,
 } from "../../models/index.js";
-import { fetchAllModels } from "../../strapi-sync/sync.js";
-import { getStrapiModelData } from "../../strapi-sync/utils.js";
+import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
 
 async function createPublishableForPark(park, transaction) {
   if (park.publishableId) return park.publishableId;
@@ -29,11 +28,8 @@ export async function populateParkGateDates() {
   const transaction = await Season.sequelize.transaction();
 
   try {
-    // fetch all models from Strapi
-    const strapiData = await fetchAllModels();
     // get park-operation-date data from Strapi
-    const parkOperationDateData = getStrapiModelData(
-      strapiData,
+    const parkOperationDateData = await getStrapiModelData(
       "park-operation-date",
     );
 

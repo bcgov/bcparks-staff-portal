@@ -2,8 +2,7 @@ import "../../env.js";
 
 import { Op } from "sequelize";
 import { Park, ParkArea } from "../../models/index.js";
-import { fetchAllModels } from "../../strapi-sync/sync.js";
-import { getStrapiModelData } from "../../strapi-sync/utils.js";
+import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
 
 /**
  * Imports/updates ParkArea records from Strapi park-area data by matching orcsAreaNumber
@@ -12,11 +11,8 @@ import { getStrapiModelData } from "../../strapi-sync/utils.js";
  */
 export default async function importParkAreasFromStrapi(transaction = null) {
   try {
-    // Fetch all models from Strapi
-    const strapiData = await fetchAllModels();
-
     // Get park-area data from Strapi
-    const parkAreaData = getStrapiModelData(strapiData, "park-area");
+    const parkAreaData = await getStrapiModelData("park-area");
     const strapiParkAreas = parkAreaData?.items || [];
 
     if (strapiParkAreas.length === 0) {
