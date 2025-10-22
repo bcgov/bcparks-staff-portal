@@ -3,6 +3,10 @@ import "../../env.js";
 import { Op } from "sequelize";
 import { Park, ParkArea } from "../../models/index.js";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import {
+  validateDootParkAreas,
+  validateStrapiParkAreas,
+} from "./validation.js";
 
 /**
  * Imports/updates ParkArea records from Strapi park-area data by matching orcsAreaNumber
@@ -21,6 +25,14 @@ export default async function importParkAreasFromStrapi(transaction = null) {
     }
 
     console.log(`Found ${strapiParkAreas.length} park areas in Strapi`);
+
+    // Validate Park Areas in DOOT and Strapi
+    const strapiValid = await validateStrapiParkAreas(strapiParkAreas);
+    const dootValid = await validateDootParkAreas();
+
+    if (!dootValid || !strapiValid) {
+      return { created: 0, skipped: 0, updated: 0 };
+    }
 
     // Get all DOOT ParkAreas for strapiOrcsAreaNumber lookup
     const dootParkAreas = await ParkArea.findAll({

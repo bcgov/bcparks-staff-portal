@@ -16,10 +16,6 @@ export default (sequelize) => {
         foreignKey: "publishableId",
         as: "parkArea",
       });
-      Publishable.hasOne(models.FeatureType, {
-        foreignKey: "publishableId",
-        as: "featureType",
-      });
       Publishable.hasOne(models.Feature, {
         foreignKey: "publishableId",
         as: "feature",
