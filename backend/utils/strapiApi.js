@@ -1,17 +1,19 @@
 import axios from "axios";
 
+const baseURL = `${process.env.STRAPI_URL}/api`;
+
+const headers = {
+  accept: "application/json",
+  "Content-Type": "application/json",
+};
+
+if (process.env.STRAPI_API_TOKEN) {
+  headers.Authorization = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+}
+
 // Create axios instance with strapi auth token headers
-const strapiApi = axios.create({
-  baseURL: process.env.STRAPI_URL,
-
-  headers: {
-    accept: "application/json",
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${process.env.STRAPI_TOKEN}`,
-  },
-
-  timeout: 30000, // 30 second timeout
-});
+// 30 second timeout
+const strapiApi = axios.create({ baseURL, headers, timeout: 30000 });
 
 // Add request interceptor for logging
 strapiApi.interceptors.request.use(
@@ -43,7 +45,7 @@ strapiApi.interceptors.response.use(
     console.error("Strapi API Error:", {
       status: error.response?.status,
       statusText: error.response?.statusText,
-      url: error.config?.url,
+      url: baseURL + error.config?.url,
       message: error.message,
       data: error.response?.data,
     });

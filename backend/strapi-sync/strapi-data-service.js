@@ -1,11 +1,13 @@
 import "../env.js";
-import { getData } from "./strapi-client.js";
-import qs from "qs";
+import { getAllPages } from "../utils/strapiApi.js";
 
 // Cache for individual model collections
 const modelCache = new Map();
 
 // Model configuration - defines all available models and their fetch settings
+// The `populate` syntax is 100% based on Strapi's populate query syntax. See the
+// Strapi docs for more info:
+// https://docs-v4.strapi.io/dev-docs/api/rest/populate-select#population
 const MODEL_CONFIG = {
   "park-operation": {
     endpoint: "/park-operations",
@@ -75,15 +77,6 @@ const MODEL_CONFIG = {
 };
 
 /**
- * Build proper Strapi query parameters
- * @param {Object} populate Populate configuration
- * @returns {URLSearchParams} Properly formatted query parameters
- */
-function buildStrapiParams(populate) {
-  return qs.stringify({ populate });
-}
-
-/**
  * Fetch a specific model from Strapi API
  * @param {string} modelName Name of the model to fetch
  * @returns {Array} Array of items for the model
@@ -96,9 +89,9 @@ async function fetchModel(modelName) {
   }
 
   const url = `${process.env.STRAPI_URL}/api${config.endpoint}`;
-  const params = buildStrapiParams(config.populate);
+  const params = { populate: config.populate };
 
-  return await getData(url, params);
+  return await getAllPages(url, params, 200);
 }
 
 /**

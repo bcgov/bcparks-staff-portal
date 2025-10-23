@@ -20,7 +20,7 @@ import {
   ManagementArea,
 } from "../models/index.js";
 import * as STATUS from "../constants/seasonStatus.js";
-import { getData } from "./strapi-client.js";
+import { getAllPages } from "../utils/strapiApi.js";
 import { getStrapiModelData } from "./strapi-data-service.js";
 
 /**
@@ -672,17 +672,11 @@ export async function oneTimeDataImport() {
 
   const currentUrl = url + datesData.endpoint;
 
-  const params = new URLSearchParams();
-
-  if (datesData.fields) {
-    for (const field of datesData.fields) {
-      params.append(`populate[${field}][fields]`, "id");
-    }
-  }
-
   await createWinterFeatureType();
 
-  datesData.items = await getData(currentUrl, params);
+  datesData.items = await getAllPages(currentUrl, {
+    populate: { parkOperationSubArea: { fields: ["id"] } },
+  });
 
   await createDatesAndSeasons(datesData);
 }
