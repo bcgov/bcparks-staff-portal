@@ -1,4 +1,4 @@
-import { Op, fn, col } from "sequelize";
+import { Op } from "sequelize";
 import { Feature } from "../../models/index.js";
 
 /**
@@ -22,26 +22,6 @@ export async function validateDootFeatures() {
     console.error(
       `Aborting import: Found ${invalidFeatures.length} DOOT Features with missing or incorrectly formatted strapiOrcsFeatureNumber.`,
     );
-    return false;
-  }
-
-  // Validate DOOT Features to make sure all strapiOrcsFeatureNumbers are unique
-  const duplicateOrcsFeatureNumbers = await Feature.findAll({
-    attributes: ["strapiOrcsFeatureNumber"],
-    where: { strapiOrcsFeatureNumber: { [Op.ne]: null } },
-    group: ["strapiOrcsFeatureNumber"],
-    having: { [Op.gt]: [fn("COUNT", col("strapiOrcsFeatureNumber")), 1] },
-  });
-
-  if (duplicateOrcsFeatureNumbers.length > 0) {
-    const duplicateValues = duplicateOrcsFeatureNumbers
-      .map((item) => item.strapiOrcsFeatureNumber)
-      .join(", ");
-
-    console.error(
-      `Aborting import: Found ${duplicateOrcsFeatureNumbers.length} DOOT features with duplicate strapiOrcsFeatureNumber: ${duplicateValues}`,
-    );
-
     return false;
   }
 

@@ -1,4 +1,4 @@
-import { Op, fn, col } from "sequelize";
+import { Op } from "sequelize";
 import { ParkArea } from "../../models/index.js";
 
 /**
@@ -20,25 +20,6 @@ export async function validateDootParkAreas() {
   if (invalidParkAreas.length > 0) {
     console.error(
       `Aborting import: Found ${invalidParkAreas.length} DOOT ParkAreas with missing or incorrectly formatted strapiOrcsAreaNumber.`,
-    );
-    return false;
-  }
-
-  // Make sure all strapiOrcsAreaNumbers in DOOT are unique
-  const duplicateOrcsAreaNumbers = await ParkArea.findAll({
-    attributes: ["strapiOrcsAreaNumber"],
-    where: { strapiOrcsAreaNumber: { [Op.ne]: null } },
-    group: ["strapiOrcsAreaNumber"],
-    having: { [Op.gt]: [fn("COUNT", col("strapiOrcsAreaNumber")), 1] },
-  });
-
-  if (duplicateOrcsAreaNumbers.length > 0) {
-    const duplicateValues = duplicateOrcsAreaNumbers
-      .map((item) => item.strapiOrcsAreaNumber)
-      .join(", ");
-
-    console.error(
-      `Aborting import: Found ${duplicateOrcsAreaNumbers.length} DOOT ParkAreas with duplicate strapiOrcsAreaNumbers: ${duplicateValues}`,
     );
     return false;
   }
