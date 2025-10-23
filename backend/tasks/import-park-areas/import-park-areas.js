@@ -77,7 +77,7 @@ export default async function importParkAreasFromStrapi(transaction = null) {
       let parkId = null;
       const protectedAreaOrcs = protectedArea?.data?.attributes.orcs;
 
-      if (protectedAreaOrcs !== null) {
+      if (protectedAreaOrcs && protectedAreaOrcs.length) {
         const protectedAreaOrcsString = String(protectedAreaOrcs);
         const matchedPark = parkLookup.get(protectedAreaOrcsString) ?? null;
 

@@ -57,7 +57,7 @@ export default async function importFeaturesFromStrapi(transaction = null) {
       ]),
     );
 
-    // Get all DOOT Park areas for orcAreaNumber lookup
+    // Get all DOOT Park areas for orcsAreaNumber lookup
     const dootParkAreas = await ParkArea.findAll({
       where: { strapiOrcsAreaNumber: { [Op.ne]: null } },
       transaction,
@@ -102,7 +102,7 @@ export default async function importFeaturesFromStrapi(transaction = null) {
       let parkId = null;
       const protectedAreaOrcs = protectedArea?.data?.attributes.orcs;
 
-      if (protectedAreaOrcs !== null) {
+      if (protectedAreaOrcs && protectedAreaOrcs.length) {
         const protectedAreaOrcsString = String(protectedAreaOrcs);
         const matchedPark = parkLookup.get(protectedAreaOrcsString) ?? null;
 
@@ -113,7 +113,7 @@ export default async function importFeaturesFromStrapi(transaction = null) {
       let parkAreaId = null;
       const orcsParkAreaNumber = parkArea?.data?.attributes.orcsAreaNumber;
 
-      if (parkArea !== null) {
+      if (orcsParkAreaNumber && orcsParkAreaNumber.length) {
         const matchedParkArea = parkAreaLookup.get(orcsParkAreaNumber) ?? null;
 
         parkAreaId = matchedParkArea?.id ?? null;
@@ -124,7 +124,7 @@ export default async function importFeaturesFromStrapi(transaction = null) {
       const strapiFeatureTypeId =
         parkFeatureType?.data?.attributes.featureTypeId;
 
-      if (parkFeatureType !== null) {
+      if (strapiFeatureTypeId) {
         const matchedFeatureType =
           featureTypeLookup.get(strapiFeatureTypeId) ?? null;
 
