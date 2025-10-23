@@ -1,4 +1,5 @@
 import { ParkArea, Park } from "../models/index.js";
+import { getStrapiModelData } from "./strapi-data-service.js";
 
 /**
  * Creates model in our local DB
@@ -14,24 +15,14 @@ export async function createModel(model, data) {
 }
 
 /**
- * Gets the data for a specific model that we recently fetched from strapi
- * @param {Array} strapiData data for every model from strapi
- * @param {string} modelName the name of the model we want to retrieve from
- * @returns {Object} the data for the model we're looking for
- */
-export function getStrapiModelData(strapiData, modelName) {
-  return strapiData.find((item) => item.model === modelName);
-}
-
-/**
  * Gets the data for a specific model by id that we recently fetched from strapi
  * @param {Object} strapiData data for every model from strapi
  * @param {string} modelName the name of the model we want to retrieve from
  * @param {number} id the id of the model we want to retrieve
  * @returns {Object} the data for the specific model instance we're looking for
  */
-export function getStrapiModelDataById(strapiData, modelName, id) {
-  const modelData = getStrapiModelData(strapiData, modelName);
+export async function getStrapiModelDataById(modelName, id) {
+  const modelData = await getStrapiModelData(modelName);
 
   if (!modelData) {
     return null;
@@ -46,18 +37,16 @@ export function getStrapiModelDataById(strapiData, modelName, id) {
  * @param {Object} featureType the feature type we want to get the icon for
  * @returns {string} the icon for the feature type
  */
-export function getFeatureTypeIcon(strapiData, featureType) {
+export async function getFeatureTypeIcon(featureType) {
   if (featureType.attributes.campingType.data !== null) {
-    const campingType = getStrapiModelDataById(
-      strapiData,
+    const campingType = await getStrapiModelDataById(
       "camping-type",
       featureType.attributes.campingType.data.id,
     );
 
     return campingType?.attributes.icon;
   }
-  const facilityType = getStrapiModelDataById(
-    strapiData,
+  const facilityType = await getStrapiModelDataById(
     "facility-type",
     featureType.attributes.facilityType.data.id,
   );
