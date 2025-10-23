@@ -1,6 +1,5 @@
 import { groupBy } from "lodash-es";
 import consolidateRanges from "@/lib/consolidateDateRanges";
-import { normalizeToLocalDate } from "@/lib/utils";
 import {
   differenceInCalendarDays,
   endOfYear,
@@ -18,16 +17,15 @@ function isYearRoundRange(consolidateDateRanges) {
   if (consolidateDateRanges.length !== 1) return false;
   const [dateRange] = consolidateDateRanges;
 
-  // Convert UTC times to local times for comparison
-  const start = normalizeToLocalDate(dateRange.startDate);
-  const end = normalizeToLocalDate(dateRange.endDate);
-
   // Get Jan 1 and Dec 31 for the year
-  const yearStart = startOfYear(start);
-  const yearEnd = endOfYear(start);
+  const yearStart = startOfYear(dateRange.startDate);
+  const yearEnd = endOfYear(dateRange.endDate);
 
   // Return true if the date range is Jan 1 - Dec 31
-  return isSameDay(start, yearStart) && isSameDay(end, yearEnd);
+  return (
+    isSameDay(dateRange.startDate, yearStart) &&
+    isSameDay(dateRange.endDate, yearEnd)
+  );
 }
 
 /**
