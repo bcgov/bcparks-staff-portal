@@ -3,8 +3,7 @@ import { Op, Sequelize } from "sequelize";
 import asyncHandler from "express-async-handler";
 import { writeToString } from "@fast-csv/format";
 import _ from "lodash";
-import { format as formatTz } from "date-fns-tz";
-import { parse as parseDate } from "date-fns";
+import { format, parse as parseDate } from "date-fns";
 
 import {
   Park,
@@ -91,13 +90,13 @@ function formatChangeLog(changeLog) {
 }
 
 /**
- * Formats a UTC date string as "Weekday, Month Day, Year"
- * @param {string} ISODate UTC date in ISO format
+ * Formats a date string as "Weekday, Month Day, Year"
+ * @param {string} date parseable date string (e.g., "2023-07-15")
  * @returns {string} Formatted date string
  */
-function formatDate(ISODate) {
-  if (!ISODate) return "";
-  return formatTz(new Date(ISODate), "EEEE, MMMM d, yyyy", { timeZone: "UTC" });
+function formatDate(date) {
+  if (!date) return "";
+  return format(date, "EEEE, MMMM d, yyyy");
 }
 
 /**
@@ -110,7 +109,7 @@ function formatTime(time24Hour) {
 
   const parsedTime = parseDate(time24Hour, "HH:mm:ss", new Date());
 
-  return formatTz(parsedTime, "h:mm a");
+  return format(parsedTime, "h:mm a");
 }
 
 /**
