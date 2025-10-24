@@ -2,11 +2,13 @@ import { Op } from "sequelize";
 import { ParkArea } from "../../models/index.js";
 
 /**
- * Validates DOOT Park Areas for duplicate and invalid strapiOrcsAreaNumber values
+ * Validates DOOT Park Areas for invalid strapiOrcsAreaNumber values
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
 export async function validateDootParkAreas() {
+  let isValid = true;
+
   // Make sure all records DOOT have a strapiOrcsAreaNumber in the format #-# (e.g. "1234-1")
   const invalidParkAreas = await ParkArea.findAll({
     where: {
@@ -19,12 +21,12 @@ export async function validateDootParkAreas() {
 
   if (invalidParkAreas.length > 0) {
     console.error(
-      `Aborting import: Found ${invalidParkAreas.length} DOOT ParkAreas with missing or incorrectly formatted strapiOrcsAreaNumber.`,
+      `Found ${invalidParkAreas.length} DOOT ParkAreas with missing or incorrectly formatted strapiOrcsAreaNumber.`,
     );
-    return false;
+    isValid = false;
   }
 
-  return true;
+  return isValid;
 }
 
 /**
@@ -33,6 +35,9 @@ export async function validateDootParkAreas() {
  * @returns {boolean} Returns true if validation passes, false if validation fails
  */
 export function validateStrapiParkAreas(parkAreas) {
+  let isValid = true;
+
+  // Validate each Strapi ParkArea
   for (const parkArea of parkAreas) {
     const { orcsAreaNumber, parkAreaName, protectedArea } = parkArea.attributes;
     const parkAreaId = parkArea.id;
@@ -40,17 +45,17 @@ export function validateStrapiParkAreas(parkAreas) {
     // Check for missing orcsAreaNumber
     if (!orcsAreaNumber?.trim().length) {
       console.error(
-        `Aborting import: Invalid Strapi ParkArea: ${parkAreaName} (${parkAreaId}) - no orcsAreaNumber found`,
+        `Invalid Strapi ParkArea: ${parkAreaName} (${parkAreaId}) - no orcsAreaNumber found`,
       );
-      return false;
+      isValid = false;
     }
 
     // Make sure protectedArea.orcs exists
     if (!protectedArea?.data?.attributes?.orcs) {
       console.error(
-        `Aborting import: Strapi ParkArea: ${parkAreaName} (${parkAreaId}) has no related protectedArea.orcs.`,
+        `Strapi ParkArea: ${parkAreaName} (${parkAreaId}) has no related protectedArea.orcs.`,
       );
-      return false;
+      isValid = false;
     }
 
     // Make sure orcsAreaNumber starts with protectedArea.orcs
@@ -58,11 +63,11 @@ export function validateStrapiParkAreas(parkAreas) {
 
     if (!orcsAreaNumber.startsWith(expectedPrefix)) {
       console.error(
-        `Aborting import: Invalid Strapi ParkArea: ${parkAreaName} (${parkAreaId}) - orcsAreaNumber "${orcsAreaNumber}" does not start with expected prefix "${expectedPrefix}"`,
+        `Invalid Strapi ParkArea: ${parkAreaName} (${parkAreaId}) - orcsAreaNumber "${orcsAreaNumber}" does not start with expected prefix "${expectedPrefix}"`,
       );
-      return false;
+      isValid = false;
     }
   }
 
-  return true;
+  return isValid;
 }

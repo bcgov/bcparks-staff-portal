@@ -17,18 +17,23 @@ export default async function importFeaturesFromStrapi(transaction = null) {
     const strapiParkFeatures = parkFeatureData?.items || [];
 
     if (strapiParkFeatures.length === 0) {
-      console.log("No park-feature data found in Strapi");
+      console.log("No Feature data found in Strapi");
       return { created: 0, skipped: 0, updated: 0 };
     }
 
-    console.log(`Found ${strapiParkFeatures.length} park features in Strapi`);
+    console.log(`Found ${strapiParkFeatures.length} Features in Strapi`);
 
     // Validate Features in DOOT and Strapi
     const dootValid = await validateDootFeatures();
     const strapiValid = validateStrapiFeatures(strapiParkFeatures);
 
+    let useSafeMode = false;
+
     if (!dootValid || !strapiValid) {
-      return { created: 0, skipped: 0, updated: 0 };
+      useSafeMode = true;
+      console.warn(
+        "Validation failed. Running in safe mode: only updates allowed, no inserts or deactivations.",
+      );
     }
 
     // Get all DOOT Features for strapiOrcsFeatureNumber lookup
@@ -43,7 +48,7 @@ export default async function importFeaturesFromStrapi(transaction = null) {
       ]),
     );
 
-    console.log(`Found ${dootFeatures.length} existing features in DOOT`);
+    console.log(`Found ${dootFeatures.length} existing Features in DOOT`);
 
     // Get all DOOT Parks for orcs lookup
     const dootParks = await Park.findAll({
@@ -84,6 +89,7 @@ export default async function importFeaturesFromStrapi(transaction = null) {
     let createdCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
+    let deactivatedCount = 0;
 
     for (const strapiParkFeature of strapiParkFeatures) {
       const {
@@ -133,7 +139,7 @@ export default async function importFeaturesFromStrapi(transaction = null) {
 
       if (!orcsFeatureNumber) {
         console.warn(
-          `Skipping feature "${parkFeatureName}" - no orcsFeatureNumber found`,
+          `Skipping Feature: "${parkFeatureName}" - no orcsFeatureNumber found`,
         );
         skippedCount++;
         continue;
@@ -158,31 +164,65 @@ export default async function importFeaturesFromStrapi(transaction = null) {
         // Update matched feature
         await matchedFeature.update(featureToSave, { transaction });
         console.log(
-          `Updated feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
+          `Updated Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
         );
         updatedCount++;
-      } else {
+      } else if (!useSafeMode) {
         // Create new feature
         await Feature.create(featureToSave, { transaction });
         console.log(
-          `Created feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
+          `Created Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
         );
         createdCount++;
+      } else {
+        console.warn(
+          `Skipped inserting Feature due to safe mode: ${parkFeatureName} (orcsFeatureNumber: ${orcsFeatureNumber})`,
+        );
+        skippedCount++;
+      }
+    }
+
+    // Create a Set of Strapi orcsFeatureNumbers for efficient lookup
+    const strapiOrcsFeatureNumbers = new Set(
+      strapiParkFeatures.map((pf) => pf.attributes.orcsFeatureNumber),
+    );
+
+    // loop through DOOT ParkFeatures to find any that are missing from Strapi data
+    for (const dootParkFeature of dootFeatures) {
+      if (
+        !strapiOrcsFeatureNumbers.has(dootParkFeature.strapiOrcsFeatureNumber)
+      ) {
+        if (!useSafeMode) {
+          // Deactivate the DOOT ParkFeature
+          dootParkFeature.active = false;
+          await dootParkFeature.save({ transaction });
+          console.log(
+            `Deactivated Feature: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber})`,
+          );
+          deactivatedCount++;
+        } else {
+          console.warn(
+            `Skipped deactivating Feature due to safe mode: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber})`,
+          );
+          skippedCount++;
+        }
       }
     }
 
     console.log(`\nImport complete:`);
-    console.log(`- Created: ${createdCount} features`);
-    console.log(`- Updated: ${updatedCount} features`);
-    console.log(`- Skipped: ${skippedCount} features`);
+    console.log(`- Created: ${createdCount} Features`);
+    console.log(`- Updated: ${updatedCount} Features`);
+    console.log(`- Skipped: ${skippedCount} Features`);
+    console.log(`- Deactivated: ${deactivatedCount} Features`);
 
     return {
       created: createdCount,
       updated: updatedCount,
       skipped: skippedCount,
+      deactivated: deactivatedCount,
     };
   } catch (error) {
-    console.error("Error importing features from Strapi:", error);
+    console.error("Error importing Features from Strapi:", error);
     throw error;
   }
 }
@@ -197,7 +237,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     await transaction.commit();
     console.log("\nTransaction committed successfully");
     console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}`,
+      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Deactivated: ${result.deactivated}`,
     );
   } catch (err) {
     await transaction.rollback();

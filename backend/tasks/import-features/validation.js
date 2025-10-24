@@ -2,11 +2,13 @@ import { Op } from "sequelize";
 import { Feature } from "../../models/index.js";
 
 /**
- * Validates DOOT Features for duplicate and invalid strapiOrcsFeatureNumber values
+ * Validates DOOT Features for invalid strapiOrcsFeatureNumber values
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
 export async function validateDootFeatures() {
+  let isValid = true;
+
   // Validate DOOT Features to make sure all records have a strapiOrcsFeatureNumber in the
   // format #-# (e.g. "1234-1")
   const invalidFeatures = await Feature.findAll({
@@ -20,12 +22,12 @@ export async function validateDootFeatures() {
 
   if (invalidFeatures.length > 0) {
     console.error(
-      `Aborting import: Found ${invalidFeatures.length} DOOT Features with missing or incorrectly formatted strapiOrcsFeatureNumber.`,
+      `Found ${invalidFeatures.length} DOOT Features with missing or incorrectly formatted strapiOrcsFeatureNumber.`,
     );
-    return false;
+    isValid = false;
   }
 
-  return true;
+  return isValid;
 }
 
 /**
@@ -35,6 +37,9 @@ export async function validateDootFeatures() {
  * @returns {boolean} Returns true if validation passes, false if validation fails
  */
 export function validateStrapiFeatures(features) {
+  let isValid = true;
+
+  // Validate each Strapi ParkFeature
   for (const feature of features) {
     const { parkFeatureName, orcsFeatureNumber, protectedArea, parkArea } =
       feature.attributes;
@@ -43,28 +48,31 @@ export function validateStrapiFeatures(features) {
     // Check for missing orcsFeatureNumber
     if (!orcsFeatureNumber?.trim().length) {
       console.error(
-        `Aborting import: Invalid Strapi ParkFeature: ${parkFeatureName} (${featureId}) - no orcsFeatureNumber found`,
+        `Invalid Strapi ParkFeature: ${parkFeatureName} (${featureId}) - no orcsFeatureNumber found`,
       );
-      return false;
+      isValid = false;
     }
 
     // Make sure protectedArea.orcs exists
     if (!protectedArea?.data?.attributes?.orcs) {
       console.error(
-        `Aborting import: Strapi ParkFeature: ${parkFeatureName} (${featureId}) has no related protectedArea.orcs.`,
+        `Strapi ParkFeature: ${parkFeatureName} (${featureId}) has no related protectedArea.`,
       );
-      return false;
+      isValid = false;
+
+      // Skip further checks if protectedArea.orcs is missing
+      continue;
     }
 
     // Check if orcsFeatureNumber and orcsAreaNumber both start with the expected ORCS
     const expectedPrefix = `${protectedArea.data.attributes.orcs}-`;
 
     // orcsFeatureNumber must start with protectedArea.orcs + "-"
-    if (!orcsFeatureNumber.startsWith(expectedPrefix)) {
+    if (orcsFeatureNumber && !orcsFeatureNumber.startsWith(expectedPrefix)) {
       console.error(
-        `Aborting import: Invalid Strapi ParkFeature: ${parkFeatureName} (${featureId}) - orcsFeatureNumber "${orcsFeatureNumber}" does not start with expected prefix "${expectedPrefix}"`,
+        `Invalid Strapi ParkFeature: ${parkFeatureName} (${featureId}) - orcsFeatureNumber "${orcsFeatureNumber}" does not start with expected prefix "${expectedPrefix}"`,
       );
-      return false;
+      isValid = false;
     }
 
     const orcsAreaNumber = parkArea?.data?.attributes?.orcsAreaNumber;
@@ -73,12 +81,12 @@ export function validateStrapiFeatures(features) {
     if (orcsAreaNumber) {
       if (!orcsAreaNumber.startsWith(expectedPrefix)) {
         console.error(
-          `Aborting import: Invalid Strapi ParkFeature: ${parkFeatureName} (${featureId}) - orcsAreaNumber "${orcsAreaNumber}" does not start with expected prefix "${expectedPrefix}"`,
+          `Invalid Strapi ParkFeature: ${parkFeatureName} (${featureId}) - orcsAreaNumber "${orcsAreaNumber}" does not start with expected prefix "${expectedPrefix}"`,
         );
-        return false;
+        isValid = false;
       }
     }
   }
 
-  return true;
+  return isValid;
 }
