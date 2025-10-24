@@ -26,6 +26,13 @@ import splitArray from "../../utils/splitArray.js";
 
 const router = Router();
 
+const FEATURE_ATTRIBUTES = [
+  "id",
+  "publishableId",
+  "dateableId",
+  "strapiOrcsFeatureNumber",
+];
+
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
@@ -340,12 +347,7 @@ async function formatParkAreaData(parkArea, season) {
 
   // Get all Features in this ParkArea
   const features = await parkArea.getFeatures({
-    attributes: [
-      "id",
-      "publishableId",
-      "dateableId",
-      "strapiOrcsFeatureNumber",
-    ],
+    attributes: FEATURE_ATTRIBUTES,
 
     where: { active: true },
   });
@@ -416,12 +418,7 @@ router.post(
           model: Feature,
           as: "feature",
 
-          attributes: [
-            "id",
-            "publishableId",
-            "dateableId",
-            "strapiOrcsFeatureNumber",
-          ],
+          attributes: FEATURE_ATTRIBUTES,
 
           include: [
             {
