@@ -1,8 +1,10 @@
 import axios from "axios";
 
+const baseURL = `${process.env.STRAPI_URL}/api`;
+
 // Create axios instance with strapi auth token headers
 const strapiApi = axios.create({
-  baseURL: process.env.STRAPI_URL,
+  baseURL,
 
   headers: {
     accept: "application/json",
@@ -43,7 +45,7 @@ strapiApi.interceptors.response.use(
     console.error("Strapi API Error:", {
       status: error.response?.status,
       statusText: error.response?.statusText,
-      url: error.config?.url,
+      url: baseURL + error.config?.url,
       message: error.message,
       data: error.response?.data,
     });

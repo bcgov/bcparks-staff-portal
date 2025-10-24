@@ -14,7 +14,9 @@ function PublishPage() {
   const successFlash = useFlashMessage();
   const errorFlash = useFlashMessage();
 
-  const { data, loading, error } = useApiGet("/publish/ready-to-publish/");
+  const { data, fetchData, loading, error } = useApiGet(
+    "/publish/ready-to-publish/",
+  );
   const { seasons = [] } = data ?? {};
 
   const { sendData: publishData, loading: saving } = useApiPost(
@@ -48,12 +50,20 @@ function PublishPage() {
 
     if (proceed) {
       try {
-        await publishData();
+        // Send an array of ready-to-publish Season IDs to the API to for publishing
+        const seasonIds = seasons
+          .filter((season) => season.readyToPublish)
+          .map((season) => season.id);
+
+        await publishData({ seasonIds });
 
         successFlash.open(
           "Dates publishing to API",
           "Approved dates publishing may take up to one hour.",
         );
+
+        // Update the table by re-fetching the data
+        await fetchData();
       } catch (publishError) {
         console.error("Error publishing to API", publishError);
 
@@ -88,7 +98,7 @@ function PublishPage() {
         <div className="d-flex justify-content-end mb-2">
           <button
             onClick={publishToApi}
-            disabled={seasons.length === 0}
+            disabled={saving || seasons.length === 0}
             className="btn btn-primary"
           >
             Publish to API
