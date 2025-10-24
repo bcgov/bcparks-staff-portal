@@ -500,6 +500,19 @@ router.post(
       }
     }
 
+    // If there are some seasons, but they can't be published due to incomplete data
+    // (Missing ORCS codes, etc), then quit and return an error
+    if (publishData.length === 0) {
+      console.error(
+        "No valid publishable data could be generated for the selected seasons.",
+      );
+      res.status(400).json({
+        error:
+          "No valid publishable data could be generated for the selected seasons.",
+      });
+      return;
+    }
+
     // Split publishData into chunks of ~500KB to avoid exceeding Strapi API limits
     const publishDataChunks = splitArray(publishData, 500 * 1024);
 
