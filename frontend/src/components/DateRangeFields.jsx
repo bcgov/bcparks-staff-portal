@@ -8,7 +8,6 @@ import Form from "react-bootstrap/Form";
 
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
-import { normalizeToUTCDate } from "@/lib/utils";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 function DateRange({
@@ -28,17 +27,15 @@ function DateRange({
   const minDate = useMemo(() => startOfYear(addYears(new Date(), 1)), []);
   const maxDate = useMemo(() => endOfYear(addYears(new Date(), 2)), []);
 
-  // Convert to UTC if necessary, and call the update method from the parent
+  // Call the update method from the parent
   function onSelect(dateField, dateObj) {
-    const newValue = normalizeToUTCDate(dateObj);
-
     // Existing ranges have an ID
     if (dateRange.id) {
-      return updateDateRange(dateRange.id, dateField, newValue);
+      return updateDateRange(dateRange.id, dateField, dateObj);
     }
 
     // New ranges have a tempId
-    return updateDateRange(dateRange.tempId, dateField, newValue, true);
+    return updateDateRange(dateRange.tempId, dateField, dateObj, true);
   }
 
   return (

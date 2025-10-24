@@ -1,10 +1,9 @@
-import { useState, useMemo, memo } from "react";
+import { useState, memo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import DatePicker from "react-datepicker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
-import { normalizeToUTCDate, normalizeToLocalDate } from "@/lib/utils";
 import ErrorSlot from "@/components/ValidationErrorSlot";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
@@ -24,17 +23,9 @@ function DootDatePickerComponent({
 
   const { elements } = useValidationContext();
 
-  const adjustedLocalDate = useMemo(
-    () => normalizeToLocalDate(localDate),
-    [localDate],
-  );
-
   // Updates the local date to control the DatePicker
   function onDateChange(dateObj) {
-    // Store as UTC time
-    const utcDateObj = normalizeToUTCDate(dateObj);
-
-    setLocalDate(utcDateObj ?? null);
+    setLocalDate(dateObj);
   }
 
   return (
@@ -46,16 +37,16 @@ function DootDatePickerComponent({
           minDate={minDate}
           maxDate={maxDate}
           className={classNames("form-control", dateField)}
-          selected={adjustedLocalDate}
+          selected={localDate}
           onChange={(newDate) => onDateChange(newDate)}
           onBlur={() => {
             // Update the `dates` object on blur
-            onSelect(dateField, adjustedLocalDate);
+            onSelect(dateField, localDate);
           }}
           onKeyDown={(event) => {
             // Update the `dates` object on Enter
             if (event.key === "Enter" && event.target.tagName === "INPUT") {
-              onSelect(dateField, adjustedLocalDate);
+              onSelect(dateField, localDate);
             }
           }}
           dateFormat="EEE, MMM d, yyyy"

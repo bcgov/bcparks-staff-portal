@@ -1,5 +1,4 @@
 import { format, parse } from "date-fns";
-import { formatInTimeZone } from "date-fns-tz";
 
 // Month, day, year
 const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
@@ -7,52 +6,16 @@ const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
 const DATE_FORMAT_SHORT = "EEE, MMM d";
 const DATE_FORMAT_SHORT_WITH_YEAR = "EEE, MMM d, yyyy";
 
-/**
- * Converts a Date to a UTC Date at midnight on the same day
- * (Adds 7/8 hours to a local Date at midnight)
- * @param {Date|null} dateObject local date object
- * @returns {Date|null} UTC zoned date object
- */
-export function normalizeToUTCDate(dateObject) {
-  // Allow null dates to pass through
-  if (!dateObject) return null;
-
-  return new Date(
-    Date.UTC(
-      dateObject.getFullYear(),
-      dateObject.getMonth(),
-      dateObject.getDate(),
-    ),
-  );
+export function formatDate(date) {
+  return format(date, DATE_FORMAT_DEFAULT);
 }
 
-/**
- * Converts a UTC Date to a local Date at midnight on the same day
- * (Removes 7/8 hours from a UTC Date at midnight)
- * @param {Date|null} dateObject UTC zoned date object
- * @returns {Date|null} local date object
- */
-export function normalizeToLocalDate(dateObject) {
-  // Allow null dates to pass through
-  if (!dateObject) return null;
-
-  return new Date(
-    dateObject.getUTCFullYear(),
-    dateObject.getUTCMonth(),
-    dateObject.getUTCDate(),
-  );
+export function formatDateShort(date) {
+  return format(date, DATE_FORMAT_SHORT);
 }
 
-export function formatDate(date, timezone = "UTC") {
-  return formatInTimeZone(date, timezone, DATE_FORMAT_DEFAULT);
-}
-
-export function formatDateShort(date, timezone = "UTC") {
-  return formatInTimeZone(date, timezone, DATE_FORMAT_SHORT);
-}
-
-export function formatDateShortWithYear(date, timezone = "UTC") {
-  return formatInTimeZone(date, timezone, DATE_FORMAT_SHORT_WITH_YEAR);
+export function formatDateShortWithYear(date) {
+  return format(date, DATE_FORMAT_SHORT_WITH_YEAR);
 }
 
 /**

@@ -11,8 +11,8 @@ import getEnv from "../config/getEnv";
  * @returns {any} - parsed value
  */
 function parseJsonWithDates(key, value) {
-  // If the value is a string and matches the ISO date format, parse it as a date
-  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}T/u.test(value)) {
+  // If the value is a string and matches the ISO or YYYY-MM-DD date format, parse it as a date
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}(T|$)/u.test(value)) {
     const date = parseISO(value);
 
     return isNaN(date.getTime()) ? value : date;
