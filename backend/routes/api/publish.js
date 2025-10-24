@@ -442,9 +442,10 @@ router.post(
     if (seasons.length === 0) {
       // Skip sending to Strapi if there are no seasons to publish
       console.error("No seasons found to publish.");
-      return res.status(400).json({
+      res.status(400).json({
         error: "No seasons found to publish.",
       });
+      return;
     }
 
     for (const season of seasons) {
