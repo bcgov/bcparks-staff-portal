@@ -19,7 +19,7 @@ function isYearRoundRange(consolidateDateRanges) {
 
   // Get Jan 1 and Dec 31 for the year
   const yearStart = startOfYear(dateRange.startDate);
-  const yearEnd = endOfYear(dateRange.endDate);
+  const yearEnd = endOfYear(dateRange.startDate);
 
   // Return true if the date range is Jan 1 - Dec 31
   return (
