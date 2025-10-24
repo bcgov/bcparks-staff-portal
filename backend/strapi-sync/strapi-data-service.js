@@ -74,6 +74,23 @@ const MODEL_CONFIG = {
     endpoint: "/management-areas",
     populate: ["section"],
   },
+  "park-feature-type": {
+    endpoint: "/park-feature-types",
+  },
+  "park-feature": {
+    endpoint: "/park-features",
+    populate: {
+      protectedArea: {
+        fields: ["orcs"],
+      },
+      parkArea: {
+        fields: ["orcsAreaNumber"],
+      },
+      parkFeatureType: {
+        fields: ["featureTypeId"],
+      },
+    },
+  },
 };
 
 /**
