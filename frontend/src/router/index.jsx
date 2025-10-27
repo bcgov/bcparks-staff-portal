@@ -1,4 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
+
+import HQStaffRoute from "./HQStaffRoute";
 import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
@@ -29,12 +31,20 @@ const RouterConfig = createBrowserRouter(
             // Export
             {
               path: "export",
-              element: <ExportPage />,
+              element: (
+                <HQStaffRoute>
+                  <ExportPage />
+                </HQStaffRoute>
+              ),
             },
             // Publish
             {
               path: "publish",
-              element: <PublishPage />,
+              element: (
+                <HQStaffRoute>
+                  <PublishPage />
+                </HQStaffRoute>
+              ),
             },
           ],
         },
