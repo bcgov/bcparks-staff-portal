@@ -1,4 +1,3 @@
-import { normalizeToLocalDate } from "@/lib/utils";
 import { isBefore, isWithinInterval } from "date-fns";
 
 /**
@@ -39,8 +38,7 @@ export default function winterDateYears(seasonData, context) {
 
   // Check each winter date
   winterDates.forEach((winterDateRange) => {
-    const startDate = normalizeToLocalDate(winterDateRange.startDate);
-    const endDate = normalizeToLocalDate(winterDateRange.endDate);
+    const { startDate, endDate } = winterDateRange;
     const idOrTempId = winterDateRange.id || winterDateRange.tempId;
 
     if (startDate && !isWithinInterval(startDate, validStartDates)) {

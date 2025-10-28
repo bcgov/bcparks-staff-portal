@@ -1,5 +1,4 @@
 import { getYear } from "date-fns";
-import { normalizeToLocalDate } from "@/lib/utils";
 
 /**
  * Validates that the date ranges are within the operating year.
@@ -17,11 +16,7 @@ export default function dateInOperatingYear(seasonData, context) {
     // Skip winter dates, since they all break this rule
     if (dateRange.dateType.name === "Winter fee") return;
 
-    // Convert UTC times to local timezone before checking values
-    const localStartDate = normalizeToLocalDate(dateRange.startDate);
-    const localEndDate = normalizeToLocalDate(dateRange.endDate);
-
-    if (dateRange.startDate && getYear(localStartDate) !== operatingYear) {
+    if (dateRange.startDate && getYear(dateRange.startDate) !== operatingYear) {
       context.addError(
         // Show the error below the end date field
         elements.dateField(dateRange.id || dateRange.tempId, "startDate"),
@@ -29,7 +24,7 @@ export default function dateInOperatingYear(seasonData, context) {
       );
     }
 
-    if (dateRange.endDate && getYear(localEndDate) !== operatingYear) {
+    if (dateRange.endDate && getYear(dateRange.endDate) !== operatingYear) {
       context.addError(
         // Show the error below the end date field
         elements.dateField(dateRange.id || dateRange.tempId, "endDate"),

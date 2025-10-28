@@ -8,22 +8,6 @@ import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPubli
 import * as STATUS from "../../constants/seasonStatus.js";
 
 // Functions
-/**
- * Converts a UTC Date to a local Date at midnight on the same day
- * (Removes 7/8 hours from a UTC Date at midnight)
- * @param {Date|null} dateObject UTC zoned date object
- * @returns {Date|null} local date object
- */
-export function normalizeToLocalDate(dateObject) {
-  // Allow null dates to pass through
-  if (!dateObject) return null;
-
-  return new Date(
-    dateObject.getUTCFullYear(),
-    dateObject.getUTCMonth(),
-    dateObject.getUTCDate(),
-  );
-}
 
 export async function populateAnnualDateRangesForYear(
   targetYear,
@@ -107,8 +91,8 @@ export async function populateAnnualDateRangesForYear(
       // copy each previous DateRange to current season
       for (const prevRange of prevDateRanges) {
         const currentYear = targetSeason.operatingYear;
-        const prevStartDate = normalizeToLocalDate(prevRange.startDate);
-        const prevEndDate = normalizeToLocalDate(prevRange.endDate);
+        const prevStartDate = prevRange.startDate;
+        const prevEndDate = prevRange.endDate;
 
         const newStartDate = new Date(prevStartDate);
         const newEndDate = new Date(prevEndDate);
