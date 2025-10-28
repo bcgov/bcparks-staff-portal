@@ -4,7 +4,7 @@ import useAccess from "@/hooks/useAccess";
 
 export default function HQStaffRoute({ children }) {
   const { ROLES, hasAnyRole } = useAccess();
-  const hqStaff = hasAnyRole([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]);
+  const hqStaff = hasAnyRole([ROLES.APPROVER]);
 
   if (!hqStaff) {
     return <Navigate to="/" replace />;
