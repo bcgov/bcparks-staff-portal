@@ -83,7 +83,7 @@ async function getAllFrontcountrySeasons(
 ) {
   // Find the FeatureTypeId for "Frontcountry campground"
   const frontcountryType = await FeatureType.findOne({
-    where: { name: FRONTCOUNTRY_CAMPING_TYPE_NAME },
+    where: { name: FRONTCOUNTRY_CAMPING_TYPE_NAME }, // could use constant now, and ditch this query
     attributes: ["id"],
     transaction,
   });
@@ -92,7 +92,7 @@ async function getAllFrontcountrySeasons(
     throw new Error("Frontcountry campground FeatureType not found.");
   }
 
-  const FRONTCOUNTRY_CAMPING_TYPE_ID = frontcountryType.id;
+  const FRONTCOUNTRY_CAMPING_TYPE_ID = frontcountryType.id; // could use constant now
 
   // Get all Seasons in the Park for the operating year
   const parkSeasons = await Park.findByPk(park.id, {
@@ -165,6 +165,7 @@ async function addWinterFeeDatesForSeason(
   transaction,
 ) {
   // If the season has any Area/Feature-level winter dates already, skip it
+  // maybe we clear them out and re-add them instead? TBD
   const existingWinterDates = await DateRange.count({
     where: {
       seasonId: season.id,
@@ -247,6 +248,7 @@ async function processAreaAndFeatureSeasons(
 
   // Park-level winter fees
   const parkLevelWinterFeeType = await DateType.findOne({
+    // can use constants for all these and ditch the queries
     attributes: ["id"],
     where: { name: PARK_WINTER_FEE_DATE_TYPE_NAME, parkLevel: true },
     transaction,
@@ -302,7 +304,7 @@ async function processAreaAndFeatureSeasons(
     const result = await addWinterFeeDatesForSeason(
       season,
       consolidatedWinterDates,
-      featureLevelWinterFeeType.id,
+      featureLevelWinterFeeType.id, // can use constants and remove these params
       featureLevelOperatingType.id,
       transaction,
     );
