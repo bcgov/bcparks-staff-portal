@@ -33,6 +33,13 @@ export default (sequelize) => {
         sourceKey: "publishableId",
         as: "seasons",
       });
+
+      // A park area has an associated GateDetail record
+      ParkArea.hasOne(models.GateDetail, {
+        foreignKey: "publishableId",
+        sourceKey: "publishableId",
+        as: "gateDetails",
+      });
     }
   }
   ParkArea.init(
