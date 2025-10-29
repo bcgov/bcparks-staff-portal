@@ -8,7 +8,7 @@ import MainLayout from "./layouts/MainLayout";
 import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
 import LoginPage from "./pages/LoginPage";
-import { ROLES } from "@/hooks/useAccess";
+import { ROLES } from "@/config/permissions";
 
 const RouterConfig = createBrowserRouter(
   [
