@@ -2,11 +2,9 @@ import "../env.js";
 
 import { Op } from "sequelize";
 
-import { get } from "./axios.js";
 import {
   getItemByAttributes,
   createModel,
-  getStrapiModelData,
   getFeatureTypeIcon,
 } from "./utils.js";
 import winterParks from "./park-winter-dates.js";
@@ -22,179 +20,8 @@ import {
   ManagementArea,
 } from "../models/index.js";
 import * as STATUS from "../constants/seasonStatus.js";
-
-/**
- * Gets data for specific page number
- * @param {string} url paginated URL
- * @returns {Array} list of items for that page
- */
-async function getPageData(url) {
-  try {
-    const response = await get(url);
-
-    return response.data;
-  } catch (error) {
-    console.error(error);
-
-    return [];
-  }
-}
-
-/**
- * Gets data for all pages for a specific model
- * @param {string} url root URL with endpoint for that model
- * @param {URLSearchParams} queryParams optional fields that need to be populated
- * @returns {Array} list of items
- */
-export async function getData(url, queryParams) {
-  try {
-    const currentUrl = queryParams.toString()
-      ? `${url}?${queryParams.toString()}`
-      : url;
-
-    const data = await get(currentUrl);
-
-    const pagination = data.meta.pagination;
-
-    const items = data.data;
-
-    for (let page = 2; page <= pagination.pageCount; page++) {
-      // wait 1 second per request to not overload the server
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const params = new URLSearchParams(queryParams);
-
-      params.append("pagination[page]", page);
-
-      const paginatedUrl = `${url}?${params.toString()}`;
-      const pageData = await getPageData(paginatedUrl);
-
-      items.push(...pageData);
-    }
-
-    return items;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-}
-
-/**
- * Fetches data for all the models of interest asynchronously
- * @returns {Array} list of all models with thier name, endpoint, and items
- */
-export async function fetchAllModels() {
-  const url = `${process.env.STRAPI_URL}/api`;
-
-  const strapiData = [
-    {
-      endpoint: "/park-operations",
-      model: "park-operation",
-      fields: [{ relation: "protectedArea", fields: ["orcs"] }],
-      items: [],
-    },
-    {
-      endpoint: "/park-operation-sub-areas",
-      model: "park-operation-sub-area",
-      fields: ["protectedArea", "parkSubAreaType"],
-      items: [],
-    },
-    {
-      endpoint: "/park-areas",
-      model: "park-area",
-      fields: [{ relation: "protectedArea", fields: ["orcs"] }],
-      items: [],
-    },
-    {
-      endpoint: "/park-operation-sub-area-dates",
-      model: "park-operation-sub-area-date",
-      fields: [
-        {
-          relation: "parkOperationSubArea",
-          fields: ["id", "hasBackcountryPermits"],
-        },
-      ],
-      items: [],
-    },
-    {
-      endpoint: "/park-feature-dates",
-      model: "park-feature-date",
-      fields: [{ relation: "parkOperationSubArea", fields: ["id"] }],
-      items: [],
-    },
-    {
-      endpoint: "/protected-areas",
-      model: "protected-area",
-      fields: ["parkFacilities", "parkOperation", "managementAreas"],
-      items: [],
-    },
-    {
-      endpoint: "/camping-types",
-      model: "camping-type",
-      fields: null,
-      items: [],
-    },
-    {
-      endpoint: "/facility-types",
-      model: "facility-type",
-      fields: null,
-      items: [],
-    },
-    {
-      endpoint: "/park-operation-sub-area-types",
-      model: "park-operation-sub-area-type",
-      fields: ["facilityType", "campingType"],
-      items: [],
-    },
-    {
-      endpoint: "/park-operation-dates",
-      model: "park-operation-date",
-      fields: [{ relation: "protectedArea", fields: ["orcs"] }],
-      items: [],
-    },
-    {
-      endpoint: "/sections",
-      model: "section",
-      fields: null,
-      items: [],
-    },
-    {
-      endpoint: "/management-areas",
-      model: "management-area",
-      fields: ["section"],
-      items: [],
-    },
-  ];
-
-  await Promise.all(
-    strapiData.map(async (item) => {
-      const currentUrl = url + item.endpoint;
-      const params = new URLSearchParams();
-
-      if (item.fields) {
-        for (const field of item.fields) {
-          if (typeof field === "string") {
-            params.append(`populate[${field}][fields]`, "id");
-          } else if (
-            typeof field === "object" &&
-            field.relation &&
-            field.fields
-          ) {
-            field.fields.forEach((nestedField, index) => {
-              params.append(
-                `populate[${field.relation}][fields][${index}]`,
-                nestedField,
-              );
-            });
-          }
-        }
-      }
-      item.items = await getData(currentUrl, params);
-    }),
-  );
-
-  return strapiData;
-}
+import { getAllPages } from "../utils/strapiApi.js";
+import { getStrapiModelData } from "./strapi-data-service.js";
 
 /**
  * For the park in strapi, create a new park or update its corresponding existing park
@@ -250,7 +77,7 @@ export async function syncParks(parkData) {
 export async function createOrUpdateFeatureType(strapiData, item) {
   let dbItem = await getItemByAttributes(FeatureType, { strapiId: item.id });
 
-  const icon = getFeatureTypeIcon(strapiData, item);
+  const icon = await getFeatureTypeIcon(item);
 
   if (dbItem) {
     dbItem.name = item.attributes.subAreaType;
@@ -751,12 +578,10 @@ export async function syncManagementAreas(managementAreaData) {
  * @returns {Promise[Object]} resolves when all data has been synced
  */
 export async function syncData() {
-  const strapiData = await fetchAllModels();
-
-  const parkData = getStrapiModelData(strapiData, "protected-area");
-  const mgmtAreaData = getStrapiModelData(strapiData, "management-area");
-  const sectionData = getStrapiModelData(strapiData, "section");
-  const parkOperationData = getStrapiModelData(strapiData, "park-operation");
+  const parkData = await getStrapiModelData("protected-area");
+  const mgmtAreaData = await getStrapiModelData("management-area");
+  const sectionData = await getStrapiModelData("section");
+  const parkOperationData = await getStrapiModelData("park-operation");
 
   // Add mgmt area and section data to parkData
   parkData.items = parkData.items.map((park) => {
@@ -802,15 +627,14 @@ export async function syncData() {
     };
   });
 
-  const featureTypeData = getStrapiModelData(
-    strapiData,
+  const featureTypeData = await getStrapiModelData(
     "park-operation-sub-area-type",
   );
-  const featureData = getStrapiModelData(strapiData, "park-operation-sub-area");
+  const featureData = await getStrapiModelData("park-operation-sub-area");
 
   await syncParks(parkData);
   // featureTypes need other strapi data to get the icon from campingType or facilityType
-  await syncFeatureTypes(strapiData, featureTypeData);
+  await syncFeatureTypes(featureTypeData, featureTypeData);
   await syncFeatures(featureData);
   await syncSections(sectionData);
   await syncManagementAreas(mgmtAreaData);
@@ -848,17 +672,11 @@ export async function oneTimeDataImport() {
 
   const currentUrl = url + datesData.endpoint;
 
-  const params = new URLSearchParams();
-
-  if (datesData.fields) {
-    for (const field of datesData.fields) {
-      params.append(`populate[${field}][fields]`, "id");
-    }
-  }
-
   await createWinterFeatureType();
 
-  datesData.items = await getData(currentUrl, params);
+  datesData.items = await getAllPages(currentUrl, {
+    populate: { parkOperationSubArea: { fields: ["id"] } },
+  });
 
   await createDatesAndSeasons(datesData);
 }

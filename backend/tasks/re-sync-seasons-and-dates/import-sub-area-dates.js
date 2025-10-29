@@ -10,18 +10,14 @@ import {
   DateRange,
   DateType,
 } from "../../models/index.js";
-import { fetchAllModels } from "../../strapi-sync/sync.js";
-import { getStrapiModelData } from "../../strapi-sync/utils.js";
+import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
 
 export async function importSubAreaDates() {
   const transaction = await Season.sequelize.transaction();
 
   try {
-    // fetch all models from Strapi
-    const strapiData = await fetchAllModels();
     // get park-operation-sub-area-dates data from Strapi
-    const subAreaDatesData = getStrapiModelData(
-      strapiData,
+    const subAreaDatesData = await getStrapiModelData(
       "park-operation-sub-area-date",
     );
 

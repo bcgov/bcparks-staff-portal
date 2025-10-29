@@ -12,8 +12,7 @@ import {
   DateRangeAnnual,
 } from "../../models/index.js";
 import { Op } from "sequelize";
-import { fetchAllModels } from "../../strapi-sync/sync.js";
-import { getStrapiModelData } from "../../strapi-sync/utils.js";
+import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
 
 // Functions
 // finds dateableId for a given park and "Operating" dateType
@@ -44,10 +43,8 @@ async function findOperatingDateableId(park, operatingDateType, transaction) {
 
 export async function createDateRangeAnnualEntries() {
   const transaction = await DateRangeAnnual.sequelize.transaction();
-  // fetch all models from Strapi
-  const strapiData = await fetchAllModels();
   // get park-operation data from Strapi
-  const parkOperationData = getStrapiModelData(strapiData, "park-operation");
+  const parkOperationData = await getStrapiModelData("park-operation");
 
   try {
     // get dateType "Operating"
