@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
 
-import HQStaffRoute from "./HQStaffRoute";
+import AccessControlledRoute from "./AccessControlledRoute";
 import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
@@ -8,6 +8,7 @@ import MainLayout from "./layouts/MainLayout";
 import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
 import LoginPage from "./pages/LoginPage";
+import { ROLES } from "@/hooks/useAccess";
 
 const RouterConfig = createBrowserRouter(
   [
@@ -32,18 +33,18 @@ const RouterConfig = createBrowserRouter(
             {
               path: "export",
               element: (
-                <HQStaffRoute>
+                <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
                   <ExportPage />
-                </HQStaffRoute>
+                </AccessControlledRoute>
               ),
             },
             // Publish
             {
               path: "publish",
               element: (
-                <HQStaffRoute>
+                <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
                   <PublishPage />
-                </HQStaffRoute>
+                </AccessControlledRoute>
               ),
             },
           ],
