@@ -14,7 +14,7 @@ export default function LandingPageTabs() {
   const { isApprover, hqStaff, hasAllParkAccess } = useMemo(
     () => ({
       isApprover: checkAccess(ROLES.APPROVER),
-      hqStaff: hasAnyRole([ROLES.APPROVER, ROLES.ALL_PARK_ACCESS]),
+      hqStaff: hasAnyRole([ROLES.APPROVER]),
       hasAllParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
     }),
     [checkAccess, hasAnyRole, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
