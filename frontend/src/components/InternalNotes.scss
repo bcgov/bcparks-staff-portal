@@ -2,4 +2,8 @@
   .note-metadata {
     color: var(--theme-gray-80);
   }
+
+  .previous-note, textarea {
+    max-width: 600px;
+  }
 }

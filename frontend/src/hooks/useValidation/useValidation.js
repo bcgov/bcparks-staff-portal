@@ -6,6 +6,7 @@ import requiredDateRanges from "./rules/requiredDateRanges.js";
 import startDateBeforeEndDate from "./rules/startDateBeforeEndDate.js";
 import dateInOperatingYear from "./rules/dateInOperatingYear.js";
 import noOverlapPrevious from "./rules/noOverlapPrevious.js";
+import noteCharacterLimit from "./rules/noteCharacterLimit.js";
 import changeNoteRequired from "./rules/changeNoteRequired.js";
 import reservationWithinOperating from "./rules/reservationWithinOperating.js";
 import reservationEndsBeforeOperatingEnds from "./rules/reservationEndsBeforeOperatingEnds.js";
@@ -110,6 +111,7 @@ function validate(seasonData, seasonContext) {
   startDateBeforeEndDate(seasonData, validationContext);
   dateInOperatingYear(seasonData, validationContext);
   noOverlapPrevious(seasonData, validationContext);
+  noteCharacterLimit(seasonData, validationContext);
   changeNoteRequired(seasonData, validationContext);
   reservationWithinOperating(seasonData, validationContext);
   reservationEndsBeforeOperatingEnds(seasonData, validationContext);
