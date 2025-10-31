@@ -203,7 +203,6 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     inReservationSystem: feature.inReservationSystem,
     featureType: {
       id: feature.featureType.id,
-      publishableId: feature.featureType.publishableId,
       name: feature.featureType.name,
     },
     seasons: filteredSeasons,
