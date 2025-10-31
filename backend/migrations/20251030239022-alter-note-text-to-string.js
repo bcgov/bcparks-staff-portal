@@ -9,7 +9,7 @@ module.exports = {
 
   async down(queryInterface, Sequelize) {
     await queryInterface.changeColumn("SeasonChangeLogs", "notes", {
-      type: Sequelize.STRING(255),
+      type: Sequelize.TEXT,
       allowNull: true,
     });
   },
