@@ -73,7 +73,7 @@ function featureModel(minYear, where = {}) {
       {
         model: FeatureType,
         as: "featureType",
-        attributes: ["id", "publishableId", "name"],
+        attributes: ["id", "name"],
       },
       // Publishable Seasons for the Feature
       seasonModel(minYear, false),
