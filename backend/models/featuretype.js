@@ -12,24 +12,13 @@ export default (sequelize) => {
         foreignKey: "featureTypeId",
         as: "features",
       });
-
-      FeatureType.belongsTo(models.Dateable, {
-        foreignKey: "dateableId",
-        as: "dateable",
-      });
-
-      FeatureType.belongsTo(models.Publishable, {
-        foreignKey: "publishableId",
-        as: "publishable",
-      });
     }
   }
   FeatureType.init(
     {
       name: DataTypes.STRING,
-      strapiId: DataTypes.INTEGER,
+      strapiFeatureTypeId: DataTypes.INTEGER,
       icon: DataTypes.STRING,
-      dateableId: DataTypes.INTEGER,
     },
     {
       sequelize,

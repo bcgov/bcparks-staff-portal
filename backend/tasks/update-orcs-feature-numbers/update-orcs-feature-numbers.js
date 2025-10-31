@@ -13,8 +13,8 @@ export default async function updateOrcsFeatureNumbers(transaction = null) {
 
   // Convert to an entities structure of ID pairs for lookups
   const strapiEntities = strapiFeatures.map((feature) => [
-    feature.attributes.featureId,
-    feature.attributes.orcsFeatureNumber,
+    feature.featureId,
+    feature.orcsFeatureNumber,
   ]);
 
   // Count occurrences of each featureId to identify duplicates
