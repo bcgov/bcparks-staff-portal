@@ -3,6 +3,10 @@ import "../../env.js";
 import { Op } from "sequelize";
 import { Park, ParkArea } from "../../models/index.js";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import {
+  validateDootParkAreas,
+  validateStrapiParkAreas,
+} from "./validation.js";
 
 /**
  * Imports/updates ParkArea records from Strapi park-area data by matching orcsAreaNumber
@@ -16,11 +20,24 @@ export default async function importParkAreasFromStrapi(transaction = null) {
     const strapiParkAreas = parkAreaData?.items || [];
 
     if (strapiParkAreas.length === 0) {
-      console.log("No park-area data found in Strapi");
+      console.log("No ParkArea data found in Strapi");
       return { created: 0, skipped: 0, updated: 0 };
     }
 
-    console.log(`Found ${strapiParkAreas.length} park areas in Strapi`);
+    console.log(`Found ${strapiParkAreas.length} ParkAreas in Strapi`);
+
+    // Validate Park Areas in DOOT and Strapi
+    const strapiValid = await validateStrapiParkAreas(strapiParkAreas);
+    const dootValid = await validateDootParkAreas();
+
+    let useSafeMode = false;
+
+    if (!dootValid || !strapiValid) {
+      useSafeMode = true;
+      console.warn(
+        "Validation failed. Running in safe mode: only updates allowed, no inserts or deactivations.",
+      );
+    }
 
     // Get all DOOT ParkAreas for strapiOrcsAreaNumber lookup
     const dootParkAreas = await ParkArea.findAll({
@@ -34,7 +51,7 @@ export default async function importParkAreasFromStrapi(transaction = null) {
       ]),
     );
 
-    console.log(`Found ${dootParkAreas.length} existing park areas in DOOT`);
+    console.log(`Found ${dootParkAreas.length} existing ParkAreas in DOOT`);
 
     // Get all DOOT Parks for orcs lookup
     const dootParks = await Park.findAll({
@@ -51,6 +68,7 @@ export default async function importParkAreasFromStrapi(transaction = null) {
     let createdCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
+    let deactivatedCount = 0;
 
     for (const strapiParkArea of strapiParkAreas) {
       const {
@@ -59,13 +77,13 @@ export default async function importParkAreasFromStrapi(transaction = null) {
         isActive,
         inReservationSystem,
         protectedArea,
-      } = strapiParkArea.attributes;
+      } = strapiParkArea;
 
       // Get the parkId from the related protectedArea
       let parkId = null;
       const protectedAreaOrcs = protectedArea?.data?.attributes.orcs;
 
-      if (protectedAreaOrcs !== null) {
+      if (protectedAreaOrcs && protectedAreaOrcs.length) {
         const protectedAreaOrcsString = String(protectedAreaOrcs);
         const matchedPark = parkLookup.get(protectedAreaOrcsString) ?? null;
 
@@ -74,16 +92,16 @@ export default async function importParkAreasFromStrapi(transaction = null) {
 
       if (!orcsAreaNumber) {
         console.warn(
-          `Skipping park area "${parkAreaName}" - no orcsAreaNumber found`,
+          `Skipping ParkArea: "${parkAreaName}" - no orcsAreaNumber found`,
         );
         skippedCount++;
         continue;
       }
 
       // Find matched ParkArea by strapiOrcsAreaNumber
-      const matchedParkArea = parkAreaLookup.get(orcsAreaNumber);
+      const matchedDootParkArea = parkAreaLookup.get(orcsAreaNumber);
 
-      const parkAreaToSave = {
+      const dootParkAreaToSave = {
         name: parkAreaName,
         strapiOrcsAreaNumber: orcsAreaNumber,
         active: isActive ?? true,
@@ -91,35 +109,79 @@ export default async function importParkAreasFromStrapi(transaction = null) {
         parkId,
       };
 
-      if (matchedParkArea) {
+      if (matchedDootParkArea) {
+        if (isActive && !matchedDootParkArea.active) {
+          console.warn(
+            `Skipping reactivation of park area: ${parkAreaName} (${orcsAreaNumber}). ` +
+              `This park area is active in Strapi but inactive in DOOT. To reactivate, ` +
+              `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
+              `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
+              `result in linking new park areas to previously deactivated data.`,
+          );
+          skippedCount++;
+          continue;
+        }
+
         // Update matched park area
-        await matchedParkArea.update(parkAreaToSave, { transaction });
+        await matchedDootParkArea.update(dootParkAreaToSave, { transaction });
         console.log(
-          `Updated park area: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+          `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
         );
         updatedCount++;
-      } else {
+      } else if (!useSafeMode) {
         // Create new park area
-        await ParkArea.create(parkAreaToSave, { transaction });
+        await ParkArea.create(dootParkAreaToSave, { transaction });
         console.log(
-          `Created park area: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+          `Created ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
         );
         createdCount++;
+      } else {
+        console.warn(
+          `Skipped inserting ParkArea due to safe mode: ${parkAreaName} (orcsAreaNumber: ${orcsAreaNumber})`,
+        );
+        skippedCount++;
+      }
+    }
+
+    // Create a Set of Strapi orcsAreaNumbers for efficient lookup
+    const strapiOrcsAreaNumbers = new Set(
+      strapiParkAreas.map((pa) => pa.orcsAreaNumber),
+    );
+
+    // loop through DOOT ParkAreas to find any that are missing from Strapi data
+    for (const dootParkArea of dootParkAreas) {
+      if (!strapiOrcsAreaNumbers.has(dootParkArea.strapiOrcsAreaNumber)) {
+        if (!useSafeMode) {
+          // Deactivate the DOOT ParkArea
+          dootParkArea.active = false;
+          await dootParkArea.save({ transaction });
+          console.log(
+            `Deactivated ParkArea: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,
+          );
+          deactivatedCount++;
+        } else {
+          console.warn(
+            `Skipped deactivating ParkArea due to safe mode: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,
+          );
+          skippedCount++;
+        }
       }
     }
 
     console.log(`\nImport complete:`);
-    console.log(`- Created: ${createdCount} park areas`);
-    console.log(`- Updated: ${updatedCount} park areas`);
-    console.log(`- Skipped: ${skippedCount} park areas`);
+    console.log(`- Created: ${createdCount} ParkAreas`);
+    console.log(`- Updated: ${updatedCount} ParkAreas`);
+    console.log(`- Deactivated: ${deactivatedCount} ParkAreas`);
+    console.log(`- Skipped: ${skippedCount} ParkAreas`);
 
     return {
       created: createdCount,
       updated: updatedCount,
       skipped: skippedCount,
+      deactivated: deactivatedCount,
     };
   } catch (error) {
-    console.error("Error importing park areas from Strapi:", error);
+    console.error("Error importing ParkAreas from Strapi:", error);
     throw error;
   }
 }
@@ -134,7 +196,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     await transaction.commit();
     console.log("\nTransaction committed successfully");
     console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}`,
+      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Deactivated: ${result.deactivated}, Skipped: ${result.skipped}`,
     );
   } catch (err) {
     await transaction.rollback();
