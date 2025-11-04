@@ -7,8 +7,8 @@ const headers = {
   "Content-Type": "application/json",
 };
 
-if (process.env.STRAPI_API_TOKEN) {
-  headers.Authorization = `Bearer ${process.env.STRAPI_API_TOKEN}`;
+if (process.env.STRAPI_TOKEN) {
+  headers.Authorization = `Bearer ${process.env.STRAPI_TOKEN}`;
 }
 
 // Create axios instance with strapi auth token headers
