@@ -18,6 +18,7 @@ function PublishPage() {
     "/publish/ready-to-publish/",
   );
   const { seasons = [] } = data ?? {};
+  const publishableSeasons = seasons.filter((season) => season.readyToPublish);
 
   const { sendData: publishData, loading: saving } = useApiPost(
     "/publish/publish-to-api/",
@@ -98,7 +99,7 @@ function PublishPage() {
         <div className="d-flex justify-content-end mb-2">
           <button
             onClick={publishToApi}
-            disabled={saving || seasons.length === 0}
+            disabled={saving || publishableSeasons.length === 0}
             className="btn btn-primary"
           >
             Publish to API
