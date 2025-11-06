@@ -26,7 +26,12 @@ export default (sequelize) => {
     {
       seasonId: DataTypes.INTEGER,
       userId: DataTypes.INTEGER,
-      notes: DataTypes.TEXT,
+      notes: {
+        type: DataTypes.STRING(2000),
+        validate: {
+          len: [0, 2000]
+        }
+      },
       statusOldValue: DataTypes.STRING,
       statusNewValue: DataTypes.STRING,
       readyToPublishOldValue: DataTypes.BOOLEAN,
