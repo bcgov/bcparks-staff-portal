@@ -40,8 +40,8 @@ function ExportPage() {
       saveAs(blob, filename);
 
       successFlash.open(
-        "Export complete",
-        "Check your downloads for the Excel document.",
+        "Export completed",
+        "Check your downloads for the export.",
       );
     } catch (csvError) {
       console.error("Error generating CSV", csvError);

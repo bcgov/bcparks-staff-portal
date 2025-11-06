@@ -42,10 +42,9 @@ function PublishPage() {
   async function publishToApi() {
     const proceed = await confirmation.open(
       "Publish dates to API?",
-      "All parks that are not flagged will be made public. This cannot be undone.",
+      "All dates that are marked ready to publish will be made public. This cannot be undone.",
       "Publish",
       "Cancel",
-      "Publishing may take up to one hour.",
     );
 
     if (proceed) {
@@ -59,7 +58,7 @@ function PublishPage() {
 
         successFlash.open(
           "Dates publishing to API",
-          "Approved dates publishing may take up to one hour.",
+          "Approved dates have been sent to the queue and publishing may take up to an hour.",
         );
 
         // Update the table by re-fetching the data
