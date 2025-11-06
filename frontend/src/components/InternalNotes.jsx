@@ -16,6 +16,7 @@ function InternalNotes({
   optional = true,
 }) {
   const { elements } = useValidationContext();
+  const isOverLimit = notes.length > 2000;
 
   return (
     <div className="internal-notes mb-4">
@@ -63,11 +64,18 @@ function InternalNotes({
         ></textarea>
       </div>
 
-      <ErrorSlot element={elements.INTERNAL_NOTES} />
-
-      <div>
+      <div className="d-flex justify-content-between">
         <small>Visible to all BC Parks staff and Park Operators</small>
+        <small
+          className={classNames({
+            "text-danger": isOverLimit,
+          })}
+        >
+          {notes.length} / 2000 characters
+        </small>
       </div>
+
+      <ErrorSlot element={elements.INTERNAL_NOTES} />
     </div>
   );
 }
