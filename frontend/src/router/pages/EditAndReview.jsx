@@ -6,7 +6,7 @@ import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState, useContext } from "react";
-import PaginationBar from "@/components/PaginationBar";
+import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
@@ -35,7 +35,17 @@ function EditAndReview() {
 
   // table pagination
   const [page, setPage] = useState(1);
-  const pageSize = 5;
+  const [pageSize, setPageSize] = useState(5);
+
+  function handlePageChange(newPage) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setPage(newPage);
+  }
+
+  function handlePageSizeChange(newPageSize) {
+    setPageSize(newPageSize);
+    handlePageChange(1);
+  }
 
   // table filter state
   const [filters, setFilters] = useState({
@@ -96,7 +106,7 @@ function EditAndReview() {
   }
 
   function resetFilters() {
-    setPage(1);
+    handlePageChange(1);
     setFilters({
       name: "",
       accessGroups: [],
@@ -256,13 +266,9 @@ function EditAndReview() {
             if (
               filterDateType.name === "Reservation" &&
               !(
-                park.features?.some(
-                  (feature) => feature.hasReservations,
-                ) ||
+                park.features?.some((feature) => feature.hasReservations) ||
                 park.parkAreas?.some((parkArea) =>
-                  parkArea.features?.some(
-                    (feature) => feature.hasReservations,
-                  ),
+                  parkArea.features?.some((feature) => feature.hasReservations),
                 )
               )
             ) {
@@ -379,10 +385,6 @@ function EditAndReview() {
   }
 
   // Slice the list of parks for pagination
-  const totalPages = useMemo(
-    () => Math.ceil(filteredParks.length / pageSize),
-    [filteredParks, pageSize],
-  );
   const pageData = useMemo(() => {
     const start = pageSize * (page - 1);
     const end = start + pageSize;
@@ -413,13 +415,14 @@ function EditAndReview() {
           </RefreshTableContext.Provider>
         </div>
 
-        <div className="d-flex justify-content-center">
-          <PaginationBar
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-          />
-        </div>
+        <PaginationControls
+          totalItems={filteredParks.length}
+          currentPage={page}
+          pageSize={pageSize}
+          onPageChange={handlePageChange}
+          onPageSizeChange={handlePageSizeChange}
+          pageSizeLabel="Parks per page"
+        />
       </div>
     );
   }
@@ -430,7 +433,7 @@ function EditAndReview() {
       <MultiSelect
         options={statusOptions}
         onInput={(value) => {
-          setPage(1);
+          handlePageChange(1);
           updateFilter("status", value);
         }}
         value={filters.status}
@@ -471,7 +474,7 @@ function EditAndReview() {
                 placeholder="Search by park name"
                 value={filters.name}
                 onChange={(e) => {
-                  setPage(1);
+                  handlePageChange(1);
                   updateFilter("name", e.target.value);
                 }}
               />
