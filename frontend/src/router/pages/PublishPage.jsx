@@ -96,7 +96,7 @@ function PublishPage() {
   const endIndex = startIndex + pageSize;
 
   return (
-    <div className="container">
+    <div className="container publish-container">
       <div className="page publish">
         <FlashMessage
           title={successFlash.title}
@@ -132,7 +132,7 @@ function PublishPage() {
           )}
         </div>
 
-        <div className="table-responsive">
+        <div className="table-responsive flex-fill">
           <table className="table table-striped table-publish">
             <thead>
               <tr>

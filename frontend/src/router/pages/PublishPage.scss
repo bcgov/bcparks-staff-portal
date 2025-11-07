@@ -1,7 +1,18 @@
-table {
-  &.table-publish {
-    thead > tr > th {
-      width: 25%;
+.publish-container {
+  // .page margin y is 4.5rem
+  height: calc(100% - 4.5rem);
+
+  .page.publish {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  table {
+    &.table-publish {
+      thead > tr > th {
+        width: 25%;
+      }
     }
   }
 }

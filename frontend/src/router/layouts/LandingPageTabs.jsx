@@ -57,7 +57,7 @@ export default function LandingPageTabs() {
           </ul>
         </div>
       </header>
-      <div className="my-3">
+      <div className="flex-fill my-3">
         <Outlet />
       </div>
     </div>
