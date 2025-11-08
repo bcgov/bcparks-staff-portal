@@ -1,4 +1,7 @@
 .layout.landing-page-tabs {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   header.section-tabs {
     background-color: var(--surface-color-background-light-blue);
     border-bottom: 1px solid var(--theme-gray-50);

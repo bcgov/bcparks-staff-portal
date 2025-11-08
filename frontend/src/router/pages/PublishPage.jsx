@@ -1,3 +1,4 @@
+import { useState } from "react";
 import useConfirmation from "@/hooks/useConfirmation";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
@@ -6,9 +7,24 @@ import ConfirmationDialog from "@/components/ConfirmationDialog";
 import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
+import PaginationControls from "@/components/PaginationControls";
 import "./PublishPage.scss";
 
 function PublishPage() {
+  // table pagination
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+
+  function handlePageChange(newPage) {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setPage(newPage);
+  }
+
+  function handlePageSizeChange(newPageSize) {
+    setPageSize(newPageSize);
+    handlePageChange(1);
+  }
+
   const confirmation = useConfirmation();
 
   const successFlash = useFlashMessage();
@@ -75,8 +91,11 @@ function PublishPage() {
     }
   }
 
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+
   return (
-    <div className="container">
+    <div className="container publish-container">
       <div className="page publish">
         <FlashMessage
           title={successFlash.title}
@@ -112,7 +131,7 @@ function PublishPage() {
           )}
         </div>
 
-        <div className="table-responsive">
+        <div className="table-responsive flex-fill">
           <table className="table table-striped table-publish">
             <thead>
               <tr>
@@ -123,7 +142,7 @@ function PublishPage() {
               </tr>
             </thead>
             <tbody>
-              {seasons.map((season) => (
+              {seasons.slice(startIndex, endIndex).map((season) => (
                 <tr key={season.id}>
                   <td>{season.parkName}</td>
                   <td className="fw-bold">{season.parkAreaName}</td>
@@ -141,14 +160,23 @@ function PublishPage() {
                   </td>
                 </tr>
               ))}
-              {seasons.length === 0 && (
-                <tr>
-                  <td colSpan="4">No seasons ready to publish</td>
-                </tr>
-              )}
             </tbody>
           </table>
+          {seasons.length === 0 && (
+            <div className="text-center my-4">
+              There are no approved dates to publish.
+            </div>
+          )}
         </div>
+
+        <PaginationControls
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
+          currentPage={page}
+          totalItems={seasons.length}
+          onPageChange={handlePageChange}
+          pageSizeLabel="Rows per page"
+        />
       </div>
     </div>
   );
