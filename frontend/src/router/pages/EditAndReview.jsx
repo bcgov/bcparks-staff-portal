@@ -374,6 +374,10 @@ function EditAndReview() {
       ...prevFilters,
       [key]: value,
     }));
+    if (page !== 1) {
+      // reset the page to 1 to avoid empty pages
+      handlePageChange(1);
+    }
   }
 
   /**
