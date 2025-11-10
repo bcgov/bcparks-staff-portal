@@ -1,3 +1,4 @@
+import { useEffect, useCallback } from "react";
 import { useAuth } from "react-oidc-context";
 import routerconfig from "@/router/index";
 import "./LoginPage.scss";
@@ -11,16 +12,30 @@ export default function LoginPage() {
   const basepath = routerconfig.basename;
 
   // function to redirect to Keycloak for the selected login provider
-  function handleLogin(idp) {
-    auth.signinRedirect({
-      // eslint-disable-next-line camelcase -- 'redirect_uri' is required by Keycloak
-      redirect_uri: `${window.location.origin}${basepath}`,
-      extraQueryParams: {
-        // eslint-disable-next-line camelcase -- 'kc_idp_hint' is required by Keycloak
-        kc_idp_hint: idp,
-      },
-    });
-  }
+  const handleLogin = useCallback(
+    (idp) => {
+      auth.signinRedirect({
+        // eslint-disable-next-line camelcase -- 'redirect_uri' is required by Keycloak
+        redirect_uri: `${window.location.origin}${basepath}`,
+        extraQueryParams: {
+          // eslint-disable-next-line camelcase -- 'kc_idp_hint' is required by Keycloak
+          kc_idp_hint: idp,
+        },
+      });
+    },
+    [auth, basepath],
+  );
+
+  useEffect(() => {
+    // if the login_idp is already set in session storage, use that to log in automatically
+    const savedIdp = sessionStorage.getItem("login_idp");
+
+    if (savedIdp) {
+      // delete the saved IDP to avoid infinite redirects
+      sessionStorage.removeItem("login_idp");
+      handleLogin(savedIdp);
+    }
+  }, [handleLogin]);
 
   return (
     <div className="container">
