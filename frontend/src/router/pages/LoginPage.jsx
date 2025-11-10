@@ -22,6 +22,15 @@ export default function LoginPage() {
     });
   }
 
+  // if the login_idp is already set in session storage, use that to log in automatically
+  const savedIdp = sessionStorage.getItem("login_idp");
+
+  if (savedIdp) {
+    // delete the saved IDP to avoid infinite redirects
+    sessionStorage.removeItem("login_idp");
+    handleLogin(savedIdp);
+  }
+
   return (
     <div className="container">
       <div className="text-center login-page-content">

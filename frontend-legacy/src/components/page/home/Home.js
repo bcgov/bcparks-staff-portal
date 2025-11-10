@@ -12,6 +12,18 @@ export default function Home({ page: { setError } }) {
   const { initialized, keycloak } = useKeycloak();
   const [toDashboard, setToDashboard] = useState(false);
 
+  // function to redirect to Keycloak for the selected login provider
+  function handleLogin(idp) {
+    // write the IDP to session storage so the DOOT frontend app knows which to use
+    sessionStorage.setItem("login_idp", idp);
+
+    // redirect to Keycloak login with the selected IDP hint
+    keycloak.login({
+      redirectUri: `${config.REACT_APP_FRONTEND_BASE_URL}/advisories`,
+      idpHint: idp,
+    });
+  }
+
   useEffect(() => {
     if (initialized && keycloak.authenticated) {
       setToDashboard(true);
@@ -51,12 +63,7 @@ export default function Home({ page: { setError } }) {
                 <div className="container-fluid ad-form">
                   {/* <div className="row hm-row ">
                     <Button
-                      onClick={() =>
-                        keycloak.login({
-                          redirectUri: `${config.REACT_APP_FRONTEND_BASE_URL}/advisories`,
-                          idpHint: "bcsc",
-                        })
-                      }
+                      onClick={() => handleLogin("bcsc")}
                       label="Log in with BC Services Card"
                       styling="bcgov-normal-blue btn"
                     />
@@ -70,12 +77,7 @@ export default function Home({ page: { setError } }) {
                   </div> */}
                   <div className="row hm-row ">
                     <Button
-                      onClick={() =>
-                        keycloak.login({
-                          redirectUri: `${config.REACT_APP_FRONTEND_BASE_URL}/advisories`,
-                          idpHint: "bceid",
-                        })
-                      }
+                      onClick={() => handleLogin("bceid")}
                       label="Log in with BCeID"
                       styling="bcgov-normal-blue btn"
                     />
@@ -91,12 +93,7 @@ export default function Home({ page: { setError } }) {
                   </div>
                   <div className="row hm-row">
                     <Button
-                      onClick={() =>
-                        keycloak.login({
-                          redirectUri: `${config.REACT_APP_FRONTEND_BASE_URL}/advisories`,
-                          idpHint: "idir",
-                        })
-                      }
+                      onClick={() => handleLogin("idir")}
                       label="Log in with IDIR"
                       styling="bcgov-normal-blue btn"
                     />
