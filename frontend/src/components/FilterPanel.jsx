@@ -136,7 +136,9 @@ function FilterPanel({
           </>
         )}
         <div className="mt-4">
-          <button className="btn btn-primary">Apply filters</button>
+          <button className="btn btn-primary" onClick={() => handleClose()}>
+            Apply filters
+          </button>
           {clearFilter}
         </div>
       </Offcanvas.Body>
