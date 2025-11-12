@@ -37,6 +37,11 @@ export default function LoginPage() {
     }
   }, [handleLogin]);
 
+  // if login_idp is in session storage, don't render the login UI
+  if (sessionStorage.getItem("login_idp")) {
+    return <></>;
+  }
+
   return (
     <div className="container">
       <div className="text-center login-page-content">
