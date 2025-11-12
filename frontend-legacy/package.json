@@ -50,7 +50,8 @@
     "webpack": "5.91.0"
   },
   "scripts": {
-    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider craco start",
+    "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider BROWSER=none craco start",
+    "dev": "bash -c 'npm run start & sleep 2 && open http://localhost:8103'",
     "build": "cross-env NODE_OPTIONS=--openssl-legacy-provider craco build",
     "test": "jest",
     "eject": "craco eject",

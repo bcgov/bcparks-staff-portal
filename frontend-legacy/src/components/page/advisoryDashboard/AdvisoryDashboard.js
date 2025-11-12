@@ -121,10 +121,14 @@ export default function AdvisoryDashboard({
           getLatestPublicAdvisoryAudits(keycloak, archived)
         ])
           .catch(() => {
-            setError({ status: 500, message: "Error loading data" });
-            setToError(true);
-            setIsLoading(false);
+          setError({
+            status: 500,
+            message: "Error loading data. Make sure Strapi is running.",
           });
+          setToError(true);
+          setIsLoading(false);
+          return;
+        });
         // Regions
         const regionsData = res[0];
         // Management Areas

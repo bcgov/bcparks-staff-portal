@@ -1,4 +1,14 @@
 .login-page-content {
   max-width: 470px;
   margin: 0 auto;
+  animation: loginFadeIn 50ms ease forwards;
+  animation-delay: 250ms;
+}
+
+// Fade in animation because I couldn't find any other way to
+// prevent a flash of the login page when switching between legacy and DOOT
+@keyframes loginFadeIn {
+  to {
+    opacity: 1;
+  }
 }

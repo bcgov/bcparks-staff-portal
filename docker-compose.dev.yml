@@ -49,5 +49,14 @@ services:
       - db-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  test-proxy:
+    image: caddy:2
+    depends_on:
+      - frontend
+    ports:
+      - "8103:80"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+
 volumes:
   db-data:
