@@ -14,9 +14,6 @@ export default function Home({ page: { setError } }) {
 
   // function to redirect to Keycloak for the selected login provider
   function handleLogin(idp) {
-    // write the IDP to session storage so the DOOT frontend app knows which to use
-    sessionStorage.setItem("login_idp", idp);
-
     // redirect to Keycloak login with the selected IDP hint
     keycloak.login({
       redirectUri: `${config.REACT_APP_FRONTEND_BASE_URL}/advisories`,
