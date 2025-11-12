@@ -1,0 +1,28 @@
+# Caddyfile for the test-proxy docker service which is used for local development
+# testing involving both the frontend and the frontend-legacy React apps.
+# The frontend app runs in docker, but frontend-legacy runs on the host machine
+# and must be started manually using `npm run dev`. Strapi must also be running.
+:80 {
+  # Redirect bare /dates to /dates/
+  @datesNoSlash path /dates
+  redir @datesNoSlash /dates/ 302
+
+  # Serve /dates and everything under it from the frontend container
+  @dates path /dates/ /dates/*
+  handle @dates {
+    reverse_proxy frontend:8101
+  }
+
+  # Everything else to legacy app on host
+  handle {
+    reverse_proxy host.docker.internal:3000
+  }
+
+  header / Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
+  header /dates Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
+
+  log {
+    output stdout
+    format console
+  }
+}

@@ -44,7 +44,7 @@ export default function LoginPage() {
 
   return (
     <div className="container">
-      <div className="text-center login-page-content">
+      <div className="text-center login-page-content" style={{ opacity: 0 }}>
         <h2 className="mt-5 mb-2">Staff web portal</h2>
         <p>Use one of the following methods to log in</p>
 
