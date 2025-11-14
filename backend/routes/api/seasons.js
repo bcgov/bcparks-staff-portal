@@ -80,6 +80,9 @@ async function updateStatus(
     season.readyToPublish = readyToPublish;
   }
 
+  // Update the updatedAt timestamp
+  season.updatedAt = new Date();
+
   return season.save({
     transaction,
   });
