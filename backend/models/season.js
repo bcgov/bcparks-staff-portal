@@ -80,7 +80,7 @@ export default (sequelize) => {
       timestamps: false,
       hooks: {
         beforeCreate(season) {
-          season.updatedAt = new Date();
+          season.updatedAt = null;
           season.createdAt = new Date();
         },
         beforeBulkUpdate(seasons) {
