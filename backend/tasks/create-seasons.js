@@ -200,7 +200,6 @@ async function createTier2Dates(
       dateTypeId: tier2DateTypeId,
       startDate: null,
       endDate: null,
-      adminNote: null,
     }));
 
     // Create the DateRange records in bulk

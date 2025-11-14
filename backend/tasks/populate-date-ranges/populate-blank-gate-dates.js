@@ -105,7 +105,6 @@ export default async function populateBlankGateOperatingDates(
     dateTypeId: operatingDateType.id,
     dateableId: season.park.dateable.id,
     seasonId: season.id,
-    adminNote: null,
   }));
 
   console.log(`\nCreating ${insertData.length} Operating DateRanges...`);
