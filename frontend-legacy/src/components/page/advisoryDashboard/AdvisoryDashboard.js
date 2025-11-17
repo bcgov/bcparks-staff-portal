@@ -129,6 +129,8 @@ export default function AdvisoryDashboard({
           setIsLoading(false);
           return;
         });
+        // If no response, return
+        if (!res) return;
         // Regions
         const regionsData = res[0];
         // Management Areas

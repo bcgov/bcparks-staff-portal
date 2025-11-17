@@ -39,7 +39,6 @@ export default (sequelize) => {
         unique: true,
       },
       email: DataTypes.STRING,
-      staff: DataTypes.BOOLEAN,
     },
     {
       sequelize,
