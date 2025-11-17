@@ -138,8 +138,7 @@ function FilterPanel({
         )}
         <div className="mt-4">
           <button className="btn btn-primary" onClick={() => handleClose()}>
-            Show {totalItems} park
-            {totalItems !== 1 ? "s" : ""}
+            {`Show ${totalItems} park${totalItems !== 1 ? "s" : ""}`}
           </button>
           {clearFilter}
         </div>
