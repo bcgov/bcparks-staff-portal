@@ -530,6 +530,7 @@ function EditAndReview() {
           filterOptionsError={filterOptionsError}
           statusFilter={<StatusFilter />}
           clearFilter={<ClearFilter />}
+          filteredCount={filteredParks.length}
         />
       </div>
     </div>
