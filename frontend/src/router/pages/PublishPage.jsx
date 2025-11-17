@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import useConfirmation from "@/hooks/useConfirmation";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
@@ -15,16 +15,28 @@ function PublishPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  function handlePageChange(newPage) {
-    setPage(newPage);
-    setTimeout(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 50); // slight delay
-  }
+  // Scroll to top after page changes
+  useEffect(() => {
+    let cancelled = false;
+
+    // double rAF helps iOS Safari reliability
+    const af1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!cancelled) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(af1);
+    };
+  }, [page]);
 
   function handlePageSizeChange(newPageSize) {
     setPageSize(newPageSize);
-    handlePageChange(1);
+    setPage(1);
   }
 
   const confirmation = useConfirmation();
@@ -176,7 +188,7 @@ function PublishPage() {
           onPageSizeChange={handlePageSizeChange}
           currentPage={page}
           totalItems={seasons.length}
-          onPageChange={handlePageChange}
+          onPageChange={setPage}
           pageSizeLabel="Rows per page"
         />
       </div>
