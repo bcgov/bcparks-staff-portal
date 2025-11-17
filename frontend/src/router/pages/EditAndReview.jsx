@@ -38,8 +38,10 @@ function EditAndReview() {
   const [pageSize, setPageSize] = useState(5);
 
   function handlePageChange(newPage) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
     setPage(newPage);
+    setTimeout(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 50); // slight delay
   }
 
   function handlePageSizeChange(newPageSize) {
