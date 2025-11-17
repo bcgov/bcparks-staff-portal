@@ -15,7 +15,7 @@ function FilterPanel({
   filterOptionsError,
   statusFilter,
   clearFilter,
-  totalItems,
+  filteredCount,
 }) {
   // constants and states
   const { sections, managementAreas, dateTypes, featureTypes, accessGroups } =
@@ -138,7 +138,7 @@ function FilterPanel({
         )}
         <div className="mt-4">
           <button className="btn btn-primary" onClick={() => handleClose()}>
-            {`Show ${totalItems} park${totalItems !== 1 ? "s" : ""}`}
+            {`Show ${filteredCount} park${filteredCount !== 1 ? "s" : ""}`}
           </button>
           {clearFilter}
         </div>
@@ -173,5 +173,5 @@ FilterPanel.propTypes = {
   filterOptionsError: PropTypes.object,
   statusFilter: PropTypes.element.isRequired,
   clearFilter: PropTypes.element.isRequired,
-  totalItems: PropTypes.number.isRequired,
+  filteredCount: PropTypes.number.isRequired,
 };
