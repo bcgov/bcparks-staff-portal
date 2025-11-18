@@ -12,8 +12,8 @@ export default function PaginationControls({
 }) {
   return (
     totalItems > 0 && (
-      <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center position-relative">
-        <div className="d-flex align-items-center start-0 mb-2 mb-lg-0">
+      <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center">
+        <div className="d-flex align-items-center start-0">
           <span className="me-2">{pageSizeLabel}</span>
           <select
             className="form-select form-select-sm"

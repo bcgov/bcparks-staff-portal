@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import { Pagination } from "react-bootstrap";
 import { useEffect, useState } from "react";
+import "./PaginationBar.scss";
 
 // Responsive wrapper around react-bootstrap Pagination component.
 // Forked from react-bootstrap-pagination-control.
@@ -15,7 +16,7 @@ export default function PaginationBar({
 
   useEffect(() => {
     function updateSurroundingPages() {
-      const width = window.innerWidth;
+      const width = document.documentElement.clientWidth;
 
       if (width < 576) {
         // xs breakpoint
@@ -74,6 +75,7 @@ export default function PaginationBar({
       <Pagination.Prev
         onClick={() => (page > 1 ? onPageChange(page - 1) : void 0)}
         disabled={page <= 1}
+        aria-label="Back"
       />
 
       {/* Page 1 button before ellipsis */}
@@ -86,6 +88,7 @@ export default function PaginationBar({
               onClick={() =>
                 value !== page - 1 ? onPageChange(value + 1) : void 0
               }
+              aria-label={`Page ${value + 1}`}
             >
               {value + 1}
             </Pagination.Item>
@@ -104,6 +107,7 @@ export default function PaginationBar({
           onClick={() =>
             value !== page - 1 ? onPageChange(value + 1) : void 0
           }
+          aria-label={`Page ${value + 1}`}
         >
           {value + 1}
         </Pagination.Item>
@@ -128,6 +132,7 @@ export default function PaginationBar({
               onClick={() =>
                 value !== page - 1 ? onPageChange(value + 1) : void 0
               }
+              aria-label={`Page ${value + 1}`}
             >
               {value + 1}
             </Pagination.Item>
@@ -137,6 +142,7 @@ export default function PaginationBar({
       <Pagination.Next
         onClick={() => (page < totalPages ? onPageChange(page + 1) : void 0)}
         disabled={page >= totalPages}
+        aria-label="Next"
       />
     </Pagination>
   );

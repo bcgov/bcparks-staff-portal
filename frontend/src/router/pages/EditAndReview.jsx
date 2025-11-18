@@ -5,7 +5,7 @@ import useConfirmation from "@/hooks/useConfirmation";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useMemo, useState, useContext } from "react";
+import { useMemo, useState, useContext, useEffect } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FormPanel from "@/components/FormPanel";
@@ -37,14 +37,28 @@ function EditAndReview() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
 
-  function handlePageChange(newPage) {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-    setPage(newPage);
-  }
+  // Scroll to top after page changes
+  useEffect(() => {
+    let cancelled = false;
+
+    // double rAF helps iOS Safari reliability
+    const af1 = requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!cancelled) {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+      });
+    });
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(af1);
+    };
+  }, [page]);
 
   function handlePageSizeChange(newPageSize) {
     setPageSize(newPageSize);
-    handlePageChange(1);
+    setPage(1);
   }
 
   // table filter state
@@ -106,7 +120,7 @@ function EditAndReview() {
   }
 
   function resetFilters() {
-    handlePageChange(1);
+    setPage(1);
     setFilters({
       name: "",
       accessGroups: [],
@@ -376,7 +390,7 @@ function EditAndReview() {
     }));
     if (page !== 1) {
       // reset the page to 1 to avoid empty pages
-      handlePageChange(1);
+      setPage(1);
     }
   }
 
@@ -423,7 +437,7 @@ function EditAndReview() {
           totalItems={filteredParks.length}
           currentPage={page}
           pageSize={pageSize}
-          onPageChange={handlePageChange}
+          onPageChange={setPage}
           onPageSizeChange={handlePageSizeChange}
           pageSizeLabel="Parks per page"
         />
@@ -437,7 +451,7 @@ function EditAndReview() {
       <MultiSelect
         options={statusOptions}
         onInput={(value) => {
-          handlePageChange(1);
+          setPage(1);
           updateFilter("status", value);
         }}
         value={filters.status}
@@ -478,7 +492,7 @@ function EditAndReview() {
                 placeholder="Search by park name"
                 value={filters.name}
                 onChange={(e) => {
-                  handlePageChange(1);
+                  setPage(1);
                   updateFilter("name", e.target.value);
                 }}
               />
