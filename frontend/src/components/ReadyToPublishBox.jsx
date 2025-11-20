@@ -5,8 +5,35 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function ReadyToPublishBox({
   readyToPublish,
   setReadyToPublish,
+  seasonType = "regular",
 }) {
-  return (
+  function ReadyToPublishSwitch() {
+    const switchId =
+      seasonType === "winter" ? "ready-to-publish-winter" : "ready-to-publish";
+
+    return (
+      <div className="form-check form-switch">
+        <input
+          checked={readyToPublish}
+          onChange={() => setReadyToPublish(!readyToPublish)}
+          className="form-check-input label-switch"
+          type="checkbox"
+          role="switch"
+          id={switchId}
+        />
+        <label className="form-check-label" htmlFor={switchId}>
+          Ready to publish
+        </label>
+      </div>
+    );
+  }
+
+  return seasonType === "winter" ? (
+    <div>
+      <h5>Ready to publish winter fee?</h5>
+      <ReadyToPublishSwitch />
+    </div>
+  ) : (
     <div className="mb-4">
       <h3 className="mb-4">Ready to publish?</h3>
 
@@ -19,19 +46,7 @@ export default function ReadyToPublishBox({
         and held in the ‘Approved’ state until ‘Yes’ is selected.
       </p>
 
-      <div className="form-check form-switch">
-        <input
-          checked={readyToPublish}
-          onChange={() => setReadyToPublish(!readyToPublish)}
-          className="form-check-input label-switch"
-          type="checkbox"
-          role="switch"
-          id="ready-to-publish"
-        />
-        <label className="form-check-label" htmlFor="ready-to-publish">
-          Ready to publish
-        </label>
-      </div>
+      <ReadyToPublishSwitch />
     </div>
   );
 }
@@ -40,4 +55,5 @@ export default function ReadyToPublishBox({
 ReadyToPublishBox.propTypes = {
   readyToPublish: PropTypes.bool.isRequired,
   setReadyToPublish: PropTypes.func.isRequired,
+  seasonType: PropTypes.oneOf(["regular", "winter"]),
 };
