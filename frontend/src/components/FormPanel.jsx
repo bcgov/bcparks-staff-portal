@@ -155,6 +155,8 @@ function SeasonForm({
   const {
     current: season,
     previous: previousSeasonDates,
+    currentWinter: winterSeason,
+    previousWinter: previousWinterSeasonDates,
     ...seasonMetadata
   } = data || {};
   const currentYear = season?.operatingYear;
@@ -493,6 +495,8 @@ If dates have already been published, they will not be updated until new dates a
             <ParkSeasonForm
               season={season}
               previousSeasonDates={previousSeasonDates}
+              winterSeason={winterSeason}
+              previousWinterSeasonDates={previousWinterSeasonDates}
               dateTypes={seasonMetadata.dateTypes}
               approver={approver}
             />
@@ -602,6 +606,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         {formData.seasonId && (
           <SeasonForm
             seasonId={formData.seasonId}
+            winterSeasonId={formData.winterSeasonId}
             level={formData.level}
             closePanel={closePanel}
             onDataUpdate={onDataUpdate}
