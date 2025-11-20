@@ -389,6 +389,62 @@ async function getParkDates(park, operatingYear) {
   };
 }
 
+/**
+ * Returns the current winter season for a park if it has winter fee dates enabled.
+ * @param {Object} park Park model with hasWinterFeeDates and publishableId
+ * @param {number} operatingYear Operating year for the Seasons
+ * @returns {Promise<Object|null>} The winter season object with all related data, or null
+ */
+async function getCurrentWinterSeason(park, operatingYear) {
+  if (!park.hasWinterFeeDates) {
+    return null;
+  }
+
+  // Find the winter season ID
+  const winterSeasonLookup = await Season.findOne({
+    attributes: ["id"],
+    where: {
+      publishableId: park.publishableId,
+      operatingYear,
+      seasonType: "winter",
+    },
+  });
+
+  if (!winterSeasonLookup) {
+    return null;
+  }
+
+  const winterSeason = await Season.findByPk(winterSeasonLookup.id, {
+    attributes: SEASON_ATTRIBUTES,
+    include: [
+      {
+        model: Park,
+        as: "park",
+        include: [
+          // Park-level dates for this winter season
+          dateableAndDatesQueryPart(winterSeasonLookup.id),
+        ],
+      },
+
+      changeLogsQueryPart(),
+    ],
+  });
+
+  if (!winterSeason) {
+    return null;
+  }
+
+  // Get DateRangeAnnuals and GateDetail for winter season
+  const dateRangeAnnuals = await getDateRangeAnnuals(
+    winterSeason.publishableId,
+  );
+
+  return {
+    ...winterSeason.toJSON(),
+    dateRangeAnnuals,
+  };
+}
+
 // Get all form data and DateRanges for a Feature Season
 router.get(
   "/feature/:seasonId",
@@ -713,6 +769,24 @@ router.get(
       parkLevel: true,
     });
 
+    // Get the current winter season for the same operating year
+    const currentWinterSeason = await getCurrentWinterSeason(
+      park,
+      seasonModel.operatingYear,
+    );
+
+    const previousWinterSeason = await getCurrentWinterSeason(
+      park,
+      seasonModel.operatingYear - 1,
+    );
+
+    const previousWinterSeasonDates = previousWinterSeason?.park?.dateable
+      ?.dateRanges
+      ? previousWinterSeason.park.dateable.dateRanges.filter(
+          (dateRange) => dateRange.startDate && dateRange.endDate, // Filter out blank ranges
+        )
+      : [];
+
     // Include all DateTypes for this Season level
     const dateTypesArray = await getAllDateTypes({
       parkLevel: true,
@@ -744,6 +818,8 @@ router.get(
     const output = {
       current: currentSeason,
       previous: previousSeason,
+      currentWinter: currentWinterSeason,
+      previousWinter: previousWinterSeasonDates,
       dateTypes: orderedDateTypes,
       icon: null,
       featureTypeName: null,

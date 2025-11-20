@@ -1,5 +1,6 @@
 // This script creates winter seasons for parks that have hasWinterFeeDates = true.
 // It will skip creating a season if one already exists for the given operating year and publishable.
+// Also removes Winter fee DateRanges from regular seasons.
 
 import "../../env.js";
 
@@ -39,11 +40,12 @@ if (isNaN(operatingYear)) {
   throw new Error("Missing operating year");
 }
 
-// Track the number of rows inserted
+// Track the number of rows inserted/deleted
 let publishablesAdded = 0;
 let dateablesAdded = 0;
 let winterSeasonsAdded = 0;
 let winterDateRangesAdded = 0;
+let winterDateRangesDeleted = 0;
 
 /**
  * Creates a new Publishable or Dateable ID and associates it with the given record, if it doesn't already have one.
@@ -183,6 +185,58 @@ async function createWinterFeeDateRange(
   return newDateRange.id;
 }
 
+/**
+ * Removes Winter fee DateRanges from regular seasons for the given park.
+ * @param {number} publishableId The Publishable ID to check
+ * @param {number} winterFeeDateTypeId The Winter fee DateType ID
+ * @param {string} parkName The park name for logging
+ * @returns {Promise<void>}
+ */
+async function removeWinterFeeFromRegularSeasons(
+  publishableId,
+  winterFeeDateTypeId,
+  parkName,
+) {
+  // Find all regular seasons for this park
+  const regularSeasons = await Season.findAll({
+    where: {
+      publishableId,
+      seasonType: ["regular", null], // Include both "regular" and null (default)
+    },
+    transaction,
+  });
+
+  if (regularSeasons.length === 0) return;
+
+  // Get season IDs
+  const regularSeasonIds = regularSeasons.map(season => season.id);
+
+  // Find and delete Winter fee DateRanges from regular seasons
+  const winterDateRangesToDelete = await DateRange.findAll({
+    where: {
+      seasonId: regularSeasonIds,
+      dateTypeId: winterFeeDateTypeId,
+    },
+    transaction,
+  });
+
+  if (winterDateRangesToDelete.length > 0) {
+    // Delete the DateRanges
+    const deletedCount = await DateRange.destroy({
+      where: {
+        seasonId: regularSeasonIds,
+        dateTypeId: winterFeeDateTypeId,
+      },
+      transaction,
+    });
+
+    winterDateRangesDeleted += deletedCount;
+    console.log(
+      `Removed ${deletedCount} Winter fee date ranges from regular seasons for ${parkName}`,
+    );
+  }
+}
+
 console.log(`Creating Winter Seasons for ${operatingYear}`);
 
 // Get the Winter fee DateType
@@ -234,6 +288,13 @@ const parkQueries = parksWithWinterFees.map(async (park) => {
   // Ensure the park has a dateableId
   const dateableId = await createDateable(park);
 
+  // Remove Winter fee DateRanges from regular seasons first
+  await removeWinterFeeFromRegularSeasons(
+    publishableId,
+    winterFeeDateType.id,
+    park.name,
+  );
+
   // Create a winter season for this park
   const winterSeasonId = await createWinterSeason(
     publishableId,
@@ -259,6 +320,7 @@ console.log(`Added ${publishablesAdded} missing Park Publishables`);
 console.log(`Added ${dateablesAdded} missing Park Dateables`);
 console.log(`Added ${winterSeasonsAdded} new Winter Seasons`);
 console.log(`Added ${winterDateRangesAdded} new Winter Fee DateRanges`);
+console.log(`Removed ${winterDateRangesDeleted} Winter Fee DateRanges from regular seasons`);
 
 console.log("Committing transaction...");
 await transaction?.commit();
