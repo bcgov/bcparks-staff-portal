@@ -11,8 +11,11 @@ import {
   ParkArea,
   AccessGroup,
   GateDetail,
+  User,
+  UserAccessGroup,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
+import checkUserRoles from "../../utils/checkUserRoles.js";
 
 // Constants
 const router = Router();
@@ -262,6 +265,7 @@ router.get(
   asyncHandler(async (req, res) => {
     // Constants
     const currentYear = new Date().getFullYear();
+    const hasAllParkAccess = checkUserRoles(req.auth, ["doot-all-park-access"]);
 
     const parks = await Park.findAll({
       attributes: [
@@ -311,11 +315,28 @@ router.get(
           },
         }),
 
-        // AccessGroups
+        // Filter AccessGroups on server-side based on user's access,
+        // and also return accessGroup IDs for client-side bundle filters
         {
           model: AccessGroup,
           as: "accessGroups",
-          attributes: ["id", "name"],
+          attributes: ["id"],
+          required: !hasAllParkAccess,
+          include: hasAllParkAccess
+            ? []
+            : [
+                {
+                  model: User,
+                  as: "users",
+                  attributes: [],
+                  where: { username: req.user?.username },
+                  through: {
+                    model: UserAccessGroup,
+                    attributes: [],
+                  },
+                  required: true,
+                },
+              ],
         },
       ],
       order: [
@@ -325,14 +346,14 @@ router.get(
       ],
     });
 
-    // constrain GateDetail query to only publishableIds in parks
-    const publishableIds = parks.map((park) => park.publishableId);
-
+    // Fetch all GateDetails for all parks in a single query
     const allGateDetails = await GateDetail.findAll({
       attributes: ["publishableId", "hasGate"],
       where: {
         publishableId: {
-          [Op.in]: publishableIds,
+          [Op.in]: GateDetail.sequelize.literal(
+            `(SELECT "publishableId" FROM "Parks" WHERE "publishableId" IS NOT NULL)`,
+          ),
         },
       },
     });
