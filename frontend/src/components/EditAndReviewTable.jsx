@@ -302,7 +302,7 @@ function FeaturesByFeatureTypeWithAreas({
                 level="park-area"
                 name={`${park.name} - ${parkArea.name}`}
                 typeName={parkArea.featureType?.name}
-                season={parkArea.currentSeason}
+                season={parkArea.currentSeason.regular}
                 formPanelHandler={() =>
                   formPanelHandler({ ...parkArea, level: "park-area" })
                 }
@@ -373,7 +373,7 @@ function FeaturesByFeatureTypeNoAreas({
               level="feature"
               name={`${park.name} - ${feature.name}`}
               typeName={feature.featureType.name}
-              season={feature.currentSeason}
+              season={feature.currentSeason.regular}
               formPanelHandler={() =>
                 formPanelHandler({ ...feature, level: "feature" })
               }
@@ -404,6 +404,8 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
+  const regularSeason = park.currentSeason.regular;
+  const winterSeason = park?.currentSeason.winter || {};
   const isParkInReservationSystem =
     park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
 
@@ -426,7 +428,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
           level="park"
           nameCellClass="fw-normal text-white"
           name={park.name}
-          season={park.currentSeason}
+          season={regularSeason}
           formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
@@ -435,12 +437,18 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
       <tbody>
         <DateTypeTableRow
           groupedDateRanges={park.groupedDateRanges}
-          currentYear={park.currentSeason?.operatingYear}
+          currentYear={regularSeason.operatingYear}
         />
         <DateTableRow
           groupedDateRanges={park.groupedDateRanges}
-          currentYear={park.currentSeason?.operatingYear}
+          currentYear={regularSeason.operatingYear}
         />
+        {park.hasWinterFeeDates && (
+          <DateTableRow
+            groupedDateRanges={park.winterGroupedDateRanges}
+            currentYear={winterSeason.operatingYear || null}
+          />
+        )}
 
         {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
           <React.Fragment key={`feature-type-${featureTypeId}`}>
@@ -474,11 +482,9 @@ Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    currentSeason: PropTypes.shape({
-      status: PropTypes.string,
-      operatingYear: PropTypes.number,
-    }),
+    currentSeason: PropTypes.object,
     groupedDateRanges: PropTypes.object,
+    winterGroupedDateRanges: PropTypes.object,
     hasTier1Dates: PropTypes.bool,
     hasTier2Dates: PropTypes.bool,
     hasWinterFeeDates: PropTypes.bool,
