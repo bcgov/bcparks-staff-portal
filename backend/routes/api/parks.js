@@ -346,14 +346,14 @@ router.get(
       ],
     });
 
-    // Fetch all GateDetails for all parks in a single query
+    // constrain GateDetail query to only publishableIds in parks
+    const publishableIds = parks.map((park) => park.publishableId);
+
     const allGateDetails = await GateDetail.findAll({
       attributes: ["publishableId", "hasGate"],
       where: {
         publishableId: {
-          [Op.in]: GateDetail.sequelize.literal(
-            `(SELECT "publishableId" FROM "Parks" WHERE "publishableId" IS NOT NULL)`,
-          ),
+          [Op.in]: publishableIds,
         },
       },
     });
