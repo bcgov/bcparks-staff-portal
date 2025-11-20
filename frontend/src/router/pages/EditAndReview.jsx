@@ -199,18 +199,6 @@ function EditAndReview() {
           return false;
         }
 
-        // filter by user access groups through userData (this is for security purposes)
-        if (
-          !hasAllParkAccess &&
-          userData &&
-          userData.accessGroups?.length > 0 &&
-          !userData.accessGroups.some((group) =>
-            park.accessGroups.some((parkGroup) => parkGroup.id === group.id),
-          )
-        ) {
-          return false;
-        }
-
         // filter by sections
         if (
           filters.sections.length > 0 &&
