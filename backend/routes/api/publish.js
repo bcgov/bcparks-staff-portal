@@ -161,7 +161,13 @@ router.get(
       where: {
         status: STATUS.APPROVED,
       },
-      attributes: ["id", "publishableId", "operatingYear", "readyToPublish", "seasonType"],
+      attributes: [
+        "id",
+        "publishableId",
+        "operatingYear",
+        "readyToPublish",
+        "seasonType",
+      ],
     });
 
     // Return if no seasons found
@@ -240,6 +246,10 @@ router.get(
     // Build output
     const output = approvedSeasons.map((season) => {
       const publishable = publishableMap.get(season.publishableId);
+      const displayOperatingYear =
+        season.seasonType === "winter"
+          ? `${season.operatingYear} Winter fee`
+          : season.operatingYear;
 
       if (!publishable) {
         console.warn(
@@ -263,7 +273,7 @@ router.get(
 
       return {
         id: season.id,
-        operatingYear: season.operatingYear,
+        displayOperatingYear,
         readyToPublish: season.readyToPublish,
         publishableType: publishable?.type ?? null,
         publishable: publishable ?? null,

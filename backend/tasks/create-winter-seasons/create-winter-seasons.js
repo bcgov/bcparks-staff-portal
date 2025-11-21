@@ -209,7 +209,7 @@ async function removeWinterFeeFromRegularSeasons(
   if (regularSeasons.length === 0) return;
 
   // Get season IDs
-  const regularSeasonIds = regularSeasons.map(season => season.id);
+  const regularSeasonIds = regularSeasons.map((season) => season.id);
 
   // Find and delete Winter fee DateRanges from regular seasons
   const winterDateRangesToDelete = await DateRange.findAll({
@@ -320,7 +320,9 @@ console.log(`Added ${publishablesAdded} missing Park Publishables`);
 console.log(`Added ${dateablesAdded} missing Park Dateables`);
 console.log(`Added ${winterSeasonsAdded} new Winter Seasons`);
 console.log(`Added ${winterDateRangesAdded} new Winter Fee DateRanges`);
-console.log(`Removed ${winterDateRangesDeleted} Winter Fee DateRanges from regular seasons`);
+console.log(
+  `Removed ${winterDateRangesDeleted} Winter Fee DateRanges from regular seasons`,
+);
 
 console.log("Committing transaction...");
 await transaction?.commit();
