@@ -519,7 +519,7 @@ async function saveSeasonData({
     {
       seasonId: season.id,
       userId,
-      notes: isWinterSeason ? `${notes} (Winter Season)` : notes,
+      notes,
       statusOldValue: season.status,
       statusNewValue: newStatus,
       readyToPublishOldValue: season.readyToPublish,
@@ -1105,7 +1105,7 @@ router.post(
     try {
       const season = await Season.findByPk(seasonId, {
         include: [{ model: Park, as: "park" }],
-        transaction
+        transaction,
       });
 
       checkSeasonExists(season);
@@ -1125,7 +1125,12 @@ router.post(
 
         if (winterSeason) {
           console.log("Approving winter season:", winterSeason.id);
-          await updateStatus(winterSeason.id, STATUS.APPROVED, null, transaction);
+          await updateStatus(
+            winterSeason.id,
+            STATUS.APPROVED,
+            null,
+            transaction,
+          );
           console.log("Winter season approved successfully");
         } else {
           console.log("No winter season found for this park/year");
