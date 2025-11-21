@@ -36,14 +36,12 @@ const FEATURE_ATTRIBUTES = [
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
-    // Get all seasons that are approved and ready to be published
+    // Get all seasons that are approved
     const approvedSeasons = await Season.findAll({
       where: {
         status: STATUS.APPROVED,
-        // TODO: CMS-1153
-        // readyToPublish: true,
       },
-      attributes: ["id", "publishableId", "operatingYear", "readyToPublish"],
+      attributes: ["id", "publishableId", "operatingYear", "readyToPublish", "seasonType"],
     });
 
     // Return if no seasons found

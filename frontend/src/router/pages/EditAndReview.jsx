@@ -130,6 +130,9 @@ function EditAndReview() {
   const filteredParks = useMemo(
     () =>
       parks.filter((park) => {
+        const regularSeason = park.currentSeason.regular;
+        const winterSeason = park.currentSeason.winter || {};
+
         // If a name filter is set, filter out parks that don't match
         if (
           filters.name.length > 0 &&
@@ -146,8 +149,9 @@ function EditAndReview() {
           const statusesToCheck = [];
 
           // check park.currentSeason
-          if (park.currentSeason?.status) {
-            statusesToCheck.push(park.currentSeason.status);
+          if (regularSeason?.status || winterSeason?.status) {
+            statusesToCheck.push(regularSeason.status);
+            statusesToCheck.push(winterSeason.status);
           }
 
           // check parkAreas.currentSeason
