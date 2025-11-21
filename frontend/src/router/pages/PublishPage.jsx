@@ -155,7 +155,7 @@ function PublishPage() {
                     </ul>
                   </td>
                   <td>
-                    {season.operatingYear}
+                    {season.displayOperatingYear}
                     <NotReadyFlag show={!season.readyToPublish} />
                   </td>
                 </tr>
