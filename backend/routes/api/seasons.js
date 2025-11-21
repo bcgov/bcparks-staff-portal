@@ -1103,7 +1103,34 @@ router.post(
     const transaction = await sequelize.transaction();
 
     try {
+      const season = await Season.findByPk(seasonId, {
+        include: [{ model: Park, as: "park" }],
+        transaction
+      });
+
+      checkSeasonExists(season);
+
       await updateStatus(seasonId, STATUS.APPROVED, null, transaction);
+
+      // If this park has winter fee dates, find and approve the winter season too
+      if (season.park.hasWinterFeeDates) {
+        const winterSeason = await Season.findOne({
+          where: {
+            publishableId: season.publishableId,
+            operatingYear: season.operatingYear,
+            seasonType: "winter",
+          },
+          transaction,
+        });
+
+        if (winterSeason) {
+          console.log("Approving winter season:", winterSeason.id);
+          await updateStatus(winterSeason.id, STATUS.APPROVED, null, transaction);
+          console.log("Winter season approved successfully");
+        } else {
+          console.log("No winter season found for this park/year");
+        }
+      }
 
       // @TODO: Uncomment after revising the logic for FCFS
       // await createFirstComeFirstServedDateRange(seasonId, transaction);
