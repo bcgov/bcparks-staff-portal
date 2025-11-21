@@ -81,7 +81,9 @@ function EditAndReview() {
 
   // open form panel when the Edit button is clicked
   async function formPanelHandler(formDataObj) {
-    const status = formDataObj.currentSeason.status;
+    const regularSeason = formDataObj.currentSeason.regular;
+    const winterSeason = formDataObj.currentSeason.winter || {};
+    const status = regularSeason.status;
 
     // If the season is already approved, prompt to continue
     if (status === "approved") {
@@ -113,7 +115,8 @@ function EditAndReview() {
     }
 
     setFormData({
-      seasonId: formDataObj.currentSeason.id,
+      seasonId: regularSeason.id,
+      winterSeasonId: winterSeason.id || null,
       level: formDataObj.level,
     });
     setShowFormPanel(true);
@@ -141,6 +144,9 @@ function EditAndReview() {
   const filteredParks = useMemo(
     () =>
       parks.filter((park) => {
+        const regularSeason = park.currentSeason.regular;
+        const winterSeason = park.currentSeason.winter || {};
+
         // If a name filter is set, filter out parks that don't match
         if (
           filters.name.length > 0 &&
@@ -157,8 +163,9 @@ function EditAndReview() {
           const statusesToCheck = [];
 
           // check park.currentSeason
-          if (park.currentSeason?.status) {
-            statusesToCheck.push(park.currentSeason.status);
+          if (regularSeason?.status || winterSeason?.status) {
+            statusesToCheck.push(regularSeason.status);
+            statusesToCheck.push(winterSeason.status);
           }
 
           // check parkAreas.currentSeason

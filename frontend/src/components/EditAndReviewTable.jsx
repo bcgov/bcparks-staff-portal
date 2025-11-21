@@ -261,6 +261,8 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
+  const regularSeason = park.currentSeason.regular;
+  const winterSeason = park?.currentSeason.winter || {};
   const isParkInReservationSystem =
     park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
 
@@ -271,7 +273,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
           level="park"
           nameCellClass="fw-normal text-white"
           name={park.name}
-          season={park.currentSeason}
+          season={regularSeason}
           formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
@@ -284,12 +286,18 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
           <>
             <DateTypeTableRow
               groupedDateRanges={park.groupedDateRanges}
-              currentYear={park.currentSeason.operatingYear || null}
+              currentYear={regularSeason.operatingYear || null}
             />
             <DateTableRow
               groupedDateRanges={park.groupedDateRanges}
-              currentYear={park.currentSeason.operatingYear || null}
+              currentYear={regularSeason.operatingYear || null}
             />
+            {park.hasWinterFeeDates && (
+              <DateTableRow
+                groupedDateRanges={park.winterGroupedDateRanges}
+                currentYear={winterSeason.operatingYear || null}
+              />
+            )}
           </>
         )}
 
@@ -307,7 +315,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
                 level="park-area"
                 name={`${park.name} - ${parkArea.name}`}
                 typeName={parkArea.featureType?.name}
-                season={parkArea.currentSeason}
+                season={parkArea.currentSeason.regular}
                 formPanelHandler={() =>
                   formPanelHandler({ ...parkArea, level: "park-area" })
                 }
@@ -352,7 +360,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
                 level="feature"
                 name={`${park.name} - ${feature.name}`}
                 typeName={feature.featureType.name}
-                season={feature.currentSeason}
+                season={feature.currentSeason.regular}
                 formPanelHandler={() =>
                   formPanelHandler({ ...feature, level: "feature" })
                 }
@@ -378,10 +386,11 @@ Table.propTypes = {
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     currentSeason: PropTypes.shape({
-      status: PropTypes.string,
-      operatingYear: PropTypes.number,
+      regular: PropTypes.object,
+      winter: PropTypes.object,
     }),
     groupedDateRanges: PropTypes.object,
+    winterGroupedDateRanges: PropTypes.object,
     hasTier1Dates: PropTypes.bool,
     hasTier2Dates: PropTypes.bool,
     hasWinterFeeDates: PropTypes.bool,
