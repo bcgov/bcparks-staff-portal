@@ -482,7 +482,10 @@ Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
-    currentSeason: PropTypes.object,
+    currentSeason: PropTypes.shape({
+      regular: PropTypes.object,
+      winter: PropTypes.object,
+    }),
     groupedDateRanges: PropTypes.object,
     winterGroupedDateRanges: PropTypes.object,
     hasTier1Dates: PropTypes.bool,
