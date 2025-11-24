@@ -29,6 +29,7 @@ function seasonModel(minYear, required = true) {
       "id",
       "publishableId",
       "status",
+      "seasonType",
       "readyToPublish",
       "operatingYear",
     ],
@@ -135,13 +136,26 @@ function buildDateRangeObject(dateRange, readyToPublish) {
 
 // build a current season object
 function buildCurrentSeasonOutput(seasons) {
-  if (!seasons || seasons.length === 0) return null;
+  if (!seasons || seasons.length === 0) return { regular: null, winter: null };
 
-  // find the most recent season (highest operatingYear)
-  return _.maxBy(seasons, "operatingYear") || null;
+  // group seasons by seasonType
+  const seasonsByType = _.groupBy(seasons, "seasonType");
+
+  // find the most recent season (highest operatingYear) for each type
+  const regularSeason = seasonsByType.regular
+    ? _.maxBy(seasonsByType.regular, "operatingYear")
+    : null;
+
+  const winterSeason = seasonsByType.winter
+    ? _.maxBy(seasonsByType.winter, "operatingYear")
+    : null;
+
+  return {
+    regular: regularSeason,
+    winter: winterSeason,
+  };
 }
 
-// get all date ranges from seasons
 function getAllDateRanges(seasons) {
   return _.flatMap(seasons, (season) =>
     (season.dateRanges || []).map((dateRange) =>
@@ -365,8 +379,15 @@ router.get(
     });
 
     const output = parks.map((park) => {
+      const regularSeasons = park.seasons.filter(
+        (season) => season.seasonType === "regular",
+      );
+      const winterSeasons = park.seasons.filter(
+        (season) => season.seasonType === "winter",
+      );
       // get date ranges for park
-      const parkDateRanges = getAllDateRanges(park.seasons);
+      const parkDateRanges = getAllDateRanges(regularSeasons);
+      const parkWinterDateRanges = getAllDateRanges(winterSeasons);
       // get hasGate for park
       const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
@@ -392,6 +413,8 @@ router.get(
           parkDateRanges,
           parkHasGate,
         ),
+        winterGroupedDateRanges:
+          groupDateRangesByTypeAndYear(parkWinterDateRanges),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, feature.seasons, true),
         ),
@@ -404,6 +427,7 @@ router.get(
           operatingYear: season.operatingYear,
           status: season.status,
           readyToPublish: season.readyToPublish,
+          seasonType: season.seasonType,
           dateRanges: season.dateRanges.map(
             buildDateRangeObject,
             season.readyToPublish,

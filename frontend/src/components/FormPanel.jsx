@@ -155,6 +155,8 @@ function SeasonForm({
   const {
     current: season,
     previous: previousSeasonDates,
+    currentWinter: winterSeason,
+    previousWinter: previousWinterSeasonDates,
     ...seasonMetadata
   } = data || {};
   const currentYear = season?.operatingYear;
@@ -199,9 +201,15 @@ function SeasonForm({
 
     // Format the data for the API
     const seasonDateRanges = [];
+    const winterSeasonDateRanges = [];
 
     if (level === "park") {
       seasonDateRanges.push(...season.park.dateable.dateRanges);
+
+      // Add winter season date ranges if winter season exists
+      if (winterSeason?.park?.dateable?.dateRanges) {
+        winterSeasonDateRanges.push(...winterSeason.park.dateable.dateRanges);
+      }
     } else if (level === "feature") {
       seasonDateRanges.push(...season.feature.dateable.dateRanges);
     } else if (level === "park-area") {
@@ -247,6 +255,17 @@ function SeasonForm({
       (dateRangeAnnual) => dateRangeAnnual.changed,
     );
 
+    // Handle winter season changes
+    const changedWinterDateRanges = winterSeasonDateRanges
+      .filter((range) => range.changed)
+      .map((range) => omit(range, ["changed", "dateType"]));
+
+    const changedWinterDateRangeAnnuals = winterSeason?.dateRangeAnnuals
+      ? winterSeason.dateRangeAnnuals.filter(
+          (dateRangeAnnual) => dateRangeAnnual.changed,
+        )
+      : [];
+
     // Clear gateDetail if hasGate is false
     if (gateDetail && gateDetail.hasGate === false) {
       gateDetail = {
@@ -268,8 +287,18 @@ function SeasonForm({
       notes,
     };
 
+    // Add winter season data if it exists
+    if (winterSeason) {
+      payload.winterSeason = {
+        id: winterSeason.id,
+        dateRanges: changedWinterDateRanges,
+        dateRangeAnnuals: changedWinterDateRangeAnnuals,
+        readyToPublish: winterSeason.readyToPublish,
+      };
+    }
+
     return payload;
-  }, [level, season, deletedDateRangeIds, notes, seasonMetadata]);
+  }, [level, season, winterSeason, deletedDateRangeIds, notes, seasonMetadata]);
 
   // Calculate if the form data has changed
   const dataChanged = useMemo(() => {
@@ -292,9 +321,25 @@ function SeasonForm({
     if (!isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail))
       return true;
 
+    // Check winter season changes
+    if (winterSeason && changesPayload.winterSeason) {
+      // Check if winter date ranges were updated
+      if (changesPayload.winterSeason.dateRanges.length) return true;
+
+      // Check if winter readyToPublish changed
+      if (
+        changesPayload.winterSeason.readyToPublish !==
+        apiData?.currentWinter?.readyToPublish
+      )
+        return true;
+
+      // Check if any winter date annuals were updated
+      if (changesPayload.winterSeason.dateRangeAnnuals.length) return true;
+    }
+
     // If nothing else has changed, return true if notes are entered
     return changesPayload.notes.length > 0;
-  }, [season, changesPayload, apiData]);
+  }, [season, winterSeason, changesPayload, apiData]);
 
   // Update the parent component when dataChanged is updated
   useEffect(() => {
@@ -493,6 +538,8 @@ If dates have already been published, they will not be updated until new dates a
             <ParkSeasonForm
               season={season}
               previousSeasonDates={previousSeasonDates}
+              winterSeason={winterSeason}
+              previousWinterSeasonDates={previousWinterSeasonDates}
               dateTypes={seasonMetadata.dateTypes}
               approver={approver}
             />
@@ -602,6 +649,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         {formData.seasonId && (
           <SeasonForm
             seasonId={formData.seasonId}
+            winterSeasonId={formData.winterSeasonId}
             level={formData.level}
             closePanel={closePanel}
             onDataUpdate={onDataUpdate}
