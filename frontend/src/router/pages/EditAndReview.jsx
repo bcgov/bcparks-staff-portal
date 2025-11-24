@@ -456,7 +456,7 @@ function EditAndReview() {
       <button
         type="button"
         onClick={resetFilters}
-        className="btn text-link text-decoration-underline align-self-end"
+        className="btn text-link text-decoration-underline align-self-end d-block mt-3 ps-1"
       >
         Clear filters
       </button>
