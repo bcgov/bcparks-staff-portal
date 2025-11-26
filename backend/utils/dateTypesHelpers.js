@@ -11,12 +11,11 @@ export async function getAllDateTypes(where = {}, transaction = null) {
     attributes: [
       "id",
       "name",
-      "startDateLabel",
-      "endDateLabel",
+      "strapiDateTypeId",
       "description",
       "parkLevel",
       "parkAreaLevel",
-      "featureLevel",
+      "featureLevel"
     ],
 
     where,

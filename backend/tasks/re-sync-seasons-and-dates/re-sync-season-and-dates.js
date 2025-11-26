@@ -35,7 +35,7 @@ async function reSyncSeasonsAndDates() {
     await importParkFeatureDates();
     console.log("Finished: Import park feature dates.\n");
 
-    // 5 - import park operating dates (gate dates) from Strapi, and populate Seasons and DateRanges
+    // 5 - import park gate dates from Strapi, and populate Seasons and DateRanges
     console.log("Starting: Populate park gate dates...");
     await populateParkGateDates();
     console.log("Finished: Populate park gate dates.\n");

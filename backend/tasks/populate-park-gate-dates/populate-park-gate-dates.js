@@ -39,14 +39,14 @@ export async function populateParkGateDates() {
       parks.map((p) => [String(p.orcs), p]),
     );
 
-    // get dateType "Operating"
-    const operatingDateType = await DateType.findOne({
-      where: { name: "Operating", parkLevel: true },
+    // get dateType "Park gate open"
+    const gateDateType = await DateType.findOne({
+      where: { strapiDateTypeId: 1 },
       transaction,
     });
 
-    if (!operatingDateType) {
-      throw new Error('No DateType with name "Operating" found.');
+    if (!gateDateType) {
+      throw new Error('No DateType with name "Park gate open" found.');
     }
 
     // group park-operation-date items by orcs and operatingYear
@@ -81,16 +81,16 @@ export async function populateParkGateDates() {
         transaction,
       });
 
-      // find or create dateRange for this season and dateType "Operating"
+      // find or create dateRange for this season and dateType "Park gate open"
       const [dateRange] = await DateRange.findOrCreate({
         where: {
           seasonId: season.id,
-          dateTypeId: operatingDateType.id,
+          dateTypeId: gateDateType.id,
         },
         defaults: {
           dateableId: park.dateableId,
           seasonId: season.id,
-          dateTypeId: operatingDateType.id,
+          dateTypeId: gateDateType.id,
           startDate,
           endDate,
         },

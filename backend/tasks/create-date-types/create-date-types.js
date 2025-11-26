@@ -28,14 +28,23 @@ export async function createDateTypes(transaction = null) {
       const featureLevel = level?.includes("feature") || false;
       const parkAreaLevel = level?.includes("parkArea") || false;
 
-      // find an existing DateType
+      // Skip entries without strapiDateTypeId
+      if (!strapiDateTypeId) {
+        console.warn(
+          `Skipping DateType "${name}" - no strapiDateTypeId provided`,
+        );
+        continue;
+      }
+
+      // Find existing DateType by strapiDateTypeId
       let dateType = await DateType.findOne({
-        where: { name, parkLevel, featureLevel, parkAreaLevel },
+        where: { strapiDateTypeId },
         transaction: localTransaction,
       });
 
-      // create or update DateType
+      // Create or update DateType based on strapiDateTypeId
       if (!dateType) {
+        // Create new DateType
         dateType = await DateType.create(
           {
             name,
@@ -49,18 +58,27 @@ export async function createDateTypes(transaction = null) {
           },
           { transaction: localTransaction },
         );
+        console.log(
+          `Created DateType: ${dateType.name} (ID: ${dateType.id}, strapiDateTypeId: ${strapiDateTypeId})`,
+        );
       } else {
-        dateType.startDateLabel = startDateLabel;
-        dateType.endDateLabel = endDateLabel;
-        dateType.description = description;
-        dateType.parkLevel = parkLevel;
-        dateType.featureLevel = featureLevel;
-        dateType.parkAreaLevel = parkAreaLevel;
-        dateType.strapiDateTypeId = strapiDateTypeId;
-        await dateType.save({ transaction: localTransaction });
+        // Update existing DateType
+        await dateType.update(
+          {
+            name,
+            startDateLabel,
+            endDateLabel,
+            description,
+            parkLevel,
+            featureLevel,
+            parkAreaLevel,
+          },
+          { transaction: localTransaction },
+        );
+        console.log(
+          `Updated DateType: ${dateType.name} (ID: ${dateType.id}, strapiDateTypeId: ${strapiDateTypeId})`,
+        );
       }
-
-      console.log(`Created/Updated DateType: ${dateType.name}`);
     }
 
     if (createdTransaction) {

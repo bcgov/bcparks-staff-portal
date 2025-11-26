@@ -173,11 +173,11 @@ export async function populateBlankDateRangesForYear(
       `${dateRangeKeys.length} applicable DateRanges. Checking if any exist already...`,
     );
 
-    // Exclude the Operating date type,
+    // Exclude the Park gate open date type,
     // handled by `populateBlankGateOperatingDates` in ./populate-blank-gate-dates.js
-    const dateTypeIdWhere = parkDateTypesByName.Operating
+    const dateTypeIdWhere = parkDateTypesByName["Park gate open"]
       ? {
-          [Op.not]: parkDateTypesByName.Operating.id,
+          [Op.not]: parkDateTypesByName["Park gate open"].id,
         }
       : {};
 
@@ -237,7 +237,7 @@ export async function populateBlankDateRangesForYear(
     );
 
     console.log(
-      `Created ${createdGateDates.length} blank Park Gate Operating DateRanges for ${targetYear}`,
+      `Created ${createdGateDates.length} blank Park gate open DateRanges for ${targetYear}`,
     );
 
     return [...createdRecords, ...createdGateDates];

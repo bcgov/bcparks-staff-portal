@@ -712,10 +712,10 @@ router.get(
     // Return the DateTypes in a specific order
     const orderedDateTypes = getDateTypesForPark(park, dateTypesByName);
 
-    // Add Operating date type
+    // Add Park gate open date type
     // @TODO: This should be in its own property
     // because it's used by gate details and not the Reservations section
-    orderedDateTypes.push(dateTypesByName.Operating);
+    orderedDateTypes.push(dateTypesByName["Park gate open"]);
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(

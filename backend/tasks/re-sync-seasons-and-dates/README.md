@@ -31,11 +31,11 @@ The main re-sync script (`re-sync-season-and-dates.js`) performs the following s
    - Finds the correct `publishableId` from `Feature` or `ParkArea`.
    - Creates `DateRange` records for each feature date, using the correct `DateType`.
 
-5. **Imports park operating (gate) dates from Strapi**
+5. **Imports park gate open dates from Strapi**
 
    - For each Park with a `publishableId`, finds all Strapi `park-operation-date` entries where `protectedArea.orcs` matches the Park's `orcs`.
    - For each unique `operatingYear`, creates or finds a `Season`.
-   - For each Season, creates or updates a `DateRange` for the `"Operating"` date type.
+   - For each Season, creates or updates a `DateRange` for the `"Park gate open"` date type.
    - All operations are performed inside a transaction for safety.
 
 6. **Imports previous dates from JSON**

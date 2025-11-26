@@ -68,11 +68,11 @@ export default function GateForm({
         </div>
         {gateDetail.hasGate && (
           <div>
-            {/* display gate (operating) dates only at park level */}
+            {/* display gate dates only at park level */}
             {level === "park" && (
               <div className="mb-4">
                 <h6 className="fw-normal">
-                  Gate dates{" "}
+                  Park gate open dates{" "}
                   <TooltipWrapper
                     placement="top"
                     content={dateType.description}
@@ -102,7 +102,7 @@ export default function GateForm({
             )}
 
             <h6 className="fw-normal">
-              Gate hours{" "}
+              Gate open hours{" "}
               <TooltipWrapper
                 placement="top"
                 content={`Regular daily hours the gate(s) is open.

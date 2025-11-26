@@ -1,6 +1,6 @@
 export const optionalTypes = {
   // @TODO: use a list of constants for date types
-  park: ["Operating", "Tier 2"],
+  park: ["Park gate open", "Tier 2"],
   parkArea: [],
   feature: [],
 };

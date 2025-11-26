@@ -18,7 +18,7 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
 export default function ParkSeasonForm({
   season,
   previousSeasonDates,
-  // All date types, including "Operating" (which is shown separately)
+  // All date types, including "Park gate open" and "Winter fee" (which is shown separately)
   dateTypes: allDateTypes,
   approver,
 }) {
@@ -28,15 +28,15 @@ export default function ParkSeasonForm({
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
   const gateDetail = season.gateDetail || {};
 
-  // Operating dates are shown in the Park Gate section,
-  // so split "Operating" out of the dateTypes array.
-  const [operatingDateType, dateTypes] = useMemo(() => {
-    const [[operating], nonOperating] = partition(
+  // Gate dates are shown in the Park Gate section,
+  // so split "Park gate open" out of the dateTypes array.
+  const [gateDateType, dateTypes] = useMemo(() => {
+    const [[gate], nonGate] = partition(
       allDateTypes,
-      (dateType) => dateType.name === "Operating",
+      (dateType) => dateType.name === "Park gate open",
     );
 
-    return [operating, nonOperating];
+    return [gate, nonGate];
   }, [allDateTypes]);
 
   // Show the date form sections only if there are applicable date types for this park.
@@ -258,14 +258,14 @@ export default function ParkSeasonForm({
         gateDetail={gateDetail}
         updateGateDetail={updateGateDetail}
         dateableId={park.dateableId}
-        dateType={operatingDateType}
-        dateRanges={datesByType.Operating ?? []}
+        dateType={gateDateType}
+        dateRanges={datesByType["Park gate open"] ?? []}
         updateDateRange={updateDateRange}
         addDateRange={addDateRange}
         removeDateRange={removeDateRange}
         dateRangeAnnuals={dateRangeAnnuals}
         updateDateRangeAnnual={updateDateRangeAnnual}
-        previousDateRanges={previousDatesByType?.Operating ?? []}
+        previousDateRanges={previousDatesByType?.["Park gate open"] ?? []}
         level={"park"}
       />
 

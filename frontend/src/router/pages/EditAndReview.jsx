@@ -228,10 +228,7 @@ function EditAndReview() {
           filters.dateTypes.length > 0 &&
           !filters.dateTypes.some((filterDateType) => {
             // check park.hasGate and dateTypes
-            if (
-              ["Gate", "Operating"].includes(filterDateType.name) &&
-              !park.hasGate
-            ) {
+            if (filterDateType.name === "Park gate open" && !park.hasGate) {
               return false;
             }
             // check park.hasTier1Dates, park.hasTier2Dates, park.hasWinterFeeDates, and dateTypes

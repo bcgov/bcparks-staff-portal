@@ -243,7 +243,7 @@ function getFeatureForDateRange(dateRange) {
  * @returns {Object} Object containing gate start time, end time, and same every year values
  */
 function getGateDisplayValues(dateRange, gateDetail, annualData) {
-  const isGateType = dateRange.dateType.name === "Operating";
+  const isGateType = dateRange.dateType.strapiDateTypeId === 1;
   const hasGate = gateDetail?.hasGate === true;
 
   let gateStartTime = "";
@@ -439,7 +439,7 @@ router.get(
         {
           model: DateType,
           as: "dateType",
-          attributes: ["id", "name"],
+          attributes: ["id", "strapiDateTypeId", "name"],
           required: true,
         },
       ],

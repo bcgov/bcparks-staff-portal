@@ -1,6 +1,3 @@
-// TODO: CMS-1162 - update name in db
-// change "Operating" to "Gate"
-// add displayName
 export const dateTypesData = [
   {
     name: "Backcountry registration",
@@ -28,10 +25,10 @@ export const dateTypesData = [
     level: ["feature", "parkArea"],
   },
   {
-    name: "Operating",
+    name: "Park gate open",
     strapiDateTypeId: 1,
-    startDateLabel: "Operating start date",
-    endDateLabel: "Operating end date",
+    startDateLabel: "Park gate open start date",
+    endDateLabel: "Park gate open end date",
     description:
       "Date range when the gate (or gates) is open and allows visitors to access the park by vehicle. If there are multiple gates, enter dates for the earliest gate opening and latest gate closing.",
     level: ["park"],
