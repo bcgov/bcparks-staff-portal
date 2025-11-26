@@ -48,7 +48,7 @@ function seasonModel(minYear, required = true) {
           {
             model: DateType,
             as: "dateType",
-            attributes: ["id", "name"],
+            attributes: ["id", "strapiDateTypeId", "name"],
           },
         ],
       },

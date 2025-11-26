@@ -18,7 +18,7 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
 export default function ParkSeasonForm({
   season,
   previousSeasonDates,
-  // All date types, including "Park gate open" and "Winter fee" (which is shown separately)
+  // All date types, including "Park gate open" (which is shown separately)
   dateTypes: allDateTypes,
   approver,
 }) {
@@ -33,7 +33,7 @@ export default function ParkSeasonForm({
   const [gateDateType, dateTypes] = useMemo(() => {
     const [[gate], nonGate] = partition(
       allDateTypes,
-      (dateType) => dateType.name === "Park gate open",
+      (dateType) => dateType.strapiDateTypeId === 1,
     );
 
     return [gate, nonGate];

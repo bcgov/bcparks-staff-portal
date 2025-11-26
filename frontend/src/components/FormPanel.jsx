@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import PropTypes from "prop-types";
-import { isEqual, omit } from "lodash-es";
+import { isEqual, omit, keyBy } from "lodash-es";
 
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
@@ -173,12 +173,13 @@ function SeasonForm({
     return `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
   }, [level, season, seasonMetadata]);
 
-  // Find the "Park gate open" date type id
-  const gateTypeId = seasonMetadata?.dateTypes?.find(
-    (dateType) => dateType.strapiDateTypeId === 1,
-  )?.id;
+  const dateTypesByStrapiId = useMemo(
+    () => keyBy(seasonMetadata?.dateTypes || [], "strapiDateTypeId"),
+    [seasonMetadata],
+  );
 
-  console.log("season",seasonMetadata)
+  // Find the "Park gate open" date type id
+  const gateTypeId = dateTypesByStrapiId[1]?.id;
 
   // Clears and re-fetches the data
   function resetData() {

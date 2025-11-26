@@ -15,7 +15,7 @@ export async function getAllDateTypes(where = {}, transaction = null) {
       "description",
       "parkLevel",
       "parkAreaLevel",
-      "featureLevel"
+      "featureLevel",
     ],
 
     where,

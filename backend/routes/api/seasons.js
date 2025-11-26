@@ -113,7 +113,7 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
               model: DateType,
               as: "dateType",
               required: false,
-              attributes: ["id", "name"],
+              attributes: ["id", "strapiDateTypeId", "name"],
 
               // Filter DateTypes by level
               where: dateTypeWhere,
@@ -147,7 +147,7 @@ async function getDateRangeAnnuals(publishableId) {
       {
         model: DateType,
         as: "dateType",
-        attributes: ["id", "name"],
+        attributes: ["id", "strapiDateTypeId", "name"],
       },
     ],
   });
@@ -219,7 +219,7 @@ function dateRangesQueryPart(seasonId) {
       {
         model: DateType,
         as: "dateType",
-        attributes: ["id", "name"],
+        attributes: ["id", "strapiDateTypeId", "name"],
       },
     ],
   };
@@ -344,7 +344,11 @@ async function getParkDates(park, operatingYear) {
         required: false,
 
         include: [
-          { model: DateType, as: "dateType", attributes: ["id", "name"] },
+          {
+            model: DateType,
+            as: "dateType",
+            attributes: ["id", "strapiDateTypeId", "name"],
+          },
         ],
       },
     ],

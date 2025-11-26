@@ -68,7 +68,7 @@ export default function GateForm({
         </div>
         {gateDetail.hasGate && (
           <div>
-            {/* display gate dates only at park level */}
+            {/* display park gate open dates only at park level */}
             {level === "park" && (
               <div className="mb-4">
                 <h6 className="fw-normal">
