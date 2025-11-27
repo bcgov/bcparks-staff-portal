@@ -18,6 +18,7 @@ import {
   DateRangeAnnual,
   GateDetail,
 } from "../../models/index.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 const router = Router();
 
@@ -243,7 +244,8 @@ function getFeatureForDateRange(dateRange) {
  * @returns {Object} Object containing gate start time, end time, and same every year values
  */
 function getGateDisplayValues(dateRange, gateDetail, annualData) {
-  const isGateType = dateRange.dateType.strapiDateTypeId === 1;
+  const isGateType =
+    dateRange.dateType.strapiDateTypeId === DATE_TYPE.PARK_GATE_OPEN;
   const hasGate = gateDetail?.hasGate === true;
 
   let gateStartTime = "";

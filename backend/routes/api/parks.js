@@ -16,6 +16,7 @@ import {
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 import checkUserRoles from "../../utils/checkUserRoles.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 // Constants
 const router = Router();
@@ -93,7 +94,8 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   // filter out "Park gate open" dateType if hasGate is explicitly false at the park level
   if (hasGate === false) {
     validRanges = validRanges.filter(
-      (dateRange) => dateRange.dateType.strapiDateTypeId !== 1,
+      (dateRange) =>
+        dateRange.dateType.strapiDateTypeId !== DATE_TYPE.PARK_GATE_OPEN,
     );
   }
 

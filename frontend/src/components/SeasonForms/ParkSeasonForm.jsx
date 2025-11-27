@@ -28,7 +28,7 @@ export default function ParkSeasonForm({
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
   const gateDetail = season.gateDetail || {};
 
-  // Gate dates are shown in the Park Gate section,
+  // Park gate open dates are shown in the Park Gate section,
   // so split "Park gate open" out of the dateTypes array.
   const [gateDateType, dateTypes] = useMemo(() => {
     const [[gate], nonGate] = partition(

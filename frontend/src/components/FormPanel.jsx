@@ -177,7 +177,6 @@ function SeasonForm({
     () => keyBy(seasonMetadata?.dateTypes || [], "strapiDateTypeId"),
     [seasonMetadata],
   );
-
   // Find the "Park gate open" date type id
   const gateTypeId = dateTypesByStrapiId[1]?.id;
 

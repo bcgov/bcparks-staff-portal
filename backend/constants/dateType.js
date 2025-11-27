@@ -5,7 +5,7 @@
 export const BACKCOUNTRY_REGISTRATION = 8;
 export const FIRST_COME_FIRST_SERVED = 9;
 export const FULL_SERVICES_AND_FEES = 10;
-export const GATE_OPERATING = 1;
+export const PARK_GATE_OPEN = 1;
 export const OPERATION = 6;
 export const RESERVATION = 7;
 export const TIER_1 = 2;
