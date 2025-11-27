@@ -81,7 +81,7 @@ export default function GateForm({
                   </TooltipWrapper>
                 </h6>
 
-                {isDateTypeOptional(dateType.name, level) && (
+                {isDateTypeOptional(dateType.strapiDateTypeId, level) && (
                   <div className="my-2 text-secondary-grey">(Optional)</div>
                 )}
 
@@ -96,7 +96,7 @@ export default function GateForm({
                   removeDateRange={removeDateRange}
                   dateRangeAnnuals={dateRangeAnnuals}
                   updateDateRangeAnnual={updateDateRangeAnnual}
-                  optional={isDateTypeOptional(dateType.name, level)}
+                  optional={isDateTypeOptional(dateType.strapiDateTypeId, level)}
                 />
               </div>
             )}
@@ -164,6 +164,7 @@ GateForm.propTypes = {
   dateableId: PropTypes.number,
   dateType: PropTypes.shape({
     id: PropTypes.number,
+    strapiDateTypeId: PropTypes.number,
     name: PropTypes.string,
     description: PropTypes.string,
   }),

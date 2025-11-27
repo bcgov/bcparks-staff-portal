@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 import {
   getAllDateTypes,
   getDateTypesForFeature,
@@ -439,7 +440,7 @@ router.get(
       featureLevel: true,
     });
 
-    const dateTypesByName = _.keyBy(dateTypesArray, "name");
+    const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "strapiDateTypeId");
 
     const { feature } = seasonModel;
 
@@ -453,7 +454,10 @@ router.get(
     );
 
     // Return the DateTypes in a specific order
-    const orderedDateTypes = getDateTypesForFeature(feature, dateTypesByName);
+    const orderedDateTypes = getDateTypesForFeature(
+      feature,
+      dateTypesByDateTypeId,
+    );
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
@@ -546,7 +550,10 @@ router.get(
       featureLevel: true,
     });
 
-    const featureDateTypesByName = _.keyBy(featureDateTypesArray, "name");
+    const featureDateTypesByDateTypeId = _.keyBy(
+      featureDateTypesArray,
+      "strapiDateTypeId",
+    );
 
     // Add some Park-level dates to the payload
     // (for validation rules)
@@ -564,7 +571,7 @@ router.get(
     const orderedFeatureDateTypesEntries = seasonModel.parkArea.features.map(
       (feature) => [
         feature.id,
-        getDateTypesForFeature(feature, featureDateTypesByName),
+        getDateTypesForFeature(feature, featureDateTypesByDateTypeId),
       ],
     );
 
@@ -711,15 +718,15 @@ router.get(
       parkLevel: true,
     });
 
-    const dateTypesByName = _.keyBy(dateTypesArray, "name");
+    const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "strapiDateTypeId");
 
     // Return the DateTypes in a specific order
-    const orderedDateTypes = getDateTypesForPark(park, dateTypesByName);
+    const orderedDateTypes = getDateTypesForPark(park, dateTypesByDateTypeId);
 
     // Add Park gate open date type
     // @TODO: This should be in its own property
     // because it's used by gate details and not the Reservations section
-    orderedDateTypes.push(dateTypesByName["Park gate open"]);
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(

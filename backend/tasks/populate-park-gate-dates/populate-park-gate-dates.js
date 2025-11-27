@@ -11,6 +11,7 @@ import {
   Publishable,
 } from "../../models/index.js";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import * as DATE_TYPE from "../../constants/dateType.js"
 
 async function createPublishableForPark(park, transaction) {
   if (park.publishableId) return park.publishableId;
@@ -41,7 +42,7 @@ export async function populateParkGateDates() {
 
     // get dateType "Park gate open"
     const gateDateType = await DateType.findOne({
-      where: { strapiDateTypeId: 1 },
+      where: { strapiDateTypeId: DATE_TYPE.PARK_GATE_OPEN },
       transaction,
     });
 

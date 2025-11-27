@@ -13,6 +13,7 @@ import {
 } from "../../models/index.js";
 import { Op } from "sequelize";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import * as DATE_TYPE from "../../constants/dateType.js"
 
 // Functions
 // finds dateableId for a given park and "Park gate open" dateType
@@ -49,7 +50,7 @@ export async function createDateRangeAnnualEntries() {
   try {
     // get dateType "Park gate open"
     const gateDateType = await DateType.findOne({
-      where: { strapiDateTypeId: 1 },
+      where: { strapiDateTypeId: DATE_TYPE.PARK_GATE_OPEN },
       transaction,
     });
 

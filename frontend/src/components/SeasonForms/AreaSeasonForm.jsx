@@ -51,7 +51,7 @@ function FeatureFormSectionComponent({
             </TooltipWrapper>
           </h6>
 
-          {isDateTypeOptional(dateType.name, "feature") && (
+          {isDateTypeOptional(dateType.strapiDateTypeId, "feature") && (
             <div className="my-2 text-secondary-grey">(Optional)</div>
           )}
 
@@ -83,7 +83,7 @@ function FeatureFormSectionComponent({
             }
             dateRangeAnnuals={dateRangeAnnuals}
             updateDateRangeAnnual={updateDateRangeAnnual}
-            optional={isDateTypeOptional(dateType.name, "feature")}
+            optional={isDateTypeOptional(dateType.strapiDateTypeId, "feature")}
           />
         </div>
       ))}
@@ -101,6 +101,7 @@ const dateRangeShape = PropTypes.shape({
   dateType: PropTypes.shape({
     name: PropTypes.string.isRequired,
     id: PropTypes.number.isRequired,
+    strapiDateTypeId: PropTypes.number.isRequired,
   }),
 });
 
@@ -117,6 +118,7 @@ FeatureFormSectionComponent.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       id: PropTypes.number.isRequired,
+      strapiDateTypeId: PropTypes.number.isRequired,
       description: PropTypes.string,
     }),
   ).isRequired,
@@ -486,7 +488,7 @@ export default function AreaSeasonForm({
                   </TooltipWrapper>
                 </h6>
 
-                {isDateTypeOptional(dateType.name, "parkArea") && (
+                {isDateTypeOptional(dateType.strapiDateTypeId, "parkArea") && (
                   <div className="my-2 text-secondary-grey">(Optional)</div>
                 )}
 
@@ -503,7 +505,7 @@ export default function AreaSeasonForm({
                   removeDateRange={removeAreaDateRange}
                   dateRangeAnnuals={dateRangeAnnuals}
                   updateDateRangeAnnual={updateDateRangeAnnual}
-                  optional={isDateTypeOptional(dateType.name, "parkArea")}
+                  optional={isDateTypeOptional(dateType.strapiDateTypeId, "parkArea")}
                 />
               </div>
             ))}
@@ -597,6 +599,7 @@ AreaSeasonForm.propTypes = {
       dateType: PropTypes.shape({
         name: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
+        strapiDateTypeId: PropTypes.number.isRequired,
       }),
     }),
   ).isRequired,
@@ -605,6 +608,7 @@ AreaSeasonForm.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       id: PropTypes.number.isRequired,
+      strapiDateTypeId: PropTypes.number.isRequired,
       description: PropTypes.string,
     }),
   ).isRequired,
@@ -614,6 +618,7 @@ AreaSeasonForm.propTypes = {
       PropTypes.shape({
         name: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
+        strapiDateTypeId: PropTypes.number.isRequired,
         description: PropTypes.string,
       }),
     ),

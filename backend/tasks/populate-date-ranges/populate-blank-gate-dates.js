@@ -8,6 +8,7 @@ import {
   Season,
   Dateable,
 } from "../../models/index.js";
+import * as DATE_TYPE from "../../constants/dateType.js"
 
 /**
  * Populates blank Park gate open DateRanges for a given year by creating DateRanges for all
@@ -25,7 +26,7 @@ export default async function populateBlankGateOperatingDates(
     attributes: ["id"],
 
     where: {
-      strapiDateTypeId: 1,
+      strapiDateTypeId: DATE_TYPE.PARK_GATE_OPEN,
     },
 
     transaction,

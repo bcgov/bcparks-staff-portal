@@ -216,7 +216,7 @@ export default function ParkSeasonForm({
               </TooltipWrapper>
             </h6>
 
-            {isDateTypeOptional(dateType.name, "park") && (
+            {isDateTypeOptional(dateType.strapiDateTypeId, "park") && (
               <div className="my-2 text-secondary-grey">(Optional)</div>
             )}
 
@@ -231,7 +231,7 @@ export default function ParkSeasonForm({
               removeDateRange={removeDateRange}
               dateRangeAnnuals={dateRangeAnnuals}
               updateDateRangeAnnual={updateDateRangeAnnual}
-              optional={isDateTypeOptional(dateType.name, "park")}
+              optional={isDateTypeOptional(dateType.strapiDateTypeId, "park")}
             />
           </div>
         ))}
@@ -305,6 +305,7 @@ ParkSeasonForm.propTypes = {
       dateType: PropTypes.shape({
         name: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
+        strapiDateTypeId: PropTypes.number.isRequired,
       }),
     }),
   ).isRequired,
@@ -313,6 +314,7 @@ ParkSeasonForm.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       id: PropTypes.number.isRequired,
+      strapiDateTypeId: PropTypes.number.isRequired,
       description: PropTypes.string,
     }),
   ).isRequired,
