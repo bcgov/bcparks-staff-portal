@@ -425,6 +425,11 @@ If dates have already been published, they will not be updated until new dates a
       // Start refreshing the main page data from the API
       onDataUpdate();
 
+      flashMessage.open(
+        "Dates submitted to HQ",
+        `${seasonTitle} ${season.operatingYear} dates submitted to HQ`,
+      );
+
       closePanel();
     } catch (saveError) {
       console.error("Error submitting season:", saveError);
@@ -555,6 +560,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
   const modal = useConfirmation();
+  const flashMessage = useContext(globalFlashMessageContext);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
@@ -565,6 +571,9 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   function closePanel() {
     setShow(false);
     setDataChanged(false);
+
+    // Close any flash messages when closing the panel
+    flashMessage.close();
   }
 
   // Prompts the user if data has changed before closing
