@@ -189,7 +189,7 @@ export default function FeatureSeasonForm({
               </TooltipWrapper>
             </h6>
 
-            {isDateTypeOptional(dateType.name, "feature") && (
+            {isDateTypeOptional(dateType.strapiDateTypeId, "feature") && (
               <div className="my-2 text-secondary-grey">(Optional)</div>
             )}
 
@@ -204,7 +204,7 @@ export default function FeatureSeasonForm({
               removeDateRange={removeDateRange}
               dateRangeAnnuals={dateRangeAnnuals}
               updateDateRangeAnnual={updateDateRangeAnnual}
-              optional={isDateTypeOptional(dateType.name, "feature")}
+              optional={isDateTypeOptional(dateType.strapiDateTypeId, "feature")}
             />
 
             <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
@@ -271,6 +271,7 @@ FeatureSeasonForm.propTypes = {
       dateType: PropTypes.shape({
         name: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
+        strapiDateTypeId: PropTypes.number.isRequired,
       }),
     }),
   ).isRequired,
@@ -279,6 +280,7 @@ FeatureSeasonForm.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       id: PropTypes.number.isRequired,
+      strapiDateTypeId: PropTypes.number.isRequired,
       description: PropTypes.string,
     }),
   ).isRequired,

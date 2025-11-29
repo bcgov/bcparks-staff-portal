@@ -8,9 +8,10 @@ import {
   Season,
   Dateable,
 } from "../../models/index.js";
+import * as DATE_TYPE from "../../constants/dateType.js"
 
 /**
- * Populates blank Park Operating DateRanges for a given year by creating DateRanges for all
+ * Populates blank Park gate open DateRanges for a given year by creating DateRanges for all
  * Park-level Seasons where the Park has Gate Details with "hasGate=TRUE"
  * @param {number} targetYear The year for which to populate blank DateRanges
  * @param {Transaction} [transaction] Optional Sequelize transaction
@@ -20,12 +21,12 @@ export default async function populateBlankGateOperatingDates(
   targetYear,
   transaction = null,
 ) {
-  // Get the Park "Operating" datetype
-  const operatingDateType = await DateType.findOne({
+  // Get the Park "Park gate open" datetype
+  const gateDateType = await DateType.findOne({
     attributes: ["id"],
 
     where: {
-      name: "Operating",
+      strapiDateTypeId: DATE_TYPE.PARK_GATE_OPEN,
     },
 
     transaction,
@@ -76,45 +77,45 @@ export default async function populateBlankGateOperatingDates(
     `\nFound ${parkSeasons.length} park seasons with gates for year ${targetYear}`,
   );
 
-  // Filter for seasons that have no Operating DateRanges for this specific season
-  const seasonsWithoutOperatingDates = parkSeasons.filter((season) => {
-    const operatingDateRanges = season.park.dateable.dateRanges.filter(
+  // Filter for seasons that have no Park gate open DateRanges for this specific season
+  const seasonsWithoutGateDates = parkSeasons.filter((season) => {
+    const gateDateRanges = season.park.dateable.dateRanges.filter(
       (dateRange) =>
-        dateRange.dateTypeId === operatingDateType.id &&
+        dateRange.dateTypeId === gateDateType.id &&
         dateRange.seasonId === season.id,
     );
 
-    return operatingDateRanges.length === 0;
+    return gateDateRanges.length === 0;
   });
 
   console.log(
-    `\n${seasonsWithoutOperatingDates.length} seasons need Operating DateRanges created`,
+    `\n${seasonsWithoutGateDates.length} seasons need Park gate open DateRanges created`,
   );
 
-  if (seasonsWithoutOperatingDates.length === 0) {
+  if (seasonsWithoutGateDates.length === 0) {
     console.log(
-      "No DateRanges to create - all parks already have Operating dates",
+      "No DateRanges to create - all parks already have Park gate open dates",
     );
     return [];
   }
 
-  // Build data for bulk inserting the missing Operating DateRanges
-  const insertData = seasonsWithoutOperatingDates.map((season) => ({
+  // Build data for bulk inserting the missing Park gate open DateRanges
+  const insertData = seasonsWithoutGateDates.map((season) => ({
     startDate: null,
     endDate: null,
-    dateTypeId: operatingDateType.id,
+    dateTypeId: gateDateType.id,
     dateableId: season.park.dateable.id,
     seasonId: season.id,
   }));
 
-  console.log(`\nCreating ${insertData.length} Operating DateRanges...`);
+  console.log(`\nCreating ${insertData.length} Park gate open DateRanges...`);
 
   const createdRecords = await DateRange.bulkCreate(insertData, {
     transaction,
   });
 
   console.log(
-    `Successfully created ${createdRecords.length} Operating DateRanges`,
+    `Successfully created ${createdRecords.length} Park gate open DateRanges`,
   );
 
   return createdRecords;

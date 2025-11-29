@@ -17,7 +17,7 @@ This script populates the `Season` and `DateRange` tables in your database based
    - Creates (or finds) a `DateRange` entry with:
 
      - `seasonId` set to the Season's ID,
-     - `dateTypeId` set to the ID of the `DateType` named `"Operating"`,
+     - `dateTypeId` set to the ID of the `DateType` named `"Park gate open"`,
      - `startDate` and `endDate` from the Strapi `park-operation-date` entry.
 
    - If a `DateRange` already exists for that Season and DateType but the dates differ, it updates the dates.
@@ -41,7 +41,7 @@ node tasks/populate-park-gate-dates/populate-park-gate-dates.js
 ## Why is this useful?
 
 - Ensures every Park with a `publishableId` has a `Season` for each operating year found in Strapi.
-- Ensures each Season has a corresponding `DateRange` for the `"Operating"` date type, with dates matching Strapi.
+- Ensures each Season has a corresponding `DateRange` for the `"Park gate open"` date type, with dates matching Strapi.
 - Keeps your database in sync with Strapi's park operation date data.
 
 ## Notes

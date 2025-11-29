@@ -16,6 +16,7 @@ import {
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 import checkUserRoles from "../../utils/checkUserRoles.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 // Constants
 const router = Router();
@@ -48,7 +49,7 @@ function seasonModel(minYear, required = true) {
           {
             model: DateType,
             as: "dateType",
-            attributes: ["id", "name"],
+            attributes: ["id", "strapiDateTypeId", "name"],
           },
         ],
       },
@@ -90,22 +91,17 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   // filter out invalid dateRanges
   let validRanges = dateRanges.filter((dateRange) => dateRange.dateType);
 
-  // filter out "Operating" dateType if hasGate is explicitly false at the park level
+  // filter out "Park gate open" dateType if hasGate is explicitly false at the park level
   if (hasGate === false) {
     validRanges = validRanges.filter(
-      (dateRange) => dateRange.dateType.name !== "Operating",
+      (dateRange) =>
+        dateRange.dateType.strapiDateTypeId !== DATE_TYPE.PARK_GATE_OPEN,
     );
   }
 
   // group by dateType name
-  // TODO: CMS-1162 - update name in db
-  // "Operating" to "Gate" to display
   return _.mapValues(
-    _.groupBy(validRanges, (dateRange) =>
-      dateRange.dateType.name === "Operating"
-        ? "Gate"
-        : dateRange.dateType.name,
-    ),
+    _.groupBy(validRanges, (dateRange) => dateRange.dateType.name),
     (ranges) => {
       const byYear = _.groupBy(ranges, (dateRange) =>
         new Date(dateRange.startDate).getFullYear(),

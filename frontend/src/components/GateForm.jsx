@@ -68,11 +68,11 @@ export default function GateForm({
         </div>
         {gateDetail.hasGate && (
           <div>
-            {/* display gate (operating) dates only at park level */}
+            {/* display park gate open dates only at park level */}
             {level === "park" && (
               <div className="mb-4">
                 <h6 className="fw-normal">
-                  Gate dates{" "}
+                  Park gate open dates{" "}
                   <TooltipWrapper
                     placement="top"
                     content={dateType.description}
@@ -81,7 +81,7 @@ export default function GateForm({
                   </TooltipWrapper>
                 </h6>
 
-                {isDateTypeOptional(dateType.name, level) && (
+                {isDateTypeOptional(dateType.strapiDateTypeId, level) && (
                   <div className="my-2 text-secondary-grey">(Optional)</div>
                 )}
 
@@ -96,13 +96,13 @@ export default function GateForm({
                   removeDateRange={removeDateRange}
                   dateRangeAnnuals={dateRangeAnnuals}
                   updateDateRangeAnnual={updateDateRangeAnnual}
-                  optional={isDateTypeOptional(dateType.name, level)}
+                  optional={isDateTypeOptional(dateType.strapiDateTypeId, level)}
                 />
               </div>
             )}
 
             <h6 className="fw-normal">
-              Gate hours{" "}
+              Gate open hours{" "}
               <TooltipWrapper
                 placement="top"
                 content={`Regular daily hours the gate(s) is open.
@@ -164,6 +164,7 @@ GateForm.propTypes = {
   dateableId: PropTypes.number,
   dateType: PropTypes.shape({
     id: PropTypes.number,
+    strapiDateTypeId: PropTypes.number,
     name: PropTypes.string,
     description: PropTypes.string,
   }),

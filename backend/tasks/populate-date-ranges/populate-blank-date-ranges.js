@@ -18,6 +18,7 @@ import {
   getDateTypesForFeature,
   getDateTypesForPark,
 } from "../../utils/dateTypesHelpers.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 // Select the relevant attributes for Feature records
 const FEATURE_ATTRIBUTES = [
@@ -117,15 +118,24 @@ export async function populateBlankDateRangesForYear(
       }
     });
 
-    const parkDateTypesByName = _.keyBy(parkDateTypes, "name");
-    const featureDateTypesByName = _.keyBy(featureDateTypes, "name");
+    const parkDateTypesByDateTypeId = _.keyBy(
+      parkDateTypes,
+      "strapiDateTypeId",
+    );
+    const featureDateTypesByDateTypeId = _.keyBy(
+      featureDateTypes,
+      "strapiDateTypeId",
+    );
 
     // Create a list of seasonId+dateableId+dateTypeId combinations
     // for the DateRanges to be created
     const dateRangeKeys = seasons.flatMap((season) => {
       // If the season is for a Park, add its ID for all applicable date types
       if (season.park) {
-        const dateTypes = getDateTypesForPark(season.park, parkDateTypesByName);
+        const dateTypes = getDateTypesForPark(
+          season.park,
+          parkDateTypesByDateTypeId,
+        );
 
         return dateTypes.map((dateType) => ({
           seasonId: season.id,
@@ -140,7 +150,7 @@ export async function populateBlankDateRangesForYear(
         return season.parkArea.features.flatMap((feature) => {
           const dateTypes = getDateTypesForFeature(
             feature,
-            featureDateTypesByName,
+            featureDateTypesByDateTypeId,
           );
 
           return dateTypes.map((dateType) => ({
@@ -156,7 +166,7 @@ export async function populateBlankDateRangesForYear(
         const feature = season.feature;
         const dateTypes = getDateTypesForFeature(
           feature,
-          featureDateTypesByName,
+          featureDateTypesByDateTypeId,
         );
 
         return dateTypes.map((dateType) => ({
@@ -173,11 +183,11 @@ export async function populateBlankDateRangesForYear(
       `${dateRangeKeys.length} applicable DateRanges. Checking if any exist already...`,
     );
 
-    // Exclude the Operating date type,
+    // Exclude the Park gate open date type,
     // handled by `populateBlankGateOperatingDates` in ./populate-blank-gate-dates.js
-    const dateTypeIdWhere = parkDateTypesByName.Operating
+    const dateTypeIdWhere = parkDateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]
       ? {
-          [Op.not]: parkDateTypesByName.Operating.id,
+          [Op.not]: parkDateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN].id,
         }
       : {};
 
@@ -237,7 +247,7 @@ export async function populateBlankDateRangesForYear(
     );
 
     console.log(
-      `Created ${createdGateDates.length} blank Park Gate Operating DateRanges for ${targetYear}`,
+      `Created ${createdGateDates.length} blank Park gate open DateRanges for ${targetYear}`,
     );
 
     return [...createdRecords, ...createdGateDates];

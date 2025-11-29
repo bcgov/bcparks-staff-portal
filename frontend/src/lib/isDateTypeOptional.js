@@ -1,16 +1,17 @@
+import * as DATE_TYPE from "../constants/dateType.js";
+
 export const optionalTypes = {
-  // @TODO: use a list of constants for date types
-  park: ["Operating", "Tier 2"],
+  park: [DATE_TYPE.PARK_GATE_OPEN, DATE_TYPE.TIER_2],
   parkArea: [],
   feature: [],
 };
 
 /**
  * Returns true if the date type is optional for the given level.
- * @param {string} dateTypeName the date type to check
+ * @param {number} strapiDateTypeId the strapi date type ID to check
  * @param {string} level the level to check against ("park", "parkArea", "feature")
  * @returns {boolean} true if the date type is optional for the level, false otherwise
  */
-export default function isDateTypeOptional(dateTypeName, level) {
-  return optionalTypes[level]?.includes(dateTypeName) ?? false;
+export default function isDateTypeOptional(strapiDateTypeId, level) {
+  return optionalTypes[level]?.includes(strapiDateTypeId) ?? false;
 }

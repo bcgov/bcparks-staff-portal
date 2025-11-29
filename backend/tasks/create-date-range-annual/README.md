@@ -11,10 +11,10 @@ This script creates and updates `DateRangeAnnual` entries in the database based 
    - For each `DateRange`, it creates or updates a `DateRangeAnnual` entry for the combination of `publishableId`, `dateTypeId`, and `dateableId`, **unless** the `DateType` name is `"Tier 1"` or `"Tier 2"`.
    - If an entry already exists, it updates the `dateableId` if it has changed.
 
-2. **Creates or updates `DateRangeAnnual` entries for all Parks with a `publishableId` and the `"Operating"` date type:**
+2. **Creates or updates `DateRangeAnnual` entries for all Parks with a `publishableId` and the `"Park gate open"` date type:**
 
    - For each `Park` with a non-null `publishableId`, it finds the corresponding Strapi `park-operation` by matching the `orcs` code.
-   - It finds the correct `dateableId` for the park's `"Operating"` date range.
+   - It finds the correct `dateableId` for the park's `"Park gate open"` date range.
    - It uses the `isDateRangeAnnual` value from Strapi `park-operation` data and sets it on the `DateRangeAnnual` entry for that park, `dateTypeId`, and `dateableId`.
    - If the entry already exists and either `isDateRangeAnnual` or `dateableId` differs, it updates those fields to match the latest data.
 
@@ -51,11 +51,11 @@ node tasks/create-date-range-annual/clean-all-date-range-annuals.js
 - Ensures your `DateRangeAnnual` table is up-to-date with all valid combinations from your business logic and Strapi data.
 - Prevents duplicate entries.
 - Keeps the `isDateRangeAnnual` and `dateableId` fields in sync with the source of truth (Strapi and your DB).
-- Handles both general date ranges and the special `"Operating"` type for parks.
+- Handles both general date ranges and the special `"Park gate open"` type for parks.
 
 ## Notes
 
 - The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project.
 - You can safely run this script multiple times; it will not create duplicates and will update `isDateRangeAnnual` and `dateableId` as needed.
 - If you add new `Publishable`, `Season`, `DateRange`, `Park`, or update Strapi `park-operation` data, re-running this script will add or update any missing or changed `DateRangeAnnual` entries as needed.
-- Strapi has `isDateRangeAnnual` only for the park gate operating dates for now
+- Strapi has `isDateRangeAnnual` only for the park gate open dates for now

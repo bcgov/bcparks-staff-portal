@@ -1,4 +1,5 @@
 import { DateType } from "../models/index.js";
+import * as DATE_TYPE from "../constants/dateType.js"
 
 /**
  * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
@@ -11,8 +12,7 @@ export async function getAllDateTypes(where = {}, transaction = null) {
     attributes: [
       "id",
       "name",
-      "startDateLabel",
-      "endDateLabel",
+      "strapiDateTypeId",
       "description",
       "parkLevel",
       "parkAreaLevel",
@@ -28,22 +28,22 @@ export async function getAllDateTypes(where = {}, transaction = null) {
 /**
  * Returns the DateTypes applicable to a Park or Feature in a specific order.
  * @param {Object} park Park object
- * @param {Object} dateTypesByName Object mapping date type name to objects with ids
+ * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects
  * @returns {Array} Applicable DateType objects for the Park, in order
  */
-export function getDateTypesForPark(park, dateTypesByName) {
+export function getDateTypesForPark(park, dateTypesByDateTypeId) {
   // Return the DateTypes in a specific order
   const orderedDateTypes = [];
 
   // Add applicable date types for the Park
   if (park.hasTier1Dates) {
-    orderedDateTypes.push(dateTypesByName["Tier 1"]);
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
   }
   if (park.hasTier2Dates) {
-    orderedDateTypes.push(dateTypesByName["Tier 2"]);
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
   }
   if (park.hasWinterFeeDates) {
-    orderedDateTypes.push(dateTypesByName["Winter fee"]);
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.WINTER_FEE]);
   }
 
   return orderedDateTypes;
@@ -53,19 +53,19 @@ export function getDateTypesForPark(park, dateTypesByName) {
  * Returns the DateTypes applicable to a Feature in a specific order.
  * For Features, it includes Operation, Reservation, and Backcountry registration dates if applicable.
  * @param {Object} feature Feature object
- * @param {Object} dateTypesByName Object mapping date type name to objects with ids
+ * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects
  * @returns {Array} An array of DateType objects in the specified order.
  */
-export function getDateTypesForFeature(feature, dateTypesByName) {
+export function getDateTypesForFeature(feature, dateTypesByDateTypeId) {
   // Return the DateTypes in a specific order
-  const orderedDateTypes = [dateTypesByName.Operation];
+  const orderedDateTypes = [dateTypesByDateTypeId[DATE_TYPE.OPERATION]];
 
   // Add applicable date types for the Feature
   if (feature.hasReservations) {
-    orderedDateTypes.push(dateTypesByName.Reservation);
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.RESERVATION]);
   }
   if (feature.hasBackcountryPermits) {
-    orderedDateTypes.push(dateTypesByName["Backcountry registration"]);
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.BACKCOUNTRY_REGISTRATION]);
   }
 
   return orderedDateTypes;

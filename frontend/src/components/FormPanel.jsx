@@ -173,12 +173,12 @@ function SeasonForm({
     return `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
   }, [level, season, seasonMetadata]);
 
-  const dateTypesByName = useMemo(
-    () => keyBy(seasonMetadata?.dateTypes || [], "name"),
+  const dateTypesByStrapiId = useMemo(
+    () => keyBy(seasonMetadata?.dateTypes || [], "strapiDateTypeId"),
     [seasonMetadata],
   );
-  // Find the "Operating" date type id
-  const operatingDateTypeId = dateTypesByName.Operating?.id;
+  // Find the "Park gate open" date type id
+  const gateTypeId = dateTypesByStrapiId[1]?.id;
 
   // Clears and re-fetches the data
   function resetData() {
@@ -221,17 +221,16 @@ function SeasonForm({
     let filteredDateRanges = seasonDateRanges;
     let deletedOperatingIds = [];
 
-    // Remove the "Operating" date ranges at park level if hasGate is false
+    // Remove the "Park gate open" date ranges at park level if hasGate is false
     if (level === "park" && gateDetail && gateDetail.hasGate === false) {
       deletedOperatingIds = seasonDateRanges
         .filter(
-          (dateRange) =>
-            dateRange.dateTypeId === operatingDateTypeId && dateRange.id,
+          (dateRange) => dateRange.dateTypeId === gateTypeId && dateRange.id,
         )
         .map((dateRange) => dateRange.id);
 
       filteredDateRanges = seasonDateRanges.filter(
-        (dateRange) => dateRange.dateTypeId !== operatingDateTypeId,
+        (dateRange) => dateRange.dateTypeId !== gateTypeId,
       );
     }
 
@@ -325,7 +324,7 @@ function SeasonForm({
     // Clone the payload
     const payload = { ...changesPayload };
 
-    // Update isDateRangeAnnual for "Operating" date if gateDetail.hasGate is false
+    // Update isDateRangeAnnual for "Park gate open" date if gateDetail.hasGate is false
     if (
       payload.gateDetail &&
       payload.gateDetail.hasGate === false &&
@@ -333,10 +332,7 @@ function SeasonForm({
     ) {
       payload.dateRangeAnnuals = season.dateRangeAnnuals
         .map((annual) => {
-          if (
-            operatingDateTypeId &&
-            annual.dateType.id === operatingDateTypeId
-          ) {
+          if (gateTypeId && annual.dateType.id === gateTypeId) {
             return {
               ...annual,
               isDateRangeAnnual: false,

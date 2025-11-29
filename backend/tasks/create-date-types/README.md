@@ -6,9 +6,9 @@ This script creates or updates `DateType` records in your database based on the 
 
 1. **For each entry in `date-types.js`:**
 
-   - Checks if a `DateType` with the same `name` and level flags (`parkLevel`, `featureLevel`, `parkAreaLevel`) exists.
+   - Checks if a `DateType` with the same `strapiDateTypeId` exists.
    - If not found, creates a new `DateType` record with the provided details.
-   - If found, updates the existing record with the latest labels, description, and level flags.
+   - If found, updates the existing record with the latest name, labels, description, and level flags.
 
 2. **Transaction Safety:**
    - All operations are performed inside a transaction. If any error occurs, all changes are rolled back.
@@ -47,7 +47,7 @@ node tasks/create-date-types/create-date-types.js
 ## Why is this useful?
 
 - Ensures all required `DateType` records exist in the database and are up to date.
-- Updates existing `DateType` records with the latest labels, descriptions, and level flags.
+- Updates existing `DateType` records with the latest names, labels, descriptions, and level flags.
 - Keeps your database in sync with your application's date type definitions.
 - The script is idempotent: you can run it multiple times without creating duplicates.
 

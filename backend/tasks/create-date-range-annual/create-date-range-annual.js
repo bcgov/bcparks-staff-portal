@@ -13,18 +13,19 @@ import {
 } from "../../models/index.js";
 import { Op } from "sequelize";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import * as DATE_TYPE from "../../constants/dateType.js"
 
 // Functions
-// finds dateableId for a given park and "Operating" dateType
+// finds dateableId for a given park and "Park gate open" dateType
 // returns the first found dateableId or null if not found.
-async function findOperatingDateableId(park, operatingDateType, transaction) {
+async function findGateDateableId(park, gateDateType, transaction) {
   const seasons = await Season.findAll({
     where: { publishableId: park.publishableId },
     include: [
       {
         model: DateRange,
         as: "dateRanges",
-        where: { dateTypeId: operatingDateType.id },
+        where: { dateTypeId: gateDateType.id },
         required: false,
       },
     ],
@@ -47,14 +48,14 @@ export async function createDateRangeAnnualEntries() {
   const parkOperationData = await getStrapiModelData("park-operation");
 
   try {
-    // get dateType "Operating"
-    const operatingDateType = await DateType.findOne({
-      where: { name: "Operating", parkLevel: true },
+    // get dateType "Park gate open"
+    const gateDateType = await DateType.findOne({
+      where: { strapiDateTypeId: DATE_TYPE.PARK_GATE_OPEN },
       transaction,
     });
 
-    if (!operatingDateType) {
-      throw new Error('No DateType with name "Operating" found.');
+    if (!gateDateType) {
+      throw new Error('No DateType with name "Park gate open" found.');
     }
 
     // get all publishables
@@ -149,13 +150,13 @@ export async function createDateRangeAnnualEntries() {
       }
     }
 
-    // 2 - create dateRangeAnnual for "Operating" dateType, for each park
+    // 2 - create dateRangeAnnual for "Park gate open" dateType, for each park
     for (const park of parks) {
       // get isDateRangeAnnual from parkOperationData using orcs
       const isDateRangeAnnual = parkOperationIsAnnualByOrcs[park.orcs] ?? false;
-      const dateableId = await findOperatingDateableId(
+      const dateableId = await findGateDateableId(
         park,
-        operatingDateType,
+        gateDateType,
         transaction,
       );
 
@@ -163,12 +164,12 @@ export async function createDateRangeAnnualEntries() {
         where: {
           publishableId: park.publishableId,
           dateableId,
-          dateTypeId: operatingDateType.id,
+          dateTypeId: gateDateType.id,
         },
         defaults: {
           publishableId: park.publishableId,
           dateableId,
-          dateTypeId: operatingDateType.id,
+          dateTypeId: gateDateType.id,
           isDateRangeAnnual,
         },
         transaction,
@@ -193,12 +194,12 @@ export async function createDateRangeAnnualEntries() {
         if (updated) {
           await entry.save({ transaction });
           console.log(
-            `Updated DateRangeAnnual for publishableId=${park.publishableId}, dateTypeId=${operatingDateType.id}: isDateRangeAnnual=${isDateRangeAnnual}, dateableId=${dateableId}`,
+            `Updated DateRangeAnnual for publishableId=${park.publishableId}, dateTypeId=${gateDateType.id}: isDateRangeAnnual=${isDateRangeAnnual}, dateableId=${dateableId}`,
           );
         }
       } else {
         console.log(
-          `Created DateRangeAnnual for publishableId=${park.publishableId}, dateTypeId=${operatingDateType.id}, isDateRangeAnnual=${isDateRangeAnnual}, dateableId=${dateableId}`,
+          `Created DateRangeAnnual for publishableId=${park.publishableId}, dateTypeId=${gateDateType.id}, isDateRangeAnnual=${isDateRangeAnnual}, dateableId=${dateableId}`,
         );
       }
     }

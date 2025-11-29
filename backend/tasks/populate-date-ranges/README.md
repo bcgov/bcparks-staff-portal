@@ -19,7 +19,7 @@ Creates blank `DateRange` records for all applicable seasons, dateables (Parks a
 - Finds all seasons for the target year
 - Determines applicable date types for each dateable based on their configuration (reservation, winter fee, etc.)
 - Creates blank DateRange records for all missing season+dateable+dateType combinations
-- Excludes existing records and Operating date type (handled by Gate date scripts)
+- Excludes existing records and Park gate open date type (handled by Gate date scripts)
 
 ## Transaction Safety
 
