@@ -11,3 +11,17 @@ export const RESERVATION = 7;
 export const TIER_1 = 2;
 export const TIER_2 = 3;
 export const WINTER_FEE = 4;
+
+export const SORT_ORDER = [
+  // park-level types
+  PARK_GATE_OPEN,
+  TIER_1,
+  TIER_2,
+  WINTER_FEE,
+  // area/feature-level types
+  OPERATION,
+  RESERVATION,
+  BACKCOUNTRY_REGISTRATION,
+  FIRST_COME_FIRST_SERVED,
+  FULL_SERVICES_AND_FEES,
+];

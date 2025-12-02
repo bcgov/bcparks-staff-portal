@@ -168,16 +168,18 @@ export default function DateRangeFields({
 
   return (
     <>
-      {dateRanges.map((dateRange, index) => (
-        <DateRange
-          key={dateRange.id || dateRange.tempId}
-          dateRange={dateRange}
-          updateDateRange={updateDateRange}
-          removeDateRange={removeDateRange}
-          removable={optional || index > 0}
-          isDateRangeAnnual={isDateRangeAnnual}
-        />
-      ))}
+      {dateRanges
+        .sort((a, b) => a.startDate - b.startDate)
+        .map((dateRange, index) => (
+          <DateRange
+            key={dateRange.id || dateRange.tempId}
+            dateRange={dateRange}
+            updateDateRange={updateDateRange}
+            removeDateRange={removeDateRange}
+            removable={optional || index > 0}
+            isDateRangeAnnual={isDateRangeAnnual}
+          />
+        ))}
 
       {/* display it if date type is not "Tier 1" or no dateRanges exist */}
       {(hasMultipleDates || dateRanges.length === 0) && (
