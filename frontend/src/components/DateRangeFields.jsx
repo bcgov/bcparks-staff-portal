@@ -168,7 +168,7 @@ export default function DateRangeFields({
 
   return (
     <>
-      {dateRanges
+      {[...dateRanges]
         .sort((a, b) => a.startDate - b.startDate)
         .map((dateRange, index) => (
           <DateRange

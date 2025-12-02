@@ -62,7 +62,7 @@ function DateRangesList({ dateRanges, isLastYear }) {
 
   return (
     <ul className="list-unstyled mb-0">
-      {dateRanges
+      {[...dateRanges]
         .sort((a, b) => a.startDate - b.startDate)
         .map((dateRange) => (
           <li key={dateRange.id}>
@@ -114,7 +114,7 @@ function DateTableRow({ groupedDateRanges, currentYear }) {
   function getStrapiDateTypeId(datesObj) {
     const firstRange = Object.values(datesObj)[0]?.[0];
 
-    return firstRange?.dateType?.strapiDateTypeId || 0;
+    return firstRange?.dateType?.strapiDateTypeId ?? Number.MAX_SAFE_INTEGER;
   }
 
   const sortedDateTypes = Object.entries(groupedDateRanges).sort(
@@ -406,7 +406,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
     park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
 
   // Filter function to determine if feature matches current feature type group
-  function featureInGroup(featureTypeId, groupFeatureType) {
+  function matchesFeatureTypeGroup(featureTypeId, groupFeatureType) {
     return groupFeatureType === FEATURE_TYPE.UNKNOWN
       ? !FEATURE_TYPE.SORT_ORDER.includes(featureTypeId)
       : featureTypeId === groupFeatureType;
@@ -448,12 +448,12 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
               parkAreas={parkAreas}
               inReservationSystemFilter={inReservationSystemFilter}
               formPanelHandler={formPanelHandler}
-              featureTypeFilter={featureInGroup}
+              featureTypeFilter={matchesFeatureTypeGroup}
             />
             <LoneFeatureGroup
               park={park}
               features={features.filter((f) =>
-                featureInGroup(
+                matchesFeatureTypeGroup(
                   f.featureType.strapiFeatureTypeId,
                   featureTypeId,
                 ),
