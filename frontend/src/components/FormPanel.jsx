@@ -307,6 +307,9 @@ function SeasonForm({
    * @returns {Promise<void>}
    */
   async function saveForm(close = true, allowInvalid = false) {
+    // Close any existing flash messages before saving
+    flashMessage.close();
+
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
@@ -369,6 +372,9 @@ function SeasonForm({
   // If the season is not "requested" (e.g. it is submitted, approved, or published),
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
+    // Close any existing flash messages before showing modal
+    flashMessage.close();
+
     if (season.status !== "requested") {
       const proceed = await openModal(
         "Move back to draft?",
