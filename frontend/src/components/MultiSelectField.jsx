@@ -25,6 +25,9 @@ function MultiSelectField({
         placeholder={placeholder}
         getOptionLabel={(e) => e[optionLabel]}
         getOptionValue={(e) => e[optionValue]}
+        formatGroupLabel={(data) => (
+          <span style={{ color: "var(--bs-gray-800)" }}>{data.label}</span>
+        )}
         className="multi-select-field"
         classNamePrefix="react-select"
       />
