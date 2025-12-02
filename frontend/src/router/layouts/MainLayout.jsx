@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Outlet, Link } from "react-router-dom";
 import "./MainLayout.scss";
 import logo from "@/assets/bc-parks-logo.svg";
@@ -55,6 +55,32 @@ export default function MainLayout() {
     }),
     [globalFlashMessage.open, globalFlashMessage.close],
   );
+
+  // Close flash message when a button is clicked
+  useEffect(() => {
+    function handleClick(e) {
+      if (!globalFlashMessage.isOpen) return;
+
+      const isLink = e.target.closest("a");
+      const isButton = e.target.closest("button");
+      const isFormButton = e.target.closest(".form-btn");
+      const isCheckBox = e.target.closest("input[type='checkbox']");
+
+      // Don't close if clicking form action buttons (Save/Approve/Submit)
+      if (isFormButton) return;
+
+      // Close if clicking any other button, link, or checkbox
+      if (isButton || isLink || isCheckBox) {
+        globalFlashMessage.close();
+      }
+    }
+
+    document.addEventListener("click", handleClick);
+
+    return () => {
+      document.removeEventListener("click", handleClick);
+    };
+  }, [globalFlashMessage]);
 
   const isUnauthorized = isAuthenticated && !isDootUser();
   const isAuthenticatedAndAuthorized = isAuthenticated && isDootUser();

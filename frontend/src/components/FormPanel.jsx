@@ -56,7 +56,7 @@ function Buttons({
       <button
         type="button"
         onClick={onSave}
-        className="btn btn-outline-primary fw-bold me-3"
+        className="btn btn-outline-primary form-btn fw-bold me-3"
       >
         Save draft
       </button>
@@ -66,7 +66,7 @@ function Buttons({
         <button
           type="button"
           onClick={onApprove}
-          className="btn btn-primary fw-bold me-2"
+          className="btn btn-primary form-btn fw-bold me-2"
         >
           Mark approved
         </button>
@@ -77,7 +77,7 @@ function Buttons({
         <button
           type="button"
           onClick={onSubmit}
-          className="btn btn-primary fw-bold me-2"
+          className="btn btn-primary form-btn fw-bold me-2"
         >
           Submit to HQ
         </button>
@@ -307,9 +307,6 @@ function SeasonForm({
    * @returns {Promise<void>}
    */
   async function saveForm(close = true, allowInvalid = false) {
-    // Close any existing flash messages before saving
-    flashMessage.close();
-
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
@@ -372,9 +369,6 @@ function SeasonForm({
   // If the season is not "requested" (e.g. it is submitted, approved, or published),
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
-    // Close any existing flash messages before showing modal
-    flashMessage.close();
-
     if (season.status !== "requested") {
       const proceed = await openModal(
         "Move back to draft?",
@@ -398,6 +392,8 @@ If dates have already been published, they will not be updated until new dates a
       "Dates saved as draft",
       `${seasonTitle} ${season.operatingYear} details saved`,
     );
+
+    closePanel();
   }
 
   async function onApprove() {
@@ -566,7 +562,6 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
   const modal = useConfirmation();
-  const flashMessage = useContext(globalFlashMessageContext);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
@@ -577,9 +572,6 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   function closePanel() {
     setShow(false);
     setDataChanged(false);
-
-    // Close any flash messages when closing the panel
-    flashMessage.close();
   }
 
   // Prompts the user if data has changed before closing
