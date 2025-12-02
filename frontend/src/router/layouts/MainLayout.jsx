@@ -64,13 +64,13 @@ export default function MainLayout() {
       const isLink = e.target.closest("a");
       const isButton = e.target.closest("button");
       const isFormButton = e.target.closest(".form-btn");
-      const isCheckBox = e.target.closest("input[type='checkbox']");
+      const isCheckbox = e.target.closest("input[type='checkbox']");
 
       // Don't close if clicking form action buttons (Save/Approve/Submit)
       if (isFormButton) return;
 
       // Close if clicking any other button, link, or checkbox
-      if (isButton || isLink || isCheckBox) {
+      if (isButton || isLink || isCheckbox) {
         globalFlashMessage.close();
       }
     }
