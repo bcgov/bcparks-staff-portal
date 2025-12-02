@@ -143,6 +143,21 @@ export default function DateRangeFields({
     );
   }, [dateableId, dateType, dateRangeAnnuals]);
 
+  useMemo(() => {
+    dateRanges
+      .sort((a, b) => {
+        if (!a.startDate) return 1;
+        if (!b.startDate) return -1;
+        return a.startDate - b.startDate;
+      })
+      .forEach((dateRange, index) => {
+        // Re-organization of dates only occurs when the page is
+        // saved, submitted, or approved
+        dateRange.sortIndex = index;
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only update the sort when the component mounts
+  }, []);
+
   const dateRangeAnnualId = matchedDateRangeAnnual?.id
     ? matchedDateRangeAnnual.id
     : `${dateableId}-${dateType.id}`;
@@ -169,7 +184,7 @@ export default function DateRangeFields({
   return (
     <>
       {[...dateRanges]
-        .sort((a, b) => a.startDate - b.startDate)
+        .sort((a, b) => a.sortIndex - b.sortIndex)
         .map((dateRange, index) => (
           <DateRange
             key={dateRange.id || dateRange.tempId}
