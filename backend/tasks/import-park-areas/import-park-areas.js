@@ -13,7 +13,7 @@ import {
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
-export default async function importParkAreasFromStrapi(transaction = null) {
+export default async function importStrapiParkAreas(transaction = null) {
   try {
     // Get park-area data from Strapi
     const parkAreaData = await getStrapiModelData("park-area");
@@ -191,7 +191,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await ParkArea.sequelize.transaction();
 
   try {
-    const result = await importParkAreasFromStrapi(transaction);
+    const result = await importStrapiParkAreas(transaction);
 
     await transaction.commit();
     console.log("\nTransaction committed successfully");

@@ -9,7 +9,7 @@ import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
-export default async function importFeatureTypesFromStrapi(transaction = null) {
+export default async function importStrapiFeatureTypes(transaction = null) {
   try {
     // Get park-feature-type data from Strapi
     const featureTypeData = await getStrapiModelData("park-feature-type");
@@ -104,7 +104,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await FeatureType.sequelize.transaction();
 
   try {
-    const result = await importFeatureTypesFromStrapi(transaction);
+    const result = await importStrapiFeatureTypes(transaction);
 
     await transaction.commit();
     console.log("\nTransaction committed successfully");

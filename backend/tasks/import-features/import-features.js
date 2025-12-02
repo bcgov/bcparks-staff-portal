@@ -10,7 +10,7 @@ import { validateDootFeatures, validateStrapiFeatures } from "./validation.js";
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
-export default async function importFeaturesFromStrapi(transaction = null) {
+export default async function importStrapiFeatures(transaction = null) {
   try {
     // Get park-feature data from Strapi
     const parkFeatureData = await getStrapiModelData("park-feature");
@@ -243,7 +243,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await Feature.sequelize.transaction();
 
   try {
-    const result = await importFeaturesFromStrapi(transaction);
+    const result = await importStrapiFeatures(transaction);
 
     await transaction.commit();
     console.log("\nTransaction committed successfully");
