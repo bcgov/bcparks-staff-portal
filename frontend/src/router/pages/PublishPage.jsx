@@ -9,6 +9,7 @@ import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import PaginationControls from "@/components/PaginationControls";
 import "./PublishPage.scss";
+import sortPublishTable from "../../lib/sortPublishTable";
 
 function PublishPage() {
   // table pagination
@@ -47,8 +48,10 @@ function PublishPage() {
   const { data, fetchData, loading, error } = useApiGet(
     "/publish/ready-to-publish/",
   );
-  const { seasons = [] } = data ?? {};
+  let { seasons = [] } = data ?? {};
   const publishableSeasons = seasons.filter((season) => season.readyToPublish);
+
+  seasons = sortPublishTable(seasons);
 
   const { sendData: publishData, loading: saving } = useApiPost(
     "/publish/publish-to-api/",
@@ -157,7 +160,7 @@ function PublishPage() {
             </thead>
             <tbody>
               {seasons.slice(startIndex, endIndex).map((season) => (
-                <tr key={season.id}>
+                <tr key={`${season.id}-${season.sortIndex}`}>
                   <td>{season.parkName}</td>
                   <td className="fw-bold">{season.parkAreaName}</td>
                   <td>

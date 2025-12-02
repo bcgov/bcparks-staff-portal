@@ -8,6 +8,7 @@ import {
   DateRangeAnnual,
   DateType,
   Feature,
+  FeatureType,
   GateDetail,
   Park,
   ParkArea,
@@ -71,7 +72,18 @@ router.get(
         attributes: ["id", "publishableId", "name"],
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
-          { model: Feature, as: "features", attributes: ["id", "name"] },
+          {
+            model: Feature,
+            as: "features",
+            attributes: ["id", "name"],
+            include: [
+              {
+                model: FeatureType,
+                as: "featureType",
+                attributes: ["strapiFeatureTypeId"],
+              },
+            ],
+          },
         ],
       }),
       Feature.findAll({
@@ -80,6 +92,11 @@ router.get(
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
           { model: ParkArea, as: "parkArea", attributes: ["id", "name"] },
+          {
+            model: FeatureType,
+            as: "featureType",
+            attributes: ["strapiFeatureTypeId"],
+          },
         ],
       }),
     ]);
