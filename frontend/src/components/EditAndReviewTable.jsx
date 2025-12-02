@@ -111,12 +111,14 @@ DateTypeTableRow.propTypes = {
 function DateTableRow({ groupedDateRanges, currentYear }) {
   if (!currentYear || !groupedDateRanges) return null;
 
+  // Helper to get the strapiDateTypeId from the first item in a groupedDateRange
   function getStrapiDateTypeId(datesObj) {
     const firstRange = Object.values(datesObj)[0]?.[0];
 
     return firstRange?.dateType?.strapiDateTypeId ?? Number.MAX_SAFE_INTEGER;
   }
 
+  // Sort date types based on DATE_TYPE.SORT_ORDER
   const sortedDateTypes = Object.entries(groupedDateRanges).sort(
     ([, datesA], [, datesB]) =>
       DATE_TYPE.SORT_ORDER.indexOf(getStrapiDateTypeId(datesA)) -
@@ -273,7 +275,7 @@ StatusTableRow.propTypes = {
   color: PropTypes.string,
 };
 
-function ParkAreaFeatureGroup({
+function FeaturesByFeatureTypeWithAreas({
   featureTypeId,
   park,
   parkAreas,
@@ -340,7 +342,7 @@ function ParkAreaFeatureGroup({
   );
 }
 
-ParkAreaFeatureGroup.propTypes = {
+FeaturesByFeatureTypeWithAreas.propTypes = {
   featureTypeId: PropTypes.number.isRequired,
   park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
@@ -349,7 +351,7 @@ ParkAreaFeatureGroup.propTypes = {
   featureTypeFilter: PropTypes.func.isRequired,
 };
 
-function LoneFeatureGroup({
+function FeaturesByFeatureTypeNoAreas({
   park,
   features,
   inReservationSystemFilter,
@@ -391,7 +393,7 @@ function LoneFeatureGroup({
   );
 }
 
-LoneFeatureGroup.propTypes = {
+FeaturesByFeatureTypeNoAreas.propTypes = {
   park: PropTypes.object.isRequired,
   features: PropTypes.array.isRequired,
   inReservationSystemFilter: PropTypes.bool.isRequired,
@@ -442,7 +444,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
 
         {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
           <React.Fragment key={`feature-type-${featureTypeId}`}>
-            <ParkAreaFeatureGroup
+            <FeaturesByFeatureTypeWithAreas
               featureTypeId={featureTypeId}
               park={park}
               parkAreas={parkAreas}
@@ -450,7 +452,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
               formPanelHandler={formPanelHandler}
               featureTypeFilter={matchesFeatureTypeGroup}
             />
-            <LoneFeatureGroup
+            <FeaturesByFeatureTypeNoAreas
               park={park}
               features={features.filter((f) =>
                 matchesFeatureTypeGroup(

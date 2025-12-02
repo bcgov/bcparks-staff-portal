@@ -143,6 +143,7 @@ export default function DateRangeFields({
     );
   }, [dateableId, dateType, dateRangeAnnuals]);
 
+  // Sort dateRanges by startDate on initial render
   useMemo(() => {
     dateRanges
       .sort((a, b) => {
@@ -150,6 +151,7 @@ export default function DateRangeFields({
         if (!b.startDate) return -1;
         return a.startDate - b.startDate;
       })
+      // Mutate the prop to assign a sortIndex to each dateRange
       .forEach((dateRange, index) => {
         // Re-organization of dates only occurs when the page is
         // saved, submitted, or approved
