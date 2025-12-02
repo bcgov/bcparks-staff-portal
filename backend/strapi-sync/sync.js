@@ -18,9 +18,9 @@ import {
 import * as STATUS from "../constants/seasonStatus.js";
 import { getAllPages } from "../utils/strapiApi.js";
 import { getStrapiModelData } from "./strapi-data-service.js";
-import { importStrapiParkAreas } from "../tasks/import-park-areas/import-park-areas.js";
-import { importFeatureTypes } from "../tasks/import-feature-types/import-feature-types.js";
-import { importFeatures } from "../tasks/import-features/import-features.js";
+import importStrapiParkAreas from "../tasks/import-park-areas/import-park-areas.js";
+import importStrapiFeatureTypes from "../tasks/import-feature-types/import-feature-types.js";
+import importStrapiFeatures from "../tasks/import-features/import-features.js";
 
 /**
  * For the park in strapi, create a new park or update its corresponding existing park
@@ -514,8 +514,8 @@ export async function syncData() {
   // featureTypes need other strapi data to get the icon from campingType or facilityType
 
   await importStrapiParkAreas();
-  await importFeatureTypes();
-  await importFeatures();
+  await importStrapiFeatureTypes();
+  await importStrapiFeatures();
 
   await syncSections(sectionData);
   await syncManagementAreas(mgmtAreaData);
