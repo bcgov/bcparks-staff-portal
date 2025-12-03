@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { sortBy } from "lodash-es";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
 import { startOfYear, endOfYear, addYears, addDays } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,6 +10,9 @@ import Form from "react-bootstrap/Form";
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
+
+// Maximum valid JavaScript date (September 13, 275760)
+const MAX_DATE = new Date(8640000000000000);
 
 function DateRange({
   dateRange,
@@ -145,12 +149,7 @@ export default function DateRangeFields({
 
   // Sort dateRanges by startDate on initial render
   useMemo(() => {
-    dateRanges
-      .sort((a, b) => {
-        if (!a.startDate) return 1;
-        if (!b.startDate) return -1;
-        return a.startDate - b.startDate;
-      })
+    sortBy(dateRanges, (dateRange) => dateRange.startDate || MAX_DATE)
       // Mutate the prop to assign a sortIndex to each dateRange
       .forEach((dateRange, index) => {
         // Re-organization of dates only occurs when the page is
