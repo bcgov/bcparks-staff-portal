@@ -133,24 +133,15 @@ router.get(
       // Extract names based on publishable type
       let parkName = "-";
       let parkAreaName = "-";
-      let featureNames = [];
 
       if (publishable?.type === "park") {
         parkName = publishable.name || "-";
       } else if (publishable?.type === "parkArea") {
         parkName = publishable.park?.name || "-";
         parkAreaName = publishable.name || "-";
-        const parkAreaFeatures = publishable.features;
-
-        featureNames = Array.isArray(parkAreaFeatures)
-          ? parkAreaFeatures
-              .filter((parkFeature) => parkFeature && parkFeature.name)
-              .map((parkFeature) => parkFeature.name)
-          : [];
       } else if (publishable?.type === "feature") {
         parkName = publishable.park?.name || "-";
         parkAreaName = publishable.parkArea?.name || "-";
-        featureNames = publishable.name ? [publishable.name] : [];
       }
 
       return {
@@ -161,7 +152,6 @@ router.get(
         publishable: publishable ?? null,
         parkName,
         parkAreaName,
-        featureNames,
       };
     });
 
