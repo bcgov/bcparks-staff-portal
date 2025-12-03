@@ -2,12 +2,14 @@ import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 import { format } from "date-fns";
+import _ from "lodash";
 
 import {
   DateRange,
   DateRangeAnnual,
   DateType,
   Feature,
+  FeatureType,
   GateDetail,
   Park,
   ParkArea,
@@ -22,6 +24,7 @@ import {
 import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as FEATURE_TYPE from "../../constants/featureType.js";
 import splitArray from "../../utils/splitArray.js";
 
 const router = Router();
@@ -32,6 +35,123 @@ const FEATURE_ATTRIBUTES = [
   "dateableId",
   "strapiOrcsFeatureNumber",
 ];
+
+// ensures non-feature rows appear before features
+const NON_FEATURE_SORT_INDEX = -1;
+
+/**
+ * Returns the sort index for the given feature type ID.
+ * @param {number} strapiFeatureTypeId the strapi feature type ID
+ * @returns {number} the sort index
+ */
+function getSortIndex(strapiFeatureTypeId) {
+  const index = FEATURE_TYPE.SORT_ORDER.indexOf(strapiFeatureTypeId);
+
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+/**
+ * Flattens the seasons into a simple array for easier sorting.
+ * @param {Array} seasons the array of season objects
+ * @returns {Array} the flattened array of season objects
+ */
+function flattenSeasons(seasons) {
+  return seasons.flatMap((season) => {
+    const baseRow = {
+      id: season.id,
+      parkName: season.parkName,
+      operatingYear: season.operatingYear,
+      parkAreaName: season.parkAreaName,
+      readyToPublish: season.readyToPublish,
+      publishableType: season.publishableType,
+    };
+
+    if (season.publishableType === "feature") {
+      return [
+        {
+          ...baseRow,
+          featureName: season.publishable.name,
+          sortIndex: getSortIndex(
+            season.publishable.featureType.strapiFeatureTypeId,
+          ),
+        },
+      ];
+    }
+
+    // If publishable has features array, create a row for each feature
+    if (
+      season.publishable?.features &&
+      season.publishable.features.length > 0
+    ) {
+      return season.publishable.features.map((feature) => ({
+        ...baseRow,
+        featureName: feature.name,
+        sortIndex: getSortIndex(feature.featureType.strapiFeatureTypeId),
+      }));
+    }
+
+    // Otherwise, create a single row without feature data
+    return [
+      {
+        ...baseRow,
+        featureName: "",
+        sortIndex: NON_FEATURE_SORT_INDEX,
+      },
+    ];
+  });
+}
+
+/**
+ * Sorts the flattened list of seasons.
+ * @param {Array} seasons the flattened array of season objects
+ * @returns {Array} the sorted array of season objects
+ */
+function sortFlattenedSeasons(seasons) {
+  // Sort the flattened list
+  return _.sortBy(seasons, [
+    (item) => item.parkName.toLowerCase(),
+    "sortIndex",
+    (item) => item.parkAreaName.toLowerCase(),
+    "operatingYear",
+    (item) => item.featureName.toLowerCase(),
+  ]);
+}
+
+/**
+ * Groups the sorted flattened seasons into rows with featureNames arrays.
+ * @param {Array} flattened the sorted flattened array of season objects
+ * @returns {Array} the grouped array of season objects
+ */
+function groupSeasons(flattened) {
+  const groupedSeasons = [];
+
+  const seasonMap = new Map();
+
+  flattened.forEach((item) => {
+    const key = `${item.parkName}-${item.operatingYear}-${item.parkAreaName}-${item.readyToPublish}-${item.publishableType}`;
+
+    if (seasonMap.has(key)) {
+      if (item.featureName) {
+        seasonMap.get(key).featureNames.push(item.featureName);
+      }
+    } else {
+      seasonMap.set(key, {
+        id: item.id,
+        parkName: item.parkName,
+        operatingYear: item.operatingYear,
+        parkAreaName: item.parkAreaName,
+        readyToPublish: item.readyToPublish,
+        featureNames: item.featureName ? [item.featureName] : [],
+        publishableType: item.publishableType,
+        sortIndex: item.sortIndex,
+      });
+    }
+  });
+
+  groupedSeasons.push(...seasonMap.values());
+
+  return groupedSeasons;
+}
 
 router.get(
   "/ready-to-publish",
@@ -71,7 +191,18 @@ router.get(
         attributes: ["id", "publishableId", "name"],
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
-          { model: Feature, as: "features", attributes: ["id", "name"] },
+          {
+            model: Feature,
+            as: "features",
+            attributes: ["id", "name"],
+            include: [
+              {
+                model: FeatureType,
+                as: "featureType",
+                attributes: ["strapiFeatureTypeId"],
+              },
+            ],
+          },
         ],
       }),
       Feature.findAll({
@@ -80,6 +211,11 @@ router.get(
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
           { model: ParkArea, as: "parkArea", attributes: ["id", "name"] },
+          {
+            model: FeatureType,
+            as: "featureType",
+            attributes: ["strapiFeatureTypeId"],
+          },
         ],
       }),
     ]);
@@ -116,24 +252,15 @@ router.get(
       // Extract names based on publishable type
       let parkName = "-";
       let parkAreaName = "-";
-      let featureNames = [];
 
       if (publishable?.type === "park") {
         parkName = publishable.name || "-";
       } else if (publishable?.type === "parkArea") {
         parkName = publishable.park?.name || "-";
         parkAreaName = publishable.name || "-";
-        const parkAreaFeatures = publishable.features;
-
-        featureNames = Array.isArray(parkAreaFeatures)
-          ? parkAreaFeatures
-              .filter((parkFeature) => parkFeature && parkFeature.name)
-              .map((parkFeature) => parkFeature.name)
-          : [];
       } else if (publishable?.type === "feature") {
         parkName = publishable.park?.name || "-";
         parkAreaName = publishable.parkArea?.name || "-";
-        featureNames = publishable.name ? [publishable.name] : [];
       }
 
       return {
@@ -144,11 +271,15 @@ router.get(
         publishable: publishable ?? null,
         parkName,
         parkAreaName,
-        featureNames,
       };
     });
 
-    return res.send({ seasons: output });
+    // Flatten, sort, and group the seasons for output
+    const flattenedSeasons = flattenSeasons(output);
+    const sortedFlattenedSeasons = sortFlattenedSeasons(flattenedSeasons);
+    const groupedSeasons = groupSeasons(sortedFlattenedSeasons);
+
+    return res.send({ seasons: groupedSeasons });
   }),
 );
 
