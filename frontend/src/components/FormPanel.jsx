@@ -56,7 +56,7 @@ function Buttons({
       <button
         type="button"
         onClick={onSave}
-        className="btn btn-outline-primary fw-bold me-3"
+        className="btn btn-outline-primary form-btn fw-bold me-3"
       >
         Save draft
       </button>
@@ -66,7 +66,7 @@ function Buttons({
         <button
           type="button"
           onClick={onApprove}
-          className="btn btn-primary fw-bold me-2"
+          className="btn btn-primary form-btn fw-bold me-2"
         >
           Mark approved
         </button>
@@ -77,7 +77,7 @@ function Buttons({
         <button
           type="button"
           onClick={onSubmit}
-          className="btn btn-primary fw-bold me-2"
+          className="btn btn-primary form-btn fw-bold me-2"
         >
           Submit to HQ
         </button>
@@ -392,6 +392,8 @@ If dates have already been published, they will not be updated until new dates a
       "Dates saved as draft",
       `${seasonTitle} ${season.operatingYear} details saved`,
     );
+
+    closePanel();
   }
 
   async function onApprove() {
@@ -424,6 +426,11 @@ If dates have already been published, they will not be updated until new dates a
 
       // Start refreshing the main page data from the API
       onDataUpdate();
+
+      flashMessage.open(
+        "Dates submitted to HQ",
+        `${seasonTitle} ${season.operatingYear} dates submitted to HQ`,
+      );
 
       closePanel();
     } catch (saveError) {
