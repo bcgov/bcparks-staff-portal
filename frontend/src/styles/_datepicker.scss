@@ -6,6 +6,22 @@
   z-index: 1046;
 }
 
+// Define a minimum height for the popper container.
+// This prevents the "flip" behavior from making the input reposition
+// when a longer month overflows the viewport.
+// (Example: Feb 2026 is 4 rows tall, while May 2026 is 6 rows)
+.react-datepicker-popper-padded {
+  // Make all months as tall as a 6-row month, so all months will fit
+  min-height: 18em;
+  display: flex;
+  align-items: flex-start;
+
+  // When the popper is placed above the input, align contents to the bottom
+  &[data-placement="top"] {
+    align-items: flex-end;
+  }
+}
+
 // Overrides for the react-datepicker component package
 .react-datepicker {
   // Prevent the bootstrap theme from making the month name huge

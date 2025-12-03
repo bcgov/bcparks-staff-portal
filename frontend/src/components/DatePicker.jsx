@@ -52,6 +52,7 @@ function DootDatePickerComponent({
           dateFormat="EEE, MMM d, yyyy"
           showMonthYearDropdown
           disabled={disabled}
+          popperClassName="react-datepicker-popper-padded"
         />
 
         <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
