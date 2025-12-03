@@ -9,7 +9,6 @@ import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import PaginationControls from "@/components/PaginationControls";
 import "./PublishPage.scss";
-import sortPublishTable from "../../lib/sortPublishTable";
 
 function PublishPage() {
   // table pagination
@@ -48,10 +47,8 @@ function PublishPage() {
   const { data, fetchData, loading, error } = useApiGet(
     "/publish/ready-to-publish/",
   );
-  let { seasons = [] } = data ?? {};
-  const publishableSeasons = seasons.filter((season) => season.readyToPublish);
-
-  seasons = sortPublishTable(seasons);
+  const { seasons = [] } = data ?? {};
+  const hasPublishableSeasons = seasons.some((season) => season.readyToPublish);
 
   const { sendData: publishData, loading: saving } = useApiPost(
     "/publish/publish-to-api/",
@@ -134,7 +131,7 @@ function PublishPage() {
         <div className="d-flex justify-content-end mb-2">
           <button
             onClick={publishToApi}
-            disabled={saving || publishableSeasons.length === 0}
+            disabled={saving || !hasPublishableSeasons}
             className="btn btn-primary"
           >
             Publish to API
