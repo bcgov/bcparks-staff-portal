@@ -335,6 +335,7 @@ async function formatDateRanges(entity, season) {
 
     where: {
       seasonId: season.id,
+      dateableId: entity.dateableId,
     },
 
     include: [
