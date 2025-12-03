@@ -75,9 +75,9 @@ function sortFlattenedSeasons(seasons) {
   // Sort the flattened list
   return sortBy(seasons, [
     (item) => item.parkName.toLowerCase(),
-    "operatingYear",
     "sortIndex",
     (item) => item.parkAreaName.toLowerCase(),
+    "operatingYear",
     (item) => item.featureName.toLowerCase(),
   ]);
 }
