@@ -77,7 +77,7 @@ function featureModel(minYear, where = {}) {
       {
         model: FeatureType,
         as: "featureType",
-        attributes: ["id", "name"],
+        attributes: ["id", "strapiFeatureTypeId", "name"],
       },
       // Publishable Seasons for the Feature
       seasonModel(minYear, false),
@@ -122,6 +122,7 @@ function buildDateRangeObject(dateRange, readyToPublish) {
     dateType: dateRange.dateType
       ? {
           id: dateRange.dateType.id,
+          strapiDateTypeId: dateRange.dateType.strapiDateTypeId,
           name: dateRange.dateType.name,
         }
       : null,
@@ -203,6 +204,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     featureType: {
       id: feature.featureType.id,
       name: feature.featureType.name,
+      strapiFeatureTypeId: feature.featureType.strapiFeatureTypeId,
     },
     seasons: filteredSeasons,
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),

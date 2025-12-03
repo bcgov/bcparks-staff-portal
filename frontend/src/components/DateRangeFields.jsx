@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { sortBy } from "lodash-es";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
 import { startOfYear, endOfYear, addYears, addDays } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,6 +10,9 @@ import Form from "react-bootstrap/Form";
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
+
+// Maximum valid JavaScript date (September 13, 275760)
+const MAX_DATE = new Date(8640000000000000);
 
 function DateRange({
   dateRange,
@@ -143,6 +147,18 @@ export default function DateRangeFields({
     );
   }, [dateableId, dateType, dateRangeAnnuals]);
 
+  // Sort dateRanges by startDate on initial render
+  useMemo(() => {
+    sortBy(dateRanges, (dateRange) => dateRange.startDate || MAX_DATE)
+      // Mutate the prop to assign a sortIndex to each dateRange
+      .forEach((dateRange, index) => {
+        // Re-organization of dates only occurs when the page is
+        // saved, submitted, or approved
+        dateRange.sortIndex = index;
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only update the sort when the component mounts
+  }, []);
+
   const dateRangeAnnualId = matchedDateRangeAnnual?.id
     ? matchedDateRangeAnnual.id
     : `${dateableId}-${dateType.id}`;
@@ -168,16 +184,18 @@ export default function DateRangeFields({
 
   return (
     <>
-      {dateRanges.map((dateRange, index) => (
-        <DateRange
-          key={dateRange.id || dateRange.tempId}
-          dateRange={dateRange}
-          updateDateRange={updateDateRange}
-          removeDateRange={removeDateRange}
-          removable={optional || index > 0}
-          isDateRangeAnnual={isDateRangeAnnual}
-        />
-      ))}
+      {[...dateRanges]
+        .sort((a, b) => a.sortIndex - b.sortIndex)
+        .map((dateRange, index) => (
+          <DateRange
+            key={dateRange.id || dateRange.tempId}
+            dateRange={dateRange}
+            updateDateRange={updateDateRange}
+            removeDateRange={removeDateRange}
+            removable={optional || index > 0}
+            isDateRangeAnnual={isDateRangeAnnual}
+          />
+        ))}
 
       {/* display it if date type is not "Tier 1" or no dateRanges exist */}
       {(hasMultipleDates || dateRanges.length === 0) && (
