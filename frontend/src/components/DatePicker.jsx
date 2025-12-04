@@ -52,6 +52,7 @@ function DootDatePickerComponent({
           dateFormat="EEE, MMM d, yyyy"
           showMonthYearDropdown
           disabled={disabled}
+          fixedHeight
         />
 
         <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
