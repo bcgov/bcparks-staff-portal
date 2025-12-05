@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { reject } from "lodash-es";
+import { reject, without } from "lodash-es";
 import Badge from "react-bootstrap/Badge";
 import CloseButton from "react-bootstrap/CloseButton";
 
@@ -135,7 +135,7 @@ export default function FilterStatus({
         label: `Status: ${status}`,
 
         remove(filters) {
-          filters.status = reject(filters.status, status);
+          filters.status = without(filters.status, status);
           return filters;
         },
       }));
