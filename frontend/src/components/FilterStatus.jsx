@@ -157,6 +157,25 @@ export default function FilterStatus({
       tags.push(...sectionTags);
     }
 
+    // Management Areas filter (multi-select)
+    if (activeFilters.managementAreas.length) {
+      const managementAreaTags = activeFilters.managementAreas.map(
+        (mgmtArea) => ({
+          label: `Management Area: ${mgmtArea.name}`,
+
+          remove(filters) {
+            filters.managementAreas = reject(filters.managementAreas, [
+              "id",
+              mgmtArea.id,
+            ]);
+            return filters;
+          },
+        }),
+      );
+
+      tags.push(...managementAreaTags);
+    }
+
     return tags;
   }, [activeFilters]);
 
