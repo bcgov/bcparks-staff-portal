@@ -5,7 +5,7 @@ import useConfirmation from "@/hooks/useConfirmation";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useMemo, useState, useContext, useEffect } from "react";
+import { useMemo, useState, useContext, useEffect, useCallback } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FilterStatus from "@/components/FilterStatus";
@@ -369,16 +369,20 @@ function EditAndReview() {
     [parks, filters, userData, hasAllParkAccess],
   );
 
-  function updateFilter(key, value) {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [key]: value,
-    }));
-    if (page !== 1) {
-      // reset the page to 1 to avoid empty pages
-      setPage(1);
-    }
-  }
+  const updateFilter = useCallback(
+    (key, value) => {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        [key]: value,
+      }));
+
+      if (page !== 1) {
+        // reset the page to 1 to avoid empty pages
+        setPage(1);
+      }
+    },
+    [setFilters, page],
+  );
 
   /**
    * Fetches all the data from the API when something changes.
@@ -509,9 +513,10 @@ function EditAndReview() {
         </div>
 
         <FilterStatus
-          filters={filters}
+          activeFilters={filters}
           filteredCount={filteredParks.length}
           ClearFilters={ClearFilters}
+          updateFilter={updateFilter}
         />
 
         <ParksTableWrapper />

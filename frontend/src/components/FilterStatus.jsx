@@ -25,95 +25,17 @@ function FilterBadge({ label, onRemove }) {
 }
 
 export default function FilterStatus({
-  activeFiltersProp,
+  activeFilters,
   filteredCount,
   ClearFilters,
+  updateFilter,
 }) {
-  let activeFilters = {
-    name: "parkfoo",
-
-    accessGroups: [
-      {
-        id: 26,
-        name: "Babine Lake",
-      },
-      {
-        id: 34,
-        name: "Bijoux/Heather/Pine Le Moray/Heart Lake",
-      },
-      {
-        id: 42,
-        name: "Buckinghorse River Wayside",
-      },
-      {
-        id: 6,
-        name: "Bugaboo and Kokanee Glacier Park",
-      },
-    ],
-
-    status: ["requested", "approved"],
-
-    sections: [
-      {
-        id: 2,
-        sectionNumber: 6,
-        name: "Kootenay",
-      },
-      {
-        id: 4,
-        sectionNumber: 3,
-        name: "Omineca",
-      },
-    ],
-
-    managementAreas: [
-      {
-        id: 22,
-        managementAreaNumber: 3,
-        name: "Atlin/Tatshenshini",
-      },
-      {
-        id: 15,
-        managementAreaNumber: 7,
-        name: "Cape Scott",
-      },
-    ],
-
-    dateTypes: [
-      {
-        id: 77,
-        strapiDateTypeId: 2,
-        name: "Tier 1",
-      },
-      { id: 79, name: "Winter fee", strapiDateTypeId: 4 },
-      { id: 80, name: "Winter fee", strapiDateTypeId: 4 },
-    ],
-
-    featureTypes: [
-      {
-        id: 304,
-        name: "Backcountry",
-      },
-      {
-        id: 319,
-        name: "Day-use",
-      },
-      {
-        id: 306,
-        name: "Day-use area",
-      },
-    ],
-
-    isInReservationSystem: true,
-    hasDateNote: true,
-  };
+  console.log("test", activeFilters);
 
   function removeFilter(removeFn) {
     const newFilters = removeFn(activeFilters);
 
     console.log("Updated Filters:", newFilters);
-
-    activeFilters = newFilters; // @TODO: emit this to the parent
   }
 
   const filterTags = useMemo(() => {
@@ -124,9 +46,8 @@ export default function FilterStatus({
       tags.push({
         label: `Name: ${activeFilters.name}`,
 
-        remove(filters) {
-          filters.name = "";
-          return filters;
+        remove() {
+          updateFilter("name", "");
         },
       });
     }
@@ -137,12 +58,10 @@ export default function FilterStatus({
         label: `Access Group: ${bundle.name}`, // @TODO: use constants for display name
 
         remove(filters) {
-          filters.accessGroups = reject(filters.accessGroups, [
-            "id",
-            bundle.id,
-          ]);
-
-          return filters;
+          updateFilter(
+            "accessGroups",
+            reject(filters.accessGroups, ["id", bundle.id]),
+          );
         },
       }));
 
@@ -155,8 +74,7 @@ export default function FilterStatus({
         label: `Status: ${status}`,
 
         remove(filters) {
-          filters.status = without(filters.status, status);
-          return filters;
+          updateFilter("status", without(filters.status, status));
         },
       }));
 
@@ -169,8 +87,10 @@ export default function FilterStatus({
         label: `Section: ${section.name}`,
 
         remove(filters) {
-          filters.sections = reject(filters.sections, ["id", section.id]);
-          return filters;
+          updateFilter(
+            "sections",
+            reject(filters.sections, ["id", section.id]),
+          );
         },
       }));
 
@@ -184,11 +104,10 @@ export default function FilterStatus({
           label: `Management Area: ${mgmtArea.name}`,
 
           remove(filters) {
-            filters.managementAreas = reject(filters.managementAreas, [
-              "id",
-              mgmtArea.id,
-            ]);
-            return filters;
+            updateFilter(
+              "managementAreas",
+              reject(filters.managementAreas, ["id", mgmtArea.id]),
+            );
           },
         }),
       );
@@ -202,8 +121,10 @@ export default function FilterStatus({
         label: `Date Type: ${dateType.name}`,
 
         remove(filters) {
-          filters.dateTypes = reject(filters.dateTypes, ["id", dateType.id]);
-          return filters;
+          updateFilter(
+            "dateTypes",
+            reject(filters.dateTypes, ["id", dateType.id]),
+          );
         },
       }));
 
@@ -216,11 +137,10 @@ export default function FilterStatus({
         label: `Feature Type: ${featureType.name}`,
 
         remove(filters) {
-          filters.featureTypes = reject(filters.featureTypes, [
-            "id",
-            featureType.id,
-          ]);
-          return filters;
+          updateFilter(
+            "featureTypes",
+            reject(filters.featureTypes, ["id", featureType.id]),
+          );
         },
       }));
 
@@ -232,9 +152,8 @@ export default function FilterStatus({
       tags.push({
         label: `In Reservation System`,
 
-        remove(filters) {
-          filters.isInReservationSystem = false;
-          return filters;
+        remove() {
+          updateFilter("isInReservationSystem", false);
         },
       });
     }
@@ -244,16 +163,21 @@ export default function FilterStatus({
       tags.push({
         label: `Has Date Note`,
 
-        remove(filters) {
-          filters.hasDateNote = false;
-          return filters;
+        remove() {
+          updateFilter("hasDateNote", false);
         },
       });
     }
 
     return tags;
-  }, [activeFilters]);
+  }, [activeFilters, updateFilter]);
 
+  // Don't render the component if there are no active filters
+  if (filterTags.length === 0) {
+    return null;
+  }
+
+  // If filters are active, show the "filter tags" and the reset button
   return (
     <div className="filter-status">
       <div className="num-results mb-3">{filteredCount} results</div>
