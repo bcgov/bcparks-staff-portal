@@ -79,12 +79,32 @@ export default function FilterStatus({
       },
     ],
 
-    dateTypes: [],
-    featureTypes: [
-      '{id: 304, name: "Backcountry"}',
-      '{id: 305, name: "Cabin"}',
+    dateTypes: [
+      {
+        id: 77,
+        strapiDateTypeId: 2,
+        name: "Tier 1",
+      },
+      { id: 79, name: "Winter fee", strapiDateTypeId: 4 },
+      { id: 80, name: "Winter fee", strapiDateTypeId: 4 },
     ],
-    isInReservationSystem: false,
+
+    featureTypes: [
+      {
+        id: 304,
+        name: "Backcountry",
+      },
+      {
+        id: 319,
+        name: "Day-use",
+      },
+      {
+        id: 306,
+        name: "Day-use area",
+      },
+    ],
+
+    isInReservationSystem: true,
     hasDateNote: true,
   };
 
@@ -174,6 +194,61 @@ export default function FilterStatus({
       );
 
       tags.push(...managementAreaTags);
+    }
+
+    // Date Types filter (multi-select)
+    if (activeFilters.dateTypes.length) {
+      const dateTypeTags = activeFilters.dateTypes.map((dateType) => ({
+        label: `Date Type: ${dateType.name}`,
+
+        remove(filters) {
+          filters.dateTypes = reject(filters.dateTypes, ["id", dateType.id]);
+          return filters;
+        },
+      }));
+
+      tags.push(...dateTypeTags);
+    }
+
+    // Feature Types filter (multi-select)
+    if (activeFilters.featureTypes.length) {
+      const featureTypeTags = activeFilters.featureTypes.map((featureType) => ({
+        label: `Feature Type: ${featureType.name}`,
+
+        remove(filters) {
+          filters.featureTypes = reject(filters.featureTypes, [
+            "id",
+            featureType.id,
+          ]);
+          return filters;
+        },
+      }));
+
+      tags.push(...featureTypeTags);
+    }
+
+    // In Reservation System filter (boolean)
+    if (activeFilters.isInReservationSystem) {
+      tags.push({
+        label: `In Reservation System`,
+
+        remove(filters) {
+          filters.isInReservationSystem = false;
+          return filters;
+        },
+      });
+    }
+
+    // Has Date Note filter (boolean)
+    if (activeFilters.hasDateNote) {
+      tags.push({
+        label: `Has Date Note`,
+
+        remove(filters) {
+          filters.hasDateNote = false;
+          return filters;
+        },
+      });
     }
 
     return tags;
