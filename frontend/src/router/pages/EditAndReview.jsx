@@ -8,6 +8,7 @@ import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState, useContext, useEffect } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
+import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
@@ -448,12 +449,12 @@ function EditAndReview() {
   }
 
   // "clear filters" button
-  function ClearFilter() {
+  function ClearFilters() {
     return (
       <button
         type="button"
         onClick={resetFilters}
-        className="btn text-link text-decoration-underline align-self-end d-block mt-3 ps-1"
+        className="btn text-link text-decoration-underline align-self-end d-block"
       >
         Clear filters
       </button>
@@ -504,9 +505,14 @@ function EditAndReview() {
               <FontAwesomeIcon icon={faFilter} className="me-1" />
               All filters
             </button>
-            <ClearFilter />
           </div>
         </div>
+
+        <FilterStatus
+          filters={filters}
+          filteredCount={filteredParks.length}
+          ClearFilters={ClearFilters}
+        />
 
         <ParksTableWrapper />
 
@@ -528,7 +534,7 @@ function EditAndReview() {
           filterOptionsLoading={filterOptionsLoading}
           filterOptionsError={filterOptionsError}
           statusFilter={<StatusFilter />}
-          clearFilter={<ClearFilter />}
+          ClearFilters={ClearFilters}
           filteredCount={filteredParks.length}
         />
       </div>
