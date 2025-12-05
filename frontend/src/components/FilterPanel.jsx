@@ -138,7 +138,7 @@ function FilterPanel({
         )}
         <div className="mt-4">
           <button className="btn btn-primary" onClick={() => handleClose()}>
-            {`Show ${filteredCount} park${filteredCount !== 1 ? "s" : ""}`}
+            {`Show ${filteredCount} result${filteredCount !== 1 ? "s" : ""}`}
           </button>
 
           <div className="mt-3">
@@ -175,6 +175,6 @@ FilterPanel.propTypes = {
   filterOptionsLoading: PropTypes.bool.isRequired,
   filterOptionsError: PropTypes.object,
   statusFilter: PropTypes.element.isRequired,
-  ClearFilters: PropTypes.element.isRequired,
+  ClearFilters: PropTypes.elementType.isRequired,
   filteredCount: PropTypes.number.isRequired,
 };

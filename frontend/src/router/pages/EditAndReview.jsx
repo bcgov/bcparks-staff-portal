@@ -5,15 +5,14 @@ import useConfirmation from "@/hooks/useConfirmation";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useMemo, useState, useContext, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
-import UserContext from "@/contexts/UserContext";
-import useAccess from "@/hooks/useAccess";
 
 function EditAndReview() {
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -24,14 +23,12 @@ function EditAndReview() {
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
-  const { data: userData } = useContext(UserContext);
-  const { ROLES, checkAccess } = useAccess();
 
   const statusOptions = [
-    { value: "requested", label: "Requested by HQ" },
-    { value: "pending review", label: "Pending HQ review" },
-    { value: "approved", label: "Approved" },
-    { value: "published", label: "Published" },
+    { value: STATUS.REQUESTED.value, label: STATUS.REQUESTED.label },
+    { value: STATUS.PENDING_REVIEW.value, label: STATUS.PENDING_REVIEW.label },
+    { value: STATUS.APPROVED.value, label: STATUS.APPROVED.label },
+    { value: STATUS.PUBLISHED.value, label: STATUS.PUBLISHED.label },
   ];
 
   // table pagination
@@ -134,10 +131,6 @@ function EditAndReview() {
       hasDateNote: false,
     });
   }
-  const hasAllParkAccess = useMemo(
-    () => checkAccess(ROLES.ALL_PARK_ACCESS),
-    [checkAccess, ROLES.ALL_PARK_ACCESS],
-  );
 
   const filteredParks = useMemo(
     () =>
@@ -366,19 +359,23 @@ function EditAndReview() {
 
         return true;
       }),
-    [parks, filters, userData, hasAllParkAccess],
+    [parks, filters],
   );
 
-  function updateFilter(key, value) {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [key]: value,
-    }));
-    if (page !== 1) {
-      // reset the page to 1 to avoid empty pages
-      setPage(1);
-    }
-  }
+  const updateFilter = useCallback(
+    (key, value) => {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        [key]: value,
+      }));
+
+      if (page !== 1) {
+        // reset the page to 1 to avoid empty pages
+        setPage(1);
+      }
+    },
+    [setFilters, page],
+  );
 
   /**
    * Fetches all the data from the API when something changes.
@@ -509,9 +506,10 @@ function EditAndReview() {
         </div>
 
         <FilterStatus
-          filters={filters}
+          activeFilters={filters}
           filteredCount={filteredParks.length}
           ClearFilters={ClearFilters}
+          updateFilter={updateFilter}
         />
 
         <ParksTableWrapper />
