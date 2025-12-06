@@ -1,6 +1,6 @@
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { groupBy, set as lodashSet, cloneDeep, partition } from "lodash-es";
+import { groupBy, set as lodashSet, cloneDeep } from "lodash-es";
 import { useMemo, useContext } from "react";
 import PropTypes from "prop-types";
 
@@ -18,7 +18,9 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
 export default function ParkSeasonForm({
   season,
   previousSeasonDates,
-  // All date types, including "Park gate open" (which is shown separately)
+  winterSeason,
+  previousWinterSeasonDates,
+  // All date types, including "Park gate open" and "Winter fee" (which is shown separately)
   dateTypes: allDateTypes,
   approver,
 }) {
@@ -27,16 +29,22 @@ export default function ParkSeasonForm({
   const park = season.park;
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
   const gateDetail = season.gateDetail || {};
+  const isWinterSeason = season.seasonType === "winter";
 
-  // Park gate open dates are shown in the Park Gate section,
-  // so split "Park gate open" out of the dateTypes array.
-  const [gateDateType, dateTypes] = useMemo(() => {
-    const [[gate], nonGate] = partition(
-      allDateTypes,
-      (dateType) => dateType.strapiDateTypeId === 1,
-    );
+  // Park gate open dates and Winter fee dates are shown in the different section,
+  // so split "Park gate open" and "Winter fee" out of the dateTypes array.
+  const [gateDateType, winterDateType, dateTypes] = useMemo(() => {
+    const grouped = groupBy(allDateTypes, (dateType) => {
+      if (dateType.strapiDateTypeId === 1) return "gate";
+      if (dateType.strapiDateTypeId === 4) return "winter";
+      return "regular";
+    });
 
-    return [gate, nonGate];
+    return [
+      grouped.gate?.[0] || null, // Park gate open date type (single object)
+      grouped.winter?.[0] || null, // Winter fee date type (single object)
+      grouped.regular || [], // All other date types (array)
+    ];
   }, [allDateTypes]);
 
   // Show the date form sections only if there are applicable date types for this park.
@@ -52,8 +60,8 @@ export default function ParkSeasonForm({
     if (park.inReservationSystem) return true;
 
     // If inReservationSystem is false in the database,
-    // fall back to checking for Winter/T1/T2 dates as a workaround for incomplete data.
-    if (park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates) {
+    // fall back to checking for T1/T2 dates as a workaround for incomplete data.
+    if (park.hasTier1Dates || park.hasTier2Dates) {
       return true;
     }
 
@@ -62,7 +70,6 @@ export default function ParkSeasonForm({
     park.inReservationSystem,
     park.hasTier1Dates,
     park.hasTier2Dates,
-    park.hasWinterFeeDates,
   ]);
 
   const datesByType = useMemo(
@@ -70,14 +77,28 @@ export default function ParkSeasonForm({
     [park.dateable.dateRanges],
   );
 
+  // Winter season dates by type
+  const winterDatesByType = useMemo(() => {
+    if (!winterSeason?.park?.dateable?.dateRanges) {
+      return {};
+    }
+    return groupBy(winterSeason.park.dateable.dateRanges, "dateType.name");
+  }, [winterSeason?.park?.dateable?.dateRanges]);
   const previousDatesByType = useMemo(
     () => groupBy(previousSeasonDates, "dateType.name"),
     [previousSeasonDates],
   );
 
   // Updates the date range in the parent component
-  function updateDateRange(id, dateField, dateObj, tempId = false) {
-    const { dateRanges } = season.park.dateable;
+  function updateDateRange(
+    id,
+    dateField,
+    dateObj,
+    tempId = false,
+    seasonType = "regular",
+  ) {
+    const seasonData = seasonType === "winter" ? winterSeason : season;
+    const { dateRanges } = seasonData.park.dateable;
     // Find the dateRanges array index from the dateRange id or tempId
     const dateRangeIndex = dateRanges.findIndex((range) => {
       if (tempId) {
@@ -87,9 +108,12 @@ export default function ParkSeasonForm({
       return range.id === id;
     });
 
+    // Choose data path based on season type
+    const seasonKey = seasonType === "winter" ? "currentWinter" : "current";
+
     // Path to update to the DateRange object
     const dateRangePath = [
-      "current",
+      seasonKey,
       "park",
       "dateable",
       "dateRanges",
@@ -113,13 +137,15 @@ export default function ParkSeasonForm({
   }
 
   // Adds a new date range to the Park's dateable.dateRanges
-  function addDateRange(dateType) {
+  function addDateRange(dateType, seasonType = "regular") {
+    const seasonData = seasonType === "winter" ? winterSeason : season;
+
     const newDateRange = {
       // Add a temporary ID for records that haven't been saved yet
       tempId: crypto.randomUUID(),
       startDate: null,
       endDate: null,
-      dateableId: park.dateable.id,
+      dateableId: seasonData.park.dateable.id,
       dateType,
       dateTypeId: dateType.id,
       changed: true,
@@ -127,14 +153,15 @@ export default function ParkSeasonForm({
 
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
+      const seasonKey = seasonType === "winter" ? "currentWinter" : "current";
 
-      updatedData.current.park.dateable.dateRanges.push(newDateRange);
+      updatedData[seasonKey].park.dateable.dateRanges.push(newDateRange);
       return updatedData;
     });
   }
 
   // Removes a date range from the Park's dateable.dateRanges by its ID or tempId
-  function removeDateRange(dateRange) {
+  function removeDateRange(dateRange, seasonType = "regular") {
     // Track deleted date range IDs
     if (dateRange.id) {
       addDeletedDateRangeId(dateRange.id);
@@ -142,7 +169,8 @@ export default function ParkSeasonForm({
 
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
-      const { dateRanges } = updatedData.current.park.dateable;
+      const seasonKey = seasonType === "winter" ? "currentWinter" : "current";
+      const { dateRanges } = updatedData[seasonKey].park.dateable;
 
       const index = dateRanges.findIndex((range) => {
         // Find by ID if dateRange has one
@@ -184,6 +212,30 @@ export default function ParkSeasonForm({
 
       updatedData.current.dateRangeAnnuals = updateDateRangeAnnualsArray(
         updatedData.current.dateRangeAnnuals,
+        updatedAnnual,
+      );
+      return updatedData;
+    });
+  }
+
+  // Updates the readyToPublish state in the winter season data object
+  function setWinterReadyToPublish(value) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.currentWinter.readyToPublish = value;
+
+      return updatedData;
+    });
+  }
+
+  // Updates the isDateRangeAnnual state in the winter season data object
+  function updateWinterDateRangeAnnual(updatedAnnual) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.currentWinter.dateRangeAnnuals = updateDateRangeAnnualsArray(
+        updatedData.currentWinter.dateRangeAnnuals || [],
         updatedAnnual,
       );
       return updatedData;
@@ -239,36 +291,84 @@ export default function ParkSeasonForm({
     );
   }
 
+  // Winter Season form section
+  function WinterFormSection() {
+    return (
+      <div className="row">
+        <div key="Winter fee" className="col-lg-6 mb-4">
+          <h6 className="fw-normal">
+            Winter fee{" "}
+            <TooltipWrapper
+              placement="top"
+              content={winterDateType.description}
+            >
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+
+          <PreviousDates dateRanges={previousWinterSeasonDates} />
+
+          <DateRangeFields
+            dateableId={winterSeason.park.dateableId}
+            dateType={winterDateType}
+            dateRanges={winterDatesByType["Winter fee"] ?? []}
+            updateDateRange={(id, field, obj, tempId) =>
+              updateDateRange(id, field, obj, tempId, "winter")
+            }
+            addDateRange={(dateType) => addDateRange(dateType, "winter")}
+            removeDateRange={(range) => removeDateRange(range, "winter")}
+            dateRangeAnnuals={winterSeason.dateRangeAnnuals || []}
+            updateDateRangeAnnual={updateWinterDateRangeAnnual}
+            optional={isDateTypeOptional("Winter fee", "park")}
+          />
+        </div>
+        {approver && (
+          <ReadyToPublishBox
+            readyToPublish={winterSeason.readyToPublish}
+            setReadyToPublish={setWinterReadyToPublish}
+            seasonType="winter"
+          />
+        )}
+      </div>
+    );
+  }
+
   return (
     <>
-      {showDateFormSections &&
-        (useBcpReservationsSection ? (
-          <FormContainer>
-            <FormSection />
-          </FormContainer>
-        ) : (
-          <div className="non-bcp-reservations">
-            <FormSection />
-          </div>
-        ))}
+      {isWinterSeason ? (
+        <FormContainer>
+          <WinterFormSection />
+        </FormContainer>
+      ) : (
+        <>
+          {/* Tier 1 and Tier 2 dates */}
+          {showDateFormSections && useBcpReservationsSection && (
+            <FormContainer>
+              <FormSection />
+            </FormContainer>
+          )}
 
-      <GateForm
-        gateTitle="Park gate"
-        gateDescription="Does this park have a gate (or gates) that controls vehicle access to all or most of the park?"
-        gateDetail={gateDetail}
-        updateGateDetail={updateGateDetail}
-        dateableId={park.dateableId}
-        dateType={gateDateType}
-        dateRanges={datesByType["Park gate open"] ?? []}
-        updateDateRange={updateDateRange}
-        addDateRange={addDateRange}
-        removeDateRange={removeDateRange}
-        dateRangeAnnuals={dateRangeAnnuals}
-        updateDateRangeAnnual={updateDateRangeAnnual}
-        previousDateRanges={previousDatesByType?.["Park gate open"] ?? []}
-        level={"park"}
-      />
+          {/* Park gate open dates */}
+          <GateForm
+            gateTitle="Park gate"
+            gateDescription="Does this park have a gate (or gates) that controls vehicle access to all or most of the park?"
+            gateDetail={gateDetail}
+            updateGateDetail={updateGateDetail}
+            dateableId={park.dateableId}
+            dateType={gateDateType}
+            dateRanges={datesByType["Park gate open"] ?? []}
+            updateDateRange={updateDateRange}
+            addDateRange={addDateRange}
+            removeDateRange={removeDateRange}
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
+            previousDateRanges={previousDatesByType?.["Park gate open"] ?? []}
+            level={"park"}
+          />
+        </>
+      )}
 
+      {/* ☃️ TODO: Put readyToPublish box outstide/inside for winter season? */}
       {/* Show Ready to Publish form input for approvers */}
       {approver && (
         <ReadyToPublishBox
@@ -286,6 +386,7 @@ ParkSeasonForm.propTypes = {
     park: PropTypes.object.isRequired,
     operatingYear: PropTypes.number.isRequired,
     readyToPublish: PropTypes.bool.isRequired,
+    seasonType: PropTypes.string.isRequired,
     dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
     gateDetail: PropTypes.shape({
       hasGate: PropTypes.oneOf([true, false, null]),
@@ -309,6 +410,25 @@ ParkSeasonForm.propTypes = {
       }),
     }),
   ).isRequired,
+
+  winterSeason: PropTypes.shape({
+    park: PropTypes.object.isRequired,
+    operatingYear: PropTypes.number.isRequired,
+    readyToPublish: PropTypes.bool.isRequired,
+    dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+  }),
+
+  previousWinterSeasonDates: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
+      dateType: PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        id: PropTypes.number.isRequired,
+      }),
+    }),
+  ),
 
   dateTypes: PropTypes.arrayOf(
     PropTypes.shape({
