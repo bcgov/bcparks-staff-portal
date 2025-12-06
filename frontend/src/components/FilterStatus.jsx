@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { reject, without } from "lodash-es";
 import Badge from "react-bootstrap/Badge";
 import CloseButton from "react-bootstrap/CloseButton";
+import PropTypes from "prop-types";
 
 function FilterBadge({ label, onRemove }) {
   // @TODO: use stylesheet instead of inline styles
@@ -24,20 +25,17 @@ function FilterBadge({ label, onRemove }) {
   );
 }
 
+FilterBadge.propTypes = {
+  label: PropTypes.string.isRequired,
+  onRemove: PropTypes.func.isRequired,
+};
+
 export default function FilterStatus({
   activeFilters,
   filteredCount,
   ClearFilters,
   updateFilter,
 }) {
-  console.log("test", activeFilters);
-
-  function removeFilter(removeFn) {
-    const newFilters = removeFn(activeFilters);
-
-    console.log("Updated Filters:", newFilters);
-  }
-
   const filterTags = useMemo(() => {
     const tags = [];
 
@@ -180,14 +178,16 @@ export default function FilterStatus({
   // If filters are active, show the "filter tags" and the reset button
   return (
     <div className="filter-status">
-      <div className="num-results mb-3">{filteredCount} results</div>
+      <div className="num-results mb-3">
+        {filteredCount} result{filteredCount === 1 ? "" : "s"}
+      </div>
 
       <div className="active-filters mb-3 d-flex flex-row flex-wrap gap-2 align-items-center">
         {filterTags.map((tag, index) => (
           <FilterBadge
             key={index}
             label={tag.label}
-            onRemove={() => removeFilter(tag.remove)}
+            onRemove={() => tag.remove(activeFilters)}
           />
         ))}
 
