@@ -88,6 +88,8 @@ function EditAndReview() {
   async function formPanelHandler(formDataObj) {
     const regularSeason = formDataObj.currentSeason.regular;
     const winterSeason = formDataObj.currentSeason.winter || {};
+    const isWinterSeason = formDataObj.isWinterSeason || false;
+    const season = isWinterSeason ? winterSeason : regularSeason;
     const status = regularSeason.status;
 
     // If the season is already approved, prompt to continue
@@ -120,8 +122,7 @@ function EditAndReview() {
     }
 
     setFormData({
-      seasonId: regularSeason.id,
-      winterSeasonId: winterSeason.id || null,
+      seasonId: season.id,
       level: formDataObj.level,
     });
     setShowFormPanel(true);
