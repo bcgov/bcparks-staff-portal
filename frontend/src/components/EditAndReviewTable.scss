@@ -4,6 +4,11 @@ table {
       th {
         background-color: var(--theme-primary-blue);
       }
+      &.winter {
+        th {
+          background-color: var(--theme-blue-10);
+        }
+      }
     }
     &--park-area,
     &--feature {
