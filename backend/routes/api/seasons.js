@@ -259,6 +259,7 @@ const SEASON_ATTRIBUTES = [
   "readyToPublish",
   "editable",
   "publishableId",
+  "seasonType",
 ];
 
 /**

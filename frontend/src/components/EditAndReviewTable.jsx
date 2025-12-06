@@ -199,6 +199,7 @@ function StatusTableRow({
   color,
 }) {
   const flashMessage = useContext(globalFlashMessageContext);
+  const isWinterSeason = season.seasonType === "winter";
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
@@ -218,7 +219,13 @@ function StatusTableRow({
   }
 
   return (
-    <tr key={id} className={classNames(level && `table-row--${level}`)}>
+    <tr
+      key={id}
+      className={classNames(
+        level && `table-row--${level}`,
+        isWinterSeason && "winter",
+      )}
+    >
       <th
         scope="col"
         colSpan="2"
@@ -292,6 +299,8 @@ function FeaturesByFeatureTypeWithAreas({
           return null;
         }
 
+        const regularSeason = parkArea.currentSeason.regular;
+
         return (
           parkArea.features.some((f) =>
             featureTypeFilter(f.featureType.strapiFeatureTypeId, featureTypeId),
@@ -302,7 +311,7 @@ function FeaturesByFeatureTypeWithAreas({
                 level="park-area"
                 name={`${park.name} - ${parkArea.name}`}
                 typeName={parkArea.featureType?.name}
-                season={parkArea.currentSeason.regular}
+                season={regularSeason}
                 formPanelHandler={() =>
                   formPanelHandler({ ...parkArea, level: "park-area" })
                 }
@@ -326,11 +335,11 @@ function FeaturesByFeatureTypeWithAreas({
                     </tr>
                     <DateTypeTableRow
                       groupedDateRanges={parkFeature.groupedDateRanges}
-                      currentYear={parkArea.currentSeason.operatingYear || null}
+                      currentYear={regularSeason.operatingYear || null}
                     />
                     <DateTableRow
                       groupedDateRanges={parkFeature.groupedDateRanges}
-                      currentYear={parkArea.currentSeason.operatingYear || null}
+                      currentYear={regularSeason.operatingYear || null}
                     />
                   </React.Fragment>
                 ))}
@@ -366,6 +375,8 @@ function FeaturesByFeatureTypeNoAreas({
           return null;
         }
 
+        const regularSeason = feature.currentSeason.regular;
+
         return (
           <React.Fragment key={feature.id}>
             <StatusTableRow
@@ -373,18 +384,18 @@ function FeaturesByFeatureTypeNoAreas({
               level="feature"
               name={`${park.name} - ${feature.name}`}
               typeName={feature.featureType.name}
-              season={feature.currentSeason.regular}
+              season={regularSeason}
               formPanelHandler={() =>
                 formPanelHandler({ ...feature, level: "feature" })
               }
             />
             <DateTypeTableRow
               groupedDateRanges={feature.groupedDateRanges}
-              currentYear={feature.currentSeason.operatingYear || null}
+              currentYear={regularSeason.operatingYear || null}
             />
             <DateTableRow
               groupedDateRanges={feature.groupedDateRanges}
-              currentYear={feature.currentSeason.operatingYear || null}
+              currentYear={regularSeason.operatingYear || null}
             />
           </React.Fragment>
         );
@@ -430,7 +441,9 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
           name={park.name}
           // Don't show season details if it's irrelevant to the active filters
           season={park.matchesFilters === false ? null : regularSeason}
-          formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
+          formPanelHandler={() =>
+            formPanelHandler({ ...park, level: "park", isWinterSeason: false })
+          }
           color="text-white"
         />
       </thead>
@@ -447,11 +460,27 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
               groupedDateRanges={park.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
             />
+            {/* ☃️ TODO: Display separate row and table for winter fee dates */}
             {park.hasWinterFeeDates && (
-              <DateTableRow
-                groupedDateRanges={park.winterGroupedDateRanges}
-                currentYear={winterSeason.operatingYear || null}
-              />
+              <>
+                <StatusTableRow
+                  level="park"
+                  nameCellClass="fw-normal"
+                  name={`${park.name} ☃️ Winter season ☃️`}
+                  season={winterSeason}
+                  formPanelHandler={() =>
+                    formPanelHandler({
+                      ...park,
+                      level: "park",
+                      isWinterSeason: true,
+                    })
+                  }
+                />
+                <DateTableRow
+                  groupedDateRanges={park.winterGroupedDateRanges}
+                  currentYear={winterSeason.operatingYear || null}
+                />
+              </>
             )}
           </>
         )}
@@ -503,7 +532,7 @@ Table.propTypes = {
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         currentSeason: PropTypes.shape({
-          status: PropTypes.string,
+          regular: PropTypes.object,
         }),
         groupedDateRanges: PropTypes.object,
         inReservationSystem: PropTypes.bool,
@@ -515,7 +544,7 @@ Table.propTypes = {
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
             currentSeason: PropTypes.shape({
-              status: PropTypes.string,
+              regular: PropTypes.object,
             }),
             groupedDateRanges: PropTypes.object,
           }),
@@ -527,7 +556,7 @@ Table.propTypes = {
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         currentSeason: PropTypes.shape({
-          status: PropTypes.string,
+          regular: PropTypes.object,
         }),
         groupedDateRanges: PropTypes.object,
         inReservationSystem: PropTypes.bool,

@@ -166,14 +166,22 @@ function SeasonForm({
     // Return blank while loading
     if (!season || !seasonMetadata) return "";
 
+    let title;
+    const isWinterSeason = season.seasonType === "winter";
+
     // For Park-level seasons, return the park name
     if (level === "park") {
-      return season.park.name;
+      title = season.park.name;
+      // ☃️ TODO: Decide form title for winter season
+      if (isWinterSeason) {
+        title += " ☃️ Winter season ☃️";
+      }
+    } else {
+      // For Area/Feature-level seasons,
+      // Return Park and Area/Feature name
+      title = `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
     }
-
-    // For Area/Feature-level seasons,
-    // Return Park and Area/Feature name
-    return `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
+    return title;
   }, [level, season, seasonMetadata]);
 
   const dateTypesByStrapiId = useMemo(
@@ -665,7 +673,6 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         {formData.seasonId && (
           <SeasonForm
             seasonId={formData.seasonId}
-            winterSeasonId={formData.winterSeasonId}
             level={formData.level}
             closePanel={closePanel}
             onDataUpdate={onDataUpdate}
