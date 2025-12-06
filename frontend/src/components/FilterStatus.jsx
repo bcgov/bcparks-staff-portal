@@ -196,3 +196,45 @@ export default function FilterStatus({
     </div>
   );
 }
+
+FilterStatus.propTypes = {
+  activeFilters: PropTypes.shape({
+    name: PropTypes.string,
+    accessGroups: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+    ),
+    status: PropTypes.arrayOf(PropTypes.string),
+    sections: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+    ),
+    managementAreas: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+    ),
+    dateTypes: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+    ),
+    featureTypes: PropTypes.arrayOf(
+      PropTypes.shape({
+        id: PropTypes.number.isRequired,
+        name: PropTypes.string.isRequired,
+      }),
+    ),
+    isInReservationSystem: PropTypes.bool,
+    hasDateNote: PropTypes.bool,
+  }).isRequired,
+  filteredCount: PropTypes.number.isRequired,
+  ClearFilters: PropTypes.elementType.isRequired,
+  updateFilter: PropTypes.func.isRequired,
+};

@@ -175,6 +175,6 @@ FilterPanel.propTypes = {
   filterOptionsLoading: PropTypes.bool.isRequired,
   filterOptionsError: PropTypes.object,
   statusFilter: PropTypes.element.isRequired,
-  ClearFilters: PropTypes.element.isRequired,
+  ClearFilters: PropTypes.elementType.isRequired,
   filteredCount: PropTypes.number.isRequired,
 };
