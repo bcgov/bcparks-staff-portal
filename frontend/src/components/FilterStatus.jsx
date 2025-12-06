@@ -5,22 +5,22 @@ import CloseButton from "react-bootstrap/CloseButton";
 import PropTypes from "prop-types";
 import { labelByValue } from "@/constants/seasonStatus";
 
+import "./FilterStatus.scss";
+
 function FilterBadge({ label, onRemove }) {
-  // @TODO: use stylesheet instead of inline styles
   return (
     <div
       data-bs-theme="dark"
       className="filter-badge fs-5 d-flex align-items-center"
-      style={{ minHeight: "36px" }}
     >
-      <Badge pill bg="primary" className="px-2 py-1 d-flex align-items-center">
+      <Badge
+        pill
+        bg="primary"
+        className="px-2 py-1 d-flex align-items-center fw-normal"
+      >
         <span>{label}</span>
 
-        <CloseButton
-          className="ms-2"
-          style={{ fontSize: "0.75rem" }}
-          onClick={onRemove}
-        />
+        <CloseButton className="ms-2" onClick={onRemove} />
       </Badge>
     </div>
   );
