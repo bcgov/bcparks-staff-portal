@@ -5,15 +5,13 @@ import useConfirmation from "@/hooks/useConfirmation";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useMemo, useState, useContext, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
-import UserContext from "@/contexts/UserContext";
-import useAccess from "@/hooks/useAccess";
 
 function EditAndReview() {
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -24,8 +22,6 @@ function EditAndReview() {
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
-  const { data: userData } = useContext(UserContext);
-  const { ROLES, checkAccess } = useAccess();
 
   const statusOptions = [
     { value: "requested", label: "Requested by HQ" },
@@ -134,10 +130,6 @@ function EditAndReview() {
       hasDateNote: false,
     });
   }
-  const hasAllParkAccess = useMemo(
-    () => checkAccess(ROLES.ALL_PARK_ACCESS),
-    [checkAccess, ROLES.ALL_PARK_ACCESS],
-  );
 
   const filteredParks = useMemo(
     () =>
@@ -366,7 +358,7 @@ function EditAndReview() {
 
         return true;
       }),
-    [parks, filters, userData, hasAllParkAccess],
+    [parks, filters],
   );
 
   const updateFilter = useCallback(
