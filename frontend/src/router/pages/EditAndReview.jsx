@@ -11,6 +11,7 @@ import FilterPanel from "@/components/FilterPanel";
 import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 
 function EditAndReview() {
@@ -24,10 +25,10 @@ function EditAndReview() {
   const filterOptions = filterOptionsData ?? {};
 
   const statusOptions = [
-    { value: "requested", label: "Requested by HQ" },
-    { value: "pending review", label: "Pending HQ review" },
-    { value: "approved", label: "Approved" },
-    { value: "published", label: "Published" },
+    { value: STATUS.REQUESTED.value, label: STATUS.REQUESTED.label },
+    { value: STATUS.PENDING_REVIEW.value, label: STATUS.PENDING_REVIEW.label },
+    { value: STATUS.APPROVED.value, label: STATUS.APPROVED.label },
+    { value: STATUS.PUBLISHED.value, label: STATUS.PUBLISHED.label },
   ];
 
   // table pagination

@@ -3,6 +3,7 @@ import { reject, without } from "lodash-es";
 import Badge from "react-bootstrap/Badge";
 import CloseButton from "react-bootstrap/CloseButton";
 import PropTypes from "prop-types";
+import { labelByValue } from "@/constants/seasonStatus";
 
 function FilterBadge({ label, onRemove }) {
   // @TODO: use stylesheet instead of inline styles
@@ -53,7 +54,7 @@ export default function FilterStatus({
     // Access Groups (bundles) filter (multi-select)
     if (activeFilters.accessGroups.length) {
       const bundleTags = activeFilters.accessGroups.map((bundle) => ({
-        label: `Access Group: ${bundle.name}`, // @TODO: use constants for display name
+        label: `Access Group: ${bundle.name}`,
 
         remove(filters) {
           updateFilter(
@@ -69,7 +70,7 @@ export default function FilterStatus({
     // Status filter (multi-select)
     if (activeFilters.status.length) {
       const statusTags = activeFilters.status.map((status) => ({
-        label: `Status: ${status}`,
+        label: `Status: ${labelByValue[status]}`,
 
         remove(filters) {
           updateFilter("status", without(filters.status, status));

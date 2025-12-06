@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import PropTypes from "prop-types";
+import * as STATUS from "@/constants/seasonStatus.js";
 import "./StatusBadge.scss";
 
 export default function StatusBadge({ status }) {
@@ -13,19 +14,25 @@ export default function StatusBadge({ status }) {
 
   // Map status code to color class and display label
   const statusMap = new Map([
-    ["published", { cssClass: "text-bg-primary", displayText: "Published" }],
-    ["approved", { cssClass: "text-bg-success", displayText: "Approved" }],
     [
-      "requested",
-      { cssClass: "text-bg-warning", displayText: "Requested by HQ" },
+      STATUS.PUBLISHED.value,
+      { cssClass: "text-bg-primary", displayText: STATUS.PUBLISHED.label },
     ],
     [
-      "pending review",
-      { cssClass: "text-bg-dark", displayText: "Pending HQ review" },
+      STATUS.APPROVED.value,
+      { cssClass: "text-bg-success", displayText: STATUS.APPROVED.label },
     ],
     [
-      "not provided",
-      { cssClass: "text-bg-disabled", displayText: "Not provided" },
+      STATUS.REQUESTED.value,
+      { cssClass: "text-bg-warning", displayText: STATUS.REQUESTED.label },
+    ],
+    [
+      STATUS.PENDING_REVIEW.value,
+      { cssClass: "text-bg-dark", displayText: STATUS.PENDING_REVIEW.label },
+    ],
+    [
+      STATUS.NOT_PROVIDED.value,
+      { cssClass: "text-bg-disabled", displayText: STATUS.NOT_PROVIDED.label },
     ],
   ]);
 
