@@ -204,10 +204,11 @@ function EditAndReview() {
     return results;
   }, [parks, filters]);
 
+  // Count the number of "results" - Parks, Areas, and Features with a status
   const numResults = useMemo(
     () =>
       // Filter out any Parks that don't match the filters;
-      // they will not count towards the total results.
+      // they will not count towards the total results and their status/edit buttons won't show.
       flattenedFilteredResults.filter(
         (item) => item.entityType !== "park" || item.matchesFilters,
       ).length,

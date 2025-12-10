@@ -434,14 +434,19 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
       </thead>
 
       <tbody>
-        <DateTypeTableRow
-          groupedDateRanges={park.groupedDateRanges}
-          currentYear={park.currentSeason?.operatingYear}
-        />
-        <DateTableRow
-          groupedDateRanges={park.groupedDateRanges}
-          currentYear={park.currentSeason?.operatingYear}
-        />
+        {/* If the park isn't filtered out, show its Park-level dates */}
+        {park.matchesFilters !== false && (
+          <>
+            <DateTypeTableRow
+              groupedDateRanges={park.groupedDateRanges}
+              currentYear={park.currentSeason?.operatingYear}
+            />
+            <DateTableRow
+              groupedDateRanges={park.groupedDateRanges}
+              currentYear={park.currentSeason?.operatingYear}
+            />
+          </>
+        )}
 
         {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
           <React.Fragment key={`feature-type-${featureTypeId}`}>
