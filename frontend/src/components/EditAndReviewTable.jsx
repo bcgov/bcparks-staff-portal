@@ -426,7 +426,8 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
           level="park"
           nameCellClass="fw-normal text-white"
           name={park.name}
-          season={park.currentSeason}
+          // Don't show season details if it's irrelevant to the active filters
+          season={park.matchesFilters === false ? null : park.currentSeason}
           formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
@@ -473,6 +474,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
 Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
+    matchesFilters: PropTypes.bool,
     name: PropTypes.string.isRequired,
     currentSeason: PropTypes.shape({
       status: PropTypes.string,
