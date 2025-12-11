@@ -195,7 +195,7 @@ function EditAndReview() {
           parkName: park.name,
         },
 
-        // Include Areas and Filters within the park that match the filters
+        // Include Areas and Features within the park that match the filters
         ...matchingAreas,
         ...matchingFeatures,
       ];
