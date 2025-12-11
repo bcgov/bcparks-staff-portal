@@ -185,7 +185,7 @@ export default function FilterStatus({
       </div>
 
       <div className="active-filters mb-3 d-flex flex-row flex-wrap gap-2 align-items-center">
-        {filterTags.map((tag, index) => (
+        {filterTags.map((tag) => (
           <FilterBadge
             key={tag.label}
             label={tag.label}
