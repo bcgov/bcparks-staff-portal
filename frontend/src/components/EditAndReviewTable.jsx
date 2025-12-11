@@ -78,8 +78,8 @@ DateRangesList.propTypes = {
   dateRanges: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
-      startDate: PropTypes.instanceOf(Date).isRequired,
-      endDate: PropTypes.instanceOf(Date).isRequired,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
       readyToPublish: PropTypes.bool.isRequired,
     }),
   ),

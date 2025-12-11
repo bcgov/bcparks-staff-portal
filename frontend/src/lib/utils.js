@@ -24,8 +24,9 @@ export function formatDateShortWithYear(date) {
  * @returns {string} formatted date range
  */
 export function formatDateRange(dateRange) {
+  // If the full date range is not provided, return an empty string
   if (dateRange.startDate === null || dateRange.endDate === null) {
-    return "Not provided";
+    return "";
   }
 
   const startDate = formatDateShort(dateRange.startDate);
