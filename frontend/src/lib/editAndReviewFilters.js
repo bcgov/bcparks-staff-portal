@@ -1,6 +1,10 @@
-// Checks a Park against the active Park-level filters.
-// Returns false if the entire park should be filtered out based on park-level filters, such as the name filter.
-// Returns true if the park should be included to check it and its areas/features against area/feature-level filters.
+/**
+ * Checks a Park against the active Park-level "hard" filters.
+ * Hard filters completely exclude a park and all its areas/features if they don't match.
+ * @param {Object} park The park object to check
+ * @param {Object} filters The active filter state
+ * @returns {boolean} False if the entire park should be filtered out, true if it should be included for area/feature checks
+ */
 export function checkParkHard(park, filters) {
   // If a name filter is set, filter out parks that don't match
   if (
@@ -49,12 +53,20 @@ export function checkParkHard(park, filters) {
   return true;
 }
 
-// Checks a Park against the active Park-level filters.
-// Returns false if the park doesn't match the filters (though its areas/features might).
+/**
+ * Checks a Park against the active Park-level "soft" filters.
+ * Soft filters only determine whether the park itself matches, but won't exclude it from the results.
+ * @param {Object} park The park object to check
+ * @param {Object} filters The active filter state
+ * @returns {boolean} False if the park doesn't match the soft filters, true otherwise
+ */
 export function checkParkSoft(park, filters) {
   // Filter by status
   if (filters.status.length) {
-    if (!park.currentSeason || !filters.status.includes(park.currentSeason.status)) {
+    if (
+      !park.currentSeason ||
+      !filters.status.includes(park.currentSeason.status)
+    ) {
       return false;
     }
   }
@@ -105,8 +117,12 @@ export function checkParkSoft(park, filters) {
   return true;
 }
 
-// Check the Park's Areas against the active Area/Feature-level filters.
-// Returns an array of matching ParkAreas.
+/**
+ * Filters a park's areas based on the active area-level filters.
+ * @param {Array} parkAreas Array of park area objects to filter
+ * @param {Object} filters The active filter state
+ * @returns {Array} Array of park areas that match the filters
+ */
 export function getMatchingAreas(parkAreas, filters) {
   if (parkAreas.length === 0) return [];
 
@@ -116,7 +132,10 @@ export function getMatchingAreas(parkAreas, filters) {
     // Filter by status
     if (filters.status.length) {
       // If currentSeason is missing or none of the statuses match, filter out
-      if (!parkArea.currentSeason || !filters.status.includes(parkArea.currentSeason.status)) {
+      if (
+        !parkArea.currentSeason ||
+        !filters.status.includes(parkArea.currentSeason.status)
+      ) {
         return false;
       }
     }
@@ -184,8 +203,12 @@ export function getMatchingAreas(parkAreas, filters) {
   });
 }
 
-// Check the Park's Features against the active Feature-level filters.
-// Returns an array of matching Features.
+/**
+ * Filters a park's features based on the active feature-level filters.
+ * @param {Array} features Array of feature objects to filter
+ * @param {Object} filters The active filter state
+ * @returns {Array} Array of features that match the filters
+ */
 export function getMatchingFeatures(features, filters) {
   if (features.length === 0) return [];
 
