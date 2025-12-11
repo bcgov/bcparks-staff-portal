@@ -139,12 +139,6 @@ function EditAndReview() {
     });
   }
 
-  // Flatten Park, Area arrays, and Feature arrays into a single array
-  // to count the number of "results" and render in the table in a special way.
-
-  // Then, re-apply filters to the flattened list
-  // to remove any items that shouldn't be shown.
-
   const flattenedFilteredResults = useMemo(() => {
     // Flatten the parks, areas, and features into a single "results" array
     // and exclude any areas or features that don't match the filters.
@@ -154,8 +148,8 @@ function EditAndReview() {
         return [];
       }
 
-      // If the Park doesn't match the Park-level "soft" filters,
-      // check its areas and features to see if any of them match.
+      // If the Park doesn't match the Park-level "soft" filters, store that result.
+      // We'll continue to check its areas and features to see if any of them match.
       const parkMatch = checkParkSoft(park, filters);
 
       // Gather matching park areas and features, and add annotations for grouping
@@ -163,11 +157,13 @@ function EditAndReview() {
         (parkArea) => ({
           ...parkArea,
           // Add the park name for grouping
-          // Using the name instead of the ID preserves the sort order
+          // (Using the name instead of the ID preserves the sort order
+          // when we rebuild the data later for rendering the table)
           parkName: park.name,
           entityType: "parkArea",
         }),
       );
+
       const matchingFeatures = getMatchingFeatures(park.features, filters).map(
         (feature) => ({
           ...feature,
@@ -185,6 +181,8 @@ function EditAndReview() {
         return [];
       }
 
+      // If the Park or any Areas/Features match,
+      // include the Park and the matching Areas/Features
       return [
         // Add a property to the Park object to indicate whether it matches the filters,
         // and add annotations for grouping in the template
@@ -208,7 +206,7 @@ function EditAndReview() {
   const numResults = useMemo(
     () =>
       // Filter out any Parks that don't match the filters;
-      // they will not count towards the total results and their status/edit buttons won't show.
+      // they will not count towards the total results and their season data won't show.
       flattenedFilteredResults.filter(
         (item) => item.entityType !== "park" || item.matchesFilters,
       ).length,
@@ -220,9 +218,9 @@ function EditAndReview() {
     // Group the flattened results by parkName for rendering in the table
     const groupedByPark = groupBy(flattenedFilteredResults, "parkName");
 
+    // Re-combine the park data into a single Park object,
+    // with filtered features and parkAreas
     const formatted = Object.values(groupedByPark).map((parkGroup) => {
-      // Re-combine the park data into a single Park object,
-      // with filtered features and parkAreas
       const park = parkGroup[0];
       const parkAreas = parkGroup.filter(
         (entity) => entity.entityType === "parkArea",
@@ -238,7 +236,6 @@ function EditAndReview() {
       };
     });
 
-    // Sort Parks by name (ignore case and punctuation)
     return formatted;
   }, [flattenedFilteredResults]);
 
