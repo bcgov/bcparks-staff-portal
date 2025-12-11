@@ -221,7 +221,7 @@ function EditAndReview() {
     // Re-combine the park data into a single Park object,
     // with filtered features and parkAreas
     const formatted = Object.values(groupedByPark).map((parkGroup) => {
-      const park = parkGroup[0];
+      const park = parkGroup.find((entity) => entity.entityType === "park");
       const parkAreas = parkGroup.filter(
         (entity) => entity.entityType === "parkArea",
       );
