@@ -54,7 +54,7 @@ export function checkParkHard(park, filters) {
 export function checkParkSoft(park, filters) {
   // Filter by status
   if (filters.status.length) {
-    if (!filters.status.includes(park.currentSeason.status)) {
+    if (!park.currentSeason || !filters.status.includes(park.currentSeason.status)) {
       return false;
     }
   }
@@ -115,8 +115,8 @@ export function getMatchingAreas(parkAreas, filters) {
 
     // Filter by status
     if (filters.status.length) {
-      // If none of the statuses match, filter out
-      if (!filters.status.includes(parkArea.currentSeason.status)) {
+      // If currentSeason is missing or none of the statuses match, filter out
+      if (!parkArea.currentSeason || !filters.status.includes(parkArea.currentSeason.status)) {
         return false;
       }
     }
@@ -192,6 +192,8 @@ export function getMatchingFeatures(features, filters) {
   return features.filter((feature) => {
     // Filter by status
     if (filters.status.length) {
+      if (!feature.currentSeason) return false;
+
       // If none of the statuses match, filter out
       if (!filters.status.includes(feature.currentSeason.status)) {
         return false;
