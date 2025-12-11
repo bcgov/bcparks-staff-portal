@@ -38,6 +38,7 @@ export default function FilterStatus({
   updateFilter,
 }) {
   const filterTags = useMemo(() => {
+    // Filter tags data: objects with `label` and a `remove` function
     const tags = [];
 
     // Park name filter (text input box)
