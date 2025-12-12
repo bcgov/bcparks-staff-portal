@@ -22,7 +22,7 @@ async function reSyncSeasonsAndDates() {
 
     // 2 - (optional) create 2026 Seasons
     console.log("Starting: Create blank seasons for 2026...");
-    await execAsync("node ./tasks/create-seasons.js 2026");
+    await execAsync("node ./tasks/create-seasons/create-seasons.js 2026");
     console.log("Finished: Create blank seasons for 2026.\n");
 
     // 3 - import sub-area dates from Strapi, and populate Seasons and DateRanges

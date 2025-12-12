@@ -207,9 +207,6 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     (dateRange) => !excludedDateTypes.has(dateRange.dateType?.name),
   );
 
-  // get a current season
-  const currentSeason = buildCurrentSeasonOutput(feature.seasons);
-
   const output = {
     id: feature.id,
     dateableId: feature.dateableId,
@@ -229,7 +226,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
   };
 
   if (includeCurrentSeason) {
-    output.currentSeason = currentSeason;
+    output.currentSeason = buildCurrentSeasonOutput(feature.seasons);
   }
 
   return output;

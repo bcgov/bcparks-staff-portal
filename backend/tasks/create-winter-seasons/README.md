@@ -35,7 +35,6 @@ This script creates winter seasons for parks that have winter fee dates (`hasWin
 
 From your project root, run:
 
-
 ```sh
 node tasks/create-winter-seasons/create-winter-seasons.js 2027
 ```

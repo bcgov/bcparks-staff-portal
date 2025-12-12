@@ -82,7 +82,7 @@ async function reSyncAll() {
 
     // 8 - create 2026 Seasons
     console.log(`Starting: ${step} - Create blank seasons for 2026...`);
-    await execAsync("node ./tasks/create-seasons.js 2026");
+    await execAsync("node ./tasks/create-seasons/create-seasons.js 2026");
     console.log(`Finished: ${step} - Create blank seasons for 2026.\n`);
     step++;
 
