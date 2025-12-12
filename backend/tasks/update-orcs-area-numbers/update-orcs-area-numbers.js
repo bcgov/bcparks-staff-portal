@@ -13,7 +13,7 @@ function standardizeName(name) {
 
 export default async function updateOrcsAreaNumbers(transaction = null) {
   // Get all park area data from Strapi
-  const strapiAreas = await strapiApi.getAllPages("/park-areas", {
+  const strapiAreas = await strapiApi.getAllPages("/api/park-areas", {
     populate: {
       protectedArea: {
         fields: ["orcs"],
@@ -25,8 +25,8 @@ export default async function updateOrcsAreaNumbers(transaction = null) {
   // Convert to an entities structure of key value pairs for lookups
   const strapiEntities = new Map(
     strapiAreas.map((area) => [
-      `${area.protectedArea?.orcs}|${standardizeName(area.parkAreaName)}`,
-      area.orcsAreaNumber,
+      `${area.attributes.protectedArea?.data?.attributes?.orcs}|${standardizeName(area.attributes.parkAreaName)}`,
+      area.attributes.orcsAreaNumber,
     ]),
   );
 
