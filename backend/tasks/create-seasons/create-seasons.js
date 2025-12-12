@@ -2,24 +2,26 @@
 // It will skip creating a season if one already exists for the given operating year and publishable.
 // Also creates Group Camping and Picnic Shelter seasons for the year after the operating year.
 
-import "../env.js";
+import "../../env.js";
 
 import { Op } from "sequelize";
 
 import {
-  Dateable,
   DateRange,
   DateType,
   Feature,
   FeatureType,
   Park,
   ParkArea,
-  Publishable,
   Season,
-} from "../models/index.js";
-import * as STATUS from "../constants/seasonStatus.js";
-import { populateAnnualDateRangesForYear } from "./populate-date-ranges/populate-annual-date-ranges.js";
-import { populateBlankDateRangesForYear } from "./populate-date-ranges/populate-blank-date-ranges.js";
+} from "../../models/index.js";
+import * as STATUS from "../../constants/seasonStatus.js";
+import { populateAnnualDateRangesForYear } from "../populate-date-ranges/populate-annual-date-ranges.js";
+import { populateBlankDateRangesForYear } from "../populate-date-ranges/populate-blank-date-ranges.js";
+import {
+  createPublishableId,
+  createDateableId,
+} from "../../utils/seasonHelpers.js";
 
 // Run all queries in a transaction
 const transaction = await Season.sequelize.transaction();
@@ -53,33 +55,14 @@ let dateablesAdded = 0;
 let seasonsAdded = 0;
 
 /**
- * Creates a new Publishable or Dateable ID and associates it with the given record, if it doesn't already have one.
- * @param {Park|ParkArea|Feature} record The record to check and update
- * @param {string} keyName The name of the key to check ("publishableId" or "dateableId")
- * @param {any} KeyModel Db model to use for creating the new ID (Publishable or Dateable)
- * @returns {Promise<number>} The ID of the record's Publishable/Dateable
- */
-async function createKey(record, keyName, KeyModel) {
-  if (record[keyName]) return { key: record[keyName], added: false };
-
-  // Create the missing FK record in the function table
-  const junctionKey = await KeyModel.create({}, { transaction });
-
-  record[keyName] = junctionKey.id;
-  await record.save({ transaction });
-  return { key: junctionKey.id, added: true };
-}
-
-/**
  * Creates a new Publishable ID and associates it with the given record, if it doesn't already have one.
  * @param {Park|ParkArea|Feature} record The record to check and update
  * @returns {Promise<number>} The record's Publishable ID
  */
 async function createPublishable(record) {
-  const { key, added } = await createKey(record, "publishableId", Publishable);
+  const { key, added } = await createPublishableId(record, transaction);
 
   if (added) publishablesAdded++;
-
   return key;
 }
 
@@ -89,10 +72,9 @@ async function createPublishable(record) {
  * @returns {Promise<number>} The record's Dateable ID
  */
 async function createDateable(record) {
-  const { key, added } = await createKey(record, "dateableId", Dateable);
+  const { key, added } = await createDateableId(record, transaction);
 
   if (added) dateablesAdded++;
-
   return key;
 }
 
