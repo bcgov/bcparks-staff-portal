@@ -1,15 +1,12 @@
 table {
   tr.table-row {
-    &--park {
+    &--park-header {
       th {
         background-color: var(--theme-primary-blue);
-      }
-      &.winter {
-        th {
-          background-color: var(--theme-blue-10);
-        }
+        padding: 0.75rem 0.5rem;
       }
     }
+    &--park,
     &--park-area,
     &--feature {
       th {

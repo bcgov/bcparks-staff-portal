@@ -172,9 +172,8 @@ function SeasonForm({
     // For Park-level seasons, return the park name
     if (level === "park") {
       title = season.park.name;
-      // ☃️ TODO: Decide form title for winter season
       if (isWinterSeason) {
-        title += " ☃️ Winter season ☃️";
+        title += ": winter fee";
       }
     } else {
       // For Area/Feature-level seasons,
