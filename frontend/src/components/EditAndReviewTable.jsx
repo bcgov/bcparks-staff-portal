@@ -86,7 +86,11 @@ DateRangesList.propTypes = {
   isLastYear: PropTypes.bool,
 };
 
-function DateTypeTableRow({ groupedDateRanges, currentYear }) {
+function DateTypeTableRow({
+  groupedDateRanges,
+  currentYear,
+  isWinterSeason = false,
+}) {
   if (
     !currentYear ||
     !groupedDateRanges ||
@@ -94,11 +98,19 @@ function DateTypeTableRow({ groupedDateRanges, currentYear }) {
   )
     return null;
 
+  const lastYear = currentYear - 1;
+  const displayLastYear = isWinterSeason
+    ? `${lastYear} – ${currentYear}`
+    : lastYear;
+  const displayCurrentYear = isWinterSeason
+    ? `${currentYear} – ${currentYear + 1}`
+    : currentYear;
+
   return (
     <tr className="table-row--date-type">
       <th scope="col">Type of date</th>
-      <th scope="col">{currentYear - 1}</th>
-      <th scope="col">{currentYear}</th>
+      <th scope="col">{displayLastYear}</th>
+      <th scope="col">{displayCurrentYear}</th>
     </tr>
   );
 }
@@ -106,6 +118,7 @@ function DateTypeTableRow({ groupedDateRanges, currentYear }) {
 DateTypeTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
   currentYear: PropTypes.number,
+  isWinterSeason: PropTypes.bool,
 };
 
 function DateTableRow({ groupedDateRanges, currentYear }) {
@@ -435,23 +448,34 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
   return (
     <table key={park.id} className="table has-header-row mb-0">
       <thead>
-        <StatusTableRow
-          level="park"
-          nameCellClass="fw-normal text-white"
-          name={park.name}
-          // Don't show season details if it's irrelevant to the active filters
-          season={park.matchesFilters === false ? null : regularSeason}
-          formPanelHandler={() =>
-            formPanelHandler({ ...park, level: "park", isWinterSeason: false })
-          }
-          color="text-white"
-        />
+        <tr className="table-row--park-header">
+          <th
+            scope="col"
+            colSpan="3"
+            className="align-middle fw-normal text-white"
+          >
+            {park.name}
+          </th>
+        </tr>
       </thead>
 
       <tbody>
         {/* If the park isn't filtered out, show its Park-level dates */}
         {park.matchesFilters !== false && (
           <>
+            {/* park level - regular season dates (park gate, tier 1, tier 2) */}
+            <StatusTableRow
+              level="park"
+              name="Tiers and gate"
+              season={regularSeason}
+              formPanelHandler={() =>
+                formPanelHandler({
+                  ...park,
+                  level: "park",
+                  isWinterSeason: false,
+                })
+              }
+            />
             <DateTypeTableRow
               groupedDateRanges={park.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
@@ -460,13 +484,13 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
               groupedDateRanges={park.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
             />
-            {/* ☃️ TODO: Display separate row and table for winter fee dates */}
+
+            {/* park level - winter fee season */}
             {park.hasWinterFeeDates && (
               <>
                 <StatusTableRow
                   level="park"
-                  nameCellClass="fw-normal"
-                  name={`${park.name} ☃️ Winter season ☃️`}
+                  name="Winter fee"
                   season={winterSeason}
                   formPanelHandler={() =>
                     formPanelHandler({
@@ -476,9 +500,14 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
                     })
                   }
                 />
-                <DateTableRow
+                <DateTypeTableRow
                   groupedDateRanges={park.winterGroupedDateRanges}
                   currentYear={winterSeason.operatingYear || null}
+                  isWinterSeason={true}
+                />
+                <DateTableRow
+                  groupedDateRanges={park.groupedDateRanges}
+                  currentYear={regularSeason.operatingYear}
                 />
               </>
             )}
