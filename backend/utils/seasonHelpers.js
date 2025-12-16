@@ -54,6 +54,6 @@ export async function createDateableId(record, transaction) {
     Dateable,
     transaction,
   );
-  
+
   return { key, added };
 }

@@ -1125,16 +1125,12 @@ router.post(
         });
 
         if (winterSeason) {
-          console.log("Approving winter season:", winterSeason.id);
           await updateStatus(
             winterSeason.id,
             STATUS.APPROVED,
             null,
             transaction,
           );
-          console.log("Winter season approved successfully");
-        } else {
-          console.log("No winter season found for this park/year");
         }
       }
 

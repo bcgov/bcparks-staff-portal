@@ -15,7 +15,7 @@ This script creates winter seasons for parks that have winter fee dates (`hasWin
 
 3. **Creates winter seasons for the specified operating year:**
    - Creates new seasons with `seasonType = "winter"`
-   - Sets `status = "REQUESTED"` and `readyToPublish = false` (requires manual approval)
+   - Sets `status = "REQUESTED"` and `readyToPublish = true` (requires manual approval)
    - Skips creation if a winter season already exists for the park and year
 
 4. **Creates Winter fee DateRanges in winter seasons:**
