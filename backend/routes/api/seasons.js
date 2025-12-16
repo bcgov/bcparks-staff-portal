@@ -1077,7 +1077,7 @@ router.post(
             deletedDateRangeIds: [], // Handle winter deletions if needed
             newStatus,
             newReadyToPublish: isApprover ? winterSeason.readyToPublish : null,
-            notes, // Use same notes for both seasons
+            notes: "",
             userId: req.user.id,
             transaction,
             isWinterSeason: true,

@@ -61,6 +61,7 @@ function flattenSeasons(seasons) {
       id: season.id,
       parkName: season.parkName,
       operatingYear: season.operatingYear,
+      displayOperatingYear: season.displayOperatingYear,
       parkAreaName: season.parkAreaName,
       readyToPublish: season.readyToPublish,
       publishableType: season.publishableType,
@@ -139,6 +140,7 @@ function groupSeasons(flattened) {
         id: item.id,
         parkName: item.parkName,
         operatingYear: item.operatingYear,
+        displayOperatingYear: item.displayOperatingYear,
         parkAreaName: item.parkAreaName,
         readyToPublish: item.readyToPublish,
         featureNames: item.featureName ? [item.featureName] : [],
@@ -246,10 +248,16 @@ router.get(
     // Build output
     const output = approvedSeasons.map((season) => {
       const publishable = publishableMap.get(season.publishableId);
-      const displayOperatingYear =
-        season.seasonType === "winter"
-          ? `${season.operatingYear} Winter fee`
-          : season.operatingYear;
+
+      // Determine displayOperatingYear based on publishable type and season type
+      let displayOperatingYear = season.operatingYear;
+
+      if (publishable?.type === "park") {
+        displayOperatingYear =
+          season.seasonType === "winter"
+            ? `${season.operatingYear} Winter fee`
+            : `${season.operatingYear} Tiers and gate`;
+      }
 
       if (!publishable) {
         console.warn(

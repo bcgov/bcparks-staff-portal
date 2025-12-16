@@ -84,7 +84,7 @@ Done
 
 - The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project
 - You can safely run this script multiple times; it will not create duplicates and will skip existing records
-- Winter seasons are created with `readyToPublish = false` and must be manually approved before publishing
+- Winter seasons are created with `readyToPublish = true` and must be manually approved before publishing
 - The script only processes parks with `hasWinterFeeDates = true` - other parks are ignored
 - If you need to add winter fee capability to additional parks, set `hasWinterFeeDates = true` on those parks first
 - Winter fee DateRanges are **moved**, not copied - they will no longer exist in regular seasons after running this script
