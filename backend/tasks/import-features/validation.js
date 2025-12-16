@@ -54,7 +54,7 @@ export function validateStrapiFeatures(features) {
     }
 
     // Make sure protectedArea.orcs exists
-    if (!protectedArea?.data?.attributes?.orcs) {
+    if (!protectedArea?.orcs) {
       console.error(
         `Strapi ParkFeature: ${parkFeatureName} (${featureId}) has no related protectedArea.`,
       );
@@ -65,7 +65,7 @@ export function validateStrapiFeatures(features) {
     }
 
     // Check if orcsFeatureNumber and orcsAreaNumber both start with the expected ORCS
-    const expectedPrefix = `${protectedArea.data.attributes.orcs}-`;
+    const expectedPrefix = `${protectedArea.orcs}-`;
 
     // orcsFeatureNumber must start with protectedArea.orcs + "-"
     if (orcsFeatureNumber && !orcsFeatureNumber.startsWith(expectedPrefix)) {

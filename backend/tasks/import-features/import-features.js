@@ -106,20 +106,28 @@ export default async function importStrapiFeatures(transaction = null) {
 
       // Get the parkId from the related protectedArea
       let parkId = null;
-      const protectedAreaOrcs = protectedArea?.data?.attributes.orcs;
+      const protectedAreaOrcs = (protectedArea || {}).orcs;
 
-      if (protectedAreaOrcs && protectedAreaOrcs.length) {
+      if (protectedAreaOrcs) {
         const protectedAreaOrcsString = String(protectedAreaOrcs);
         const matchedPark = parkLookup.get(protectedAreaOrcsString) ?? null;
 
         parkId = matchedPark?.id ?? null;
       }
 
+      if (!parkId) {
+        console.warn(
+          `Skipping Feature: "${parkFeatureName}" - no matching Park found for related Protected Area orcs: ${protectedAreaOrcs}`,
+        );
+        skippedCount++;
+        continue;
+      }
+
       // Get the parkAreaId from the related parkArea
       let parkAreaId = null;
-      const orcsParkAreaNumber = parkArea?.data?.orcsAreaNumber;
+      const orcsParkAreaNumber = parkArea?.orcsAreaNumber;
 
-      if (orcsParkAreaNumber && orcsParkAreaNumber.length) {
+      if (orcsParkAreaNumber) {
         const matchedParkArea = parkAreaLookup.get(orcsParkAreaNumber) ?? null;
 
         parkAreaId = matchedParkArea?.id ?? null;
@@ -127,7 +135,7 @@ export default async function importStrapiFeatures(transaction = null) {
 
       // Get the featureTypeId from the related parkFeatureType
       let featureTypeId = null;
-      const strapiFeatureTypeId = parkFeatureType?.data?.featureTypeId;
+      const strapiFeatureTypeId = parkFeatureType?.featureTypeId;
 
       if (strapiFeatureTypeId) {
         const matchedFeatureType =
