@@ -101,7 +101,7 @@ async function createWinterSeason(publishableId, year, parkName) {
       operatingYear: year,
       seasonType: "winter",
       status: STATUS.REQUESTED,
-      readyToPublish: false,
+      readyToPublish: true,
     },
     { transaction },
   );

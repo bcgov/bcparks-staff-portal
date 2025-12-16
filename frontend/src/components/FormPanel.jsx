@@ -174,6 +174,8 @@ function SeasonForm({
       title = season.park.name;
       if (isWinterSeason) {
         title += ": winter fee";
+      } else {
+        title += ": tiers and gate";
       }
     } else {
       // For Area/Feature-level seasons,
