@@ -51,7 +51,7 @@ export function validateStrapiParkAreas(parkAreas) {
     }
 
     // Make sure protectedArea.orcs exists
-    if (!protectedArea?.data?.attributes?.orcs) {
+    if (!protectedArea?.orcs) {
       console.error(
         `Strapi ParkArea: ${parkAreaName} (${parkAreaId}) has no related protectedArea.orcs.`,
       );
