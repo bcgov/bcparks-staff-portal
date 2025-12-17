@@ -66,7 +66,7 @@ function DateRangesList({ dateRanges, isLastYear }) {
         .sort((a, b) => a.startDate - b.startDate)
         .map((dateRange) => (
           <li key={dateRange.id}>
-            {formatDateRange(dateRange)}
+            {formatDateRange(dateRange, isLastYear ? "Not provided" : "")}
             <NotReadyFlag show={!dateRange.readyToPublish} />
           </li>
         ))}
