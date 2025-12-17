@@ -14,7 +14,7 @@ function FilterPanel({
   filterOptionsLoading,
   filterOptionsError,
   statusFilter,
-  clearFilter,
+  ClearFilters,
   filteredCount,
 }) {
   // constants and states
@@ -138,9 +138,12 @@ function FilterPanel({
         )}
         <div className="mt-4">
           <button className="btn btn-primary" onClick={() => handleClose()}>
-            {`Show ${filteredCount} park${filteredCount !== 1 ? "s" : ""}`}
+            {`Show ${filteredCount} result${filteredCount !== 1 ? "s" : ""}`}
           </button>
-          {clearFilter}
+
+          <div className="mt-3">
+            <ClearFilters />
+          </div>
         </div>
       </Offcanvas.Body>
     </Offcanvas>
@@ -172,6 +175,6 @@ FilterPanel.propTypes = {
   filterOptionsLoading: PropTypes.bool.isRequired,
   filterOptionsError: PropTypes.object,
   statusFilter: PropTypes.element.isRequired,
-  clearFilter: PropTypes.element.isRequired,
+  ClearFilters: PropTypes.func.isRequired,
   filteredCount: PropTypes.number.isRequired,
 };

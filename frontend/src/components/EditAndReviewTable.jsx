@@ -426,21 +426,27 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
           level="park"
           nameCellClass="fw-normal text-white"
           name={park.name}
-          season={park.currentSeason}
+          // Don't show season details if it's irrelevant to the active filters
+          season={park.matchesFilters === false ? null : park.currentSeason}
           formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
           color="text-white"
         />
       </thead>
 
       <tbody>
-        <DateTypeTableRow
-          groupedDateRanges={park.groupedDateRanges}
-          currentYear={park.currentSeason?.operatingYear}
-        />
-        <DateTableRow
-          groupedDateRanges={park.groupedDateRanges}
-          currentYear={park.currentSeason?.operatingYear}
-        />
+        {/* If the park isn't filtered out, show its Park-level dates */}
+        {park.matchesFilters !== false && (
+          <>
+            <DateTypeTableRow
+              groupedDateRanges={park.groupedDateRanges}
+              currentYear={park.currentSeason?.operatingYear}
+            />
+            <DateTableRow
+              groupedDateRanges={park.groupedDateRanges}
+              currentYear={park.currentSeason?.operatingYear}
+            />
+          </>
+        )}
 
         {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
           <React.Fragment key={`feature-type-${featureTypeId}`}>
@@ -473,6 +479,7 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
 Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
+    matchesFilters: PropTypes.bool,
     name: PropTypes.string.isRequired,
     currentSeason: PropTypes.shape({
       status: PropTypes.string,
