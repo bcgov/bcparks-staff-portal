@@ -139,18 +139,31 @@ function EditAndReview() {
     });
   }
 
+  // Track if any Park-level filters are active
+  const parkFiltersActive = useMemo(
+    () =>
+      filters.name.length ||
+      filters.accessGroups.length ||
+      filters.sections.length ||
+      filters.managementAreas.length ||
+      filters.status.length ||
+      filters.dateTypes.length ||
+      filters.isInReservationSystem,
+    [filters],
+  );
+
   const flattenedFilteredResults = useMemo(() => {
     // Flatten the parks, areas, and features into a single "results" array
     // and exclude any areas or features that don't match the filters.
     const results = parks.flatMap((park) => {
       // If the Park doesn't match the Park-level "hard" filters, exclude it entirely.
-      if (!checkParkHard(park, filters)) {
+      if (parkFiltersActive && !checkParkHard(park, filters)) {
         return [];
       }
 
       // If the Park doesn't match the Park-level "soft" filters, store that result.
       // We'll continue to check its areas and features to see if any of them match.
-      const parkMatch = checkParkSoft(park, filters);
+      const parkMatch = parkFiltersActive && checkParkSoft(park, filters);
 
       // Gather matching park areas and features, and add annotations for grouping
       const matchingAreas = getMatchingAreas(park.parkAreas, filters).map(
@@ -181,6 +194,16 @@ function EditAndReview() {
         return [];
       }
 
+      // If the featureType filter is set, but no Areas/Features match,
+      // exclude the park
+      if (
+        filters.featureTypes.length &&
+        matchingAreas.length === 0 &&
+        matchingFeatures.length === 0
+      ) {
+        return [];
+      }
+
       // If the Park or any Areas/Features match,
       // include the Park and the matching Areas/Features
       return [
@@ -200,7 +223,7 @@ function EditAndReview() {
     });
 
     return results;
-  }, [parks, filters]);
+  }, [parks, filters, parkFiltersActive]);
 
   // Count the number of "results" - Parks, Areas, and Features with a status
   const numResults = useMemo(
