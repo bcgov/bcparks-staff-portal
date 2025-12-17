@@ -163,7 +163,7 @@ function EditAndReview() {
 
       // If the Park doesn't match the Park-level "soft" filters, store that result.
       // We'll continue to check its areas and features to see if any of them match.
-      const parkMatch = parkFiltersActive && checkParkSoft(park, filters);
+      const parkMatch = checkParkSoft(park, filters);
 
       // Gather matching park areas and features, and add annotations for grouping
       const matchingAreas = getMatchingAreas(park.parkAreas, filters).map(
