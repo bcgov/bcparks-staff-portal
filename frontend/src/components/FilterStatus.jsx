@@ -237,6 +237,6 @@ FilterStatus.propTypes = {
     hasDateNote: PropTypes.bool,
   }).isRequired,
   filteredCount: PropTypes.number.isRequired,
-  ClearFilters: PropTypes.elementType.isRequired,
+  ClearFilters: PropTypes.func.isRequired,
   updateFilter: PropTypes.func.isRequired,
 };
