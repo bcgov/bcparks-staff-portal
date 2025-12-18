@@ -312,7 +312,7 @@ function SeasonForm({
   async function saveForm(
     close = true,
     allowInvalid = false,
-    status = STATUS.REQUESTED,
+    status = STATUS.REQUESTED.value,
   ) {
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
@@ -381,7 +381,7 @@ function SeasonForm({
   // If the season is not "requested" (e.g. it is submitted, approved, or published),
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
-    if (season.status !== STATUS.REQUESTED) {
+    if (season.status !== STATUS.REQUESTED.value) {
       const proceed = await openModal(
         "Move back to draft?",
         `The dates will be moved back to draft and need to be submitted again to be reviewed.
@@ -398,7 +398,7 @@ If dates have already been published, they will not be updated until new dates a
     }
 
     // Save draft, and allow saving with validation errors
-    await saveForm(close, true, STATUS.REQUESTED);
+    await saveForm(close, true, STATUS.REQUESTED.value);
 
     flashMessage.open(
       "Dates saved as draft",
@@ -411,7 +411,7 @@ If dates have already been published, they will not be updated until new dates a
   async function onApprove() {
     try {
       // Save first, then approve
-      await saveForm(false, false, STATUS.APPROVED); // Don't close the form after saving
+      await saveForm(false, false, STATUS.APPROVED.value); // Don't close the form after saving
 
       await sendApprove();
 
@@ -432,7 +432,7 @@ If dates have already been published, they will not be updated until new dates a
   async function onSubmit() {
     try {
       // Save first, then submit
-      await saveForm(false, false, STATUS.PENDING_REVIEW); // Don't close the form after saving
+      await saveForm(false, false, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
 
       await sendSubmit();
 
@@ -543,8 +543,8 @@ If dates have already been published, they will not be updated until new dates a
             setNotes={setNotes}
             previousNotes={season.changeLogs}
             optional={
-              season.status !== STATUS.APPROVED &&
-              season.status !== STATUS.PUBLISHED
+              season.status !== STATUS.APPROVED.value &&
+              season.status !== STATUS.PUBLISHED.value
             }
           />
           <Buttons
