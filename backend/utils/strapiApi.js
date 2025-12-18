@@ -1,4 +1,5 @@
 import axios from "axios";
+import qs from "qs";
 
 const baseURL = `${process.env.STRAPI_URL}/api`;
 
@@ -74,6 +75,12 @@ export async function getAllPages(endpoint, params = {}, delay = 1000) {
           ...params,
           "pagination[page]": currentPage,
           "pagination[pageSize]": 100, // Use max page size for efficiency
+        },
+        paramsSerializer(p) {
+          return qs.stringify(p, {
+            encodeValuesOnly: true, // Keep brackets unencoded
+            arrayFormat: "indices", // Use fields[0]=name instead of fields[]=name
+          });
         },
       });
 

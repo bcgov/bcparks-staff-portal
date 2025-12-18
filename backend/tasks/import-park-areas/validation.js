@@ -51,14 +51,14 @@ export function validateStrapiParkAreas(parkAreas) {
     }
 
     // Make sure protectedArea.orcs exists
-    if (!protectedArea?.data?.attributes?.orcs) {
+    if (!protectedArea?.orcs) {
       console.error(
         `Strapi ParkArea: ${parkAreaName} (${parkAreaId}) has no related protectedArea.orcs.`,
       );
       isValid = false;
     } else {
       // Make sure orcsAreaNumber starts with protectedArea.orcs
-      const expectedPrefix = `${protectedArea.data.attributes.orcs}-`;
+      const expectedPrefix = `${protectedArea.orcs}-`;
 
       if (!orcsAreaNumber.startsWith(expectedPrefix)) {
         console.error(
