@@ -81,13 +81,21 @@ export default async function importStrapiParkAreas(transaction = null) {
 
       // Get the parkId from the related protectedArea
       let parkId = null;
-      const protectedAreaOrcs = protectedArea?.data?.attributes.orcs;
+      const protectedAreaOrcs = (protectedArea || {}).orcs;
 
-      if (protectedAreaOrcs && protectedAreaOrcs.length) {
+      if (protectedAreaOrcs) {
         const protectedAreaOrcsString = String(protectedAreaOrcs);
         const matchedPark = parkLookup.get(protectedAreaOrcsString) ?? null;
 
         parkId = matchedPark?.id ?? null;
+      }
+
+      if (!parkId) {
+        console.warn(
+          `Skipping ParkArea: "${parkAreaName}" - no matching Park found for related Protected Area orcs: ${protectedAreaOrcs}`,
+        );
+        skippedCount++;
+        continue;
       }
 
       if (!orcsAreaNumber) {

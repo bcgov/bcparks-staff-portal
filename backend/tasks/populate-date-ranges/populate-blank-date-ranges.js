@@ -109,12 +109,20 @@ export async function populateBlankDateRangesForYear(
     allDateTypes.forEach((dateType) => {
       // If the date type is applicable to Parks, add it to parkDateTypes
       if (dateType.parkLevel) {
-        parkDateTypes.push({ id: dateType.id, name: dateType.name });
+        parkDateTypes.push({
+          id: dateType.id,
+          name: dateType.name,
+          strapiDateTypeId: dateType.strapiDateTypeId,
+        });
       }
 
       // If the date type is applicable to Features, add it to featureDateTypes
       if (dateType.featureLevel) {
-        featureDateTypes.push({ id: dateType.id, name: dateType.name });
+        featureDateTypes.push({
+          id: dateType.id,
+          name: dateType.name,
+          strapiDateTypeId: dateType.strapiDateTypeId,
+        });
       }
     });
 
