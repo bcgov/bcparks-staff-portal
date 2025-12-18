@@ -10,10 +10,10 @@ const counts = {
 /**
  * Deletes any existing DateRanges from targetSeason and moves DateRanges
  * from currentSeason to targetSeason.
- * @param {*} currentSeason
- * @param {*} targetSeason
- * @param {*} transaction
- * @returns
+ * @param {Object} currentSeason - Season with id, feature, parkArea, dateRanges
+ * @param {Object} targetSeason - Season with id, feature, parkArea, dateRanges
+ * @param {Object} [transaction] - Optional Sequelize transaction
+ * @returns {Promise<void>}
  */
 async function moveDateRanges(currentSeason, targetSeason, transaction) {
   // if the targetSeason has valid DateRanges then skip
@@ -57,7 +57,8 @@ async function moveDateRanges(currentSeason, targetSeason, transaction) {
  * Only one year of data is processed at a time to limit the scope of changes.
  * Other issues may also be logged, but it only fixes this specific type of issue.
  * @param {number} operatingYear
- * @param {*} transaction
+ * @param {Object} [transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
  */
 export default async function fixOrphanedDateRanges(
   operatingYear,
@@ -196,7 +197,7 @@ export default async function fixOrphanedDateRanges(
 
     if (!feature.parkAreaId) {
       // Standalone Feature
-      await moveDateRanges(parkAreaSeason, featureSeason, transaction, counts);
+      await moveDateRanges(parkAreaSeason, featureSeason, transaction);
     } else {
       // Feature within a ParkArea
       await moveDateRanges(featureSeason, parkAreaSeason, transaction);

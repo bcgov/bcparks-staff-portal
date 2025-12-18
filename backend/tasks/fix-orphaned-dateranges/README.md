@@ -49,7 +49,7 @@ Replace `2025` with the operating year you want to fix.
 ## Output
 
 - The script logs the number of dateableIds found with DateRanges for multiple publishables.
-- For and skipped records, it logs why it was skipped.
+- For each skipped record, it logs why it was skipped.
 - Final summary shows counts of updated and skipped DateRanges.
 
 ## Notes
