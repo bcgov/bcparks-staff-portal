@@ -58,7 +58,7 @@ export function validateStrapiParkAreas(parkAreas) {
       isValid = false;
     } else {
       // Make sure orcsAreaNumber starts with protectedArea.orcs
-      const expectedPrefix = `${protectedArea.data.attributes.orcs}-`;
+      const expectedPrefix = `${protectedArea.orcs}-`;
 
       if (!orcsAreaNumber.startsWith(expectedPrefix)) {
         console.error(
