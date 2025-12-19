@@ -103,9 +103,7 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   return _.mapValues(
     _.groupBy(validRanges, (dateRange) => dateRange.dateType.name),
     (ranges) => {
-      const byYear = _.groupBy(ranges, (dateRange) =>
-        new Date(dateRange.startDate).getFullYear(),
-      );
+      const byYear = _.groupBy(ranges, "operatingYear");
 
       return byYear;
     },
@@ -113,7 +111,7 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
 }
 
 // build a date range output object
-function buildDateRangeObject(dateRange, readyToPublish) {
+function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
   return {
     id: dateRange.id,
     dateableId: dateRange.dateableId,
@@ -127,6 +125,8 @@ function buildDateRangeObject(dateRange, readyToPublish) {
         }
       : null,
     readyToPublish,
+    // Add the Season's operating year for grouping
+    operatingYear,
   };
 }
 
@@ -142,7 +142,11 @@ function buildCurrentSeasonOutput(seasons) {
 function getAllDateRanges(seasons) {
   return _.flatMap(seasons, (season) =>
     (season.dateRanges || []).map((dateRange) =>
-      buildDateRangeObject(dateRange, season.readyToPublish),
+      buildDateRangeObject(
+        dateRange,
+        season.operatingYear,
+        season.readyToPublish,
+      ),
     ),
   );
 }
@@ -402,9 +406,12 @@ router.get(
           operatingYear: season.operatingYear,
           status: season.status,
           readyToPublish: season.readyToPublish,
-          dateRanges: season.dateRanges.map(
-            buildDateRangeObject,
-            season.readyToPublish,
+          dateRanges: season.dateRanges.map((dateRange) =>
+            buildDateRangeObject(
+              dateRange,
+              season.operatingYear,
+              season.readyToPublish,
+            ),
           ),
         })),
       };

@@ -19,13 +19,20 @@ export function formatDateShortWithYear(date) {
 }
 
 /**
- * Returns a string with the dates formatted "Weekday, Month Day"
+ * Returns a string with the dates formatted "Weekday, Month Day",
+ * or a placeholder string if a date is missing.
  * @param {Object} dateRange object with startDate and endDate
+ * @param {string} placeholder string to display if the dateRange is incomplete/blank
  * @returns {string} formatted date range
  */
-export function formatDateRange(dateRange) {
-  if (dateRange.startDate === null || dateRange.endDate === null) {
-    return "Not provided";
+export function formatDateRange(dateRange, placeholder = "") {
+  // If the full date range is not provided, return a placeholder string
+  if (
+    !dateRange ||
+    dateRange.startDate === null ||
+    dateRange.endDate === null
+  ) {
+    return placeholder;
   }
 
   const startDate = formatDateShort(dateRange.startDate);

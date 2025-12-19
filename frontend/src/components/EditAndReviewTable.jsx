@@ -66,7 +66,7 @@ function DateRangesList({ dateRanges, isLastYear }) {
         .sort((a, b) => a.startDate - b.startDate)
         .map((dateRange) => (
           <li key={dateRange.id}>
-            {formatDateRange(dateRange)}
+            {formatDateRange(dateRange, isLastYear ? "Not provided" : "")}
             <NotReadyFlag show={!dateRange.readyToPublish} />
           </li>
         ))}
@@ -78,8 +78,8 @@ DateRangesList.propTypes = {
   dateRanges: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
-      startDate: PropTypes.instanceOf(Date).isRequired,
-      endDate: PropTypes.instanceOf(Date).isRequired,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
       readyToPublish: PropTypes.bool.isRequired,
     }),
   ),
