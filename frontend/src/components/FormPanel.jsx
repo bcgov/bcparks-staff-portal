@@ -20,6 +20,7 @@ import useValidation, {
 } from "@/hooks/useValidation/useValidation";
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
+import * as STATUS from "@/constants/seasonStatus";
 
 import "./FormPanel.scss";
 
@@ -264,6 +265,7 @@ function SeasonForm({
       dateRangeAnnuals: changedDateRangeAnnuals,
       gateDetail,
       readyToPublish: season.readyToPublish,
+      status: season.status,
       notes,
     };
 
@@ -304,9 +306,14 @@ function SeasonForm({
    * Saves the form data to the DB.
    * @param {boolean} close closes the form panel
    * @param {boolean} allowInvalid allows saving even if the form has validation errors
+   * @param {string} status optional status to set for the season
    * @returns {Promise<void>}
    */
-  async function saveForm(close = true, allowInvalid = false) {
+  async function saveForm(
+    close = true,
+    allowInvalid = false,
+    status = STATUS.REQUESTED.value,
+  ) {
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
@@ -323,6 +330,11 @@ function SeasonForm({
 
     // Clone the payload
     const payload = { ...changesPayload };
+
+    // Override status if provided
+    if (status) {
+      payload.status = status;
+    }
 
     // Update isDateRangeAnnual for "Park gate open" date if gateDetail.hasGate is false
     if (
@@ -369,7 +381,7 @@ function SeasonForm({
   // If the season is not "requested" (e.g. it is submitted, approved, or published),
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
-    if (season.status !== "requested") {
+    if (season.status !== STATUS.REQUESTED.value) {
       const proceed = await openModal(
         "Move back to draft?",
         `The dates will be moved back to draft and need to be submitted again to be reviewed.
@@ -386,7 +398,7 @@ If dates have already been published, they will not be updated until new dates a
     }
 
     // Save draft, and allow saving with validation errors
-    await saveForm(close, true);
+    await saveForm(close, true, STATUS.REQUESTED.value);
 
     flashMessage.open(
       "Dates saved as draft",
@@ -399,7 +411,7 @@ If dates have already been published, they will not be updated until new dates a
   async function onApprove() {
     try {
       // Save first, then approve
-      await saveForm(false); // Don't close the form after saving
+      await saveForm(false, false, STATUS.APPROVED.value); // Don't close the form after saving
 
       await sendApprove();
 
@@ -420,7 +432,7 @@ If dates have already been published, they will not be updated until new dates a
   async function onSubmit() {
     try {
       // Save first, then submit
-      await saveForm(false); // Don't close the form after saving
+      await saveForm(false, false, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
 
       await sendSubmit();
 
@@ -531,7 +543,8 @@ If dates have already been published, they will not be updated until new dates a
             setNotes={setNotes}
             previousNotes={season.changeLogs}
             optional={
-              season.status !== "approved" && season.status !== "published"
+              season.status !== STATUS.APPROVED.value &&
+              season.status !== STATUS.PUBLISHED.value
             }
           />
           <Buttons

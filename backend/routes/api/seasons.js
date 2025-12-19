@@ -766,6 +766,7 @@ router.post(
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
       gateDetail = {},
+      status,
     } = req.body;
     let { readyToPublish } = req.body;
 
@@ -793,7 +794,7 @@ router.post(
 
       checkSeasonExists(season);
 
-      const newStatus = STATUS.REQUESTED;
+      const newStatus = status ?? season.status;
 
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
