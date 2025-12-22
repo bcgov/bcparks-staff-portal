@@ -14,12 +14,12 @@ import PreviousDates from "@/components/SeasonForms/PreviousDates";
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
+import * as SEASON_TYPE from "@/constants/seasonType";
 
 export default function ParkSeasonForm({
   season,
   previousSeasonDates,
   winterSeason,
-  previousWinterSeasonDates,
   // All date types, including "Park gate open" and "Winter fee" (which is shown separately)
   dateTypes: allDateTypes,
   approver,
@@ -29,7 +29,7 @@ export default function ParkSeasonForm({
   const park = season.park;
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
   const gateDetail = season.gateDetail || {};
-  const isWinterSeason = season.seasonType === "winter";
+  const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
 
   // Park gate open dates and Winter fee dates are shown in the different section,
   // so split "Park gate open" and "Winter fee" out of the dateTypes array.
@@ -87,9 +87,10 @@ export default function ParkSeasonForm({
     dateField,
     dateObj,
     tempId = false,
-    seasonType = "regular",
+    seasonType = SEASON_TYPE.REGULAR,
   ) {
-    const seasonData = seasonType === "winter" ? winterSeason : season;
+    const seasonData =
+      seasonType === SEASON_TYPE.WINTER ? winterSeason : season;
     const { dateRanges } = seasonData.park.dateable;
     // Find the dateRanges array index from the dateRange id or tempId
     const dateRangeIndex = dateRanges.findIndex((range) => {
@@ -101,7 +102,8 @@ export default function ParkSeasonForm({
     });
 
     // Choose data path based on season type
-    const seasonKey = seasonType === "winter" ? "currentWinter" : "current";
+    const seasonKey =
+      seasonType === SEASON_TYPE.WINTER ? "currentWinter" : "current";
 
     // Path to update to the DateRange object
     const dateRangePath = [
@@ -129,8 +131,9 @@ export default function ParkSeasonForm({
   }
 
   // Adds a new date range to the Park's dateable.dateRanges
-  function addDateRange(dateType, seasonType = "regular") {
-    const seasonData = seasonType === "winter" ? winterSeason : season;
+  function addDateRange(dateType, seasonType = SEASON_TYPE.REGULAR) {
+    const seasonData =
+      seasonType === SEASON_TYPE.WINTER ? winterSeason : season;
 
     const newDateRange = {
       // Add a temporary ID for records that haven't been saved yet
@@ -145,7 +148,8 @@ export default function ParkSeasonForm({
 
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
-      const seasonKey = seasonType === "winter" ? "currentWinter" : "current";
+      const seasonKey =
+        seasonType === SEASON_TYPE.WINTER ? "currentWinter" : "current";
 
       updatedData[seasonKey].park.dateable.dateRanges.push(newDateRange);
       return updatedData;
@@ -153,7 +157,7 @@ export default function ParkSeasonForm({
   }
 
   // Removes a date range from the Park's dateable.dateRanges by its ID or tempId
-  function removeDateRange(dateRange, seasonType = "regular") {
+  function removeDateRange(dateRange, seasonType = SEASON_TYPE.REGULAR) {
     // Track deleted date range IDs
     if (dateRange.id) {
       addDeletedDateRangeId(dateRange.id);
@@ -161,7 +165,8 @@ export default function ParkSeasonForm({
 
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
-      const seasonKey = seasonType === "winter" ? "currentWinter" : "current";
+      const seasonKey =
+        seasonType === SEASON_TYPE.WINTER ? "currentWinter" : "current";
       const { dateRanges } = updatedData[seasonKey].park.dateable;
 
       const index = dateRanges.findIndex((range) => {
@@ -224,7 +229,7 @@ export default function ParkSeasonForm({
   }
 
   // Individual Park form section
-  function FormSection({ dateTypes, seasonType = "regular" }) {
+  function FormSection({ dateTypes }) {
     return (
       <div className="row">
         {dateTypes.map((dateType) => (
@@ -261,21 +266,20 @@ export default function ParkSeasonForm({
 
   FormSection.propTypes = {
     dateTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
-    seasonType: PropTypes.oneOf(["regular", "winter"]),
   };
 
   return (
     <>
       {isWinterSeason ? (
         <FormContainer>
-          <FormSection dateTypes={[winterDateType]} seasonType="winter" />
+          <FormSection dateTypes={[winterDateType]} />
         </FormContainer>
       ) : (
         <>
           {/* Tier 1 and Tier 2 dates */}
           {showDateFormSections && useBcpReservationsSection && (
             <FormContainer>
-              <FormSection dateTypes={regularDateTypes} seasonType="regular" />
+              <FormSection dateTypes={regularDateTypes} />
             </FormContainer>
           )}
 
