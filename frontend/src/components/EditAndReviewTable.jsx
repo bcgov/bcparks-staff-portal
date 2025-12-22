@@ -14,6 +14,7 @@ import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
 import * as FEATURE_TYPE from "../constants/featureType";
 import * as DATE_TYPE from "../constants/dateType";
+import * as SEASON_TYPE from "@/constants/seasonType";
 
 // Components
 function IconButton({
@@ -212,7 +213,7 @@ function StatusTableRow({
   color,
 }) {
   const flashMessage = useContext(globalFlashMessageContext);
-  const isWinterSeason = season.seasonType === "winter";
+  const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(

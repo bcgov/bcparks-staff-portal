@@ -153,6 +153,7 @@ function buildCurrentSeasonOutput(seasons) {
   };
 }
 
+// get all date ranges from seasons
 function getAllDateRanges(seasons) {
   return _.flatMap(seasons, (season) =>
     (season.dateRanges || []).map((dateRange) =>
@@ -386,11 +387,9 @@ router.get(
     });
 
     const output = parks.map((park) => {
-      const regularSeasons = park.seasons.filter(
+      const [regularSeasons, winterSeasons] = _.partition(
+        park.seasons,
         (season) => season.seasonType === "regular",
-      );
-      const winterSeasons = park.seasons.filter(
-        (season) => season.seasonType === "winter",
       );
       // get date ranges for park
       const parkDateRanges = getAllDateRanges(regularSeasons);

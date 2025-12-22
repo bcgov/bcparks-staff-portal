@@ -21,7 +21,7 @@ import useValidation, {
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus";
-
+import * as SEASON_TYPE from "@/constants/seasonType";
 import "./FormPanel.scss";
 
 // Components
@@ -167,7 +167,7 @@ function SeasonForm({
     if (!season || !seasonMetadata) return "";
 
     let title;
-    const isWinterSeason = season.seasonType === "winter";
+    const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
 
     // For Park-level seasons, return the park name
     if (level === "park") {
