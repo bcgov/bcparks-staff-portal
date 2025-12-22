@@ -25,6 +25,7 @@ import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as FEATURE_TYPE from "../../constants/featureType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
 
 const router = Router();
@@ -254,7 +255,7 @@ router.get(
 
       if (publishable?.type === "park") {
         displayOperatingYear =
-          season.seasonType === "winter"
+          season.seasonType === SEASON_TYPE.WINTER
             ? `${season.operatingYear} Winter fee`
             : `${season.operatingYear} Tiers and gate`;
       }

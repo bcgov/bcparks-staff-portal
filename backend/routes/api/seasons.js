@@ -5,6 +5,7 @@ import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import {
   getAllDateTypes,
   getDateTypesForFeature,
@@ -407,7 +408,7 @@ async function getCurrentWinterSeason(park, operatingYear) {
     where: {
       publishableId: park.publishableId,
       operatingYear,
-      seasonType: "winter",
+      seasonType: SEASON_TYPE.WINTER,
     },
   });
 
@@ -1119,7 +1120,7 @@ router.post(
           where: {
             publishableId: season.publishableId,
             operatingYear: season.operatingYear,
-            seasonType: "winter",
+            seasonType: SEASON_TYPE.WINTER,
           },
           transaction,
         });

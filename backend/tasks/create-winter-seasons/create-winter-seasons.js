@@ -6,6 +6,7 @@ import "../../env.js";
 
 import { DateRange, DateType, Park, Season } from "../../models/index.js";
 import * as STATUS from "../../constants/seasonStatus.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import {
   createPublishableId,
   createDateableId,
@@ -83,7 +84,7 @@ async function createWinterSeason(publishableId, year, parkName) {
     where: {
       publishableId,
       operatingYear: year,
-      seasonType: "winter",
+      seasonType: SEASON_TYPE.WINTER,
     },
     transaction,
   });
@@ -99,7 +100,7 @@ async function createWinterSeason(publishableId, year, parkName) {
     {
       publishableId,
       operatingYear: year,
-      seasonType: "winter",
+      seasonType: SEASON_TYPE.WINTER,
       status: STATUS.REQUESTED,
       readyToPublish: true,
     },

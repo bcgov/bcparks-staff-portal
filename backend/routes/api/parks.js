@@ -17,6 +17,7 @@ import {
 import asyncHandler from "express-async-handler";
 import checkUserRoles from "../../utils/checkUserRoles.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 // Constants
 const router = Router();
@@ -389,7 +390,7 @@ router.get(
     const output = parks.map((park) => {
       const [regularSeasons, winterSeasons] = _.partition(
         park.seasons,
-        (season) => season.seasonType === "regular",
+        (season) => season.seasonType === SEASON_TYPE.REGULAR,
       );
       // get date ranges for park
       const parkDateRanges = getAllDateRanges(regularSeasons);
