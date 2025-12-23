@@ -311,6 +311,7 @@ console.log(`Found ${parkAreasWithFeatures.length} ParkAreas with Features`);
 
 /**
  * Creates new Seasons for each ParkArea in the provided array for the given year.
+ * Also ensures all Features within each ParkArea have a dateableId.
  * @param {Array<ParkArea>} parkAreas Array of ParkArea records to process.
  * @param {number} year The operating year for which to create seasons.
  * @returns {Promise<void>}
@@ -325,6 +326,20 @@ async function createSeasonsForParkAreas(parkAreas, year) {
 
     // Create a season for this parkArea's Publishable ID and Operating Year, if it doesn't exist
     await createSeason(parkArea.publishableId, year);
+
+    // Get all active features for this parkArea and ensure they have a dateableId
+    const features = await Feature.findAll({
+      where: {
+        parkAreaId: parkArea.id,
+        active: true,
+      },
+      transaction,
+    });
+
+    for (const feature of features) {
+      // If the feature doesn't have a dateableId, add one and associate it
+      await createDateable(feature);
+    }
   }
 }
 
