@@ -86,7 +86,11 @@ function EditAndReview() {
 
   // open form panel when the Edit button is clicked
   async function formPanelHandler(formDataObj) {
-    const status = formDataObj.currentSeason.status;
+    const regularSeason = formDataObj.currentSeason.regular;
+    const winterSeason = formDataObj.currentSeason.winter || {};
+    const isWinterSeason = formDataObj.isWinterSeason || false;
+    const season = isWinterSeason ? winterSeason : regularSeason;
+    const status = regularSeason.status;
 
     // If the season is already approved, prompt to continue
     if (status === "approved") {
@@ -118,7 +122,7 @@ function EditAndReview() {
     }
 
     setFormData({
-      seasonId: formDataObj.currentSeason.id,
+      seasonId: season.id,
       level: formDataObj.level,
     });
     setShowFormPanel(true);
