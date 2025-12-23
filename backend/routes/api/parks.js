@@ -344,6 +344,14 @@ router.get(
       order: [
         ["name", "ASC"],
         [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
+        // For Features that ARE part of a ParkArea
+        [
+          { model: ParkArea, as: "parkAreas" },
+          { model: Feature, as: "features" },
+          "name",
+          "ASC",
+        ],
+        // For Features that ARE NOT part of a ParkArea
         [{ model: Feature, as: "features" }, "name", "ASC"],
       ],
     });
