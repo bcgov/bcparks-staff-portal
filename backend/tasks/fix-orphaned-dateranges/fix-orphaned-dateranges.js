@@ -62,7 +62,7 @@ async function moveDateRanges(currentSeason, targetSeason, transaction) {
  */
 async function fixDateRangesForFeatureParkAreaChanges(
   operatingYear,
-  transaction,
+  transaction = null,
 ) {
   // Find Seasons where the associated DateRanges' dateableId belongs to a Feature
   // whose ParkArea publishableId doesn't match the Season's ParkArea publishableId.
