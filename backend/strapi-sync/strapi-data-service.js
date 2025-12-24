@@ -91,6 +91,9 @@ const MODEL_CONFIG = {
       },
     },
   },
+  "park-date-type": {
+    endpoint: "/park-date-types",
+  },
 };
 
 /**
