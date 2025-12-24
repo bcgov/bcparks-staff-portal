@@ -14,7 +14,7 @@ Fixes DateRanges when a Feature's ParkArea relationship has changed but DateRang
 
 - Finds Seasons where DateRanges belong to Features whose current ParkArea doesn't match the Season's ParkArea.
 - Identifies the correct Season (matching the Feature's current ParkArea).
-- Moves all DateRanges to the correct Season, deleting any existing incomplete DateRanges first.
+- Moves DateRanges (filtered by dateableId) to the correct Season, deleting any existing incomplete DateRanges first.
 - Skips if target Season already has valid DateRanges.
 
 ### 2. fixDateRangesForFeatureStandaloneToggle

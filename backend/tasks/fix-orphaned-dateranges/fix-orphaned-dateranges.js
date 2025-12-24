@@ -10,12 +10,18 @@ const counts = {
 /**
  * Deletes any existing DateRanges from targetSeason and moves DateRanges
  * from currentSeason to targetSeason.
- * @param {Object} currentSeason Season with id, feature, parkArea, dateRanges
- * @param {Object} targetSeason Season with id, feature, parkArea, dateRanges
- * @param {Object} [transaction] Optional Sequelize transaction
+ * @param {Object} currentSeason Season with id
+ * @param {Object} targetSeason Season with id & dateRanges
+ * @param {Object} [options] Optional parameters
+ * @param {number} [options.dateableId] Filter dateRanges by this dateableId
+ * @param {Object} [options.transaction] Sequelize transaction
  * @returns {Promise<void>}
  */
-async function moveDateRanges(currentSeason, targetSeason, transaction) {
+async function moveDateRanges(
+  currentSeason,
+  targetSeason,
+  { dateableId = null, transaction = null } = {},
+) {
   // if the targetSeason has valid DateRanges then skip
   if (targetSeason.dateRanges.length > 0) {
     console.log(
@@ -35,11 +41,13 @@ async function moveDateRanges(currentSeason, targetSeason, transaction) {
   });
 
   // Update currentSeason DateRanges to point to the targetSeason
+  // optionally filter by dateableId
   await DateRange.update(
     { seasonId: targetSeason.id },
     {
       where: {
         seasonId: currentSeason.id,
+        ...(dateableId !== null && { dateableId }),
       },
       transaction,
     },
@@ -121,8 +129,6 @@ async function fixDateRangesForFeatureParkAreaChanges(
     transaction,
   });
 
-  // Look for any DateRanges associated with the seasonPublishableId and the dateableId and
-  // re-assign them to the season associated with the featureParkAreaPublishableId
   console.log(
     `Found ${results.length} Seasons with mismatched Feature ParkArea publishableIds for operatingYear ${operatingYear}`,
   );
@@ -159,8 +165,12 @@ async function fixDateRangesForFeatureParkAreaChanges(
       continue;
     }
 
-    // Move DateRanges from the current season to the target season
-    await moveDateRanges({ id: seasonId }, targetSeason, transaction);
+    // Move DateRanges (for the problematic dateableId only) from the current
+    // season to the target season
+    await moveDateRanges({ id: seasonId }, targetSeason, {
+      dateableId,
+      transaction,
+    });
   }
 }
 
@@ -304,10 +314,10 @@ async function fixDateRangesForFeatureStandaloneToggle(
 
     if (!feature.parkAreaId) {
       // Standalone Feature
-      await moveDateRanges(parkAreaSeason, featureSeason, transaction);
+      await moveDateRanges(parkAreaSeason, featureSeason, { transaction });
     } else {
       // Feature within a ParkArea
-      await moveDateRanges(featureSeason, parkAreaSeason, transaction);
+      await moveDateRanges(featureSeason, parkAreaSeason, { transaction });
     }
   }
 
