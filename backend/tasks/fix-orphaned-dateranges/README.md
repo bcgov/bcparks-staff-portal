@@ -1,60 +1,49 @@
 # fix-orphaned-dateranges.js
 
-This script identifies and fixes orphaned `DateRange` records that are associated with incorrect `Season` records due to changes in Feature/ParkArea relationships over time.
+This script fixes orphaned `DateRange` records associated with incorrect `Season` records due to changes in Feature/ParkArea relationships.
 
 ## What does the script do?
 
-1. **Identifies orphaned DateRanges:**
+The script runs two fixes sequentially:
 
-   - Finds `dateableId` values that have `DateRange` records associated with multiple `publishableId` values in the same operating year.
-   - This situation occurs when Features are moved between standalone status and ParkArea membership (or vice versa), but their DateRanges remain attached to the old Season.
+### 1. fixDateRangesForFeatureParkAreaChanges
 
-2. **For each dateableId with multiple associated publishables:**
+Fixes DateRanges when a Feature's ParkArea relationship has changed but DateRanges remain associated with the old Season.
 
-   - Retrieves the Feature and ParkArea (if any) for that dateableId.
-   - Retrieves all Seasons associated with the DateRanges, along with their Feature/ParkArea relationships.
+**Process:**
 
-3. **Determines the correct Season:**
+- Finds Seasons where DateRanges belong to Features whose current ParkArea doesn't match the Season's ParkArea.
+- Identifies the correct Season (matching the Feature's current ParkArea).
+- Moves all DateRanges to the correct Season, deleting any existing incomplete DateRanges first.
+- Skips if target Season already has valid DateRanges.
 
-   - If the Feature currently belongs to a ParkArea (`feature.parkAreaId` is set):
-     - DateRanges should be associated with the ParkArea's Season.
-     - Moves DateRanges from the standalone Feature Season to the ParkArea Season.
-   - If the Feature is currently standalone (`feature.parkAreaId` is null):
-     - DateRanges should be associated with the Feature's own Season.
-     - Moves DateRanges from the ParkArea Season to the Feature Season.
+### 2. fixDateRangesForFeatureStandaloneToggle
 
-4. **Updates DateRanges:**
+Fixes DateRanges when Features toggle between standalone status and being part of a ParkArea.
 
-   - Deletes any existing incomplete DateRanges from the target Season.
-   - Updates the `seasonId` of orphaned DateRanges to point to the correct Season.
-   - Skips updates if the target Season already has valid DateRanges (with non-null start and end dates).
+**Process:**
 
-5. **Transaction Safety:**
-   - All operations are performed inside a transaction. If any error occurs, all changes are rolled back.
+- Identifies `dateableId` values with DateRanges associated with multiple `publishableId` values in the same year.
+- Retrieves the Feature and its current ParkArea (if any), plus all related Seasons.
+- Moves DateRanges based on current status:
+  - Feature in ParkArea → moves from standalone Season to ParkArea Season
+  - Feature standalone → moves from ParkArea Season to standalone Season
+- Deletes incomplete DateRanges before moving; skips if target has valid DateRanges.
 
 ## Prerequisites
 
-This script should be executed after running the `create-seasons.js` script, as it addresses data inconsistencies that may arise from the season creation process.
+Run after `create-seasons.js` to address data inconsistencies from season creation.
 
 ## Usage
 
-From your project root, run:
-
 ```sh
-node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2025
+node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2027
 ```
 
-Replace `2025` with the operating year you want to fix.
-
-## Output
-
-- The script logs the number of dateableIds found with DateRanges for multiple publishables.
-- For each skipped record, it logs why it was skipped.
-- Final summary shows counts of updated and skipped DateRanges.
+Replace `2027` with the desired operating year.
 
 ## Notes
 
-- This script only processes one operating year at a time to limit the scope of changes.
-- The script is designed to handle the specific case where a Feature has exactly two Seasons (one for standalone Feature, one for ParkArea). Other scenarios are logged but skipped.
-- If the target Season already has valid DateRanges, the script will skip that update to avoid overwriting good data.
-- You can safely run this script multiple times; it will only update DateRanges that still need fixing.
+- Processes one operating year at a time.
+- Safe to run multiple times; only updates DateRanges still needing fixes.
+- All operations run in a transaction and roll back on errors.

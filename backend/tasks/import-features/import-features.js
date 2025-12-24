@@ -180,12 +180,19 @@ export default async function importStrapiFeatures(transaction = null) {
           continue;
         }
 
-        // Update matched feature
-        await matchedDootFeature.update(dootFeatureToSave, { transaction });
-        console.log(
-          `Updated Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
+        // Check if any values are different
+        const hasChanges = Object.keys(dootFeatureToSave).some(
+          (key) => matchedDootFeature[key] !== dootFeatureToSave[key],
         );
-        updatedCount++;
+
+        if (hasChanges) {
+          // Update matched feature
+          await matchedDootFeature.update(dootFeatureToSave, { transaction });
+          console.log(
+            `Updated Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
+          );
+          updatedCount++;
+        }
       } else if (!useSafeMode) {
         // Create new feature
         await Feature.create(dootFeatureToSave, { transaction });
@@ -213,12 +220,14 @@ export default async function importStrapiFeatures(transaction = null) {
       ) {
         if (!useSafeMode) {
           // Deactivate the DOOT ParkFeature
-          dootParkFeature.active = false;
-          await dootParkFeature.save({ transaction });
-          console.log(
-            `Deactivated Feature: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber})`,
-          );
-          deactivatedCount++;
+          if (dootParkFeature.active) {
+            dootParkFeature.active = false;
+            await dootParkFeature.save({ transaction });
+            console.log(
+              `Deactivated Feature: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber})`,
+            );
+            deactivatedCount++;
+          }
         } else {
           console.warn(
             `Skipped deactivating Feature due to safe mode: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber})`,

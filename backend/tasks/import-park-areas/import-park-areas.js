@@ -130,12 +130,19 @@ export default async function importStrapiParkAreas(transaction = null) {
           continue;
         }
 
-        // Update matched park area
-        await matchedDootParkArea.update(dootParkAreaToSave, { transaction });
-        console.log(
-          `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+        // Check if any values are different
+        const hasChanges = Object.keys(dootParkAreaToSave).some(
+          (key) => matchedDootParkArea[key] !== dootParkAreaToSave[key],
         );
-        updatedCount++;
+
+        if (hasChanges) {
+          // Update matched park area
+          await matchedDootParkArea.update(dootParkAreaToSave, { transaction });
+          console.log(
+            `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+          );
+          updatedCount++;
+        }
       } else if (!useSafeMode) {
         // Create new park area
         await ParkArea.create(dootParkAreaToSave, { transaction });
@@ -161,12 +168,14 @@ export default async function importStrapiParkAreas(transaction = null) {
       if (!strapiOrcsAreaNumbers.has(dootParkArea.strapiOrcsAreaNumber)) {
         if (!useSafeMode) {
           // Deactivate the DOOT ParkArea
-          dootParkArea.active = false;
-          await dootParkArea.save({ transaction });
-          console.log(
-            `Deactivated ParkArea: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,
-          );
-          deactivatedCount++;
+          if (dootParkArea.active) {
+            dootParkArea.active = false;
+            await dootParkArea.save({ transaction });
+            console.log(
+              `Deactivated ParkArea: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,
+            );
+            deactivatedCount++;
+          }
         } else {
           console.warn(
             `Skipped deactivating ParkArea due to safe mode: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,

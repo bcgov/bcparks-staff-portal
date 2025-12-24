@@ -10,9 +10,9 @@ const counts = {
 /**
  * Deletes any existing DateRanges from targetSeason and moves DateRanges
  * from currentSeason to targetSeason.
- * @param {Object} currentSeason - Season with id, feature, parkArea, dateRanges
- * @param {Object} targetSeason - Season with id, feature, parkArea, dateRanges
- * @param {Object} [transaction] - Optional Sequelize transaction
+ * @param {Object} currentSeason Season with id, feature, parkArea, dateRanges
+ * @param {Object} targetSeason Season with id, feature, parkArea, dateRanges
+ * @param {Object} [transaction] Optional Sequelize transaction
  * @returns {Promise<void>}
  */
 async function moveDateRanges(currentSeason, targetSeason, transaction) {
@@ -45,32 +45,139 @@ async function moveDateRanges(currentSeason, targetSeason, transaction) {
     },
   );
 
+  console.log(
+    `Moved DateRanges from seasonId ${currentSeason.id} to seasonId ${targetSeason.id}`,
+  );
+
   counts.updated++;
 }
 
 /**
- * Finds and fixes orphaned DateRanges for the given operating year. DateRanges
- * are considered orphaned if they are associated with Seasons that belong to
- * different publishables for the same dateableId. This can happen when Features
- * are moved in and out of ParkAreas over time. In such cases, the DateRanges
- * should be associated with the Season that matches the current relationship.
- * Only one year of data is processed at a time to limit the scope of changes.
- * Other issues may also be logged, but it only fixes this specific type of issue.
- * @param {number} operatingYear
+ * Fixes orphaned DateRanges for Features where the parkArea relation implied by the
+ * Season's publishableId doesn't match the parkArea relation of the Feature itself,
+ * and moves all DateRanges from the current Season to the correct Season.
+ * @param {number} operatingYear Operating year to process
  * @param {Object} [transaction] Optional Sequelize transaction
  * @returns {Promise<void>}
  */
-export default async function fixOrphanedDateRanges(
+async function fixDateRangesForFeatureParkAreaChanges(
   operatingYear,
   transaction = null,
 ) {
-  if (isNaN(operatingYear)) {
-    console.info(
-      "Usage example: node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2027",
-    );
-    throw new Error("Missing operating year");
-  }
+  // Find Seasons where the associated DateRanges' dateableId belongs to a Feature
+  // whose ParkArea publishableId doesn't match the Season's ParkArea publishableId.
+  const results = await Season.findAll({
+    attributes: [
+      [col("dateRanges.dateableId"), "dateableId"],
+      ["id", "seasonId"],
+      [col("feature.parkArea.publishableId"), "featureParkAreaPublishableId"],
+      [col("parkArea.publishableId"), "seasonParkAreaPublishableId"],
+    ],
+    distinct: true,
+    include: [
+      {
+        model: DateRange,
+        as: "dateRanges",
+        attributes: [],
+        required: true,
+      },
+      {
+        model: Feature,
+        as: "feature",
+        required: false,
+        attributes: [],
+        on: {
+          "$feature.dateableId$": { [Op.eq]: col("dateRanges.dateableId") },
+        },
+        include: [
+          {
+            model: ParkArea,
+            as: "parkArea",
+            required: false,
+            attributes: [],
+          },
+        ],
+      },
+      {
+        model: ParkArea,
+        as: "parkArea",
+        required: false,
+        attributes: [],
+      },
+    ],
+    where: {
+      operatingYear,
+      "$feature.parkArea.publishableId$": { [Op.ne]: null },
+      "$parkArea.publishableId$": {
+        [Op.and]: [
+          { [Op.ne]: null },
+          { [Op.ne]: col("feature.parkArea.publishableId") },
+        ],
+      },
+      "$dateRanges.startDate$": { [Op.ne]: null },
+      "$dateRanges.endDate$": { [Op.ne]: null },
+    },
+    raw: true,
+    transaction,
+  });
 
+  // Look for any DateRanges associated with the seasonPublishableId and the dateableId and
+  // re-assign them to the season associated with the featureParkAreaPublishableId
+  console.log(
+    `Found ${results.length} Seasons with mismatched Feature ParkArea publishableIds for operatingYear ${operatingYear}`,
+  );
+
+  for (const row of results) {
+    const { dateableId, seasonId, featureParkAreaPublishableId } = row;
+
+    // Find the target Season
+    const targetSeason = await Season.findOne({
+      where: {
+        operatingYear,
+        publishableId: featureParkAreaPublishableId,
+      },
+      include: [
+        {
+          model: DateRange,
+          as: "dateRanges",
+          attributes: ["id"],
+          where: {
+            startDate: { [Op.ne]: null },
+            endDate: { [Op.ne]: null },
+          },
+          required: false,
+        },
+      ],
+      transaction,
+    });
+
+    if (!targetSeason) {
+      console.log(
+        `No target Season found for dateableId ${dateableId} with publishableId ${featureParkAreaPublishableId} in operatingYear ${operatingYear}`,
+      );
+      counts.skipped++;
+      continue;
+    }
+
+    // Move DateRanges from the current season to the target season
+    await moveDateRanges({ id: seasonId }, targetSeason, transaction);
+  }
+}
+
+/**
+ * Fixes orphaned DateRanges resulting from Features toggling between standalone
+ * status and being part of a ParkArea. These DateRanges are considered orphaned
+ * if they are associated with Seasons that belong to different publishables for
+ * the same dateableId. In such cases, the DateRanges should be associated with the
+ * Season that matches the current relationship.
+ * @param {number} operatingYear Operating year to process
+ * @param {Object} [transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
+ */
+async function fixDateRangesForFeatureStandaloneToggle(
+  operatingYear,
+  transaction = null,
+) {
   // Find dateableIds that are associated with multiple publishableIds
   // in the same operating year. This is an indication of potential orphaned
   // DateRanges due to changes in Feature/ParkArea relations over time.
@@ -210,6 +317,27 @@ export default async function fixOrphanedDateRanges(
   console.log(
     `Skipped ${counts.skipped} DateRanges for operatingYear ${operatingYear}`,
   );
+}
+
+/**
+ * Fix orphaned DateRanges for a given operating year. Only one year
+ * of data is processed at a time to limit the scope of changes.
+ * @param {number} operatingYear Operating year to process
+ * @param {Object} [transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
+ */
+export default async function fixOrphanedDateRanges(
+  operatingYear,
+  transaction = null,
+) {
+  if (isNaN(operatingYear)) {
+    console.info(
+      "Usage example: node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2027",
+    );
+    throw new Error("Missing operating year");
+  }
+  await fixDateRangesForFeatureParkAreaChanges(operatingYear, transaction);
+  await fixDateRangesForFeatureStandaloneToggle(operatingYear, transaction);
 }
 
 // Run directly
