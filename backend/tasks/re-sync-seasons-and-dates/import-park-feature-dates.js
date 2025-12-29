@@ -11,6 +11,7 @@ import {
   DateType,
 } from "../../models/index.js";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 export async function importParkFeatureDates() {
   const transaction = await Season.sequelize.transaction();
@@ -69,7 +70,7 @@ export async function importParkFeatureDates() {
             operatingYear,
             editable: operatingYear >= currentYear,
             readyToPublish: true,
-            seasonType: "regular",
+            seasonType: SEASON_TYPE.REGULAR,
             status: "published",
           },
           { transaction },
@@ -77,7 +78,7 @@ export async function importParkFeatureDates() {
       } else {
         season.editable = operatingYear >= currentYear;
         season.readyToPublish = true;
-        season.seasonType = "regular";
+        season.seasonType = SEASON_TYPE.REGULAR;
         season.status = "published";
         await season.save({ transaction });
       }

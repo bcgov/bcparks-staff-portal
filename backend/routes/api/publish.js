@@ -25,6 +25,7 @@ import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as FEATURE_TYPE from "../../constants/featureType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
 
 const router = Router();
@@ -61,6 +62,7 @@ function flattenSeasons(seasons) {
       id: season.id,
       parkName: season.parkName,
       operatingYear: season.operatingYear,
+      displayOperatingYear: season.displayOperatingYear,
       parkAreaName: season.parkAreaName,
       readyToPublish: season.readyToPublish,
       publishableType: season.publishableType,
@@ -139,6 +141,7 @@ function groupSeasons(flattened) {
         id: item.id,
         parkName: item.parkName,
         operatingYear: item.operatingYear,
+        displayOperatingYear: item.displayOperatingYear,
         parkAreaName: item.parkAreaName,
         readyToPublish: item.readyToPublish,
         featureNames: item.featureName ? [item.featureName] : [],
@@ -156,14 +159,18 @@ function groupSeasons(flattened) {
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
-    // Get all seasons that are approved and ready to be published
+    // Get all seasons that are approved
     const approvedSeasons = await Season.findAll({
       where: {
         status: STATUS.APPROVED,
-        // TODO: CMS-1153
-        // readyToPublish: true,
       },
-      attributes: ["id", "publishableId", "operatingYear", "readyToPublish"],
+      attributes: [
+        "id",
+        "publishableId",
+        "operatingYear",
+        "readyToPublish",
+        "seasonType",
+      ],
     });
 
     // Return if no seasons found
@@ -243,6 +250,16 @@ router.get(
     const output = approvedSeasons.map((season) => {
       const publishable = publishableMap.get(season.publishableId);
 
+      // Determine displayOperatingYear based on publishable type and season type
+      let displayOperatingYear = season.operatingYear;
+
+      if (publishable?.type === "park") {
+        displayOperatingYear =
+          season.seasonType === SEASON_TYPE.WINTER
+            ? `${season.operatingYear} Winter fee`
+            : `${season.operatingYear} Tiers and gate`;
+      }
+
       if (!publishable) {
         console.warn(
           `No publishable entity found for publishableId: ${season.publishableId}`,
@@ -265,7 +282,7 @@ router.get(
 
       return {
         id: season.id,
-        operatingYear: season.operatingYear,
+        displayOperatingYear,
         readyToPublish: season.readyToPublish,
         publishableType: publishable?.type ?? null,
         publishable: publishable ?? null,
