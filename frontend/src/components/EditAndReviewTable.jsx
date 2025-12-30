@@ -150,12 +150,17 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
   // disable the approve button if a season is already approved, published, or requested by HQ
   const isDisabled = status !== "pending review";
   const { refreshTable } = useContext(RefreshTableContext);
+  const { sendData: sendSave, loading: sendingSave } = useApiPost(
+    `/seasons/${seasonId}/save/`,
+  );
   const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
     `/seasons/${seasonId}/approve/`,
   );
 
   async function approveSeason() {
     try {
+      // Save first, then approve
+      await sendSave({ status: "approved" });
       await sendApprove();
 
       // Refresh the main page data from the API
@@ -175,7 +180,7 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
       label="Approve"
       textColor={color}
       onClick={approveSeason}
-      loading={sendingApprove}
+      loading={sendingSave || sendingApprove}
       disabled={isDisabled}
     />
   );
