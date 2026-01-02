@@ -300,7 +300,6 @@ function FeaturesByFeatureTypeWithAreas({
   featureTypeId,
   park,
   parkAreas,
-  inReservationSystemFilter,
   formPanelHandler,
   featureTypeFilter,
 }) {
@@ -308,11 +307,6 @@ function FeaturesByFeatureTypeWithAreas({
     <>
       {/* 2 - park area level */}
       {parkAreas.map((parkArea) => {
-        // filter out park areas not in reservation system if the filter is applied
-        if (inReservationSystemFilter && !parkArea.inReservationSystem) {
-          return null;
-        }
-
         const regularSeason = parkArea.currentSeason.regular;
 
         return (
@@ -369,26 +363,15 @@ FeaturesByFeatureTypeWithAreas.propTypes = {
   featureTypeId: PropTypes.number.isRequired,
   park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
-  inReservationSystemFilter: PropTypes.bool.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
   featureTypeFilter: PropTypes.func.isRequired,
 };
 
-function FeaturesByFeatureTypeNoAreas({
-  park,
-  features,
-  inReservationSystemFilter,
-  formPanelHandler,
-}) {
+function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
   return (
     <>
       {/* features that don't belong to park area  */}
       {features.map((feature) => {
-        // filter out features not in reservation system if the filter is applied
-        if (inReservationSystemFilter && !feature.inReservationSystem) {
-          return null;
-        }
-
         const regularSeason = feature.currentSeason.regular;
 
         return (
@@ -421,29 +404,21 @@ function FeaturesByFeatureTypeNoAreas({
 FeaturesByFeatureTypeNoAreas.propTypes = {
   park: PropTypes.object.isRequired,
   features: PropTypes.array.isRequired,
-  inReservationSystemFilter: PropTypes.bool.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
 };
 
-function Table({ park, formPanelHandler, inReservationSystemFilter }) {
+function Table({ park, formPanelHandler }) {
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
   const regularSeason = park.currentSeason.regular;
   const winterSeason = park?.currentSeason.winter || {};
-  const isParkInReservationSystem =
-    park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
 
   // Filter function to determine if feature matches current feature type group
   function matchesFeatureTypeGroup(featureTypeId, groupFeatureType) {
     return groupFeatureType === FEATURE_TYPE.UNKNOWN
       ? !FEATURE_TYPE.SORT_ORDER.includes(featureTypeId)
       : featureTypeId === groupFeatureType;
-  }
-
-  // Don't render table if park is filtered out
-  if (inReservationSystemFilter && !isParkInReservationSystem) {
-    return null;
   }
 
   return (
@@ -521,7 +496,6 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
               featureTypeId={featureTypeId}
               park={park}
               parkAreas={parkAreas}
-              inReservationSystemFilter={inReservationSystemFilter}
               formPanelHandler={formPanelHandler}
               featureTypeFilter={matchesFeatureTypeGroup}
             />
@@ -533,7 +507,6 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
                   featureTypeId,
                 ),
               )}
-              inReservationSystemFilter={inReservationSystemFilter}
               formPanelHandler={formPanelHandler}
             />
           </React.Fragment>
@@ -602,21 +575,13 @@ Table.propTypes = {
 
 export default function EditAndReviewTable({
   data,
-  filters,
   onResetFilters,
   formPanelHandler,
 }) {
-  const { isInReservationSystem } = filters;
-
   return (
     <div className="table-responsive">
       {data.map((park) => (
-        <Table
-          key={park.id}
-          park={park}
-          formPanelHandler={formPanelHandler}
-          inReservationSystemFilter={isInReservationSystem}
-        />
+        <Table key={park.id} park={park} formPanelHandler={formPanelHandler} />
       ))}
 
       {data.length === 0 && (
@@ -642,7 +607,6 @@ EditAndReviewTable.propTypes = {
       status: PropTypes.string,
     }),
   ),
-  filters: PropTypes.object,
   onResetFilters: PropTypes.func,
   formPanelHandler: PropTypes.func,
 };
