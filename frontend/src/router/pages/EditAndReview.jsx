@@ -311,7 +311,6 @@ function EditAndReview() {
           <RefreshTableContext.Provider value={{ refreshTable }}>
             <EditAndReviewTable
               data={pageData}
-              filters={filters}
               onResetFilters={resetFilters}
               formPanelHandler={formPanelHandler}
             />

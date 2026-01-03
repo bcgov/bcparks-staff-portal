@@ -55,7 +55,7 @@ export default function FilterStatus({
     // Access Groups (bundles) filter (multi-select)
     if (activeFilters.accessGroups.length) {
       const bundleTags = activeFilters.accessGroups.map((bundle) => ({
-        label: `Access Group: ${bundle.name}`,
+        label: `Bundle: ${bundle.name}`,
 
         remove(filters) {
           updateFilter(

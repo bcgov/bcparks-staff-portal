@@ -279,20 +279,14 @@ function FeaturesByFeatureTypeWithAreas({
   featureTypeId,
   park,
   parkAreas,
-  inReservationSystemFilter,
   formPanelHandler,
   featureTypeFilter,
 }) {
   return (
     <>
       {/* 2 - park area level */}
-      {parkAreas.map((parkArea) => {
-        // filter out park areas not in reservation system if the filter is applied
-        if (inReservationSystemFilter && !parkArea.inReservationSystem) {
-          return null;
-        }
-
-        return (
+      {parkAreas.map(
+        (parkArea) =>
           parkArea.features.some((f) =>
             featureTypeFilter(f.featureType.strapiFeatureTypeId, featureTypeId),
           ) && (
@@ -335,9 +329,8 @@ function FeaturesByFeatureTypeWithAreas({
                   </React.Fragment>
                 ))}
             </React.Fragment>
-          )
-        );
-      })}
+          ),
+      )}
     </>
   );
 }
@@ -346,49 +339,36 @@ FeaturesByFeatureTypeWithAreas.propTypes = {
   featureTypeId: PropTypes.number.isRequired,
   park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
-  inReservationSystemFilter: PropTypes.bool.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
   featureTypeFilter: PropTypes.func.isRequired,
 };
 
-function FeaturesByFeatureTypeNoAreas({
-  park,
-  features,
-  inReservationSystemFilter,
-  formPanelHandler,
-}) {
+function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
   return (
     <>
       {/* features that don't belong to park area  */}
-      {features.map((feature) => {
-        // filter out features not in reservation system if the filter is applied
-        if (inReservationSystemFilter && !feature.inReservationSystem) {
-          return null;
-        }
-
-        return (
-          <React.Fragment key={feature.id}>
-            <StatusTableRow
-              id={feature.id}
-              level="feature"
-              name={`${park.name} - ${feature.name}`}
-              typeName={feature.featureType.name}
-              season={feature.currentSeason}
-              formPanelHandler={() =>
-                formPanelHandler({ ...feature, level: "feature" })
-              }
-            />
-            <DateTypeTableRow
-              groupedDateRanges={feature.groupedDateRanges}
-              currentYear={feature.currentSeason.operatingYear || null}
-            />
-            <DateTableRow
-              groupedDateRanges={feature.groupedDateRanges}
-              currentYear={feature.currentSeason.operatingYear || null}
-            />
-          </React.Fragment>
-        );
-      })}
+      {features.map((feature) => (
+        <React.Fragment key={feature.id}>
+          <StatusTableRow
+            id={feature.id}
+            level="feature"
+            name={`${park.name} - ${feature.name}`}
+            typeName={feature.featureType.name}
+            season={feature.currentSeason}
+            formPanelHandler={() =>
+              formPanelHandler({ ...feature, level: "feature" })
+            }
+          />
+          <DateTypeTableRow
+            groupedDateRanges={feature.groupedDateRanges}
+            currentYear={feature.currentSeason.operatingYear || null}
+          />
+          <DateTableRow
+            groupedDateRanges={feature.groupedDateRanges}
+            currentYear={feature.currentSeason.operatingYear || null}
+          />
+        </React.Fragment>
+      ))}
     </>
   );
 }
@@ -396,27 +376,19 @@ function FeaturesByFeatureTypeNoAreas({
 FeaturesByFeatureTypeNoAreas.propTypes = {
   park: PropTypes.object.isRequired,
   features: PropTypes.array.isRequired,
-  inReservationSystemFilter: PropTypes.bool.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
 };
 
-function Table({ park, formPanelHandler, inReservationSystemFilter }) {
+function Table({ park, formPanelHandler }) {
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
-  const isParkInReservationSystem =
-    park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
 
   // Filter function to determine if feature matches current feature type group
   function matchesFeatureTypeGroup(featureTypeId, groupFeatureType) {
     return groupFeatureType === FEATURE_TYPE.UNKNOWN
       ? !FEATURE_TYPE.SORT_ORDER.includes(featureTypeId)
       : featureTypeId === groupFeatureType;
-  }
-
-  // Don't render table if park is filtered out
-  if (inReservationSystemFilter && !isParkInReservationSystem) {
-    return null;
   }
 
   return (
@@ -454,7 +426,6 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
               featureTypeId={featureTypeId}
               park={park}
               parkAreas={parkAreas}
-              inReservationSystemFilter={inReservationSystemFilter}
               formPanelHandler={formPanelHandler}
               featureTypeFilter={matchesFeatureTypeGroup}
             />
@@ -466,7 +437,6 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
                   featureTypeId,
                 ),
               )}
-              inReservationSystemFilter={inReservationSystemFilter}
               formPanelHandler={formPanelHandler}
             />
           </React.Fragment>
@@ -529,26 +499,17 @@ Table.propTypes = {
     ),
   }),
   formPanelHandler: PropTypes.func.isRequired,
-  inReservationSystemFilter: PropTypes.bool,
 };
 
 export default function EditAndReviewTable({
   data,
-  filters,
   onResetFilters,
   formPanelHandler,
 }) {
-  const { isInReservationSystem } = filters;
-
   return (
     <div className="table-responsive">
       {data.map((park) => (
-        <Table
-          key={park.id}
-          park={park}
-          formPanelHandler={formPanelHandler}
-          inReservationSystemFilter={isInReservationSystem}
-        />
+        <Table key={park.id} park={park} formPanelHandler={formPanelHandler} />
       ))}
 
       {data.length === 0 && (
