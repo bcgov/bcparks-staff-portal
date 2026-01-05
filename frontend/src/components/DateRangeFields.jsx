@@ -182,10 +182,9 @@ export default function DateRangeFields({
     }
   }
 
-  // Min and max dates for the date picker control:
-  // Jan 1 of the season's operating year to Dec 31 of the next year
-  const minDate = new Date(operatingYear, 0, 1); // Jan 1
-  const maxDate = new Date(operatingYear + 1, 11, 31); // Dec 31 of the next year
+  // Min and max dates for the date picker control
+  const minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
+  const maxDate = new Date(operatingYear + 1, 11, 31); // Dec 31 of the year after that
 
   return (
     <>
