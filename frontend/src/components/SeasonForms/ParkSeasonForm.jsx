@@ -251,6 +251,7 @@ export default function ParkSeasonForm({
               dateableId={park.dateableId}
               dateType={dateType}
               dateRanges={datesByType[dateType.name] ?? []}
+              operatingYear={season.operatingYear}
               updateDateRange={updateDateRange}
               addDateRange={addDateRange}
               removeDateRange={removeDateRange}
@@ -299,6 +300,7 @@ export default function ParkSeasonForm({
             updateDateRangeAnnual={updateDateRangeAnnual}
             previousDateRanges={previousDatesByType?.["Park gate open"] ?? []}
             level={"park"}
+            operatingYear={season.operatingYear}
           />
         </>
       )}

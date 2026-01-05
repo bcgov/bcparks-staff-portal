@@ -3,7 +3,7 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 import { sortBy } from "lodash-es";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
-import { startOfYear, endOfYear, addYears, addDays } from "date-fns";
+import { addDays } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Form from "react-bootstrap/Form";
 
@@ -20,16 +20,13 @@ function DateRange({
   removeDateRange,
   removable = true,
   isDateRangeAnnual,
+  minDate,
+  maxDate,
 }) {
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
   const { elements } = useValidationContext();
-
-  // Min and max dates: Jan 1 of next year and Dec 31 of the year after next
-  // @TODO: Update this when validation is implemented
-  const minDate = useMemo(() => startOfYear(addYears(new Date(), 1)), []);
-  const maxDate = useMemo(() => endOfYear(addYears(new Date(), 2)), []);
 
   // Call the update method from the parent
   function onSelect(dateField, dateObj) {
@@ -117,6 +114,8 @@ DateRange.propTypes = {
   // Allow removal only if it's not the first date range
   removable: PropTypes.bool,
   isDateRangeAnnual: PropTypes.bool.isRequired,
+  minDate: PropTypes.instanceOf(Date).isRequired,
+  maxDate: PropTypes.instanceOf(Date).isRequired,
 };
 
 export default function DateRangeFields({
@@ -126,6 +125,7 @@ export default function DateRangeFields({
   removeDateRange,
   addDateRange,
   dateType,
+  operatingYear,
   dateRangeAnnuals,
   updateDateRangeAnnual,
   optional = false,
@@ -182,6 +182,11 @@ export default function DateRangeFields({
     }
   }
 
+  // Min and max dates for the date picker control:
+  // Jan 1 of the season's operating year to Dec 31 of the next year
+  const minDate = new Date(operatingYear, 0, 1); // Jan 1
+  const maxDate = new Date(operatingYear + 1, 11, 31); // Dec 31 of the next year
+
   return (
     <>
       {[...dateRanges]
@@ -194,6 +199,8 @@ export default function DateRangeFields({
             removeDateRange={removeDateRange}
             removable={optional || index > 0}
             isDateRangeAnnual={isDateRangeAnnual}
+            minDate={minDate}
+            maxDate={maxDate}
           />
         ))}
 
@@ -252,6 +259,7 @@ DateRangeFields.propTypes = {
     name: PropTypes.string.isRequired,
     displayName: PropTypes.string,
   }).isRequired,
+  operatingYear: PropTypes.number.isRequired,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
   optional: PropTypes.bool,
