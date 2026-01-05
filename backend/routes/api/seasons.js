@@ -1075,7 +1075,7 @@ router.post(
             dateRanges: winterDateRanges,
             dateRangeAnnuals: winterSeason.dateRangeAnnuals || [],
             gateDetail: null, // Winter season doesn't have gate details
-            deletedDateRangeIds: [], // Handle winter deletions if needed
+            deletedDateRangeIds: winterSeason.deletedDateRangeIds || [],
             newStatus,
             newReadyToPublish: isApprover ? winterSeason.readyToPublish : null,
             notes: "",
