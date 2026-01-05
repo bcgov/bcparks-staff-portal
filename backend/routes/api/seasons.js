@@ -392,12 +392,12 @@ async function getParkDates(park, operatingYear) {
 }
 
 /**
- * Returns the current winter season for a park if it has winter fee dates enabled.
+ * Returns the winter season for a park if it has winter fee dates enabled.
  * @param {Object} park Park model with hasWinterFeeDates and publishableId
  * @param {number} operatingYear Operating year for the Seasons
  * @returns {Promise<Object|null>} The winter season object with all related data, or null
  */
-async function getCurrentWinterSeason(park, operatingYear) {
+async function getWinterSeason(park, operatingYear) {
   if (!park.hasWinterFeeDates) {
     return null;
   }
@@ -557,9 +557,9 @@ async function saveSeasonData({
       transaction,
     });
 
-    const datesToUpdateByid = _.keyBy(dateRanges, "id");
+    const datesToUpdateById = _.keyBy(dateRanges, "id");
     const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
-      const newDateRange = datesToUpdateByid[oldDateRange.id];
+      const newDateRange = datesToUpdateById[oldDateRange.id];
 
       return {
         dateRangeId: oldDateRange.id,
@@ -935,12 +935,12 @@ router.get(
     });
 
     // Get the current winter season for the same operating year
-    const currentWinterSeason = await getCurrentWinterSeason(
+    const currentWinterSeason = await getWinterSeason(
       park,
       seasonModel.operatingYear,
     );
 
-    const previousWinterSeason = await getCurrentWinterSeason(
+    const previousWinterSeason = await getWinterSeason(
       park,
       seasonModel.operatingYear - 1,
     );
