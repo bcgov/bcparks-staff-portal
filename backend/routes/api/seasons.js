@@ -542,7 +542,7 @@ router.get(
 
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel, {
-      [Op.or]: [{ parkAreaLevel: true }, { featureLevel: true }],
+      featureLevel: true,
     });
 
     // Include all DateTypes for the Feature level

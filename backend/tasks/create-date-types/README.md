@@ -29,9 +29,7 @@ node tasks/create-date-types/create-date-types.js
   export const dateTypesData = [
     {
       name: "Winter fee",
-      level: ["park"],
-      startDateLabel: "Start",
-      endDateLabel: "End",
+      level: ["park", "feature"],
       description: "Winter fee period",
       strapiDateTypeId: 123,
     },

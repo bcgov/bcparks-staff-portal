@@ -14,16 +14,13 @@ Imports and updates `DateType` records from Strapi's `park-date-type` collection
 
 **Data mapping:**
 
-| Strapi Field     | DOOT Field         | Notes                        |
-| ---------------- | ------------------ | ---------------------------- |
-| `dateType`       | `name`             | Date type name               |
-| `dateTypeId`     | `strapiDateTypeId` | Well known key               |
-| `description`    | `description`      | Date type description        |
-| `parkAreaLevel`  | `parkAreaLevel`    | Defaults to false if not set |
-| `featureLevel`   | `featureLevel`     | Defaults to false if not set |
-| `parkLevel`      | `parkLevel`        | Defaults to false if not set |
-| `startDateLabel` | `startDateLabel`   | Label for start date field   |
-| `endDateLabel`   | `endDateLabel`     | Label for end date field     |
+| Strapi Field   | DOOT Field         | Notes                        |
+| -------------- | ------------------ | ---------------------------- |
+| `dateType`     | `name`             | Date type name               |
+| `dateTypeId`   | `strapiDateTypeId` | Well known key               |
+| `description`  | `description`      | Date type description        |
+| `featureLevel` | `featureLevel`     | Defaults to false if not set |
+| `parkLevel`    | `parkLevel`        | Defaults to false if not set |
 
 ## Transaction Safety
 

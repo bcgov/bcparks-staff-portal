@@ -16,17 +16,9 @@ export async function createDateTypes(transaction = null) {
   try {
     for (const entry of dateTypesData) {
       // determine boolean fields based on level array
-      const {
-        name,
-        level,
-        startDateLabel,
-        endDateLabel,
-        description,
-        strapiDateTypeId,
-      } = entry;
+      const { name, level, description, strapiDateTypeId } = entry;
       const parkLevel = level?.includes("park") || false;
       const featureLevel = level?.includes("feature") || false;
-      const parkAreaLevel = level?.includes("parkArea") || false;
 
       // Skip entries without strapiDateTypeId
       if (!strapiDateTypeId) {
@@ -48,12 +40,9 @@ export async function createDateTypes(transaction = null) {
         dateType = await DateType.create(
           {
             name,
-            startDateLabel,
-            endDateLabel,
             description,
             parkLevel,
             featureLevel,
-            parkAreaLevel,
             strapiDateTypeId,
           },
           { transaction: localTransaction },
@@ -66,12 +55,9 @@ export async function createDateTypes(transaction = null) {
         await dateType.update(
           {
             name,
-            startDateLabel,
-            endDateLabel,
             description,
             parkLevel,
             featureLevel,
-            parkAreaLevel,
           },
           { transaction: localTransaction },
         );

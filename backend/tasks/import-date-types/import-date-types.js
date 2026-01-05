@@ -56,11 +56,8 @@ export default async function importStrapiDateTypes(transaction = null) {
         name: dateType,
         strapiDateTypeId: dateTypeId,
         description: strapiDateType.description,
-        parkAreaLevel: strapiDateType.parkAreaLevel || false,
         featureLevel: strapiDateType.featureLevel || false,
         parkLevel: strapiDateType.parkLevel || false,
-        startDateLabel: strapiDateType.startDateLabel,
-        endDateLabel: strapiDateType.endDateLabel,
       };
 
       if (matchedDateType) {
