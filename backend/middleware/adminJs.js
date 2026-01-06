@@ -8,6 +8,7 @@ import session from "express-session";
 import { Op } from "sequelize";
 import flat from "flat";
 import * as STATUS from "../constants/seasonStatus.js";
+import * as SEASON_TYPE from "../constants/seasonType.js";
 import "../env.js";
 
 import {
@@ -100,7 +101,7 @@ function getSeasonActions() {
             {
               where: {
                 status: STATUS.REQUESTED,
-                seasonType: "winter",
+                seasonType: SEASON_TYPE.WINTER,
                 operatingYear: currentYear,
               },
             },

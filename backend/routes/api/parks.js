@@ -17,6 +17,7 @@ import {
 import asyncHandler from "express-async-handler";
 import checkUserRoles from "../../utils/checkUserRoles.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 // Constants
 const router = Router();
@@ -30,6 +31,7 @@ function seasonModel(minYear, required = true) {
       "id",
       "publishableId",
       "status",
+      "seasonType",
       "readyToPublish",
       "operatingYear",
     ],
@@ -132,10 +134,24 @@ function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
 
 // build a current season object
 function buildCurrentSeasonOutput(seasons) {
-  if (!seasons || seasons.length === 0) return null;
+  if (!seasons || seasons.length === 0) return { regular: null, winter: null };
 
-  // find the most recent season (highest operatingYear)
-  return _.maxBy(seasons, "operatingYear") || null;
+  // group seasons by seasonType
+  const seasonsByType = _.groupBy(seasons, "seasonType");
+
+  // find the most recent season (highest operatingYear) for each type
+  const regularSeason = seasonsByType.regular
+    ? _.maxBy(seasonsByType.regular, "operatingYear")
+    : null;
+
+  const winterSeason = seasonsByType.winter
+    ? _.maxBy(seasonsByType.winter, "operatingYear")
+    : null;
+
+  return {
+    regular: regularSeason,
+    winter: winterSeason,
+  };
 }
 
 // get all date ranges from seasons
@@ -193,9 +209,6 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     (dateRange) => !excludedDateTypes.has(dateRange.dateType?.name),
   );
 
-  // get a current season
-  const currentSeason = buildCurrentSeasonOutput(feature.seasons);
-
   const output = {
     id: feature.id,
     dateableId: feature.dateableId,
@@ -215,7 +228,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
   };
 
   if (includeCurrentSeason) {
-    output.currentSeason = currentSeason;
+    output.currentSeason = buildCurrentSeasonOutput(feature.seasons);
   }
 
   return output;
@@ -375,8 +388,13 @@ router.get(
     });
 
     const output = parks.map((park) => {
+      const [regularSeasons, winterSeasons] = _.partition(
+        park.seasons,
+        (season) => season.seasonType === SEASON_TYPE.REGULAR,
+      );
       // get date ranges for park
-      const parkDateRanges = getAllDateRanges(park.seasons);
+      const parkDateRanges = getAllDateRanges(regularSeasons);
+      const parkWinterDateRanges = getAllDateRanges(winterSeasons);
       // get hasGate for park
       const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
@@ -402,6 +420,8 @@ router.get(
           parkDateRanges,
           parkHasGate,
         ),
+        winterGroupedDateRanges:
+          groupDateRangesByTypeAndYear(parkWinterDateRanges),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, feature.seasons, true),
         ),
@@ -421,6 +441,7 @@ router.get(
               season.readyToPublish,
             ),
           ),
+          seasonType: season.seasonType,
         })),
       };
     });

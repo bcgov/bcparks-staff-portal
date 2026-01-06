@@ -5,6 +5,7 @@ import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import {
   getAllDateTypes,
   getDateTypesForFeature,
@@ -259,6 +260,7 @@ const SEASON_ATTRIBUTES = [
   "readyToPublish",
   "editable",
   "publishableId",
+  "seasonType",
 ];
 
 /**
@@ -387,6 +389,225 @@ async function getParkDates(park, operatingYear) {
     parkTier2Dates,
     parkWinterDates,
   };
+}
+
+/**
+ * Returns the winter season for a park if it has winter fee dates enabled.
+ * @param {Object} park Park model with hasWinterFeeDates and publishableId
+ * @param {number} operatingYear Operating year for the Seasons
+ * @returns {Promise<Object|null>} The winter season object with all related data, or null
+ */
+async function getWinterSeason(park, operatingYear) {
+  if (!park.hasWinterFeeDates) {
+    return null;
+  }
+
+  // Find the winter season ID
+  const winterSeasonLookup = await Season.findOne({
+    attributes: ["id"],
+    where: {
+      publishableId: park.publishableId,
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
+    },
+  });
+
+  if (!winterSeasonLookup) {
+    return null;
+  }
+
+  const winterSeason = await Season.findByPk(winterSeasonLookup.id, {
+    attributes: SEASON_ATTRIBUTES,
+    include: [
+      {
+        model: Park,
+        as: "park",
+        include: [
+          // Park-level dates for this winter season
+          dateableAndDatesQueryPart(winterSeasonLookup.id),
+        ],
+      },
+
+      changeLogsQueryPart(),
+    ],
+  });
+
+  if (!winterSeason) {
+    return null;
+  }
+
+  // Get DateRangeAnnuals and GateDetail for winter season
+  const dateRangeAnnuals = await getDateRangeAnnuals(
+    winterSeason.publishableId,
+  );
+
+  return {
+    ...winterSeason.toJSON(),
+    dateRangeAnnuals,
+  };
+}
+
+/**
+ * Saves season data (regular or winter season)
+ * @param {Object} params Parameters for saving season data
+ * @param {Season} params.season The season model instance
+ * @param {Array} params.dateRanges Array of date ranges to save
+ * @param {Array} params.dateRangeAnnuals Array of date range annuals to save
+ * @param {Object|null} params.gateDetail Gate detail object (null for winter seasons)
+ * @param {Array} params.deletedDateRangeIds Array of date range IDs to delete
+ * @param {string} params.newStatus New status for the season
+ * @param {boolean|null} params.newReadyToPublish New readyToPublish value
+ * @param {string} params.notes Notes for the change log
+ * @param {number} params.userId User ID making the changes
+ * @param {Transaction} params.transaction Database transaction
+ * @param {boolean} params.isWinterSeason Whether this is a winter season
+ * @returns {Promise<void>}
+ */
+async function saveSeasonData({
+  season,
+  dateRanges,
+  dateRangeAnnuals,
+  gateDetail,
+  deletedDateRangeIds,
+  newStatus,
+  newReadyToPublish,
+  notes,
+  userId,
+  transaction,
+  isWinterSeason = false,
+}) {
+  // Calculate the actual new readyToPublish value
+  const actualNewReadyToPublish = newReadyToPublish ?? season.readyToPublish;
+
+  // dateRangeAnnuals
+  const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
+    (dateRangeAnnual) => ({
+      id: dateRangeAnnual.id,
+      dateTypeId: dateRangeAnnual.dateType?.id,
+      publishableId: season.publishableId,
+      dateableId: dateRangeAnnual.dateableId,
+      isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
+    }),
+  );
+
+  // Upsert dateRangeAnnuals
+  const saveDateRangeAnnuals = DateRangeAnnual.bulkCreate(
+    dateRangeAnnualsToSave,
+    {
+      updateOnDuplicate: ["isDateRangeAnnual", "updatedAt"],
+      transaction,
+    },
+  );
+
+  // Handle gateDetail for regular seasons only
+  let saveGateDetail = Promise.resolve();
+  let oldGateDetail = null;
+  let gateDetailToSave = null;
+
+  if (!isWinterSeason && gateDetail) {
+    oldGateDetail = await getGateDetail(season.publishableId);
+    gateDetailToSave = {
+      ...gateDetail,
+      publishableId: season.publishableId,
+    };
+
+    saveGateDetail = GateDetail.upsert(gateDetailToSave, {
+      transaction,
+    });
+  }
+
+  // Create season change log with the notes
+  const seasonChangeLog = await SeasonChangeLog.create(
+    {
+      seasonId: season.id,
+      userId,
+      notes,
+      statusOldValue: season.status,
+      statusNewValue: newStatus,
+      readyToPublishOldValue: season.readyToPublish,
+      readyToPublishNewValue: actualNewReadyToPublish,
+      gateDetailOldValue: oldGateDetail,
+      gateDetailNewValue: gateDetailToSave,
+    },
+    { transaction },
+  );
+
+  // Update the season object with the new status and readyToPublish values
+  const saveSeason = updateStatus(
+    season.id,
+    newStatus,
+    newReadyToPublish,
+    transaction,
+  );
+
+  // Create date change logs for updated dateRanges
+  const existingDateIds = dateRanges
+    .filter((date) => date.id)
+    .map((date) => date.id);
+
+  let createChangeLogs = Promise.resolve();
+
+  if (existingDateIds.length > 0) {
+    const existingDateRows = await DateRange.findAll({
+      where: {
+        id: {
+          [Op.in]: existingDateIds,
+        },
+      },
+      transaction,
+    });
+
+    const datesToUpdateById = _.keyBy(dateRanges, "id");
+    const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
+      const newDateRange = datesToUpdateById[oldDateRange.id];
+
+      return {
+        dateRangeId: oldDateRange.id,
+        seasonChangeLogId: seasonChangeLog.id,
+        startDateOldValue: oldDateRange.startDate,
+        startDateNewValue: newDateRange.startDate,
+        endDateOldValue: oldDateRange.endDate,
+        endDateNewValue: newDateRange.endDate,
+      };
+    });
+
+    createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate, {
+      transaction,
+    });
+  }
+
+  // Update or create dateRanges
+  let updateDates = Promise.resolve();
+
+  if (dateRanges.length > 0) {
+    updateDates = DateRange.bulkCreate(dateRanges, {
+      updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
+      transaction,
+    });
+  }
+
+  // Delete dateRanges removed by the user
+  let deleteDates = Promise.resolve();
+
+  if (deletedDateRangeIds.length > 0) {
+    deleteDates = DateRange.destroy({
+      where: {
+        id: {
+          [Op.in]: deletedDateRangeIds,
+        },
+      },
+      transaction,
+    });
+  }
+
+  await Promise.all([
+    saveSeason,
+    updateDates,
+    createChangeLogs,
+    deleteDates,
+    saveDateRangeAnnuals,
+    saveGateDetail,
+  ]);
 }
 
 // Get all form data and DateRanges for a Feature Season
@@ -713,6 +934,24 @@ router.get(
       parkLevel: true,
     });
 
+    // Get the current winter season for the same operating year
+    const currentWinterSeason = await getWinterSeason(
+      park,
+      seasonModel.operatingYear,
+    );
+
+    const previousWinterSeason = await getWinterSeason(
+      park,
+      seasonModel.operatingYear - 1,
+    );
+
+    const previousWinterSeasonDates = previousWinterSeason?.park?.dateable
+      ?.dateRanges
+      ? previousWinterSeason.park.dateable.dateRanges.filter(
+          (dateRange) => dateRange.startDate && dateRange.endDate, // Filter out blank ranges
+        )
+      : [];
+
     // Include all DateTypes for this Season level
     const dateTypesArray = await getAllDateTypes({
       parkLevel: true,
@@ -744,6 +983,8 @@ router.get(
     const output = {
       current: currentSeason,
       previous: previousSeason,
+      currentWinter: currentWinterSeason,
+      previousWinter: previousWinterSeasonDates,
       dateTypes: orderedDateTypes,
       icon: null,
       featureTypeName: null,
@@ -767,6 +1008,7 @@ router.post(
       dateRangeAnnuals = [],
       gateDetail = {},
       status,
+      winterSeason = null,
     } = req.body;
     let { readyToPublish } = req.body;
 
@@ -799,121 +1041,50 @@ router.post(
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
 
-      // dateRangeAnnuals
-      const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
-        (dateRangeAnnual) => ({
-          id: dateRangeAnnual.id,
-          dateTypeId: dateRangeAnnual.dateType?.id,
-          publishableId: season.publishableId,
-          dateableId: dateRangeAnnual.dateableId,
-          isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
-        }),
-      );
-
-      // Upsert dateRangeAnnuals
-      const saveDateRangeAnnuals = DateRangeAnnual.bulkCreate(
-        dateRangeAnnualsToSave,
-        {
-          updateOnDuplicate: ["isDateRangeAnnual", "updatedAt"],
-          transaction,
-        },
-      );
-
-      // gateDetail
-      const oldGateDetail = await getGateDetail(season.publishableId);
-
-      const gateDetailToSave = {
-        ...gateDetail,
-        publishableId: season.publishableId,
-      };
-
-      // Upsert gateDetail
-      const saveGateDetail = GateDetail.upsert(gateDetailToSave, {
-        transaction,
-      });
-
-      // Create season change log with the notes
-      const seasonChangeLog = await SeasonChangeLog.create(
-        {
-          seasonId,
-          userId: req.user.id,
-          notes,
-          statusOldValue: season.status,
-          statusNewValue: newStatus,
-          readyToPublishOldValue: season.readyToPublish,
-          readyToPublishNewValue: newReadyToPublish,
-          gateDetailOldValue: oldGateDetail,
-          gateDetailNewValue: gateDetailToSave,
-        },
-        { transaction },
-      );
-
-      // Update the season object with the new status and readyToPublish values
-      const saveSeason = updateStatus(
-        seasonId,
+      // Process regular season data
+      await saveSeasonData({
+        season,
+        dateRanges,
+        dateRangeAnnuals,
+        gateDetail,
+        deletedDateRangeIds,
         newStatus,
-        readyToPublish,
-        transaction,
-      );
-
-      // Create date change logs for updated dateRanges
-      const existingDateIds = dateRanges
-        .filter((date) => date.id)
-        .map((date) => date.id);
-      const existingDateRows = await DateRange.findAll({
-        where: {
-          id: {
-            [Op.in]: existingDateIds,
-          },
-        },
-
+        newReadyToPublish,
+        notes,
+        userId: req.user.id,
         transaction,
       });
 
-      const datesToUpdateByid = _.keyBy(dateRanges, "id");
-      const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
-        const newDateRange = datesToUpdateByid[oldDateRange.id];
+      // Process winter season data if provided
+      if (winterSeason) {
+        const winterSeasonModel = await Season.findByPk(winterSeason.id, {
+          transaction,
+        });
 
-        return {
-          dateRangeId: oldDateRange.id,
-          seasonChangeLogId: seasonChangeLog.id,
-          startDateOldValue: oldDateRange.startDate,
-          startDateNewValue: newDateRange.startDate,
-          endDateOldValue: oldDateRange.endDate,
-          endDateNewValue: newDateRange.endDate,
-        };
-      });
+        if (winterSeasonModel) {
+          // Add seasonId to winter dateRanges
+          const winterDateRanges = (winterSeason.dateRanges || []).map(
+            (dateRange) => ({
+              ...dateRange,
+              seasonId: winterSeason.id,
+            }),
+          );
 
-      const createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate, {
-        transaction,
-      });
-
-      // Update or create dateRanges
-      const updateDates = DateRange.bulkCreate(dateRanges, {
-        updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
-
-        transaction,
-      });
-
-      // Delete dateRanges removed by the user
-      const deleteDates = DateRange.destroy({
-        where: {
-          id: {
-            [Op.in]: deletedDateRangeIds,
-          },
-        },
-
-        transaction,
-      });
-
-      await Promise.all([
-        saveSeason,
-        updateDates,
-        createChangeLogs,
-        deleteDates,
-        saveDateRangeAnnuals,
-        saveGateDetail,
-      ]);
+          await saveSeasonData({
+            season: winterSeasonModel,
+            dateRanges: winterDateRanges,
+            dateRangeAnnuals: winterSeason.dateRangeAnnuals || [],
+            gateDetail: null, // Winter season doesn't have gate details
+            deletedDateRangeIds: winterSeason.deletedDateRangeIds || [],
+            newStatus,
+            newReadyToPublish: isApprover ? winterSeason.readyToPublish : null,
+            notes: "",
+            userId: req.user.id,
+            transaction,
+            isWinterSeason: true,
+          });
+        }
+      }
 
       await transaction.commit();
       res.sendStatus(200);
@@ -934,7 +1105,35 @@ router.post(
     const transaction = await sequelize.transaction();
 
     try {
+      const season = await Season.findByPk(seasonId, {
+        include: [{ model: Park, as: "park" }],
+        transaction,
+      });
+
+      checkSeasonExists(season);
+
       await updateStatus(seasonId, STATUS.APPROVED, null, transaction);
+
+      // If this park has winter fee dates, find and approve the winter season too
+      if (season.park.hasWinterFeeDates) {
+        const winterSeason = await Season.findOne({
+          where: {
+            publishableId: season.publishableId,
+            operatingYear: season.operatingYear,
+            seasonType: SEASON_TYPE.WINTER,
+          },
+          transaction,
+        });
+
+        if (winterSeason) {
+          await updateStatus(
+            winterSeason.id,
+            STATUS.APPROVED,
+            null,
+            transaction,
+          );
+        }
+      }
 
       // @TODO: Uncomment after revising the logic for FCFS
       // await createFirstComeFirstServedDateRange(seasonId, transaction);
