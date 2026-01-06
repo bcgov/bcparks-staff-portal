@@ -507,8 +507,8 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
                   isWinterSeason={true}
                 />
                 <DateTableRow
-                  groupedDateRanges={park.groupedDateRanges}
-                  currentYear={regularSeason.operatingYear}
+                  groupedDateRanges={park.winterGroupedDateRanges}
+                  currentYear={winterSeason.operatingYear || null}
                 />
               </>
             )}
