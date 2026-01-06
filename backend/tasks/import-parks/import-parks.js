@@ -23,7 +23,7 @@ async function createManagementAreaLookup(transaction) {
       {
         name: section.name,
         number: section.sectionNumber,
-        id: section.id, // this uses to be called strapiId but I don't think it was used anywhere
+        id: section.id, // this used to be called strapiId but I don't think it was used anywhere
       },
     ]),
   );
@@ -40,7 +40,7 @@ async function createManagementAreaLookup(transaction) {
         mgmtArea: {
           name: ma.name,
           number: ma.managementAreaNumber,
-          id: ma.id, // this uses to be called strapiId but I don't think it was used anywhere
+          id: ma.id, // this used to be called strapiId but I don't think it was used anywhere
         },
         section: sectionLookup.get(ma.sectionId),
       },
