@@ -107,5 +107,5 @@ export async function syncData() {
   await importStrapiFeatureTypes(transaction);
   await importStrapiFeatures(transaction);
 
-  transaction.commit();
+  await transaction.commit();
 }
