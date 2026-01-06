@@ -6,6 +6,7 @@ import importStrapiParkAreas from "../tasks/import-park-areas/import-park-areas.
 import importStrapiFeatureTypes from "../tasks/import-feature-types/import-feature-types.js";
 import importStrapiFeatures from "../tasks/import-features/import-features.js";
 import importStrapiProtectedAreas from "../tasks/import-parks/import-parks.js";
+import importStrapiDateTypes from "../tasks/import-date-types/import-date-types.js";
 
 /**
  * For the section in Strapi, create a new section or update its corresponding existing section
@@ -100,6 +101,7 @@ export async function syncData() {
 
   const transaction = await Park.sequelize.transaction();
 
+  await importStrapiDateTypes(transaction);
   await importStrapiProtectedAreas(transaction);
   await importStrapiParkAreas(transaction);
   await importStrapiFeatureTypes(transaction);

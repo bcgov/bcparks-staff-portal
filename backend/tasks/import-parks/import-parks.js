@@ -162,6 +162,8 @@ export default async function importStrapiProtectedAreas(transaction = null) {
 
           console.log(`Updated Park: ${protectedAreaName} (orcs: ${orcs})`);
           updatedCount++;
+        } else {
+          skippedCount++;
         }
       } else {
         // Create new park area

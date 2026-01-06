@@ -124,7 +124,7 @@ export default async function importStrapiParkAreas(transaction = null) {
               `This park area is active in Strapi but inactive in DOOT. To reactivate, ` +
               `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
               `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
-              `result in linking new park areas to previously deactivated data.`,
+              `result in linking new park areas to previously deactivated data.\n`,
           );
           skippedCount++;
           continue;

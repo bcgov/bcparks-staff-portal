@@ -64,6 +64,16 @@ export default async function importStrapiFeatureTypes(transaction = null) {
       };
 
       if (matchedFeatureType) {
+        // check if any fields have changed
+        const hasChanges = Object.keys(featureTypeToSave).some(
+          (key) => matchedFeatureType[key] !== featureTypeToSave[key],
+        );
+
+        if (!hasChanges) {
+          skippedCount++;
+          continue;
+        }
+
         // Update matched feature type
         await matchedFeatureType.update(featureTypeToSave, { transaction });
         console.log(
