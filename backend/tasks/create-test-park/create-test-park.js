@@ -17,9 +17,9 @@ const transaction = await Park.sequelize.transaction();
 
 // for testing: roll back transaction
 process.on("uncaughtException", (err) => {
-  console.error(err);
+  console.error(`\n${err.message}\n`);
   transaction?.rollback();
-  throw new Error(err);
+  throw err;
 });
 
 // Create new Publishable and Dateable records for the test Park
