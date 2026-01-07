@@ -64,8 +64,11 @@ export function checkParkSoft(park, filters) {
   // Filter by status
   if (filters.status.length) {
     if (
-      !park.currentSeason ||
-      !filters.status.includes(park.currentSeason.status)
+      // Filter out if the regular season status doesn't match, and
+      !filters.status.includes(park.currentSeason.regular.status) &&
+      // the winter season's status also doesn't match (or there is no winter season)
+      (!park.currentSeason.winter ||
+        !filters.status.includes(park.currentSeason.winter.status))
     ) {
       return false;
     }
@@ -131,11 +134,10 @@ export function getMatchingAreas(parkAreas, filters) {
 
     // Filter by status
     if (filters.status.length) {
-      // If currentSeason is missing or none of the statuses match, filter out
-      if (
-        !parkArea.currentSeason ||
-        !filters.status.includes(parkArea.currentSeason.status)
-      ) {
+      if (!parkArea.currentSeason.regular) return false;
+
+      // If none of the statuses match, filter out
+      if (!filters.status.includes(parkArea.currentSeason.regular.status)) {
         return false;
       }
     }
@@ -221,10 +223,10 @@ export function getMatchingFeatures(features, filters) {
   return features.filter((feature) => {
     // Filter by status
     if (filters.status.length) {
-      if (!feature.currentSeason) return false;
+      if (!feature.currentSeason.regular) return false;
 
       // If none of the statuses match, filter out
-      if (!filters.status.includes(feature.currentSeason.status)) {
+      if (!filters.status.includes(feature.currentSeason.regular.status)) {
         return false;
       }
     }
