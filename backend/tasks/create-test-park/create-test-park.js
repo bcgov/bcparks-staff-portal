@@ -113,6 +113,9 @@ for (const featureType of featureTypes) {
   );
 
   // 3. Create 2 Features within the ParkArea
+  const areaFeatureDateable1 = await Dateable.create({}, { transaction });
+  const areaFeatureDateable2 = await Dateable.create({}, { transaction });
+
   await Feature.bulkCreate(
     [
       {
@@ -120,7 +123,7 @@ for (const featureType of featureTypes) {
         parkId: park.id,
         strapiFeatureId: null,
         featureTypeId: featureType.id,
-        dateableId: featureDateable.id,
+        dateableId: areaFeatureDateable1.id,
         publishableId: null,
         hasReservations: true,
         parkAreaId: parkArea.id,
@@ -135,7 +138,7 @@ for (const featureType of featureTypes) {
         parkId: park.id,
         strapiFeatureId: null,
         featureTypeId: featureType.id,
-        dateableId: featureDateable.id,
+        dateableId: areaFeatureDateable2.id,
         publishableId: null,
         hasReservations: true,
         parkAreaId: parkArea.id,
