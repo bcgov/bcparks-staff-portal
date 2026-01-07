@@ -21,8 +21,6 @@ export default (sequelize) => {
   DateType.init(
     {
       name: DataTypes.STRING,
-      startDateLabel: DataTypes.STRING,
-      endDateLabel: DataTypes.STRING,
       description: DataTypes.TEXT,
 
       parkLevel: {
@@ -32,12 +30,6 @@ export default (sequelize) => {
       },
 
       featureLevel: {
-        type: DataTypes.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
-      },
-
-      parkAreaLevel: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
         defaultValue: false,

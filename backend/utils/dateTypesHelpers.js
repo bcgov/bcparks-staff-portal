@@ -1,5 +1,5 @@
 import { DateType } from "../models/index.js";
-import * as DATE_TYPE from "../constants/dateType.js"
+import * as DATE_TYPE from "../constants/dateType.js";
 
 /**
  * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
@@ -15,7 +15,6 @@ export async function getAllDateTypes(where = {}, transaction = null) {
       "strapiDateTypeId",
       "description",
       "parkLevel",
-      "parkAreaLevel",
       "featureLevel",
     ],
 
@@ -65,7 +64,9 @@ export function getDateTypesForFeature(feature, dateTypesByDateTypeId) {
     orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.RESERVATION]);
   }
   if (feature.hasBackcountryPermits) {
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.BACKCOUNTRY_REGISTRATION]);
+    orderedDateTypes.push(
+      dateTypesByDateTypeId[DATE_TYPE.BACKCOUNTRY_REGISTRATION],
+    );
   }
 
   return orderedDateTypes;

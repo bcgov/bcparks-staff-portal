@@ -6,6 +6,7 @@ const connectionConfig = {
   host: process.env.POSTGRES_SERVER,
   port: process.env.POSTGRES_PORT || 5432,
   dialect: "postgres",
+  logging: process.env.SEQUELIZE_LOGGING === "true",
 };
 
 export default {
