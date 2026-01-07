@@ -30,7 +30,7 @@ const dateable = await Dateable.create({}, { transaction });
 const park = await Park.create(
   {
     name: "Test Park",
-    orcs: "TESTING123",
+    orcs: "9991234",
     dateableId: dateable.id,
     publishableId: publishable.id,
     strapiId: null,
