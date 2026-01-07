@@ -343,11 +343,11 @@ function FeaturesByFeatureTypeWithAreas({
                     </tr>
                     <DateTypeTableRow
                       groupedDateRanges={parkFeature.groupedDateRanges}
-                      currentYear={regularSeason.operatingYear || null}
+                      currentYear={regularSeason.operatingYear}
                     />
                     <DateTableRow
                       groupedDateRanges={parkFeature.groupedDateRanges}
-                      currentYear={regularSeason.operatingYear || null}
+                      currentYear={regularSeason.operatingYear}
                     />
                   </React.Fragment>
                 ))}
@@ -388,11 +388,11 @@ function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
             />
             <DateTypeTableRow
               groupedDateRanges={feature.groupedDateRanges}
-              currentYear={regularSeason.operatingYear || null}
+              currentYear={regularSeason.operatingYear}
             />
             <DateTableRow
               groupedDateRanges={feature.groupedDateRanges}
-              currentYear={regularSeason.operatingYear || null}
+              currentYear={regularSeason.operatingYear}
             />
           </React.Fragment>
         );
@@ -478,12 +478,12 @@ function Table({ park, formPanelHandler }) {
                 />
                 <DateTypeTableRow
                   groupedDateRanges={park.winterGroupedDateRanges}
-                  currentYear={winterSeason.operatingYear || null}
+                  currentYear={winterSeason.operatingYear}
                   isWinterSeason={true}
                 />
                 <DateTableRow
-                  groupedDateRanges={park.groupedDateRanges}
-                  currentYear={regularSeason.operatingYear}
+                  groupedDateRanges={park.winterGroupedDateRanges}
+                  currentYear={winterSeason.operatingYear}
                 />
               </>
             )}

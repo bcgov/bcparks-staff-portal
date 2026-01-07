@@ -479,6 +479,19 @@ async function saveSeasonData({
   // Calculate the actual new readyToPublish value
   const actualNewReadyToPublish = newReadyToPublish ?? season.readyToPublish;
 
+  // Filter date ranges based on season type
+  // Winter seasons should only have Winter fee dates
+  // Regular seasons should NOT have Winter fee dates
+  const filteredDateRanges = (dateRanges || []).filter((dateRange) => {
+    if (!dateRange.dateTypeId) return true;
+
+    if (isWinterSeason) {
+      return dateRange.dateTypeId === DATE_TYPE.WINTER_FEE;
+    }
+
+    return dateRange.dateTypeId !== DATE_TYPE.WINTER_FEE;
+  });
+
   // dateRangeAnnuals
   const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
     (dateRangeAnnual) => ({
@@ -541,7 +554,7 @@ async function saveSeasonData({
   );
 
   // Create date change logs for updated dateRanges
-  const existingDateIds = dateRanges
+  const existingDateIds = filteredDateRanges
     .filter((date) => date.id)
     .map((date) => date.id);
 
@@ -557,7 +570,7 @@ async function saveSeasonData({
       transaction,
     });
 
-    const datesToUpdateById = _.keyBy(dateRanges, "id");
+    const datesToUpdateById = _.keyBy(filteredDateRanges, "id");
     const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
       const newDateRange = datesToUpdateById[oldDateRange.id];
 
@@ -579,8 +592,8 @@ async function saveSeasonData({
   // Update or create dateRanges
   let updateDates = Promise.resolve();
 
-  if (dateRanges.length > 0) {
-    updateDates = DateRange.bulkCreate(dateRanges, {
+  if (filteredDateRanges.length > 0) {
+    updateDates = DateRange.bulkCreate(filteredDateRanges, {
       updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
       transaction,
     });

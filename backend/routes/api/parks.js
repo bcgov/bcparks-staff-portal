@@ -393,8 +393,16 @@ router.get(
         (season) => season.seasonType === SEASON_TYPE.REGULAR,
       );
       // get date ranges for park
-      const parkDateRanges = getAllDateRanges(regularSeasons);
-      const parkWinterDateRanges = getAllDateRanges(winterSeasons);
+      // For regular seasons, exclude Winter fee dates
+      const parkDateRanges = getAllDateRanges(regularSeasons).filter(
+        (dateRange) =>
+          dateRange.dateType?.strapiDateTypeId !== DATE_TYPE.WINTER_FEE,
+      );
+      // For winter seasons, only include Winter fee dates
+      const parkWinterDateRanges = getAllDateRanges(winterSeasons).filter(
+        (dateRange) =>
+          dateRange.dateType?.strapiDateTypeId === DATE_TYPE.WINTER_FEE,
+      );
       // get hasGate for park
       const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
