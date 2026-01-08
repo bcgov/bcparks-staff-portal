@@ -40,4 +40,4 @@ The script logs progress and provides summary counts of created, updated, and sk
 - Number of park date types found in Strapi
 - Existing `strapiDateTypeId` values in DOOT for debugging
 - Per-record lookup results and processing status
-- Final summary with counts of created, updated, and skipped records
+- Final summary with counts of created, updated, skipped and unchanged records

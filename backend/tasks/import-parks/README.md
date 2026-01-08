@@ -43,4 +43,4 @@ The script logs progress and provides summary counts of created, updated, and sk
 - Number of protected areas found in Strapi
 - Existing parks in DOOT for matching
 - Per-record processing status (created/updated/skipped)
-- Final summary with counts of created, updated, and skipped records
+- Final summary with counts of created, updated, skipped and unchanged records

@@ -18,7 +18,13 @@ export default async function importStrapiFeatures(transaction = null) {
 
     if (strapiParkFeatures.length === 0) {
       console.log("No Feature data found in Strapi");
-      return { created: 0, skipped: 0, updated: 0 };
+      return {
+        created: 0,
+        updated: 0,
+        skipped: 0,
+        deactivated: 0,
+        unchanged: 0,
+      };
     }
 
     console.log(`Found ${strapiParkFeatures.length} Features in Strapi`);
@@ -90,6 +96,7 @@ export default async function importStrapiFeatures(transaction = null) {
     let updatedCount = 0;
     let skippedCount = 0;
     let deactivatedCount = 0;
+    let unchangedCount = 0;
 
     for (const strapiParkFeature of strapiParkFeatures) {
       const {
@@ -192,6 +199,8 @@ export default async function importStrapiFeatures(transaction = null) {
             `Updated Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
           );
           updatedCount++;
+        } else {
+          unchangedCount++;
         }
       } else if (!useSafeMode) {
         // Create new feature
@@ -240,7 +249,8 @@ export default async function importStrapiFeatures(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} Features`);
     console.log(`- Updated: ${updatedCount} Features`);
-    console.log(`- Skipped: ${skippedCount} Features`);
+    console.log(`- Unchanged: ${unchangedCount} Features`);
+    console.log(`- Skipped (invalid): ${skippedCount} Features`);
     console.log(`- Deactivated: ${deactivatedCount} Features`);
 
     return {
@@ -248,6 +258,7 @@ export default async function importStrapiFeatures(transaction = null) {
       updated: updatedCount,
       skipped: skippedCount,
       deactivated: deactivatedCount,
+      unchanged: unchangedCount,
     };
   } catch (error) {
     console.error("Error importing Features from Strapi:", error);
@@ -265,7 +276,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     await transaction.commit();
     console.log("\nTransaction committed successfully");
     console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Deactivated: ${result.deactivated}`,
+      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Deactivated: ${result.deactivated}, Unchanged: ${result.unchanged}`,
     );
   } catch (err) {
     await transaction.rollback();

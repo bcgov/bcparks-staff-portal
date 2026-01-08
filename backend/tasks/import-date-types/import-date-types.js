@@ -17,7 +17,7 @@ export default async function importStrapiDateTypes(transaction = null) {
 
     if (strapiDateTypes.length === 0) {
       console.log("No park-date-type data found in Strapi");
-      return { created: 0, skipped: 0, updated: 0 };
+      return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
 
     console.log(`Found ${strapiDateTypes.length} park date types in Strapi`);
@@ -39,6 +39,7 @@ export default async function importStrapiDateTypes(transaction = null) {
     let createdCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
+    let unchangedCount = 0;
 
     for (const strapiDateType of strapiDateTypes) {
       const { dateType, dateTypeId } = strapiDateType;
@@ -67,7 +68,7 @@ export default async function importStrapiDateTypes(transaction = null) {
         );
 
         if (!hasChanges) {
-          skippedCount++;
+          unchangedCount++;
           continue;
         }
 
@@ -90,12 +91,14 @@ export default async function importStrapiDateTypes(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} date types`);
     console.log(`- Updated: ${updatedCount} date types`);
-    console.log(`- Skipped: ${skippedCount} date types`);
+    console.log(`- Unchanged: ${unchangedCount} date types`);
+    console.log(`- Skipped (invalid): ${skippedCount} date types`);
 
     return {
       created: createdCount,
       updated: updatedCount,
       skipped: skippedCount,
+      unchanged: unchangedCount,
     };
   } catch (error) {
     console.error("Error importing date types from Strapi:", error);
@@ -113,7 +116,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     await transaction.commit();
     console.log("\nTransaction committed successfully");
     console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}`,
+      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Unchanged: ${result.unchanged}`,
     );
   } catch (err) {
     await transaction.rollback();
