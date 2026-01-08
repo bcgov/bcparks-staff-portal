@@ -192,8 +192,8 @@ export default async function importStrapiParkAreas(transaction = null) {
     console.log(`- Created: ${createdCount} ParkAreas`);
     console.log(`- Updated: ${updatedCount} ParkAreas`);
     console.log(`- Unchanged: ${unchangedCount} ParkAreas`);
-    console.log(`- Skipped (invalid): ${skippedCount} ParkAreas`);
     console.log(`- Deactivated: ${deactivatedCount} ParkAreas`);
+    console.log(`- Skipped (invalid): ${skippedCount} ParkAreas`);
 
     return {
       created: createdCount,

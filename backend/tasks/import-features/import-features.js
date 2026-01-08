@@ -250,8 +250,8 @@ export default async function importStrapiFeatures(transaction = null) {
     console.log(`- Created: ${createdCount} Features`);
     console.log(`- Updated: ${updatedCount} Features`);
     console.log(`- Unchanged: ${unchangedCount} Features`);
-    console.log(`- Skipped (invalid): ${skippedCount} Features`);
     console.log(`- Deactivated: ${deactivatedCount} Features`);
+    console.log(`- Skipped (invalid): ${skippedCount} Features`);
 
     return {
       created: createdCount,
