@@ -20,25 +20,31 @@ export function formatDateShortWithYear(date) {
 
 /**
  * Returns a string with the dates formatted "Weekday, Month Day",
+ * or "Weekday, Month Day, Year" if the date range spans multiple years,
  * or a placeholder string if a date is missing.
  * @param {Object} dateRange object with startDate and endDate
  * @param {string} placeholder string to display if the dateRange is incomplete/blank
  * @returns {string} formatted date range
  */
 export function formatDateRange(dateRange, placeholder = "") {
+  const { startDate, endDate } = dateRange || {};
+
   // If the full date range is not provided, return a placeholder string
-  if (
-    !dateRange ||
-    dateRange.startDate === null ||
-    dateRange.endDate === null
-  ) {
+  if (!dateRange || startDate === null || endDate === null) {
     return placeholder;
   }
 
-  const startDate = formatDateShort(dateRange.startDate);
-  const endDate = formatDateShort(dateRange.endDate);
+  // Include the years in the output if the date range spans multiple years
+  const multiYear = startDate.getFullYear() !== endDate.getFullYear();
 
-  return `${startDate} – ${endDate}`;
+  const startDateFormatted = multiYear
+    ? formatDateShortWithYear(startDate)
+    : formatDateShort(startDate);
+  const endDateFormatted = multiYear
+    ? formatDateShortWithYear(endDate)
+    : formatDateShort(endDate);
+
+  return `${startDateFormatted} – ${endDateFormatted}`;
 }
 
 /**
