@@ -1,0 +1,73 @@
+kind: "CronJob"
+apiVersion: "batch/v1"
+metadata:
+  name: {{ .Release.Name }}-{{ .Values.cron.componentName }}
+  labels:
+    template: {{ .Release.Name }}-{{ .Values.cron.componentName }}-cronjob
+    cronjob: {{ .Release.Name }}-{{ .Values.cron.componentName }}
+spec:
+  schedule: {{ .Values.cron.schedule }}
+  concurrencyPolicy: "Forbid"
+  suspend: {{ not .Values.cron.enabled }}
+  successfulJobsHistoryLimit: {{ .Values.cron.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ .Values.cron.failedJobsHistoryLimit }}
+  jobTemplate:
+    metadata:
+      labels:
+        template: {{ .Release.Name }}-{{ .Values.cron.componentName }}-job
+        cronjob: {{ .Release.Name }}-{{ .Values.cron.componentName }}
+    spec:
+      backoffLimit: {{ .Values.cron.backoffLimit }}
+      template:
+        metadata:
+          labels:
+            template: {{ .Release.Name }}-{{ .Values.cron.componentName }}-job
+            cronjob: {{ .Release.Name }}-{{ .Values.cron.componentName }}
+        spec:
+          containers:
+            - name: {{ .Release.Name }}-{{ .Values.cron.componentName }}-cronjob
+              image: {{ .Values.images.backend.name }}:{{ .Values.images.backend.tag }}
+              command: ["sh", "/app/entrypoint.sh", "cron"]
+              resources:
+{{ toYaml .Values.cron.resources | indent 16 }}
+              env:
+                - name: NODE_ENV
+                  value: {{ .Values.backend.env.nodeEnv }}
+                - name: DEV_TEST_MODE
+                  value: {{ .Values.backend.env.devTestMode | quote }}
+                - name: POSTGRES_SERVER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backend.postgresSecret }}
+                      key: host
+                - name: POSTGRES_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backend.postgresSecret }}
+                      key: port
+                - name: POSTGRES_DB
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backend.postgresSecret }}
+                      key: dbname
+                - name: POSTGRES_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backend.postgresSecret }}
+                      key: user
+                - name: POSTGRES_PASSWORD
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Values.backend.postgresSecret }}
+                      key: password
+                - name: STRAPI_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: {{ .Release.Name }}-strapi-token
+                      key: STRAPI_TOKEN
+                - name: STRAPI_URL
+                  value: {{ .Values.cluster.cmsUrl }}
+          restartPolicy: "Never"
+          terminationGracePeriodSeconds: 30
+          activeDeadlineSeconds: 1600
+          dnsPolicy: "ClusterFirst"
