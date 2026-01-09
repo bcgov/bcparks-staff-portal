@@ -69,6 +69,7 @@ export default async function importStrapiParkAreas(transaction = null) {
     let updatedCount = 0;
     let skippedCount = 0;
     let deactivatedCount = 0;
+    let unchangedCount = 0;
 
     for (const strapiParkArea of strapiParkAreas) {
       const {
@@ -142,6 +143,8 @@ export default async function importStrapiParkAreas(transaction = null) {
             `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
           );
           updatedCount++;
+        } else {
+          unchangedCount++;
         }
       } else if (!useSafeMode) {
         // Create new park area
@@ -188,14 +191,16 @@ export default async function importStrapiParkAreas(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} ParkAreas`);
     console.log(`- Updated: ${updatedCount} ParkAreas`);
+    console.log(`- Unchanged: ${unchangedCount} ParkAreas`);
     console.log(`- Deactivated: ${deactivatedCount} ParkAreas`);
-    console.log(`- Skipped: ${skippedCount} ParkAreas`);
+    console.log(`- Skipped (invalid): ${skippedCount} ParkAreas`);
 
     return {
       created: createdCount,
       updated: updatedCount,
       skipped: skippedCount,
       deactivated: deactivatedCount,
+      unchanged: unchangedCount,
     };
   } catch (error) {
     console.error("Error importing ParkAreas from Strapi:", error);

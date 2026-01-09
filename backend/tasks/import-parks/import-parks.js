@@ -61,7 +61,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
 
     if (strapiProtectedAreas.length === 0) {
       console.log("No protectedArea data found in Strapi");
-      return { created: 0, skipped: 0, updated: 0 };
+      return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
 
     console.log(
@@ -89,6 +89,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
     let createdCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
+    let unchangedCount = 0;
 
     for (const strapiProtectedArea of strapiProtectedAreas) {
       const { orcs, protectedAreaName, parkOperation, managementAreas } =
@@ -163,7 +164,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
           console.log(`Updated Park: ${protectedAreaName} (orcs: ${orcs})`);
           updatedCount++;
         } else {
-          skippedCount++;
+          unchangedCount++;
         }
       } else {
         // Create new park area
@@ -176,12 +177,14 @@ export default async function importStrapiProtectedAreas(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} Parks`);
     console.log(`- Updated: ${updatedCount} Parks`);
-    console.log(`- Skipped: ${skippedCount} Parks`);
+    console.log(`- Unchanged: ${unchangedCount} Parks`);
+    console.log(`- Skipped (invalid): ${skippedCount} Parks`);
 
     return {
       created: createdCount,
       updated: updatedCount,
       skipped: skippedCount,
+      unchanged: unchangedCount,
     };
   } catch (error) {
     console.error("Error importing ProtectedAreas from Strapi:", error);
@@ -199,7 +202,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     await transaction.commit();
     console.log("\nTransaction committed successfully");
     console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}`,
+      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Unchanged: ${result.unchanged}`,
     );
   } catch (err) {
     await transaction.rollback();
