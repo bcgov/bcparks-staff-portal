@@ -19,7 +19,7 @@ export function formatDateShortWithYear(date) {
 }
 
 /**
- * Returns a string with formatted like "Tue, Jan 30 - Wed, Mar 15, 2026",
+ * Returns a string formatted like "Tue, Jan 30 - Wed, Mar 15, 2026",
  * or "Wed, Oct 14, 2026 – Wed, Feb 10, 2027" if the date range spans multiple years.
  * Returns a placeholder string if a date is missing.
  * @param {Object} dateRange object with startDate and endDate
