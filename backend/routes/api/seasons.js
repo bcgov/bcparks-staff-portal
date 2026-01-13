@@ -31,7 +31,6 @@ import {
 import {
   adminsAndApprovers,
   checkPermissions,
-  sanitizePayload,
 } from "../../middleware/permissions.js";
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
@@ -1012,7 +1011,7 @@ router.get(
 // Save draft
 router.post(
   "/:seasonId/save/",
-  sanitizePayload,
+  checkPermissions(["doot-submitter"]),
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const {
