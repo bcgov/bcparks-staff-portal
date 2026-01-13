@@ -35,6 +35,7 @@ function FeatureFormSectionComponent({
   removeFeatureDateRange,
   dateRangeAnnuals,
   updateDateRangeAnnual,
+  operatingYear,
 }) {
   const { elements } = useValidationContext();
 
@@ -66,6 +67,7 @@ function FeatureFormSectionComponent({
             dateableId={feature.dateableId}
             dateType={dateType}
             dateRanges={featureDatesByType[feature.dateableId][dateType.id]}
+            operatingYear={operatingYear}
             updateDateRange={(id, dateField, dateObj, tempId = false) =>
               updateFeatureDateRange(
                 feature.dateableId,
@@ -133,6 +135,7 @@ FeatureFormSectionComponent.propTypes = {
   removeFeatureDateRange: PropTypes.func.isRequired,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
+  operatingYear: PropTypes.number.isRequired,
 };
 
 const FeatureFormSection = memo(FeatureFormSectionComponent);
@@ -500,12 +503,16 @@ export default function AreaSeasonForm({
                   dateableId={parkArea.dateableId}
                   dateType={dateType}
                   dateRanges={areaDatesByType[dateType.name] ?? []}
+                  operatingYear={season.operatingYear}
                   updateDateRange={updateAreaDateRange}
                   addDateRange={addAreaDateRange}
                   removeDateRange={removeAreaDateRange}
                   dateRangeAnnuals={dateRangeAnnuals}
                   updateDateRangeAnnual={updateDateRangeAnnual}
-                  optional={isDateTypeOptional(dateType.strapiDateTypeId, "parkArea")}
+                  optional={isDateTypeOptional(
+                    dateType.strapiDateTypeId,
+                    "parkArea",
+                  )}
                 />
               </div>
             ))}
@@ -517,6 +524,7 @@ export default function AreaSeasonForm({
             {bcpResFeatures.map((feature) => (
               <FeatureFormSection
                 feature={feature}
+                operatingYear={season.operatingYear}
                 featureDateTypes={featureDateTypesByFeatureId[feature.id]}
                 previousFeatureDatesByType={previousFeatureDatesByType}
                 featureDatesByType={featureDatesByType}
@@ -541,6 +549,7 @@ export default function AreaSeasonForm({
           {nonBcpResFeatures.map((feature) => (
             <FeatureFormSection
               feature={feature}
+              operatingYear={season.operatingYear}
               featureDateTypes={featureDateTypesByFeatureId[feature.id]}
               previousFeatureDatesByType={previousFeatureDatesByType}
               featureDatesByType={featureDatesByType}
@@ -561,6 +570,7 @@ export default function AreaSeasonForm({
         gateDetail={gateDetail}
         updateGateDetail={updateGateDetail}
         level={"park-area"}
+        operatingYear={season.operatingYear}
       />
 
       {/* Show Ready to Publish form input for approvers */}

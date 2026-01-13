@@ -226,6 +226,7 @@ export default function ParkSeasonForm({
               dateableId={park.dateableId}
               dateType={dateType}
               dateRanges={datesByType[dateType.name] ?? []}
+              operatingYear={season.operatingYear}
               updateDateRange={updateDateRange}
               addDateRange={addDateRange}
               removeDateRange={removeDateRange}
@@ -252,22 +253,24 @@ export default function ParkSeasonForm({
           </div>
         ))}
 
-      <GateForm
-        gateTitle="Park gate"
-        gateDescription="Does this park have a gate (or gates) that controls vehicle access to all or most of the park?"
-        gateDetail={gateDetail}
-        updateGateDetail={updateGateDetail}
-        dateableId={park.dateableId}
-        dateType={gateDateType}
-        dateRanges={datesByType["Park gate open"] ?? []}
-        updateDateRange={updateDateRange}
-        addDateRange={addDateRange}
-        removeDateRange={removeDateRange}
-        dateRangeAnnuals={dateRangeAnnuals}
-        updateDateRangeAnnual={updateDateRangeAnnual}
-        previousDateRanges={previousDatesByType?.["Park gate open"] ?? []}
-        level={"park"}
-      />
+          {/* Park gate open dates */}
+          <GateForm
+            gateTitle="Park gate"
+            gateDescription="Does this park have a gate (or gates) that controls vehicle access to all or most of the park?"
+            gateDetail={gateDetail}
+            updateGateDetail={updateGateDetail}
+            dateableId={park.dateableId}
+            dateType={gateDateType}
+            dateRanges={datesByType["Park gate open"] ?? []}
+            updateDateRange={updateDateRange}
+            addDateRange={addDateRange}
+            removeDateRange={removeDateRange}
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
+            previousDateRanges={previousDatesByType?.["Park gate open"] ?? []}
+            level={"park"}
+            operatingYear={season.operatingYear}
+          />
 
       {/* Show Ready to Publish form input for approvers */}
       {approver && (

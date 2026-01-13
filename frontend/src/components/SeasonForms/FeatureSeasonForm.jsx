@@ -199,12 +199,16 @@ export default function FeatureSeasonForm({
               dateableId={feature.dateableId}
               dateType={dateType}
               dateRanges={datesByType[dateType.name] ?? []}
+              operatingYear={season.operatingYear}
               updateDateRange={updateDateRange}
               addDateRange={addDateRange}
               removeDateRange={removeDateRange}
               dateRangeAnnuals={dateRangeAnnuals}
               updateDateRangeAnnual={updateDateRangeAnnual}
-              optional={isDateTypeOptional(dateType.strapiDateTypeId, "feature")}
+              optional={isDateTypeOptional(
+                dateType.strapiDateTypeId,
+                "feature",
+              )}
             />
 
             <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
@@ -233,6 +237,7 @@ export default function FeatureSeasonForm({
         gateDetail={gateDetail}
         updateGateDetail={updateGateDetail}
         level={"feature"}
+        operatingYear={season.operatingYear}
       />
 
       {/* Show Ready to Publish form input for approvers */}

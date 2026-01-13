@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
-import { startOfYear, endOfYear, addYears, addDays } from "date-fns";
+import { addDays } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Form from "react-bootstrap/Form";
 
@@ -16,16 +16,13 @@ function DateRange({
   removeDateRange,
   removable = true,
   isDateRangeAnnual,
+  minDate,
+  maxDate,
 }) {
   // A unique ID for template loops and selectors
   const idOrTempId = dateRange.id || dateRange.tempId;
 
   const { elements } = useValidationContext();
-
-  // Min and max dates: Jan 1 of next year and Dec 31 of the year after next
-  // @TODO: Update this when validation is implemented
-  const minDate = useMemo(() => startOfYear(addYears(new Date(), 1)), []);
-  const maxDate = useMemo(() => endOfYear(addYears(new Date(), 2)), []);
 
   // Call the update method from the parent
   function onSelect(dateField, dateObj) {
@@ -113,6 +110,8 @@ DateRange.propTypes = {
   // Allow removal only if it's not the first date range
   removable: PropTypes.bool,
   isDateRangeAnnual: PropTypes.bool.isRequired,
+  minDate: PropTypes.instanceOf(Date).isRequired,
+  maxDate: PropTypes.instanceOf(Date).isRequired,
 };
 
 export default function DateRangeFields({
@@ -122,6 +121,7 @@ export default function DateRangeFields({
   removeDateRange,
   addDateRange,
   dateType,
+  operatingYear,
   dateRangeAnnuals,
   updateDateRangeAnnual,
   optional = false,
@@ -166,18 +166,26 @@ export default function DateRangeFields({
     }
   }
 
+  // Min and max dates for the date picker control
+  const minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
+  const maxDate = new Date(operatingYear + 1, 11, 31); // Dec 31 of the year after that
+
   return (
     <>
-      {dateRanges.map((dateRange, index) => (
-        <DateRange
-          key={dateRange.id || dateRange.tempId}
-          dateRange={dateRange}
-          updateDateRange={updateDateRange}
-          removeDateRange={removeDateRange}
-          removable={optional || index > 0}
-          isDateRangeAnnual={isDateRangeAnnual}
-        />
-      ))}
+      {[...dateRanges]
+        .sort((a, b) => a.sortIndex - b.sortIndex)
+        .map((dateRange, index) => (
+          <DateRange
+            key={dateRange.id || dateRange.tempId}
+            dateRange={dateRange}
+            updateDateRange={updateDateRange}
+            removeDateRange={removeDateRange}
+            removable={optional || index > 0}
+            isDateRangeAnnual={isDateRangeAnnual}
+            minDate={minDate}
+            maxDate={maxDate}
+          />
+        ))}
 
       {/* display it if date type is not "Tier 1" or no dateRanges exist */}
       {(hasMultipleDates || dateRanges.length === 0) && (
@@ -234,6 +242,7 @@ DateRangeFields.propTypes = {
     name: PropTypes.string.isRequired,
     displayName: PropTypes.string,
   }).isRequired,
+  operatingYear: PropTypes.number.isRequired,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
   optional: PropTypes.bool,
