@@ -18,6 +18,8 @@ import {
   checkParkSoft,
   getMatchingAreas,
   getMatchingFeatures,
+  shouldShowTiersAndGateSection,
+  shouldShowWinterFeeSection,
 } from "@/lib/editAndReviewFilters";
 import { groupBy } from "lodash-es";
 
@@ -211,13 +213,19 @@ function EditAndReview() {
       // If the Park or any Areas/Features match,
       // include the Park and the matching Areas/Features
       return [
-        // Add a property to the Park object to indicate whether it matches the filters,
-        // and add annotations for grouping in the template
         {
           ...park,
+
+          // Add a property to the Park object to indicate whether it matches the filters,
+          // and add annotations for grouping in the template
           matchesFilters: parkMatch,
           entityType: "park",
           parkName: park.name,
+
+          // Add properties to the Park object to show/hide
+          // the "Tiers and gate" / "Winter fee" sections if relevant filters are set.
+          showTiersAndGate: shouldShowTiersAndGateSection(park, filters),
+          showWinterFee: shouldShowWinterFeeSection(park, filters),
         },
 
         // Include Areas and Features within the park that match the filters

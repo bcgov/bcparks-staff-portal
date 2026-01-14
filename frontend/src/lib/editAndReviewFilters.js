@@ -1,3 +1,5 @@
+import * as DATE_TYPES from "@/constants/dateType.js";
+
 /**
  * Checks a Park against the active Park-level "hard" filters.
  * Hard filters completely exclude a park and all its areas/features if they don't match.
@@ -275,4 +277,116 @@ export function getMatchingFeatures(features, filters) {
 
     return true;
   });
+}
+
+/**
+ * Returns true if the "Tiers and gate" section should be shown for the given park and filters.
+ * @param {Object} park The park object
+ * @param {Object} filters The active filter state
+ * @returns {boolean} Whether to show the "Tiers and gate" section on the table
+ */
+export function shouldShowTiersAndGateSection(park, filters) {
+  // If no filters are selected, always show the section
+  // (Regardless of Tier 1/2 dates, all parks display the "Park gate open" section)
+  let show = true;
+
+  // If "Date type" filters are set
+  if (filters.dateTypes.length) {
+    // "Park gate open" date type always shows the "Tiers and gate" section
+    if (
+      filters.dateTypes.some(
+        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.PARK_GATE_OPEN,
+      )
+    ) {
+      return true;
+    }
+
+    // Show section if park has matching tier dates
+    if (
+      park.hasTier1Dates &&
+      filters.dateTypes.some(
+        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.TIER_1,
+      )
+    ) {
+      return true;
+    }
+    if (
+      park.hasTier2Dates &&
+      filters.dateTypes.some(
+        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.TIER_2,
+      )
+    ) {
+      return true;
+    }
+
+    // If no relevant date type filters are set,
+    // hide the section unless it matches other criteria
+    show = false;
+  }
+
+  // When "BCP reservations only" is selected,
+  // only show if Tier 1/2 dates are requested for the Park
+  if (filters.isInReservationSystem) {
+    if (park.hasTier1Dates || park.hasTier2Dates) {
+      return true;
+    }
+
+    // If the Park has no Tier 1/2 dates, hide the section
+    show = false;
+  }
+
+  return show;
+}
+
+/**
+ * Returns true if the "Winter fee" section should be shown for the given park and filters.
+ * @param {Object} park The park object
+ * @param {Object} filters The active filter state
+ * @returns {boolean} Whether to show the "Winter fee" section on the table
+ */
+export function shouldShowWinterFeeSection(park, filters) {
+  // If the Park has no winter fee dates, never show the section
+  if (!park.hasWinterFeeDates) return false;
+
+  // If no filters are selected, always show the section
+  let show = true;
+
+  // If "Date type" filters are set
+  if (filters.dateTypes.length) {
+    // If "Winter fee" date type is selected, show the section
+    if (
+      filters.dateTypes.some(
+        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.WINTER_FEE,
+      )
+    ) {
+      return true;
+    }
+
+    // If other date types are selected,
+    // hide the section unless it matches other criteria
+    show = false;
+  }
+
+  // If "Feature type" filters are set
+  if (filters.featureTypes.length) {
+    // If "Frontcountry campground" feature type is selected, show the section
+    if (
+      filters.featureTypes.some(
+        (featureType) => featureType.name === "Frontcountry campground",
+      )
+    ) {
+      return true;
+    }
+
+    // If other feature types are selected,
+    // hide the section unless it matches other criteria
+    show = false;
+  }
+
+  // When "BCP reservations only" is selected, "Winter fee" sections should appear
+  if (filters.isInReservationSystem) {
+    return true;
+  }
+
+  return show;
 }

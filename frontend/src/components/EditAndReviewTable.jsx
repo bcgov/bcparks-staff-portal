@@ -444,30 +444,37 @@ function Table({ park, formPanelHandler }) {
         {/* If the park isn't filtered out, show its Park-level dates */}
         {park.matchesFilters !== false && (
           <>
-            {/* park level - regular season dates (park gate, tier 1, tier 2) */}
-            <StatusTableRow
-              level="park"
-              name="Tiers and gate"
-              season={regularSeason}
-              formPanelHandler={() =>
-                formPanelHandler({
-                  ...park,
-                  level: "park",
-                  isWinterSeason: false,
-                })
-              }
-            />
-            <DateTypeTableRow
-              groupedDateRanges={park.groupedDateRanges}
-              currentYear={regularSeason.operatingYear}
-            />
-            <DateTableRow
-              groupedDateRanges={park.groupedDateRanges}
-              currentYear={regularSeason.operatingYear}
-            />
+            {/*
+              Park level regular season dates (park gate, tier 1, tier 2):
+              Always show unless explicitly hidden via filters
+            */}
+            {park.showTiersAndGate && (
+              <>
+                <StatusTableRow
+                  level="park"
+                  name="Tiers and gate"
+                  season={regularSeason}
+                  formPanelHandler={() =>
+                    formPanelHandler({
+                      ...park,
+                      level: "park",
+                      isWinterSeason: false,
+                    })
+                  }
+                />
+                <DateTypeTableRow
+                  groupedDateRanges={park.groupedDateRanges}
+                  currentYear={regularSeason.operatingYear}
+                />
+                <DateTableRow
+                  groupedDateRanges={park.groupedDateRanges}
+                  currentYear={regularSeason.operatingYear}
+                />
+              </>
+            )}
 
-            {/* park level - winter fee season */}
-            {park.hasWinterFeeDates && (
+            {/* Park level winter fee season */}
+            {park.showWinterFee && (
               <>
                 <StatusTableRow
                   level="park"
@@ -534,7 +541,9 @@ Table.propTypes = {
     winterGroupedDateRanges: PropTypes.object,
     hasTier1Dates: PropTypes.bool,
     hasTier2Dates: PropTypes.bool,
+    showTiersAndGate: PropTypes.bool.isRequired,
     hasWinterFeeDates: PropTypes.bool,
+    showWinterFee: PropTypes.bool.isRequired,
     parkAreas: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,
