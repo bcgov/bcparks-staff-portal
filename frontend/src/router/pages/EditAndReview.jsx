@@ -92,7 +92,7 @@ function EditAndReview() {
     const winterSeason = formDataObj.currentSeason.winter || {};
     const isWinterSeason = formDataObj.isWinterSeason || false;
     const season = isWinterSeason ? winterSeason : regularSeason;
-    const status = regularSeason.status;
+    const status = isWinterSeason ? winterSeason.status : regularSeason.status;
 
     // If the season is already approved, prompt to continue
     if (status === "approved") {

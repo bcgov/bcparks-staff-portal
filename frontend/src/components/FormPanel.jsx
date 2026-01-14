@@ -299,11 +299,17 @@ function SeasonForm({
 
     // Add winter season data if it exists
     if (winterSeason) {
+      // Check readyToPublish for winter season
+      const winterReadyToPublish =
+        season.id === winterSeason.id
+          ? season.readyToPublish
+          : winterSeason.readyToPublish;
+
       payload.winterSeason = {
         id: winterSeason.id,
         dateRanges: changedWinterDateRanges,
         dateRangeAnnuals: changedWinterDateRangeAnnuals,
-        readyToPublish: winterSeason.readyToPublish,
+        readyToPublish: winterReadyToPublish,
       };
     }
 
