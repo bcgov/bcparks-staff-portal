@@ -1118,10 +1118,49 @@ router.post(
     const transaction = await sequelize.transaction();
 
     try {
+      // Fetch the season and try three different ways to get the related Park
       const season = await Season.findByPk(seasonId, {
-        include: [{ model: Park, as: "park" }],
+        include: [
+          {
+            model: Park, // related to park directly
+            as: "park",
+            required: false,
+          },
+          {
+            model: ParkArea, // related to park through park area
+            as: "parkArea",
+            required: false,
+            include: [
+              {
+                model: Park,
+                as: "park",
+                required: false,
+              },
+            ],
+          },
+          {
+            model: Feature, // related to park through feature
+            as: "feature",
+            required: false,
+            include: [
+              {
+                model: Park,
+                as: "park",
+                required: false,
+              },
+            ],
+          },
+        ],
         transaction,
       });
+
+      // Get the park from whichever relation is available
+      season.park =
+        season.park || season.parkArea?.park || season.feature?.park || null;
+
+      // Remove parkArea and feature references
+      delete season.parkArea;
+      delete season.feature;
 
       checkSeasonExists(season);
 

@@ -13,7 +13,7 @@ export default function hasGateChosen(seasonData, context) {
   if (!context.submitted) return;
 
   // hasGate radio buttons are initially null, but Yes or No is required
-  if (current.gateDetail.hasGate === null) {
+  if (current.gateDetail?.hasGate === null) {
     context.addError(elements.HAS_GATE, "Select an option");
   }
 }
