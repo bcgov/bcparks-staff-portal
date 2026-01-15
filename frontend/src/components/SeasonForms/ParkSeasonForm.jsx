@@ -252,6 +252,7 @@ export default function ParkSeasonForm({
               dateType={dateType}
               dateRanges={datesByType[dateType.name] ?? []}
               operatingYear={season.operatingYear}
+              isWinterSeason={isWinterSeason}
               updateDateRange={updateDateRange}
               addDateRange={addDateRange}
               removeDateRange={removeDateRange}

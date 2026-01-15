@@ -126,6 +126,7 @@ export default function DateRangeFields({
   addDateRange,
   dateType,
   operatingYear,
+  isWinterSeason = false,
   dateRangeAnnuals,
   updateDateRangeAnnual,
   optional = false,
@@ -183,8 +184,18 @@ export default function DateRangeFields({
   }
 
   // Min and max dates for the date picker control
-  const minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
-  const maxDate = new Date(operatingYear + 1, 11, 31); // Dec 31 of the year after that
+  let minDate;
+  let maxDate;
+
+  if (isWinterSeason) {
+    // Winter seasons
+    minDate = new Date(operatingYear, 9, 1); // Oct 1 of the season's operating year
+    maxDate = new Date(operatingYear + 1, 2, 31); // Mar 31 of the year after that
+  } else {
+    // Regular seasons
+    minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
+    maxDate = new Date(operatingYear, 11, 31); // Dec 31 of the season's operating year
+  }
 
   return (
     <>
@@ -259,6 +270,7 @@ DateRangeFields.propTypes = {
     displayName: PropTypes.string,
   }).isRequired,
   operatingYear: PropTypes.number.isRequired,
+  isWinterSeason: PropTypes.bool,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
   optional: PropTypes.bool,
