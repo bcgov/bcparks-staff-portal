@@ -1020,7 +1020,6 @@ router.post(
       dateRangeAnnuals = [],
       gateDetail = {},
       status,
-      winterSeason = null,
     } = req.body;
     let { readyToPublish } = req.body;
 
@@ -1053,50 +1052,23 @@ router.post(
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
 
-      // Process regular season data
+      // Determine if this is a winter season based on seasonType
+      const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+
+      // Process season data
       await saveSeasonData({
         season,
         dateRanges,
         dateRangeAnnuals,
-        gateDetail,
+        gateDetail: isWinterSeason ? null : gateDetail,
         deletedDateRangeIds,
         newStatus,
         newReadyToPublish,
         notes,
         userId: req.user.id,
         transaction,
+        isWinterSeason,
       });
-
-      // Process winter season data if provided
-      if (winterSeason) {
-        const winterSeasonModel = await Season.findByPk(winterSeason.id, {
-          transaction,
-        });
-
-        if (winterSeasonModel) {
-          // Add seasonId to winter dateRanges
-          const winterDateRanges = (winterSeason.dateRanges || []).map(
-            (dateRange) => ({
-              ...dateRange,
-              seasonId: winterSeason.id,
-            }),
-          );
-
-          await saveSeasonData({
-            season: winterSeasonModel,
-            dateRanges: winterDateRanges,
-            dateRangeAnnuals: winterSeason.dateRangeAnnuals || [],
-            gateDetail: null, // Winter season doesn't have gate details
-            deletedDateRangeIds: winterSeason.deletedDateRangeIds || [],
-            newStatus,
-            newReadyToPublish: isApprover ? winterSeason.readyToPublish : null,
-            notes: "",
-            userId: req.user.id,
-            transaction,
-            isWinterSeason: true,
-          });
-        }
-      }
 
       await transaction.commit();
       res.sendStatus(200);
