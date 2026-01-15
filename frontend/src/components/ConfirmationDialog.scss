@@ -12,20 +12,4 @@
     border-top: none;
     justify-content: space-between;
   }
-
-  .required-message {
-    color: var(--support-border-color-danger);
-    font-size: var(--typography-regular-small-body);
-  }
-
-  .word-count {
-    font-size: var(--typography-regular-small-body);
-    color: var(--typography-color-placeholder);
-    text-align: right;
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-  }
 }

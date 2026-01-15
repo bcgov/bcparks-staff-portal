@@ -1,7 +1,4 @@
 import PropTypes from "prop-types";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faClose } from "@fa-kit/icons/classic/regular";
-import Button from "react-bootstrap/Button";
 import Modal from "react-bootstrap/Modal";
 import "./ConfirmationDialog.scss";
 
