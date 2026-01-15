@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClose } from "@fa-kit/icons/classic/regular";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 import "./ConfirmationDialog.scss";
 
 function ConfirmationDialog({
@@ -13,30 +15,33 @@ function ConfirmationDialog({
   onConfirm,
   isOpen,
 }) {
-  if (!isOpen) return null;
-
   return (
-    <div className="confirmation-dialog-overlay">
-      <div className="confirmation-dialog-container">
-        <div className="confirmation-dialog-header">
-          <h3 className="confirmation-dialog-title">{title}</h3>
-          <button onClick={onCancel} className="confirmation-dialog-close">
-            <FontAwesomeIcon icon={faClose} />
-          </button>
-        </div>
+    <Modal
+      centered
+      dialogClassName="confirmation-dialog-wrap"
+      contentClassName="confirmation-dialog-modal"
+      show={isOpen}
+      onHide={onCancel}
+    >
+      <Modal.Header closeButton>
+        <Modal.Title>{title}</Modal.Title>
+      </Modal.Header>
 
+      <Modal.Body>
         <p className="confirmation-dialog-message">{message}</p>
         <p className="confirmation-dialog-message">{notes}</p>
-        <div className="confirmation-dialog-actions">
-          <button className="btn btn-outline-primary" onClick={onCancel}>
-            {cancelButtonText}
-          </button>
-          <button className="btn btn-primary" onClick={onConfirm}>
-            {confirmButtonText}
-          </button>
-        </div>
+      </Modal.Body>
+
+      {/* Custom modal-footer markup so we can use different button classes */}
+      <div className="modal-footer">
+        <button className="btn btn-outline-primary" onClick={onCancel}>
+          {cancelButtonText}
+        </button>
+        <button className="btn btn-primary" onClick={onConfirm}>
+          {confirmButtonText}
+        </button>
       </div>
-    </div>
+    </Modal>
   );
 }
 
