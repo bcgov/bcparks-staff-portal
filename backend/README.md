@@ -54,7 +54,7 @@ The Dev Container is configured with Prettier and ESLint. Code will be automatic
 
 Migrations are files that keep track of the changes we make to the DB schema.
 
-#### create a migration
+#### Create a migration
 
 run the command `npx sequelize-cli migration:generate --name my-migration-name` in the container. A file will be created inside the migrations folder. Inside that file you will see 2 methods.
 
