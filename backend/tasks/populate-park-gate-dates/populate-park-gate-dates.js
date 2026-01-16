@@ -11,7 +11,8 @@ import {
   Publishable,
 } from "../../models/index.js";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
-import * as DATE_TYPE from "../../constants/dateType.js"
+import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 async function createPublishableForPark(park, transaction) {
   if (park.publishableId) return park.publishableId;
@@ -72,6 +73,7 @@ export async function populateParkGateDates() {
         where: {
           publishableId,
           operatingYear,
+          seasonType: SEASON_TYPE.REGULAR,
         },
         defaults: {
           publishableId,
