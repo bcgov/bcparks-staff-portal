@@ -16,6 +16,8 @@ import seasonRoutes from "./routes/api/seasons.js";
 import exportRoutes from "./routes/api/export.js";
 import publishRoutes from "./routes/api/publish.js";
 import filterOptionsRoutes from "./routes/api/filter-options.js";
+import { checkPermissions } from "./middleware/permissions.js";
+import * as ROLES from "./constants/userRoles.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
@@ -65,7 +67,13 @@ app.use("/", homeRoutes); // Health check route(s)
 // API routes
 const apiRouter = express.Router();
 
+// Apply JWT check and user middleware to all /api routes
 apiRouter.use(checkJwt);
+
+// Ensure user has DOOT_USER role to access any /api route
+apiRouter.use(checkPermissions([ROLES.DOOT_USER]));
+
+// Attach user data from the DB to the request object
 apiRouter.use(usersMiddleware);
 
 apiRouter.use("/user", userRoutes);

@@ -15,9 +15,12 @@ import {
   UserAccessGroup,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
-import checkUserRoles from "../../utils/checkUserRoles.js";
+import checkUserRoles, {
+  getRolesFromAuth,
+} from "../../utils/checkUserRoles.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as USER_ROLES from "../../constants/userRoles.js";
 
 // Constants
 const router = Router();
@@ -280,7 +283,9 @@ router.get(
   asyncHandler(async (req, res) => {
     // Constants
     const currentYear = new Date().getFullYear();
-    const hasAllParkAccess = checkUserRoles(req.auth, ["doot-all-park-access"]);
+    const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
+      USER_ROLES.ALL_PARK_ACCESS,
+    ]);
 
     const parks = await Park.findAll({
       attributes: [

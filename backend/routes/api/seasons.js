@@ -28,14 +28,14 @@ import {
   User,
 } from "../../models/index.js";
 
-import {
-  adminsAndApprovers,
-  checkPermissions,
-} from "../../middleware/permissions.js";
+import { checkPermissions } from "../../middleware/permissions.js";
+import * as USER_ROLES from "../../constants/userRoles.js";
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 // import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
-import checkUserRoles from "../../utils/checkUserRoles.js";
+import checkUserRoles, {
+  getRolesFromAuth,
+} from "../../utils/checkUserRoles.js";
 
 const router = Router();
 
@@ -1011,7 +1011,7 @@ router.get(
 // Save draft
 router.post(
   "/:seasonId/save/",
-  checkPermissions(["doot-submitter"]),
+  checkPermissions([USER_ROLES.SUBMITTER]),
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const {
@@ -1024,7 +1024,9 @@ router.post(
     let { readyToPublish } = req.body;
 
     // If the user isn't an approver, they shouldn't be able to set readyToPublish
-    const isApprover = checkUserRoles(req.auth, ["doot-approver"]);
+    const isApprover = checkUserRoles(getRolesFromAuth(req.auth), [
+      USER_ROLES.APPROVER,
+    ]);
 
     if (!isApprover) {
       // Clear the value from the request body
@@ -1082,7 +1084,7 @@ router.post(
 // Approve
 router.post(
   "/:seasonId/approve/",
-  checkPermissions(adminsAndApprovers),
+  checkPermissions([USER_ROLES.APPROVER]),
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
 
