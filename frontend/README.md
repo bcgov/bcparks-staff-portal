@@ -58,7 +58,7 @@ npm run dev
 
 The Dev Container is configured with Prettier and ESLint. Code will be automatically formatted on save.
 
-To manually run ESslint and list warnings and errors:
+To manually run ESLint and list warnings and errors:
 
 ```sh
 npm run lint
