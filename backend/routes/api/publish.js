@@ -14,6 +14,7 @@ import {
   Park,
   ParkArea,
   Season,
+  SeasonChangeLog,
 } from "../../models/index.js";
 
 import {
@@ -686,6 +687,39 @@ router.post(
       { status: STATUS.PUBLISHED },
       { where: { id: { [Op.in]: publishedSeasonIds } } },
     );
+
+    // Fetch the published seasons
+    const publishedSeasons = await Season.findAll({
+      where: { id: { [Op.in]: publishedSeasonIds } },
+      include: [
+        {
+          model: SeasonChangeLog,
+          as: "changeLogs",
+          separate: true,
+          limit: 1,
+          order: [["createdAt", "DESC"]],
+        },
+      ],
+    });
+
+    // Create season change logs for the published seasons
+    const changeLogsToCreate = publishedSeasons.map((season) => {
+      const lastLog = season.changeLogs?.[0];
+
+      return {
+        seasonId: season.id,
+        userId: req.user.id,
+        notes: "",
+        statusOldValue: lastLog?.statusNewValue || STATUS.APPROVED,
+        statusNewValue: STATUS.PUBLISHED,
+        readyToPublishOldValue: lastLog?.readyToPublishNewValue ?? true,
+        readyToPublishNewValue: null,
+        gateDetailOldValue: lastLog?.gateDetailNewValue || null,
+        gateDetailNewValue: null,
+      };
+    });
+
+    await SeasonChangeLog.bulkCreate(changeLogsToCreate);
 
     // Send 200 OK response with empty body
     res.send();
