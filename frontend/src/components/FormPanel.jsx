@@ -418,8 +418,6 @@ If dates have already been published, they will not be updated until new dates a
       "Dates saved as draft",
       `${seasonTitle} ${season.operatingYear} details saved`,
     );
-
-    closePanel();
   }
 
   async function onApprove() {
