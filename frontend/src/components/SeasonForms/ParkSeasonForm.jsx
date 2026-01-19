@@ -15,6 +15,7 @@ import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import * as SEASON_TYPE from "@/constants/seasonType";
+import * as DATE_TYPE from "@/constants/dateType";
 
 export default function ParkSeasonForm({
   season,
@@ -35,8 +36,8 @@ export default function ParkSeasonForm({
   // so split "Park gate open" and "Winter fee" out of the dateTypes array.
   const [gateDateType, winterDateType, regularDateTypes] = useMemo(() => {
     const grouped = groupBy(allDateTypes, (dateType) => {
-      if (dateType.strapiDateTypeId === 1) return "gate";
-      if (dateType.strapiDateTypeId === 4) return "winter";
+      if (dateType.strapiDateTypeId === DATE_TYPE.PARK_GATE_OPEN) return "gate";
+      if (dateType.strapiDateTypeId === DATE_TYPE.WINTER_FEE) return "winter";
       return "regular";
     });
 
@@ -72,12 +73,12 @@ export default function ParkSeasonForm({
   }, [park.inReservationSystem, park.hasTier1Dates, park.hasTier2Dates]);
 
   const datesByType = useMemo(
-    () => groupBy(park.dateable.dateRanges, "dateType.name"),
+    () => groupBy(park.dateable.dateRanges, "dateType.strapiDateTypeId"),
     [park.dateable.dateRanges],
   );
 
   const previousDatesByType = useMemo(
-    () => groupBy(previousSeasonDates, "dateType.name"),
+    () => groupBy(previousSeasonDates, "dateType.strapiDateTypeId"),
     [previousSeasonDates],
   );
 
@@ -245,12 +246,14 @@ export default function ParkSeasonForm({
               <div className="my-2 text-secondary-grey">(Optional)</div>
             )}
 
-            <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
+            <PreviousDates
+              dateRanges={previousDatesByType?.[dateType.strapiDateTypeId]}
+            />
 
             <DateRangeFields
               dateableId={park.dateableId}
               dateType={dateType}
-              dateRanges={datesByType[dateType.name] ?? []}
+              dateRanges={datesByType[dateType.strapiDateTypeId] ?? []}
               operatingYear={season.operatingYear}
               isWinterSeason={isWinterSeason}
               updateDateRange={updateDateRange}
@@ -293,13 +296,15 @@ export default function ParkSeasonForm({
             updateGateDetail={updateGateDetail}
             dateableId={park.dateableId}
             dateType={gateDateType}
-            dateRanges={datesByType["Park gate open"] ?? []}
+            dateRanges={datesByType[DATE_TYPE.PARK_GATE_OPEN] ?? []}
             updateDateRange={updateDateRange}
             addDateRange={addDateRange}
             removeDateRange={removeDateRange}
             dateRangeAnnuals={dateRangeAnnuals}
             updateDateRangeAnnual={updateDateRangeAnnual}
-            previousDateRanges={previousDatesByType?.["Park gate open"] ?? []}
+            previousDateRanges={
+              previousDatesByType?.[DATE_TYPE.PARK_GATE_OPEN] ?? []
+            }
             level={"park"}
             operatingYear={season.operatingYear}
           />
