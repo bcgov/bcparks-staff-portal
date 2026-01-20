@@ -290,6 +290,12 @@ export function shouldShowTiersAndGateSection(park, filters) {
   // (Regardless of Tier 1/2 dates, all parks display the "Park gate open" section)
   let show = true;
 
+  // If "Feature type" filters are set, hide the section.
+  // Tiers and Gate have no applicable feature types.
+  if (filters.featureTypes.length) {
+    return false;
+  }
+
   // If "Status" filters are set
   if (filters.status.length) {
     // Show section if the park's regular season status matches
@@ -334,19 +340,6 @@ export function shouldShowTiersAndGateSection(park, filters) {
     // If no relevant date type filters are set,
     // hide the section unless it matches other criteria
     show = false;
-  }
-
-  // If "Feature type" filters are set
-  if (filters.featureTypes.length) {
-    // If "Frontcountry campground" feature type is selected, hide the section.
-    // No "Feature type" options will specifically show the "Tiers and gate" section
-    if (
-      filters.featureTypes.some(
-        (featureType) => featureType.name === "Frontcountry campground",
-      )
-    ) {
-      show = false;
-    }
   }
 
   // When "BCP reservations only" is selected,
