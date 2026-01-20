@@ -478,6 +478,17 @@ async function saveSeasonData({
   // Calculate the actual new readyToPublish value
   const actualNewReadyToPublish = newReadyToPublish ?? season.readyToPublish;
 
+  // Get the Winter Fee DateType's database ID
+  const winterFeeDateType = await DateType.findOne({
+    attributes: ["id"],
+    where: {
+      strapiDateTypeId: DATE_TYPE.WINTER_FEE,
+    },
+    transaction,
+  });
+
+  const winterFeeDateTypeId = winterFeeDateType?.id;
+
   // Filter date ranges based on season type
   // Winter seasons should only have Winter fee dates
   // Regular seasons should NOT have Winter fee dates
@@ -485,10 +496,10 @@ async function saveSeasonData({
     if (!dateRange.dateTypeId) return true;
 
     if (isWinterSeason) {
-      return dateRange.dateTypeId === DATE_TYPE.WINTER_FEE;
+      return dateRange.dateTypeId === winterFeeDateTypeId;
     }
 
-    return dateRange.dateTypeId !== DATE_TYPE.WINTER_FEE;
+    return dateRange.dateTypeId !== winterFeeDateTypeId;
   });
 
   // dateRangeAnnuals
