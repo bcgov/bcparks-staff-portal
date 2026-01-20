@@ -972,12 +972,18 @@ router.get(
     const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "strapiDateTypeId");
 
     // Return the DateTypes in a specific order
-    const orderedDateTypes = getDateTypesForPark(park, dateTypesByDateTypeId);
+    const orderedDateTypes = getDateTypesForPark(
+      park,
+      dateTypesByDateTypeId,
+      seasonModel.seasonType,
+    );
 
-    // Add Park gate open date type
+    // Add Park gate open date type for regular seasons only
     // @TODO: This should be in its own property
     // because it's used by gate details and not the Reservations section
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
+    if (seasonModel.seasonType === SEASON_TYPE.REGULAR) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
+    }
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
