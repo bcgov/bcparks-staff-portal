@@ -20,7 +20,6 @@ import * as DATE_TYPE from "@/constants/dateType";
 export default function ParkSeasonForm({
   season,
   previousSeasonDates,
-  winterSeason,
   // All date types, including "Park gate open" and "Winter fee" (which is shown separately)
   dateTypes: allDateTypes,
   approver,
@@ -83,16 +82,8 @@ export default function ParkSeasonForm({
   );
 
   // Updates the date range in the parent component
-  function updateDateRange(
-    id,
-    dateField,
-    dateObj,
-    tempId = false,
-    seasonType = SEASON_TYPE.REGULAR,
-  ) {
-    const seasonData =
-      seasonType === SEASON_TYPE.WINTER ? winterSeason : season;
-    const { dateRanges } = seasonData.park.dateable;
+  function updateDateRange(id, dateField, dateObj, tempId = false) {
+    const { dateRanges } = season.park.dateable;
     // Find the dateRanges array index from the dateRange id or tempId
     const dateRangeIndex = dateRanges.findIndex((range) => {
       if (tempId) {
@@ -102,13 +93,9 @@ export default function ParkSeasonForm({
       return range.id === id;
     });
 
-    // Choose data path based on season type
-    const seasonKey =
-      seasonType === SEASON_TYPE.WINTER ? "currentWinter" : "current";
-
     // Path to update to the DateRange object
     const dateRangePath = [
-      seasonKey,
+      "current",
       "park",
       "dateable",
       "dateRanges",
@@ -132,16 +119,13 @@ export default function ParkSeasonForm({
   }
 
   // Adds a new date range to the Park's dateable.dateRanges
-  function addDateRange(dateType, seasonType = SEASON_TYPE.REGULAR) {
-    const seasonData =
-      seasonType === SEASON_TYPE.WINTER ? winterSeason : season;
-
+  function addDateRange(dateType) {
     const newDateRange = {
       // Add a temporary ID for records that haven't been saved yet
       tempId: crypto.randomUUID(),
       startDate: null,
       endDate: null,
-      dateableId: seasonData.park.dateable.id,
+      dateableId: season.park.dateable.id,
       dateType,
       dateTypeId: dateType.id,
       changed: true,
@@ -149,16 +133,14 @@ export default function ParkSeasonForm({
 
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
-      const seasonKey =
-        seasonType === SEASON_TYPE.WINTER ? "currentWinter" : "current";
 
-      updatedData[seasonKey].park.dateable.dateRanges.push(newDateRange);
+      updatedData.current.park.dateable.dateRanges.push(newDateRange);
       return updatedData;
     });
   }
 
   // Removes a date range from the Park's dateable.dateRanges by its ID or tempId
-  function removeDateRange(dateRange, seasonType = SEASON_TYPE.REGULAR) {
+  function removeDateRange(dateRange) {
     // Track deleted date range IDs
     if (dateRange.id) {
       addDeletedDateRangeId(dateRange.id);
@@ -166,9 +148,7 @@ export default function ParkSeasonForm({
 
     setData((prevData) => {
       const updatedData = cloneDeep(prevData);
-      const seasonKey =
-        seasonType === SEASON_TYPE.WINTER ? "currentWinter" : "current";
-      const { dateRanges } = updatedData[seasonKey].park.dateable;
+      const { dateRanges } = updatedData.current.park.dateable;
 
       const index = dateRanges.findIndex((range) => {
         // Find by ID if dateRange has one
