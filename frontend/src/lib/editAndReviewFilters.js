@@ -290,6 +290,18 @@ export function shouldShowTiersAndGateSection(park, filters) {
   // (Regardless of Tier 1/2 dates, all parks display the "Park gate open" section)
   let show = true;
 
+  // If "Status" filters are set
+  if (filters.status.length) {
+    // Show section if the park's regular season status matches
+    if (filters.status.includes(park.currentSeason.regular.status)) {
+      return true;
+    }
+
+    // If no relevant date type filters are set,
+    // hide the section unless it matches other criteria
+    show = false;
+  }
+
   // If "Date type" filters are set
   if (filters.dateTypes.length) {
     // "Park gate open" date type always shows the "Tiers and gate" section
@@ -363,6 +375,18 @@ export function shouldShowWinterFeeSection(park, filters) {
 
   // If no filters are selected, always show the section
   let show = true;
+
+  // If "Status" filters are set
+  if (filters.status.length) {
+    // Show section if the park's winter season status matches
+    if (filters.status.includes(park.currentSeason.winter.status)) {
+      return true;
+    }
+
+    // If no relevant date type filters are set,
+    // hide the section unless it matches other criteria
+    show = false;
+  }
 
   // If "Date type" filters are set
   if (filters.dateTypes.length) {
