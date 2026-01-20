@@ -324,6 +324,19 @@ export function shouldShowTiersAndGateSection(park, filters) {
     show = false;
   }
 
+  // If "Feature type" filters are set
+  if (filters.featureTypes.length) {
+    // If "Frontcountry campground" feature type is selected, hide the section.
+    // No "Feature type" options will specifically show the "Tiers and gate" section
+    if (
+      filters.featureTypes.some(
+        (featureType) => featureType.name === "Frontcountry campground",
+      )
+    ) {
+      show = false;
+    }
+  }
+
   // When "BCP reservations only" is selected,
   // only show if Tier 1/2 dates are requested for the Park
   if (filters.isInReservationSystem) {
