@@ -487,7 +487,11 @@ async function saveSeasonData({
     transaction,
   });
 
-  const winterFeeDateTypeId = winterFeeDateType?.id;
+  if (!winterFeeDateType) {
+    throw new Error("Required DateType WINTER_FEE not found in the database.");
+  }
+
+  const winterFeeDateTypeId = winterFeeDateType.id;
 
   // Filter date ranges based on season type
   // Winter seasons should only have Winter fee dates
