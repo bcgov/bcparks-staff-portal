@@ -33,7 +33,6 @@ function DootDatePickerComponent({
       <div className="input-with-append">
         <DatePicker
           id={`date-range-${id}-${dateField}`}
-          portalId={`date-picker-portal-${dateField}`}
           minDate={minDate}
           maxDate={maxDate}
           className={classNames("form-control", dateField)}
