@@ -706,16 +706,20 @@ router.post(
     const changeLogsToCreate = publishedSeasons.map((season) => {
       const lastLog = season.changeLogs?.[0];
 
+      const statusOldValue = lastLog?.statusNewValue || STATUS.APPROVED;
+      const readyToPublishValue = lastLog?.readyToPublishNewValue ?? true;
+      const gateDetailValue = lastLog?.gateDetailNewValue || null;
+
       return {
         seasonId: season.id,
         userId: req.user.id,
         notes: "",
-        statusOldValue: lastLog?.statusNewValue || STATUS.APPROVED,
+        statusOldValue,
         statusNewValue: STATUS.PUBLISHED,
-        readyToPublishOldValue: lastLog?.readyToPublishNewValue ?? true,
-        readyToPublishNewValue: null,
-        gateDetailOldValue: lastLog?.gateDetailNewValue || null,
-        gateDetailNewValue: null,
+        readyToPublishOldValue: readyToPublishValue,
+        readyToPublishNewValue: readyToPublishValue,
+        gateDetailOldValue: gateDetailValue,
+        gateDetailNewValue: gateDetailValue,
       };
     });
 
