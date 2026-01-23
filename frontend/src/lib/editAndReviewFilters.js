@@ -290,6 +290,24 @@ export function shouldShowTiersAndGateSection(park, filters) {
   // (Regardless of Tier 1/2 dates, all parks display the "Park gate open" section)
   let show = true;
 
+  // If "Feature type" filters are set, hide the section.
+  // Tiers and Gate have no applicable feature types.
+  if (filters.featureTypes.length) {
+    return false;
+  }
+
+  // If "Status" filters are set
+  if (filters.status.length) {
+    // Show section if the park's regular season status matches
+    if (filters.status.includes(park.currentSeason.regular.status)) {
+      return true;
+    }
+
+    // If no relevant date type filters are set,
+    // hide the section unless it matches other criteria
+    show = false;
+  }
+
   // If "Date type" filters are set
   if (filters.dateTypes.length) {
     // "Park gate open" date type always shows the "Tiers and gate" section
@@ -351,6 +369,31 @@ export function shouldShowWinterFeeSection(park, filters) {
   // If no filters are selected, always show the section
   let show = true;
 
+  // If "Feature type" filters are set
+  if (filters.featureTypes.length) {
+    // If "Frontcountry campground" feature type is not selected, hide the section
+    // Winter fees only apply to frontcountry campgrounds
+    if (
+      !filters.featureTypes.some(
+        (featureType) => featureType.name === "Frontcountry campground",
+      )
+    ) {
+      return false;
+    }
+  }
+
+  // If "Status" filters are set
+  if (filters.status.length) {
+    // Show section if the park's winter season status matches
+    if (filters.status.includes(park.currentSeason.winter.status)) {
+      return true;
+    }
+
+    // If no relevant date type filters are set,
+    // hide the section unless it matches other criteria
+    show = false;
+  }
+
   // If "Date type" filters are set
   if (filters.dateTypes.length) {
     // If "Winter fee" date type is selected, show the section
@@ -363,22 +406,6 @@ export function shouldShowWinterFeeSection(park, filters) {
     }
 
     // If other date types are selected,
-    // hide the section unless it matches other criteria
-    show = false;
-  }
-
-  // If "Feature type" filters are set
-  if (filters.featureTypes.length) {
-    // If "Frontcountry campground" feature type is selected, show the section
-    if (
-      filters.featureTypes.some(
-        (featureType) => featureType.name === "Frontcountry campground",
-      )
-    ) {
-      return true;
-    }
-
-    // If other feature types are selected,
     // hide the section unless it matches other criteria
     show = false;
   }
