@@ -79,6 +79,7 @@ function featureModel(minYear, where = {}) {
       {
         model: FeatureType,
         as: "featureType",
+        required: true,
         attributes: ["id", "strapiFeatureTypeId", "name"],
       },
       // Publishable Seasons for the Feature
