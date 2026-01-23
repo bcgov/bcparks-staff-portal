@@ -79,6 +79,7 @@ function featureModel(minYear, where = {}) {
       {
         model: FeatureType,
         as: "featureType",
+        required: true,
         attributes: ["id", "strapiFeatureTypeId", "name"],
       },
       // Publishable Seasons for the Feature
@@ -242,19 +243,8 @@ function buildParkAreaOutput(parkArea) {
     // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
     .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
 
-  // add featureType to parkArea if all features have the same featureType
-  let featureType = null;
-
-  if (
-    parkArea.features.length > 0 &&
-    parkArea.features.every(
-      (parkAreaFeature) =>
-        parkAreaFeature.featureType &&
-        parkAreaFeature.featureType.id === parkArea.features[0].featureType.id,
-    )
-  ) {
-    featureType = parkArea.features[0].featureType.get({ plain: true });
-  }
+  // Use the featureType of the first feature as the parkArea's featureType
+  const featureType = parkArea.features[0].featureType.get({ plain: true });
 
   // get a current season
   const currentSeason = buildCurrentSeasonOutput(parkArea.seasons);
