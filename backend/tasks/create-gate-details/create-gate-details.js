@@ -44,10 +44,9 @@ export async function createGateDetailsFromStrapi(transaction = null) {
     const parkOperationByOrcs = {};
 
     for (const parkOperation of parkOperationData.items) {
-      const orcs =
-        parkOperation.attributes?.protectedArea?.data?.attributes?.orcs;
+      const orcs = parkOperation?.protectedArea?.orcs;
 
-      if (orcs) parkOperationByOrcs[orcs] = parkOperation.attributes;
+      if (orcs) parkOperationByOrcs[orcs] = parkOperation;
     }
 
     // build lookup for park-operation-sub-area by name (parkSubArea)
