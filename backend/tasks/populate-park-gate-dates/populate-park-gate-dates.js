@@ -1,5 +1,5 @@
 // This script populates the Season and DateRange
-// based on data from Strapi park-operation-date model.
+// based on data from Strapi park-date model with Gate date type.
 
 import "../../env.js";
 
@@ -30,10 +30,8 @@ export async function populateParkGateDates() {
   const transaction = await Season.sequelize.transaction();
 
   try {
-    // get park-operation-date data from Strapi
-    const parkOperationDateData = await getStrapiModelData(
-      "park-operation-date",
-    );
+    // get park-date data from Strapi
+    const parkDateData = await getStrapiModelData("park-date");
 
     // build lookup for park by orcs
     const parks = await Park.findAll({ transaction });
@@ -51,13 +49,27 @@ export async function populateParkGateDates() {
       throw new Error('No DateType with name "Park gate open" found.');
     }
 
-    // group park-operation-date items by orcs and operatingYear
-    for (const operationDate of parkOperationDateData.items) {
-      const orcs =
-        operationDate.attributes?.protectedArea?.data?.attributes?.orcs;
-      const operatingYear = operationDate.attributes?.operatingYear;
-      const startDate = operationDate.attributes?.gateOpenDate;
-      const endDate = operationDate.attributes?.gateCloseDate;
+    // filter for gate dates that have protectedArea relation
+    const gateDates = parkDateData.items.filter((parkDate) => {
+      // must have parkDateType with Gate type
+      const isGateType =
+        parkDate.parkDateType?.dateTypeId === DATE_TYPE.PARK_GATE_OPEN;
+      // must have protectedArea relation (not null)
+      const hasProtectedArea = parkDate.protectedArea !== null;
+
+      return isGateType && hasProtectedArea;
+    });
+
+    console.log(
+      `Found ${gateDates.length} Gate dates with protectedArea out of ${parkDateData.items.length} total park-dates`,
+    );
+
+    // process each gate date
+    for (const gateDate of gateDates) {
+      const orcs = gateDate?.protectedArea?.orcs;
+      const operatingYear = gateDate?.operatingYear;
+      const startDate = gateDate?.startDate;
+      const endDate = gateDate?.endDate;
 
       if (!orcs || !operatingYear || !startDate || !endDate) continue;
 
@@ -101,13 +113,18 @@ export async function populateParkGateDates() {
       });
 
       // if dateRange exists but dates differ, update them
+      const existingStartDate = new Date(dateRange.startDate);
+      const existingEndDate = new Date(dateRange.endDate);
+      const newStartDate = new Date(startDate);
+      const newEndDate = new Date(endDate);
+
       if (
-        dateRange.startDate.getTime() !== new Date(startDate).getTime() ||
-        dateRange.endDate.getTime() !== new Date(endDate).getTime() ||
+        existingStartDate.getTime() !== newStartDate.getTime() ||
+        existingEndDate.getTime() !== newEndDate.getTime() ||
         dateRange.dateableId !== park.dateableId
       ) {
-        dateRange.startDate = new Date(startDate);
-        dateRange.endDate = new Date(endDate);
+        dateRange.startDate = newStartDate;
+        dateRange.endDate = newEndDate;
         dateRange.dateableId = park.dateableId;
         await dateRange.save({ transaction });
       }
