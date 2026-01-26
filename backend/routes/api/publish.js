@@ -14,6 +14,7 @@ import {
   Park,
   ParkArea,
   Season,
+  SeasonChangeLog,
 } from "../../models/index.js";
 
 import { checkPermissions } from "../../middleware/permissions.js";
@@ -684,6 +685,43 @@ router.post(
       { status: STATUS.PUBLISHED },
       { where: { id: { [Op.in]: publishedSeasonIds } } },
     );
+
+    // Fetch the published seasons
+    const publishedSeasons = await Season.findAll({
+      where: { id: { [Op.in]: publishedSeasonIds } },
+      include: [
+        {
+          model: SeasonChangeLog,
+          as: "changeLogs",
+          separate: true,
+          limit: 1,
+          order: [["createdAt", "DESC"]],
+        },
+      ],
+    });
+
+    // Create season change logs for the published seasons
+    const changeLogsToCreate = publishedSeasons.map((season) => {
+      const lastLog = season.changeLogs?.[0];
+
+      const statusOldValue = lastLog?.statusNewValue || STATUS.APPROVED;
+      const readyToPublishValue = lastLog?.readyToPublishNewValue ?? true;
+      const gateDetailValue = lastLog?.gateDetailNewValue || null;
+
+      return {
+        seasonId: season.id,
+        userId: req.user.id,
+        notes: "",
+        statusOldValue,
+        statusNewValue: STATUS.PUBLISHED,
+        readyToPublishOldValue: readyToPublishValue,
+        readyToPublishNewValue: readyToPublishValue,
+        gateDetailOldValue: gateDetailValue,
+        gateDetailNewValue: gateDetailValue,
+      };
+    });
+
+    await SeasonChangeLog.bulkCreate(changeLogsToCreate);
 
     // Send 200 OK response with empty body
     res.send();
