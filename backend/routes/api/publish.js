@@ -16,10 +16,8 @@ import {
   Season,
 } from "../../models/index.js";
 
-import {
-  adminsAndApprovers,
-  checkPermissions,
-} from "../../middleware/permissions.js";
+import { checkPermissions } from "../../middleware/permissions.js";
+import * as USER_ROLES from "../../constants/userRoles.js";
 
 import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
@@ -520,7 +518,7 @@ async function formatParkAreaData(parkArea, season) {
 // For a list of season IDs, fetch the season data from our DB and send it to Strapi
 router.post(
   "/publish-to-api/",
-  checkPermissions(adminsAndApprovers),
+  checkPermissions([USER_ROLES.APPROVER]),
   asyncHandler(async (req, res) => {
     const seasonIds = req.body.seasonIds;
 

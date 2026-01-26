@@ -1,9 +1,7 @@
-// TODO: include checks when we have list of POs and AccessGroups
-
-export const adminsAndApprovers = ["doot-super-admin", "doot-approver"];
+import checkUserRoles, { getRolesFromAuth } from "../utils/checkUserRoles.js";
 
 /**
- * Checks if the user has the required roles to access the route
+ * Checks if the user has the required roles to access the route. Always allows Super Admin users.
  * @param {Array<string>} requiredRoles List of roles that are allowed to access the route
  * @returns {Function} - Express middleware function
  */
@@ -14,12 +12,10 @@ export function checkPermissions(requiredRoles) {
         throw new Error("Authentication data missing");
       }
 
-      const userRoles = req.auth.resource_access["staff-portal"].roles;
+      const userRoles = getRolesFromAuth(req.auth);
 
-      // Check if user has at least one required role
-      const hasPermission = requiredRoles.some((role) =>
-        userRoles.includes(role),
-      );
+      // Check if user has at least one required role (or is a Super Admin)
+      const hasPermission = checkUserRoles(userRoles, requiredRoles);
 
       if (!hasPermission) {
         return res.status(403).json({
