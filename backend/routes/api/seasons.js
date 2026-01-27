@@ -1044,27 +1044,44 @@ router.post(
     } = req.body;
     let { readyToPublish } = req.body;
 
+    // Check the user's roles from their auth data
     const userRoles = getRolesFromAuth(req.auth);
+    const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
+    const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.SUBMITTER]);
 
-    // Contributors can only save drafts; they cannot submit for review.
-    // If the payload is trying to set status to anything other than "requested",
-    // check if the user is a submitter. If not, throw an error.
-    if (status !== STATUS.REQUESTED) {
-      const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.SUBMITTER]);
+    // Contributors can only save drafts. If the payload is trying to set status
+    // to anything other than "requested", check if the user has permission.
+    if (status === STATUS.PENDING_REVIEW && !isSubmitter) {
+      const error = new Error(
+        "Permission denied: You do not have permission to submit this season for review.",
+      );
 
-      if (!isSubmitter) {
-        const error = new Error(
-          "Permission denied: You do not have permission to submit this season for review.",
-        );
+      error.status = 403;
+      throw error;
+    }
 
-        error.status = 403;
-        throw error;
-      }
+    if (status === STATUS.APPROVED && !isApprover) {
+      const error = new Error(
+        "Permission denied: You do not have permission to approve this season for publishing.",
+      );
+
+      error.status = 403;
+      throw error;
+    }
+
+    // Disallow changing the season status to anything other than the preset statuses
+    if (
+      status !== STATUS.REQUESTED &&
+      status !== STATUS.PENDING_REVIEW &&
+      status !== STATUS.APPROVED
+    ) {
+      const error = new Error("Permission denied: Invalid season status");
+
+      error.status = 400;
+      throw error;
     }
 
     // If the user isn't an approver, they shouldn't be able to set readyToPublish
-    const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
-
     if (!isApprover) {
       // Clear the value from the request body
       // This will prevent the user from changing readyToPublish
@@ -1115,92 +1132,6 @@ router.post(
       await transaction.rollback();
       throw error; // Re-throw to let global error handler catch it
     }
-  }),
-);
-
-// Approve
-router.post(
-  "/:seasonId/approve/",
-  checkPermissions([USER_ROLES.APPROVER]),
-  asyncHandler(async (req, res) => {
-    const seasonId = Number(req.params.seasonId);
-
-    const transaction = await sequelize.transaction();
-
-    try {
-      // Fetch the season and try three different ways to get the related Park
-      const season = await Season.findByPk(seasonId, {
-        include: [
-          {
-            model: Park, // related to park directly
-            as: "park",
-            required: false,
-          },
-          {
-            model: ParkArea, // related to park through park area
-            as: "parkArea",
-            required: false,
-            include: [
-              {
-                model: Park,
-                as: "park",
-                required: false,
-              },
-            ],
-          },
-          {
-            model: Feature, // related to park through feature
-            as: "feature",
-            required: false,
-            include: [
-              {
-                model: Park,
-                as: "park",
-                required: false,
-              },
-            ],
-          },
-        ],
-        transaction,
-      });
-
-      // Get the park from whichever relation is available
-      season.park =
-        season.park || season.parkArea?.park || season.feature?.park || null;
-
-      // Remove parkArea and feature references
-      delete season.parkArea;
-      delete season.feature;
-
-      checkSeasonExists(season);
-
-      await updateStatus(seasonId, STATUS.APPROVED, null, transaction);
-
-      // @TODO: Uncomment after revising the logic for FCFS
-      // await createFirstComeFirstServedDateRange(seasonId, transaction);
-
-      // Copy Winter fee dates from the Park level to Features and Park Areas
-      // @TODO: Uncomment after revising the logic for Winter fees
-      // await propagateWinterFeeDates(seasonId, transaction);
-
-      await transaction.commit();
-      res.sendStatus(200);
-    } catch (error) {
-      await transaction.rollback();
-      throw error; // Re-throw to let global error handler catch it
-    }
-  }),
-);
-
-// Submit for review
-router.post(
-  "/:seasonId/submit/",
-  asyncHandler(async (req, res) => {
-    const seasonId = Number(req.params.seasonId);
-
-    await updateStatus(seasonId, STATUS.PENDING_REVIEW);
-
-    res.sendStatus(200);
   }),
 );
 
