@@ -1176,27 +1176,6 @@ router.post(
 
       await updateStatus(seasonId, STATUS.APPROVED, null, transaction);
 
-      // If this park has winter fee dates, find and approve the winter season too
-      if (season.park.hasWinterFeeDates) {
-        const winterSeason = await Season.findOne({
-          where: {
-            publishableId: season.publishableId,
-            operatingYear: season.operatingYear,
-            seasonType: SEASON_TYPE.WINTER,
-          },
-          transaction,
-        });
-
-        if (winterSeason) {
-          await updateStatus(
-            winterSeason.id,
-            STATUS.APPROVED,
-            null,
-            transaction,
-          );
-        }
-      }
-
       // @TODO: Uncomment after revising the logic for FCFS
       // await createFirstComeFirstServedDateRange(seasonId, transaction);
 
