@@ -1032,7 +1032,7 @@ router.get(
 // Save draft
 router.post(
   "/:seasonId/save/",
-  checkPermissions([USER_ROLES.SUBMITTER]),
+  checkPermissions([USER_ROLES.SUBMITTER, USER_ROLES.CONTRIBUTOR]),
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const {
@@ -1044,10 +1044,26 @@ router.post(
     } = req.body;
     let { readyToPublish } = req.body;
 
+    const userRoles = getRolesFromAuth(req.auth);
+
+    // Contributors can only save drafts; they cannot submit for review.
+    // If the payload is trying to set status to anything other than "requested",
+    // check if the user is a submitter. If not, throw an error.
+    if (status !== STATUS.REQUESTED) {
+      const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.SUBMITTER]);
+
+      if (!isSubmitter) {
+        const error = new Error(
+          "Permission denied: You do not have permission to submit this season for review.",
+        );
+
+        error.status = 403;
+        throw error;
+      }
+    }
+
     // If the user isn't an approver, they shouldn't be able to set readyToPublish
-    const isApprover = checkUserRoles(getRolesFromAuth(req.auth), [
-      USER_ROLES.APPROVER,
-    ]);
+    const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
 
     if (!isApprover) {
       // Clear the value from the request body

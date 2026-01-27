@@ -376,19 +376,26 @@ function SeasonForm({
         );
     }
 
-    await sendSave(payload);
+    try {
+      // Send the save request to the API
+      await sendSave(payload);
 
-    // Start refreshing the main page data from the API
-    onDataUpdate();
+      // Start refreshing the main page data from the API
+      onDataUpdate();
 
-    // Reset the form state
-    setNotes("");
-    setDeletedDateRangeIds([]);
+      // Reset the form state
+      setNotes("");
+      setDeletedDateRangeIds([]);
 
-    if (close) {
-      closePanel();
-    } else {
-      resetData();
+      if (close) {
+        closePanel();
+      } else {
+        resetData();
+      }
+    } catch (saveError) {
+      // @TODO: Catch API error and show a flash message
+      console.error("Error saving season:", saveError);
+      throw saveError;
     }
   }
 
@@ -411,13 +418,17 @@ If dates have already been published, they will not be updated until new dates a
       }
     }
 
-    // Save draft, and allow saving with validation errors
-    await saveForm(close, true, STATUS.REQUESTED.value);
+    try {
+      // Save draft, and allow saving with validation errors
+      await saveForm(close, true, STATUS.REQUESTED.value);
 
-    flashMessage.open(
-      "Dates saved as draft",
-      `${seasonTitle} ${season.operatingYear} details saved`,
-    );
+      flashMessage.open(
+        "Dates saved as draft",
+        `${seasonTitle} ${season.operatingYear} details saved`,
+      );
+    } catch (saveError) {
+      console.error("Error saving season as draft:", saveError);
+    }
   }
 
   async function onApprove() {
