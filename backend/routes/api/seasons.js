@@ -1044,6 +1044,18 @@ router.post(
     } = req.body;
     let { readyToPublish } = req.body;
 
+    // Disallow changing the season status to anything other than the preset statuses
+    if (
+      status !== STATUS.REQUESTED &&
+      status !== STATUS.PENDING_REVIEW &&
+      status !== STATUS.APPROVED
+    ) {
+      const error = new Error("Validation error: Invalid season status");
+
+      error.status = 400;
+      throw error;
+    }
+
     // Check the user's roles from their auth data
     const userRoles = getRolesFromAuth(req.auth);
     const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
@@ -1066,18 +1078,6 @@ router.post(
       );
 
       error.status = 403;
-      throw error;
-    }
-
-    // Disallow changing the season status to anything other than the preset statuses
-    if (
-      status !== STATUS.REQUESTED &&
-      status !== STATUS.PENDING_REVIEW &&
-      status !== STATUS.APPROVED
-    ) {
-      const error = new Error("Permission denied: Invalid season status");
-
-      error.status = 400;
       throw error;
     }
 
