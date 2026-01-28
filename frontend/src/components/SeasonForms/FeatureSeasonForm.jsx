@@ -17,6 +17,71 @@ import { updateDateRangeAnnualsArray } from "@/lib/utils";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
+// Individual Feature form section
+function FormSection({
+  dateTypes,
+  feature,
+  previousDatesByType,
+  datesByType,
+  season,
+  updateDateRange,
+  addDateRange,
+  removeDateRange,
+  dateRangeAnnuals,
+  updateDateRangeAnnual,
+}) {
+  const { elements } = useValidationContext();
+
+  return (
+    <div className="row">
+      {dateTypes.map((dateType) => (
+        <div key={dateType.name} className="col-lg-6 mb-4">
+          <h6 className="fw-normal">
+            {dateType.name}{" "}
+            <TooltipWrapper placement="top" content={dateType.description}>
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+
+          {isDateTypeOptional(dateType.strapiDateTypeId, "feature") && (
+            <div className="my-2 text-secondary-grey">(Optional)</div>
+          )}
+
+          <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
+
+          <DateRangeFields
+            dateableId={feature.dateableId}
+            dateType={dateType}
+            dateRanges={datesByType[dateType.name] ?? []}
+            operatingYear={season.operatingYear}
+            updateDateRange={updateDateRange}
+            addDateRange={addDateRange}
+            removeDateRange={removeDateRange}
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
+            optional={isDateTypeOptional(dateType.strapiDateTypeId, "feature")}
+          />
+
+          <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+FormSection.propTypes = {
+  dateTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  feature: PropTypes.object.isRequired,
+  previousDatesByType: PropTypes.object.isRequired,
+  datesByType: PropTypes.object.isRequired,
+  season: PropTypes.object.isRequired,
+  updateDateRange: PropTypes.func.isRequired,
+  addDateRange: PropTypes.func.isRequired,
+  removeDateRange: PropTypes.func.isRequired,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+  updateDateRangeAnnual: PropTypes.func.isRequired,
+};
+
 export default function FeatureSeasonForm({
   season,
   previousSeasonDates,
@@ -174,60 +239,38 @@ export default function FeatureSeasonForm({
     });
   }
 
-  // Individual Feature form section
-  function FormSection() {
-    const { elements } = useValidationContext();
-
-    return (
-      <div className="row">
-        {dateTypes.map((dateType) => (
-          <div key={dateType.name} className="col-lg-6 mb-4">
-            <h6 className="fw-normal">
-              {dateType.name}{" "}
-              <TooltipWrapper placement="top" content={dateType.description}>
-                <FontAwesomeIcon icon={faCircleInfo} />
-              </TooltipWrapper>
-            </h6>
-
-            {isDateTypeOptional(dateType.strapiDateTypeId, "feature") && (
-              <div className="my-2 text-secondary-grey">(Optional)</div>
-            )}
-
-            <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
-
-            <DateRangeFields
-              dateableId={feature.dateableId}
-              dateType={dateType}
-              dateRanges={datesByType[dateType.name] ?? []}
-              operatingYear={season.operatingYear}
-              updateDateRange={updateDateRange}
-              addDateRange={addDateRange}
-              removeDateRange={removeDateRange}
-              dateRangeAnnuals={dateRangeAnnuals}
-              updateDateRangeAnnual={updateDateRangeAnnual}
-              optional={isDateTypeOptional(
-                dateType.strapiDateTypeId,
-                "feature",
-              )}
-            />
-
-            <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <>
       {showDateFormSections &&
         (feature.inReservationSystem ? (
           <FormContainer>
-            <FormSection />
+            <FormSection
+              dateTypes={dateTypes}
+              feature={feature}
+              previousDatesByType={previousDatesByType}
+              datesByType={datesByType}
+              season={season}
+              updateDateRange={updateDateRange}
+              addDateRange={addDateRange}
+              removeDateRange={removeDateRange}
+              dateRangeAnnuals={dateRangeAnnuals}
+              updateDateRangeAnnual={updateDateRangeAnnual}
+            />
           </FormContainer>
         ) : (
           <div className="non-bcp-reservations">
-            <FormSection />
+            <FormSection
+              dateTypes={dateTypes}
+              feature={feature}
+              previousDatesByType={previousDatesByType}
+              datesByType={datesByType}
+              season={season}
+              updateDateRange={updateDateRange}
+              addDateRange={addDateRange}
+              removeDateRange={removeDateRange}
+              dateRangeAnnuals={dateRangeAnnuals}
+              updateDateRangeAnnual={updateDateRangeAnnual}
+            />
           </div>
         ))}
 

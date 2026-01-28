@@ -17,6 +17,72 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as DATE_TYPE from "@/constants/dateType";
 
+// Individual Park form section
+function FormSection({
+  dateTypes,
+  park,
+  previousDatesByType,
+  datesByType,
+  season,
+  isWinterSeason,
+  updateDateRange,
+  addDateRange,
+  removeDateRange,
+  dateRangeAnnuals,
+  updateDateRangeAnnual,
+}) {
+  return (
+    <div className="row">
+      {dateTypes.map((dateType) => (
+        <div key={dateType.name} className="col-lg-6 mb-4">
+          <h6 className="fw-normal">
+            {dateType.name}{" "}
+            <TooltipWrapper placement="top" content={dateType.description}>
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+
+          {isDateTypeOptional(dateType.strapiDateTypeId, "park") && (
+            <div className="my-2 text-secondary-grey">(Optional)</div>
+          )}
+
+          <PreviousDates
+            dateRanges={previousDatesByType?.[dateType.strapiDateTypeId]}
+          />
+
+          <DateRangeFields
+            dateableId={park.dateableId}
+            dateType={dateType}
+            dateRanges={datesByType[dateType.strapiDateTypeId] ?? []}
+            operatingYear={season.operatingYear}
+            isWinterSeason={isWinterSeason}
+            updateDateRange={updateDateRange}
+            addDateRange={addDateRange}
+            removeDateRange={removeDateRange}
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
+            optional={isDateTypeOptional(dateType.strapiDateTypeId, "park")}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+FormSection.propTypes = {
+  dateTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  park: PropTypes.object.isRequired,
+  previousDatesByType: PropTypes.object.isRequired,
+  datesByType: PropTypes.object.isRequired,
+  season: PropTypes.object.isRequired,
+  isWinterSeason: PropTypes.bool.isRequired,
+  updateDateRange: PropTypes.func.isRequired,
+  addDateRange: PropTypes.func.isRequired,
+  removeDateRange: PropTypes.func.isRequired,
+  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+  updateDateRangeAnnual: PropTypes.func.isRequired,
+};
+
 export default function ParkSeasonForm({
   season,
   previousSeasonDates,
@@ -209,62 +275,42 @@ export default function ParkSeasonForm({
     });
   }
 
-  // Individual Park form section
-  function FormSection({ dateTypes }) {
-    return (
-      <div className="row">
-        {dateTypes.map((dateType) => (
-          <div key={dateType.name} className="col-lg-6 mb-4">
-            <h6 className="fw-normal">
-              {dateType.name}{" "}
-              <TooltipWrapper placement="top" content={dateType.description}>
-                <FontAwesomeIcon icon={faCircleInfo} />
-              </TooltipWrapper>
-            </h6>
-
-            {isDateTypeOptional(dateType.strapiDateTypeId, "park") && (
-              <div className="my-2 text-secondary-grey">(Optional)</div>
-            )}
-
-            <PreviousDates
-              dateRanges={previousDatesByType?.[dateType.strapiDateTypeId]}
-            />
-
-            <DateRangeFields
-              dateableId={park.dateableId}
-              dateType={dateType}
-              dateRanges={datesByType[dateType.strapiDateTypeId] ?? []}
-              operatingYear={season.operatingYear}
-              isWinterSeason={isWinterSeason}
-              updateDateRange={updateDateRange}
-              addDateRange={addDateRange}
-              removeDateRange={removeDateRange}
-              dateRangeAnnuals={dateRangeAnnuals}
-              updateDateRangeAnnual={updateDateRangeAnnual}
-              optional={isDateTypeOptional(dateType.strapiDateTypeId, "park")}
-            />
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  FormSection.propTypes = {
-    dateTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  };
-
   return (
     <>
       {isWinterSeason ? (
         <FormContainer>
-          <FormSection dateTypes={[winterDateType]} />
+          <FormSection
+            dateTypes={[winterDateType]}
+            park={park}
+            previousDatesByType={previousDatesByType}
+            datesByType={datesByType}
+            season={season}
+            isWinterSeason={isWinterSeason}
+            updateDateRange={updateDateRange}
+            addDateRange={addDateRange}
+            removeDateRange={removeDateRange}
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
+          />
         </FormContainer>
       ) : (
         <>
           {/* Tier 1 and Tier 2 dates */}
           {showDateFormSections && useBcpReservationsSection && (
             <FormContainer>
-              <FormSection dateTypes={regularDateTypes} />
+              <FormSection
+                dateTypes={regularDateTypes}
+                park={park}
+                previousDatesByType={previousDatesByType}
+                datesByType={datesByType}
+                season={season}
+                isWinterSeason={isWinterSeason}
+                updateDateRange={updateDateRange}
+                addDateRange={addDateRange}
+                removeDateRange={removeDateRange}
+                dateRangeAnnuals={dateRangeAnnuals}
+                updateDateRangeAnnual={updateDateRangeAnnual}
+              />
             </FormContainer>
           )}
 
