@@ -65,7 +65,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
     }
 
     console.log(
-      `Found ${strapiProtectedAreas.length} protectedAreas with parkOperations in Strapi`,
+      `Found ${strapiProtectedAreas.length} Active protectedAreas with parkOperations in Strapi`,
     );
 
     // Create management area lookup
