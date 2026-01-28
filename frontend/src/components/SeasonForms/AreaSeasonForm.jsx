@@ -458,6 +458,7 @@ export default function AreaSeasonForm({
 
       // Path to update to the DateRange object
       const dateRangePath = [
+        "current",
         "parkArea",
         "features",
         featureIndex,
@@ -469,8 +470,8 @@ export default function AreaSeasonForm({
       // The DateRange input component fires onSelect even if the date didn't change,
       // so check if the value actually changed to avoid unnecessary updates.
       const existingDate = lodashGet(
-        season,
-        [...dateRangePath, dateField],
+        season.parkArea.features,
+        [featureIndex, "dateable", "dateRanges", dateRangeIndex, dateField],
         null,
       );
 
@@ -484,19 +485,15 @@ export default function AreaSeasonForm({
         // Update the start or end date field
         updatedData = lodashSet(
           updatedData,
-          ["current", ...dateRangePath, dateField],
+          [...dateRangePath, dateField],
           dateObj,
         );
 
         // Update the changed flag for the date range
-        return lodashSet(
-          updatedData,
-          ["current", ...dateRangePath, "changed"],
-          true,
-        );
+        return lodashSet(updatedData, [...dateRangePath, "changed"], true);
       });
     },
-    [setData, season],
+    [setData, season.parkArea.features],
   );
 
   return (
