@@ -18,88 +18,11 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 // Individual Feature form section
-function FormSection({
-  dateTypes,
-  feature,
-  previousDatesByType,
-  datesByType,
-  season,
-  updateDateRange,
-  addDateRange,
-  removeDateRange,
-  dateRangeAnnuals,
-  updateDateRangeAnnual,
-}) {
+function FormSection({ dateTypes, feature, season, previousSeasonDates }) {
   const { elements } = useValidationContext();
-
-  return (
-    <div className="row">
-      {dateTypes.map((dateType) => (
-        <div key={dateType.name} className="col-lg-6 mb-4">
-          <h6 className="fw-normal">
-            {dateType.name}{" "}
-            <TooltipWrapper placement="top" content={dateType.description}>
-              <FontAwesomeIcon icon={faCircleInfo} />
-            </TooltipWrapper>
-          </h6>
-
-          {isDateTypeOptional(dateType.strapiDateTypeId, "feature") && (
-            <div className="my-2 text-secondary-grey">(Optional)</div>
-          )}
-
-          <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
-
-          <DateRangeFields
-            dateableId={feature.dateableId}
-            dateType={dateType}
-            dateRanges={datesByType[dateType.name] ?? []}
-            operatingYear={season.operatingYear}
-            updateDateRange={updateDateRange}
-            addDateRange={addDateRange}
-            removeDateRange={removeDateRange}
-            dateRangeAnnuals={dateRangeAnnuals}
-            updateDateRangeAnnual={updateDateRangeAnnual}
-            optional={isDateTypeOptional(dateType.strapiDateTypeId, "feature")}
-          />
-
-          <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
-        </div>
-      ))}
-    </div>
-  );
-}
-
-FormSection.propTypes = {
-  dateTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
-  feature: PropTypes.object.isRequired,
-  previousDatesByType: PropTypes.object.isRequired,
-  datesByType: PropTypes.object.isRequired,
-  season: PropTypes.object.isRequired,
-  updateDateRange: PropTypes.func.isRequired,
-  addDateRange: PropTypes.func.isRequired,
-  removeDateRange: PropTypes.func.isRequired,
-  dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
-  updateDateRangeAnnual: PropTypes.func.isRequired,
-};
-
-export default function FeatureSeasonForm({
-  season,
-  previousSeasonDates,
-  dateTypes,
-  approver,
-}) {
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
-  const feature = season.feature;
   const dateRangeAnnuals = season.dateRangeAnnuals || [];
-  const gateDetail = season.gateDetail || {};
-
-  // Show the date form sections only if there are applicable date types for this feature.
-  // If there are no date types to show, the section would be empty, so we won't render it.
-  const showDateFormSections = useMemo(
-    () => dateTypes.length > 0,
-    [dateTypes.length],
-  );
 
   const datesByType = useMemo(
     () => groupBy(feature.dateable.dateRanges, "dateType.name"),
@@ -202,17 +125,6 @@ export default function FeatureSeasonForm({
     });
   }
 
-  // Updates the readyToPublish state in the season data object
-  function setReadyToPublish(value) {
-    setData((prevData) => {
-      const updatedData = cloneDeep(prevData);
-
-      updatedData.current.readyToPublish = value;
-
-      return updatedData;
-    });
-  }
-
   // Updates the isDateRangeAnnual state in the season data object
   function updateDateRangeAnnual(updatedAnnual) {
     setData((prevData) => {
@@ -222,6 +134,79 @@ export default function FeatureSeasonForm({
         updatedData.current.dateRangeAnnuals,
         updatedAnnual,
       );
+      return updatedData;
+    });
+  }
+
+  return (
+    <div className="row">
+      {dateTypes.map((dateType) => (
+        <div key={dateType.name} className="col-lg-6 mb-4">
+          <h6 className="fw-normal">
+            {dateType.name}{" "}
+            <TooltipWrapper placement="top" content={dateType.description}>
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+
+          {isDateTypeOptional(dateType.strapiDateTypeId, "feature") && (
+            <div className="my-2 text-secondary-grey">(Optional)</div>
+          )}
+
+          <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
+
+          <DateRangeFields
+            dateableId={feature.dateableId}
+            dateType={dateType}
+            dateRanges={datesByType[dateType.name] ?? []}
+            operatingYear={season.operatingYear}
+            updateDateRange={updateDateRange}
+            addDateRange={addDateRange}
+            removeDateRange={removeDateRange}
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
+            optional={isDateTypeOptional(dateType.strapiDateTypeId, "feature")}
+          />
+
+          <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+FormSection.propTypes = {
+  dateTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  feature: PropTypes.object.isRequired,
+  season: PropTypes.object.isRequired,
+  previousSeasonDates: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
+export default function FeatureSeasonForm({
+  season,
+  previousSeasonDates,
+  dateTypes,
+  approver,
+}) {
+  const { setData } = useContext(DataContext);
+
+  const feature = season.feature;
+  const gateDetail = season.gateDetail || {};
+
+  // Show the date form sections only if there are applicable date types for this feature.
+  // If there are no date types to show, the section would be empty, so we won't render it.
+  const showDateFormSections = useMemo(
+    () => dateTypes.length > 0,
+    [dateTypes.length],
+  );
+
+  // Updates the readyToPublish state in the season data object
+  function setReadyToPublish(value) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.readyToPublish = value;
+
       return updatedData;
     });
   }
@@ -247,14 +232,8 @@ export default function FeatureSeasonForm({
             <FormSection
               dateTypes={dateTypes}
               feature={feature}
-              previousDatesByType={previousDatesByType}
-              datesByType={datesByType}
               season={season}
-              updateDateRange={updateDateRange}
-              addDateRange={addDateRange}
-              removeDateRange={removeDateRange}
-              dateRangeAnnuals={dateRangeAnnuals}
-              updateDateRangeAnnual={updateDateRangeAnnual}
+              previousSeasonDates={previousSeasonDates}
             />
           </FormContainer>
         ) : (
@@ -262,14 +241,8 @@ export default function FeatureSeasonForm({
             <FormSection
               dateTypes={dateTypes}
               feature={feature}
-              previousDatesByType={previousDatesByType}
-              datesByType={datesByType}
               season={season}
-              updateDateRange={updateDateRange}
-              addDateRange={addDateRange}
-              removeDateRange={removeDateRange}
-              dateRangeAnnuals={dateRangeAnnuals}
-              updateDateRangeAnnual={updateDateRangeAnnual}
+              previousSeasonDates={previousSeasonDates}
             />
           </div>
         ))}
