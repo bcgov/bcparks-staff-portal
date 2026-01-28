@@ -993,18 +993,18 @@ router.get(
       seasonModel.seasonType,
     );
 
-    // Add Park gate open date type for regular seasons only
-    // @TODO: This should be in its own property
-    // because it's used by gate details and not the Reservations section
+    let gateDetail = null;
+
+    // Add park gate data for regular (non-winter) seasons
     if (seasonModel.seasonType === SEASON_TYPE.REGULAR) {
       orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
+      gateDetail = await getGateDetail(seasonModel.publishableId);
     }
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
-    const gateDetail = await getGateDetail(seasonModel.publishableId);
 
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {

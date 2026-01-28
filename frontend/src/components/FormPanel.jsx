@@ -295,8 +295,11 @@ function SeasonForm({
     // Check if any date annuals were updated
     if (changesPayload.dateRangeAnnuals.length) return true;
 
-    // Check if any gateDetail values changed
-    if (!isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail))
+    // Check if any gateDetail values changed (for regular seasons)
+    if (
+      season.seasonType === SEASON_TYPE.REGULAR &&
+      !isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail)
+    )
       return true;
 
     // If nothing else has changed, return true if notes are entered
