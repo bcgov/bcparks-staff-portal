@@ -127,14 +127,6 @@ function SeasonForm({
   );
   const validation = useValidation(data, validationContext);
 
-  const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
-    `/seasons/${seasonId}/approve/`,
-  );
-
-  const { sendData: sendSubmit, loading: sendingSubmit } = useApiPost(
-    `/seasons/${seasonId}/submit/`,
-  );
-
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
   );
@@ -433,10 +425,8 @@ If dates have already been published, they will not be updated until new dates a
 
   async function onApprove() {
     try {
-      // Save first, then approve
+      // Save and update status
       await saveForm(false, false, STATUS.APPROVED.value); // Don't close the form after saving
-
-      await sendApprove();
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -454,10 +444,8 @@ If dates have already been published, they will not be updated until new dates a
 
   async function onSubmit() {
     try {
-      // Save first, then submit
+      // Save and update status
       await saveForm(false, false, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
-
-      await sendSubmit();
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -578,7 +566,7 @@ If dates have already been published, they will not be updated until new dates a
             onApprove={onApprove}
             onSave={() => promptAndSave(false)}
             onSubmit={onSubmit}
-            loading={sendingApprove || sendingSubmit || sendingSave}
+            loading={sendingSave}
           />
         </Offcanvas.Body>
       </ValidationContext.Provider>

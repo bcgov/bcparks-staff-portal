@@ -167,15 +167,11 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
   );
-  const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
-    `/seasons/${seasonId}/approve/`,
-  );
 
   async function approveSeason() {
     try {
-      // Save first, then approve
+      // Save and update status
       await sendSave({ status: "approved" });
-      await sendApprove();
 
       // Refresh the main page data from the API
       await refreshTable();
@@ -194,7 +190,7 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
       label="Approve"
       textColor={color}
       onClick={approveSeason}
-      loading={sendingSave || sendingApprove}
+      loading={sendingSave}
       disabled={isDisabled}
     />
   );
