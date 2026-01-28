@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   groupBy,
   set as lodashSet,
+  get as lodashGet,
   cloneDeep,
   mapValues,
   keyBy,
@@ -10,6 +11,7 @@ import {
 } from "lodash-es";
 import { memo, useMemo, useContext, useCallback } from "react";
 import PropTypes from "prop-types";
+import { isEqual } from "date-fns";
 
 import DateRangeFields from "@/components/DateRangeFields";
 import FormContainer from "@/components/FormContainer";
@@ -189,12 +191,18 @@ export default function AreaSeasonForm({
 
     // Path to update to the DateRange object
     const dateRangePath = [
-      "current",
       "parkArea",
       "dateable",
       "dateRanges",
       dateRangeIndex,
     ];
+
+    // The DateRange input component fires onSelect even if the date didn't change,
+    // so check if the value actually changed to avoid unnecessary updates.
+    const existingDate = lodashGet(season, [...dateRangePath, dateField], null);
+
+    // If the value hasn't changed, don't call setData
+    if (isEqual(existingDate, dateObj)) return;
 
     // Update the local state (in the FormPanel component)
     setData((prevData) => {
@@ -203,12 +211,16 @@ export default function AreaSeasonForm({
       // Update the start or end date field
       updatedData = lodashSet(
         updatedData,
-        [...dateRangePath, dateField],
+        ["current", ...dateRangePath, dateField],
         dateObj,
       );
 
       // Update the changed flag for the date range
-      return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+      return lodashSet(
+        updatedData,
+        ["current", ...dateRangePath, "changed"],
+        true,
+      );
     });
   }
 
@@ -446,7 +458,6 @@ export default function AreaSeasonForm({
 
       // Path to update to the DateRange object
       const dateRangePath = [
-        "current",
         "parkArea",
         "features",
         featureIndex,
@@ -455,6 +466,17 @@ export default function AreaSeasonForm({
         dateRangeIndex,
       ];
 
+      // The DateRange input component fires onSelect even if the date didn't change,
+      // so check if the value actually changed to avoid unnecessary updates.
+      const existingDate = lodashGet(
+        season,
+        [...dateRangePath, dateField],
+        null,
+      );
+
+      // If the value hasn't changed, don't call setData
+      if (isEqual(existingDate, dateObj)) return;
+
       // Update the local state (in the FormPanel component)
       setData((prevData) => {
         let updatedData = cloneDeep(prevData);
@@ -462,15 +484,19 @@ export default function AreaSeasonForm({
         // Update the start or end date field
         updatedData = lodashSet(
           updatedData,
-          [...dateRangePath, dateField],
+          ["current", ...dateRangePath, dateField],
           dateObj,
         );
 
         // Update the changed flag for the date range
-        return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+        return lodashSet(
+          updatedData,
+          ["current", ...dateRangePath, "changed"],
+          true,
+        );
       });
     },
-    [setData, season.parkArea.features],
+    [setData, season],
   );
 
   return (
