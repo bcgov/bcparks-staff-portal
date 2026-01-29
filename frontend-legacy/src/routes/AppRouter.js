@@ -62,13 +62,13 @@ function AppRouter() {
           />
           <PrivateRoute
             roles={["submitter", "approver"]}
-            path="/update-advisory/:id"
+            path="/update-advisory/:documentId"
             component={Advisory}
             props={{ mode: "update", page: { setError, cmsData, setCmsData } }}
           />
           <PrivateRoute
             roles={["submitter", "approver"]}
-            path="/advisory-summary/:id"
+            path="/advisory-summary/:documentId"
             component={AdvisorySummary}
             props={{ page: { setError, cmsData, setCmsData } }}
           />

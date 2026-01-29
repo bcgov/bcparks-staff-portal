@@ -669,7 +669,7 @@ export default function AdvisoryDashboard({
               data={publicAdvisories}
               title=""
               onRowClick={(event, rowData) => {
-                history.push(`advisory-summary/${rowData.id}`);
+                history.push(`advisory-summary/${rowData.documentId}`);
               }}
               components={{
                 Toolbar: (props) => <div></div>,

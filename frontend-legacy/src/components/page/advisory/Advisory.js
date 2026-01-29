@@ -107,11 +107,10 @@ export default function Advisory({
   const [isApprover, setIsApprover] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { id } = useParams();
+  const { documentId } = useParams();
   const history = useHistory();
 
   const query = qs.stringify({
-    publicationState: "preview",
     populate: {
       accessStatus: { populate: "*" },
       advisoryStatus: { populate: "*" },
@@ -155,11 +154,11 @@ export default function Advisory({
 
   useEffect(() => {
     if (mode === "update" && !isLoadingData) {
-      if (parseInt(id)) {
-        setAdvisoryId(id);
+      if (documentId) {
+        setAdvisoryId(documentId);
         cmsAxios
           .get(
-            `public-advisory-audits/${id}?${query}`,
+            `public-advisory-audits/${documentId}?${query}`,
             {
               headers: { Authorization: `Bearer ${keycloak.token}` }
             }
@@ -357,7 +356,7 @@ export default function Advisory({
       }
     }
   }, [
-    id,
+    documentId,
     query,
     mode,
     setHeadline,
@@ -931,7 +930,7 @@ export default function Advisory({
           }
 
           cmsAxios
-            .put(`public-advisory-audits/${id}`, { data: updatedAdvisory }, {
+            .put(`public-advisory-audits/${documentId}`, { data: updatedAdvisory }, {
               headers: { Authorization: `Bearer ${keycloak.token}` }
             })
             .then((res) => {
