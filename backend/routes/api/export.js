@@ -96,7 +96,7 @@ function formatChangeLog(changeLog) {
 /**
  * Formats a date string as "Weekday, Month Day, Year"
  * @param {string} date parseable date string (e.g., "2023-07-15")
- * @returns {string} Formatted date string
+ * @returns {string} Formatted date string, or empty string if date is falsy
  */
 function formatDate(date) {
   if (!date) return "";
@@ -106,7 +106,7 @@ function formatDate(date) {
 /**
  * Formats a changelog date in BC time zone as "Weekday, Month Day, Year h:mm a"
  * @param {string|Date} date parseable date string (ISO 8601)
- * @returns {string} Formatted date string
+ * @returns {string} Formatted date string, or empty string if date is falsy
  */
 function formatChangeLogDate(date) {
   if (!date) return "";
