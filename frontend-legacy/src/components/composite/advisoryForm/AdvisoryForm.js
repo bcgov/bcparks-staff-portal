@@ -569,7 +569,7 @@ export default function AdvisoryForm({
                   component="div"
                   className="standard-message"
                   dangerouslySetInnerHTML={{
-                    __html: message.obj.description
+                    __html: message?.obj.description
                   }} />
               ))}
             </div>

@@ -145,7 +145,7 @@ export function generateProtectedAreasListForSelectedRelations(
     selSites,
     sites,
     null
-  );  
+  );
   return selProtectedAreas;
 }
 
@@ -168,7 +168,7 @@ const setAreaValues = (
           selSites
         );
       } else if (a.type === "site") {
-        selProtectedAreas.push(a.obj.attributes.protectedArea.data.id);
+        selProtectedAreas.push(a.obj.protectedArea.id);
       } else if (a.type === "region" || a.type === "section") {
         addProtectedAreasFromArea(
           a.obj,
