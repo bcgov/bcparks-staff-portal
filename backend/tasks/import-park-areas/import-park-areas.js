@@ -120,15 +120,23 @@ export default async function importStrapiParkAreas(transaction = null) {
 
       if (matchedDootParkArea) {
         if (isActive && !matchedDootParkArea.active) {
-          console.warn(
-            `Skipping reactivation of park area: ${parkAreaName} (${orcsAreaNumber}). ` +
-              `This park area is active in Strapi but inactive in DOOT. To reactivate, ` +
-              `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
-              `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
-              `result in linking new park areas to previously deactivated data.\n`,
-          );
-          skippedCount++;
-          continue;
+          if (
+            matchedDootParkArea.name.toLowerCase().trim() ===
+            parkAreaName.toLowerCase().trim()
+          ) {
+            // Names match, allow reactivation
+          } else {
+            console.warn(
+              `\nSkipping reactivation of park area: ${parkAreaName} (${orcsAreaNumber}). ` +
+                `This park area is active in Strapi but inactive in DOOT. To reactivate, ` +
+                `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
+                `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
+                `result in linking new park areas to previously deactivated data. ` +
+                `NOTE: If the park area names match, this check is bypassed.\n`,
+            );
+            skippedCount++;
+            continue;
+          }
         }
 
         // Check if any values are different
