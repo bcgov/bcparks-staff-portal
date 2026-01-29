@@ -146,7 +146,7 @@ export default async function importStrapiParkAreas(transaction = null) {
 
         if (hasChanges) {
           // Update counts based on activation status
-          if (matchedDootParkArea.active & !isActive) {
+          if (matchedDootParkArea.active && !isActive) {
             deactivatedCount++;
           } else {
             updatedCount++;
