@@ -165,7 +165,7 @@ export default async function importStrapiFeatures(transaction = null) {
       const dootFeatureToSave = {
         name: parkFeatureName,
         strapiOrcsFeatureNumber: orcsFeatureNumber,
-        active: isActive ?? true,
+        active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         hasReservations: hasReservations ?? false,
         hasBackcountryPermits: hasBackcountryPermits ?? false,

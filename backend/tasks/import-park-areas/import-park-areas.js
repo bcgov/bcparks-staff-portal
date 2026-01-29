@@ -113,7 +113,7 @@ export default async function importStrapiParkAreas(transaction = null) {
       const dootParkAreaToSave = {
         name: parkAreaName,
         strapiOrcsAreaNumber: orcsAreaNumber,
-        active: isActive ?? true,
+        active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         parkId,
       };
