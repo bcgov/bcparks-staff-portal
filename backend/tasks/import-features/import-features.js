@@ -202,7 +202,7 @@ export default async function importStrapiFeatures(transaction = null) {
 
         if (hasChanges) {
           // Update counts based on activation status
-          if (matchedDootFeature.active & !isActive) {
+          if (matchedDootFeature.active && !isActive) {
             deactivatedCount++;
           } else {
             updatedCount++;
