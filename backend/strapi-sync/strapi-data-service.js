@@ -7,25 +7,30 @@ const modelCache = new Map();
 // Model configuration - defines all available models and their fetch settings
 // The `populate` syntax is 100% based on Strapi's populate query syntax. See the
 // Strapi docs for more info:
-// https://docs-v4.strapi.io/dev-docs/api/rest/populate-select#population
+// https://docs.strapi.io/dev-docs/api/rest/populate-select
 const MODEL_CONFIG = {
   "park-operation": {
     endpoint: "/park-operations",
     populate: {
       protectedArea: {
         fields: ["orcs"],
+        populate: {},
       },
     },
   },
   "park-operation-sub-area": {
     endpoint: "/park-operation-sub-areas",
-    populate: ["protectedArea", "parkSubAreaType"],
+    populate: {
+      protectedArea: { populate: {} },
+      parkSubAreaType: { populate: {} },
+    },
   },
   "park-area": {
     endpoint: "/park-areas",
     populate: {
       protectedArea: {
         fields: ["orcs"],
+        populate: {},
       },
     },
   },
@@ -34,6 +39,7 @@ const MODEL_CONFIG = {
     populate: {
       parkOperationSubArea: {
         fields: ["id", "hasBackcountryPermits"],
+        populate: {},
       },
     },
   },
@@ -42,6 +48,7 @@ const MODEL_CONFIG = {
     populate: {
       parkOperationSubArea: {
         fields: ["id"],
+        populate: {},
       },
     },
   },
@@ -57,8 +64,12 @@ const MODEL_CONFIG = {
             "hasTier1Dates",
             "hasTier2Dates",
           ],
+          populate: {},
         },
-        managementAreas: true,
+        managementAreas: {
+          fields: ["managementAreaNumber"],
+          populate: {},
+        },
       },
       filters: {
         $and: [
@@ -70,48 +81,80 @@ const MODEL_CONFIG = {
   },
   "camping-type": {
     endpoint: "/camping-types",
+    populate: {},
   },
   "facility-type": {
     endpoint: "/facility-types",
+    populate: {},
   },
   "park-operation-sub-area-type": {
     endpoint: "/park-operation-sub-area-types",
-    populate: ["facilityType", "campingType"],
+    populate: {
+      facilityType: { populate: {} },
+      campingType: { populate: {} },
+    },
   },
   "park-operation-date": {
     endpoint: "/park-operation-dates",
     populate: {
       protectedArea: {
         fields: ["orcs"],
+        populate: {},
       },
     },
   },
   section: {
     endpoint: "/sections",
+    populate: {},
   },
   "management-area": {
     endpoint: "/management-areas",
-    populate: ["section"],
+    populate: {
+      fields: ["managementAreaNumber"],
+      section: { populate: {} },
+    },
   },
   "park-feature-type": {
     endpoint: "/park-feature-types",
+    populate: {},
   },
   "park-feature": {
     endpoint: "/park-features",
     populate: {
       protectedArea: {
         fields: ["orcs"],
+        populate: {},
       },
       parkArea: {
         fields: ["orcsAreaNumber"],
+        populate: {},
       },
       parkFeatureType: {
         fields: ["featureTypeId"],
+        populate: {},
       },
     },
   },
   "park-date-type": {
     endpoint: "/park-date-types",
+    populate: {},
+  },
+  "park-date": {
+    endpoint: "/park-dates",
+    populate: {
+      parkDateType: {
+        fields: ["dateTypeId"],
+        populate: {},
+      },
+      protectedArea: {
+        fields: ["orcs"],
+        populate: {},
+      },
+      parkFeature: {
+        fields: ["featureId"],
+        populate: {},
+      },
+    },
   },
 };
 
@@ -128,7 +171,6 @@ async function fetchModel(modelName) {
   }
 
   const url = `${process.env.STRAPI_URL}/api${config.endpoint}`;
-
   let params = {};
 
   if (config.populate) {
