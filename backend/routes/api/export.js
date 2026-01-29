@@ -4,6 +4,7 @@ import asyncHandler from "express-async-handler";
 import { writeToString } from "@fast-csv/format";
 import _ from "lodash";
 import { format, parse as parseDate } from "date-fns";
+import { TZDate } from "@date-fns/tz";
 
 import {
   Park,
@@ -45,6 +46,8 @@ const colNames = {
   IN_BCP_RESERVATION_SYSTEM: "In BC Parks Reservation system",
   STATUS: "Status",
   READY_TO_PUBLISH: "Ready to publish",
+  UPDATE_TIME: "Last updated",
+  UPDATE_USER: "Last updated by",
   INTERNAL_NOTES: "Internal notes",
 };
 
@@ -99,6 +102,20 @@ function formatChangeLog(changeLog) {
 function formatDate(date) {
   if (!date) return "";
   return format(date, "EEEE, MMMM d, yyyy");
+}
+
+/**
+ * Formats a changelog date in BC time zone as "Weekday, Month Day, Year h:mm a"
+ * @param {string|Date} date parseable date string (ISO 8601)
+ * @returns {string} Formatted date string
+ */
+function formatChangeLogDate(date) {
+  if (!date) return "";
+
+  // Convert to BC time zone
+  const bcDate = new TZDate(date, "America/Vancouver");
+
+  return format(bcDate, "EEEE, MMMM d, yyyy h:mm a");
 }
 
 /**
@@ -447,6 +464,9 @@ router.get(
                   attributes: ["id", "name", "email"],
                 },
               ],
+
+              // Sort by createdAt descending to show newest notes first
+              order: [["createdAt", "DESC"]],
             },
           ],
         },
@@ -553,6 +573,10 @@ router.get(
           ),
           [colNames.STATUS]: season.status,
           [colNames.READY_TO_PUBLISH]: formatBoolean(season.readyToPublish),
+          [colNames.UPDATE_TIME]: formatChangeLogDate(
+            season.changeLogs.at(0)?.createdAt,
+          ),
+          [colNames.UPDATE_USER]: season.changeLogs.at(0)?.user.name ?? "",
           [colNames.INTERNAL_NOTES]: season.changeLogs
             .map(formatChangeLog)
             .join("\n"),
