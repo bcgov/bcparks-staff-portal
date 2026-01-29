@@ -201,12 +201,17 @@ export default async function importStrapiFeatures(transaction = null) {
         );
 
         if (hasChanges) {
+          // Update counts based on activation status
+          if (matchedDootFeature.active & !isActive) {
+            deactivatedCount++;
+          } else {
+            updatedCount++;
+          }
           // Update matched feature
           await matchedDootFeature.update(dootFeatureToSave, { transaction });
           console.log(
             `Updated Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
           );
-          updatedCount++;
         } else {
           unchangedCount++;
         }

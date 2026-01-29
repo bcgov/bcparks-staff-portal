@@ -145,12 +145,17 @@ export default async function importStrapiParkAreas(transaction = null) {
         );
 
         if (hasChanges) {
+          // Update counts based on activation status
+          if (matchedDootParkArea.active & !isActive) {
+            deactivatedCount++;
+          } else {
+            updatedCount++;
+          }
           // Update matched park area
           await matchedDootParkArea.update(dootParkAreaToSave, { transaction });
           console.log(
             `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
           );
-          updatedCount++;
         } else {
           unchangedCount++;
         }
