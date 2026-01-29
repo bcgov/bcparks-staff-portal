@@ -48,7 +48,7 @@ const MODEL_CONFIG = {
   "protected-area": {
     endpoint: "/protected-areas",
     query: {
-      fields: ["id", "orcs", "protectedAreaName", "status"],
+      fields: ["id", "orcs", "protectedAreaName"],
       populate: {
         parkOperation: {
           fields: [
@@ -60,7 +60,12 @@ const MODEL_CONFIG = {
         },
         managementAreas: true,
       },
-      filters: { parkOperation: { $notNull: true } },
+      filters: {
+        $and: [
+          { parkOperation: { $notNull: true } },
+          { legalStatus: { $eq: "Active" } },
+        ],
+      },
     },
   },
   "camping-type": {
