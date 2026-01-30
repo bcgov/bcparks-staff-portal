@@ -352,6 +352,9 @@ async function formatDateRanges(entity, season) {
     where: {
       seasonId: season.id,
       dateableId: entity.dateableId,
+      // startDate and endDate must both be non-null to publish
+      startDate: { [Op.ne]: null },
+      endDate: { [Op.ne]: null },
     },
 
     include: [
