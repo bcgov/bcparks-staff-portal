@@ -113,22 +113,30 @@ export default async function importStrapiParkAreas(transaction = null) {
       const dootParkAreaToSave = {
         name: parkAreaName,
         strapiOrcsAreaNumber: orcsAreaNumber,
-        active: isActive ?? true,
+        active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         parkId,
       };
 
       if (matchedDootParkArea) {
         if (isActive && !matchedDootParkArea.active) {
-          console.warn(
-            `Skipping reactivation of park area: ${parkAreaName} (${orcsAreaNumber}). ` +
-              `This park area is active in Strapi but inactive in DOOT. To reactivate, ` +
-              `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
-              `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
-              `result in linking new park areas to previously deactivated data.\n`,
-          );
-          skippedCount++;
-          continue;
+          if (
+            matchedDootParkArea.name.toLowerCase().trim() ===
+            parkAreaName.toLowerCase().trim()
+          ) {
+            // Names match, allow reactivation
+          } else {
+            console.warn(
+              `\nSkipping reactivation of park area: ${parkAreaName} (${orcsAreaNumber}). ` +
+                `This park area is active in Strapi but inactive in DOOT. To reactivate, ` +
+                `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
+                `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
+                `result in linking new park areas to previously deactivated data. ` +
+                `NOTE: If the park area names match, this check is bypassed.\n`,
+            );
+            skippedCount++;
+            continue;
+          }
         }
 
         // Check if any values are different
@@ -137,12 +145,17 @@ export default async function importStrapiParkAreas(transaction = null) {
         );
 
         if (hasChanges) {
+          // Update counts based on activation status
+          if (matchedDootParkArea.active && !isActive) {
+            deactivatedCount++;
+          } else {
+            updatedCount++;
+          }
           // Update matched park area
           await matchedDootParkArea.update(dootParkAreaToSave, { transaction });
           console.log(
             `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
           );
-          updatedCount++;
         } else {
           unchangedCount++;
         }

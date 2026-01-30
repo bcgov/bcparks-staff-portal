@@ -165,7 +165,7 @@ export default async function importStrapiFeatures(transaction = null) {
       const dootFeatureToSave = {
         name: parkFeatureName,
         strapiOrcsFeatureNumber: orcsFeatureNumber,
-        active: isActive ?? true,
+        active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         hasReservations: hasReservations ?? false,
         hasBackcountryPermits: hasBackcountryPermits ?? false,
@@ -176,15 +176,23 @@ export default async function importStrapiFeatures(transaction = null) {
 
       if (matchedDootFeature) {
         if (isActive && !matchedDootFeature.active) {
-          console.warn(
-            `Skipping reactivation of feature: ${parkFeatureName} (${orcsFeatureNumber}). ` +
-              `This feature is active in Strapi but inactive in DOOT. ` +
-              `To reactivate, either activate it manually via AdminJS or assign a new ` +
-              `orcsFeatureNumber in Strapi. This is a safety measure to avoid orcsFeatureNumber ` +
-              `reuse, which could result in linking new features to previously deactivated data.`,
-          );
-          skippedCount++;
-          continue;
+          if (
+            matchedDootFeature.name.toLowerCase().trim() ===
+            parkFeatureName.toLowerCase().trim()
+          ) {
+            // Names match, allow reactivation
+          } else {
+            console.warn(
+              `\nSkipping reactivation of feature: ${parkFeatureName} (${orcsFeatureNumber}). ` +
+                `This feature is active in Strapi but inactive in DOOT. ` +
+                `To reactivate, either activate it manually via AdminJS or assign a new ` +
+                `orcsFeatureNumber in Strapi. This is a safety measure to avoid orcsFeatureNumber ` +
+                `reuse, which could result in linking new features to previously deactivated data. ` +
+                `NOTE: If the feature names match, then this check is bypassed.\n`,
+            );
+            skippedCount++;
+            continue;
+          }
         }
 
         // Check if any values are different
@@ -193,12 +201,17 @@ export default async function importStrapiFeatures(transaction = null) {
         );
 
         if (hasChanges) {
+          // Update counts based on activation status
+          if (matchedDootFeature.active && !isActive) {
+            deactivatedCount++;
+          } else {
+            updatedCount++;
+          }
           // Update matched feature
           await matchedDootFeature.update(dootFeatureToSave, { transaction });
           console.log(
             `Updated Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
           );
-          updatedCount++;
         } else {
           unchangedCount++;
         }
