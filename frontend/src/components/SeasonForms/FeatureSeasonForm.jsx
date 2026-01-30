@@ -1,8 +1,14 @@
 import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { groupBy, set as lodashSet, cloneDeep } from "lodash-es";
+import {
+  groupBy,
+  set as lodashSet,
+  get as lodashGet,
+  cloneDeep,
+} from "lodash-es";
 import { useMemo, useContext } from "react";
 import PropTypes from "prop-types";
+import { isEqual } from "date-fns";
 
 import DateRangeFields from "@/components/DateRangeFields";
 import FormContainer from "@/components/FormContainer";
@@ -46,28 +52,34 @@ function FormSection({ dateTypes, feature, season, previousSeasonDates }) {
       return range.id === id;
     });
 
-    // Path to update to the DateRange object
-    const dateRangePath = [
-      "current",
-      "feature",
-      "dateable",
-      "dateRanges",
-      dateRangeIndex,
-    ];
+    // Path to access the date range in the season data object
+    const dateRangePath = ["feature", "dateable", "dateRanges", dateRangeIndex];
+
+    // The DateRange input component fires onSelect even if the date didn't change,
+    // so check if the value actually changed to avoid unnecessary updates.
+    // Get the original value of the date field (startDate or endDate) in the season data object
+    const existingDate = lodashGet(season, [...dateRangePath, dateField], null);
+
+    // If the value in the form hasn't changed since it loaded from the API, don't call setData
+    if (isEqual(existingDate, dateObj)) return;
 
     // Update the local state (in the FormPanel component)
     setData((prevData) => {
       let updatedData = cloneDeep(prevData);
 
-      // Update the start or end date field
+      // Update the start or end date field in the current season data object
       updatedData = lodashSet(
         updatedData,
-        [...dateRangePath, dateField],
+        ["current", ...dateRangePath, dateField],
         dateObj,
       );
 
-      // Update the changed flag for the date range
-      return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+      // Set the changed flag for the date range in the current season data object
+      return lodashSet(
+        updatedData,
+        ["current", ...dateRangePath, "changed"],
+        true,
+      );
     });
   }
 
