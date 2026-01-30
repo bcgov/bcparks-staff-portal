@@ -189,7 +189,7 @@ export default function AreaSeasonForm({
       return range.id === id;
     });
 
-    // Path to update to the DateRange object
+    // Path to access the date range in the season data object
     const dateRangePath = [
       "parkArea",
       "dateable",
@@ -199,23 +199,24 @@ export default function AreaSeasonForm({
 
     // The DateRange input component fires onSelect even if the date didn't change,
     // so check if the value actually changed to avoid unnecessary updates.
+    // Get the original value of the date field (startDate or endDate) in the season data object
     const existingDate = lodashGet(season, [...dateRangePath, dateField], null);
 
-    // If the value hasn't changed, don't call setData
+    // If the value in the form hasn't changed since it loaded from the API, don't call setData
     if (isEqual(existingDate, dateObj)) return;
 
     // Update the local state (in the FormPanel component)
     setData((prevData) => {
       let updatedData = cloneDeep(prevData);
 
-      // Update the start or end date field
+      // Update the start or end date field in the current season data object
       updatedData = lodashSet(
         updatedData,
         ["current", ...dateRangePath, dateField],
         dateObj,
       );
 
-      // Update the changed flag for the date range
+      // Set the changed flag for the date range in the current season data object
       return lodashSet(
         updatedData,
         ["current", ...dateRangePath, "changed"],
@@ -456,7 +457,7 @@ export default function AreaSeasonForm({
         return range.id === id;
       });
 
-      // Path to update to the DateRange object
+      // Path to access the feature date range in the area season data object
       const dateRangePath = [
         "current",
         "parkArea",
@@ -469,27 +470,28 @@ export default function AreaSeasonForm({
 
       // The DateRange input component fires onSelect even if the date didn't change,
       // so check if the value actually changed to avoid unnecessary updates.
+      // Get the original value of the date field (startDate or endDate) in the season data object
       const existingDate = lodashGet(
         season.parkArea.features,
         [featureIndex, "dateable", "dateRanges", dateRangeIndex, dateField],
         null,
       );
 
-      // If the value hasn't changed, don't call setData
+      // If the value in the form hasn't changed since it loaded from the API, don't call setData
       if (isEqual(existingDate, dateObj)) return;
 
       // Update the local state (in the FormPanel component)
       setData((prevData) => {
         let updatedData = cloneDeep(prevData);
 
-        // Update the start or end date field
+        // Update the start or end date field in the current season data object
         updatedData = lodashSet(
           updatedData,
           [...dateRangePath, dateField],
           dateObj,
         );
 
-        // Update the changed flag for the date range
+        // Set the changed flag for the date range in the current season data object
         return lodashSet(updatedData, [...dateRangePath, "changed"], true);
       });
     },
