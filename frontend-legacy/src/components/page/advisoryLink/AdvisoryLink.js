@@ -5,9 +5,9 @@ import { useKeycloak } from "@react-keycloak/web";
 import Header from "../../composite/header/Header";
 import config from "../../../utils/config";
 
-/* 
+/*
   This component is used with React Router to create email redirect links to the
-  advisory-summary page based on advisoryNumber instead of publicAdvisoryAuditId 
+  advisory-summary page based on advisoryNumber instead of publicAdvisoryAuditId
 */
 export default function AdvisoryLink() {
   const history = useHistory();
@@ -24,7 +24,7 @@ export default function AdvisoryLink() {
           })
         }
         Promise.resolve(
-          cmsAxios.get(`public-advisory-audits?filters[advisoryNumber]=${advisoryNumber}&filters[isLatestRevision]=true&publicationState=preview`,
+          cmsAxios.get(`public-advisory-audits?filters[advisoryNumber]=${advisoryNumber}&filters[isLatestRevision]=true&status=draft`,
             {
               headers: { Authorization: `Bearer ${keycloak.token}` }
             }),

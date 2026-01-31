@@ -256,7 +256,6 @@ export function getStandardMessages(cmsData, setCmsData) {
 export function getParkRelations(parkId) {
     const query = qs.stringify(
         {
-            publicationState: "preview",
             fields: ["id"],
             filters: {
                 id: parkId
