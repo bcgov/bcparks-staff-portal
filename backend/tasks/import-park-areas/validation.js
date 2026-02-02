@@ -22,7 +22,7 @@ export async function validateDootParkAreas() {
   if (invalidParkAreas.length > 0) {
     for (const parkArea of invalidParkAreas) {
       console.warn(
-        `Invalid DOOT ParkArea: ${parkArea.parkAreaName} (${parkArea.id}) - strapiOrcsAreaNumber: "${parkArea.strapiOrcsAreaNumber}"`,
+        `Invalid DOOT ParkArea: ${parkArea.name} (${parkArea.id}) - strapiOrcsAreaNumber: "${parkArea.strapiOrcsAreaNumber}"`,
       );
     }
     console.error(

@@ -23,7 +23,7 @@ export async function validateDootFeatures() {
   if (invalidFeatures.length > 0) {
     for (const feature of invalidFeatures) {
       console.warn(
-        `Invalid DOOT Feature: ${feature.featureName} (${feature.id}) - strapiOrcsFeatureNumber: "${feature.strapiOrcsFeatureNumber}"`,
+        `Invalid DOOT Feature: ${feature.name} (${feature.id}) - strapiOrcsFeatureNumber: "${feature.strapiOrcsFeatureNumber}"`,
       );
     }
     console.error(
