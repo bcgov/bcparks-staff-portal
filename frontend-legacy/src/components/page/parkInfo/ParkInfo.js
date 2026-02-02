@@ -87,8 +87,8 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       ])
         .then((res) => {
           const protectedAreaData = res[0].data.data[0];
-          if (protectedAreaData.attributes.managementAreas.data.length > 0) {
-            const managementArea = protectedAreaData.attributes.managementAreas.data[0].attributes;
+          if (protectedAreaData.managementAreas.data.length > 0) {
+            const managementArea = protectedAreaData.managementAreas.data[0];
             protectedAreaData.managementAreaName =
               managementArea.managementAreaName;
             const region = cmsData.regions.filter(
@@ -104,54 +104,54 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
               protectedAreaData.sectionName = section[0].sectionName;
             }
           }
-          if (protectedAreaData.attributes.parkActivities.data) {
+          if (protectedAreaData.parkActivities.data) {
             const activities = [];
-            protectedAreaData.attributes.parkActivities.data.map((activity) => {
+            protectedAreaData.parkActivities.data.map((activity) => {
               return activities.push({
                 id: activity.id,
-                description: activity.attributes.description,
-                name: activity.attributes.name,
-                isActivityOpen: activity.attributes.isActivityOpen,
-                isActive: activity.attributes.isActive,
-                protectedArea: activity.attributes.protectedArea.data,
-                site: activity.attributes.site.data,
-                activityType: activity.attributes.activityType.data,
+                description: activity.description,
+                name: activity.name,
+                isActivityOpen: activity.isActivityOpen,
+                isActive: activity.isActive,
+                protectedArea: activity.protectedArea.data,
+                site: activity.site.data,
+                activityType: activity.activityType.data,
               });
             });
             if (isMounted) {
               setParkActivities([...activities]);
             }
           }
-          if (protectedAreaData.attributes.parkFacilities.data) {
+          if (protectedAreaData.parkFacilities.data) {
             const facilities = [];
-            protectedAreaData.attributes.parkFacilities.data.map((facility) => {
+            protectedAreaData.parkFacilities.data.map((facility) => {
               return facilities.push({
                 id: facility.id,
-                description: facility.attributes.description,
-                name: facility.attributes.name,
-                isFacilityOpen: facility.attributes.isFacilityOpen,
-                isActive: facility.attributes.isActive,
-                protectedArea: facility.attributes.protectedArea.data,
-                site: facility.attributes.site.data,
-                facilityType: facility.attributes.facilityType.data,
+                description: facility.description,
+                name: facility.name,
+                isFacilityOpen: facility.isFacilityOpen,
+                isActive: facility.isActive,
+                protectedArea: facility.protectedArea.data,
+                site: facility.site.data,
+                facilityType: facility.facilityType.data,
               });
             });
             if (isMounted) {
               setParkFacilities([...facilities]);
             }
           }
-          if (protectedAreaData.attributes.parkCampingTypes.data) {
+          if (protectedAreaData.parkCampingTypes.data) {
             const campingTypes = [];
-            protectedAreaData.attributes.parkCampingTypes.data.map((campingType) => {
+            protectedAreaData.parkCampingTypes.data.map((campingType) => {
               return campingTypes.push({
                 id: campingType.id,
-                description: campingType.attributes.description,
-                name: campingType.attributes.name,
-                isCampingOpen: campingType.attributes.isCampingOpen,
-                isActive: campingType.attributes.isActive,
-                protectedArea: campingType.attributes.protectedArea.data,
-                site: campingType.attributes.site.data,
-                campingType: campingType.attributes.campingType.data,
+                description: campingType.description,
+                name: campingType.name,
+                isCampingOpen: campingType.isCampingOpen,
+                isActive: campingType.isActive,
+                protectedArea: campingType.protectedArea.data,
+                site: campingType.site.data,
+                campingType: campingType.campingType.data,
               });
             });
             if (isMounted) {
@@ -236,10 +236,10 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     const currentActivity = parkActivities.filter(
       (a) => a.id === activityId
     )[0];
-    const unchangedActivity = protectedArea.attributes.parkActivities.data.filter(
+    const unchangedActivity = protectedArea.parkActivities.data.filter(
       (a) => a.id === activityId
     )[0];
-    currentActivity.description = unchangedActivity.attributes.description;
+    currentActivity.description = unchangedActivity.description;
     finishEditActivityDesc(activityId, true);
   };
 
@@ -349,10 +349,10 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     const currentFacility = parkFacilities.filter(
       (f) => f.id === facilityId
     )[0];
-    const unchangedFacility = protectedArea.attributes.parkFacilities.data.filter(
+    const unchangedFacility = protectedArea.parkFacilities.data.filter(
       (f) => f.id === facilityId
     )[0];
-    currentFacility.description = unchangedFacility.attributes.description;
+    currentFacility.description = unchangedFacility.description;
     finishEditFacilityDesc(facilityId, true);
   };
 
@@ -462,10 +462,10 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     const currentCampingType = parkCampingTypes.filter(
       (f) => f.id === campingTypeId
     )[0];
-    const unchangedCampingType = protectedArea.attributes.parkCampingTypes.data.filter(
+    const unchangedCampingType = protectedArea.parkCampingTypes.data.filter(
       (f) => f.id === campingTypeId
     )[0];
-    currentCampingType.description = unchangedCampingType.attributes.description;
+    currentCampingType.description = unchangedCampingType.description;
     finishEditCampingTypeDesc(campingTypeId, true);
   };
 
@@ -582,7 +582,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
               <br />
               <div className="pt10b30">
                 <div className="container-fluid">
-                  <h3>{protectedArea.attributes.protectedAreaName}</h3>
+                  <h3>{protectedArea.protectedAreaName}</h3>
                   {protectedArea.regionName && (
                     <div>{protectedArea.regionName} Region</div>
                   )}
@@ -1118,7 +1118,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
                           No camping types found
                         </div>
                       ))}
-                  </TabPanel>                  
+                  </TabPanel>
                 </div>
               </div>
             </div>

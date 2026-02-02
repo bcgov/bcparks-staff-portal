@@ -206,16 +206,16 @@ export default function Advisory({
               );
             }
             if (advisoryData.accessStatus) {
-              setAccessStatus(advisoryData.accessStatus.id);
+              setAccessStatus(advisoryData.accessStatus.documentId);
             }
             if (advisoryData.eventType) {
-              setEventType(advisoryData.eventType.id);
+              setEventType(advisoryData.eventType.documentId);
             }
             if (advisoryData.urgency) {
-              setUrgency(advisoryData.urgency.id);
+              setUrgency(advisoryData.urgency.documentId);
             }
             if (advisoryData.advisoryStatus) {
-              setAdvisoryStatus(advisoryData.advisoryStatus.id);
+              setAdvisoryStatus(advisoryData.advisoryStatus.documentId);
             }
             setDisplayAdvisoryDate(
               advisoryData.isAdvisoryDateDisplayed
@@ -250,7 +250,7 @@ export default function Advisory({
               const selStandardMessages = [];
               standardMessageInfo.forEach((p) => {
                 selStandardMessages.push(
-                  standardMessages.find((l) => l.value === p.id)
+                  standardMessages.find((l) => l.value === p.documentId)
                 );
               });
               setSelectedStandardMessages([...selStandardMessages]);
@@ -322,10 +322,10 @@ export default function Advisory({
                 linksRef.current = [
                   ...linksRef.current,
                   {
-                    type: l.type.id,
+                    type: l.type.documentId,
                     title: l.title || "",
                     url: l.url || "",
-                    id: l.id,
+                    id: l.documentId,
                     file: l.file || "",
                     format: l.format || "",
                     isModified: false,
@@ -743,7 +743,7 @@ export default function Advisory({
     const savedLinks = [];
     for (let link of linksRef.current) {
       if (isValidLink(link)) {
-        if (parseInt(link.id) > 0) {
+        if (link.id) {
           const savedLink = await saveLink(link, link.id);
           savedLinks.push(savedLink.id);
         } else {
@@ -934,7 +934,7 @@ export default function Advisory({
               headers: { Authorization: `Bearer ${keycloak.token}` }
             })
             .then((res) => {
-              setAdvisoryId(res.data.data.id);
+              setAdvisoryId(res.data.data.documentId);
               setIsSubmitting(false);
               setIsSavingDraft(false);
               setIsConfirmation(true);
@@ -978,7 +978,7 @@ export default function Advisory({
           message: "Could not save attachments",
         });
       });
-    return res.data.data.id;
+    return res.data.data.documentId;
   };
 
   const updateMediaLink = async (media, id, link) => {

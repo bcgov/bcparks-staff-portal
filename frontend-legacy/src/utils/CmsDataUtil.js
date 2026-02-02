@@ -283,12 +283,12 @@ export function getParkRelations(parkId) {
         .get(`/protected-areas?${query}`)
         .then((res) => {
             if (res.data.data.length) {
-                const parkInfo = res.data.data[0].attributes;
+                const parkInfo = res.data.data[0];
                 const managementArea = parkInfo.managementAreas?.data[0];
-                const region = managementArea?.attributes.region?.data;
-                const section = managementArea?.attributes.section?.data;
+                const region = managementArea?.region?.data;
+                const section = managementArea?.section?.data;
                 const fireZone = parkInfo.fireZones?.data[0];
-                const fireCentre = fireZone?.attributes.fireCentre?.data;
+                const fireCentre = fireZone?.fireCentre?.data;
                 const naturalResourceDistrict = parkInfo.naturalResourceDistricts?.data[0];
                 const sites = parkInfo.sites;
                 return {
