@@ -20,6 +20,11 @@ export async function validateDootParkAreas() {
   });
 
   if (invalidParkAreas.length > 0) {
+    for (const parkArea of invalidParkAreas) {
+      console.warn(
+        `Invalid DOOT ParkArea: ${parkArea.parkAreaName} (${parkArea.id}) - strapiOrcsAreaNumber: "${parkArea.strapiOrcsAreaNumber}"`,
+      );
+    }
     console.error(
       `Found ${invalidParkAreas.length} DOOT ParkAreas with missing or incorrectly formatted strapiOrcsAreaNumber.`,
     );
