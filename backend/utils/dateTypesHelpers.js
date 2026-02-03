@@ -46,18 +46,14 @@ export function getDateTypesForPark(
     if (park.hasWinterFeeDates) {
       orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.WINTER_FEE]);
     }
-    return orderedDateTypes;
-  }
-
-  // For regular seasons (default)
-  if (seasonType === SEASON_TYPE.REGULAR) {
+  // For regular seasons
+  } else if (seasonType === SEASON_TYPE.REGULAR) {
     if (park.hasTier1Dates) {
       orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
     }
     if (park.hasTier2Dates) {
       orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
     }
-    return orderedDateTypes;
   }
 
   return orderedDateTypes;
