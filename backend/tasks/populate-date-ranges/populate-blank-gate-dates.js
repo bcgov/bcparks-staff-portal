@@ -13,7 +13,7 @@ import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 /**
  * Populates blank Park gate open DateRanges for a given year by creating DateRanges for all
- * Park-level Seasons where the Park has Gate Details with "hasGate=TRUE"
+ * Regular Park-level Seasons where the Park has Gate Details with "hasGate=TRUE"
  * @param {number} targetYear The year for which to populate blank DateRanges
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Array>} Array of created DateRange records
@@ -33,7 +33,7 @@ export default async function populateBlankGateOperatingDates(
     transaction,
   });
 
-  // Get all Park Seasons with "HasGate = true" and "seasonType = regular"
+  // Get all regular (non-winter) Park Seasons with "HasGate = true"
   const parkSeasons = await Season.findAll({
     where: {
       operatingYear: targetYear,
