@@ -21,7 +21,13 @@ export default async function importStrapiParkAreas(transaction = null) {
 
     if (strapiParkAreas.length === 0) {
       console.log("No ParkArea data found in Strapi");
-      return { created: 0, skipped: 0, updated: 0 };
+      return {
+        created: 0,
+        skipped: 0,
+        updated: 0,
+        deactivated: 0,
+        unchanged: 0,
+      };
     }
 
     console.log(`Found ${strapiParkAreas.length} ParkAreas in Strapi`);
@@ -35,7 +41,7 @@ export default async function importStrapiParkAreas(transaction = null) {
     if (!dootValid || !strapiValid) {
       useSafeMode = true;
       console.warn(
-        "Validation failed. Running in safe mode: only updates allowed, no inserts or deactivations.",
+        "Validation failed. Running in safe mode: only updates allowed, no inserts, and no deactivations from upstream deletions.",
       );
     }
 
@@ -188,7 +194,7 @@ export default async function importStrapiParkAreas(transaction = null) {
             dootParkArea.active = false;
             await dootParkArea.save({ transaction });
             console.log(
-              `Deactivated ParkArea: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,
+              `Deactivated ParkArea: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber}) due to removal from Strapi.`,
             );
             deactivatedCount++;
           }
