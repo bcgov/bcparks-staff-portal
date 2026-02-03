@@ -8,7 +8,8 @@ import {
   Season,
   Dateable,
 } from "../../models/index.js";
-import * as DATE_TYPE from "../../constants/dateType.js"
+import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 /**
  * Populates blank Park gate open DateRanges for a given year by creating DateRanges for all
@@ -32,9 +33,12 @@ export default async function populateBlankGateOperatingDates(
     transaction,
   });
 
-  // Get all Park Seasons with "HasGate = true"
+  // Get all Park Seasons with "HasGate = true" and "seasonType = regular"
   const parkSeasons = await Season.findAll({
-    where: { operatingYear: targetYear },
+    where: {
+      operatingYear: targetYear,
+      seasonType: SEASON_TYPE.REGULAR,
+    },
 
     include: [
       {

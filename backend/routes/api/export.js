@@ -19,6 +19,7 @@ import {
   GateDetail,
 } from "../../models/index.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 const router = Router();
 
@@ -310,7 +311,13 @@ router.get(
         {
           model: Season,
           as: "season",
-          attributes: ["id", "operatingYear", "status", "readyToPublish"],
+          attributes: [
+            "id",
+            "operatingYear",
+            "status",
+            "readyToPublish",
+            "seasonType",
+          ],
 
           where: { operatingYear },
           required: true,
@@ -495,6 +502,14 @@ router.get(
         // @TODO: Delete this when FCFS logic is revised
         // Skip FCFS dates
         if (dateRange.dateType.name === "First come, first served") {
+          return null;
+        }
+
+        // Skip non-winter fee dates for winter seasons
+        if (
+          season.seasonType === SEASON_TYPE.WINTER &&
+          dateRange.dateType.strapiDateTypeId !== DATE_TYPE.WINTER_FEE
+        ) {
           return null;
         }
 
