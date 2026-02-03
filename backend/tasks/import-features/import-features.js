@@ -38,7 +38,7 @@ export default async function importStrapiFeatures(transaction = null) {
     if (!dootValid || !strapiValid) {
       useSafeMode = true;
       console.warn(
-        "Validation failed. Running in safe mode: only updates allowed, no inserts or deactivations.",
+        "Validation failed. Running in safe mode: only updates allowed; no inserts and no soft deletes (deactivations triggered by upstream deletions).",
       );
     }
 
@@ -246,7 +246,7 @@ export default async function importStrapiFeatures(transaction = null) {
             dootParkFeature.active = false;
             await dootParkFeature.save({ transaction });
             console.log(
-              `Deactivated Feature: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber})`,
+              `Deactivated Feature: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber}) due to removal from Strapi.`,
             );
             deactivatedCount++;
           }
