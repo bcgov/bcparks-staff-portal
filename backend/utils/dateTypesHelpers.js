@@ -50,11 +50,14 @@ export function getDateTypesForPark(
   }
 
   // For regular seasons (default)
-  if (park.hasTier1Dates) {
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
-  }
-  if (park.hasTier2Dates) {
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
+  if (seasonType === SEASON_TYPE.REGULAR) {
+    if (park.hasTier1Dates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
+    }
+    if (park.hasTier2Dates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
+    }
+    return orderedDateTypes;
   }
 
   return orderedDateTypes;
