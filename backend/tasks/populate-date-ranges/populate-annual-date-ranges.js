@@ -6,6 +6,8 @@ import "../../env.js";
 import { Season, DateRange, DateRangeAnnual } from "../../models/index.js";
 import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
 import * as STATUS from "../../constants/seasonStatus.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 // Functions
 
@@ -50,12 +52,23 @@ export async function populateAnnualDateRangesForYear(
             operatingYear: targetYear,
             status: STATUS.APPROVED,
             readyToPublish: true,
+            seasonType: prevSeason.seasonType,
           },
           { transaction },
         );
       }
 
-      // find dateableId for targetSeason's publishableId
+      // For winter seasons, only copy Winter fee date types
+      if (targetSeason.seasonType === SEASON_TYPE.WINTER) {
+        if (annual.dateTypeId !== DATE_TYPE.WINTER_FEE) {
+          console.log(
+            `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${annual.publishableId})`,
+          );
+          continue;
+        }
+      }
+
+      // find dateableId for targetSeason's Park/ParkArea/Feature by publishableId
       const dateableId = await findDateableIdByPublishableId(
         targetSeason.publishableId,
         transaction,
@@ -79,17 +92,32 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
-      // skip only if all existing DateRanges have both startDate and endDate
-      const allRangesComplete =
-        existingTargetDateRanges.length > 0 &&
-        existingTargetDateRanges.every(
-          (dateRange) => dateRange.startDate && dateRange.endDate,
+      // If we have the same number of complete ranges as previous year, skip
+      const completeTargetRanges = existingTargetDateRanges.filter(
+        (range) => range.startDate && range.endDate,
+      );
+
+      if (completeTargetRanges.length >= prevDateRanges.length) {
+        console.log(
+          `Target season ${targetSeason.operatingYear} already has ${completeTargetRanges.length} complete date ranges for dateType ${annual.dateTypeId}, skipping`,
         );
+        continue;
+      }
 
-      if (allRangesComplete) continue;
+      // Only copy ranges that don't already exist (avoiding duplicates)
+      const numRangesToCopy =
+        prevDateRanges.length - existingTargetDateRanges.length;
 
-      // copy each previous DateRange to current season
-      for (const prevRange of prevDateRanges) {
+      if (numRangesToCopy <= 0) {
+        console.log(
+          `Target season ${targetSeason.operatingYear} already has enough date ranges for dateType ${annual.dateTypeId}, skipping`,
+        );
+        continue;
+      }
+
+      // copy each previous DateRange to current season (only the missing ones)
+      for (let i = 0; i < numRangesToCopy; i++) {
+        const prevRange = prevDateRanges[i];
         const currentYear = targetSeason.operatingYear;
         const prevStartDate = prevRange.startDate;
         const prevEndDate = prevRange.endDate;
