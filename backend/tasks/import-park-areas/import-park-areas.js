@@ -41,7 +41,7 @@ export default async function importStrapiParkAreas(transaction = null) {
     if (!dootValid || !strapiValid) {
       useSafeMode = true;
       console.warn(
-        "Validation failed. Running in safe mode: only updates allowed, no inserts, and no deactivations from upstream deletions.",
+        "Validation failed. Running in safe mode: only updates allowed; no inserts and no soft deletes (deactivations triggered by upstream deletions).",
       );
     }
 
