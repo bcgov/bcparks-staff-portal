@@ -67,7 +67,8 @@ export function checkParkSoft(park, filters) {
   if (filters.status.length) {
     if (
       // Filter out if the regular season status doesn't match, and
-      !filters.status.includes(park.currentSeason.regular.status) &&
+      (!park.currentSeason.regular ||
+        !filters.status.includes(park.currentSeason.regular.status)) &&
       // the winter season's status also doesn't match (or there is no winter season)
       (!park.currentSeason.winter ||
         !filters.status.includes(park.currentSeason.winter.status))
@@ -299,7 +300,10 @@ export function shouldShowTiersAndGateSection(park, filters) {
   // If "Status" filters are set
   if (filters.status.length) {
     // Show section if the park's regular season status matches
-    if (filters.status.includes(park.currentSeason.regular.status)) {
+    if (
+      park.currentSeason.regular &&
+      filters.status.includes(park.currentSeason.regular.status)
+    ) {
       return true;
     }
 
@@ -385,7 +389,10 @@ export function shouldShowWinterFeeSection(park, filters) {
   // If "Status" filters are set
   if (filters.status.length) {
     // Show section if the park's winter season status matches
-    if (filters.status.includes(park.currentSeason.winter.status)) {
+    if (
+      park.currentSeason.winter &&
+      filters.status.includes(park.currentSeason.winter.status)
+    ) {
       return true;
     }
 
