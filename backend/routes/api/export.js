@@ -131,7 +131,7 @@ function formatBoolean(value) {
  * Returns the park associated with a date range from
  * its Feature, ParkArea, or direct Park association.
  * @param {Season} season The date range to get the park for
- * @returns {Park} the park associated with the date range
+ * @returns {Park|null} the park associated with the date range, or null if not found
  */
 function getPark(season) {
   // ParkArea seasons: return the ParkArea's Park details
@@ -337,6 +337,9 @@ router.get(
               as: "parkArea",
               attributes: ["id", "name", "inReservationSystem"],
               required: false,
+              where: {
+                active: true,
+              },
 
               include: [
                 {
@@ -358,6 +361,9 @@ router.get(
                     "hasReservations",
                   ],
                   required: false,
+                  where: {
+                    active: true,
+                  },
 
                   include: [
                     {
@@ -462,6 +468,12 @@ router.get(
         const { season } = dateRange;
         const { gateDetail } = season;
         const park = getPark(season);
+
+        // Skip this row if park is null (no valid park association)
+        if (!park) {
+          console.log("No park found for season ID:", season.id);
+          return null;
+        }
 
         const annualData = dateRangeAnnuals.get(
           `${dateRange.dateableId}-${dateRange.dateTypeId}`,
