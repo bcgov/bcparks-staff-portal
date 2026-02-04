@@ -499,6 +499,9 @@ router.get(
           `${dateRange.dateableId}-${dateRange.dateTypeId}`,
         );
 
+        // Get the most recent changelog entry for update time
+        const latestChangeLog = season.changeLogs.at(0);
+
         // Get the Feature for this DateRange, if there is one
         const feature = getFeatureForDateRange(dateRange);
 
@@ -574,9 +577,9 @@ router.get(
           [colNames.STATUS]: season.status,
           [colNames.READY_TO_PUBLISH]: formatBoolean(season.readyToPublish),
           [colNames.UPDATE_TIME]: formatChangeLogDate(
-            season.changeLogs.at(0)?.createdAt,
+            latestChangeLog?.createdAt,
           ),
-          [colNames.UPDATE_USER]: season.changeLogs.at(0)?.user.name ?? "",
+          [colNames.UPDATE_USER]: latestChangeLog?.user.name ?? "",
           [colNames.INTERNAL_NOTES]: season.changeLogs
             .map(formatChangeLog)
             .join("\n"),
