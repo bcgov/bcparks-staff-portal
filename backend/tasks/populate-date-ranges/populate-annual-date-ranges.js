@@ -106,7 +106,7 @@ export async function populateAnnualDateRangesForYear(
 
       // Only copy ranges that don't already exist (avoiding duplicates)
       const numRangesToCopy =
-        prevDateRanges.length - existingTargetDateRanges.length;
+        prevDateRanges.length - completeTargetRanges.length;
 
       if (numRangesToCopy <= 0) {
         console.log(
