@@ -105,7 +105,7 @@ function formatDate(date) {
 }
 
 /**
- * Formats a changelog date in BC time zone as "Weekday, Month Day, Year h:mm a"
+ * Formats a changelog date in BC timezone with a date format suitable for Excel (yyyy-MM-dd HH:mm:ss)
  * @param {string|Date} date parseable date string (ISO 8601)
  * @returns {string} Formatted date string, or empty string if date is falsy
  */
@@ -115,7 +115,7 @@ function formatChangeLogDate(date) {
   // Convert to BC time zone
   const bcDate = new TZDate(date, "America/Vancouver");
 
-  return format(bcDate, "EEEE, MMMM d, yyyy h:mm a");
+  return format(bcDate, "yyyy-MM-dd HH:mm:ss");
 }
 
 /**
