@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { Op, Sequelize } from "sequelize";
+import { Sequelize } from "sequelize";
 import asyncHandler from "express-async-handler";
 import { writeToString } from "@fast-csv/format";
 import _ from "lodash";
@@ -443,18 +443,12 @@ router.get(
               required: false,
             },
 
-            // Season changelogs with "internal notes"
+            // Season changelogs with User details and any "internal notes"
             {
               model: SeasonChangeLog,
               as: "changeLogs",
               attributes: ["id", "notes", "createdAt"],
 
-              // Filter out empty notes
-              where: {
-                notes: {
-                  [Op.ne]: "",
-                },
-              },
               required: false,
 
               include: [
@@ -580,7 +574,11 @@ router.get(
             latestChangeLog?.createdAt,
           ),
           [colNames.UPDATE_USER]: latestChangeLog?.user.name ?? "",
+
+          // Show the internal notes from changeLogs, if any
+          // Filter out changelogs with no notes and concatenate the rest with line breaks
           [colNames.INTERNAL_NOTES]: season.changeLogs
+            .filter((changeLog) => changeLog.notes?.trim())
             .map(formatChangeLog)
             .join("\n"),
         };
