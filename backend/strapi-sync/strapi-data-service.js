@@ -14,15 +14,13 @@ const MODEL_CONFIG = {
     populate: {
       protectedArea: {
         fields: ["orcs"],
-        populate: {},
       },
     },
   },
   "park-operation-sub-area": {
     endpoint: "/park-operation-sub-areas",
     populate: {
-      protectedArea: { populate: {} },
-      parkSubAreaType: { populate: {} },
+      protectedArea: { fields: ["orcs"] },
     },
   },
   "park-area": {
@@ -30,7 +28,6 @@ const MODEL_CONFIG = {
     populate: {
       protectedArea: {
         fields: ["orcs"],
-        populate: {},
       },
     },
   },
@@ -39,7 +36,6 @@ const MODEL_CONFIG = {
     populate: {
       parkOperationSubArea: {
         fields: ["id", "hasBackcountryPermits"],
-        populate: {},
       },
     },
   },
@@ -48,7 +44,6 @@ const MODEL_CONFIG = {
     populate: {
       parkOperationSubArea: {
         fields: ["id"],
-        populate: {},
       },
     },
   },
@@ -64,11 +59,9 @@ const MODEL_CONFIG = {
             "hasTier1Dates",
             "hasTier2Dates",
           ],
-          populate: {},
         },
         managementAreas: {
           fields: ["managementAreaNumber"],
-          populate: {},
         },
       },
       filters: {
@@ -81,78 +74,58 @@ const MODEL_CONFIG = {
   },
   "camping-type": {
     endpoint: "/camping-types",
-    populate: {},
   },
   "facility-type": {
     endpoint: "/facility-types",
-    populate: {},
-  },
-  "park-operation-sub-area-type": {
-    endpoint: "/park-operation-sub-area-types",
-    populate: {
-      facilityType: { populate: {} },
-      campingType: { populate: {} },
-    },
   },
   "park-operation-date": {
     endpoint: "/park-operation-dates",
     populate: {
       protectedArea: {
         fields: ["orcs"],
-        populate: {},
       },
     },
   },
   section: {
     endpoint: "/sections",
-    populate: {},
   },
   "management-area": {
     endpoint: "/management-areas",
     populate: {
-      fields: ["managementAreaNumber"],
-      section: { fields: ["id"], populate: {} },
+      section: { fields: ["id"] },
     },
   },
   "park-feature-type": {
     endpoint: "/park-feature-types",
-    populate: {},
   },
   "park-feature": {
     endpoint: "/park-features",
     populate: {
       protectedArea: {
         fields: ["orcs"],
-        populate: {},
       },
       parkArea: {
         fields: ["orcsAreaNumber"],
-        populate: {},
       },
       parkFeatureType: {
         fields: ["featureTypeId"],
-        populate: {},
       },
     },
   },
   "park-date-type": {
     endpoint: "/park-date-types",
-    populate: {},
   },
   "park-date": {
     endpoint: "/park-dates",
     populate: {
       parkDateType: {
         fields: ["dateTypeId"],
-        populate: {},
       },
       protectedArea: {
         fields: ["orcs"],
-        populate: {},
       },
       parkFeature: {
         fields: ["featureId"],
-        populate: {},
       },
     },
   },
