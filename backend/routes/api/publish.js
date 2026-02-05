@@ -343,6 +343,7 @@ function formatDate(date) {
  * @param {Object} entity The entity object (e.g., Park, Feature)
  * @param {Season} season The season object
  * @returns {Array} Array of formatted DateRange objects
+ * @throws {Error} If no valid date ranges are found
  */
 async function formatDateRanges(entity, season) {
   // Fetch all date ranges for this season
@@ -388,6 +389,12 @@ async function formatDateRanges(entity, season) {
       dateRangeAnnual,
     ]),
   );
+
+  if (dateRangesRows.length === 0) {
+    throw new Error(
+      `No valid date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}`,
+    );
+  }
 
   // Transform date ranges to API format
   return dateRangesRows.map((dateRange) => {
@@ -439,17 +446,22 @@ async function formatParkData(park, season) {
   // We can't connect to anything in Strapi without this key
   if (!park.orcs) return null;
 
-  const dateRanges = await formatDateRanges(park, season);
-  const gateInfo = formatGateInfo(park.gateDetails);
+  try {
+    const dateRanges = await formatDateRanges(park, season);
+    const gateInfo = formatGateInfo(park.gateDetails);
 
-  // Return formatted Park data
-  return {
-    // Strapi expects the ORCS code as a number
-    orcs: Number(park.orcs),
-    operatingYear: season.operatingYear,
-    dateRanges,
-    gateInfo,
-  };
+    // Return formatted Park data
+    return {
+      // Strapi expects the ORCS code as a number
+      orcs: Number(park.orcs),
+      operatingYear: season.operatingYear,
+      dateRanges,
+      gateInfo,
+    };
+  } catch (error) {
+    console.error("Error formatting date ranges for park:", error);
+    return null;
+  }
 }
 
 /**
@@ -463,16 +475,21 @@ async function formatFeatureData(feature, season) {
   // We can't connect to anything in Strapi without this key
   if (!feature.strapiOrcsFeatureNumber) return null;
 
-  const dateRanges = await formatDateRanges(feature, season);
-  const gateInfo = formatGateInfo(feature.gateDetails);
+  try {
+    const dateRanges = await formatDateRanges(feature, season);
+    const gateInfo = formatGateInfo(feature.gateDetails);
 
-  // Return formatted Feature data
-  return {
-    orcsFeatureNumber: feature.strapiOrcsFeatureNumber,
-    operatingYear: season.operatingYear,
-    dateRanges,
-    gateInfo,
-  };
+    // Return formatted Feature data
+    return {
+      orcsFeatureNumber: feature.strapiOrcsFeatureNumber,
+      operatingYear: season.operatingYear,
+      dateRanges,
+      gateInfo,
+    };
+  } catch (error) {
+    console.error("Error formatting date ranges for feature:", error);
+    return null;
+  }
 }
 
 /**
