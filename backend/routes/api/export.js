@@ -471,7 +471,7 @@ router.get(
       ],
 
       order: [
-        // Sort the season.changeLogs subquery by createdAt to show newest notes first
+        // Sort the included season.changeLogs by createdAt to show newest notes first
         [
           { model: Season, as: "season" },
           { model: SeasonChangeLog, as: "changeLogs" },
