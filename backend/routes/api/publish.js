@@ -353,9 +353,6 @@ async function formatDateRanges(entity, season) {
     where: {
       seasonId: season.id,
       dateableId: entity.dateableId,
-      // startDate and endDate must both be non-null to publish
-      startDate: { [Op.ne]: null },
-      endDate: { [Op.ne]: null },
     },
 
     include: [
@@ -374,6 +371,24 @@ async function formatDateRanges(entity, season) {
     ],
   });
 
+  if (dateRangesRows.length === 0) {
+    throw new Error(
+      `No date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}, dateableId: ${entity.dateableId}`,
+    );
+  }
+
+  // startDate and endDate must both be non-null to publish.
+  // If any empty or incomplete date ranges exist, we cannot publish.
+  const incompleteDateRange = dateRangesRows.some(
+    (dateRange) => !dateRange.startDate || !dateRange.endDate,
+  );
+
+  if (incompleteDateRange) {
+    throw new Error(
+      `Incomplete date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}`,
+    );
+  }
+
   // Get all the DateRangeAnnual data for this season/entity
   const dateRangeAnnualsRows = await DateRangeAnnual.findAll({
     where: {
@@ -389,12 +404,6 @@ async function formatDateRanges(entity, season) {
       dateRangeAnnual,
     ]),
   );
-
-  if (dateRangesRows.length === 0) {
-    throw new Error(
-      `No valid date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}`,
-    );
-  }
 
   // Transform date ranges to API format
   return dateRangesRows.map((dateRange) => {
@@ -526,8 +535,8 @@ async function formatParkAreaData(parkArea, season) {
     const featureData = await formatFeatureData(feature, season);
 
     // If the formatting function returned null for any reason,
-    // skip publishing this Feature
-    if (!featureData) continue;
+    // return null to skip publishing this entire Area and its Features
+    if (!featureData) return null;
 
     formattedFeatures.push(featureData);
   }
