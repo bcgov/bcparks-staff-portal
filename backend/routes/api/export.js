@@ -458,9 +458,6 @@ router.get(
                   attributes: ["id", "name", "email"],
                 },
               ],
-
-              // Sort by createdAt descending to show newest notes first
-              order: [["createdAt", "DESC"]],
             },
           ],
         },
@@ -471,6 +468,16 @@ router.get(
           attributes: ["id", "strapiDateTypeId", "name"],
           required: true,
         },
+      ],
+
+      order: [
+        // Sort the included season.changeLogs by createdAt to show newest notes first
+        [
+          { model: Season, as: "season" },
+          { model: SeasonChangeLog, as: "changeLogs" },
+          "createdAt",
+          "DESC",
+        ],
       ],
     });
 
