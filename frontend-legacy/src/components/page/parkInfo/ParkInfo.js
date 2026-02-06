@@ -301,9 +301,9 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
         isActive: activity.isActive,
         modifiedBy: keycloak.tokenParsed.name,
         modifiedDate: moment().toISOString(),
-        protectedArea: activity.protectedArea,
-        site: activity.site,
-        activityType: activity.activityType,
+        protectedArea: activity.protectedArea?.documentId,
+        site: activity.site?.documentId,
+        activityType: activity.activityType?.documentId,
       };
       cmsAxios
         .put(`park-activities/${activityId}`, {data:parkActivity}, {
@@ -414,9 +414,9 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
         isActive: facility.isActive,
         modifiedBy: keycloak.tokenParsed.name,
         modifiedDate: moment().toISOString(),
-        protectedArea: facility.protectedArea,
-        site: facility.site,
-        facilityType: facility.facilityType,
+        protectedArea: facility.protectedArea?.documentId,
+        site: facility.site?.documentId,
+        facilityType: facility.facilityType?.documentId,
       };
       cmsAxios
         .put(`park-facilities/${facilityId}`, {data:parkFacility}, {
@@ -527,9 +527,9 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
         isActive: campingType.isActive,
         modifiedBy: keycloak.tokenParsed.name,
         modifiedDate: moment().toISOString(),
-        protectedArea: campingType.protectedArea,
-        site: campingType.site,
-        campingTypeType: campingType.campingTypeType,
+        protectedArea: campingType.protectedArea?.documentId,
+        site: campingType.site?.documentId,
+        campingType: campingType.campingType?.documentId,
       };
       cmsAxios
         .put(`park-camping-types/${campingTypeId}`, {data:parkCampingType}, {
