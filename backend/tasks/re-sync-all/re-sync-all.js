@@ -2,11 +2,14 @@ import { exec } from "node:child_process";
 import { promisify } from "node:util";
 
 import { createDateRangeAnnualEntries } from "../create-date-range-annual/create-date-range-annual.js";
-import { createDateTypes } from "../create-date-types/create-date-types.js";
 import { createGateDetailsFromStrapi } from "../create-gate-details/create-gate-details.js";
 import { deleteAllData } from "./delete-all.js";
-import { importData } from "../../strapi-sync/reset-and-import-data.js";
 import { importParkFeatureDates } from "../re-sync-seasons-and-dates/import-park-feature-dates.js";
+import importStrapiDateTypes from "../import-date-types/import-date-types.js";
+import importStrapiFeatures from "../import-features/import-features.js";
+import importStrapiFeatureTypes from "../import-feature-types/import-feature-types.js";
+import importStrapiParkAreas from "../import-park-areas/import-park-areas.js";
+import importStrapiProtectedAreas from "../import-parks/import-parks.js";
 import { importSubAreaDates } from "../re-sync-seasons-and-dates/import-sub-area-dates.js";
 import { populateAccessGroups } from "../populate-access-groups/populate-access-groups.js";
 import { populateParkAreaInReservationSystem } from "../populate-in-reservation-system/populate-in-reservation-system.js";
@@ -14,6 +17,7 @@ import { populateParkGateDates } from "../populate-park-gate-dates/populate-park
 import { populateParkTierTypes } from "../populate-park-tier-types/populate-park-tier-types.js";
 import { populateParkWinterFeeFlag } from "../populate-park-winter-fee-flag/populate-park-winter-fee-flag.js";
 import { populatePreviousDates } from "../populate-previous-dates/populate-previous-dates.js";
+import { syncData } from "../../strapi-sync/sync.js";
 
 const execAsync = promisify(exec);
 
@@ -28,11 +32,14 @@ async function reSyncAll() {
     step++;
 
     // 2 - import Feature, FeatureType, Park, ParkArea, ManagementArea, Section from Strapi
-    // TODO: split this "importData" out into a separate script in tasks
     console.log(
       `Starting: ${step} - Import Feature, FeatureType, Park, ParkArea, ManagementArea, Section from Strapi...`,
     );
-    await importData();
+    await syncData();
+    await importStrapiFeatureTypes();
+    await importStrapiProtectedAreas();
+    await importStrapiParkAreas();
+    await importStrapiFeatures();
     console.log(
       `Finished: ${step} - Import Feature, FeatureType, Park, ParkArea, ManagementArea, Section from Strapi.\n`,
     );
@@ -40,7 +47,7 @@ async function reSyncAll() {
 
     // 3 - import DateType from date-types.js
     console.log(`Starting: ${step} - Import DateType...`);
-    await createDateTypes();
+    await importStrapiDateTypes();
     console.log(`Finished: ${step} - Import DateType.\n`);
     step++;
 

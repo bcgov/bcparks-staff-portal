@@ -12,6 +12,7 @@ import {
 } from "../../models/index.js";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 export async function importSubAreaDates() {
   const transaction = await Season.sequelize.transaction();
@@ -28,17 +29,17 @@ export async function importSubAreaDates() {
     const parkAreas = await ParkArea.findAll({ transaction });
     const parkAreaById = _.keyBy(parkAreas, "id");
 
-    // get DateTypes for Operation, Reservation, and Backcountry
+    // get DateTypes for Operation, Reservation, and Backcountry using strapiDateTypeId
     const operationDateType = await DateType.findOne({
-      where: { name: "Operation", featureLevel: true },
+      where: { strapiDateTypeId: DATE_TYPE.OPERATION },
       transaction,
     });
     const reservationDateType = await DateType.findOne({
-      where: { name: "Reservation", featureLevel: true },
+      where: { strapiDateTypeId: DATE_TYPE.RESERVATION },
       transaction,
     });
     const backcountryDateType = await DateType.findOne({
-      where: { name: "Backcountry registration", featureLevel: true },
+      where: { strapiDateTypeId: DATE_TYPE.BACKCOUNTRY_REGISTRATION },
       transaction,
     });
 
