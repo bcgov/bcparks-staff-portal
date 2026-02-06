@@ -226,7 +226,7 @@ async function formatDateRanges(entity, season) {
 
   if (dateRangesRows.length === 0) {
     throw new Error(
-      `No valid date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}`,
+      `No date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}, dateableId: ${entity.dateableId}`,
     );
   }
 
