@@ -7,7 +7,7 @@ const modelCache = new Map();
 // Model configuration - defines all available models and their fetch settings
 // The `populate` syntax is 100% based on Strapi's populate query syntax. See the
 // Strapi docs for more info:
-// https://docs-v4.strapi.io/dev-docs/api/rest/populate-select#population
+// https://docs.strapi.io/dev-docs/api/rest/populate-select
 const MODEL_CONFIG = {
   "park-operation": {
     endpoint: "/park-operations",
@@ -19,7 +19,9 @@ const MODEL_CONFIG = {
   },
   "park-operation-sub-area": {
     endpoint: "/park-operation-sub-areas",
-    populate: ["protectedArea", "parkSubAreaType"],
+    populate: {
+      protectedArea: { fields: ["orcs"] },
+    },
   },
   "park-area": {
     endpoint: "/park-areas",
@@ -58,7 +60,9 @@ const MODEL_CONFIG = {
             "hasTier2Dates",
           ],
         },
-        managementAreas: true,
+        managementAreas: {
+          fields: ["managementAreaNumber"],
+        },
       },
       filters: {
         $and: [
@@ -74,10 +78,6 @@ const MODEL_CONFIG = {
   "facility-type": {
     endpoint: "/facility-types",
   },
-  "park-operation-sub-area-type": {
-    endpoint: "/park-operation-sub-area-types",
-    populate: ["facilityType", "campingType"],
-  },
   "park-operation-date": {
     endpoint: "/park-operation-dates",
     populate: {
@@ -91,7 +91,9 @@ const MODEL_CONFIG = {
   },
   "management-area": {
     endpoint: "/management-areas",
-    populate: ["section"],
+    populate: {
+      section: { fields: ["id"] },
+    },
   },
   "park-feature-type": {
     endpoint: "/park-feature-types",
@@ -113,6 +115,20 @@ const MODEL_CONFIG = {
   "park-date-type": {
     endpoint: "/park-date-types",
   },
+  "park-date": {
+    endpoint: "/park-dates",
+    populate: {
+      parkDateType: {
+        fields: ["dateTypeId"],
+      },
+      protectedArea: {
+        fields: ["orcs"],
+      },
+      parkFeature: {
+        fields: ["featureId"],
+      },
+    },
+  },
 };
 
 /**
@@ -128,7 +144,6 @@ async function fetchModel(modelName) {
   }
 
   const url = `${process.env.STRAPI_URL}/api${config.endpoint}`;
-
   let params = {};
 
   if (config.populate) {

@@ -93,20 +93,20 @@ export default async function importStrapiProtectedAreas(transaction = null) {
 
     for (const strapiProtectedArea of strapiProtectedAreas) {
       const { orcs, protectedAreaName, parkOperation, managementAreas } =
-        strapiProtectedArea.attributes;
+        strapiProtectedArea;
 
       const {
         inReservationSystem,
         hasWinterFeeDates,
         hasTier1Dates,
         hasTier2Dates,
-      } = parkOperation?.data?.attributes || {};
+      } = parkOperation || {};
 
       // get the managementAreas from Strapi
       const managementAreaArray = [];
 
-      for (const managementArea of managementAreas.data) {
-        const mgmtAreaNumber = managementArea.attributes.managementAreaNumber;
+      for (const managementArea of managementAreas) {
+        const mgmtAreaNumber = managementArea.managementAreaNumber;
         const ma = managementAreaLookup.get(mgmtAreaNumber);
 
         if (ma) {
