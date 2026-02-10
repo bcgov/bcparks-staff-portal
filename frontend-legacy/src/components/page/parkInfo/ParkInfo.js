@@ -236,7 +236,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     const currentActivity = parkActivities.filter(
       (a) => a.id === activityId
     )[0];
-    const unchangedActivity = protectedArea.parkActivities.data.filter(
+    const unchangedActivity = protectedArea.parkActivities.filter(
       (a) => a.id === activityId
     )[0];
     currentActivity.description = unchangedActivity.description;
@@ -349,7 +349,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     const currentFacility = parkFacilities.filter(
       (f) => f.id === facilityId
     )[0];
-    const unchangedFacility = protectedArea.parkFacilities.data.filter(
+    const unchangedFacility = protectedArea.parkFacilities.filter(
       (f) => f.id === facilityId
     )[0];
     currentFacility.description = unchangedFacility.description;
@@ -462,7 +462,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     const currentCampingType = parkCampingTypes.filter(
       (f) => f.id === campingTypeId
     )[0];
-    const unchangedCampingType = protectedArea.parkCampingTypes.data.filter(
+    const unchangedCampingType = protectedArea.parkCampingTypes.filter(
       (f) => f.id === campingTypeId
     )[0];
     currentCampingType.description = unchangedCampingType.description;

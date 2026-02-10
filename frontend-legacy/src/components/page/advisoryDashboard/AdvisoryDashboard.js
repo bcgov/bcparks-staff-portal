@@ -197,7 +197,7 @@ export default function AdvisoryDashboard({
       const filteredPublicAdvsories = [];
       const currentParkObj = protectedAreas.find(o => o.id === pId);
       advisories.forEach((obj) => {
-        if (obj.protectedAreas.filter(p => p.id === currentParkObj.id).length > 0) {
+        if (obj.protectedAreas.filter(p => p.documentId === currentParkObj.documentId).length > 0) {
           filteredPublicAdvsories.push(obj);
         }
       });
