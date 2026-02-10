@@ -745,10 +745,10 @@ export default function Advisory({
       if (isValidLink(link)) {
         if (link.id) {
           const savedLink = await saveLink(link, link.id);
-          savedLinks.push(savedLink.id);
+          savedLinks.push(savedLink.documentId);
         } else {
           const savedLink = await createLink(link);
-          savedLinks.push(savedLink.id);
+          savedLinks.push(savedLink.documentId);
         }
       }
     }
@@ -826,7 +826,7 @@ export default function Advisory({
           isAdvisoryDateDisplayed: displayAdvisoryDate,
           isEffectiveDateDisplayed: displayStartDate,
           isEndDateDisplayed: displayEndDate,
-          published_at: new Date(),
+          publishedAt: new Date(),
           isLatestRevision: true,
           createdByName: keycloak.tokenParsed.name,
           createdByRole: isApprover ? "approver" : "submitter",
@@ -838,7 +838,7 @@ export default function Advisory({
             headers: { Authorization: `Bearer ${keycloak.token}` }
           })
           .then((res) => {
-            setAdvisoryId(res.data.data.id);
+            setAdvisoryId(res.data.data.documentId);
             setIsSubmitting(false);
             setIsSavingDraft(false);
             setIsConfirmation(true);

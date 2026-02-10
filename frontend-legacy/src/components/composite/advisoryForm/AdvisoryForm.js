@@ -472,7 +472,7 @@ export default function AdvisoryForm({
               type="number"
               value={listingRank}
               onChange={(event) => {
-                setListingRank(event.target.value);
+                setListingRank(parseInt(event.target.value, 10));
               }}
               onWheel={(event) => {
                 event.target.blur();
