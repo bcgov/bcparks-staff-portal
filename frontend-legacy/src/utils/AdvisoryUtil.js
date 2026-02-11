@@ -168,7 +168,7 @@ const setAreaValues = (
           selSites
         );
       } else if (a.type === "site") {
-        selProtectedAreas.push(a.obj.protectedArea.id);
+        selProtectedAreas.push(a.obj.protectedArea.documentId);
       } else if (a.type === "region" || a.type === "section") {
         addProtectedAreasFromArea(
           a.obj,

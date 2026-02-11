@@ -92,7 +92,7 @@ export default function AdvisorySummary({
   useEffect(() => {
     if (documentId) {
       Promise.all([
-        cmsAxios.get(`public-advisory-audits/${documentId}?&populate=*`, {
+        cmsAxios.get(`public-advisory-audits/${documentId}?populate=*`, {
           headers: { Authorization: `Bearer ${keycloak.token}` },
         }),
         getLinkTypes(cmsData, setCmsData),
