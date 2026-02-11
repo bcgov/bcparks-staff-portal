@@ -105,55 +105,46 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
             }
           }
           if (protectedAreaData.parkActivities?.length > 0) {
-            const activities = [];
-            protectedAreaData.parkActivities.map((activity) => {
-              return activities.push({
-                id: activity.documentId,
-                description: activity.description,
-                name: activity.name,
-                isActivityOpen: activity.isActivityOpen,
-                isActive: activity.isActive,
-                protectedArea: activity.protectedArea,
-                site: activity.site,
-                activityType: activity.activityType,
-              });
-            });
+            const activities = protectedAreaData.parkActivities.map((activity) => ({
+              id: activity.documentId,
+              description: activity.description,
+              name: activity.name,
+              isActivityOpen: activity.isActivityOpen,
+              isActive: activity.isActive,
+              protectedArea: activity.protectedArea,
+              site: activity.site,
+              activityType: activity.activityType,
+            }));
             if (isMounted) {
               setParkActivities([...activities]);
             }
           }
           if (protectedAreaData.parkFacilities?.length > 0) {
-            const facilities = [];
-            protectedAreaData.parkFacilities.map((facility) => {
-              return facilities.push({
-                id: facility.documentId,
-                description: facility.description,
-                name: facility.name,
-                isFacilityOpen: facility.isFacilityOpen,
-                isActive: facility.isActive,
-                protectedArea: facility.protectedArea,
-                site: facility.site,
-                facilityType: facility.facilityType,
-              });
-            });
+            const facilities = protectedAreaData.parkFacilities.map((facility) => ({
+              id: facility.documentId,
+              description: facility.description,
+              name: facility.name,
+              isFacilityOpen: facility.isFacilityOpen,
+              isActive: facility.isActive,
+              protectedArea: facility.protectedArea,
+              site: facility.site,
+              facilityType: facility.facilityType,
+            }));
             if (isMounted) {
               setParkFacilities([...facilities]);
             }
           }
           if (protectedAreaData.parkCampingTypes?.length > 0) {
-            const campingTypes = [];
-            protectedAreaData.parkCampingTypes.map((campingType) => {
-              return campingTypes.push({
-                id: campingType.documentId,
-                description: campingType.description,
-                name: campingType.name,
-                isCampingOpen: campingType.isCampingOpen,
-                isActive: campingType.isActive,
-                protectedArea: campingType.protectedArea,
-                site: campingType.site,
-                campingType: campingType.campingType,
-              });
-            });
+            const campingTypes = protectedAreaData.parkCampingTypes.map((campingType) => ({
+              id: campingType.documentId,
+              description: campingType.description,
+              name: campingType.name,
+              isCampingOpen: campingType.isCampingOpen,
+              isActive: campingType.isActive,
+              protectedArea: campingType.protectedArea,
+              site: campingType.site,
+              campingType: campingType.campingType,
+            }));
             if (isMounted) {
               setParkCampingTypes([...campingTypes]);
             }

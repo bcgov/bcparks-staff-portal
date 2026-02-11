@@ -23,7 +23,7 @@ export function getLatestPublicAdvisoryAudits(keycloak, showArchived) {
         };
     }
     const query = qs.stringify({
-        fields: ["documentId", 'advisoryNumber', 'advisoryDate', 'title', 'effectiveDate', 'endDate', 'expiryDate', 'updatedAt'],
+        fields: ['documentId', 'advisoryNumber', 'advisoryDate', 'title', 'effectiveDate', 'endDate', 'expiryDate', 'updatedAt'],
         populate: {
             protectedAreas: {
                 fields: ['orcs', 'protectedAreaName'],

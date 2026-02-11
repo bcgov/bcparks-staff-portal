@@ -166,7 +166,7 @@ export default function AdvisoryDashboard({
             let park = protectedAreasData.find((p) => (p.documentId === parkId));
             if (park) {
               setSelectedParkId(parkId);
-              setSelectedPark(({ label: park.protectedAreaName, value: park.id }));
+              setSelectedPark(({ label: park.protectedAreaName, value: park.documentId }));
             }
           }
         }
