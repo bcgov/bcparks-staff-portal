@@ -472,7 +472,9 @@ export default function AdvisoryForm({
               type="number"
               value={listingRank}
               onChange={(event) => {
-                setListingRank(parseInt(event.target.value, 10));
+                const value = event.target.value;
+                const parsed = parseInt(value, 10);
+                setListingRank(isNaN(parsed) ? 0 : parsed);
               }}
               onWheel={(event) => {
                 event.target.blur();
@@ -569,7 +571,7 @@ export default function AdvisoryForm({
                   component="div"
                   className="standard-message"
                   dangerouslySetInnerHTML={{
-                    __html: message?.obj.description
+                    __html: message.obj.description || ""
                   }} />
               ))}
             </div>

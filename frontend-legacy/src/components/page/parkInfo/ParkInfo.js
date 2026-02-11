@@ -87,7 +87,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       ])
         .then((res) => {
           const protectedAreaData = res[0].data.data[0];
-          if (protectedAreaData.managementAreas.length > 0) {
+          if (protectedAreaData.managementAreas?.length > 0) {
             const managementArea = protectedAreaData.managementAreas[0];
             protectedAreaData.managementAreaName =
               managementArea.managementAreaName;
@@ -104,7 +104,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
               protectedAreaData.sectionName = section[0].sectionName;
             }
           }
-          if (protectedAreaData.parkActivities.length > 0) {
+          if (protectedAreaData.parkActivities?.length > 0) {
             const activities = [];
             protectedAreaData.parkActivities.map((activity) => {
               return activities.push({
@@ -122,7 +122,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
               setParkActivities([...activities]);
             }
           }
-          if (protectedAreaData.parkFacilities.length > 0) {
+          if (protectedAreaData.parkFacilities?.length > 0) {
             const facilities = [];
             protectedAreaData.parkFacilities.map((facility) => {
               return facilities.push({
@@ -140,7 +140,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
               setParkFacilities([...facilities]);
             }
           }
-          if (protectedAreaData.parkCampingTypes.length > 0) {
+          if (protectedAreaData.parkCampingTypes?.length > 0) {
             const campingTypes = [];
             protectedAreaData.parkCampingTypes.map((campingType) => {
               return campingTypes.push({
@@ -237,7 +237,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       (a) => a.id === activityId
     )[0];
     const unchangedActivity = protectedArea.parkActivities.filter(
-      (a) => a.id === activityId
+      (a) => a.documentId === activityId
     )[0];
     currentActivity.description = unchangedActivity.description;
     finishEditActivityDesc(activityId, true);
@@ -350,7 +350,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       (f) => f.id === facilityId
     )[0];
     const unchangedFacility = protectedArea.parkFacilities.filter(
-      (f) => f.id === facilityId
+      (f) => f.documentId === facilityId
     )[0];
     currentFacility.description = unchangedFacility.description;
     finishEditFacilityDesc(facilityId, true);
@@ -463,7 +463,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       (f) => f.id === campingTypeId
     )[0];
     const unchangedCampingType = protectedArea.parkCampingTypes.filter(
-      (f) => f.id === campingTypeId
+      (f) => f.documentId === campingTypeId
     )[0];
     currentCampingType.description = unchangedCampingType.description;
     finishEditCampingTypeDesc(campingTypeId, true);
