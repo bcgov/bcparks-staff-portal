@@ -92,13 +92,13 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
             protectedAreaData.managementAreaName =
               managementArea.managementAreaName;
             const region = cmsData.regions.filter(
-              (r) => r.id === managementArea.region.id
+              (r) => r.documentId === managementArea.region.documentId
             );
             if (region.length > 0) {
               protectedAreaData.regionName = region[0].regionName;
             }
             const section = cmsData.sections.filter(
-              (s) => s.id === managementArea.section.id
+              (s) => s.documentId === managementArea.section.documentId
             );
             if (section.length > 0) {
               protectedAreaData.sectionName = section[0].sectionName;

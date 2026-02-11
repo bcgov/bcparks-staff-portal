@@ -284,10 +284,10 @@ export function getParkRelations(parkId) {
         .then((res) => {
             if (res.data.data.length) {
                 const parkInfo = res.data.data[0];
-                const managementArea = parkInfo.managementAreas[0];
+                const managementArea = parkInfo.managementAreas?.[0];
                 const region = managementArea?.region;
                 const section = managementArea?.section;
-                const fireZone = parkInfo.fireZones[0];
+                const fireZone = parkInfo.fireZones?.[0];
                 const fireCentre = fireZone?.fireCentre;
                 const naturalResourceDistrict = parkInfo.naturalResourceDistricts[0];
                 const sites = parkInfo.sites;
