@@ -46,7 +46,7 @@ export function addProtectedAreas(
   if (sites && sites.length > 0) {
     sites.forEach((site) => {
       if (
-        !selSites.includes(site.id) &&
+        !selSites.includes(site.value) &&
         tempParkList.includes(site.obj.protectedArea.documentId)
       ) {
         selSites.push(site.value);
