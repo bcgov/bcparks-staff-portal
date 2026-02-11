@@ -59,31 +59,31 @@ export default function AdvisoryAreaPicker({
       } = await Promise.resolve(getParkRelations(parkId));
 
       if (managementArea && selectedManagementAreas.length) {
-        const newManagementAreas = selectedManagementAreas.filter(ma => ma.value !== managementArea.id);
+        const newManagementAreas = selectedManagementAreas.filter(ma => ma.value !== managementArea.documentId);
         setSelectedManagementAreas(newManagementAreas);
       }
       if (region && selectedRegions.length) {
-        const newRegions = selectedRegions.filter(r => r.value !== region.id);
+        const newRegions = selectedRegions.filter(r => r.value !== region.documentId);
         setSelectedRegions(newRegions);
       }
       if (section && selectedSections.length) {
-        const newSections = selectedSections.filter(s => s.value !== section.id);
+        const newSections = selectedSections.filter(s => s.value !== section.documentId);
         setSelectedSections(newSections);
       }
       if (fireZone && selectedFireZones.length) {
-        const newFireZones = selectedFireZones.filter(fz => fz.value !== fireZone.id);
+        const newFireZones = selectedFireZones.filter(fz => fz.value !== fireZone.documentId);
         setSelectedFireZones(newFireZones);
       }
       if (fireCentre && selectedFireCentres.length) {
-        const newFireCentres = selectedFireCentres.filter(fc => fc.value !== fireCentre.id);
+        const newFireCentres = selectedFireCentres.filter(fc => fc.value !== fireCentre.documentId);
         setSelectedFireCentres(newFireCentres);
       }
       if (naturalResourceDistrict && selectedNaturalResourceDistricts.length) {
-        const newNaturalResourceDistricts = selectedNaturalResourceDistricts.filter(nrd => nrd.value !== naturalResourceDistrict.id);
+        const newNaturalResourceDistricts = selectedNaturalResourceDistricts.filter(nrd => nrd.value !== naturalResourceDistrict.documentId);
         setSelectedNaturalResourceDistricts(newNaturalResourceDistricts);
-      }      
-      if (sites && sites.data.length && selectedSites.length) {
-        const parkSites = sites.data.map(x => x.id);
+      }
+      if (sites && sites.length && selectedSites.length) {
+        const parkSites = sites.map(x => x.documentId);
         const newSites = selectedSites.filter(s => !parkSites.includes(s.value));
         setSelectedSites(newSites);
       }
@@ -176,7 +176,7 @@ export default function AdvisoryAreaPicker({
             arrow
             title="Please select the park that your advisory is affecting.
                 There is no need to select additional sites, regions, or sections if your advisory is just for a specific park.
-                Selecting a region (or any other category) will apply your advisory to every park page within that region or other category.              
+                Selecting a region (or any other category) will apply your advisory to every park page within that region or other category.
                 For example, an advisory for Goldstream Park would only need Goldstream selected from the list of parks,
                 you would not need to include West Coast in the regions as this would trigger an alert for all parks in the West Coast."
           >

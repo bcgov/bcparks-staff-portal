@@ -107,11 +107,10 @@ export default function Advisory({
   const [isApprover, setIsApprover] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { id } = useParams();
+  const { documentId } = useParams();
   const history = useHistory();
 
   const query = qs.stringify({
-    publicationState: "preview",
     populate: {
       accessStatus: { populate: "*" },
       advisoryStatus: { populate: "*" },
@@ -155,11 +154,11 @@ export default function Advisory({
 
   useEffect(() => {
     if (mode === "update" && !isLoadingData) {
-      if (parseInt(id)) {
-        setAdvisoryId(id);
+      if (documentId) {
+        setAdvisoryId(documentId);
         cmsAxios
           .get(
-            `public-advisory-audits/${id}?${query}`,
+            `public-advisory-audits/${documentId}?${query}`,
             {
               headers: { Authorization: `Bearer ${keycloak.token}` }
             }
@@ -207,16 +206,16 @@ export default function Advisory({
               );
             }
             if (advisoryData.accessStatus) {
-              setAccessStatus(advisoryData.accessStatus.id);
+              setAccessStatus(advisoryData.accessStatus.documentId);
             }
             if (advisoryData.eventType) {
-              setEventType(advisoryData.eventType.id);
+              setEventType(advisoryData.eventType.documentId);
             }
             if (advisoryData.urgency) {
-              setUrgency(advisoryData.urgency.id);
+              setUrgency(advisoryData.urgency.documentId);
             }
             if (advisoryData.advisoryStatus) {
-              setAdvisoryStatus(advisoryData.advisoryStatus.id);
+              setAdvisoryStatus(advisoryData.advisoryStatus.documentId);
             }
             setDisplayAdvisoryDate(
               advisoryData.isAdvisoryDateDisplayed
@@ -251,7 +250,7 @@ export default function Advisory({
               const selStandardMessages = [];
               standardMessageInfo.forEach((p) => {
                 selStandardMessages.push(
-                  standardMessages.find((l) => l.value === p.id)
+                  standardMessages.find((l) => l.value === p.documentId)
                 );
               });
               setSelectedStandardMessages([...selStandardMessages]);
@@ -261,7 +260,7 @@ export default function Advisory({
               const selProtectedAreas = [];
               protectedAreaInfo.forEach((p) => {
                 selProtectedAreas.push(
-                  protectedAreas.find((l) => l.value === p.id)
+                  protectedAreas.find((l) => l.value === p.documentId)
                 );
               });
               setSelectedProtectedAreas([...selProtectedAreas]);
@@ -269,14 +268,14 @@ export default function Advisory({
             if (regionInfo) {
               const selRegions = [];
               regionInfo.forEach((r) => {
-                selRegions.push(regions.find((l) => l.value === r.id));
+                selRegions.push(regions.find((l) => l.value === r.documentId));
               });
               setSelectedRegions([...selRegions]);
             }
             if (sectionInfo) {
               const selSections = [];
               sectionInfo.forEach((s) => {
-                selSections.push(sections.find((l) => l.value === s.id));
+                selSections.push(sections.find((l) => l.value === s.documentId));
               });
               setSelectedSections([...selSections]);
             }
@@ -284,7 +283,7 @@ export default function Advisory({
               const selManagementAreas = [];
               managementAreaInfo.forEach((m) => {
                 selManagementAreas.push(
-                  managementAreas.find((l) => l.value === m.id)
+                  managementAreas.find((l) => l.value === m.documentId)
                 );
               });
               setSelectedManagementAreas([...selManagementAreas]);
@@ -292,28 +291,28 @@ export default function Advisory({
             if (siteInfo) {
               const selSites = [];
               siteInfo.forEach((s) => {
-                selSites.push(sites.find((l) => l.value === s.id));
+                selSites.push(sites.find((l) => l.value === s.documentId));
               });
               setSelectedSites([...selSites]);
             }
             if (fireCentreInfo) {
               const selFireCentres = [];
               fireCentreInfo.forEach((f) => {
-                selFireCentres.push(fireCentres.find((l) => l.value === f.id));
+                selFireCentres.push(fireCentres.find((l) => l.value === f.documentId));
               });
               setSelectedFireCentres([...selFireCentres]);
             }
             if (fireZoneInfo) {
               const selFireZones = [];
               fireZoneInfo.forEach((f) => {
-                selFireZones.push(fireZones.find((l) => l.value === f.id));
+                selFireZones.push(fireZones.find((l) => l.value === f.documentId));
               });
               setSelectedFireZones([...selFireZones]);
             }
             if (naturalResourceDistrictInfo) {
               const selNaturalResourceDistricts = [];
               naturalResourceDistrictInfo.forEach((f) => {
-                selNaturalResourceDistricts.push(naturalResourceDistricts.find((l) => l.value === f.id));
+                selNaturalResourceDistricts.push(naturalResourceDistricts.find((l) => l.value === f.documentId));
               });
               setSelectedNaturalResourceDistricts([...selNaturalResourceDistricts]);
             }
@@ -323,10 +322,10 @@ export default function Advisory({
                 linksRef.current = [
                   ...linksRef.current,
                   {
-                    type: l.type.id,
+                    type: l.type.documentId,
                     title: l.title || "",
                     url: l.url || "",
-                    id: l.id,
+                    id: l.documentId,
                     file: l.file || "",
                     format: l.format || "",
                     isModified: false,
@@ -357,7 +356,7 @@ export default function Advisory({
       }
     }
   }, [
-    id,
+    documentId,
     query,
     mode,
     setHeadline,
@@ -428,7 +427,7 @@ export default function Advisory({
           const protectedAreaData = res[0];
           const protectedAreas = protectedAreaData.map((p) => ({
             label: p.protectedAreaName,
-            value: p.id,
+            value: p.documentId,
             type: "protectedArea",
             orcs: p.orcs
           }));
@@ -436,7 +435,7 @@ export default function Advisory({
           const regionData = res[1];
           const regions = regionData.map((r) => ({
             label: r.regionName + " Region",
-            value: r.id,
+            value: r.documentId,
             type: "region",
             obj: r,
           }));
@@ -444,7 +443,7 @@ export default function Advisory({
           const sectionData = res[2];
           const sections = sectionData.map((s) => ({
             label: s.sectionName + " Section",
-            value: s.id,
+            value: s.documentId,
             type: "section",
             obj: s,
           }));
@@ -452,15 +451,15 @@ export default function Advisory({
           const managementAreaData = res[3];
           const managementAreas = managementAreaData.map((m) => ({
             label: m.managementAreaName + " Management Area",
-            value: m.id,
+            value: m.documentId,
             type: "managementArea",
             obj: m,
           }));
           setManagementAreas([...managementAreas]);
           const siteData = res[4];
           const sites = siteData.map((s) => ({
-            label: s?.attributes.protectedArea?.data?.attributes.protectedAreaName + ": " + s.attributes.siteName,
-            value: s.id,
+            label: s?.protectedArea?.protectedAreaName + ": " + s.siteName,
+            value: s.documentId,
             type: "site",
             obj: s,
           }));
@@ -469,7 +468,7 @@ export default function Advisory({
           const fireCentreData = res[5];
           const fireCentres = fireCentreData.map((f) => ({
             label: f.fireCentreName,
-            value: f.id,
+            value: f.documentId,
             type: "fireCentre",
             obj: f,
           }));
@@ -477,7 +476,7 @@ export default function Advisory({
           const fireZoneData = res[6];
           const fireZones = fireZoneData.map((f) => ({
             label: f.fireZoneName,
-            value: f.id,
+            value: f.documentId,
             type: "fireZone",
             obj: f,
           }));
@@ -485,7 +484,7 @@ export default function Advisory({
           const naturalResourceDistrictData = res[7];
           const naturalResourceDistricts = naturalResourceDistrictData.map((f) => ({
             label: f.naturalResourceDistrictName,
-            value: f.id,
+            value: f.documentId,
             type: "naturalResourceDistrict",
             obj: f,
           }));
@@ -493,13 +492,13 @@ export default function Advisory({
           const eventTypeData = res[8];
           const eventTypes = eventTypeData.map((et) => ({
             label: et.eventType,
-            value: et.id,
+            value: et.documentId,
           }));
           setEventTypes([...eventTypes]);
           const accessStatusData = res[9];
           const accessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
-            value: a.id,
+            value: a.documentId,
           }));
           setAccessStatuses([...accessStatuses]);
           const accessStatus = accessStatuses.filter((a) => a.label === "Open");
@@ -507,7 +506,7 @@ export default function Advisory({
           const urgencyData = res[10];
           const urgencies = urgencyData.map((u) => ({
             label: u.urgency,
-            value: u.id,
+            value: u.documentId,
             sequence: u.sequence
           }));
           setUrgencies([...urgencies]);
@@ -520,13 +519,13 @@ export default function Advisory({
               result = {
                 code: s.code,
                 label: camelCaseToSentenceCase(s.advisoryStatus),
-                value: s.id,
+                value: s.documentId,
               };
             } else if (!restrictedAdvisoryStatusCodes.includes(s.code)) {
               result = {
                 code: s.code,
                 label: camelCaseToSentenceCase(s.advisoryStatus),
-                value: s.id,
+                value: s.documentId,
               };
             }
             return result;
@@ -541,13 +540,13 @@ export default function Advisory({
           const linkTypeData = res[12];
           const linkTypes = linkTypeData.map((lt) => ({
             label: lt.type,
-            value: lt.id,
+            value: lt.documentId,
           }));
           setLinkTypes([...linkTypes]);
           const standardMessageData = res[13];
           const standardMessages = standardMessageData.map((m) => ({
             label: m.title,
-            value: m.id,
+            value: m.documentId,
             type: "standardMessage",
             obj: m,
           }));
@@ -744,12 +743,12 @@ export default function Advisory({
     const savedLinks = [];
     for (let link of linksRef.current) {
       if (isValidLink(link)) {
-        if (parseInt(link.id) > 0) {
+        if (link.id) {
           const savedLink = await saveLink(link, link.id);
-          savedLinks.push(savedLink.id);
+          savedLinks.push(savedLink.documentId);
         } else {
           const savedLink = await createLink(link);
-          savedLinks.push(savedLink.id);
+          savedLinks.push(savedLink.documentId);
         }
       }
     }
@@ -827,7 +826,7 @@ export default function Advisory({
           isAdvisoryDateDisplayed: displayAdvisoryDate,
           isEffectiveDateDisplayed: displayStartDate,
           isEndDateDisplayed: displayEndDate,
-          published_at: new Date(),
+          publishedAt: new Date(),
           isLatestRevision: true,
           createdByName: keycloak.tokenParsed.name,
           createdByRole: isApprover ? "approver" : "submitter",
@@ -839,7 +838,7 @@ export default function Advisory({
             headers: { Authorization: `Bearer ${keycloak.token}` }
           })
           .then((res) => {
-            setAdvisoryId(res.data.data.id);
+            setAdvisoryId(res.data.data.documentId);
             setIsSubmitting(false);
             setIsSavingDraft(false);
             setIsConfirmation(true);
@@ -931,11 +930,11 @@ export default function Advisory({
           }
 
           cmsAxios
-            .put(`public-advisory-audits/${id}`, { data: updatedAdvisory }, {
+            .put(`public-advisory-audits/${documentId}`, { data: updatedAdvisory }, {
               headers: { Authorization: `Bearer ${keycloak.token}` }
             })
             .then((res) => {
-              setAdvisoryId(res.data.data.id);
+              setAdvisoryId(res.data.data.documentId);
               setIsSubmitting(false);
               setIsSavingDraft(false);
               setIsConfirmation(true);
@@ -979,7 +978,7 @@ export default function Advisory({
           message: "Could not save attachments",
         });
       });
-    return res.data.data.id;
+    return res.data.data.documentId;
   };
 
   const updateMediaLink = async (media, id, link) => {

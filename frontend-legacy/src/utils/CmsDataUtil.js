@@ -256,10 +256,9 @@ export function getStandardMessages(cmsData, setCmsData) {
 export function getParkRelations(parkId) {
     const query = qs.stringify(
         {
-            publicationState: "preview",
-            fields: ["id"],
+            fields: ["documentId"],
             filters: {
-                id: parkId
+                documentId: parkId
             },
             populate: {
                 managementAreas: {
@@ -269,10 +268,10 @@ export function getParkRelations(parkId) {
                     populate: ["fireCentre"]
                 },
                 sites: {
-                    fields: ["id"]
+                    fields: ["documentId"]
                 },
                 naturalResourceDistricts: {
-                    fields: ["id"]
+                    fields: ["documentId"]
                 }
             }
         },
@@ -284,13 +283,13 @@ export function getParkRelations(parkId) {
         .get(`/protected-areas?${query}`)
         .then((res) => {
             if (res.data.data.length) {
-                const parkInfo = res.data.data[0].attributes;
-                const managementArea = parkInfo.managementAreas?.data[0];
-                const region = managementArea?.attributes.region?.data;
-                const section = managementArea?.attributes.section?.data;
-                const fireZone = parkInfo.fireZones?.data[0];
-                const fireCentre = fireZone?.attributes.fireCentre?.data;
-                const naturalResourceDistrict = parkInfo.naturalResourceDistricts?.data[0];
+                const parkInfo = res.data.data[0];
+                const managementArea = parkInfo.managementAreas?.[0];
+                const region = managementArea?.region;
+                const section = managementArea?.section;
+                const fireZone = parkInfo.fireZones?.[0];
+                const fireCentre = fireZone?.fireCentre;
+                const naturalResourceDistrict = parkInfo.naturalResourceDistricts[0];
                 const sites = parkInfo.sites;
                 return {
                     managementArea: managementArea,

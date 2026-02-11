@@ -28,7 +28,7 @@ export default function AdvisorySummary({
   const [snackPack, setSnackPack] = useState([]);
   const [openSnack, setOpenSnack] = useState(false);
   const [snackMessageInfo, setSnackMessageInfo] = useState(undefined);
-  const { id } = useParams();
+  const { documentId } = useParams();
   const history = useHistory();
   const { confirmationText, index } = useLocation();
   const [isCurrentlyPublished, setIsCurrentlyPublished] = useState(false);
@@ -41,7 +41,9 @@ export default function AdvisorySummary({
     if (!isLoadingPage) {
       if (showOriginalAdvisory) {
         Promise.all([
-          cmsAxios.get(`/public-advisories/${advisory.advisoryNumber}?populate=*`),
+          cmsAxios.get(
+            `/public-advisories/${advisory.advisoryNumber}?populate=*`
+          ),
           getLinkTypes(cmsData, setCmsData),
         ])
           .then((res) => {
@@ -88,13 +90,11 @@ export default function AdvisorySummary({
   ]);
 
   useEffect(() => {
-    if (parseInt(id)) {
+    if (documentId) {
       Promise.all([
-        cmsAxios.get(
-          `public-advisory-audits/${id}?publicationState=preview&populate=*`,
-          {
-            headers: { Authorization: `Bearer ${keycloak.token}` }
-          }),
+        cmsAxios.get(`public-advisory-audits/${documentId}?populate=*`, {
+          headers: { Authorization: `Bearer ${keycloak.token}` },
+        }),
         getLinkTypes(cmsData, setCmsData),
       ])
         .then((res) => {
@@ -153,7 +153,7 @@ export default function AdvisorySummary({
       setOpenSnack(false);
     }
   }, [
-    id,
+    documentId,
     setError,
     setToError,
     setIsLoadingPage,
@@ -173,16 +173,16 @@ export default function AdvisorySummary({
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push('/advisories');
+        history.push("/advisories");
         break;
       case 1:
-        history.push('/park-access-status');
+        history.push("/park-access-status");
         break;
       case 2:
-        history.push('/activities-and-facilities');
+        history.push("/activities-and-facilities");
         break;
       default:
-        history.push('/');
+        history.push("/");
     }
   };
 
@@ -214,7 +214,7 @@ export default function AdvisorySummary({
   }
 
   if (toUpdate) {
-    return <Redirect push to={`/update-advisory/${id}`} />;
+    return <Redirect push to={`/update-advisory/${documentId}`} />;
   }
 
   if (toError) {
@@ -240,7 +240,8 @@ export default function AdvisorySummary({
                     className="btn btn-link btn-back mt-4"
                     onClick={() => {
                       setToDashboard(true);
-                    }}>
+                    }}
+                  >
                     <ArrowBackIcon />
                     Back to public advisories
                   </button>
