@@ -163,7 +163,7 @@ export default function AdvisoryDashboard({
 
           let parkId = getPageFilterValue(filters, 'park');
           if (parkId) {
-            let park = protectedAreasData.find((p) => (p.id === parkId));
+            let park = protectedAreasData.find((p) => (p.documentId === parkId));
             if (park) {
               setSelectedParkId(parkId);
               setSelectedPark(({ label: park.protectedAreaName, value: park.id }));
@@ -195,7 +195,7 @@ export default function AdvisoryDashboard({
 
     if (pId) {
       const filteredPublicAdvsories = [];
-      const currentParkObj = protectedAreas.find(o => o.id === pId);
+      const currentParkObj = protectedAreas.find(o => o.documentId === pId);
       advisories.forEach((obj) => {
         if (obj.protectedAreas.filter(p => p.documentId === currentParkObj.documentId).length > 0) {
           filteredPublicAdvsories.push(obj);
@@ -599,7 +599,7 @@ export default function AdvisoryDashboard({
           <div className="col-xl-5 col-md-4 col-sm-12">
             <Select
               value={selectedPark}
-              options={protectedAreas.map((p) => ({ label: p.protectedAreaName, value: p.id }))}
+              options={protectedAreas.map((p) => ({ label: p.protectedAreaName, value: p.documentId }))}
               onChange={(e) => {
                 setSelectedPark(e);
                 setSelectedParkId(e ? e.value : 0);
