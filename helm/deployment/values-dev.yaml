@@ -12,3 +12,6 @@ backend:
     externalUrl: https://dev-staff-api.bcparks.ca
     devTestMode: "true"
   postgresSecret: crunchy-postgres-pguser-postgres
+
+cron:
+  enabled: true

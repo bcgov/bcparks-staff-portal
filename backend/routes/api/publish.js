@@ -2,26 +2,29 @@ import { Router } from "express";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 import { format } from "date-fns";
+import _ from "lodash";
 
 import {
   DateRange,
   DateRangeAnnual,
   DateType,
   Feature,
+  FeatureType,
   GateDetail,
   Park,
   ParkArea,
   Season,
+  SeasonChangeLog,
 } from "../../models/index.js";
 
-import {
-  adminsAndApprovers,
-  checkPermissions,
-} from "../../middleware/permissions.js";
+import { checkPermissions } from "../../middleware/permissions.js";
+import * as USER_ROLES from "../../constants/userRoles.js";
 
 import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as FEATURE_TYPE from "../../constants/featureType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
 
 const router = Router();
@@ -33,17 +36,140 @@ const FEATURE_ATTRIBUTES = [
   "strapiOrcsFeatureNumber",
 ];
 
+// ensures non-feature rows appear before features
+const NON_FEATURE_SORT_INDEX = -1;
+
+/**
+ * Returns the sort index for the given feature type ID.
+ * @param {number} strapiFeatureTypeId the strapi feature type ID
+ * @returns {number} the sort index
+ */
+function getSortIndex(strapiFeatureTypeId) {
+  const index = FEATURE_TYPE.SORT_ORDER.indexOf(strapiFeatureTypeId);
+
+  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+}
+
+/**
+ * Flattens the seasons into a simple array for easier sorting.
+ * @param {Array} seasons the array of season objects
+ * @returns {Array} the flattened array of season objects
+ */
+function flattenSeasons(seasons) {
+  return seasons.flatMap((season) => {
+    const baseRow = {
+      id: season.id,
+      parkName: season.parkName,
+      operatingYear: season.operatingYear,
+      displayOperatingYear: season.displayOperatingYear,
+      parkAreaName: season.parkAreaName,
+      readyToPublish: season.readyToPublish,
+      publishableType: season.publishableType,
+    };
+
+    if (season.publishableType === "feature") {
+      return [
+        {
+          ...baseRow,
+          featureName: season.publishable.name,
+          sortIndex: getSortIndex(
+            season.publishable.featureType.strapiFeatureTypeId,
+          ),
+        },
+      ];
+    }
+
+    // If publishable has features array, create a row for each feature
+    if (
+      season.publishable?.features &&
+      season.publishable.features.length > 0
+    ) {
+      return season.publishable.features.map((feature) => ({
+        ...baseRow,
+        featureName: feature.name,
+        sortIndex: getSortIndex(feature.featureType.strapiFeatureTypeId),
+      }));
+    }
+
+    // Otherwise, create a single row without feature data
+    return [
+      {
+        ...baseRow,
+        featureName: "",
+        sortIndex: NON_FEATURE_SORT_INDEX,
+      },
+    ];
+  });
+}
+
+/**
+ * Sorts the flattened list of seasons.
+ * @param {Array} seasons the flattened array of season objects
+ * @returns {Array} the sorted array of season objects
+ */
+function sortFlattenedSeasons(seasons) {
+  // Sort the flattened list
+  return _.sortBy(seasons, [
+    (item) => item.parkName.toLowerCase(),
+    "sortIndex",
+    (item) => item.parkAreaName.toLowerCase(),
+    "operatingYear",
+    (item) => item.featureName.toLowerCase(),
+  ]);
+}
+
+/**
+ * Groups the sorted flattened seasons into rows with featureNames arrays.
+ * @param {Array} flattened the sorted flattened array of season objects
+ * @returns {Array} the grouped array of season objects
+ */
+function groupSeasons(flattened) {
+  const groupedSeasons = [];
+
+  const seasonMap = new Map();
+
+  flattened.forEach((item) => {
+    const key = `${item.parkName}-${item.operatingYear}-${item.parkAreaName}-${item.readyToPublish}-${item.publishableType}`;
+
+    if (seasonMap.has(key)) {
+      if (item.featureName) {
+        seasonMap.get(key).featureNames.push(item.featureName);
+      }
+    } else {
+      seasonMap.set(key, {
+        id: item.id,
+        parkName: item.parkName,
+        operatingYear: item.operatingYear,
+        displayOperatingYear: item.displayOperatingYear,
+        parkAreaName: item.parkAreaName,
+        readyToPublish: item.readyToPublish,
+        featureNames: item.featureName ? [item.featureName] : [],
+        publishableType: item.publishableType,
+        sortIndex: item.sortIndex,
+      });
+    }
+  });
+
+  groupedSeasons.push(...seasonMap.values());
+
+  return groupedSeasons;
+}
+
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
-    // Get all seasons that are approved and ready to be published
+    // Get all seasons that are approved
     const approvedSeasons = await Season.findAll({
       where: {
         status: STATUS.APPROVED,
-        // TODO: CMS-1153
-        // readyToPublish: true,
       },
-      attributes: ["id", "publishableId", "operatingYear", "readyToPublish"],
+      attributes: [
+        "id",
+        "publishableId",
+        "operatingYear",
+        "readyToPublish",
+        "seasonType",
+      ],
     });
 
     // Return if no seasons found
@@ -71,7 +197,18 @@ router.get(
         attributes: ["id", "publishableId", "name"],
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
-          { model: Feature, as: "features", attributes: ["id", "name"] },
+          {
+            model: Feature,
+            as: "features",
+            attributes: ["id", "name"],
+            include: [
+              {
+                model: FeatureType,
+                as: "featureType",
+                attributes: ["strapiFeatureTypeId"],
+              },
+            ],
+          },
         ],
       }),
       Feature.findAll({
@@ -80,6 +217,11 @@ router.get(
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
           { model: ParkArea, as: "parkArea", attributes: ["id", "name"] },
+          {
+            model: FeatureType,
+            as: "featureType",
+            attributes: ["strapiFeatureTypeId"],
+          },
         ],
       }),
     ]);
@@ -107,6 +249,16 @@ router.get(
     const output = approvedSeasons.map((season) => {
       const publishable = publishableMap.get(season.publishableId);
 
+      // Determine displayOperatingYear based on publishable type and season type
+      let displayOperatingYear = season.operatingYear;
+
+      if (publishable?.type === "park") {
+        displayOperatingYear =
+          season.seasonType === SEASON_TYPE.WINTER
+            ? `${season.operatingYear} Winter fee`
+            : `${season.operatingYear} Tiers and gate`;
+      }
+
       if (!publishable) {
         console.warn(
           `No publishable entity found for publishableId: ${season.publishableId}`,
@@ -116,39 +268,34 @@ router.get(
       // Extract names based on publishable type
       let parkName = "-";
       let parkAreaName = "-";
-      let featureNames = [];
 
       if (publishable?.type === "park") {
         parkName = publishable.name || "-";
       } else if (publishable?.type === "parkArea") {
         parkName = publishable.park?.name || "-";
         parkAreaName = publishable.name || "-";
-        const parkAreaFeatures = publishable.features;
-
-        featureNames = Array.isArray(parkAreaFeatures)
-          ? parkAreaFeatures
-              .filter((parkFeature) => parkFeature && parkFeature.name)
-              .map((parkFeature) => parkFeature.name)
-          : [];
       } else if (publishable?.type === "feature") {
         parkName = publishable.park?.name || "-";
         parkAreaName = publishable.parkArea?.name || "-";
-        featureNames = publishable.name ? [publishable.name] : [];
       }
 
       return {
         id: season.id,
-        operatingYear: season.operatingYear,
+        displayOperatingYear,
         readyToPublish: season.readyToPublish,
         publishableType: publishable?.type ?? null,
         publishable: publishable ?? null,
         parkName,
         parkAreaName,
-        featureNames,
       };
     });
 
-    return res.send({ seasons: output });
+    // Flatten, sort, and group the seasons for output
+    const flattenedSeasons = flattenSeasons(output);
+    const sortedFlattenedSeasons = sortFlattenedSeasons(flattenedSeasons);
+    const groupedSeasons = groupSeasons(sortedFlattenedSeasons);
+
+    return res.send({ seasons: groupedSeasons });
   }),
 );
 
@@ -401,7 +548,7 @@ async function formatParkAreaData(parkArea, season) {
 // For a list of season IDs, fetch the season data from our DB and send it to Strapi
 router.post(
   "/publish-to-api/",
-  checkPermissions(adminsAndApprovers),
+  checkPermissions([USER_ROLES.APPROVER]),
   asyncHandler(async (req, res) => {
     const seasonIds = req.body.seasonIds;
 
@@ -567,6 +714,43 @@ router.post(
       { status: STATUS.PUBLISHED },
       { where: { id: { [Op.in]: publishedSeasonIds } } },
     );
+
+    // Fetch the published seasons
+    const publishedSeasons = await Season.findAll({
+      where: { id: { [Op.in]: publishedSeasonIds } },
+      include: [
+        {
+          model: SeasonChangeLog,
+          as: "changeLogs",
+          separate: true,
+          limit: 1,
+          order: [["createdAt", "DESC"]],
+        },
+      ],
+    });
+
+    // Create season change logs for the published seasons
+    const changeLogsToCreate = publishedSeasons.map((season) => {
+      const lastLog = season.changeLogs?.[0];
+
+      const statusOldValue = lastLog?.statusNewValue || STATUS.APPROVED;
+      const readyToPublishValue = lastLog?.readyToPublishNewValue ?? true;
+      const gateDetailValue = lastLog?.gateDetailNewValue || null;
+
+      return {
+        seasonId: season.id,
+        userId: req.user.id,
+        notes: "",
+        statusOldValue,
+        statusNewValue: STATUS.PUBLISHED,
+        readyToPublishOldValue: readyToPublishValue,
+        readyToPublishNewValue: readyToPublishValue,
+        gateDetailOldValue: gateDetailValue,
+        gateDetailNewValue: gateDetailValue,
+      };
+    });
+
+    await SeasonChangeLog.bulkCreate(changeLogsToCreate);
 
     // Send 200 OK response with empty body
     res.send();

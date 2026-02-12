@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { sortBy } from "lodash-es";
 import { faPlus, faXmark } from "@fa-kit/icons/classic/regular";
 import { addDays } from "date-fns";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -9,6 +10,9 @@ import Form from "react-bootstrap/Form";
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
+
+// Maximum valid JavaScript date (September 13, 275760)
+const MAX_DATE = new Date(8640000000000000);
 
 function DateRange({
   dateRange,
@@ -122,6 +126,7 @@ export default function DateRangeFields({
   addDateRange,
   dateType,
   operatingYear,
+  isWinterSeason = false,
   dateRangeAnnuals,
   updateDateRangeAnnual,
   optional = false,
@@ -142,6 +147,18 @@ export default function DateRangeFields({
         dateRangeAnnual.dateType?.id === dateType.id,
     );
   }, [dateableId, dateType, dateRangeAnnuals]);
+
+  // Sort dateRanges by startDate on initial render
+  useMemo(() => {
+    sortBy(dateRanges, (dateRange) => dateRange.startDate || MAX_DATE)
+      // Mutate the prop to assign a sortIndex to each dateRange
+      .forEach((dateRange, index) => {
+        // Re-organization of dates only occurs when the page is
+        // saved, submitted, or approved
+        dateRange.sortIndex = index;
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only update the sort when the component mounts
+  }, []);
 
   const dateRangeAnnualId = matchedDateRangeAnnual?.id
     ? matchedDateRangeAnnual.id
@@ -167,8 +184,18 @@ export default function DateRangeFields({
   }
 
   // Min and max dates for the date picker control
-  const minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
-  const maxDate = new Date(operatingYear + 1, 11, 31); // Dec 31 of the year after that
+  let minDate;
+  let maxDate;
+
+  if (isWinterSeason) {
+    // Winter seasons
+    minDate = new Date(operatingYear, 9, 1); // Oct 1 of the season's operating year
+    maxDate = new Date(operatingYear + 1, 2, 31); // Mar 31 of the year after that
+  } else {
+    // Regular seasons
+    minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
+    maxDate = new Date(operatingYear, 11, 31); // Dec 31 of the season's operating year
+  }
 
   return (
     <>
@@ -243,6 +270,7 @@ DateRangeFields.propTypes = {
     displayName: PropTypes.string,
   }).isRequired,
   operatingYear: PropTypes.number.isRequired,
+  isWinterSeason: PropTypes.bool,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
   optional: PropTypes.bool,

@@ -1,25 +1,29 @@
-// This script creates new blank seasons for upcoming years in the DOOT database.
+// This script creates new blank regular seasons for upcoming years in the DOOT database.
 // It will skip creating a season if one already exists for the given operating year and publishable.
 // Also creates Group Camping and Picnic Shelter seasons for the year after the operating year.
+// Note: Winter seasons are created separately by the create-winter-seasons script.
 
-import "../env.js";
+import "../../env.js";
 
 import { Op } from "sequelize";
 
 import {
-  Dateable,
   DateRange,
   DateType,
   Feature,
   FeatureType,
   Park,
   ParkArea,
-  Publishable,
   Season,
-} from "../models/index.js";
-import * as STATUS from "../constants/seasonStatus.js";
-import { populateAnnualDateRangesForYear } from "./populate-date-ranges/populate-annual-date-ranges.js";
-import { populateBlankDateRangesForYear } from "./populate-date-ranges/populate-blank-date-ranges.js";
+} from "../../models/index.js";
+import * as STATUS from "../../constants/seasonStatus.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
+import { populateAnnualDateRangesForYear } from "../populate-date-ranges/populate-annual-date-ranges.js";
+import { populateBlankDateRangesForYear } from "../populate-date-ranges/populate-blank-date-ranges.js";
+import {
+  createPublishableId,
+  createDateableId,
+} from "../../utils/seasonHelpers.js";
 
 // Run all queries in a transaction
 const transaction = await Season.sequelize.transaction();
@@ -53,33 +57,14 @@ let dateablesAdded = 0;
 let seasonsAdded = 0;
 
 /**
- * Creates a new Publishable or Dateable ID and associates it with the given record, if it doesn't already have one.
- * @param {Park|ParkArea|Feature} record The record to check and update
- * @param {string} keyName The name of the key to check ("publishableId" or "dateableId")
- * @param {any} KeyModel Db model to use for creating the new ID (Publishable or Dateable)
- * @returns {Promise<number>} The ID of the record's Publishable/Dateable
- */
-async function createKey(record, keyName, KeyModel) {
-  if (record[keyName]) return { key: record[keyName], added: false };
-
-  // Create the missing FK record in the function table
-  const junctionKey = await KeyModel.create({}, { transaction });
-
-  record[keyName] = junctionKey.id;
-  await record.save({ transaction });
-  return { key: junctionKey.id, added: true };
-}
-
-/**
  * Creates a new Publishable ID and associates it with the given record, if it doesn't already have one.
  * @param {Park|ParkArea|Feature} record The record to check and update
  * @returns {Promise<number>} The record's Publishable ID
  */
 async function createPublishable(record) {
-  const { key, added } = await createKey(record, "publishableId", Publishable);
+  const { key, added } = await createPublishableId(record, transaction);
 
   if (added) publishablesAdded++;
-
   return key;
 }
 
@@ -89,25 +74,25 @@ async function createPublishable(record) {
  * @returns {Promise<number>} The record's Dateable ID
  */
 async function createDateable(record) {
-  const { key, added } = await createKey(record, "dateableId", Dateable);
+  const { key, added } = await createDateableId(record, transaction);
 
   if (added) dateablesAdded++;
-
   return key;
 }
 
 /**
- * Creates a new Season for the given Publishable ID and operating year, if it doesn't already exist.
+ * Creates a new regular Season for the given Publishable ID and operating year, if it doesn't already exist.
  * @param {number} publishableId The Publishable ID to check
  * @param {number} year The operating year for the season
- * @returns {Promise<number>} The ID of the created or existing Season
+ * @returns {Promise<number>} The ID of the created or existing regular Season
  */
 async function createSeason(publishableId, year) {
-  // Create a season for this Publishable ID and Operating Year, if it doesn't exist
+  // Create a regular (non-winter) season for this Publishable ID and Operating Year, if it doesn't exist
   const season = await Season.findOne({
     where: {
       publishableId,
       operatingYear: year,
+      seasonType: SEASON_TYPE.REGULAR,
     },
 
     transaction,
@@ -121,6 +106,7 @@ async function createSeason(publishableId, year) {
       operatingYear: year,
       status: STATUS.REQUESTED,
       readyToPublish: true,
+      seasonType: SEASON_TYPE.REGULAR,
     },
 
     { transaction },
@@ -168,12 +154,13 @@ async function createTier2Dates(
     return [];
   }
 
-  // Check if the park's Dateable ID has any Tier 2 dates in the previous year
+  // Check if the park's Dateable ID has any Tier 2 dates in the previous year's regular seasons
   const previousYear = year - 1;
   const previousParkSeasons = await Season.findAll({
     where: {
       publishableId: park.publishableId,
       operatingYear: previousYear,
+      seasonType: SEASON_TYPE.REGULAR,
     },
 
     include: [
@@ -216,9 +203,9 @@ async function createTier2Dates(
   return allDone;
 }
 
-console.log(`Creating Seasons for ${operatingYear}`);
+console.log(`Creating regular Seasons for ${operatingYear}`);
 
-// Step 1: Create new Seasons for every Park
+// Step 1: Create new regular Seasons for every Park
 
 // Get all the Parks with Features
 const parks = await Park.findAll({
@@ -278,7 +265,7 @@ console.log(`Added ${publishablesAdded} missing Park Publishables`);
 console.log(`Added ${dateablesAdded} missing Park Dateables`);
 console.log(`Added ${seasonsAdded} new Park Seasons`);
 
-// Step 2: Create new seasons for every ParkArea with Features in it
+// Step 2: Create new regular seasons for every ParkArea with Features in it
 
 publishablesAdded = 0;
 dateablesAdded = 0;
@@ -310,7 +297,7 @@ const parkAreasWithFeatures = Array.from(parkAreasMap.values());
 console.log(`Found ${parkAreasWithFeatures.length} ParkAreas with Features`);
 
 /**
- * Creates new Seasons for each ParkArea in the provided array for the given year.
+ * Creates new regular Seasons for each ParkArea in the provided array for the given year.
  * Also ensures all Features within each ParkArea have a dateableId.
  * @param {Array<ParkArea>} parkAreas Array of ParkArea records to process.
  * @param {number} year The operating year for which to create seasons.
@@ -349,7 +336,7 @@ console.log(`Added ${publishablesAdded} missing ParkArea Publishables`);
 console.log(`Added ${dateablesAdded} missing ParkArea Dateables`);
 console.log(`Added ${seasonsAdded} new ParkArea Seasons`);
 
-// Step 3: Create new seasons for every Feature that doesn't belong to a ParkArea
+// Step 3: Create new regular seasons for every Feature that doesn't belong to a ParkArea
 
 publishablesAdded = 0;
 dateablesAdded = 0;
@@ -370,7 +357,7 @@ console.log(
 );
 
 /**
- * Creates new Seasons for each Feature in the provided array for the given year.
+ * Creates new regular Seasons for each Feature in the provided array for the given year.
  * @param {Array<Feature>} features Array of Feature records to process.
  * @param {number} year The operating year for which to create seasons.
  * @returns {Promise<void>}
@@ -394,11 +381,11 @@ console.log(`Added ${publishablesAdded} missing Feature Publishables`);
 console.log(`Added ${dateablesAdded} missing Feature Dateables`);
 console.log(`Added ${seasonsAdded} new Feature Seasons`);
 
-// Step 4: Create new seasons for the following year for every Group Camping or Picnic Shelter Feature
+// Step 4: Create new regular seasons for the following year for every Group Camping or Picnic Shelter Feature
 const nextYear = operatingYear + 1;
 
 console.log(
-  `Creating Group Camping and Picnic Shelter seasons for ${nextYear}`,
+  `Creating Group Camping and Picnic Shelter regular seasons for ${nextYear}`,
 );
 
 publishablesAdded = 0;

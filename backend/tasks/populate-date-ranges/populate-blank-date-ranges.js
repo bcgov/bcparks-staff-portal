@@ -143,6 +143,7 @@ export async function populateBlankDateRangesForYear(
         const dateTypes = getDateTypesForPark(
           season.park,
           parkDateTypesByDateTypeId,
+          season.seasonType,
         );
 
         return dateTypes.map((dateType) => ({

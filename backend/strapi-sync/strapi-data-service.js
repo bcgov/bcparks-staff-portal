@@ -47,7 +47,26 @@ const MODEL_CONFIG = {
   },
   "protected-area": {
     endpoint: "/protected-areas",
-    populate: ["parkFacilities", "parkOperation", "managementAreas"],
+    query: {
+      fields: ["id", "orcs", "protectedAreaName"],
+      populate: {
+        parkOperation: {
+          fields: [
+            "inReservationSystem",
+            "hasWinterFeeDates",
+            "hasTier1Dates",
+            "hasTier2Dates",
+          ],
+        },
+        managementAreas: true,
+      },
+      filters: {
+        $and: [
+          { parkOperation: { $notNull: true } },
+          { legalStatus: { $eq: "Active" } },
+        ],
+      },
+    },
   },
   "camping-type": {
     endpoint: "/camping-types",
@@ -91,6 +110,9 @@ const MODEL_CONFIG = {
       },
     },
   },
+  "park-date-type": {
+    endpoint: "/park-date-types",
+  },
 };
 
 /**
@@ -106,7 +128,14 @@ async function fetchModel(modelName) {
   }
 
   const url = `${process.env.STRAPI_URL}/api${config.endpoint}`;
-  const params = { populate: config.populate };
+
+  let params = {};
+
+  if (config.populate) {
+    params = { populate: config.populate };
+  } else if (config.query) {
+    params = config.query;
+  }
 
   return await getAllPages(url, params, 200);
 }

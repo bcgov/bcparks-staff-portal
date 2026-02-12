@@ -19,19 +19,30 @@ export function formatDateShortWithYear(date) {
 }
 
 /**
- * Returns a string with the dates formatted "Weekday, Month Day"
+ * Returns a string formatted like "Tue, Jan 30 - Wed, Mar 15, 2026",
+ * or "Wed, Oct 14, 2026 – Wed, Feb 10, 2027" if the date range spans multiple years.
+ * Returns a placeholder string if a date is missing.
  * @param {Object} dateRange object with startDate and endDate
+ * @param {string} placeholder string to display if the dateRange is incomplete/blank
  * @returns {string} formatted date range
  */
-export function formatDateRange(dateRange) {
-  if (dateRange.startDate === null || dateRange.endDate === null) {
-    return "Not provided";
+export function formatDateRange(dateRange, placeholder = "") {
+  const { startDate, endDate } = dateRange || {};
+
+  // If the full date range is not provided, return a placeholder string
+  if (!dateRange || startDate === null || endDate === null) {
+    return placeholder;
   }
 
-  const startDate = formatDateShort(dateRange.startDate);
-  const endDate = formatDateShort(dateRange.endDate);
+  // Include the years for both dates if the date range spans multiple years
+  const multiYear = startDate.getFullYear() !== endDate.getFullYear();
 
-  return `${startDate} – ${endDate}`;
+  const startDateFormatted = multiYear
+    ? formatDateShortWithYear(startDate)
+    : formatDateShort(startDate);
+  const endDateFormatted = formatDateShortWithYear(endDate);
+
+  return `${startDateFormatted} – ${endDateFormatted}`;
 }
 
 /**

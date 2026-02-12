@@ -1,5 +1,6 @@
 import { DateType } from "../models/index.js";
-import * as DATE_TYPE from "../constants/dateType.js"
+import * as DATE_TYPE from "../constants/dateType.js";
+import * as SEASON_TYPE from "../constants/seasonType.js";
 
 /**
  * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
@@ -15,7 +16,6 @@ export async function getAllDateTypes(where = {}, transaction = null) {
       "strapiDateTypeId",
       "description",
       "parkLevel",
-      "parkAreaLevel",
       "featureLevel",
     ],
 
@@ -29,21 +29,31 @@ export async function getAllDateTypes(where = {}, transaction = null) {
  * Returns the DateTypes applicable to a Park or Feature in a specific order.
  * @param {Object} park Park object
  * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects
+ * @param {string} [seasonType] Season type ("winter" or "regular") to filter applicable date types
  * @returns {Array} Applicable DateType objects for the Park, in order
  */
-export function getDateTypesForPark(park, dateTypesByDateTypeId) {
+export function getDateTypesForPark(
+  park,
+  dateTypesByDateTypeId,
+  seasonType = SEASON_TYPE.REGULAR,
+) {
   // Return the DateTypes in a specific order
   const orderedDateTypes = [];
 
-  // Add applicable date types for the Park
-  if (park.hasTier1Dates) {
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
-  }
-  if (park.hasTier2Dates) {
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
-  }
-  if (park.hasWinterFeeDates) {
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.WINTER_FEE]);
+  // Add applicable date types for the Park based on season type
+  // For winter seasons
+  if (seasonType === SEASON_TYPE.WINTER) {
+    if (park.hasWinterFeeDates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.WINTER_FEE]);
+    }
+  // For regular seasons
+  } else if (seasonType === SEASON_TYPE.REGULAR) {
+    if (park.hasTier1Dates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
+    }
+    if (park.hasTier2Dates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
+    }
   }
 
   return orderedDateTypes;
@@ -65,7 +75,9 @@ export function getDateTypesForFeature(feature, dateTypesByDateTypeId) {
     orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.RESERVATION]);
   }
   if (feature.hasBackcountryPermits) {
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.BACKCOUNTRY_REGISTRATION]);
+    orderedDateTypes.push(
+      dateTypesByDateTypeId[DATE_TYPE.BACKCOUNTRY_REGISTRATION],
+    );
   }
 
   return orderedDateTypes;

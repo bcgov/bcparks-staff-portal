@@ -15,8 +15,12 @@ import {
   UserAccessGroup,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
-import checkUserRoles from "../../utils/checkUserRoles.js";
+import checkUserRoles, {
+  getRolesFromAuth,
+} from "../../utils/checkUserRoles.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as USER_ROLES from "../../constants/userRoles.js";
 
 // Constants
 const router = Router();
@@ -30,6 +34,7 @@ function seasonModel(minYear, required = true) {
       "id",
       "publishableId",
       "status",
+      "seasonType",
       "readyToPublish",
       "operatingYear",
     ],
@@ -78,7 +83,7 @@ function featureModel(minYear, where = {}) {
         model: FeatureType,
         as: "featureType",
         required: true,
-        attributes: ["id", "name"],
+        attributes: ["id", "strapiFeatureTypeId", "name"],
       },
       // Publishable Seasons for the Feature
       seasonModel(minYear, false),
@@ -104,9 +109,7 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   return _.mapValues(
     _.groupBy(validRanges, (dateRange) => dateRange.dateType.name),
     (ranges) => {
-      const byYear = _.groupBy(ranges, (dateRange) =>
-        new Date(dateRange.startDate).getFullYear(),
-      );
+      const byYear = _.groupBy(ranges, "operatingYear");
 
       return byYear;
     },
@@ -114,7 +117,7 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
 }
 
 // build a date range output object
-function buildDateRangeObject(dateRange, readyToPublish) {
+function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
   return {
     id: dateRange.id,
     dateableId: dateRange.dateableId,
@@ -123,26 +126,47 @@ function buildDateRangeObject(dateRange, readyToPublish) {
     dateType: dateRange.dateType
       ? {
           id: dateRange.dateType.id,
+          strapiDateTypeId: dateRange.dateType.strapiDateTypeId,
           name: dateRange.dateType.name,
         }
       : null,
     readyToPublish,
+    // Add the Season's operating year for grouping
+    operatingYear,
   };
 }
 
 // build a current season object
 function buildCurrentSeasonOutput(seasons) {
-  if (!seasons || seasons.length === 0) return null;
+  if (!seasons || seasons.length === 0) return { regular: null, winter: null };
 
-  // find the most recent season (highest operatingYear)
-  return _.maxBy(seasons, "operatingYear") || null;
+  // group seasons by seasonType
+  const seasonsByType = _.groupBy(seasons, "seasonType");
+
+  // find the most recent season (highest operatingYear) for each type
+  const regularSeason = seasonsByType.regular
+    ? _.maxBy(seasonsByType.regular, "operatingYear")
+    : null;
+
+  const winterSeason = seasonsByType.winter
+    ? _.maxBy(seasonsByType.winter, "operatingYear")
+    : null;
+
+  return {
+    regular: regularSeason,
+    winter: winterSeason,
+  };
 }
 
 // get all date ranges from seasons
 function getAllDateRanges(seasons) {
   return _.flatMap(seasons, (season) =>
     (season.dateRanges || []).map((dateRange) =>
-      buildDateRangeObject(dateRange, season.readyToPublish),
+      buildDateRangeObject(
+        dateRange,
+        season.operatingYear,
+        season.readyToPublish,
+      ),
     ),
   );
 }
@@ -189,9 +213,6 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     (dateRange) => !excludedDateTypes.has(dateRange.dateType?.name),
   );
 
-  // get a current season
-  const currentSeason = buildCurrentSeasonOutput(feature.seasons);
-
   const output = {
     id: feature.id,
     dateableId: feature.dateableId,
@@ -204,13 +225,14 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     featureType: {
       id: feature.featureType.id,
       name: feature.featureType.name,
+      strapiFeatureTypeId: feature.featureType.strapiFeatureTypeId,
     },
     seasons: filteredSeasons,
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
   };
 
   if (includeCurrentSeason) {
-    output.currentSeason = currentSeason;
+    output.currentSeason = buildCurrentSeasonOutput(feature.seasons);
   }
 
   return output;
@@ -251,7 +273,9 @@ router.get(
   asyncHandler(async (req, res) => {
     // Constants
     const currentYear = new Date().getFullYear();
-    const hasAllParkAccess = checkUserRoles(req.auth, ["doot-all-park-access"]);
+    const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
+      USER_ROLES.ALL_PARK_ACCESS,
+    ]);
 
     const parks = await Park.findAll({
       attributes: [
@@ -328,6 +352,14 @@ router.get(
       order: [
         ["name", "ASC"],
         [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
+        // For Features that ARE part of a ParkArea
+        [
+          { model: ParkArea, as: "parkAreas" },
+          { model: Feature, as: "features" },
+          "name",
+          "ASC",
+        ],
+        // For Features that ARE NOT part of a ParkArea
         [{ model: Feature, as: "features" }, "name", "ASC"],
       ],
     });
@@ -351,8 +383,21 @@ router.get(
     });
 
     const output = parks.map((park) => {
+      const [regularSeasons, winterSeasons] = _.partition(
+        park.seasons,
+        (season) => season.seasonType === SEASON_TYPE.REGULAR,
+      );
       // get date ranges for park
-      const parkDateRanges = getAllDateRanges(park.seasons);
+      // For regular seasons, exclude Winter fee dates
+      const parkDateRanges = getAllDateRanges(regularSeasons).filter(
+        (dateRange) =>
+          dateRange.dateType?.strapiDateTypeId !== DATE_TYPE.WINTER_FEE,
+      );
+      // For winter seasons, only include Winter fee dates
+      const parkWinterDateRanges = getAllDateRanges(winterSeasons).filter(
+        (dateRange) =>
+          dateRange.dateType?.strapiDateTypeId === DATE_TYPE.WINTER_FEE,
+      );
       // get hasGate for park
       const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
 
@@ -378,6 +423,8 @@ router.get(
           parkDateRanges,
           parkHasGate,
         ),
+        winterGroupedDateRanges:
+          groupDateRangesByTypeAndYear(parkWinterDateRanges),
         features: park.features.map((feature) =>
           buildFeatureOutput(feature, feature.seasons, true),
         ),
@@ -390,10 +437,14 @@ router.get(
           operatingYear: season.operatingYear,
           status: season.status,
           readyToPublish: season.readyToPublish,
-          dateRanges: season.dateRanges.map(
-            buildDateRangeObject,
-            season.readyToPublish,
+          dateRanges: season.dateRanges.map((dateRange) =>
+            buildDateRangeObject(
+              dateRange,
+              season.operatingYear,
+              season.readyToPublish,
+            ),
           ),
+          seasonType: season.seasonType,
         })),
       };
     });

@@ -31,7 +31,7 @@ function ExportPage() {
     try {
       const csvData = await fetchCsv();
 
-      const exportDate = format(new Date(), "yyyyMMdd");
+      const exportDate = format(new Date(), "yyyyMMdd-HHmm");
       const filename = `DOOT ${exportYear.value} - all dates - exported ${exportDate}.csv`;
 
       // Convert CSV string to blob and save in the browser

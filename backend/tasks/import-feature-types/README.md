@@ -39,18 +39,4 @@ The script logs progress and provides summary counts of created, updated, and sk
 - Number of park feature types found in Strapi
 - Existing `strapiFeatureTypeId` values in DOOT for debugging
 - Per-record lookup results and processing status
-- Final summary with counts of created, updated, and skipped records
-
-## Why is this useful?
-
-- **Data synchronization**: Keeps DOOT features in sync with Strapi CMS data
-- **Safe operations**: Transaction-based with automatic rollback on errors
-- **Idempotent**: Can be run multiple times safely without creating duplicates
-- **Detailed logging**: Provides clear feedback on what was processed and any issues
-
-## Notes
-
-- Script assumes Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project
-- Uses efficient Map-based lookup to avoid multiple database queries per record
-- Only processes feature types with valid `featureTypeId` values from Strapi
-- Environment variables for Strapi API access must be configured
+- Final summary with counts of created, updated, skipped and unchanged records

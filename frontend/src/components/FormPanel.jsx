@@ -20,7 +20,8 @@ import useValidation, {
 } from "@/hooks/useValidation/useValidation";
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
-
+import * as STATUS from "@/constants/seasonStatus";
+import * as SEASON_TYPE from "@/constants/seasonType";
 import "./FormPanel.scss";
 
 // Components
@@ -56,7 +57,7 @@ function Buttons({
       <button
         type="button"
         onClick={onSave}
-        className="btn btn-outline-primary fw-bold me-3"
+        className="btn btn-outline-primary form-btn fw-bold me-3"
       >
         Save draft
       </button>
@@ -66,7 +67,7 @@ function Buttons({
         <button
           type="button"
           onClick={onApprove}
-          className="btn btn-primary fw-bold me-2"
+          className="btn btn-primary form-btn fw-bold me-2"
         >
           Mark approved
         </button>
@@ -77,7 +78,7 @@ function Buttons({
         <button
           type="button"
           onClick={onSubmit}
-          className="btn btn-primary fw-bold me-2"
+          className="btn btn-primary form-btn fw-bold me-2"
         >
           Submit to HQ
         </button>
@@ -126,14 +127,6 @@ function SeasonForm({
   );
   const validation = useValidation(data, validationContext);
 
-  const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
-    `/seasons/${seasonId}/approve/`,
-  );
-
-  const { sendData: sendSubmit, loading: sendingSubmit } = useApiPost(
-    `/seasons/${seasonId}/submit/`,
-  );
-
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
   );
@@ -155,6 +148,8 @@ function SeasonForm({
   const {
     current: season,
     previous: previousSeasonDates,
+    currentWinter: winterSeason,
+    previousWinter: previousWinterSeasonDates,
     ...seasonMetadata
   } = data || {};
   const currentYear = season?.operatingYear;
@@ -163,14 +158,23 @@ function SeasonForm({
     // Return blank while loading
     if (!season || !seasonMetadata) return "";
 
+    let title;
+    const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+
     // For Park-level seasons, return the park name
     if (level === "park") {
-      return season.park.name;
+      title = season.park.name;
+      if (isWinterSeason) {
+        title += ": winter fee";
+      } else {
+        title += ": tiers and gate";
+      }
+    } else {
+      // For Area/Feature-level seasons,
+      // Return Park and Area/Feature name
+      title = `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
     }
-
-    // For Area/Feature-level seasons,
-    // Return Park and Area/Feature name
-    return `${seasonMetadata.parkName} - ${seasonMetadata.name}`;
+    return title;
   }, [level, season, seasonMetadata]);
 
   const dateTypesByStrapiId = useMemo(
@@ -258,17 +262,21 @@ function SeasonForm({
       };
     }
 
+    // Determine if this is a winter season based on seasonType
+    const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+
     const payload = {
       dateRanges: changedDateRanges,
       deletedDateRangeIds: allDeletedIds,
       dateRangeAnnuals: changedDateRangeAnnuals,
-      gateDetail,
+      gateDetail: isWinterSeason ? null : gateDetail,
       readyToPublish: season.readyToPublish,
+      status: season.status,
       notes,
     };
 
     return payload;
-  }, [level, season, deletedDateRangeIds, notes, seasonMetadata]);
+  }, [level, season, deletedDateRangeIds, notes, gateTypeId]);
 
   // Calculate if the form data has changed
   const dataChanged = useMemo(() => {
@@ -287,8 +295,11 @@ function SeasonForm({
     // Check if any date annuals were updated
     if (changesPayload.dateRangeAnnuals.length) return true;
 
-    // Check if any gateDetail values changed
-    if (!isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail))
+    // Check if any gateDetail values changed (for regular seasons)
+    if (
+      season.seasonType === SEASON_TYPE.REGULAR &&
+      !isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail)
+    )
       return true;
 
     // If nothing else has changed, return true if notes are entered
@@ -304,9 +315,14 @@ function SeasonForm({
    * Saves the form data to the DB.
    * @param {boolean} close closes the form panel
    * @param {boolean} allowInvalid allows saving even if the form has validation errors
+   * @param {string} status optional status to set for the season
    * @returns {Promise<void>}
    */
-  async function saveForm(close = true, allowInvalid = false) {
+  async function saveForm(
+    close = true,
+    allowInvalid = false,
+    status = STATUS.REQUESTED.value,
+  ) {
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
@@ -323,6 +339,11 @@ function SeasonForm({
 
     // Clone the payload
     const payload = { ...changesPayload };
+
+    // Override status if provided
+    if (status) {
+      payload.status = status;
+    }
 
     // Update isDateRangeAnnual for "Park gate open" date if gateDetail.hasGate is false
     if (
@@ -350,26 +371,33 @@ function SeasonForm({
         );
     }
 
-    await sendSave(payload);
+    try {
+      // Send the save request to the API
+      await sendSave(payload);
 
-    // Start refreshing the main page data from the API
-    onDataUpdate();
+      // Start refreshing the main page data from the API
+      onDataUpdate();
 
-    // Reset the form state
-    setNotes("");
-    setDeletedDateRangeIds([]);
+      // Reset the form state
+      setNotes("");
+      setDeletedDateRangeIds([]);
 
-    if (close) {
-      closePanel();
-    } else {
-      resetData();
+      if (close) {
+        closePanel();
+      } else {
+        resetData();
+      }
+    } catch (saveError) {
+      // @TODO: Catch API error and show a flash message
+      console.error("Error saving season:", saveError);
+      throw saveError;
     }
   }
 
   // If the season is not "requested" (e.g. it is submitted, approved, or published),
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
-    if (season.status !== "requested") {
+    if (season.status !== STATUS.REQUESTED.value) {
       const proceed = await openModal(
         "Move back to draft?",
         `The dates will be moved back to draft and need to be submitted again to be reviewed.
@@ -385,21 +413,23 @@ If dates have already been published, they will not be updated until new dates a
       }
     }
 
-    // Save draft, and allow saving with validation errors
-    await saveForm(close, true);
+    try {
+      // Save draft, and allow saving with validation errors
+      await saveForm(close, true, STATUS.REQUESTED.value);
 
-    flashMessage.open(
-      "Dates saved as draft",
-      `${seasonTitle} ${season.operatingYear} details saved`,
-    );
+      flashMessage.open(
+        "Dates saved as draft",
+        `${seasonTitle} ${season.operatingYear} details saved`,
+      );
+    } catch (saveError) {
+      console.error("Error saving season as draft:", saveError);
+    }
   }
 
   async function onApprove() {
     try {
-      // Save first, then approve
-      await saveForm(false); // Don't close the form after saving
-
-      await sendApprove();
+      // Save and update status
+      await saveForm(false, false, STATUS.APPROVED.value); // Don't close the form after saving
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -417,13 +447,16 @@ If dates have already been published, they will not be updated until new dates a
 
   async function onSubmit() {
     try {
-      // Save first, then submit
-      await saveForm(false); // Don't close the form after saving
-
-      await sendSubmit();
+      // Save and update status
+      await saveForm(false, false, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
 
       // Start refreshing the main page data from the API
       onDataUpdate();
+
+      flashMessage.open(
+        "Dates submitted to HQ",
+        `${seasonTitle} ${season.operatingYear} dates submitted to HQ`,
+      );
 
       closePanel();
     } catch (saveError) {
@@ -489,6 +522,8 @@ If dates have already been published, they will not be updated until new dates a
             <ParkSeasonForm
               season={season}
               previousSeasonDates={previousSeasonDates}
+              winterSeason={winterSeason}
+              previousWinterSeasonDates={previousWinterSeasonDates}
               dateTypes={seasonMetadata.dateTypes}
               approver={approver}
             />
@@ -524,7 +559,8 @@ If dates have already been published, they will not be updated until new dates a
             setNotes={setNotes}
             previousNotes={season.changeLogs}
             optional={
-              season.status !== "approved" && season.status !== "published"
+              season.status !== STATUS.APPROVED.value &&
+              season.status !== STATUS.PUBLISHED.value
             }
           />
           <Buttons
@@ -533,7 +569,7 @@ If dates have already been published, they will not be updated until new dates a
             onApprove={onApprove}
             onSave={() => promptAndSave(false)}
             onSubmit={onSubmit}
-            loading={sendingApprove || sendingSubmit || sendingSave}
+            loading={sendingSave}
           />
         </Offcanvas.Body>
       </ValidationContext.Provider>

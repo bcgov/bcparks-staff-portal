@@ -5,6 +5,7 @@ import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import {
   getAllDateTypes,
   getDateTypesForFeature,
@@ -27,15 +28,14 @@ import {
   User,
 } from "../../models/index.js";
 
-import {
-  adminsAndApprovers,
-  checkPermissions,
-  sanitizePayload,
-} from "../../middleware/permissions.js";
+import { checkPermissions } from "../../middleware/permissions.js";
+import * as USER_ROLES from "../../constants/userRoles.js";
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 // import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
-import checkUserRoles from "../../utils/checkUserRoles.js";
+import checkUserRoles, {
+  getRolesFromAuth,
+} from "../../utils/checkUserRoles.js";
 
 const router = Router();
 
@@ -259,6 +259,7 @@ const SEASON_ATTRIBUTES = [
   "readyToPublish",
   "editable",
   "publishableId",
+  "seasonType",
 ];
 
 /**
@@ -387,6 +388,253 @@ async function getParkDates(park, operatingYear) {
     parkTier2Dates,
     parkWinterDates,
   };
+}
+
+/**
+ * Returns the winter season for a park if it has winter fee dates enabled.
+ * @param {Object} park Park model with hasWinterFeeDates and publishableId
+ * @param {number} operatingYear Operating year for the Seasons
+ * @returns {Promise<Object|null>} The winter season object with all related data, or null
+ */
+async function getWinterSeason(park, operatingYear) {
+  if (!park.hasWinterFeeDates) {
+    return null;
+  }
+
+  // Find the winter season ID
+  const winterSeasonLookup = await Season.findOne({
+    attributes: ["id"],
+    where: {
+      publishableId: park.publishableId,
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
+    },
+  });
+
+  if (!winterSeasonLookup) {
+    return null;
+  }
+
+  const winterSeason = await Season.findByPk(winterSeasonLookup.id, {
+    attributes: SEASON_ATTRIBUTES,
+    include: [
+      {
+        model: Park,
+        as: "park",
+        include: [
+          // Park-level dates for this winter season
+          dateableAndDatesQueryPart(winterSeasonLookup.id),
+        ],
+      },
+
+      changeLogsQueryPart(),
+    ],
+  });
+
+  if (!winterSeason) {
+    return null;
+  }
+
+  // Get DateRangeAnnuals and GateDetail for winter season
+  const dateRangeAnnuals = await getDateRangeAnnuals(
+    winterSeason.publishableId,
+  );
+
+  return {
+    ...winterSeason.toJSON(),
+    dateRangeAnnuals,
+  };
+}
+
+/**
+ * Saves season data (regular or winter season)
+ * @param {Object} params Parameters for saving season data
+ * @param {Season} params.season The season model instance
+ * @param {Array} params.dateRanges Array of date ranges to save
+ * @param {Array} params.dateRangeAnnuals Array of date range annuals to save
+ * @param {Object|null} params.gateDetail Gate detail object (null for winter seasons)
+ * @param {Array} params.deletedDateRangeIds Array of date range IDs to delete
+ * @param {string} params.newStatus New status for the season
+ * @param {boolean|null} params.newReadyToPublish New readyToPublish value
+ * @param {string} params.notes Notes for the change log
+ * @param {number} params.userId User ID making the changes
+ * @param {Transaction} params.transaction Database transaction
+ * @param {boolean} params.isWinterSeason Whether this is a winter season
+ * @returns {Promise<void>}
+ */
+async function saveSeasonData({
+  season,
+  dateRanges,
+  dateRangeAnnuals,
+  gateDetail,
+  deletedDateRangeIds,
+  newStatus,
+  newReadyToPublish,
+  notes,
+  userId,
+  transaction,
+  isWinterSeason = false,
+}) {
+  // Calculate the actual new readyToPublish value
+  const actualNewReadyToPublish = newReadyToPublish ?? season.readyToPublish;
+
+  // Get the Winter Fee DateType's database ID
+  const winterFeeDateType = await DateType.findOne({
+    attributes: ["id"],
+    where: {
+      strapiDateTypeId: DATE_TYPE.WINTER_FEE,
+    },
+    transaction,
+  });
+
+  if (!winterFeeDateType) {
+    throw new Error("Required DateType WINTER_FEE not found in the database.");
+  }
+
+  const winterFeeDateTypeId = winterFeeDateType.id;
+
+  // Filter date ranges based on season type
+  // Winter seasons should only have Winter fee dates
+  // Regular seasons should NOT have Winter fee dates
+  const filteredDateRanges = (dateRanges || []).filter((dateRange) => {
+    if (!dateRange.dateTypeId) return true;
+
+    if (isWinterSeason) {
+      return dateRange.dateTypeId === winterFeeDateTypeId;
+    }
+
+    return dateRange.dateTypeId !== winterFeeDateTypeId;
+  });
+
+  // dateRangeAnnuals
+  const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
+    (dateRangeAnnual) => ({
+      id: dateRangeAnnual.id,
+      dateTypeId: dateRangeAnnual.dateType?.id,
+      publishableId: season.publishableId,
+      dateableId: dateRangeAnnual.dateableId,
+      isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
+    }),
+  );
+
+  // Upsert dateRangeAnnuals
+  const saveDateRangeAnnuals = DateRangeAnnual.bulkCreate(
+    dateRangeAnnualsToSave,
+    {
+      updateOnDuplicate: ["isDateRangeAnnual", "updatedAt"],
+      transaction,
+    },
+  );
+
+  // Handle gateDetail for regular seasons only
+  let saveGateDetail = Promise.resolve();
+  let oldGateDetail = null;
+  let gateDetailToSave = null;
+
+  if (!isWinterSeason && gateDetail) {
+    oldGateDetail = await getGateDetail(season.publishableId);
+    gateDetailToSave = {
+      ...gateDetail,
+      publishableId: season.publishableId,
+    };
+
+    saveGateDetail = GateDetail.upsert(gateDetailToSave, {
+      transaction,
+    });
+  }
+
+  // Create season change log with the notes
+  const seasonChangeLog = await SeasonChangeLog.create(
+    {
+      seasonId: season.id,
+      userId,
+      notes,
+      statusOldValue: season.status,
+      statusNewValue: newStatus,
+      readyToPublishOldValue: season.readyToPublish,
+      readyToPublishNewValue: actualNewReadyToPublish,
+      gateDetailOldValue: oldGateDetail,
+      gateDetailNewValue: gateDetailToSave,
+    },
+    { transaction },
+  );
+
+  // Update the season object with the new status and readyToPublish values
+  const saveSeason = updateStatus(
+    season.id,
+    newStatus,
+    newReadyToPublish,
+    transaction,
+  );
+
+  // Create date change logs for updated dateRanges
+  const existingDateIds = filteredDateRanges
+    .filter((date) => date.id)
+    .map((date) => date.id);
+
+  let createChangeLogs = Promise.resolve();
+
+  if (existingDateIds.length > 0) {
+    const existingDateRows = await DateRange.findAll({
+      where: {
+        id: {
+          [Op.in]: existingDateIds,
+        },
+      },
+      transaction,
+    });
+
+    const datesToUpdateById = _.keyBy(filteredDateRanges, "id");
+    const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
+      const newDateRange = datesToUpdateById[oldDateRange.id];
+
+      return {
+        dateRangeId: oldDateRange.id,
+        seasonChangeLogId: seasonChangeLog.id,
+        startDateOldValue: oldDateRange.startDate,
+        startDateNewValue: newDateRange.startDate,
+        endDateOldValue: oldDateRange.endDate,
+        endDateNewValue: newDateRange.endDate,
+      };
+    });
+
+    createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate, {
+      transaction,
+    });
+  }
+
+  // Update or create dateRanges
+  let updateDates = Promise.resolve();
+
+  if (filteredDateRanges.length > 0) {
+    updateDates = DateRange.bulkCreate(filteredDateRanges, {
+      updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
+      transaction,
+    });
+  }
+
+  // Delete dateRanges removed by the user
+  let deleteDates = Promise.resolve();
+
+  if (deletedDateRangeIds.length > 0) {
+    deleteDates = DateRange.destroy({
+      where: {
+        id: {
+          [Op.in]: deletedDateRangeIds,
+        },
+      },
+      transaction,
+    });
+  }
+
+  await Promise.all([
+    saveSeason,
+    updateDates,
+    createChangeLogs,
+    deleteDates,
+    saveDateRangeAnnuals,
+    saveGateDetail,
+  ]);
 }
 
 // Get all form data and DateRanges for a Feature Season
@@ -542,7 +790,7 @@ router.get(
 
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel, {
-      [Op.or]: [{ parkAreaLevel: true }, { featureLevel: true }],
+      featureLevel: true,
     });
 
     // Include all DateTypes for the Feature level
@@ -713,6 +961,24 @@ router.get(
       parkLevel: true,
     });
 
+    // Get the current winter season for the same operating year
+    const currentWinterSeason = await getWinterSeason(
+      park,
+      seasonModel.operatingYear,
+    );
+
+    const previousWinterSeason = await getWinterSeason(
+      park,
+      seasonModel.operatingYear - 1,
+    );
+
+    const previousWinterSeasonDates = previousWinterSeason?.park?.dateable
+      ?.dateRanges
+      ? previousWinterSeason.park.dateable.dateRanges.filter(
+          (dateRange) => dateRange.startDate && dateRange.endDate, // Filter out blank ranges
+        )
+      : [];
+
     // Include all DateTypes for this Season level
     const dateTypesArray = await getAllDateTypes({
       parkLevel: true,
@@ -721,18 +987,24 @@ router.get(
     const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "strapiDateTypeId");
 
     // Return the DateTypes in a specific order
-    const orderedDateTypes = getDateTypesForPark(park, dateTypesByDateTypeId);
+    const orderedDateTypes = getDateTypesForPark(
+      park,
+      dateTypesByDateTypeId,
+      seasonModel.seasonType,
+    );
 
-    // Add Park gate open date type
-    // @TODO: This should be in its own property
-    // because it's used by gate details and not the Reservations section
-    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
+    let gateDetail = null;
+
+    // Add park gate data for regular (non-winter) seasons
+    if (seasonModel.seasonType === SEASON_TYPE.REGULAR) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
+      gateDetail = await getGateDetail(seasonModel.publishableId);
+    }
 
     // Get DateRangeAnnuals and GateDetail
     const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
-    const gateDetail = await getGateDetail(seasonModel.publishableId);
 
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {
@@ -744,6 +1016,8 @@ router.get(
     const output = {
       current: currentSeason,
       previous: previousSeason,
+      currentWinter: currentWinterSeason,
+      previousWinter: previousWinterSeasonDates,
       dateTypes: orderedDateTypes,
       icon: null,
       featureTypeName: null,
@@ -758,7 +1032,7 @@ router.get(
 // Save draft
 router.post(
   "/:seasonId/save/",
-  sanitizePayload,
+  checkPermissions([USER_ROLES.SUBMITTER, USER_ROLES.CONTRIBUTOR]),
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const {
@@ -766,12 +1040,48 @@ router.post(
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
       gateDetail = {},
+      status,
     } = req.body;
     let { readyToPublish } = req.body;
 
-    // If the user isn't an approver, they shouldn't be able to set readyToPublish
-    const isApprover = checkUserRoles(req.auth, ["doot-approver"]);
+    // Disallow changing the season status to anything other than the preset statuses
+    if (
+      status !== STATUS.REQUESTED &&
+      status !== STATUS.PENDING_REVIEW &&
+      status !== STATUS.APPROVED
+    ) {
+      const error = new Error("Validation error: Invalid season status");
 
+      error.status = 400;
+      throw error;
+    }
+
+    // Check the user's roles from their auth data
+    const userRoles = getRolesFromAuth(req.auth);
+    const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
+    const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.SUBMITTER]);
+
+    // Contributors can only save drafts. If the payload is trying to set status
+    // to anything other than "requested", check if the user has permission.
+    if (status === STATUS.PENDING_REVIEW && !isSubmitter) {
+      const error = new Error(
+        "Permission denied: You do not have permission to submit this season for review.",
+      );
+
+      error.status = 403;
+      throw error;
+    }
+
+    if (status === STATUS.APPROVED && !isApprover) {
+      const error = new Error(
+        "Permission denied: You do not have permission to approve this season for publishing.",
+      );
+
+      error.status = 403;
+      throw error;
+    }
+
+    // If the user isn't an approver, they shouldn't be able to set readyToPublish
     if (!isApprover) {
       // Clear the value from the request body
       // This will prevent the user from changing readyToPublish
@@ -793,126 +1103,28 @@ router.post(
 
       checkSeasonExists(season);
 
-      const newStatus = STATUS.REQUESTED;
+      const newStatus = status ?? season.status;
 
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
 
-      // dateRangeAnnuals
-      const dateRangeAnnualsToSave = (dateRangeAnnuals || []).map(
-        (dateRangeAnnual) => ({
-          id: dateRangeAnnual.id,
-          dateTypeId: dateRangeAnnual.dateType?.id,
-          publishableId: season.publishableId,
-          dateableId: dateRangeAnnual.dateableId,
-          isDateRangeAnnual: dateRangeAnnual.isDateRangeAnnual,
-        }),
-      );
+      // Determine if this is a winter season based on seasonType
+      const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
 
-      // Upsert dateRangeAnnuals
-      const saveDateRangeAnnuals = DateRangeAnnual.bulkCreate(
-        dateRangeAnnualsToSave,
-        {
-          updateOnDuplicate: ["isDateRangeAnnual", "updatedAt"],
-          transaction,
-        },
-      );
-
-      // gateDetail
-      const oldGateDetail = await getGateDetail(season.publishableId);
-
-      const gateDetailToSave = {
-        ...gateDetail,
-        publishableId: season.publishableId,
-      };
-
-      // Upsert gateDetail
-      const saveGateDetail = GateDetail.upsert(gateDetailToSave, {
-        transaction,
-      });
-
-      // Create season change log with the notes
-      const seasonChangeLog = await SeasonChangeLog.create(
-        {
-          seasonId,
-          userId: req.user.id,
-          notes,
-          statusOldValue: season.status,
-          statusNewValue: newStatus,
-          readyToPublishOldValue: season.readyToPublish,
-          readyToPublishNewValue: newReadyToPublish,
-          gateDetailOldValue: oldGateDetail,
-          gateDetailNewValue: gateDetailToSave,
-        },
-        { transaction },
-      );
-
-      // Update the season object with the new status and readyToPublish values
-      const saveSeason = updateStatus(
-        seasonId,
+      // Process season data
+      await saveSeasonData({
+        season,
+        dateRanges,
+        dateRangeAnnuals,
+        gateDetail: isWinterSeason ? null : gateDetail,
+        deletedDateRangeIds,
         newStatus,
-        readyToPublish,
+        newReadyToPublish,
+        notes,
+        userId: req.user.id,
         transaction,
-      );
-
-      // Create date change logs for updated dateRanges
-      const existingDateIds = dateRanges
-        .filter((date) => date.id)
-        .map((date) => date.id);
-      const existingDateRows = await DateRange.findAll({
-        where: {
-          id: {
-            [Op.in]: existingDateIds,
-          },
-        },
-
-        transaction,
+        isWinterSeason,
       });
-
-      const datesToUpdateByid = _.keyBy(dateRanges, "id");
-      const changeLogsToCreate = existingDateRows.map((oldDateRange) => {
-        const newDateRange = datesToUpdateByid[oldDateRange.id];
-
-        return {
-          dateRangeId: oldDateRange.id,
-          seasonChangeLogId: seasonChangeLog.id,
-          startDateOldValue: oldDateRange.startDate,
-          startDateNewValue: newDateRange.startDate,
-          endDateOldValue: oldDateRange.endDate,
-          endDateNewValue: newDateRange.endDate,
-        };
-      });
-
-      const createChangeLogs = DateChangeLog.bulkCreate(changeLogsToCreate, {
-        transaction,
-      });
-
-      // Update or create dateRanges
-      const updateDates = DateRange.bulkCreate(dateRanges, {
-        updateOnDuplicate: ["startDate", "endDate", "updatedAt"],
-
-        transaction,
-      });
-
-      // Delete dateRanges removed by the user
-      const deleteDates = DateRange.destroy({
-        where: {
-          id: {
-            [Op.in]: deletedDateRangeIds,
-          },
-        },
-
-        transaction,
-      });
-
-      await Promise.all([
-        saveSeason,
-        updateDates,
-        createChangeLogs,
-        deleteDates,
-        saveDateRangeAnnuals,
-        saveGateDetail,
-      ]);
 
       await transaction.commit();
       res.sendStatus(200);
@@ -920,46 +1132,6 @@ router.post(
       await transaction.rollback();
       throw error; // Re-throw to let global error handler catch it
     }
-  }),
-);
-
-// Approve
-router.post(
-  "/:seasonId/approve/",
-  checkPermissions(adminsAndApprovers),
-  asyncHandler(async (req, res) => {
-    const seasonId = Number(req.params.seasonId);
-
-    const transaction = await sequelize.transaction();
-
-    try {
-      await updateStatus(seasonId, STATUS.APPROVED, null, transaction);
-
-      // @TODO: Uncomment after revising the logic for FCFS
-      // await createFirstComeFirstServedDateRange(seasonId, transaction);
-
-      // Copy Winter fee dates from the Park level to Features and Park Areas
-      // @TODO: Uncomment after revising the logic for Winter fees
-      // await propagateWinterFeeDates(seasonId, transaction);
-
-      await transaction.commit();
-      res.sendStatus(200);
-    } catch (error) {
-      await transaction.rollback();
-      throw error; // Re-throw to let global error handler catch it
-    }
-  }),
-);
-
-// Submit for review
-router.post(
-  "/:seasonId/submit/",
-  asyncHandler(async (req, res) => {
-    const seasonId = Number(req.params.seasonId);
-
-    await updateStatus(seasonId, STATUS.PENDING_REVIEW);
-
-    res.sendStatus(200);
   }),
 );
 

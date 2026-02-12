@@ -48,7 +48,7 @@ function PublishPage() {
     "/publish/ready-to-publish/",
   );
   const { seasons = [] } = data ?? {};
-  const publishableSeasons = seasons.filter((season) => season.readyToPublish);
+  const hasPublishableSeasons = seasons.some((season) => season.readyToPublish);
 
   const { sendData: publishData, loading: saving } = useApiPost(
     "/publish/publish-to-api/",
@@ -131,7 +131,7 @@ function PublishPage() {
         <div className="d-flex justify-content-end mb-2">
           <button
             onClick={publishToApi}
-            disabled={saving || publishableSeasons.length === 0}
+            disabled={saving || !hasPublishableSeasons}
             className="btn btn-primary"
           >
             Publish to API
@@ -157,7 +157,7 @@ function PublishPage() {
             </thead>
             <tbody>
               {seasons.slice(startIndex, endIndex).map((season) => (
-                <tr key={season.id}>
+                <tr key={`${season.id}-${season.sortIndex}`}>
                   <td>{season.parkName}</td>
                   <td className="fw-bold">{season.parkAreaName}</td>
                   <td>
@@ -169,7 +169,7 @@ function PublishPage() {
                     </ul>
                   </td>
                   <td>
-                    {season.operatingYear}
+                    {season.displayOperatingYear}
                     <NotReadyFlag show={!season.readyToPublish} />
                   </td>
                 </tr>

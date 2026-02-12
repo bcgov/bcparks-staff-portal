@@ -1,3 +1,5 @@
+import * as SEASON_TYPE from "@/constants/seasonType";
+
 /**
  * Validates that the "hasGate" question is answered.
  * Can be "Yes" or "No" (true/false) but it can't be left null.
@@ -12,8 +14,13 @@ export default function hasGateChosen(seasonData, context) {
   // Only validate after the form is submitted
   if (!context.submitted) return;
 
+  // Winter seasons don't have gate details
+  const isWinterSeason = current.seasonType === SEASON_TYPE.WINTER;
+
+  if (isWinterSeason) return;
+
   // hasGate radio buttons are initially null, but Yes or No is required
-  if (current.gateDetail.hasGate === null) {
+  if (current.gateDetail?.hasGate === null) {
     context.addError(elements.HAS_GATE, "Select an option");
   }
 }

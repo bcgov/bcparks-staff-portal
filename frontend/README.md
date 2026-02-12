@@ -57,3 +57,15 @@ npm run dev
 ### Code formatting
 
 The Dev Container is configured with Prettier and ESLint. Code will be automatically formatted on save.
+
+To manually run ESLint and list warnings and errors:
+
+```sh
+npm run lint
+```
+
+To manually run Prettier and apply formatting changes to all files:
+
+```sh
+npx prettier . --write
+```

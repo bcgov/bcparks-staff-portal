@@ -5,14 +5,23 @@ import useConfirmation from "@/hooks/useConfirmation";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useMemo, useState, useContext, useEffect } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
+import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
-import UserContext from "@/contexts/UserContext";
-import useAccess from "@/hooks/useAccess";
+import {
+  checkParkHard,
+  checkParkSoft,
+  getMatchingAreas,
+  getMatchingFeatures,
+  shouldShowTiersAndGateSection,
+  shouldShowWinterFeeSection,
+} from "@/lib/editAndReviewFilters";
+import { groupBy } from "lodash-es";
 
 function EditAndReview() {
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -23,14 +32,12 @@ function EditAndReview() {
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
   const filterOptions = filterOptionsData ?? {};
-  const { data: userData } = useContext(UserContext);
-  const { ROLES, checkAccess } = useAccess();
 
   const statusOptions = [
-    { value: "requested", label: "Requested by HQ" },
-    { value: "pending review", label: "Pending HQ review" },
-    { value: "approved", label: "Approved" },
-    { value: "published", label: "Published" },
+    { value: STATUS.REQUESTED.value, label: STATUS.REQUESTED.label },
+    { value: STATUS.PENDING_REVIEW.value, label: STATUS.PENDING_REVIEW.label },
+    { value: STATUS.APPROVED.value, label: STATUS.APPROVED.label },
+    { value: STATUS.PUBLISHED.value, label: STATUS.PUBLISHED.label },
   ];
 
   // table pagination
@@ -81,7 +88,11 @@ function EditAndReview() {
 
   // open form panel when the Edit button is clicked
   async function formPanelHandler(formDataObj) {
-    const status = formDataObj.currentSeason.status;
+    const regularSeason = formDataObj.currentSeason.regular;
+    const winterSeason = formDataObj.currentSeason.winter || {};
+    const isWinterSeason = formDataObj.isWinterSeason || false;
+    const season = isWinterSeason ? winterSeason : regularSeason;
+    const status = season.status;
 
     // If the season is already approved, prompt to continue
     if (status === "approved") {
@@ -113,7 +124,7 @@ function EditAndReview() {
     }
 
     setFormData({
-      seasonId: formDataObj.currentSeason.id,
+      seasonId: season.id,
       level: formDataObj.level,
     });
     setShowFormPanel(true);
@@ -133,251 +144,152 @@ function EditAndReview() {
       hasDateNote: false,
     });
   }
-  const hasAllParkAccess = useMemo(
-    () => checkAccess(ROLES.ALL_PARK_ACCESS),
-    [checkAccess, ROLES.ALL_PARK_ACCESS],
-  );
 
-  const filteredParks = useMemo(
+  // Track if any Park-level filters are active
+  const parkFiltersActive = useMemo(
     () =>
-      parks.filter((park) => {
-        // If a name filter is set, filter out parks that don't match
-        if (
-          filters.name.length > 0 &&
-          !park.name
-            .toLocaleLowerCase()
-            .includes(filters.name.toLocaleLowerCase())
-        ) {
-          return false;
-        }
-
-        // filter by status
-        if (filters.status.length > 0) {
-          // gather all statuses to check
-          const statusesToCheck = [];
-
-          // check park.currentSeason
-          if (park.currentSeason?.status) {
-            statusesToCheck.push(park.currentSeason.status);
-          }
-
-          // check parkAreas.currentSeason
-          if (Array.isArray(park.parkAreas)) {
-            park.parkAreas.forEach((parkArea) => {
-              if (parkArea.currentSeason?.status) {
-                statusesToCheck.push(parkArea.currentSeason.status);
-              }
-            });
-          }
-
-          // check features.currentSeason
-          if (Array.isArray(park.features)) {
-            park.features.forEach((feature) => {
-              if (feature.currentSeason?.status) {
-                statusesToCheck.push(feature.currentSeason.status);
-              }
-            });
-          }
-
-          // if none of the statuses match, filter out
-          if (
-            !statusesToCheck.some((status) => filters.status.includes(status))
-          ) {
-            return false;
-          }
-        }
-
-        // filter by access groups
-        // filters.accessGroups is called "Bundle(s)" in the UI and it allows users to
-        // filter parks by bundles. It is not for security purposes.
-        if (
-          filters.accessGroups.length > 0 &&
-          !filters.accessGroups.some((group) =>
-            park.accessGroups.some((parkGroup) => parkGroup.id === group.id),
-          )
-        ) {
-          return false;
-        }
-
-        // filter by sections
-        if (
-          filters.sections.length > 0 &&
-          !filters.sections.some((section) =>
-            park.section.some(
-              (parkSection) => parkSection.number === section.sectionNumber,
-            ),
-          )
-        ) {
-          return false;
-        }
-
-        // filter by management areas
-        if (
-          filters.managementAreas.length > 0 &&
-          !filters.managementAreas.some((area) =>
-            park.managementArea.some(
-              (parkArea) => parkArea.number === area.managementAreaNumber,
-            ),
-          )
-        ) {
-          return false;
-        }
-
-        // filter by date types
-        if (
-          filters.dateTypes.length > 0 &&
-          !filters.dateTypes.some((filterDateType) => {
-            // check park.hasGate and dateTypes
-            if (filterDateType.name === "Park gate open" && !park.hasGate) {
-              return false;
-            }
-            // check park.hasTier1Dates, park.hasTier2Dates, park.hasWinterFeeDates, and dateTypes
-            if (filterDateType.name === "Tier 1" && !park.hasTier1Dates) {
-              return false;
-            }
-            if (filterDateType.name === "Tier 2" && !park.hasTier2Dates) {
-              return false;
-            }
-            if (
-              filterDateType.name === "Winter fee" &&
-              !park.hasWinterFeeDates
-            ) {
-              return false;
-            }
-            // check feature.hasBackcountryPermits and dateTypes
-            if (
-              filterDateType.name === "Backcountry registration" &&
-              !(
-                park.features?.some(
-                  (feature) => feature.hasBackcountryPermits,
-                ) ||
-                park.parkAreas?.some((parkArea) =>
-                  parkArea.features?.some(
-                    (feature) => feature.hasBackcountryPermits,
-                  ),
-                )
-              )
-            ) {
-              return false;
-            }
-
-            // check feature.hasReservations and dateTypes
-            if (
-              filterDateType.name === "Reservation" &&
-              !(
-                park.features?.some((feature) => feature.hasReservations) ||
-                park.parkAreas?.some((parkArea) =>
-                  parkArea.features?.some((feature) => feature.hasReservations),
-                )
-              )
-            ) {
-              return false;
-            }
-
-            // check park.seasons and dateTypes
-            const hasParkDateType = park.seasons?.some((season) =>
-              season.dateRanges?.some(
-                (dateRange) => dateRange.dateType.id === filterDateType.id,
-              ),
-            );
-
-            if (hasParkDateType) return true;
-
-            // check parkAreas.seasons and dateTypes
-            const hasParkAreaDateType = park.parkAreas?.some((parkArea) =>
-              parkArea.seasons?.some((season) =>
-                season.dateRanges?.some(
-                  (dateRange) => dateRange.dateType.id === filterDateType.id,
-                ),
-              ),
-            );
-
-            if (hasParkAreaDateType) return true;
-
-            // check parkAreas.features.seasons and dateTypes
-            const hasParkAreaFeatureDateType = park.parkAreas?.some(
-              (parkArea) =>
-                parkArea.features?.some((feature) =>
-                  feature.seasons?.some((season) =>
-                    season.dateRanges?.some(
-                      (dateRange) =>
-                        dateRange.dateType.id === filterDateType.id,
-                    ),
-                  ),
-                ),
-            );
-
-            if (hasParkAreaFeatureDateType) return true;
-
-            // check features.seasons and dateTypes
-            const hasFeatureDateType = park.features?.some((feature) =>
-              feature.seasons?.some((season) =>
-                season.dateRanges?.some(
-                  (dateRange) => dateRange.dateType.id === filterDateType.id,
-                ),
-              ),
-            );
-
-            if (hasFeatureDateType) return true;
-
-            return false;
-          })
-        ) {
-          return false;
-        }
-
-        // filter by feature types
-        if (
-          filters.featureTypes.length > 0 &&
-          !filters.featureTypes.some(
-            (filterFeatureType) =>
-              // check features.featureTypes
-              park.features.some(
-                (feature) => feature.featureType.id === filterFeatureType.id,
-              ) ||
-              // check parkAreas.featureTypes
-              park.parkAreas?.some(
-                (parkArea) => parkArea.featureType.id === filterFeatureType.id,
-              ),
-          )
-        ) {
-          return false;
-        }
-
-        // filter by isInReservationSystem
-        // park level - check if it has hasTier1Dates, hasTier2Dates, or hasWinterFeeDates
-        // area and feature level - check it it has inReservationSystem
-        if (
-          filters.isInReservationSystem &&
-          !(
-            park.hasTier1Dates ||
-            park.hasTier2Dates ||
-            park.hasWinterFeeDates ||
-            park.parkAreas.some((parkArea) => parkArea.inReservationSystem) ||
-            park.features.some((feature) => feature.inReservationSystem)
-          )
-        ) {
-          return false;
-        }
-
-        // TODO: CMS-788
-        // filter by hasDateNote
-
-        return true;
-      }),
-    [parks, filters, userData, hasAllParkAccess],
+      filters.name.length ||
+      filters.accessGroups.length ||
+      filters.sections.length ||
+      filters.managementAreas.length ||
+      filters.status.length ||
+      filters.dateTypes.length ||
+      filters.isInReservationSystem,
+    [filters],
   );
 
-  function updateFilter(key, value) {
-    setFilters((prevFilters) => ({
-      ...prevFilters,
-      [key]: value,
-    }));
-    if (page !== 1) {
-      // reset the page to 1 to avoid empty pages
-      setPage(1);
-    }
-  }
+  const flattenedFilteredResults = useMemo(() => {
+    // Flatten the parks, areas, and features into a single "results" array
+    // and exclude any areas or features that don't match the filters.
+    const results = parks.flatMap((park) => {
+      // If the Park doesn't match the Park-level "hard" filters, exclude it entirely.
+      if (parkFiltersActive && !checkParkHard(park, filters)) {
+        return [];
+      }
+
+      // If the Park doesn't match the Park-level "soft" filters, store that result.
+      // We'll continue to check its areas and features to see if any of them match.
+      const parkMatch = checkParkSoft(park, filters);
+
+      // Gather matching park areas and features, and add annotations for grouping
+      const matchingAreas = getMatchingAreas(park.parkAreas, filters).map(
+        (parkArea) => ({
+          ...parkArea,
+          // Add the park name for grouping
+          // (Using the name instead of the ID preserves the sort order
+          // when we rebuild the data later for rendering the table)
+          parkName: park.name,
+          entityType: "parkArea",
+        }),
+      );
+
+      const matchingFeatures = getMatchingFeatures(park.features, filters).map(
+        (feature) => ({
+          ...feature,
+          parkName: park.name,
+          entityType: "feature",
+        }),
+      );
+
+      // If nothing matches, exclude the entire park
+      if (
+        !parkMatch &&
+        matchingAreas.length === 0 &&
+        matchingFeatures.length === 0
+      ) {
+        return [];
+      }
+
+      // If the featureType filter is set, but no Areas/Features match,
+      // exclude the park
+      if (
+        filters.featureTypes.length &&
+        matchingAreas.length === 0 &&
+        matchingFeatures.length === 0
+      ) {
+        return [];
+      }
+
+      // If the Park or any Areas/Features match,
+      // include the Park and the matching Areas/Features
+      return [
+        {
+          ...park,
+
+          // Add a property to the Park object to indicate whether it matches the filters,
+          // and add annotations for grouping in the template
+          matchesFilters: parkMatch,
+          entityType: "park",
+          parkName: park.name,
+
+          // Add properties to the Park object to show/hide
+          // the "Tiers and gate" / "Winter fee" sections if relevant filters are set.
+          showTiersAndGate: shouldShowTiersAndGateSection(park, filters),
+          showWinterFee: shouldShowWinterFeeSection(park, filters),
+        },
+
+        // Include Areas and Features within the park that match the filters
+        ...matchingAreas,
+        ...matchingFeatures,
+      ];
+    });
+
+    return results;
+  }, [parks, filters, parkFiltersActive]);
+
+  // Count the number of "results" - Parks, Areas, and Features with a status
+  const numResults = useMemo(
+    () =>
+      // Filter out any Parks that don't match the filters;
+      // they will not count towards the total results and their season data won't show.
+      flattenedFilteredResults.filter(
+        (item) => item.entityType !== "park" || item.matchesFilters,
+      ).length,
+    [flattenedFilteredResults],
+  );
+
+  // Format data for rendering in the table
+  const tableData = useMemo(() => {
+    // Group the flattened results by parkName for rendering in the table
+    const groupedByPark = groupBy(flattenedFilteredResults, "parkName");
+
+    // Re-combine the park data into a single Park object,
+    // with filtered features and parkAreas
+    const formatted = Object.values(groupedByPark).map((parkGroup) => {
+      const park = parkGroup.find((entity) => entity.entityType === "park");
+      const parkAreas = parkGroup.filter(
+        (entity) => entity.entityType === "parkArea",
+      );
+      const features = parkGroup.filter(
+        (entity) => entity.entityType === "feature",
+      );
+
+      return {
+        ...park,
+        parkAreas,
+        features,
+      };
+    });
+
+    return formatted;
+  }, [flattenedFilteredResults]);
+
+  const numParks = tableData.length;
+
+  const updateFilter = useCallback(
+    (key, value) => {
+      setFilters((prevFilters) => ({
+        ...prevFilters,
+        [key]: value,
+      }));
+
+      if (page !== 1) {
+        // reset the page to 1 to avoid empty pages
+        setPage(1);
+      }
+    },
+    [setFilters, page],
+  );
 
   /**
    * Fetches all the data from the API when something changes.
@@ -392,8 +304,8 @@ function EditAndReview() {
     const start = pageSize * (page - 1);
     const end = start + pageSize;
 
-    return filteredParks.slice(start, end);
-  }, [filteredParks, page, pageSize]);
+    return tableData.slice(start, end);
+  }, [tableData, page, pageSize]);
 
   // components
   function ParksTableWrapper() {
@@ -411,7 +323,6 @@ function EditAndReview() {
           <RefreshTableContext.Provider value={{ refreshTable }}>
             <EditAndReviewTable
               data={pageData}
-              filters={filters}
               onResetFilters={resetFilters}
               formPanelHandler={formPanelHandler}
             />
@@ -419,7 +330,7 @@ function EditAndReview() {
         </div>
 
         <PaginationControls
-          totalItems={filteredParks.length}
+          totalItems={numParks}
           currentPage={page}
           pageSize={pageSize}
           onPageChange={setPage}
@@ -448,12 +359,12 @@ function EditAndReview() {
   }
 
   // "clear filters" button
-  function ClearFilter() {
+  function ClearFilters() {
     return (
       <button
         type="button"
         onClick={resetFilters}
-        className="btn text-link text-decoration-underline align-self-end d-block mt-3 ps-1"
+        className="btn text-link text-decoration-underline align-self-end d-block"
       >
         Clear filters
       </button>
@@ -504,9 +415,15 @@ function EditAndReview() {
               <FontAwesomeIcon icon={faFilter} className="me-1" />
               All filters
             </button>
-            <ClearFilter />
           </div>
         </div>
+
+        <FilterStatus
+          activeFilters={filters}
+          filteredCount={numResults}
+          ClearFilters={ClearFilters}
+          updateFilter={updateFilter}
+        />
 
         <ParksTableWrapper />
 
@@ -528,8 +445,8 @@ function EditAndReview() {
           filterOptionsLoading={filterOptionsLoading}
           filterOptionsError={filterOptionsError}
           statusFilter={<StatusFilter />}
-          clearFilter={<ClearFilter />}
-          filteredCount={filteredParks.length}
+          ClearFilters={ClearFilters}
+          filteredCount={numResults}
         />
       </div>
     </div>

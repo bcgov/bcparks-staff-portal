@@ -1,86 +1,15 @@
-.confirmation-dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  // Above the Offcanvas panel (1045) and the Flash message (1046)
-  z-index: 1047;
-}
-
-.confirmation-dialog-container {
-  grid-template-columns: 1% 99%;
-  border-radius: var(--layout-border-radius-large);
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.1),
-    0 2px 4px -1px rgba(0, 0, 0, 0.06);
-
-  background-color: white;
-  padding: var(--layout-padding-large);
-  border-radius: var(--layout-border-radius-large);
-  border-left: 5px solid var(--support-border-color-warning);
-
-  max-width: 80%;
-  width: 100%;
-
-  @include from-md {
-    max-width: 50%;
+.confirmation-dialog-modal {
+  &.modal-content {
+    border: none;
+    border-left: 5px solid var(--support-border-color-warning);
   }
-}
 
-.confirmation-dialog-title {
-  font-size: var(--typography-regular-H6);
-  font-weight: bold;
-  margin-bottom: var(--layout-margin-none);
-}
+  .modal-header {
+    border-bottom: none;
+  }
 
-.confirmation-dialog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--layout-margin-medium);
-}
-
-.confirmation-dialog-message {
-  margin-bottom: var(--layout-margin-large);
-
-  // Render line breaks in the message
-  white-space: pre-line;
-}
-
-.missing-dates-confirmation-dialog-message {
-  margin-bottom: var(--layout-margin-small);
-}
-
-.confirmation-dialog-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.confirmation-dialog-close {
-  background-color: transparent;
-  border: none;
-  color: var(--icons-color-secondary);
-  font-size: 32px;
-}
-
-.required-message {
-  color: var(--support-border-color-danger);
-  font-size: var(--typography-regular-small-body);
-}
-
-.word-count {
-  font-size: var(--typography-regular-small-body);
-  color: var(--typography-color-placeholder);
-  text-align: right;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
+  .modal-footer {
+    border-top: none;
+    justify-content: space-between;
+  }
 }

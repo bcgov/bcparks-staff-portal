@@ -12,6 +12,9 @@ import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
+import * as FEATURE_TYPE from "../constants/featureType";
+import * as DATE_TYPE from "../constants/dateType";
+import * as SEASON_TYPE from "@/constants/seasonType";
 
 // Components
 function IconButton({
@@ -60,12 +63,14 @@ function DateRangesList({ dateRanges, isLastYear }) {
 
   return (
     <ul className="list-unstyled mb-0">
-      {dateRanges.map((dateRange) => (
-        <li key={dateRange.id}>
-          {formatDateRange(dateRange)}
-          <NotReadyFlag show={!dateRange.readyToPublish} />
-        </li>
-      ))}
+      {[...dateRanges]
+        .sort((a, b) => a.startDate - b.startDate)
+        .map((dateRange) => (
+          <li key={dateRange.id}>
+            {formatDateRange(dateRange, isLastYear ? "Not provided" : "")}
+            <NotReadyFlag show={!dateRange.readyToPublish} />
+          </li>
+        ))}
     </ul>
   );
 }
@@ -74,15 +79,19 @@ DateRangesList.propTypes = {
   dateRanges: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number.isRequired,
-      startDate: PropTypes.instanceOf(Date).isRequired,
-      endDate: PropTypes.instanceOf(Date).isRequired,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
       readyToPublish: PropTypes.bool.isRequired,
     }),
   ),
   isLastYear: PropTypes.bool,
 };
 
-function DateTypeTableRow({ groupedDateRanges, currentYear }) {
+function DateTypeTableRow({
+  groupedDateRanges,
+  currentYear,
+  isWinterSeason = false,
+}) {
   if (
     !currentYear ||
     !groupedDateRanges ||
@@ -90,11 +99,19 @@ function DateTypeTableRow({ groupedDateRanges, currentYear }) {
   )
     return null;
 
+  const lastYear = currentYear - 1;
+  const displayLastYear = isWinterSeason
+    ? `${lastYear} – ${currentYear}`
+    : lastYear;
+  const displayCurrentYear = isWinterSeason
+    ? `${currentYear} – ${currentYear + 1}`
+    : currentYear;
+
   return (
     <tr className="table-row--date-type">
       <th scope="col">Type of date</th>
-      <th scope="col">{currentYear - 1}</th>
-      <th scope="col">{currentYear}</th>
+      <th scope="col">{displayLastYear}</th>
+      <th scope="col">{displayCurrentYear}</th>
     </tr>
   );
 }
@@ -102,12 +119,27 @@ function DateTypeTableRow({ groupedDateRanges, currentYear }) {
 DateTypeTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
   currentYear: PropTypes.number,
+  isWinterSeason: PropTypes.bool,
 };
 
 function DateTableRow({ groupedDateRanges, currentYear }) {
   if (!currentYear || !groupedDateRanges) return null;
 
-  return Object.entries(groupedDateRanges).map(([dateTypeName, yearsObj]) => (
+  // Helper to get the strapiDateTypeId from the first item in a groupedDateRange
+  function getStrapiDateTypeId(datesObj) {
+    const firstRange = Object.values(datesObj)[0]?.[0];
+
+    return firstRange?.dateType?.strapiDateTypeId ?? Number.MAX_SAFE_INTEGER;
+  }
+
+  // Sort date types based on DATE_TYPE.SORT_ORDER
+  const sortedDateTypes = Object.entries(groupedDateRanges).sort(
+    ([, datesA], [, datesB]) =>
+      DATE_TYPE.SORT_ORDER.indexOf(getStrapiDateTypeId(datesA)) -
+      DATE_TYPE.SORT_ORDER.indexOf(getStrapiDateTypeId(datesB)),
+  );
+
+  return sortedDateTypes.map(([dateTypeName, yearsObj]) => (
     <tr key={dateTypeName} className="table-row--date">
       <td className="fw-bold">{dateTypeName}</td>
       <td>
@@ -132,13 +164,14 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
   // disable the approve button if a season is already approved, published, or requested by HQ
   const isDisabled = status !== "pending review";
   const { refreshTable } = useContext(RefreshTableContext);
-  const { sendData: sendApprove, loading: sendingApprove } = useApiPost(
-    `/seasons/${seasonId}/approve/`,
+  const { sendData: sendSave, loading: sendingSave } = useApiPost(
+    `/seasons/${seasonId}/save/`,
   );
 
   async function approveSeason() {
     try {
-      await sendApprove();
+      // Save and update status
+      await sendSave({ status: "approved" });
 
       // Refresh the main page data from the API
       await refreshTable();
@@ -157,7 +190,7 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
       label="Approve"
       textColor={color}
       onClick={approveSeason}
-      loading={sendingApprove}
+      loading={sendingSave}
       disabled={isDisabled}
     />
   );
@@ -181,6 +214,7 @@ function StatusTableRow({
   color,
 }) {
   const flashMessage = useContext(globalFlashMessageContext);
+  const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
@@ -200,7 +234,13 @@ function StatusTableRow({
   }
 
   return (
-    <tr key={id} className={classNames(level && `table-row--${level}`)}>
+    <tr
+      key={id}
+      className={classNames(
+        level && `table-row--${level}`,
+        isWinterSeason && "winter",
+      )}
+    >
       <th
         scope="col"
         colSpan="2"
@@ -257,57 +297,30 @@ StatusTableRow.propTypes = {
   color: PropTypes.string,
 };
 
-function Table({ park, formPanelHandler, inReservationSystemFilter }) {
-  // Constants
-  const parkAreas = park.parkAreas || [];
-  const features = park.features || [];
-  const isParkInReservationSystem =
-    park.hasTier1Dates || park.hasTier2Dates || park.hasWinterFeeDates;
-
+function FeaturesByFeatureTypeWithAreas({
+  featureTypeId,
+  park,
+  parkAreas,
+  formPanelHandler,
+  featureTypeFilter,
+}) {
   return (
-    <table key={park.id} className="table has-header-row mb-0">
-      <thead>
-        <StatusTableRow
-          level="park"
-          nameCellClass="fw-normal text-white"
-          name={park.name}
-          season={park.currentSeason}
-          formPanelHandler={() => formPanelHandler({ ...park, level: "park" })}
-          color="text-white"
-        />
-      </thead>
+    <>
+      {/* 2 - park area level */}
+      {parkAreas.map((parkArea) => {
+        const regularSeason = parkArea.currentSeason.regular;
 
-      <tbody>
-        {/* 1 - park level */}
-        {/* filter out park if not in reservation system if the filter is applied */}
-        {inReservationSystemFilter && !isParkInReservationSystem ? null : (
-          <>
-            <DateTypeTableRow
-              groupedDateRanges={park.groupedDateRanges}
-              currentYear={park.currentSeason.operatingYear || null}
-            />
-            <DateTableRow
-              groupedDateRanges={park.groupedDateRanges}
-              currentYear={park.currentSeason.operatingYear || null}
-            />
-          </>
-        )}
-
-        {/* 2 - park area level */}
-        {parkAreas.map((parkArea) => {
-          // filter out park areas not in reservation system if the filter is applied
-          if (inReservationSystemFilter && !parkArea.inReservationSystem) {
-            return null;
-          }
-
-          return (
+        return (
+          parkArea.features.some((f) =>
+            featureTypeFilter(f.featureType.strapiFeatureTypeId, featureTypeId),
+          ) && (
             <React.Fragment key={parkArea.id}>
               <StatusTableRow
                 id={parkArea.id}
                 level="park-area"
                 name={`${park.name} - ${parkArea.name}`}
                 typeName={parkArea.featureType?.name}
-                season={parkArea.currentSeason}
+                season={regularSeason}
                 formPanelHandler={() =>
                   formPanelHandler({ ...parkArea, level: "park-area" })
                 }
@@ -315,59 +328,197 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
 
               {/* features that belong to park area */}
               {/* these features might not be publishable */}
-              {parkArea.features.map((parkFeature) => (
-                <React.Fragment key={parkFeature.id}>
-                  <tr className="table-row--park-area-feature">
-                    <th scope="colgroup" colSpan="3">
-                      {parkFeature.name}
-                    </th>
-                  </tr>
-                  <DateTypeTableRow
-                    groupedDateRanges={parkFeature.groupedDateRanges}
-                    currentYear={parkArea.currentSeason.operatingYear || null}
-                  />
-                  <DateTableRow
-                    groupedDateRanges={parkFeature.groupedDateRanges}
-                    currentYear={parkArea.currentSeason.operatingYear || null}
-                  />
-                </React.Fragment>
-              ))}
+              {parkArea.features
+                .filter((f) =>
+                  featureTypeFilter(
+                    f.featureType.strapiFeatureTypeId,
+                    featureTypeId,
+                  ),
+                )
+                .map((parkFeature) => (
+                  <React.Fragment key={parkFeature.id}>
+                    <tr className="table-row--park-area-feature">
+                      <th scope="colgroup" colSpan="3">
+                        {parkFeature.name}
+                      </th>
+                    </tr>
+                    <DateTypeTableRow
+                      groupedDateRanges={parkFeature.groupedDateRanges}
+                      currentYear={regularSeason.operatingYear}
+                    />
+                    <DateTableRow
+                      groupedDateRanges={parkFeature.groupedDateRanges}
+                      currentYear={regularSeason.operatingYear}
+                    />
+                  </React.Fragment>
+                ))}
             </React.Fragment>
-          );
-        })}
+          )
+        );
+      })}
+    </>
+  );
+}
 
-        {/* 3 - feature level */}
-        {/* features that don't belong to park area  */}
-        {/* these features are publishable */}
-        {features.map((feature) => {
-          // filter out features not in reservation system if the filter is applied
-          if (inReservationSystemFilter && !feature.inReservationSystem) {
-            return null;
-          }
+FeaturesByFeatureTypeWithAreas.propTypes = {
+  featureTypeId: PropTypes.number.isRequired,
+  park: PropTypes.object.isRequired,
+  parkAreas: PropTypes.array.isRequired,
+  formPanelHandler: PropTypes.func.isRequired,
+  featureTypeFilter: PropTypes.func.isRequired,
+};
 
-          return (
-            <React.Fragment key={feature.id}>
-              <StatusTableRow
-                id={feature.id}
-                level="feature"
-                name={`${park.name} - ${feature.name}`}
-                typeName={feature.featureType.name}
-                season={feature.currentSeason}
-                formPanelHandler={() =>
-                  formPanelHandler({ ...feature, level: "feature" })
-                }
-              />
-              <DateTypeTableRow
-                groupedDateRanges={feature.groupedDateRanges}
-                currentYear={feature.currentSeason.operatingYear || null}
-              />
-              <DateTableRow
-                groupedDateRanges={feature.groupedDateRanges}
-                currentYear={feature.currentSeason.operatingYear || null}
-              />
-            </React.Fragment>
-          );
-        })}
+function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
+  return (
+    <>
+      {/* features that don't belong to park area  */}
+      {features.map((feature) => {
+        const regularSeason = feature.currentSeason.regular;
+
+        return (
+          <React.Fragment key={feature.id}>
+            <StatusTableRow
+              id={feature.id}
+              level="feature"
+              name={`${park.name} - ${feature.name}`}
+              typeName={feature.featureType.name}
+              season={regularSeason}
+              formPanelHandler={() =>
+                formPanelHandler({ ...feature, level: "feature" })
+              }
+            />
+            <DateTypeTableRow
+              groupedDateRanges={feature.groupedDateRanges}
+              currentYear={regularSeason.operatingYear}
+            />
+            <DateTableRow
+              groupedDateRanges={feature.groupedDateRanges}
+              currentYear={regularSeason.operatingYear}
+            />
+          </React.Fragment>
+        );
+      })}
+    </>
+  );
+}
+
+FeaturesByFeatureTypeNoAreas.propTypes = {
+  park: PropTypes.object.isRequired,
+  features: PropTypes.array.isRequired,
+  formPanelHandler: PropTypes.func.isRequired,
+};
+
+function Table({ park, formPanelHandler }) {
+  // Constants
+  const parkAreas = park.parkAreas || [];
+  const features = park.features || [];
+  const regularSeason = park.currentSeason.regular;
+  const winterSeason = park?.currentSeason.winter || {};
+
+  // Filter function to determine if feature matches current feature type group
+  function matchesFeatureTypeGroup(featureTypeId, groupFeatureType) {
+    return groupFeatureType === FEATURE_TYPE.UNKNOWN
+      ? !FEATURE_TYPE.SORT_ORDER.includes(featureTypeId)
+      : featureTypeId === groupFeatureType;
+  }
+
+  return (
+    <table key={park.id} className="table has-header-row mb-0">
+      <thead>
+        <tr className="table-row--park-header">
+          <th
+            scope="col"
+            colSpan="3"
+            className="align-middle fw-normal text-white"
+          >
+            {park.name}
+          </th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {/* If the park isn't filtered out, show its Park-level dates */}
+        {park.matchesFilters !== false && (
+          <>
+            {/*
+              Park level regular season dates (park gate, tier 1, tier 2):
+              Always show unless explicitly hidden via filters
+            */}
+            {park.showTiersAndGate && (
+              <>
+                <StatusTableRow
+                  level="park"
+                  name="Tiers and gate"
+                  season={regularSeason}
+                  formPanelHandler={() =>
+                    formPanelHandler({
+                      ...park,
+                      level: "park",
+                      isWinterSeason: false,
+                    })
+                  }
+                />
+                <DateTypeTableRow
+                  groupedDateRanges={park.groupedDateRanges}
+                  currentYear={regularSeason.operatingYear}
+                />
+                <DateTableRow
+                  groupedDateRanges={park.groupedDateRanges}
+                  currentYear={regularSeason.operatingYear}
+                />
+              </>
+            )}
+
+            {/* Park level winter fee season */}
+            {park.showWinterFee && (
+              <>
+                <StatusTableRow
+                  level="park"
+                  name="Winter fee"
+                  season={winterSeason}
+                  formPanelHandler={() =>
+                    formPanelHandler({
+                      ...park,
+                      level: "park",
+                      isWinterSeason: true,
+                    })
+                  }
+                />
+                <DateTypeTableRow
+                  groupedDateRanges={park.winterGroupedDateRanges}
+                  currentYear={winterSeason.operatingYear}
+                  isWinterSeason={true}
+                />
+                <DateTableRow
+                  groupedDateRanges={park.winterGroupedDateRanges}
+                  currentYear={winterSeason.operatingYear}
+                />
+              </>
+            )}
+          </>
+        )}
+
+        {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
+          <React.Fragment key={`feature-type-${featureTypeId}`}>
+            <FeaturesByFeatureTypeWithAreas
+              featureTypeId={featureTypeId}
+              park={park}
+              parkAreas={parkAreas}
+              formPanelHandler={formPanelHandler}
+              featureTypeFilter={matchesFeatureTypeGroup}
+            />
+            <FeaturesByFeatureTypeNoAreas
+              park={park}
+              features={features.filter((f) =>
+                matchesFeatureTypeGroup(
+                  f.featureType.strapiFeatureTypeId,
+                  featureTypeId,
+                ),
+              )}
+              formPanelHandler={formPanelHandler}
+            />
+          </React.Fragment>
+        ))}
       </tbody>
     </table>
   );
@@ -376,21 +527,25 @@ function Table({ park, formPanelHandler, inReservationSystemFilter }) {
 Table.propTypes = {
   park: PropTypes.shape({
     id: PropTypes.number.isRequired,
+    matchesFilters: PropTypes.bool,
     name: PropTypes.string.isRequired,
     currentSeason: PropTypes.shape({
-      status: PropTypes.string,
-      operatingYear: PropTypes.number,
+      regular: PropTypes.object,
+      winter: PropTypes.object,
     }),
     groupedDateRanges: PropTypes.object,
+    winterGroupedDateRanges: PropTypes.object,
     hasTier1Dates: PropTypes.bool,
     hasTier2Dates: PropTypes.bool,
+    showTiersAndGate: PropTypes.bool.isRequired,
     hasWinterFeeDates: PropTypes.bool,
+    showWinterFee: PropTypes.bool.isRequired,
     parkAreas: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         currentSeason: PropTypes.shape({
-          status: PropTypes.string,
+          regular: PropTypes.object,
         }),
         groupedDateRanges: PropTypes.object,
         inReservationSystem: PropTypes.bool,
@@ -402,7 +557,7 @@ Table.propTypes = {
             id: PropTypes.number.isRequired,
             name: PropTypes.string.isRequired,
             currentSeason: PropTypes.shape({
-              status: PropTypes.string,
+              regular: PropTypes.object,
             }),
             groupedDateRanges: PropTypes.object,
           }),
@@ -414,7 +569,7 @@ Table.propTypes = {
         id: PropTypes.number.isRequired,
         name: PropTypes.string.isRequired,
         currentSeason: PropTypes.shape({
-          status: PropTypes.string,
+          regular: PropTypes.object,
         }),
         groupedDateRanges: PropTypes.object,
         inReservationSystem: PropTypes.bool,
@@ -430,21 +585,13 @@ Table.propTypes = {
 
 export default function EditAndReviewTable({
   data,
-  filters,
   onResetFilters,
   formPanelHandler,
 }) {
-  const { isInReservationSystem } = filters;
-
   return (
     <div className="table-responsive">
       {data.map((park) => (
-        <Table
-          key={park.id}
-          park={park}
-          formPanelHandler={formPanelHandler}
-          inReservationSystemFilter={isInReservationSystem}
-        />
+        <Table key={park.id} park={park} formPanelHandler={formPanelHandler} />
       ))}
 
       {data.length === 0 && (
@@ -470,7 +617,6 @@ EditAndReviewTable.propTypes = {
       status: PropTypes.string,
     }),
   ),
-  filters: PropTypes.object,
   onResetFilters: PropTypes.func,
   formPanelHandler: PropTypes.func,
 };

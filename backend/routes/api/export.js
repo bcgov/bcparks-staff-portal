@@ -1,9 +1,10 @@
 import { Router } from "express";
-import { Op, Sequelize } from "sequelize";
+import { Sequelize } from "sequelize";
 import asyncHandler from "express-async-handler";
 import { writeToString } from "@fast-csv/format";
 import _ from "lodash";
 import { format, parse as parseDate } from "date-fns";
+import { TZDate } from "@date-fns/tz";
 
 import {
   Park,
@@ -19,6 +20,7 @@ import {
   GateDetail,
 } from "../../models/index.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 const router = Router();
 
@@ -44,6 +46,8 @@ const colNames = {
   IN_BCP_RESERVATION_SYSTEM: "In BC Parks Reservation system",
   STATUS: "Status",
   READY_TO_PUBLISH: "Ready to publish",
+  UPDATE_TIME: "Last updated",
+  UPDATE_USER: "Last updated by",
   INTERNAL_NOTES: "Internal notes",
 };
 
@@ -93,11 +97,25 @@ function formatChangeLog(changeLog) {
 /**
  * Formats a date string as "Weekday, Month Day, Year"
  * @param {string} date parseable date string (e.g., "2023-07-15")
- * @returns {string} Formatted date string
+ * @returns {string} Formatted date string, or empty string if date is falsy
  */
 function formatDate(date) {
   if (!date) return "";
   return format(date, "EEEE, MMMM d, yyyy");
+}
+
+/**
+ * Formats a changelog date in BC timezone with a date format suitable for Excel (yyyy-MM-dd HH:mm:ss)
+ * @param {string|Date} date parseable date string (ISO 8601)
+ * @returns {string} Formatted date string, or empty string if date is falsy
+ */
+function formatChangeLogDate(date) {
+  if (!date) return "";
+
+  // Convert to BC time zone
+  const bcDate = new TZDate(date, "America/Vancouver");
+
+  return format(bcDate, "yyyy-MM-dd HH:mm:ss");
 }
 
 /**
@@ -130,7 +148,7 @@ function formatBoolean(value) {
  * Returns the park associated with a date range from
  * its Feature, ParkArea, or direct Park association.
  * @param {Season} season The date range to get the park for
- * @returns {Park} the park associated with the date range
+ * @returns {Park|null} the park associated with the date range, or null if not found
  */
 function getPark(season) {
   // ParkArea seasons: return the ParkArea's Park details
@@ -310,7 +328,13 @@ router.get(
         {
           model: Season,
           as: "season",
-          attributes: ["id", "operatingYear", "status", "readyToPublish"],
+          attributes: [
+            "id",
+            "operatingYear",
+            "status",
+            "readyToPublish",
+            "seasonType",
+          ],
 
           where: { operatingYear },
           required: true,
@@ -330,6 +354,9 @@ router.get(
               as: "parkArea",
               attributes: ["id", "name", "inReservationSystem"],
               required: false,
+              where: {
+                active: true,
+              },
 
               include: [
                 {
@@ -351,6 +378,9 @@ router.get(
                     "hasReservations",
                   ],
                   required: false,
+                  where: {
+                    active: true,
+                  },
 
                   include: [
                     {
@@ -413,18 +443,12 @@ router.get(
               required: false,
             },
 
-            // Season changelogs with "internal notes"
+            // Season changelogs with User details and any "internal notes"
             {
               model: SeasonChangeLog,
               as: "changeLogs",
               attributes: ["id", "notes", "createdAt"],
 
-              // Filter out empty notes
-              where: {
-                notes: {
-                  [Op.ne]: "",
-                },
-              },
               required: false,
 
               include: [
@@ -445,6 +469,16 @@ router.get(
           required: true,
         },
       ],
+
+      order: [
+        // Sort the included season.changeLogs by createdAt to show newest notes first
+        [
+          { model: Season, as: "season" },
+          { model: SeasonChangeLog, as: "changeLogs" },
+          "createdAt",
+          "DESC",
+        ],
+      ],
     });
 
     const dateRangeAnnuals = await getDateRangeAnnualsMap();
@@ -456,9 +490,18 @@ router.get(
         const { gateDetail } = season;
         const park = getPark(season);
 
+        // Skip this row if park is null (no valid park association)
+        if (!park) {
+          console.log("No park found for season ID:", season.id);
+          return null;
+        }
+
         const annualData = dateRangeAnnuals.get(
           `${dateRange.dateableId}-${dateRange.dateTypeId}`,
         );
+
+        // Get the most recent changelog entry for update time
+        const latestChangeLog = season.changeLogs.at(0);
 
         // Get the Feature for this DateRange, if there is one
         const feature = getFeatureForDateRange(dateRange);
@@ -498,6 +541,14 @@ router.get(
           return null;
         }
 
+        // Skip non-winter fee dates for winter seasons
+        if (
+          season.seasonType === SEASON_TYPE.WINTER &&
+          dateRange.dateType.strapiDateTypeId !== DATE_TYPE.WINTER_FEE
+        ) {
+          return null;
+        }
+
         return {
           // Get park management area and section names from jsonb field
           [colNames.SECTION]: park.managementAreas
@@ -526,7 +577,15 @@ router.get(
           ),
           [colNames.STATUS]: season.status,
           [colNames.READY_TO_PUBLISH]: formatBoolean(season.readyToPublish),
+          [colNames.UPDATE_TIME]: formatChangeLogDate(
+            latestChangeLog?.createdAt,
+          ),
+          [colNames.UPDATE_USER]: latestChangeLog?.user.name ?? "",
+
+          // Show the internal notes from changeLogs, if any
+          // Filter out changelogs with no notes and concatenate the rest with line breaks
           [colNames.INTERNAL_NOTES]: season.changeLogs
+            .filter((changeLog) => changeLog.notes?.trim())
             .map(formatChangeLog)
             .join("\n"),
         };

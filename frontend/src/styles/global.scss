@@ -86,6 +86,8 @@ a:not(.btn):focus {
 
 // custom bootstrap button style: "text"
 .btn-text {
+  --bs-btn-focus-shadow-rgb: 1, 51, 102;
+
   &:hover,
   &:focus {
     text-decoration: underline;
@@ -104,6 +106,7 @@ a:not(.btn):focus {
 
 // custom bootstrap button style: "link"
 .text-link {
+  --bs-btn-focus-shadow-rgb: 1, 51, 102;
   color: var(--typography-color-link);
 
   &:hover,
