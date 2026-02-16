@@ -27,6 +27,7 @@ spec:
           containers:
             - name: {{ .Release.Name }}-{{ .Values.cron.componentName }}-cronjob
               image: {{ .Values.images.backend.name }}:{{ .Values.images.backend.tag }}
+              imagePullPolicy: Always
               command: ["sh", "/app/entrypoint.sh", "cron"]
               resources:
 {{ toYaml .Values.cron.resources | indent 16 }}
