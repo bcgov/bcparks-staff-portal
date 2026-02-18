@@ -24,7 +24,7 @@ export default function AdvisoryLink() {
           })
         }
         Promise.resolve(
-          cmsAxios.get(`public-advisory-audits?filters[advisoryNumber]=${advisoryNumber}&filters[isLatestRevision]=true&status=draft`,
+          cmsAxios.get(`public-advisory-audits?filters[advisoryNumber]=${advisoryNumber}&filters[isLatestRevision]=true`,
             {
               headers: { Authorization: `Bearer ${keycloak.token}` }
             }),
