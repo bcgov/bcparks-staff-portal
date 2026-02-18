@@ -472,7 +472,9 @@ export default function AdvisoryForm({
               type="number"
               value={listingRank}
               onChange={(event) => {
-                setListingRank(event.target.value);
+                const value = event.target.value;
+                const parsed = parseInt(value, 10);
+                setListingRank(isNaN(parsed) ? 0 : parsed);
               }}
               onWheel={(event) => {
                 event.target.blur();
@@ -569,7 +571,7 @@ export default function AdvisoryForm({
                   component="div"
                   className="standard-message"
                   dangerouslySetInnerHTML={{
-                    __html: message.obj.description
+                    __html: message.obj.description || ""
                   }} />
               ))}
             </div>
@@ -1326,10 +1328,10 @@ AdvisoryForm.propTypes = {
     setListingRank: PropTypes.func.isRequired,
     headline: PropTypes.string,
     setHeadline: PropTypes.func.isRequired,
-    eventType: PropTypes.number,
+    eventType: PropTypes.string,
     eventTypes: PropTypes.array.isRequired,
     setEventType: PropTypes.func.isRequired,
-    accessStatus: PropTypes.number,
+    accessStatus: PropTypes.string,
     accessStatuses: PropTypes.array.isRequired,
     setAccessStatus: PropTypes.func.isRequired,
     description: PropTypes.string,
@@ -1362,7 +1364,7 @@ AdvisoryForm.propTypes = {
     selectedNaturalResourceDistricts: PropTypes.array,
     setSelectedNaturalResourceDistricts: PropTypes.func.isRequired,
     urgencies: PropTypes.array.isRequired,
-    urgency: PropTypes.number,
+    urgency: PropTypes.string,
     setUrgency: PropTypes.func.isRequired,
     isSafetyRelated: PropTypes.bool,
     setIsSafetyRelated: PropTypes.func.isRequired,
@@ -1395,7 +1397,7 @@ AdvisoryForm.propTypes = {
     submittedBy: PropTypes.string,
     setSubmittedBy: PropTypes.func.isRequired,
     advisoryStatuses: PropTypes.array.isRequired,
-    advisoryStatus: PropTypes.number,
+    advisoryStatus: PropTypes.string,
     setAdvisoryStatus: PropTypes.func.isRequired,
     isStatHoliday: PropTypes.bool,
     isAfterHours: PropTypes.bool,
