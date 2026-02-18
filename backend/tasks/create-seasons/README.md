@@ -113,4 +113,3 @@ Done
 - [`populate-date-ranges/populate-annual-date-ranges.js`](../populate-date-ranges/populate-annual-date-ranges.js) - Copies annual date ranges from previous year
 - [`populate-date-ranges/populate-blank-date-ranges.js`](../populate-date-ranges/populate-blank-date-ranges.js) - Creates blank date ranges for new seasons
 - [`create-winter-seasons/`](../create-winter-seasons/README.md) - Creates winter seasons for parks with winter fee dates
-- [`create-gate-details/`](../create-gate-details/README.md) - Creates gate details for park seasons
