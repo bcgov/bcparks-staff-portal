@@ -20,17 +20,19 @@ export default function AdvisoryLink() {
         if (!keycloak.authenticated) {
           keycloak.login({
             redirectUri: `${config.REACT_APP_FRONTEND_BASE_URL}/advisory-link/${advisoryNumber}`,
-            idpHint: 'idir'
-          })
+            idpHint: "idir",
+          });
         }
         Promise.resolve(
-          cmsAxios.get(`public-advisory-audits?filters[advisoryNumber]=${advisoryNumber}&filters[isLatestRevision]=true`,
+          cmsAxios.get(
+            `public-advisory-audits?filters[advisoryNumber]=${advisoryNumber}&filters[isLatestRevision]=true`,
             {
-              headers: { Authorization: `Bearer ${keycloak.token}` }
-            }),
+              headers: { Authorization: `Bearer ${keycloak.token}` },
+            }
+          )
         )
           .then((res) => {
-            history.replace(`/advisory-summary/${res.data.data[0].id}`);
+            history.replace(`/advisory-summary/${res.data.data[0].documentId}`);
           })
           .catch((err) => {
             history.replace(`/advisories`);
@@ -39,16 +41,11 @@ export default function AdvisoryLink() {
     } else {
       history.replace(`/`);
     }
-  }, [
-    initialized,
-    advisoryNumber,
-    keycloak,
-    history
-  ]);
+  }, [initialized, advisoryNumber, keycloak, history]);
 
   return (
     <main>
       <Header />
     </main>
   );
-};
+}
