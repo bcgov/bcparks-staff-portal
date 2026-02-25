@@ -129,7 +129,7 @@ function groupSeasons(flattened) {
   const seasonMap = new Map();
 
   flattened.forEach((item) => {
-    const key = `${item.parkName}-${item.operatingYear}-${item.parkAreaName}-${item.readyToPublish}-${item.publishableType}`;
+    const key = `${item.parkName}-${item.displayOperatingYear}-${item.parkAreaName}-${item.readyToPublish}-${item.publishableType}`;
 
     if (seasonMap.has(key)) {
       if (item.featureName) {
