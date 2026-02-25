@@ -283,6 +283,7 @@ router.get(
 
       return {
         id: season.id,
+        operatingYear: season.operatingYear,
         displayOperatingYear,
         readyToPublish: season.readyToPublish,
         publishableType: publishable?.type ?? null,
