@@ -65,6 +65,7 @@ function flattenSeasons(seasons) {
       parkAreaName: season.parkAreaName,
       readyToPublish: season.readyToPublish,
       publishableType: season.publishableType,
+      seasonType: season.seasonType,
     };
 
     if (season.publishableType === "feature") {
@@ -129,7 +130,7 @@ function groupSeasons(flattened) {
   const seasonMap = new Map();
 
   flattened.forEach((item) => {
-    const key = `${item.parkName}-${item.operatingYear}-${item.parkAreaName}-${item.readyToPublish}-${item.publishableType}`;
+    const key = `${item.parkName}-${item.operatingYear}-${item.seasonType}-${item.parkAreaName}-${item.readyToPublish}-${item.publishableType}`;
 
     if (seasonMap.has(key)) {
       if (item.featureName) {
@@ -145,6 +146,7 @@ function groupSeasons(flattened) {
         readyToPublish: item.readyToPublish,
         featureNames: item.featureName ? [item.featureName] : [],
         publishableType: item.publishableType,
+        seasonType: item.seasonType,
         sortIndex: item.sortIndex,
       });
     }
@@ -281,12 +283,14 @@ router.get(
 
       return {
         id: season.id,
+        operatingYear: season.operatingYear,
         displayOperatingYear,
         readyToPublish: season.readyToPublish,
         publishableType: publishable?.type ?? null,
         publishable: publishable ?? null,
         parkName,
         parkAreaName,
+        seasonType: season.seasonType,
       };
     });
 
