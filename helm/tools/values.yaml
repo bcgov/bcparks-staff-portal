@@ -4,5 +4,4 @@ images:
     tag: 2.8.4-alpine
   node:
     name: node
-    tag: 20-slim
- 
+    tag: 24.14-slim
