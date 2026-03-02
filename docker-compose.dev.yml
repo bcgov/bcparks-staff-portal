@@ -11,7 +11,7 @@ services:
       - "8101:8101"
     volumes:
       - .:/app:cached
-      - ~/.config/git/ignore:/home/node/.config/git/ignore:ro
+      - ~/.config/git:/home/node/.config/git:ro
     command: sleep infinity # Keep the container running
     # Just send SIGKILL to stop the container (no grace period for `sleep infinity`)
     # https://docs.docker.com/compose/faq/#why-do-my-services-take-10-seconds-to-recreate-or-stop
@@ -31,7 +31,7 @@ services:
       - "8100:8100"
     volumes:
       - .:/app:cached
-      - ~/.config/git/ignore:/home/node/.config/git/ignore:ro
+      - ~/.config/git:/home/node/.config/git:ro
     command: sleep infinity # Keep the container running
     depends_on:
       - db
