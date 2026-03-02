@@ -481,24 +481,30 @@ async function formatParkData(park, season) {
  * Fetches and formats Feature-level data for publishing.
  * @param {Feature} feature The Feature object for the season
  * @param {Season} season The season object
+ * @param {boolean} includeGateInfo Whether to include gate info (default: true)
  * @returns {Object|null} Formatted feature data for publishing, or null to skip publishing
  */
-async function formatFeatureData(feature, season) {
+async function formatFeatureData(feature, season, includeGateInfo = true) {
   // Return null to skip publishing if the ORCS Feature Number is missing
   // We can't connect to anything in Strapi without this key
   if (!feature.strapiOrcsFeatureNumber) return null;
 
   try {
     const dateRanges = await formatDateRanges(feature, season);
-    const gateInfo = formatGateInfo(feature.gateDetails);
 
     // Return formatted Feature data
-    return {
+    const featureData = {
       orcsFeatureNumber: feature.strapiOrcsFeatureNumber,
       operatingYear: season.operatingYear,
       dateRanges,
-      gateInfo,
     };
+
+    // Only include gate info for independent features (not in park area)
+    if (includeGateInfo) {
+      featureData.gateInfo = formatGateInfo(feature.gateDetails);
+    }
+
+    return featureData;
   } catch (error) {
     console.error("Error formatting date ranges for feature:", error);
     return null;
@@ -536,7 +542,8 @@ async function formatParkAreaData(parkArea, season) {
   const formattedFeatures = [];
 
   for (const feature of features) {
-    const featureData = await formatFeatureData(feature, season);
+    // Features in park areas should not have gate info
+    const featureData = await formatFeatureData(feature, season, false);
 
     // If the formatting function returned null for any reason,
     // return null to skip publishing this entire Area and its Features
