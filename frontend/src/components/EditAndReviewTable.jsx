@@ -297,57 +297,36 @@ StatusTableRow.propTypes = {
   color: PropTypes.string,
 };
 
-function ParkAreas({ park, parkAreas, formPanelHandler }) {
-  return (
-    <>
-      {parkAreas.map((parkArea) => {
-        const regularSeason = parkArea.currentSeason.regular;
-
-        return (
-          parkArea.features.length > 0 && (
-            <React.Fragment key={parkArea.id}>
-              <StatusTableRow
-                id={parkArea.id}
-                level="park-area"
-                name={`${park.name} - ${parkArea.name}`}
-                typeName={parkArea.featureType?.name}
-                season={regularSeason}
-                formPanelHandler={() =>
-                  formPanelHandler({ ...parkArea, level: "park-area" })
-                }
-              />
-            </React.Fragment>
-          )
-        );
-      })}
-    </>
-  );
-}
-
-ParkAreas.propTypes = {
-  park: PropTypes.object.isRequired,
-  parkAreas: PropTypes.array.isRequired,
-  formPanelHandler: PropTypes.func.isRequired,
-};
-
 function FeaturesByFeatureTypeWithAreas({
-  featureTypeId,
+  park,
   parkAreas,
+  formPanelHandler,
   featureTypeFilter,
 }) {
   return (
     <>
       {parkAreas.map((parkArea) => {
+        if (!parkArea.features || parkArea.features.length === 0) return null;
+
         const regularSeason = parkArea.currentSeason.regular;
 
         return (
-          parkArea.features.some((f) =>
-            featureTypeFilter(f.featureType.strapiFeatureTypeId, featureTypeId),
-          ) && (
-            <React.Fragment key={parkArea.id}>
-              {/* features that belong to park area */}
-              {/* these features might not be publishable */}
-              {parkArea.features
+          <React.Fragment key={parkArea.id}>
+            <StatusTableRow
+              id={parkArea.id}
+              level="park-area"
+              name={`${park.name} - ${parkArea.name}`}
+              typeName={parkArea.featureType?.name}
+              season={regularSeason}
+              formPanelHandler={() =>
+                formPanelHandler({ ...parkArea, level: "park-area" })
+              }
+            />
+
+            {/* features that belong to park area */}
+            {/* these features might not be publishable */}
+            {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) =>
+              parkArea.features
                 .filter((f) =>
                   featureTypeFilter(
                     f.featureType.strapiFeatureTypeId,
@@ -370,9 +349,9 @@ function FeaturesByFeatureTypeWithAreas({
                       currentYear={regularSeason.operatingYear}
                     />
                   </React.Fragment>
-                ))}
-            </React.Fragment>
-          )
+                )),
+            )}
+          </React.Fragment>
         );
       })}
     </>
@@ -380,8 +359,9 @@ function FeaturesByFeatureTypeWithAreas({
 }
 
 FeaturesByFeatureTypeWithAreas.propTypes = {
-  featureTypeId: PropTypes.number.isRequired,
+  park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
+  formPanelHandler: PropTypes.func.isRequired,
   featureTypeFilter: PropTypes.func.isRequired,
 };
 
@@ -515,21 +495,14 @@ function Table({ park, formPanelHandler }) {
           </>
         )}
 
-        {/* Park areas */}
-        <ParkAreas
+        <FeaturesByFeatureTypeWithAreas
           park={park}
           parkAreas={parkAreas}
           formPanelHandler={formPanelHandler}
+          featureTypeFilter={matchesFeatureTypeGroup}
         />
-
-        {/* Park features */}
         {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
           <React.Fragment key={`feature-type-${featureTypeId}`}>
-            <FeaturesByFeatureTypeWithAreas
-              featureTypeId={featureTypeId}
-              parkAreas={parkAreas}
-              featureTypeFilter={matchesFeatureTypeGroup}
-            />
             <FeaturesByFeatureTypeNoAreas
               park={park}
               features={features.filter((f) =>
