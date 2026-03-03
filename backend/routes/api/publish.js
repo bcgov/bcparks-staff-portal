@@ -481,10 +481,10 @@ async function formatParkData(park, season) {
  * Fetches and formats Feature-level data for publishing.
  * @param {Feature} feature The Feature object for the season
  * @param {Season} season The season object
- * @param {boolean} includeGateInfo Whether to include gate info (default: true)
+ * @param {boolean} includeGateInfo Whether to include gate info (default: false)
  * @returns {Object|null} Formatted feature data for publishing, or null to skip publishing
  */
-async function formatFeatureData(feature, season, includeGateInfo = true) {
+async function formatFeatureData(feature, season, includeGateInfo = false) {
   // Return null to skip publishing if the ORCS Feature Number is missing
   // We can't connect to anything in Strapi without this key
   if (!feature.strapiOrcsFeatureNumber) return null;
@@ -543,7 +543,7 @@ async function formatParkAreaData(parkArea, season) {
 
   for (const feature of features) {
     // Features in park areas should not have gate info
-    const featureData = await formatFeatureData(feature, season, false);
+    const featureData = await formatFeatureData(feature, season);
 
     // If the formatting function returned null for any reason,
     // return null to skip publishing this entire Area and its Features
@@ -655,9 +655,11 @@ router.post(
         publishedSeasonIds.push(season.id);
       } else if (publishableEntity.type === "feature") {
         // If the season is for a Feature, fetch the Feature's dates and format the data
+        // Independent features (not in park area) should include gate info
         const featureData = await formatFeatureData(
           publishableEntity.feature,
           season,
+          true,
         );
 
         // If the formatting function returned null for any reason,
