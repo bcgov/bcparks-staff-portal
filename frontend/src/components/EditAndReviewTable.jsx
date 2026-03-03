@@ -297,23 +297,14 @@ StatusTableRow.propTypes = {
   color: PropTypes.string,
 };
 
-function FeaturesByFeatureTypeWithAreas({
-  featureTypeId,
-  park,
-  parkAreas,
-  formPanelHandler,
-  featureTypeFilter,
-}) {
+function ParkAreas({ park, parkAreas, formPanelHandler }) {
   return (
     <>
-      {/* 2 - park area level */}
       {parkAreas.map((parkArea) => {
         const regularSeason = parkArea.currentSeason.regular;
 
         return (
-          parkArea.features.some((f) =>
-            featureTypeFilter(f.featureType.strapiFeatureTypeId, featureTypeId),
-          ) && (
+          parkArea.features.length > 0 && (
             <React.Fragment key={parkArea.id}>
               <StatusTableRow
                 id={parkArea.id}
@@ -325,7 +316,35 @@ function FeaturesByFeatureTypeWithAreas({
                   formPanelHandler({ ...parkArea, level: "park-area" })
                 }
               />
+            </React.Fragment>
+          )
+        );
+      })}
+    </>
+  );
+}
 
+ParkAreas.propTypes = {
+  park: PropTypes.object.isRequired,
+  parkAreas: PropTypes.array.isRequired,
+  formPanelHandler: PropTypes.func.isRequired,
+};
+
+function FeaturesByFeatureTypeWithAreas({
+  featureTypeId,
+  parkAreas,
+  featureTypeFilter,
+}) {
+  return (
+    <>
+      {parkAreas.map((parkArea) => {
+        const regularSeason = parkArea.currentSeason.regular;
+
+        return (
+          parkArea.features.some((f) =>
+            featureTypeFilter(f.featureType.strapiFeatureTypeId, featureTypeId),
+          ) && (
+            <React.Fragment key={parkArea.id}>
               {/* features that belong to park area */}
               {/* these features might not be publishable */}
               {parkArea.features
@@ -362,9 +381,7 @@ function FeaturesByFeatureTypeWithAreas({
 
 FeaturesByFeatureTypeWithAreas.propTypes = {
   featureTypeId: PropTypes.number.isRequired,
-  park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
-  formPanelHandler: PropTypes.func.isRequired,
   featureTypeFilter: PropTypes.func.isRequired,
 };
 
@@ -498,13 +515,19 @@ function Table({ park, formPanelHandler }) {
           </>
         )}
 
+        {/* Park areas */}
+        <ParkAreas
+          park={park}
+          parkAreas={parkAreas}
+          formPanelHandler={formPanelHandler}
+        />
+
+        {/* Park features */}
         {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
           <React.Fragment key={`feature-type-${featureTypeId}`}>
             <FeaturesByFeatureTypeWithAreas
               featureTypeId={featureTypeId}
-              park={park}
               parkAreas={parkAreas}
-              formPanelHandler={formPanelHandler}
               featureTypeFilter={matchesFeatureTypeGroup}
             />
             <FeaturesByFeatureTypeNoAreas
