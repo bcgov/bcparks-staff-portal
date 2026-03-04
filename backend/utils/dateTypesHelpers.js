@@ -46,7 +46,7 @@ export function getDateTypesForPark(
     if (park.hasWinterFeeDates) {
       orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.WINTER_FEE]);
     }
-  // For regular seasons
+    // For regular ("tiers and gate") seasons
   } else if (seasonType === SEASON_TYPE.REGULAR) {
     if (park.hasTier1Dates) {
       orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
@@ -54,9 +54,12 @@ export function getDateTypesForPark(
     if (park.hasTier2Dates) {
       orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
     }
+
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
   }
 
-  return orderedDateTypes;
+  // Filter out any undefined items (potentially caused by date types missing from the DB)
+  return orderedDateTypes.filter(Boolean);
 }
 
 /**
@@ -80,5 +83,6 @@ export function getDateTypesForFeature(feature, dateTypesByDateTypeId) {
     );
   }
 
-  return orderedDateTypes;
+  // Filter out any undefined items (potentially caused by date types missing from the DB)
+  return orderedDateTypes.filter(Boolean);
 }

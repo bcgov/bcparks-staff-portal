@@ -997,7 +997,6 @@ router.get(
 
     // Add park gate data for regular (non-winter) seasons
     if (seasonModel.seasonType === SEASON_TYPE.REGULAR) {
-      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
       gateDetail = await getGateDetail(seasonModel.publishableId);
     }
 

@@ -144,6 +144,11 @@ export async function populateBlankDateRangesForYear(
           season.park,
           parkDateTypesByDateTypeId,
           season.seasonType,
+        ).filter(
+          (dateType) =>
+            // Exclude the Park gate open date type,
+            // handled by `populateBlankGateOperatingDates` in ./populate-blank-gate-dates.js
+            dateType.strapiDateTypeId !== DATE_TYPE.PARK_GATE_OPEN,
         );
 
         return dateTypes.map((dateType) => ({
