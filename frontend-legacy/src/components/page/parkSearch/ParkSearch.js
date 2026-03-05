@@ -62,7 +62,7 @@ export default function ParkSearch({
           null,
           parkIds,
           null,
-          parkList
+          parkList,
         );
         setParkList(parkList);
       } else if (section && !isEmpty(section)) {
@@ -73,7 +73,7 @@ export default function ParkSearch({
           null,
           null,
           managementAreas,
-          parkList
+          parkList,
         );
         setParkList(parkList);
       } else if (region && !isEmpty(region)) {
@@ -84,7 +84,7 @@ export default function ParkSearch({
           null,
           null,
           managementAreas,
-          parkList
+          parkList,
         );
         setParkList(parkList);
       }
@@ -92,18 +92,18 @@ export default function ParkSearch({
       setFilteredManagementAreas(managementAreas);
       if (section && !isEmpty(section)) {
         const filteredManagementAreas = managementAreas.filter(
-          (m) => m.obj.section?.id === section.value
+          (m) => m.obj.section?.id === section.value,
         );
         setFilteredManagementAreas([...filteredManagementAreas]);
       }
       if (region && !isEmpty(region)) {
         const filteredSections = sections.filter(
-          (s) => s.obj.region?.id === region.value
+          (s) => s.obj.region?.id === region.value,
         );
         setFilteredSections([...filteredSections]);
         if (!section) {
           const filteredManagementAreas = managementAreas.filter(
-            (m) => m.obj.region?.id === region.value
+            (m) => m.obj.region?.id === region.value,
           );
           setFilteredManagementAreas([...filteredManagementAreas]);
         }
@@ -233,7 +233,7 @@ export default function ParkSearch({
                       <Select
                         options={protectedAreas}
                         value={protectedAreas.filter(
-                          (e) => e.orcs === protectedArea
+                          (e) => e.orcs === protectedArea,
                         )}
                         onChange={(e) => setProtectedArea(e ? e.orcs : 0)}
                         placeholder="Find a park by name"

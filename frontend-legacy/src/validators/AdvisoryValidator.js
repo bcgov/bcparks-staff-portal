@@ -3,7 +3,7 @@ import { isEmpty } from "../utils/AppUtil";
 
 export function validateOptionalNumber(field) {
   field.setError("");
-  if (field.value === "" || !(/^0$|^[1-9]\d{0,3}$/).test(field.value)) {
+  if (field.value === "" || !/^0$|^[1-9]\d{0,3}$/.test(field.value)) {
     field.setError("Please enter a valid number");
     return false;
   }
@@ -78,38 +78,38 @@ export function validateDate(field) {
 
 export function validateLinks(links, linkErrorsStatus) {
   let isValid = true;
-  const newLinkTypeErrors = [...linkErrorsStatus.linkTypeErrors]
-  const newLinkTitleErrors = [...linkErrorsStatus.linkTitleErrors]
-  const newLinkUrlErrors = [...linkErrorsStatus.linkUrlErrors]
-  const newLinkFileErrors = [...linkErrorsStatus.linkFileErrors]
+  const newLinkTypeErrors = [...linkErrorsStatus.linkTypeErrors];
+  const newLinkTitleErrors = [...linkErrorsStatus.linkTitleErrors];
+  const newLinkUrlErrors = [...linkErrorsStatus.linkUrlErrors];
+  const newLinkFileErrors = [...linkErrorsStatus.linkFileErrors];
 
   links.forEach((link, idx) => {
     if (!link.type) {
-      newLinkTypeErrors[idx] = true
-      isValid = false
+      newLinkTypeErrors[idx] = true;
+      isValid = false;
     } else {
-      newLinkTypeErrors[idx] = false
+      newLinkTypeErrors[idx] = false;
     }
     if (!link.title) {
-      newLinkTitleErrors[idx] = true
-      isValid = false
+      newLinkTitleErrors[idx] = true;
+      isValid = false;
     } else {
-      newLinkTitleErrors[idx] = false
+      newLinkTitleErrors[idx] = false;
     }
     if (!link.url && !link.file) {
-      newLinkUrlErrors[idx] = true
-      newLinkFileErrors[idx] = true
-      isValid = false
+      newLinkUrlErrors[idx] = true;
+      newLinkFileErrors[idx] = true;
+      isValid = false;
     } else {
-      newLinkUrlErrors[idx] = false
-      newLinkFileErrors[idx] = false
+      newLinkUrlErrors[idx] = false;
+      newLinkFileErrors[idx] = false;
     }
-  })
-  linkErrorsStatus.setLinkTypeErrors(newLinkTypeErrors)
-  linkErrorsStatus.setLinkTitleErrors(newLinkTitleErrors)
-  linkErrorsStatus.setLinkUrlErrors(newLinkUrlErrors)
-  linkErrorsStatus.setLinkFileErrors(newLinkFileErrors)
-  return isValid
+  });
+  linkErrorsStatus.setLinkTypeErrors(newLinkTypeErrors);
+  linkErrorsStatus.setLinkTitleErrors(newLinkTitleErrors);
+  linkErrorsStatus.setLinkUrlErrors(newLinkUrlErrors);
+  linkErrorsStatus.setLinkFileErrors(newLinkFileErrors);
+  return isValid;
 }
 
 export function validateLink(link, index, field, setErrors) {
@@ -124,7 +124,7 @@ export function validateLink(link, index, field, setErrors) {
     hasError = true;
   }
 
-  setErrors(prevErrors => {
+  setErrors((prevErrors) => {
     const newErrors = [...prevErrors];
     newErrors[index] = hasError;
     return newErrors;
@@ -132,7 +132,10 @@ export function validateLink(link, index, field, setErrors) {
 }
 export function validateDisplayedDate(field) {
   const obj = field.value;
-  if ((obj.displayedDateOption === "" || obj.displayedDateOption === "posting") && !obj.advisoryDate) {
+  if (
+    (obj.displayedDateOption === "" || obj.displayedDateOption === "posting") &&
+    !obj.advisoryDate
+  ) {
     field.setError("Please choose a date to display");
     return false;
   } else if (obj.displayedDateOption === "start" && !obj.startDate) {
@@ -141,7 +144,10 @@ export function validateDisplayedDate(field) {
   } else if (obj.displayedDateOption === "updated" && !obj.updatedDate) {
     field.setError("Please enter a date for 'Updated date'");
     return false;
-  } else if (obj.displayedDateOption === "event" && (!obj.startDate || !obj.endDate)) {
+  } else if (
+    obj.displayedDateOption === "event" &&
+    (!obj.startDate || !obj.endDate)
+  ) {
     field.setError("Please enter dates for 'Start date' and 'End date'");
     return false;
   } else {
@@ -150,13 +156,23 @@ export function validateDisplayedDate(field) {
   }
 }
 
-export function validAdvisoryData(advisoryData, linksRef, validateStatus, mode, linkErrorsStatus) {
+export function validAdvisoryData(
+  advisoryData,
+  linksRef,
+  validateStatus,
+  mode,
+  linkErrorsStatus,
+) {
   advisoryData.formError("");
-  const validListingRankNumber = validateOptionalNumber(advisoryData.listingRank);
+  const validListingRankNumber = validateOptionalNumber(
+    advisoryData.listingRank,
+  );
   const validHeadline = validateRequiredText(advisoryData.headline);
   const validEventType = validateRequiredSelect(advisoryData.eventType);
   const validUrgency = validateRequiredSelect(advisoryData.urgency);
-  const validAffectedArea = validateRequiredAffectedArea(advisoryData.protectedArea);
+  const validAffectedArea = validateRequiredAffectedArea(
+    advisoryData.protectedArea,
+  );
   const validAdvisoryDate = validateRequiredDate(advisoryData.advisoryDate);
   const validStartDate = validateOptionalDate(advisoryData.startDate);
   const validEndDate = validateOptionalDate(advisoryData.endDate);
@@ -177,24 +193,20 @@ export function validAdvisoryData(advisoryData, linksRef, validateStatus, mode, 
     validLinks;
   if (validateStatus) {
     const validAdvisoryStatus = validateRequiredSelect(
-      advisoryData.advisoryStatus
+      advisoryData.advisoryStatus,
     );
     validData = validData && validAdvisoryStatus;
   }
   if (validateStatus) {
-    const validSubmittedBy = validateRequiredText(
-      advisoryData.submittedBy
-    );
-    validData = validData && validSubmittedBy
+    const validSubmittedBy = validateRequiredText(advisoryData.submittedBy);
+    validData = validData && validSubmittedBy;
   }
   if (mode === "update") {
     const validUpdatedDate = validateOptionalDate(advisoryData.updatedDate);
     validData = validData && validUpdatedDate;
   }
   if (!validData) {
-    advisoryData.formError(
-      "Please complete required fields"
-    );
+    advisoryData.formError("Please complete required fields");
   }
   return validData;
 }

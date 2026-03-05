@@ -28,8 +28,8 @@ export default function AdvisoryLink() {
             `public-advisory-audits?filters[advisoryNumber]=${advisoryNumber}&filters[isLatestRevision]=true`,
             {
               headers: { Authorization: `Bearer ${keycloak.token}` },
-            }
-          )
+            },
+          ),
         )
           .then((res) => {
             history.replace(`/advisory-summary/${res.data.data[0].documentId}`);

@@ -42,7 +42,7 @@ export default function AdvisorySummary({
       if (showOriginalAdvisory) {
         Promise.all([
           cmsAxios.get(
-            `/public-advisories/${advisory.advisoryNumber}?populate=*`
+            `/public-advisories/${advisory.advisoryNumber}?populate=*`,
           ),
           getLinkTypes(cmsData, setCmsData),
         ])

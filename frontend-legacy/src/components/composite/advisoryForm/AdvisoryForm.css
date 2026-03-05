@@ -136,7 +136,7 @@
   margin-right: 16px;
 }
 
-.ad-add-link.add-url{
+.ad-add-link.add-url {
   margin-left: 16px;
 }
 
@@ -146,7 +146,8 @@
   background-color: white !important;
 }
 
-.clear-url-btn:hover, .clear-url-btn:active {
+.clear-url-btn:hover,
+.clear-url-btn:active {
   background-color: white !important;
 }
 

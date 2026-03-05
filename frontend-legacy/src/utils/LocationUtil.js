@@ -5,7 +5,7 @@ export function addProtectedAreasFromArea(
   selSites,
   sites,
   areaList,
-  protectedAreaList
+  protectedAreaList,
 ) {
   if (!protectedAreaList) {
     protectedAreaList = [];
@@ -19,7 +19,7 @@ export function addProtectedAreasFromArea(
       sites,
       selProtectedAreas,
       selSites,
-      protectedAreaList
+      protectedAreaList,
     );
   });
   return protectedAreaList;
@@ -30,7 +30,7 @@ export function addProtectedAreas(
   sites,
   selProtectedAreas,
   selSites,
-  protectedAreaList
+  protectedAreaList,
 ) {
   if (!protectedAreaList) {
     protectedAreaList = [];

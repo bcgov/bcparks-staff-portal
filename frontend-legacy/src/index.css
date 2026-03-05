@@ -12,7 +12,7 @@
 
 body {
   margin: 0;
-  font-family: 'BC Sans', 'Noto sans', Verdana, Arial, sans-serif;
+  font-family: "BC Sans", "Noto sans", Verdana, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -25,7 +25,10 @@ main {
   color: var(--color-grey) !important;
 }
 
-h1, h2, h3, h4 {
+h1,
+h2,
+h3,
+h4 {
   color: var(--color-blue) !important;
 }
 

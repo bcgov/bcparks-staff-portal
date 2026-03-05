@@ -45,12 +45,12 @@
   color: #234075 !important;
 }
 
-
 .btn {
   border-radius: 5px !important;
 }
 
-.btn:focus, .btn:focus-visible {
+.btn:focus,
+.btn:focus-visible {
   box-shadow: none !important;
 }
 
@@ -78,7 +78,7 @@
 }
 
 .btn-urgency-1,
-.btn-safety-selected  {
+.btn-safety-selected {
   color: white !important;
   background-color: var(--color-med-blue) !important;
 }
@@ -203,7 +203,7 @@
 }
 
 .react-datepicker-wrapper + .MuiSvgIcon-root,
-.react-datepicker__tab-loop  + .MuiSvgIcon-root {
+.react-datepicker__tab-loop + .MuiSvgIcon-root {
   position: absolute;
   top: 8px;
   right: 16px;
@@ -315,7 +315,7 @@
 .MuiTableCell-root,
 .MuiInputBase-root,
 .MuiTypography-root {
-  font-family: 'BC Sans', 'Noto sans', Verdana, Arial, sans-serif !important;
+  font-family: "BC Sans", "Noto sans", Verdana, Arial, sans-serif !important;
 }
 
 .MuiInput-underline:before,
