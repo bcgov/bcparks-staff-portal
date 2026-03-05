@@ -29,8 +29,8 @@ export default (sequelize) => {
       notes: {
         type: DataTypes.STRING(2000),
         validate: {
-          len: [0, 2000]
-        }
+          len: [0, 2000],
+        },
       },
       statusOldValue: DataTypes.STRING,
       statusNewValue: DataTypes.STRING,

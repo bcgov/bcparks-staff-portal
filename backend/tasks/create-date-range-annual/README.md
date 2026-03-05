@@ -5,14 +5,12 @@ This script creates and updates `DateRangeAnnual` entries in the database based 
 ## What does the script do?
 
 1. **Creates or updates `DateRangeAnnual` entries for all valid date ranges:**
-
    - For each `Publishable`, it finds all related `Season` records.
    - For each `Season`, it finds all associated `DateRange` records (and their `DateType`).
    - For each `DateRange`, it creates or updates a `DateRangeAnnual` entry for the combination of `publishableId`, `dateTypeId`, and `dateableId`, **unless** the `DateType` name is `"Tier 1"` or `"Tier 2"`.
    - If an entry already exists, it updates the `dateableId` if it has changed.
 
 2. **Creates or updates `DateRangeAnnual` entries for all Parks with a `publishableId` and the `"Park gate open"` date type:**
-
    - For each `Park` with a non-null `publishableId`, it finds the corresponding Strapi `park-operation` by matching the `orcs` code.
    - It finds the correct `dateableId` for the park's `"Park gate open"` date range.
    - It uses the `isDateRangeAnnual` value from Strapi `park-operation` data and sets it on the `DateRangeAnnual` entry for that park, `dateTypeId`, and `dateableId`.
@@ -38,7 +36,6 @@ To **clean** all `DateRangeAnnual` records (delete all):
 ```sh
 node tasks/create-date-range-annual/clean-all-date-range-annuals.js
 ```
-
 
 ## Output
 

@@ -5,16 +5,13 @@ This script populates the `Season` and `DateRange` tables in your database based
 ## What does the script do?
 
 1. **For each Park with a `publishableId`:**
-
    - Finds all entries in `previous-dates.json` where `orcs` matches the Park's `orcs`.
 
 2. **For each `operatingYear` in the matching data:**
-
    - Creates (or finds) a `Season` entry with the Park's `publishableId` and the given `operatingYear`.
    - Updates the Season's `status` to `"published"`, sets `readyToPublish` to `true`, and `seasonType` to `"regular"`.
 
 3. **For each Season:**
-
    - Finds the correct `DateType` by `name` and `parkLevel: true`.
    - Creates (or finds) a `DateRange` entry with:
      - `seasonId` set to the Season's ID,
