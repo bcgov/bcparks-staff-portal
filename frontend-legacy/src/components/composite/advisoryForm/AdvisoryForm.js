@@ -10,7 +10,7 @@ import {
   FormHelperText,
   Button as Btn,
   Typography,
-  IconButton
+  IconButton,
 } from "@material-ui/core";
 import Select from "react-select";
 import WarningIcon from "@material-ui/icons/Warning";
@@ -25,10 +25,10 @@ import {
   validateOptionalDate,
   validAdvisoryData,
   validateLink,
-  validateDisplayedDate
+  validateDisplayedDate,
 } from "../../../validators/AdvisoryValidator";
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 import PrivateElement from "../../../auth/PrivateElement";
 import LightTooltip from "../../shared/tooltip/LightTooltip";
@@ -136,16 +136,31 @@ export default function AdvisoryForm({
   const [updatedDateError, setUpdatedDateError] = useState("");
   const [submittedByError, setSubmittedByError] = useState("");
   const [listingRankError, setListingRankError] = useState("");
-  const [linkTypeErrors, setLinkTypeErrors] = useState(new Array(linksRef.current.length).fill(false));
-  const [linkTitleErrors, setLinkTitleErrors] = useState(new Array(linksRef.current.length).fill(false));
-  const [linkUrlErrors, setLinkUrlErrors] = useState(new Array(linksRef.current.length).fill(false));
-  const [linkFileErrors, setLinkFileErrors] = useState(new Array(linksRef.current.length).fill(false));
-  const [hasFileDeleted, setHasFileDeleted] = useState(new Array(linksRef.current.length).fill(false));
+  const [linkTypeErrors, setLinkTypeErrors] = useState(
+    new Array(linksRef.current.length).fill(false),
+  );
+  const [linkTitleErrors, setLinkTitleErrors] = useState(
+    new Array(linksRef.current.length).fill(false),
+  );
+  const [linkUrlErrors, setLinkUrlErrors] = useState(
+    new Array(linksRef.current.length).fill(false),
+  );
+  const [linkFileErrors, setLinkFileErrors] = useState(
+    new Array(linksRef.current.length).fill(false),
+  );
+  const [hasFileDeleted, setHasFileDeleted] = useState(
+    new Array(linksRef.current.length).fill(false),
+  );
   const [displayedDateError, setDisplayedDateError] = useState("");
-  const [selectedDisplayedDateOption, setSelectedDisplayedDateOption] = useState("");
+  const [selectedDisplayedDateOption, setSelectedDisplayedDateOption] =
+    useState("");
 
   const advisoryData = {
-    listingRank: { value: listingRank, setError: setListingRankError, text: "listing rank" },
+    listingRank: {
+      value: listingRank,
+      setError: setListingRankError,
+      text: "listing rank",
+    },
     headline: { value: headline, setError: setHeadlineError, text: "headline" },
     eventType: {
       value: eventType,
@@ -243,7 +258,7 @@ export default function AdvisoryForm({
     ...(mode === "update" ? [{ label: "Updated date", value: "updated" }] : []),
     { label: "Start date", value: "start" },
     { label: "Event date range", value: "event" },
-    { label: "No date", value: "no" }
+    { label: "No date", value: "no" },
   ];
 
   const POSTING_DATE = 0;
@@ -253,70 +268,93 @@ export default function AdvisoryForm({
   const NO_DATE = 4;
 
   const getDisplayedDate = () => {
-    if (!displayStartDate && !displayEndDate && !displayAdvisoryDate && !displayUpdatedDate) {
+    if (
+      !displayStartDate &&
+      !displayEndDate &&
+      !displayAdvisoryDate &&
+      !displayUpdatedDate
+    ) {
       return displayedDateOptions[NO_DATE];
-    } else if (!displayStartDate && !displayEndDate && displayAdvisoryDate && !displayUpdatedDate) {
+    } else if (
+      !displayStartDate &&
+      !displayEndDate &&
+      displayAdvisoryDate &&
+      !displayUpdatedDate
+    ) {
       return displayedDateOptions[POSTING_DATE];
-    } else if (!displayStartDate && !displayEndDate && !displayAdvisoryDate && displayUpdatedDate) {
+    } else if (
+      !displayStartDate &&
+      !displayEndDate &&
+      !displayAdvisoryDate &&
+      displayUpdatedDate
+    ) {
       return displayedDateOptions[UPDATED_DATE];
-    } else if (displayStartDate && !displayEndDate && !displayAdvisoryDate && !displayUpdatedDate) {
+    } else if (
+      displayStartDate &&
+      !displayEndDate &&
+      !displayAdvisoryDate &&
+      !displayUpdatedDate
+    ) {
       return displayedDateOptions[START_DATE];
-    } else if (displayStartDate && displayEndDate && !displayAdvisoryDate && !displayUpdatedDate) {
+    } else if (
+      displayStartDate &&
+      displayEndDate &&
+      !displayAdvisoryDate &&
+      !displayUpdatedDate
+    ) {
       return displayedDateOptions[EVENT_DATE_RANGE];
     }
   };
 
   // Check if the URL format is a file
   const isFile = (url) => {
-    const fileExtensions = ['.jpg', '.jpeg', '.gif', '.png', '.pdf'];
+    const fileExtensions = [".jpg", ".jpeg", ".gif", ".png", ".pdf"];
     for (const extension of fileExtensions) {
       if (url.endsWith(extension)) {
         return true;
       }
     }
     return false;
-  }
+  };
 
   useEffect(() => {
     if (selectedDisplayedDateOption === "posting") {
-      setDisplayAdvisoryDate(true)
-      setDisplayUpdatedDate(false)
-      setDisplayStartDate(false)
-      setDisplayEndDate(false)
+      setDisplayAdvisoryDate(true);
+      setDisplayUpdatedDate(false);
+      setDisplayStartDate(false);
+      setDisplayEndDate(false);
     }
     if (selectedDisplayedDateOption === "updated") {
-      setDisplayAdvisoryDate(false)
-      setDisplayUpdatedDate(true)
-      setDisplayStartDate(false)
-      setDisplayEndDate(false)
+      setDisplayAdvisoryDate(false);
+      setDisplayUpdatedDate(true);
+      setDisplayStartDate(false);
+      setDisplayEndDate(false);
     }
     if (selectedDisplayedDateOption === "start") {
-      setDisplayAdvisoryDate(false)
-      setDisplayUpdatedDate(false)
-      setDisplayStartDate(true)
-      setDisplayEndDate(false)
+      setDisplayAdvisoryDate(false);
+      setDisplayUpdatedDate(false);
+      setDisplayStartDate(true);
+      setDisplayEndDate(false);
     }
     if (selectedDisplayedDateOption === "event") {
-      setDisplayAdvisoryDate(false)
-      setDisplayUpdatedDate(false)
-      setDisplayStartDate(true)
-      setDisplayEndDate(true)
+      setDisplayAdvisoryDate(false);
+      setDisplayUpdatedDate(false);
+      setDisplayStartDate(true);
+      setDisplayEndDate(true);
     }
     if (selectedDisplayedDateOption === "no") {
-      setDisplayAdvisoryDate(false)
-      setDisplayUpdatedDate(false)
-      setDisplayStartDate(false)
-      setDisplayEndDate(false)
+      setDisplayAdvisoryDate(false);
+      setDisplayUpdatedDate(false);
+      setDisplayStartDate(false);
+      setDisplayEndDate(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDisplayedDateOption])
+  }, [selectedDisplayedDateOption]);
 
   return (
     <form className="mt-5">
       <div className="container-fluid ad-form">
-        <div className="row heading">
-          Affected area
-        </div>
+        <div className="row heading">Affected area</div>
         <AdvisoryAreaPicker
           data={{
             protectedAreas,
@@ -344,12 +382,10 @@ export default function AdvisoryForm({
             selectedNaturalResourceDistricts,
             setSelectedNaturalResourceDistricts,
             advisoryData,
-            protectedAreaError
+            protectedAreaError,
           }}
         />
-        <div className="row heading">
-          Advisory content
-        </div>
+        <div className="row heading">Advisory content</div>
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
             Headline
@@ -386,8 +422,9 @@ export default function AdvisoryForm({
           <div className="col-lg-7 col-md-8 col-sm-12">
             <FormControl
               variant="outlined"
-              className={`bcgov-select-form ${eventTypeError !== "" ? "bcgov-select-error" : ""
-                }`}
+              className={`bcgov-select-form ${
+                eventTypeError !== "" ? "bcgov-select-error" : ""
+              }`}
               error
             >
               <Select
@@ -429,27 +466,36 @@ export default function AdvisoryForm({
                     onClick={() => {
                       setUrgency(u.value);
                     }}
-                    className={urgency === u.value && `btn-urgency-${u.sequence}`}
-                    style={{ textTransform: 'none' }}
+                    className={
+                      urgency === u.value && `btn-urgency-${u.sequence}`
+                    }
+                    style={{ textTransform: "none" }}
                   >
                     {urgency === u.value && <CheckIcon />}
                     {u.label}
                   </Btn>
                 ))}
               </ButtonGroup>
-              {urgencies.map((u) => (urgency === u.value && (
-                <div key={u.value} className="urgency-helper-text mt-1">
-                  {u.sequence === 1 && (
-                    <small>Low urgency for discretion and warnings</small>
-                  )}
-                  {u.sequence === 2 && (
-                    <small>Medium urgency for safety and health related</small>
-                  )}
-                  {u.sequence === 3 && (
-                    <small>High urgency for immediate danger and closures</small>
-                  )}
-                </div>
-              )))}
+              {urgencies.map(
+                (u) =>
+                  urgency === u.value && (
+                    <div key={u.value} className="urgency-helper-text mt-1">
+                      {u.sequence === 1 && (
+                        <small>Low urgency for discretion and warnings</small>
+                      )}
+                      {u.sequence === 2 && (
+                        <small>
+                          Medium urgency for safety and health related
+                        </small>
+                      )}
+                      {u.sequence === 3 && (
+                        <small>
+                          High urgency for immediate danger and closures
+                        </small>
+                      )}
+                    </div>
+                  ),
+              )}
               <FormHelperText>{urgencyError}</FormHelperText>
             </FormControl>
           </div>
@@ -571,8 +617,9 @@ export default function AdvisoryForm({
                   component="div"
                   className="standard-message"
                   dangerouslySetInnerHTML={{
-                    __html: message.obj.description || ""
-                  }} />
+                    __html: message.obj.description || "",
+                  }}
+                />
               ))}
             </div>
           </div>
@@ -591,8 +638,9 @@ export default function AdvisoryForm({
                   <div className="col-12 col-lg-9 col-md-10 d-flex">
                     <FormControl
                       variant="outlined"
-                      className={`bcgov-select-form ${linkTypeErrors[idx] ?
-                        "bcgov-select-error" : ""}`}
+                      className={`bcgov-select-form ${
+                        linkTypeErrors[idx] ? "bcgov-select-error" : ""
+                      }`}
                       error
                     >
                       <Select
@@ -603,7 +651,9 @@ export default function AdvisoryForm({
                         value={linkTypes.filter((o) => o.value === l.type)}
                         className="ad-link-select bcgov-select"
                         placeholder="Link or document type"
-                        onBlur={() => validateLink(l, idx, "type", setLinkTypeErrors)}
+                        onBlur={() =>
+                          validateLink(l, idx, "type", setLinkTypeErrors)
+                        }
                       />
                       <FormHelperText>
                         {linkTypeErrors[idx] && "Please provide a link type"}
@@ -640,12 +690,16 @@ export default function AdvisoryForm({
                       inputProps={{ maxLength: 255 }}
                       InputProps={{ ...linkTitleInput }}
                       error={linkTitleErrors[idx]}
-                      helperText={linkTitleErrors[idx] && "Please provide a link title"}
-                      onBlur={() => validateLink(l, idx, "title", setLinkTitleErrors)}
+                      helperText={
+                        linkTitleErrors[idx] && "Please provide a link title"
+                      }
+                      onBlur={() =>
+                        validateLink(l, idx, "title", setLinkTitleErrors)
+                      }
                     />
                   </div>
                 </div>
-                {(l.format !== "file" && !hasFileDeleted[idx]) ? (
+                {l.format !== "file" && !hasFileDeleted[idx] ? (
                   <div className="row">
                     <div className="col-12 col-lg-3 col-md-2 ad-label bcgov-required">
                       URL
@@ -659,18 +713,23 @@ export default function AdvisoryForm({
                         className="bcgov-input"
                         variant="outlined"
                         error={linkUrlErrors[idx]}
-                        helperText={linkUrlErrors[idx] && "Please provide a URL"}
-                        onBlur={() => validateLink(l, idx, "url", setLinkUrlErrors)}
+                        helperText={
+                          linkUrlErrors[idx] && "Please provide a URL"
+                        }
+                        onBlur={() =>
+                          validateLink(l, idx, "url", setLinkUrlErrors)
+                        }
                         inputProps={{ maxLength: 255 }}
                         InputProps={{
                           ...linkUrlInput,
                           endAdornment: (
                             <IconButton
                               onClick={() => {
-                                isFile(l.url) && setHasFileDeleted(prev => {
-                                  hasFileDeleted[idx] = true;
-                                  return [...prev];
-                                });
+                                isFile(l.url) &&
+                                  setHasFileDeleted((prev) => {
+                                    hasFileDeleted[idx] = true;
+                                    return [...prev];
+                                  });
                                 updateLink(idx, "url", "");
                               }}
                               className="clear-url-btn"
@@ -698,14 +757,19 @@ export default function AdvisoryForm({
                               <IconButton
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  updateLink(idx, "file", "")
-                                  validateLink(l, idx, "file", setLinkFileErrors)
+                                  updateLink(idx, "file", "");
+                                  validateLink(
+                                    l,
+                                    idx,
+                                    "file",
+                                    setLinkFileErrors,
+                                  );
                                 }}
                                 className="clear-url-btn"
                               >
                                 <CloseIcon />
                               </IconButton>
-                            )
+                            ),
                           }}
                         />
                       ) : (
@@ -716,9 +780,7 @@ export default function AdvisoryForm({
                             type="file"
                             accept=".jpg,.gif,.png,.gif,.pdf"
                             onChange={(e) => {
-                              handleFileCapture(
-                                e.target.files, idx
-                              );
+                              handleFileCapture(e.target.files, idx);
                             }}
                           />
                           <label htmlFor="file-upload" className="mb-0">
@@ -726,15 +788,15 @@ export default function AdvisoryForm({
                               variant="outlined"
                               component="span"
                               className="ad-add-link add-file"
-                              style={{ textTransform: 'none' }}
+                              style={{ textTransform: "none" }}
                             >
                               Browse
                             </Btn>
-                            {linkFileErrors[idx] &&
+                            {linkFileErrors[idx] && (
                               <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error d-block">
                                 Please upload file too
                               </span>
-                            }
+                            )}
                           </label>
                         </>
                       )}
@@ -751,7 +813,7 @@ export default function AdvisoryForm({
               onChange={(e) => {
                 handleFileCapture(
                   e.target.files,
-                  linksRef.current.length > 0 ? linksRef.current.length - 1 : 0
+                  linksRef.current.length > 0 ? linksRef.current.length - 1 : 0,
                 );
               }}
             />
@@ -760,7 +822,7 @@ export default function AdvisoryForm({
                 variant="outlined"
                 component="span"
                 className="ad-add-link add-file"
-                style={{ textTransform: 'none' }}
+                style={{ textTransform: "none" }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     addLink("file");
@@ -777,7 +839,7 @@ export default function AdvisoryForm({
             <Btn
               variant="outlined"
               className="ad-add-link add-url"
-              style={{ textTransform: 'none' }}
+              style={{ textTransform: "none" }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   addLink("url");
@@ -805,7 +867,9 @@ export default function AdvisoryForm({
                   <DatePicker
                     id="startDate"
                     selected={startDate}
-                    onChange={(date) => { setStartDate(date) }}
+                    onChange={(date) => {
+                      setStartDate(date);
+                    }}
                     dateFormat="MMMM d, yyyy"
                     maxDate={endDate}
                     className={`${startDateError !== "" ? "error" : ""}`}
@@ -818,9 +882,7 @@ export default function AdvisoryForm({
                     month dd, yyyy
                   </span>
                 </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">
-                  Time
-                </div>
+                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
                   <DatePicker
                     selected={startDate}
@@ -852,7 +914,9 @@ export default function AdvisoryForm({
                   <DatePicker
                     id="endDate"
                     selected={endDate}
-                    onChange={(date) => { setEndDate(date) }}
+                    onChange={(date) => {
+                      setEndDate(date);
+                    }}
                     dateFormat="MMMM d, yyyy"
                     minDate={startDate}
                     className={`${endDateError !== "" ? "error" : ""}`}
@@ -864,18 +928,16 @@ export default function AdvisoryForm({
                   <span className="MuiFormHelperText-root MuiFormHelperText-contained">
                     month dd, yyyy
                   </span>
-                  {endDateError !== "" &&
+                  {endDateError !== "" && (
                     <>
                       <br />
                       <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">
                         End date should not be before Posting date
                       </span>
                     </>
-                  }
+                  )}
                 </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">
-                  Time
-                </div>
+                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
                   <DatePicker
                     selected={endDate}
@@ -902,8 +964,9 @@ export default function AdvisoryForm({
           <div className="col-lg-7 col-md-8 col-sm-12">
             <FormControl
               variant="outlined"
-              className={`bcgov-select-form ${displayedDateError !== "" ?
-                "bcgov-select-error" : ""}`}
+              className={`bcgov-select-form ${
+                displayedDateError !== "" ? "bcgov-select-error" : ""
+              }`}
               error
             >
               <Select
@@ -917,15 +980,11 @@ export default function AdvisoryForm({
                   validateDisplayedDate(advisoryData.displayedDate);
                 }}
               />
-              <FormHelperText>
-                {displayedDateError}
-              </FormHelperText>
+              <FormHelperText>{displayedDateError}</FormHelperText>
             </FormControl>
           </div>
         </div>
-        <div className="row heading">
-          Internal details
-        </div>
+        <div className="row heading">Internal details</div>
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label pt-4">
             Post dates
@@ -940,7 +999,9 @@ export default function AdvisoryForm({
                   <DatePicker
                     id="advisoryDate"
                     selected={advisoryDate}
-                    onChange={(date) => { handleAdvisoryDateChange(date) }}
+                    onChange={(date) => {
+                      handleAdvisoryDateChange(date);
+                    }}
                     dateFormat="MMMM d, yyyy"
                     maxDate={expiryDate}
                     className={`${advisoryDateError !== "" ? "error" : ""}`}
@@ -952,18 +1013,16 @@ export default function AdvisoryForm({
                   <span className="MuiFormHelperText-root MuiFormHelperText-contained">
                     month dd, yyyy
                   </span>
-                  {advisoryDateError !== "" &&
+                  {advisoryDateError !== "" && (
                     <>
                       <br />
                       <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">
                         Please enter valid date
                       </span>
                     </>
-                  }
+                  )}
                 </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">
-                  Time
-                </div>
+                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
                   <DatePicker
                     selected={advisoryDate}
@@ -994,7 +1053,9 @@ export default function AdvisoryForm({
                   <DatePicker
                     id="expiryDate"
                     selected={expiryDate}
-                    onChange={(date) => { setExpiryDate(date) }}
+                    onChange={(date) => {
+                      setExpiryDate(date);
+                    }}
                     dateFormat="MMMM d, yyyy"
                     minDate={advisoryDate}
                     className={`${expiryDateError !== "" ? "error" : ""}`}
@@ -1005,22 +1066,22 @@ export default function AdvisoryForm({
                   <span className="MuiFormHelperText-root MuiFormHelperText-contained">
                     month dd, yyyy
                   </span>
-                  {expiryDateError !== "" &&
+                  {expiryDateError !== "" && (
                     <>
                       <br />
                       <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">
                         Expiry date should not be before Posting date
                       </span>
                     </>
-                  }
+                  )}
                 </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">
-                  Time
-                </div>
+                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
                   <DatePicker
                     selected={expiryDate}
-                    onChange={(date) => { setExpiryDate(date) }}
+                    onChange={(date) => {
+                      setExpiryDate(date);
+                    }}
                     showTimeSelect
                     showTimeSelectOnly
                     timeIntervals={15}
@@ -1042,7 +1103,9 @@ export default function AdvisoryForm({
                     <DatePicker
                       id="updatedDate"
                       selected={updatedDate}
-                      onChange={(date) => { setUpdatedDate(date) }}
+                      onChange={(date) => {
+                        setUpdatedDate(date);
+                      }}
                       dateFormat="MMMM d, yyyy"
                       minDate={advisoryDate}
                       className={`${updatedDateError !== "" ? "error" : ""}`}
@@ -1055,13 +1118,13 @@ export default function AdvisoryForm({
                       month dd, yyyy
                     </span>
                   </div>
-                  <div className="col-12 col-lg-1 col-md-4 ad-label">
-                    Time
-                  </div>
+                  <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                   <div className="col-12 col-lg-3 col-md-8">
                     <DatePicker
                       selected={updatedDate}
-                      onChange={(date) => { setUpdatedDate(date) }}
+                      onChange={(date) => {
+                        setUpdatedDate(date);
+                      }}
                       showTimeSelect
                       showTimeSelectOnly
                       timeIntervals={15}
@@ -1087,14 +1150,15 @@ export default function AdvisoryForm({
               <div className="col-lg-7 col-md-8 col-sm-12">
                 <FormControl
                   variant="outlined"
-                  className={`bcgov-select-form ${advisoryStatusError !== "" ? "bcgov-select-error" : ""
-                    }`}
+                  className={`bcgov-select-form ${
+                    advisoryStatusError !== "" ? "bcgov-select-error" : ""
+                  }`}
                   error
                 >
                   <Select
                     options={advisoryStatuses}
                     value={advisoryStatuses.filter(
-                      (a) => a.value === advisoryStatus
+                      (a) => a.value === advisoryStatus,
                     )}
                     onChange={(e) => setAdvisoryStatus(e ? e.value : 0)}
                     placeholder="Select an advisory status"
@@ -1145,14 +1209,14 @@ export default function AdvisoryForm({
               <Btn
                 onClick={() => setIsSafetyRelated(true)}
                 className={isSafetyRelated === true && `btn-safety-selected`}
-                style={{ textTransform: 'none' }}
+                style={{ textTransform: "none" }}
               >
                 {isSafetyRelated && <CheckIcon />} Yes
               </Btn>
               <Btn
                 onClick={() => setIsSafetyRelated(false)}
                 className={isSafetyRelated === false && `btn-safety-selected`}
-                style={{ textTransform: 'none' }}
+                style={{ textTransform: "none" }}
               >
                 {!isSafetyRelated && <CheckIcon />} No
               </Btn>
@@ -1178,15 +1242,16 @@ export default function AdvisoryForm({
         {!PrivateElement(["approver"]) && (isStatHoliday || isAfterHours) && (
           <div className="ad-af-hour-box">
             <div className="row">
-              <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              </div>
+              <div className="col-lg-3 col-md-4 col-sm-12 ad-label"></div>
               <div className="col-lg-7 col-md-8 col-sm-12">
                 <div className="d-flex field-bg-blue">
                   <WarningIcon className="warningIcon" />
                   <div className="ms-3">
                     <p>
-                      <b>This is an after-hours advisory</b><br />
-                      The web team's business hours are<br />
+                      <b>This is an after-hours advisory</b>
+                      <br />
+                      The web team's business hours are
+                      <br />
                       Monday to Friday, 8:30 am – 4:30 pm.
                     </p>
                     <div className="d-flex mt-3">
@@ -1200,7 +1265,12 @@ export default function AdvisoryForm({
                         inputProps={{ "aria-label": "Publish immediately" }}
                         className="me-2"
                       />
-                      <p><b className="required">Urgent/safety-related advisory.</b> Publish immediately.</p>
+                      <p>
+                        <b className="required">
+                          Urgent/safety-related advisory.
+                        </b>{" "}
+                        Publish immediately.
+                      </p>
                     </div>
                     <div className="d-flex mt-3">
                       <Radio
@@ -1215,7 +1285,10 @@ export default function AdvisoryForm({
                         }}
                         className="me-2"
                       />
-                      <p><b>Advisory is not urgent.</b> Submit for web team review.</p>
+                      <p>
+                        <b>Advisory is not urgent.</b> Submit for web team
+                        review.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -1239,10 +1312,22 @@ export default function AdvisoryForm({
                 {mode === "create" && (
                   <>
                     <Button
-                      label={(isStatHoliday || isAfterHours) ? "Submit" : "Submit for approval"}
+                      label={
+                        isStatHoliday || isAfterHours
+                          ? "Submit"
+                          : "Submit for approval"
+                      }
                       styling="bcgov-normal-blue btn"
                       onClick={() => {
-                        if (validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)) {
+                        if (
+                          validAdvisoryData(
+                            advisoryData,
+                            linksRef,
+                            false,
+                            mode,
+                            linkErrorsStatus,
+                          )
+                        ) {
                           saveAdvisory("submit");
                         }
                       }}
@@ -1252,7 +1337,15 @@ export default function AdvisoryForm({
                       label="Save draft"
                       styling="bcgov-normal-white btn"
                       onClick={() => {
-                        if (validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)) {
+                        if (
+                          validAdvisoryData(
+                            advisoryData,
+                            linksRef,
+                            false,
+                            mode,
+                            linkErrorsStatus,
+                          )
+                        ) {
                           saveAdvisory("draft");
                         }
                       }}
@@ -1263,10 +1356,22 @@ export default function AdvisoryForm({
                 {mode === "update" && (
                   <>
                     <Button
-                      label={(isStatHoliday || isAfterHours) ? "Submit" : "Submit for approval"}
+                      label={
+                        isStatHoliday || isAfterHours
+                          ? "Submit"
+                          : "Submit for approval"
+                      }
                       styling="bcgov-normal-blue btn"
                       onClick={() => {
-                        if (validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)) {
+                        if (
+                          validAdvisoryData(
+                            advisoryData,
+                            linksRef,
+                            false,
+                            mode,
+                            linkErrorsStatus,
+                          )
+                        ) {
                           updateAdvisory("submit");
                         }
                       }}
@@ -1276,7 +1381,15 @@ export default function AdvisoryForm({
                       label="Save draft"
                       styling="bcgov-normal-white btn"
                       onClick={() => {
-                        if (validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)) {
+                        if (
+                          validAdvisoryData(
+                            advisoryData,
+                            linksRef,
+                            false,
+                            mode,
+                            linkErrorsStatus,
+                          )
+                        ) {
                           updateAdvisory("draft");
                         }
                       }}
@@ -1293,7 +1406,15 @@ export default function AdvisoryForm({
                     label="Create advisory"
                     styling="bcgov-normal-blue btn"
                     onClick={() => {
-                      if (validAdvisoryData(advisoryData, linksRef, true, mode, linkErrorsStatus)) {
+                      if (
+                        validAdvisoryData(
+                          advisoryData,
+                          linksRef,
+                          true,
+                          mode,
+                          linkErrorsStatus,
+                        )
+                      ) {
                         saveAdvisory();
                       }
                     }}
@@ -1305,7 +1426,15 @@ export default function AdvisoryForm({
                     label="Update advisory"
                     styling="bcgov-normal-blue btn"
                     onClick={() => {
-                      if (validAdvisoryData(advisoryData, linksRef, true, mode, linkErrorsStatus)) {
+                      if (
+                        validAdvisoryData(
+                          advisoryData,
+                          linksRef,
+                          true,
+                          mode,
+                          linkErrorsStatus,
+                        )
+                      ) {
                         updateAdvisory();
                       }
                     }}

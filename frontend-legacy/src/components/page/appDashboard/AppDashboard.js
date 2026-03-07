@@ -18,7 +18,11 @@ export default function AppDashboard({
   const [tabIndex, setTabIndex] = useState(0);
   const [tabOrientation, setTabOrientation] = useState("vertical");
   const history = useHistory();
-  const tabUrls = ["/dashboard", "/park-access-status", "/activities-and-facilities"];
+  const tabUrls = [
+    "/dashboard",
+    "/park-access-status",
+    "/activities-and-facilities",
+  ];
 
   useEffect(() => {
     const path = window.location.pathname;
@@ -32,23 +36,23 @@ export default function AppDashboard({
     } else {
       setTabOrientation("horizontal");
     }
-    // eslint-disable-next-line 
+    // eslint-disable-next-line
   }, [setTabIndex, setTabOrientation]);
 
   const handleTabChange = (event, val) => {
     setTabIndex(val);
     switch (val) {
       case 0:
-        history.push('/advisories');
+        history.push("/advisories");
         break;
       case 1:
-        history.push('/park-access-status');
+        history.push("/park-access-status");
         break;
       case 2:
-        history.push('/activities-and-facilities');
+        history.push("/activities-and-facilities");
         break;
       default:
-        history.push('/');
+        history.push("/");
     }
   };
 

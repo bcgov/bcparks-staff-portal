@@ -15,7 +15,7 @@ export default function ParkAccessStatus() {
 
   const fetchParkAccessStatus = async ({ queryKey }) => {
     const response = await cmsAxios.get(
-      `/protected-areas/status?limit=-1&sort=protectedAreaName`
+      `/protected-areas/status?limit=-1&sort=protectedAreaName`,
     );
 
     const data = response.data.map((park) => {
@@ -24,9 +24,10 @@ export default function ParkAccessStatus() {
       park.regionsStr = park.regions.join(", ");
       park.fireCentresStr = park.fireCentres.join(", ");
       park.fireZonesStr = park.fireZones.join(", ");
-      park.naturalResourceDistrictsStr = park.naturalResourceDistricts.join(", ");
+      park.naturalResourceDistrictsStr =
+        park.naturalResourceDistricts.join(", ");
       park.accessStatusEffectiveDate = formatDate(
-        park.accessStatusEffectiveDate
+        park.accessStatusEffectiveDate,
       );
       park.campfireBanEffectiveDate = formatDate(park.campfireBanEffectiveDate);
       return park;
@@ -41,7 +42,7 @@ export default function ParkAccessStatus() {
     fetchParkAccessStatus,
     {
       staleTime: STALE_TIME_MILLISECONDS,
-    }
+    },
   );
 
   const title = "Park Access Status";
@@ -86,7 +87,10 @@ export default function ParkAccessStatus() {
               { title: "Management Area", field: "managementAreasStr" },
               { title: "Fire Centre", field: "fireCentresStr" },
               { title: "Fire Zone", field: "fireZonesStr" },
-              { title: "Natural Resource District", field: "naturalResourceDistrictsStr" },
+              {
+                title: "Natural Resource District",
+                field: "naturalResourceDistrictsStr",
+              },
               { title: "Access Status", field: "accessStatus" },
               {
                 title: "Access Details",

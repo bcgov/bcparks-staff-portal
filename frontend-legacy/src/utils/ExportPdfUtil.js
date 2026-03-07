@@ -26,7 +26,7 @@ export function exportPdf(columns, data, reportTitle, exportFilename) {
           50,
           30,
           150,
-          50
+          50,
         );
         doc.setFontSize(40);
         doc.text(reportTitle, 220, 78);

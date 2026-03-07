@@ -5,7 +5,7 @@ import AppRouter from "./routes/AppRouter";
 import { QueryClient, QueryClientProvider } from "react-query";
 
 const queryClient = new QueryClient();
-const isFirefox = typeof InstallTrigger !== 'undefined';
+const isFirefox = typeof InstallTrigger !== "undefined";
 
 // detect the identity provider (IDP) from the Keycloak token
 function onAuthSuccess(keycloak) {

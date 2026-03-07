@@ -1,16 +1,13 @@
 import moment from "moment";
 import { cmsAxios, axios } from "../axios_config";
-import {
-  addProtectedAreas,
-  addProtectedAreasFromArea,
-} from "./LocationUtil";
+import { addProtectedAreas, addProtectedAreasFromArea } from "./LocationUtil";
 import config from "./config";
 
 export function calculateAfterHours(businessHours) {
   const currentDate = moment().format("YYYY-MM-DD");
   const currentDay = moment().format("dddd");
   const businessStartTime = moment(
-    currentDate + " " + businessHours["startTime"]
+    currentDate + " " + businessHours["startTime"],
   );
   const businessEndTime = moment(currentDate + " " + businessHours["endTime"]);
   const businessHour = moment().isBetween(businessStartTime, businessEndTime);
@@ -41,7 +38,7 @@ function isLatestStatutoryHolidayList(statData) {
 export function getSubmitterAdvisoryFields(
   type,
   advisoryStatuses,
-  setConfirmationText
+  setConfirmationText,
 ) {
   let status = {};
   let published = null;
@@ -80,7 +77,7 @@ export function generateProtectedAreasListForSelectedRelations(
   selectedNaturalResourceDistricts,
   managementAreas,
   fireZones,
-  sites
+  sites,
 ) {
   const selProtectedAreas = [];
   const selRegions = [];
@@ -96,7 +93,7 @@ export function generateProtectedAreasListForSelectedRelations(
     selProtectedAreas,
     selSites,
     sites,
-    managementAreas
+    managementAreas,
   );
   setAreaValues(
     selectedSections,
@@ -104,7 +101,7 @@ export function generateProtectedAreasListForSelectedRelations(
     selProtectedAreas,
     selSites,
     sites,
-    managementAreas
+    managementAreas,
   );
   setAreaValues(
     selectedManagementAreas,
@@ -112,23 +109,16 @@ export function generateProtectedAreasListForSelectedRelations(
     selProtectedAreas,
     selSites,
     sites,
-    null
-  );
-  setAreaValues(
-    selectedSites,
-    selSites,
-    selProtectedAreas,
     null,
-    null,
-    null
   );
+  setAreaValues(selectedSites, selSites, selProtectedAreas, null, null, null);
   setAreaValues(
     selectedFireCentres,
     selFireCentres,
     selProtectedAreas,
     selSites,
     sites,
-    fireZones
+    fireZones,
   );
   setAreaValues(
     selectedFireZones,
@@ -136,7 +126,7 @@ export function generateProtectedAreasListForSelectedRelations(
     selProtectedAreas,
     selSites,
     sites,
-    null
+    null,
   );
   setAreaValues(
     selectedNaturalResourceDistricts,
@@ -144,7 +134,7 @@ export function generateProtectedAreasListForSelectedRelations(
     selProtectedAreas,
     selSites,
     sites,
-    null
+    null,
   );
   return selProtectedAreas;
 }
@@ -155,17 +145,21 @@ const setAreaValues = (
   selProtectedAreas,
   selSites,
   sites,
-  areaList
+  areaList,
 ) => {
   if (areas && areas.length > 0) {
     areas.forEach((a) => {
       selAreas.push(a.value);
-      if (a.type === "managementArea" || a.type === "fireZone" || a.type === "naturalResourceDistrict") {
+      if (
+        a.type === "managementArea" ||
+        a.type === "fireZone" ||
+        a.type === "naturalResourceDistrict"
+      ) {
         addProtectedAreas(
           a.obj.protectedAreas,
           sites,
           selProtectedAreas,
-          selSites
+          selSites,
         );
       } else if (a.type === "site") {
         selProtectedAreas.push(a.obj.protectedArea.documentId);
@@ -176,7 +170,7 @@ const setAreaValues = (
           selProtectedAreas,
           selSites,
           sites,
-          areaList
+          areaList,
         );
       } else if (a.type === "fireCentre") {
         addProtectedAreasFromArea(
@@ -185,7 +179,7 @@ const setAreaValues = (
           selProtectedAreas,
           selSites,
           sites,
-          areaList
+          areaList,
         );
       }
     });
@@ -196,13 +190,13 @@ export function calculateIsStatHoliday(
   setIsStatHoliday,
   cmsData,
   setCmsData,
-  token
+  token,
 ) {
   if (!cmsData.statutoryHolidays) {
     Promise.resolve(
       cmsAxios
         .get(`statutory-holiday`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
           const statData = res.data.data.data;
@@ -230,13 +224,17 @@ export function calculateIsStatHoliday(
               setCmsData(data);
               // Write Statutory Data to CMS cache
               cmsAxios
-                .put(`statutory-holiday`, { "id": 1, "data": { ...res.data } }, {
-                  headers: { Authorization: `Bearer ${token}` }
-                })
+                .put(
+                  `statutory-holiday`,
+                  { id: 1, data: { ...res.data } },
+                  {
+                    headers: { Authorization: `Bearer ${token}` },
+                  },
+                )
                 .catch((error) => {
                   console.log(
                     "error occurred writing statutory holidays to cms",
-                    error
+                    error,
                   );
                 });
             })
@@ -244,10 +242,10 @@ export function calculateIsStatHoliday(
               setIsStatHoliday(false);
               console.log(
                 "error occurred fetching statutory holidays from API",
-                error
+                error,
               );
             });
-        })
+        }),
     );
   } else {
     setIsStatHoliday(calculateStatHoliday(cmsData.statutoryHolidays));

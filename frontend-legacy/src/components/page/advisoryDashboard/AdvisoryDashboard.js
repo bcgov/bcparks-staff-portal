@@ -34,7 +34,7 @@ import {
 
 import {
   getLatestPublicAdvisoryAudits,
-  updatePublicAdvisories
+  updatePublicAdvisories,
 } from "../../../utils/AdvisoryDataUtil";
 
 export default function AdvisoryDashboard({
@@ -74,35 +74,44 @@ export default function AdvisoryDashboard({
   }, [selectedParkId, regionalPublicAdvisories]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Preserve filters
-  const savedFilters = JSON.parse(localStorage.getItem('advisoryFilters'));
+  const savedFilters = JSON.parse(localStorage.getItem("advisoryFilters"));
   const defaultPageFilters = [
-    { filterName: 'region', filterValue: '', type: 'page' },
-    { filterName: 'park', filterValue: '', type: 'page' },
+    { filterName: "region", filterValue: "", type: "page" },
+    { filterName: "park", filterValue: "", type: "page" },
   ];
-  const [filters, setFilters] = useState([...(savedFilters || defaultPageFilters)]);
+  const [filters, setFilters] = useState([
+    ...(savedFilters || defaultPageFilters),
+  ]);
 
-  const archived = sessionStorage.getItem('showArchived') === "true";
+  const archived = sessionStorage.getItem("showArchived") === "true";
   const [showArchived, setShowArchived] = useState(archived);
 
   useEffect(() => {
-    const filters = JSON.parse(localStorage.getItem('advisoryFilters'));
+    const filters = JSON.parse(localStorage.getItem("advisoryFilters"));
     if (filters) {
       setFilters([...filters]);
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('advisoryFilters', JSON.stringify(filters));
-    sessionStorage.setItem('showArchived', showArchived);
+    localStorage.setItem("advisoryFilters", JSON.stringify(filters));
+    sessionStorage.setItem("showArchived", showArchived);
   }, [filters, showArchived]);
 
   const getTableFilterValue = (col) => {
-    return filters.find((obj) => obj.type === 'table' && obj.fieldName === col.field)?.fieldValue || '';
-  }
+    return (
+      filters.find((obj) => obj.type === "table" && obj.fieldName === col.field)
+        ?.fieldValue || ""
+    );
+  };
 
   const getPageFilterValue = (filters, filterName) => {
-    return filters.find((obj) => obj.type === 'page' && obj.filterName === filterName)?.filterValue || 0;
-  }
+    return (
+      filters.find(
+        (obj) => obj.type === "page" && obj.filterName === filterName,
+      )?.filterValue || 0
+    );
+  };
   /*-------------------------------------------------------------------------*/
 
   useEffect(() => {
@@ -111,16 +120,15 @@ export default function AdvisoryDashboard({
     const fetchData = async () => {
       setIsLoading(true);
       if (initialized && keycloak) {
-        const filters = JSON.parse(localStorage.getItem('advisoryFilters'));
-        const archived = sessionStorage.getItem('showArchived') === "true";
+        const filters = JSON.parse(localStorage.getItem("advisoryFilters"));
+        const archived = sessionStorage.getItem("showArchived") === "true";
         setShowArchived(archived);
         const res = await Promise.all([
           getRegions(cmsData, setCmsData),
           getManagementAreas(cmsData, setCmsData),
           getProtectedAreas(cmsData, setCmsData),
-          getLatestPublicAdvisoryAudits(keycloak, archived)
-        ])
-          .catch(() => {
+          getLatestPublicAdvisoryAudits(keycloak, archived),
+        ]).catch(() => {
           setError({
             status: 500,
             message: "Error loading data. Make sure Strapi is running.",
@@ -139,7 +147,10 @@ export default function AdvisoryDashboard({
         const protectedAreasData = res[2];
         const publicAdvisories = res[3]?.data.data;
         // Public Advisories
-        const updatedPublicAdvisories = updatePublicAdvisories(publicAdvisories, managementAreasData);
+        const updatedPublicAdvisories = updatePublicAdvisories(
+          publicAdvisories,
+          managementAreasData,
+        );
 
         if (isMounted) {
           // Published Advisories
@@ -152,58 +163,65 @@ export default function AdvisoryDashboard({
           setOriginalPublicAdvisories(updatedPublicAdvisories);
 
           // Preserve filters
-          let regionId = getPageFilterValue(filters, 'region');
+          let regionId = getPageFilterValue(filters, "region");
           if (regionId) {
-            let region = regionsData.find((r) => (r.id === regionId));
+            let region = regionsData.find((r) => r.id === regionId);
             if (region) {
               setSelectedRegionId(regionId);
-              setSelectedRegion(({ label: region.regionName + " Region", value: region.id }));
+              setSelectedRegion({
+                label: region.regionName + " Region",
+                value: region.id,
+              });
             }
           }
 
-          let parkId = getPageFilterValue(filters, 'park');
+          let parkId = getPageFilterValue(filters, "park");
           if (parkId) {
-            let park = protectedAreasData.find((p) => (p.documentId === parkId));
+            let park = protectedAreasData.find((p) => p.documentId === parkId);
             if (park) {
               setSelectedParkId(parkId);
-              setSelectedPark(({ label: park.protectedAreaName, value: park.documentId }));
+              setSelectedPark({
+                label: park.protectedAreaName,
+                value: park.documentId,
+              });
             }
           }
         }
       }
       setIsLoading(false);
-    }
+    };
     fetchData();
 
     return () => {
       isMounted = false;
-    }
-  }, [
-    initialized,
-    keycloak,
-    cmsData,
-    setCmsData,
-    setError,
-  ]);
+    };
+  }, [initialized, keycloak, cmsData, setCmsData, setError]);
 
   const removeDuplicatesById = (arr) => {
-    return arr.filter((obj, index, self) => index === self.findIndex((o) => o.id === obj.id));
+    return arr.filter(
+      (obj, index, self) => index === self.findIndex((o) => o.id === obj.id),
+    );
   };
 
   const filterAdvisoriesByParkId = (pId) => {
-    const advisories = selectedRegionId ? regionalPublicAdvisories : originalPublicAdvisories;
+    const advisories = selectedRegionId
+      ? regionalPublicAdvisories
+      : originalPublicAdvisories;
 
     if (pId) {
       const filteredPublicAdvsories = [];
-      const currentParkObj = protectedAreas.find(o => o.documentId === pId);
+      const currentParkObj = protectedAreas.find((o) => o.documentId === pId);
       advisories.forEach((obj) => {
-        if (obj.protectedAreas.filter(p => p.documentId === currentParkObj.documentId).length > 0) {
+        if (
+          obj.protectedAreas.filter(
+            (p) => p.documentId === currentParkObj.documentId,
+          ).length > 0
+        ) {
           filteredPublicAdvsories.push(obj);
         }
       });
       setPublicAdvisories([...filteredPublicAdvsories]);
-    }
-    else {
+    } else {
       setPublicAdvisories([...advisories]);
     }
   };
@@ -227,8 +245,10 @@ export default function AdvisoryDashboard({
       const filteredPublicAdvsories = [];
 
       originalPublicAdvisories.forEach((obj) => {
-        obj.protectedAreas.forEach(p => {
-          let idx = filteredProtectedAreas.findIndex(o => o?.orcs === p?.orcs);
+        obj.protectedAreas.forEach((p) => {
+          let idx = filteredProtectedAreas.findIndex(
+            (o) => o?.orcs === p?.orcs,
+          );
           if (idx !== -1) {
             filteredPublicAdvsories.push(obj);
           }
@@ -238,7 +258,9 @@ export default function AdvisoryDashboard({
       setProtectedAreas([...filteredProtectedAreas]);
       setProtectedAreas([...originalProtectedAreas]);
       setPublicAdvisories([...removeDuplicatesById(filteredPublicAdvsories)]);
-      setRegionalPublicAdvisories([...removeDuplicatesById(filteredPublicAdvsories)]);
+      setRegionalPublicAdvisories([
+        ...removeDuplicatesById(filteredPublicAdvsories),
+      ]);
     } else {
       setProtectedAreas([...originalProtectedAreas]);
       setPublicAdvisories([...originalPublicAdvisories]);
@@ -246,18 +268,21 @@ export default function AdvisoryDashboard({
     }
   };
 
-
   const getCurrentPublishedAdvisories = async (cmsData, setCmsData) => {
     const advisoryStatuses = await getAdvisoryStatuses(cmsData, setCmsData);
     const urgencies = await getUrgencies(cmsData, setCmsData);
-    setAdvisoryStatuses(advisoryStatuses)
-    setUrgencies(urgencies)
+    setAdvisoryStatuses(advisoryStatuses);
+    setUrgencies(urgencies);
     if (advisoryStatuses) {
-      const publishedStatus = advisoryStatuses.filter((as) => as.code === "PUB");
+      const publishedStatus = advisoryStatuses.filter(
+        (as) => as.code === "PUB",
+      );
 
       if (publishedStatus?.length > 0) {
         const result = await cmsAxios
-          .get(`/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`)
+          .get(
+            `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
+          )
           .catch(() => {
             setHasErrors(true);
           });
@@ -282,7 +307,7 @@ export default function AdvisoryDashboard({
 
     let res = null;
     try {
-      res = await getLatestPublicAdvisoryAudits(keycloak, showArchived)
+      res = await getLatestPublicAdvisoryAudits(keycloak, showArchived);
     } catch {
       setError({ status: 500, message: "Error loading data" });
       setToError(true);
@@ -290,11 +315,14 @@ export default function AdvisoryDashboard({
     }
 
     const publicAdvisories = res?.data.data;
-    const updatedPublicAdvisories = updatePublicAdvisories(publicAdvisories, cmsData.managementAreas);
+    const updatedPublicAdvisories = updatePublicAdvisories(
+      publicAdvisories,
+      cmsData.managementAreas,
+    );
     setPublicAdvisories(updatedPublicAdvisories);
     setOriginalPublicAdvisories(updatedPublicAdvisories);
     setIsLoading(false);
-  }
+  };
 
   const tableColumns = [
     {
@@ -352,15 +380,20 @@ export default function AdvisoryDashboard({
         lookup[status.advisoryStatus] = status.advisoryStatus;
         return lookup;
       }, {}),
-      customSort: (a, b) => a.archived === b.archived
-        ? a.advisoryStatus.advisoryStatus < b.advisoryStatus.advisoryStatus ? -1 : 1
-        : a.archived < b.archived ? 1 : -1,
+      customSort: (a, b) =>
+        a.archived === b.archived
+          ? a.advisoryStatus.advisoryStatus < b.advisoryStatus.advisoryStatus
+            ? -1
+            : 1
+          : a.archived < b.archived
+            ? 1
+            : -1,
       cellStyle: {
         textAlign: "center",
       },
       render: (rowData) => (
         <div className="advisory-status">
-          {rowData.advisoryStatus && !rowData.archived &&
+          {rowData.advisoryStatus && !rowData.archived && (
             <Tooltip title={rowData.advisoryStatus.advisoryStatus}>
               <span>
                 {publishedAdvisories.includes(rowData.advisoryNumber) && (
@@ -418,7 +451,7 @@ export default function AdvisoryDashboard({
                 )}
               </span>
             </Tooltip>
-          }
+          )}
           {rowData.archived && (
             <Tooltip title="Archived">
               <span>
@@ -459,7 +492,8 @@ export default function AdvisoryDashboard({
     {
       field: "title",
       title: "Headline",
-      customSort: (a, b) => a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1,
+      customSort: (a, b) =>
+        a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1,
       headerStyle: { width: 400 },
       cellStyle: { width: 400 },
       render: (rowData) => {
@@ -550,7 +584,7 @@ export default function AdvisoryDashboard({
     return <Redirect to="/create-advisory" />;
   }
   if (toError || hasErrors) {
-    console.log('toError || hasErrors', toError, hasErrors)
+    console.log("toError || hasErrors", toError, hasErrors);
     return <Redirect push to="/error" />;
   }
 
@@ -576,7 +610,10 @@ export default function AdvisoryDashboard({
           <div className="col-xl-4 col-md-4 col-sm-12">
             <Select
               value={selectedRegion}
-              options={regions.map((r) => ({ label: r.regionName + " Region", value: r.id }))}
+              options={regions.map((r) => ({
+                label: r.regionName + " Region",
+                value: r.id,
+              }))}
               onChange={(e) => {
                 setSelectedRegion(e);
                 setSelectedRegionId(e ? e.value : 0);
@@ -584,11 +621,15 @@ export default function AdvisoryDashboard({
                 setSelectedPark(null);
                 setSelectedParkId(-1); // Do not filter by parkId
 
-                let arr = [...filters.filter((o) => !(o.type === 'page'))];
+                let arr = [...filters.filter((o) => !(o.type === "page"))];
                 setFilters([
                   ...arr,
-                  { type: 'page', filterName: 'region', filterValue: e ? e.value : 0 },
-                  { type: 'page', filterName: 'park', filterValue: 0 }, // Reset park filter
+                  {
+                    type: "page",
+                    filterName: "region",
+                    filterValue: e ? e.value : 0,
+                  },
+                  { type: "page", filterName: "park", filterValue: 0 }, // Reset park filter
                 ]);
               }}
               placeholder="Select a Region..."
@@ -599,13 +640,27 @@ export default function AdvisoryDashboard({
           <div className="col-xl-5 col-md-4 col-sm-12">
             <Select
               value={selectedPark}
-              options={protectedAreas.map((p) => ({ label: p.protectedAreaName, value: p.documentId }))}
+              options={protectedAreas.map((p) => ({
+                label: p.protectedAreaName,
+                value: p.documentId,
+              }))}
               onChange={(e) => {
                 setSelectedPark(e);
                 setSelectedParkId(e ? e.value : 0);
 
-                let arr = [...filters.filter((o) => !(o.type === 'page' && o.filterName === 'park'))];
-                setFilters([...arr, { type: 'page', filterName: 'park', filterValue: e ? e.value : 0 }]);
+                let arr = [
+                  ...filters.filter(
+                    (o) => !(o.type === "page" && o.filterName === "park"),
+                  ),
+                ];
+                setFilters([
+                  ...arr,
+                  {
+                    type: "page",
+                    filterName: "park",
+                    filterValue: e ? e.value : 0,
+                  },
+                ]);
               }}
               placeholder="Select a Park..."
               className="bcgov-select"
@@ -613,33 +668,36 @@ export default function AdvisoryDashboard({
             />
           </div>
           <div className="col-xl-3 col-md-4 col-sm-12">
-            <FormControlLabel className="ms-1" control={
-              <Checkbox
-                checked={showArchived}
-                onChange={(e) => {
-                  let showArchived = e ? e.target.checked : false;
-                  sessionStorage.setItem('showArchived', showArchived);
-                  toggleArchivedAdvisories(showArchived)
-                }}
-                inputProps={{ "aria-label": "archived" }}
-              />
-            } label={
-              <>
-                <small>
-                  Show archived
-                </small>
-                <LightTooltip
-                  arrow
-                  title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this
-                   box to include inactive advisories modified in the past 18 months. Older advisories are available in Strapi.">
-                  <HelpIcon className="helpIcon ms-1" />
-                </LightTooltip>
-              </>
-            } />
+            <FormControlLabel
+              className="ms-1"
+              control={
+                <Checkbox
+                  checked={showArchived}
+                  onChange={(e) => {
+                    let showArchived = e ? e.target.checked : false;
+                    sessionStorage.setItem("showArchived", showArchived);
+                    toggleArchivedAdvisories(showArchived);
+                  }}
+                  inputProps={{ "aria-label": "archived" }}
+                />
+              }
+              label={
+                <>
+                  <small>Show archived</small>
+                  <LightTooltip
+                    arrow
+                    title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this
+                   box to include inactive advisories modified in the past 18 months. Older advisories are available in Strapi."
+                  >
+                    <HelpIcon className="helpIcon ms-1" />
+                  </LightTooltip>
+                </>
+              }
+            />
           </div>
         </div>
       </div>
-      {(
+      {
         <div
           className={styles.AdvisoryDashboard}
           data-testid="AdvisoryDashboard"
@@ -655,17 +713,25 @@ export default function AdvisoryDashboard({
                 pageSizeOptions: [25, 50, publicAdvisories.length],
               }}
               onFilterChange={(filters) => {
-                const advisoryFilters = JSON.parse(localStorage.getItem('advisoryFilters'));
+                const advisoryFilters = JSON.parse(
+                  localStorage.getItem("advisoryFilters"),
+                );
                 const arrFilters = filters.map((obj) => {
                   return {
                     fieldName: obj.column["field"],
                     fieldValue: obj.value,
-                    type: 'table'
+                    type: "table",
                   };
                 });
-                setFilters([...advisoryFilters.filter(o => o.type === 'page'), ...arrFilters]);
+                setFilters([
+                  ...advisoryFilters.filter((o) => o.type === "page"),
+                  ...arrFilters,
+                ]);
               }}
-              columns={tableColumns.map((col) => ({ ...col, defaultFilter: getTableFilterValue(col) }))}
+              columns={tableColumns.map((col) => ({
+                ...col,
+                defaultFilter: getTableFilterValue(col),
+              }))}
               data={publicAdvisories}
               title=""
               onRowClick={(event, rowData) => {
@@ -677,7 +743,7 @@ export default function AdvisoryDashboard({
             />
           </div>
         </div>
-      )}
+      }
       {isLoading && (
         <div className="page-loader">
           <Loader page />

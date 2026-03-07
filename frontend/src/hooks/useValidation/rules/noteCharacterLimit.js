@@ -9,9 +9,6 @@ export default function noteCharacterLimit(seasonData, context) {
   const { notes, addError, elements } = context;
 
   if (notes && notes.length > 2000) {
-    addError(
-      elements.INTERNAL_NOTES,
-      "Notes cannot exceed 2000 characters"
-    );
+    addError(elements.INTERNAL_NOTES, "Notes cannot exceed 2000 characters");
   }
 }

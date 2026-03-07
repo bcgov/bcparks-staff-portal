@@ -1,10 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryAreaPicker.css";
-import {
-  FormControl,
-  FormHelperText,
-} from "@material-ui/core";
+import { FormControl, FormHelperText } from "@material-ui/core";
 import Select from "react-select";
 import LightTooltip from "../../shared/tooltip/LightTooltip";
 import HelpIcon from "@material-ui/icons/Help";
@@ -39,13 +36,15 @@ export default function AdvisoryAreaPicker({
     selectedNaturalResourceDistricts,
     setSelectedNaturalResourceDistricts,
     advisoryData,
-    protectedAreaError
+    protectedAreaError,
   },
 }) {
-  const [isShow, setIsShow] = useState(false)
+  const [isShow, setIsShow] = useState(false);
 
   const handleRemoveProtectedArea = async (updatedParksList) => {
-    const deletedParks = selectedProtectedAreas.filter(park => !updatedParksList?.includes(park));
+    const deletedParks = selectedProtectedAreas.filter(
+      (park) => !updatedParksList?.includes(park),
+    );
     if (deletedParks.length) {
       const parkId = deletedParks[0]?.value;
       const {
@@ -55,36 +54,51 @@ export default function AdvisoryAreaPicker({
         fireZone,
         fireCentre,
         naturalResourceDistrict,
-        sites
+        sites,
       } = await Promise.resolve(getParkRelations(parkId));
 
       if (managementArea && selectedManagementAreas.length) {
-        const newManagementAreas = selectedManagementAreas.filter(ma => ma.value !== managementArea.documentId);
+        const newManagementAreas = selectedManagementAreas.filter(
+          (ma) => ma.value !== managementArea.documentId,
+        );
         setSelectedManagementAreas(newManagementAreas);
       }
       if (region && selectedRegions.length) {
-        const newRegions = selectedRegions.filter(r => r.value !== region.documentId);
+        const newRegions = selectedRegions.filter(
+          (r) => r.value !== region.documentId,
+        );
         setSelectedRegions(newRegions);
       }
       if (section && selectedSections.length) {
-        const newSections = selectedSections.filter(s => s.value !== section.documentId);
+        const newSections = selectedSections.filter(
+          (s) => s.value !== section.documentId,
+        );
         setSelectedSections(newSections);
       }
       if (fireZone && selectedFireZones.length) {
-        const newFireZones = selectedFireZones.filter(fz => fz.value !== fireZone.documentId);
+        const newFireZones = selectedFireZones.filter(
+          (fz) => fz.value !== fireZone.documentId,
+        );
         setSelectedFireZones(newFireZones);
       }
       if (fireCentre && selectedFireCentres.length) {
-        const newFireCentres = selectedFireCentres.filter(fc => fc.value !== fireCentre.documentId);
+        const newFireCentres = selectedFireCentres.filter(
+          (fc) => fc.value !== fireCentre.documentId,
+        );
         setSelectedFireCentres(newFireCentres);
       }
       if (naturalResourceDistrict && selectedNaturalResourceDistricts.length) {
-        const newNaturalResourceDistricts = selectedNaturalResourceDistricts.filter(nrd => nrd.value !== naturalResourceDistrict.documentId);
+        const newNaturalResourceDistricts =
+          selectedNaturalResourceDistricts.filter(
+            (nrd) => nrd.value !== naturalResourceDistrict.documentId,
+          );
         setSelectedNaturalResourceDistricts(newNaturalResourceDistricts);
       }
       if (sites && sites.length && selectedSites.length) {
-        const parkSites = sites.map(x => x.documentId);
-        const newSites = selectedSites.filter(s => !parkSites.includes(s.value));
+        const parkSites = sites.map((x) => x.documentId);
+        const newSites = selectedSites.filter(
+          (s) => !parkSites.includes(s.value),
+        );
         setSelectedSites(newSites);
       }
     }
@@ -107,10 +121,10 @@ export default function AdvisoryAreaPicker({
     updatedSites,
     updatedFireZones,
     updatedFireCentres,
-    updatedNaturalResourceDistricts
+    updatedNaturalResourceDistricts,
   }) => {
     // get current the list of park ids before the change
-    const currentlySelected = selectedProtectedAreas.map(x => x.value);
+    const currentlySelected = selectedProtectedAreas.map((x) => x.value);
 
     // get the list of park ids based on the previously selected relations
     const oldGeneratedList = generateProtectedAreasListForSelectedRelations(
@@ -123,11 +137,13 @@ export default function AdvisoryAreaPicker({
       selectedNaturalResourceDistricts,
       managementAreas,
       fireZones,
-      sites
+      sites,
     );
 
     // get the difference (these are the extra/manual parks)
-    const manualList = currentlySelected.filter((id) => !(new Set(oldGeneratedList)).has(id))
+    const manualList = currentlySelected.filter(
+      (id) => !new Set(oldGeneratedList).has(id),
+    );
 
     // get the new list of park ids based on updated relations
     const newGeneratedList = generateProtectedAreasListForSelectedRelations(
@@ -140,37 +156,37 @@ export default function AdvisoryAreaPicker({
       updatedNaturalResourceDistricts || selectedManagementAreas,
       managementAreas,
       fireZones,
-      sites
+      sites,
     );
 
     // add back the extra manual park ids
-    const newList = [...newGeneratedList, ...manualList]
+    const newList = [...newGeneratedList, ...manualList];
 
     // update the parks input with the new list
-    const parks = protectedAreas.filter(p => newList.includes(p.value));
+    const parks = protectedAreas.filter((p) => newList.includes(p.value));
     setSelectedProtectedAreas(parks);
-  }
+  };
 
   const customSelectStyles = {
     control: (provided, state) => ({
       ...provided,
-      maxHeight: '400px',
-      overflowY: 'auto'
+      maxHeight: "400px",
+      overflowY: "auto",
     }),
     indicatorsContainer: (provided, state) => ({
       ...provided,
-      height: '2.3rem',
+      height: "2.3rem",
     }),
   };
 
   return (
     <>
       <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-        </div>
+        <div className="col-lg-3 col-md-4 col-sm-12 ad-label"></div>
         <div className="col-lg-7 col-md-8 col-sm-12">
           <span>
-            Select at least one park <b>or</b> search for groups of parks by other area{"("}s{")"}
+            Select at least one park <b>or</b> search for groups of parks by
+            other area{"("}s{")"}
           </span>
           <LightTooltip
             arrow
@@ -182,7 +198,7 @@ export default function AdvisoryAreaPicker({
           >
             <HelpIcon className="helpIcon" />
           </LightTooltip>
-          {!isShow &&
+          {!isShow && (
             <button
               type="button"
               className="btn btn-link btn-boolean"
@@ -190,7 +206,7 @@ export default function AdvisoryAreaPicker({
             >
               Show other areas
             </button>
-          }
+          )}
         </div>
       </div>
       {isShow && (
@@ -200,10 +216,7 @@ export default function AdvisoryAreaPicker({
               Fire Centre(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl
-                variant="outlined"
-                className="bcgov-select-form"
-              >
+              <FormControl variant="outlined" className="bcgov-select-form">
                 <Select
                   options={fireCentres}
                   value={selectedFireCentres}
@@ -223,10 +236,7 @@ export default function AdvisoryAreaPicker({
               Fire Zone(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl
-                variant="outlined"
-                className="bcgov-select-form"
-              >
+              <FormControl variant="outlined" className="bcgov-select-form">
                 <Select
                   options={fireZones}
                   value={selectedFireZones}
@@ -246,16 +256,15 @@ export default function AdvisoryAreaPicker({
               Natural Resource District(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl
-                variant="outlined"
-                className="bcgov-select-form"
-              >
+              <FormControl variant="outlined" className="bcgov-select-form">
                 <Select
                   options={naturalResourceDistricts}
                   value={selectedNaturalResourceDistricts}
                   onChange={(e) => {
                     setSelectedNaturalResourceDistricts(e);
-                    handleChangeRelations({ updatedNaturalResourceDistricts: e });
+                    handleChangeRelations({
+                      updatedNaturalResourceDistricts: e,
+                    });
                   }}
                   placeholder="Select Natural Resource District(s)"
                   isMulti="true"
@@ -269,10 +278,7 @@ export default function AdvisoryAreaPicker({
               Region(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl
-                variant="outlined"
-                className="bcgov-select-form"
-              >
+              <FormControl variant="outlined" className="bcgov-select-form">
                 <Select
                   options={regions}
                   value={selectedRegions}
@@ -292,10 +298,7 @@ export default function AdvisoryAreaPicker({
               Section(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl
-                variant="outlined"
-                className="bcgov-select-form"
-              >
+              <FormControl variant="outlined" className="bcgov-select-form">
                 <Select
                   options={sections}
                   value={selectedSections}
@@ -315,10 +318,7 @@ export default function AdvisoryAreaPicker({
               Management Area(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl
-                variant="outlined"
-                className="bcgov-select-form"
-              >
+              <FormControl variant="outlined" className="bcgov-select-form">
                 <Select
                   options={managementAreas}
                   value={selectedManagementAreas}
@@ -334,8 +334,7 @@ export default function AdvisoryAreaPicker({
             </div>
           </div>
           <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12">
-            </div>
+            <div className="col-lg-3 col-md-4 col-sm-12"></div>
             <div className="col-lg-7 col-md-8 col-sm-12">
               <button
                 type="button"
@@ -355,8 +354,9 @@ export default function AdvisoryAreaPicker({
         <div className="col-lg-7 col-md-8 col-sm-12">
           <FormControl
             variant="outlined"
-            className={`bcgov-select-form ${protectedAreaError !== "" ? "bcgov-select-error" : ""
-              }`}
+            className={`bcgov-select-form ${
+              protectedAreaError !== "" ? "bcgov-select-error" : ""
+            }`}
             error
           >
             <Select
@@ -365,7 +365,7 @@ export default function AdvisoryAreaPicker({
               value={selectedProtectedAreas}
               onChange={(e, action) => {
                 setSelectedProtectedAreas(e);
-                if (action.action === 'clear') {
+                if (action.action === "clear") {
                   handleClearProtectedAreas();
                 } else {
                   handleRemoveProtectedArea(e);
@@ -384,14 +384,9 @@ export default function AdvisoryAreaPicker({
         </div>
       </div>
       <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-          Site(s)
-        </div>
+        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">Site(s)</div>
         <div className="col-lg-7 col-md-8 col-sm-12">
-          <FormControl
-            variant="outlined"
-            className="bcgov-select-form"
-          >
+          <FormControl variant="outlined" className="bcgov-select-form">
             <Select
               options={sites}
               value={selectedSites}
@@ -406,10 +401,9 @@ export default function AdvisoryAreaPicker({
           </FormControl>
         </div>
       </div>
-
     </>
   );
-};
+}
 
 AdvisoryAreaPicker.propTypes = {
   data: PropTypes.shape({
@@ -438,6 +432,6 @@ AdvisoryAreaPicker.propTypes = {
     selectedNaturalResourceDistricts: PropTypes.array,
     setSelectedNaturalResourceDistricts: PropTypes.func.isRequired,
     advisoryData: PropTypes.object,
-    protectedAreaError: PropTypes.string
+    protectedAreaError: PropTypes.string,
   }).isRequired,
 };
