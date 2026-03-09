@@ -2,9 +2,9 @@ import React, { useState, useEffect } from "react";
 import { cmsAxios } from "../../../axios_config";
 import Header from "../../composite/header/Header";
 
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ErrorIcon from "@material-ui/icons/Error";
-import CancelRoundedIcon from "@material-ui/icons/CancelRounded";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ErrorIcon from "@mui/icons-material/Error";
+import CancelRoundedIcon from "@mui/icons-material/CancelRounded";
 import config from "../../../utils/config";
 
 const contentTypes = [

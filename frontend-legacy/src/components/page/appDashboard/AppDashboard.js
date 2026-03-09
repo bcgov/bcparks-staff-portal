@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./AppDashboard.css";
-import Tabs from "@material-ui/core/Tabs";
-import Tab from "@material-ui/core/Tab";
+import Tabs from "@mui/material/Tabs";
+import Tab from "@mui/material/Tab";
 import AdvisoryDashboard from "../advisoryDashboard/AdvisoryDashboard";
 import ParkSearch from "../parkSearch/ParkSearch";
 import ParkAccessStatus from "../parkAccessStatus/ParkAccessStatus";
@@ -17,7 +17,7 @@ export default function AppDashboard({
 }) {
   const [tabIndex, setTabIndex] = useState(0);
   const [tabOrientation, setTabOrientation] = useState("vertical");
-  const history = useHistory();
+  const navigate = useNavigate();
   const tabUrls = [
     "/dashboard",
     "/park-access-status",
@@ -43,16 +43,16 @@ export default function AppDashboard({
     setTabIndex(val);
     switch (val) {
       case 0:
-        history.push("/advisories");
+        navigate("/advisories");
         break;
       case 1:
-        history.push("/park-access-status");
+        navigate("/park-access-status");
         break;
       case 2:
-        history.push("/activities-and-facilities");
+        navigate("/activities-and-facilities");
         break;
       default:
-        history.push("/");
+        navigate("/");
     }
   };
 

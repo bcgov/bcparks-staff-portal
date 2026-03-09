@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Redirect, useLocation, useParams, useHistory } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useParams,
+  useNavigate,
+} from "react-router-dom";
 import PropTypes from "prop-types";
 import { cmsAxios } from "../../../axios_config";
 import { useKeycloak } from "@react-keycloak/web";
 import "./AdvisorySummary.css";
 import Header from "../../composite/header/Header";
 import { Loader } from "../../shared/loader/Loader";
-import Alert from "@material-ui/lab/Alert";
-import { Snackbar, Link } from "@material-ui/core";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import Alert from "@mui/material/Alert";
+import { Snackbar, Link } from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Button } from "../../shared/button/Button";
 import { getLinkTypes } from "../../../utils/CmsDataUtil";
 import AdvisorySummaryView from "../../composite/advisorySummaryView/AdvisorySummaryView";
@@ -29,7 +34,7 @@ export default function AdvisorySummary({
   const [openSnack, setOpenSnack] = useState(false);
   const [snackMessageInfo, setSnackMessageInfo] = useState(undefined);
   const { documentId } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
   const { confirmationText, index } = useLocation();
   const [isCurrentlyPublished, setIsCurrentlyPublished] = useState(false);
   const [showOriginalAdvisory, setShowOriginalAdvisory] = useState(false);
@@ -173,16 +178,16 @@ export default function AdvisorySummary({
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push("/advisories");
+        navigate("/advisories");
         break;
       case 1:
-        history.push("/park-access-status");
+        navigate("/park-access-status");
         break;
       case 2:
-        history.push("/activities-and-facilities");
+        navigate("/activities-and-facilities");
         break;
       default:
-        history.push("/");
+        navigate("/");
     }
   };
 
@@ -203,7 +208,7 @@ export default function AdvisorySummary({
 
   if (toDashboard) {
     return (
-      <Redirect
+      <Navigate
         push
         to={{
           pathname: `/advisories`,
@@ -214,11 +219,11 @@ export default function AdvisorySummary({
   }
 
   if (toUpdate) {
-    return <Redirect push to={`/update-advisory/${documentId}`} />;
+    return <Navigate push to={`/update-advisory/${documentId}`} />;
   }
 
   if (toError) {
-    return <Redirect push to="/error" />;
+    return <Navigate push to="/error" />;
   }
 
   return (

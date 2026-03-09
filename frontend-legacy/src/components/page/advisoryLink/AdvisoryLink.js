@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { cmsAxios } from "../../../axios_config";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
 import Header from "../../composite/header/Header";
 import config from "../../../utils/config";
@@ -10,7 +10,7 @@ import config from "../../../utils/config";
   advisory-summary page based on advisoryNumber instead of publicAdvisoryAuditId
 */
 export default function AdvisoryLink() {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { keycloak, initialized } = useKeycloak();
   const { advisoryNumber } = useParams();
 
@@ -32,16 +32,16 @@ export default function AdvisoryLink() {
           ),
         )
           .then((res) => {
-            history.replace(`/advisory-summary/${res.data.data[0].documentId}`);
+            navigate(`/advisory-summary/${res.data.data[0].documentId}`);
           })
           .catch((err) => {
-            history.replace(`/advisories`);
+            navigate(`/advisories`);
           });
       }
     } else {
-      history.replace(`/`);
+      navigate(`/`);
     }
-  }, [initialized, advisoryNumber, keycloak, history]);
+  }, [initialized, advisoryNumber, keycloak, navigate]);
 
   return (
     <main>

@@ -1,35 +1,33 @@
 import React, { useState, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "./Header.css";
 import AccountInfo from "../accountInfo/AccountInfo";
 import config from "../../../utils/config";
 import ResponsiveDrawer from "../responsiveDrawer/responsiveDrawer";
-import InfoIcon from "@material-ui/icons/InfoOutlined";
+import InfoIcon from "@mui/icons-material/InfoOutlined";
 
-export const goHome = (e, history) => {
+export const goHome = (e, navigate) => {
   e.stopPropagation();
   e.preventDefault();
 
-  if (
-    history.location &&
-    history.location.pathname &&
-    history.location.pathname === "/"
-  ) {
+  const pathname = window.location.pathname;
+
+  if (pathname === "/") {
     return false;
   }
 
-  if (history.location.pathname === "/error") {
+  if (pathname === "/error") {
     sessionStorage.clear();
-    history.push("/");
+    navigate("/");
     return true;
   }
 
-  history.push("/");
+  navigate("/");
   return true;
 };
 
 export default function Header({ handleTabChange }) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Check if the app is running in production
@@ -49,9 +47,9 @@ export default function Header({ handleTabChange }) {
         <div className="container-fluid">
           <div
             className="navbar-brand pointer"
-            onClick={(e) => goHome(e, history)}
+            onClick={(e) => goHome(e, navigate)}
             role="button"
-            onKeyDown={(e) => goHome(e, history)}
+            onKeyDown={(e) => goHome(e, navigate)}
             tabIndex={0}
           >
             {windowWidth > 768 ? (
@@ -71,9 +69,9 @@ export default function Header({ handleTabChange }) {
             )}
             <div
               className="pointer navbar-brand nav-item nav-link nav-title"
-              onClick={(e) => goHome(e, history)}
+              onClick={(e) => goHome(e, navigate)}
               role="button"
-              onKeyDown={(e) => goHome(e, history)}
+              onKeyDown={(e) => goHome(e, navigate)}
               tabIndex={0}
             >
               Staff web portal

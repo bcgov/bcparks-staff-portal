@@ -1,9 +1,9 @@
 import React from "react";
 import PropTypes from "prop-types";
 import "./VisibilityToggle.css";
-import ToggleButton from "@material-ui/lab/ToggleButton";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import VisibilityOffIcon from "@material-ui/icons/VisibilityOff";
+import ToggleButton from "@mui/material/ToggleButton";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 export default function VisibilityToggle({
   toggle: { toggleState, setToggleState },

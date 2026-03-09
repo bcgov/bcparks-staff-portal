@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./ParkInfo.css";
-import { Redirect, useParams, useHistory } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { Loader } from "../../shared/loader/Loader";
 import { useKeycloak } from "@react-keycloak/web";
 import Header from "../../composite/header/Header";
@@ -17,8 +17,8 @@ import {
   AccordionSummary,
   AccordionActions,
   TextField,
-} from "@material-ui/core";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+} from "@mui/material";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import moment from "moment";
 import SwitchButton from "../../base/switchButton/SwitchButton";
 import TabPanel from "../../base/tabPanel/TabPanel";
@@ -45,7 +45,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
   const [loadParkInfo, setLoadParkInfo] = useState(true);
   const { keycloak, initialized } = useKeycloak();
   const { id } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const [tabIndex, setTabIndex] = useState(0);
 
@@ -202,16 +202,16 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push("/advisories");
+        navigate("/advisories");
         break;
       case 1:
-        history.push("/park-access-status");
+        navigate("/park-access-status");
         break;
       case 2:
-        history.push("/activities-and-facilities");
+        navigate("/activities-and-facilities");
         break;
       default:
-        history.push("/");
+        navigate("/");
     }
   };
 
@@ -571,7 +571,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
   };
 
   if (toError) {
-    return <Redirect push to="/error" />;
+    return <Navigate push to="/error" />;
   }
 
   return (
@@ -591,7 +591,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
                   label="Back"
                   styling="bcgov-normal-white btn mt-4"
                   onClick={() => {
-                    history.push("/activities-and-facilities");
+                    navigate("/activities-and-facilities");
                   }}
                 />
               </div>

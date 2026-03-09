@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "../components/page/home/Home";
 import Error from "../components/page/error/Error";
 // import About from "../components/page/about/About";
@@ -17,72 +17,81 @@ function AppRouter() {
 
   return (
     <div>
-      <BrowserRouter>
-        <Switch>
-          <Route exact path="/">
-            <Home page={{ setError }} />
-          </Route>
-          {/* We could delete it since it's not used */}
-          {/* <Route exact path="/about">
-            <About />
-          </Route> */}
-          {/* We could delete it since it's not used */}
-          {/* <Route exact path="/cms-contents">
-            <CmsContents />
-          </Route> */}
-          <PrivateRoute
-            roles={["submitter", "approver"]}
+      <BrowserRouter
+        future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
+      >
+        <Routes>
+          <Route path="/" element={<Home page={{ setError }} />} />
+          <Route
             path="/advisories"
-            component={AppDashboard}
-            props={{ page: { setError, cmsData, setCmsData } }}
+            element={
+              <PrivateRoute roles={["submitter", "approver"]}>
+                <AppDashboard page={{ setError, cmsData, setCmsData }} />
+              </PrivateRoute>
+            }
           />
-          <PrivateRoute
-            roles={["submitter", "approver"]}
+          <Route
             path="/park-access-status"
-            component={AppDashboard}
-            props={{ page: { setError, cmsData, setCmsData } }}
+            element={
+              <PrivateRoute roles={["submitter", "approver"]}>
+                <AppDashboard page={{ setError, cmsData, setCmsData }} />
+              </PrivateRoute>
+            }
           />
-          <PrivateRoute
-            roles={["submitter", "approver"]}
+          <Route
             path="/activities-and-facilities"
-            component={AppDashboard}
-            props={{ page: { setError, cmsData, setCmsData } }}
+            element={
+              <PrivateRoute roles={["submitter", "approver"]}>
+                <AppDashboard page={{ setError, cmsData, setCmsData }} />
+              </PrivateRoute>
+            }
           />
-          <PrivateRoute
-            roles={["approver"]}
+          <Route
             path="/park-info/:id"
-            component={ParkInfo}
-            props={{ page: { setError, cmsData, setCmsData } }}
+            element={
+              <PrivateRoute roles={["approver"]}>
+                <ParkInfo page={{ setError, cmsData, setCmsData }} />
+              </PrivateRoute>
+            }
           />
-          <PrivateRoute
-            roles={["submitter", "approver"]}
+          <Route
             path="/create-advisory"
-            component={Advisory}
-            props={{ mode: "create", page: { setError, cmsData, setCmsData } }}
+            element={
+              <PrivateRoute roles={["submitter", "approver"]}>
+                <Advisory
+                  mode="create"
+                  page={{ setError, cmsData, setCmsData }}
+                />
+              </PrivateRoute>
+            }
           />
-          <PrivateRoute
-            roles={["submitter", "approver"]}
+          <Route
             path="/update-advisory/:documentId"
-            component={Advisory}
-            props={{ mode: "update", page: { setError, cmsData, setCmsData } }}
+            element={
+              <PrivateRoute roles={["submitter", "approver"]}>
+                <Advisory
+                  mode="update"
+                  page={{ setError, cmsData, setCmsData }}
+                />
+              </PrivateRoute>
+            }
           />
-          <PrivateRoute
-            roles={["submitter", "approver"]}
+          <Route
             path="/advisory-summary/:documentId"
-            component={AdvisorySummary}
-            props={{ page: { setError, cmsData, setCmsData } }}
+            element={
+              <PrivateRoute roles={["submitter", "approver"]}>
+                <AdvisorySummary page={{ setError, cmsData, setCmsData }} />
+              </PrivateRoute>
+            }
           />
-          <Route exact path="/advisory-link/:advisoryNumber">
-            <AdvisoryLink />
-          </Route>
-          <Route path="/error">
-            <Error page={{ error }} />
-          </Route>
-          <Route path="/dates">
-            <p>/dates</p>
-          </Route>
-          <Redirect from="*" to="/" />
-        </Switch>
+          <Route
+            path="/advisory-link/:advisoryNumber"
+            element={<AdvisoryLink />}
+          />
+          <Route path="/error" element={<Error page={{ error }} />} />
+          <Route path="/dates" element={<p>/dates</p>} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
       </BrowserRouter>
     </div>
   );

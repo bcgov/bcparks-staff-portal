@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from "react";
 import { cmsAxios } from "../../../axios_config";
-import { Redirect, useHistory } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useKeycloak } from "@react-keycloak/web";
 import styles from "./AdvisoryDashboard.css";
 import { Button } from "../../shared/button/Button";
 import DataTable from "../../composite/dataTable/DataTable";
 import Select from "react-select";
-import Moment from "react-moment";
+import moment from "moment";
 import { Loader } from "../../shared/loader/Loader";
-import IconButton from "@material-ui/core/IconButton";
-import Chip from "@material-ui/core/Chip";
-import Tooltip from "@material-ui/core/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import Chip from "@mui/material/Chip";
+import Tooltip from "@mui/material/Tooltip";
 import LightTooltip from "../../shared/tooltip/LightTooltip";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import WatchLaterIcon from "@material-ui/icons/WatchLater";
-import EditIcon from "@material-ui/icons/Edit";
-import InfoIcon from "@material-ui/icons/Info";
-import HelpIcon from "@material-ui/icons/Help";
-import ArchiveIcon from "@material-ui/icons/Archive";
-import PublishIcon from "@material-ui/icons/Publish";
-import ThumbUpIcon from "@material-ui/icons/ThumbUp";
-import WarningRoundedIcon from "@material-ui/icons/WarningRounded";
-import { FormControlLabel, Checkbox, SvgIcon } from "@material-ui/core";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import WatchLaterIcon from "@mui/icons-material/WatchLater";
+import EditIcon from "@mui/icons-material/Edit";
+import InfoIcon from "@mui/icons-material/Info";
+import HelpIcon from "@mui/icons-material/Help";
+import ArchiveIcon from "@mui/icons-material/Archive";
+import PublishIcon from "@mui/icons-material/Publish";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
+import { FormControlLabel, Checkbox, SvgIcon } from "@mui/material";
 
 import {
   getRegions,
@@ -40,7 +40,7 @@ import {
 export default function AdvisoryDashboard({
   page: { setError, cmsData, setCmsData },
 }) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { keycloak, initialized } = useKeycloak();
   const [toError, setToError] = useState(false);
   const [toCreate, setToCreate] = useState(false);
@@ -469,7 +469,7 @@ export default function AdvisoryDashboard({
       title: "Posting date",
       render: (rowData) => {
         if (rowData.advisoryDate)
-          return <Moment format="YYYY/MM/DD">{rowData.advisoryDate}</Moment>;
+          return moment(rowData.advisoryDate).format("YYYY/MM/DD");
       },
     },
     {
@@ -477,7 +477,7 @@ export default function AdvisoryDashboard({
       title: "End date",
       render: (rowData) => {
         if (rowData.endDate) {
-          return <Moment format="YYYY/MM/DD">{rowData.endDate}</Moment>;
+          return moment(rowData.endDate).format("YYYY/MM/DD");
         }
       },
     },
@@ -486,7 +486,7 @@ export default function AdvisoryDashboard({
       title: "Expiry date",
       render: (rowData) => {
         if (rowData.expiryDate)
-          return <Moment format="YYYY/MM/DD">{rowData.expiryDate}</Moment>;
+          return moment(rowData.expiryDate).format("YYYY/MM/DD");
       },
     },
     {
@@ -581,11 +581,11 @@ export default function AdvisoryDashboard({
   ];
 
   if (toCreate) {
-    return <Redirect to="/create-advisory" />;
+    return <Navigate to="/create-advisory" />;
   }
   if (toError || hasErrors) {
     console.log("toError || hasErrors", toError, hasErrors);
-    return <Redirect push to="/error" />;
+    return <Navigate push to="/error" />;
   }
 
   return (
@@ -735,7 +735,7 @@ export default function AdvisoryDashboard({
               data={publicAdvisories}
               title=""
               onRowClick={(event, rowData) => {
-                history.push(`/advisory-summary/${rowData.documentId}`);
+                navigate(`/advisory-summary/${rowData.documentId}`);
               }}
               components={{
                 Toolbar: (props) => <div></div>,

@@ -1,11 +1,13 @@
-import Tooltip from "@material-ui/core/Tooltip";
-import { withStyles } from "@material-ui/core/styles";
+import { styled } from "@mui/material/styles";
+import Tooltip from "@mui/material/Tooltip";
 
-export default withStyles(() => ({
+const LightTooltip = styled(Tooltip)(({ theme }) => ({
   tooltip: {
     backgroundColor: "#fff",
     color: "rgba(0, 0, 0, 0.87)",
     boxShadow: "rgba(0, 0, 0, 0.35) 1px 1px 15px",
     fontSize: 12,
   },
-}))(Tooltip);
+}));
+
+export default LightTooltip;

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { cmsAxios } from "../../../axios_config";
-import { Redirect, useParams, useHistory } from "react-router-dom";
+import { Navigate, useParams, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Advisory.css";
 import moment from "moment";
@@ -35,7 +35,7 @@ import {
 import { hasRole } from "../../../utils/AuthenticationUtil";
 import { labelCompare, camelCaseToSentenceCase } from "../../../utils/AppUtil";
 import config from "../../../utils/config";
-import ArrowBackIcon from "@material-ui/icons/ArrowBack";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import qs from "qs";
 
 export default function Advisory({
@@ -111,7 +111,7 @@ export default function Advisory({
   const [formError, setFormError] = useState("");
 
   const { documentId } = useParams();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const query = qs.stringify(
     {
@@ -642,16 +642,16 @@ export default function Advisory({
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push("/advisories");
+        navigate("/advisories");
         break;
       case 1:
-        history.push("/park-access-status");
+        navigate("/park-access-status");
         break;
       case 2:
-        history.push("/activities-and-facilities");
+        navigate("/activities-and-facilities");
         break;
       default:
-        history.push("/");
+        navigate("/");
     }
   };
 
@@ -1103,7 +1103,7 @@ export default function Advisory({
 
   if (toDashboard) {
     return (
-      <Redirect
+      <Navigate
         push
         to={{
           pathname: `/advisories`,
@@ -1114,12 +1114,12 @@ export default function Advisory({
   }
 
   if (toError) {
-    return <Redirect push to="/error" />;
+    return <Navigate push to="/error" />;
   }
 
   if (isConfirmation) {
     return (
-      <Redirect
+      <Navigate
         push
         to={{
           pathname: `/advisory-summary/${advisoryId}`,

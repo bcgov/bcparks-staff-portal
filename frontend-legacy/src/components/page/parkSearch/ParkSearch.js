@@ -2,11 +2,11 @@ import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./ParkSearch.css";
 import { useKeycloak } from "@react-keycloak/web";
-import { Redirect } from "react-router-dom";
-import SearchIcon from "@material-ui/icons/Search";
+import { Navigate } from "react-router-dom";
+import SearchIcon from "@mui/icons-material/Search";
 import Select, { components } from "react-select";
 import { Loader } from "../../shared/loader/Loader";
-import { List, ListItem, Divider } from "@material-ui/core";
+import { List, ListItem, Divider } from "@mui/material";
 import {
   getProtectedAreas,
   getRegions,
@@ -208,11 +208,11 @@ export default function ParkSearch({
   };
 
   if (toDetails) {
-    return <Redirect push to={`/park-info/${protectedArea}`} />;
+    return <Navigate push to={`/park-info/${protectedArea}`} />;
   }
 
   if (toError) {
-    return <Redirect push to="/error" />;
+    return <Navigate push to="/error" />;
   }
 
   return (
