@@ -20,6 +20,14 @@ export default (sequelize) => {
         foreignKey: "dateableId",
         as: "dateable",
       });
+
+      // Virtual association: DateRangeAnnual to Season (by publishableId and operatingYear)
+      // This is not a strict FK, but allows eager loading for querying
+      DateRangeAnnual.belongsTo(models.Season, {
+        foreignKey: "publishableId",
+        targetKey: "publishableId",
+        as: "season"
+      });
     }
   }
 
