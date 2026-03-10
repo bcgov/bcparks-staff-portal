@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { cmsAxios } from "../../../axios_config";
 import { Navigate, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
@@ -97,13 +97,6 @@ export default function AdvisoryDashboard({
     localStorage.setItem("advisoryFilters", JSON.stringify(filters));
     sessionStorage.setItem("showArchived", showArchived);
   }, [filters, showArchived]);
-
-  const getTableFilterValue = (col) => {
-    return (
-      filters.find((obj) => obj.type === "table" && obj.fieldName === col.field)
-        ?.fieldValue || ""
-    );
-  };
 
   const getPageFilterValue = (filters, filterName) => {
     return (
@@ -324,7 +317,7 @@ export default function AdvisoryDashboard({
     setIsLoading(false);
   };
 
-  const tableColumns = [
+  const tableColumns = useMemo(() => [
     {
       field: "urgency.urgency",
       title: (
@@ -578,7 +571,7 @@ export default function AdvisoryDashboard({
         </IconButton>
       ),
     },
-  ];
+  ], [urgencies, advisoryStatuses, publishedAdvisories]);
 
   if (toCreate) {
     return <Navigate to="/create-advisory" />;
@@ -713,25 +706,19 @@ export default function AdvisoryDashboard({
                 pageSizeOptions: [25, 50, publicAdvisories.length],
               }}
               onFilterChange={(filters) => {
-                const advisoryFilters = JSON.parse(
-                  localStorage.getItem("advisoryFilters"),
-                );
-                const arrFilters = filters.map((obj) => {
-                  return {
-                    fieldName: obj.column["field"],
-                    fieldValue: obj.value,
-                    type: "table",
-                  };
-                });
+                const advisoryFilters =
+                  JSON.parse(localStorage.getItem("advisoryFilters")) ?? [];
+                const arrFilters = filters.map((obj) => ({
+                  fieldName: obj.column["field"],
+                  fieldValue: obj.value,
+                  type: "table",
+                }));
                 setFilters([
                   ...advisoryFilters.filter((o) => o.type === "page"),
                   ...arrFilters,
                 ]);
               }}
-              columns={tableColumns.map((col) => ({
-                ...col,
-                defaultFilter: getTableFilterValue(col),
-              }))}
+              columns={tableColumns}
               data={publicAdvisories}
               title=""
               onRowClick={(event, rowData) => {
