@@ -39,6 +39,7 @@ export async function populatePreviousDates() {
         where: {
           publishableId: park.publishableId,
           operatingYear,
+          seasonType: SEASON_TYPE.REGULAR,
         },
         transaction,
       });
