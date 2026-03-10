@@ -1,6 +1,7 @@
 import "../../env.js";
 import { Op, fn, col, literal } from "sequelize";
 import { DateRange, Season, Feature, ParkArea } from "../../models/index.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 const counts = {
   updated: 0,
@@ -141,6 +142,7 @@ async function fixDateRangesForFeatureParkAreaChanges(
       where: {
         operatingYear,
         publishableId: featureParkAreaPublishableId,
+        seasonType: SEASON_TYPE.REGULAR, // Only regular seasons for features/areas
       },
       include: [
         {
