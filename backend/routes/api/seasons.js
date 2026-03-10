@@ -102,6 +102,7 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
       where: {
         operatingYear: currentSeason.operatingYear - 1,
         publishableId: currentSeason.publishableId,
+        seasonType: currentSeason.seasonType,
       },
       include: [
         {
