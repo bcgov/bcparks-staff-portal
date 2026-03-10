@@ -32,14 +32,16 @@ export default function AdvisoryLink() {
           ),
         )
           .then((res) => {
-            navigate(`/advisory-summary/${res.data.data[0].documentId}`);
+            navigate(`/advisory-summary/${res.data.data[0].documentId}`, {
+              replace: true,
+            });
           })
           .catch((err) => {
-            navigate(`/advisories`);
+            navigate(`/advisories`, { replace: true });
           });
       }
     } else {
-      navigate(`/`);
+      navigate(`/`, { replace: true });
     }
   }, [initialized, advisoryNumber, keycloak, navigate]);
 

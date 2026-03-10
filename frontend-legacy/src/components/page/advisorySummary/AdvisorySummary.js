@@ -35,7 +35,9 @@ export default function AdvisorySummary({
   const [snackMessageInfo, setSnackMessageInfo] = useState(undefined);
   const { documentId } = useParams();
   const navigate = useNavigate();
-  const { confirmationText, index } = useLocation();
+  const location = useLocation();
+  const confirmationText = location.state?.confirmationText;
+  const index = location.state?.index;
   const [isCurrentlyPublished, setIsCurrentlyPublished] = useState(false);
   const [showOriginalAdvisory, setShowOriginalAdvisory] = useState(false);
   const [currentAdvisory, setCurrentAdvisory] = useState({});

@@ -706,13 +706,16 @@ export default function AdvisoryDashboard({
                 pageSizeOptions: [25, 50, publicAdvisories.length],
               }}
               onFilterChange={(filters) => {
-                const advisoryFilters =
-                  JSON.parse(localStorage.getItem("advisoryFilters")) ?? [];
-                const arrFilters = filters.map((obj) => ({
-                  fieldName: obj.column["field"],
-                  fieldValue: obj.value,
-                  type: "table",
-                }));
+                const advisoryFilters = JSON.parse(
+                  localStorage.getItem("advisoryFilters")
+                );
+                const arrFilters = filters.map((obj) => {
+                  return {
+                    fieldName: obj.column["field"],
+                    fieldValue: obj.value,
+                    type: "table",
+                  };
+                });
                 setFilters([
                   ...advisoryFilters.filter((o) => o.type === "page"),
                   ...arrFilters,
