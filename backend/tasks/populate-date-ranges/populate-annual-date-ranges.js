@@ -19,30 +19,45 @@ export async function populateAnnualDateRangesForYear(
     // find all DateRangeAnnuals where isDateRangeAnnual is TRUE
     const annuals = await DateRangeAnnual.findAll({
       where: { isDateRangeAnnual: true },
+      include: [
+        {
+          model: Season,
+          as: "season",
+          required: false,
+          where: {
+            operatingYear: targetYear - 1,
+          },
+        },
+      ],
       transaction,
     });
 
     const dateRangesToCreate = [];
 
     for (const annual of annuals) {
-      // find previous and target seasons for this publishable
-      const prevSeason = await Season.findOne({
+      // Use the included previous season (if any)
+      const prevSeason = annual.season;
+
+      if (!prevSeason) continue;
+
+      const hasDates = await DateRange.findOne({
         where: {
-          publishableId: annual.publishableId,
-          operatingYear: targetYear - 1,
-        },
-        transaction,
-      });
-      let targetSeason = await Season.findOne({
-        where: {
-          publishableId: annual.publishableId,
-          operatingYear: targetYear,
+          seasonId: prevSeason.id,
+          dateTypeId: annual.dateTypeId,
         },
         transaction,
       });
 
-      // skip if no previous season found
-      if (!prevSeason) continue;
+      if (!hasDates) continue;
+
+      let targetSeason = await Season.findOne({
+        where: {
+          publishableId: annual.publishableId,
+          operatingYear: targetYear,
+          seasonType: prevSeason.seasonType,
+        },
+        transaction,
+      });
 
       // create season if no target season found
       if (!targetSeason) {
