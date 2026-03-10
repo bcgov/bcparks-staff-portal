@@ -18,7 +18,7 @@ export default function ParkAccessStatus() {
       `/protected-areas/status?limit=-1&sort=protectedAreaName`,
     );
 
-    const data = response.data.map((park, index) => {
+    const data = response.data.map((park) => {
       park.id = park.orcs;
       park.managementAreasStr = park.managementAreas.join(", ");
       park.sectionsStr = park.sections.join(", ");

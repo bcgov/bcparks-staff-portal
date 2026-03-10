@@ -80,7 +80,6 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
   }, {});
 
   return publicAdvisories.map((publicAdvisory) => {
-    publicAdvisory.id = publicAdvisory.documentId;
     publicAdvisory.expired = publicAdvisory.expiryDate < today ? "Y" : "N";
     publicAdvisory.associatedParks =
       publicAdvisory.protectedAreas.map((p) => p.protectedAreaName).join(", ") +

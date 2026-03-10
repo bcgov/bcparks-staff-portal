@@ -2,13 +2,11 @@ import React, { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Home from "../components/page/home/Home";
 import Error from "../components/page/error/Error";
-// import About from "../components/page/about/About";
 import Advisory from "../components/page/advisory/Advisory";
 import AdvisorySummary from "../components/page/advisorySummary/AdvisorySummary";
 import AppDashboard from "../components/page/appDashboard/AppDashboard";
 import ParkInfo from "../components/page/parkInfo/ParkInfo";
 import { PrivateRoute } from "../auth/PrivateRoute";
-// import CmsContents from "../components/page/cmsContents/CmsContents";
 import AdvisoryLink from "../components/page/advisoryLink/AdvisoryLink";
 
 function AppRouter() {
