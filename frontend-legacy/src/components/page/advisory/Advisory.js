@@ -1114,7 +1114,7 @@ export default function Advisory({
   }
 
   if (toError) {
-    return <Navigate push to="/error" />;
+    return <Navigate to="/error" />;
   }
 
   if (isConfirmation) {

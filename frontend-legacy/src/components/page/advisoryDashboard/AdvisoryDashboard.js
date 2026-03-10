@@ -578,7 +578,7 @@ export default function AdvisoryDashboard({
   }
   if (toError || hasErrors) {
     console.log("toError || hasErrors", toError, hasErrors);
-    return <Navigate push to="/error" />;
+    return <Navigate to="/error" />;
   }
 
   return (

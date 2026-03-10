@@ -571,7 +571,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
   };
 
   if (toError) {
-    return <Navigate push to="/error" />;
+    return <Navigate to="/error" />;
   }
 
   return (

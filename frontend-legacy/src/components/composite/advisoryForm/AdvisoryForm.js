@@ -597,8 +597,8 @@ export default function AdvisoryForm({
                 setDescription(event.target.value);
               }}
               multiline
-              rows={4}
-              rowsMax={10}
+              minRows={4}
+              maxRows={10}
               className="bcgov-input"
               variant="outlined"
               InputProps={{ ...descriptionInput }}

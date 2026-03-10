@@ -17,9 +17,7 @@ function AppRouter() {
 
   return (
     <div>
-      <BrowserRouter
-        future={{ v7_relativeSplatPath: true, v7_startTransition: true }}
-      >
+      <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home page={{ setError }} />} />
           <Route

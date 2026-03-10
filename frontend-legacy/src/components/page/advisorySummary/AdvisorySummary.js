@@ -219,11 +219,11 @@ export default function AdvisorySummary({
   }
 
   if (toUpdate) {
-    return <Navigate push to={`/update-advisory/${documentId}`} />;
+    return <Navigate to={`/update-advisory/${documentId}`} />;
   }
 
   if (toError) {
-    return <Navigate push to="/error" />;
+    return <Navigate to="/error" />;
   }
 
   return (

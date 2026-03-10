@@ -19,7 +19,7 @@ export default function ParkAccessStatus() {
     );
 
     const data = response.data.map((park, index) => {
-      park.id = park.orcs || `park-${index}`;
+      park.id = park.orcs;
       park.managementAreasStr = park.managementAreas.join(", ");
       park.sectionsStr = park.sections.join(", ");
       park.regionsStr = park.regions.join(", ");

@@ -208,11 +208,11 @@ export default function ParkSearch({
   };
 
   if (toDetails) {
-    return <Navigate push to={`/park-info/${protectedArea}`} />;
+    return <Navigate to={`/park-info/${protectedArea}`} />;
   }
 
   if (toError) {
-    return <Navigate push to="/error" />;
+    return <Navigate to="/error" />;
   }
 
   return (

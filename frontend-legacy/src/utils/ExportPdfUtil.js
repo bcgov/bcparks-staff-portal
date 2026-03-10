@@ -1,11 +1,10 @@
-import "jspdf-autotable";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import moment from "moment";
 import config from "./config";
 
-const jsPDF = typeof window !== "undefined" ? require("jspdf").jsPDF : null;
-
 export function exportPdf(columns, data, reportTitle, exportFilename) {
-  if (jsPDF !== null) {
+  if (typeof window !== "undefined") {
     const today = moment(new Date()).format("YYYY-MM-DD");
 
     const content = {
@@ -41,7 +40,7 @@ export function exportPdf(columns, data, reportTitle, exportFilename) {
 
     const doc = new jsPDF(orientation, unit, size);
     doc.setFontSize(10);
-    doc.autoTable(content);
+    autoTable(doc, content);
     doc.save(exportFilename);
   }
 }
