@@ -61,7 +61,8 @@ export async function populateAnnualDateRangesForYear(
 
       if (!prevSeason) continue;
 
-      const hasDates = await DateRange.findOne({
+      // Find DateRanges for the previous season and this dateType
+      const prevDateRanges = await DateRange.findAll({
         where: {
           seasonId: prevSeason.id,
           dateTypeId: annual.dateTypeId,
@@ -69,7 +70,8 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
-      if (!hasDates) continue;
+      // Skip to the next DateRangeAnnual if there are no previous DateRanges to copy
+      if (prevDateRanges.length === 0) continue;
 
       let targetSeason = await Season.findOne({
         where: {
@@ -109,15 +111,6 @@ export async function populateAnnualDateRangesForYear(
         targetSeason.publishableId,
         transaction,
       );
-
-      // find DateRanges for previous season and this dateType
-      const prevDateRanges = await DateRange.findAll({
-        where: {
-          seasonId: prevSeason.id,
-          dateTypeId: annual.dateTypeId,
-        },
-        transaction,
-      });
 
       // check if target season already has DateRanges for this dateType
       const existingTargetDateRanges = await DateRange.findAll({
