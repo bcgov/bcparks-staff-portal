@@ -3,7 +3,12 @@
 
 import "../../env.js";
 
-import { Season, DateRange, DateRangeAnnual } from "../../models/index.js";
+import {
+  Season,
+  DateRange,
+  DateRangeAnnual,
+  DateType,
+} from "../../models/index.js";
 import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
@@ -18,6 +23,14 @@ export async function populateAnnualDateRangesForYear(
   try {
     // find all DateRangeAnnuals where isDateRangeAnnual is TRUE
     const annuals = await DateRangeAnnual.findAll({
+      include: [
+        {
+          model: DateType,
+          as: "dateType",
+          attributes: ["strapiDateTypeId"],
+        },
+      ],
+
       where: { isDateRangeAnnual: true },
       transaction,
     });
@@ -27,9 +40,13 @@ export async function populateAnnualDateRangesForYear(
     for (const annual of annuals) {
       // Find the previous season for this DateRangeAnnual
 
+      if (!annual.dateType) {
+        throw new Error(`DateType missing for DateRangeAnnual ${annual.id}`);
+      }
+
       // Season type based on the date type of the DateRangeAnnual
       const seasonType =
-        annual.dateTypeId === DATE_TYPE.WINTER_FEE
+        annual.dateType.strapiDateTypeId === DATE_TYPE.WINTER_FEE
           ? SEASON_TYPE.WINTER
           : SEASON_TYPE.REGULAR;
 
@@ -79,7 +96,7 @@ export async function populateAnnualDateRangesForYear(
 
       // For winter seasons, only copy Winter fee date types
       if (targetSeason.seasonType === SEASON_TYPE.WINTER) {
-        if (annual.dateTypeId !== DATE_TYPE.WINTER_FEE) {
+        if (annual.dateType.strapiDateTypeId !== DATE_TYPE.WINTER_FEE) {
           console.log(
             `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${annual.publishableId})`,
           );
