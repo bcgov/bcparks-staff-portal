@@ -1,10 +1,9 @@
-name: Build dev on branch push
+name: Build alpha-dev on staff-portal-advisories branch push
 
 on:
   push:
     branches:
-      - main
-      - alpha
+      - staff-portal-advisories
 
 concurrency:
   group: build-dev-${{ github.ref_name }}
@@ -14,7 +13,7 @@ jobs:
   build-frontend:
     runs-on: ubuntu-24.04
     env:
-      IMAGE_NAME: frontend-${{ github.ref_name }}
+      IMAGE_NAME: frontend-alpha
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -59,7 +58,7 @@ jobs:
   build-backend:
     runs-on: ubuntu-24.04
     env:
-      IMAGE_NAME: backend-${{ github.ref_name }}
+      IMAGE_NAME: backend-alpha
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -102,5 +101,5 @@ jobs:
 
       - name: Trigger rollout
         run: |
-          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-frontend
-          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-backend
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment alpha-frontend
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment alpha-backend
