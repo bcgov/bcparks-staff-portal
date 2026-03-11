@@ -1,7 +1,6 @@
 import "../../env.js";
 import { Op, fn, col, literal } from "sequelize";
 import { DateRange, Season, Feature, ParkArea } from "../../models/index.js";
-import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 const counts = {
   updated: 0,
@@ -79,6 +78,7 @@ async function fixDateRangesForFeatureParkAreaChanges(
     attributes: [
       [col("dateRanges.dateableId"), "dateableId"],
       ["id", "seasonId"],
+      ["seasonType", "seasonType"],
       [col("feature.parkArea.publishableId"), "featureParkAreaPublishableId"],
       [col("parkArea.publishableId"), "seasonParkAreaPublishableId"],
     ],
@@ -135,14 +135,15 @@ async function fixDateRangesForFeatureParkAreaChanges(
   );
 
   for (const row of results) {
-    const { dateableId, seasonId, featureParkAreaPublishableId } = row;
+    const { dateableId, seasonId, seasonType, featureParkAreaPublishableId } =
+      row;
 
     // Find the target Season
     const targetSeason = await Season.findOne({
       where: {
         operatingYear,
         publishableId: featureParkAreaPublishableId,
-        seasonType: SEASON_TYPE.REGULAR, // Only regular seasons for features/areas
+        seasonType,
       },
       include: [
         {
