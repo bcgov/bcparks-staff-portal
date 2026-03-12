@@ -281,7 +281,7 @@ export default function AdvisoryDashboard({
       if (publishedStatus?.length > 0) {
         const result = await cmsAxios
           .get(
-            `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
+            `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=500&sort=createdAt:DESC`,
           )
           .catch(() => {
             setHasErrors(true);
