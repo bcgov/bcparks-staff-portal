@@ -102,6 +102,7 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
       where: {
         operatingYear: currentSeason.operatingYear - 1,
         publishableId: currentSeason.publishableId,
+        seasonType: currentSeason.seasonType,
       },
       include: [
         {
@@ -326,17 +327,19 @@ async function getFeatureReservationDates(park, operatingYear) {
 }
 
 /**
- * Returns Tier 1, Tier 2, and Winter fee dates for Park Season.
+ * Returns Tier 1, Tier 2, and Winter fee dates for a Park operating year.
  * @param {Object} park Park model with hasTier1Dates, hasTier2Dates, and publishableId
  * @param {number} operatingYear Operating year for the Seasons
  * @returns {Promise<Object>} - Object with parkTier1Dates, parkTier2Dates, and parkWinterDates arrays
  */
 async function getParkDates(park, operatingYear) {
-  // Get the Park Season for the operating year
-  const parkSeason = await Season.findOne({
+  // Query both regular and winter seasons to get the Tier 1, Tier 2, and Winter fee dates
+  // for this park and year
+  const seasons = await Season.findAll({
     where: {
       publishableId: park.publishableId,
       operatingYear,
+      seasonType: [SEASON_TYPE.REGULAR, SEASON_TYPE.WINTER],
     },
 
     include: [
@@ -356,28 +359,23 @@ async function getParkDates(park, operatingYear) {
     ],
   });
 
-  // Handle case where no park season exists
-  if (!parkSeason) {
-    return {
-      parkTier1Dates: [],
-      parkTier2Dates: [],
-      parkWinterDates: [],
-    };
-  }
-
-  // Filter out blank date ranges (null startDate and endDate)
-  const dateRanges = parkSeason.dateRanges.filter(
-    (range) => range.startDate && range.endDate,
+  // Merge all dateRanges from both seasons
+  const allRanges = seasons.flatMap((season) =>
+    (season.dateRanges || []).filter(
+      (range) => range.startDate && range.endDate,
+    ),
   );
 
-  // Group DateRanges by Type and get the Tier 1 and Tier 2 dates, if any
-  const datesByType = _.groupBy(dateRanges, "dateType.name");
+  // Group by strapiDateTypeId
+  const datesByStrapiId = _.groupBy(
+    allRanges,
+    (range) => range.dateType?.strapiDateTypeId,
+  );
 
-  const {
-    "Tier 1": tier1Dates = [],
-    "Tier 2": tier2Dates = [],
-    "Winter fee": parkWinterDates = [],
-  } = datesByType;
+  // Use constants for Tier 1, Tier 2, and Winter fee
+  const tier1Dates = datesByStrapiId[DATE_TYPE.TIER_1] || [];
+  const tier2Dates = datesByStrapiId[DATE_TYPE.TIER_2] || [];
+  const parkWinterDates = datesByStrapiId[DATE_TYPE.WINTER_FEE] || [];
 
   // Only include tier dates if park supports them
   const parkTier1Dates = park.hasTier1Dates ? tier1Dates : [];
