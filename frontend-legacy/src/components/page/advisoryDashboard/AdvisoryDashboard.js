@@ -279,21 +279,30 @@ export default function AdvisoryDashboard({
       );
 
       if (publishedStatus?.length > 0) {
-        const result = await cmsAxios
-          .get(
-            `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=500&sort=createdAt:DESC`,
-          )
-          .catch(() => {
-            setHasErrors(true);
-          });
+        const publishedAdvisories = [];
+        const pageSize = 100;
+        let page = 1;
+        let pageCount = 1;
 
-        let publishedAdvisories = [];
-        const res = result?.data?.data;
+        try {
+          while (page <= pageCount) {
+            const result = await cmsAxios.get(
+              `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[page]=${page}&pagination[pageSize]=${pageSize}&sort=createdAt:DESC`,
+            );
 
-        if (res.length > 0) {
-          res.forEach((ad) => {
-            publishedAdvisories = [...publishedAdvisories, ad.advisoryNumber];
-          });
+            const pagination = result?.data?.meta?.pagination;
+            const res = result?.data?.data || [];
+
+            res.forEach((ad) => {
+              publishedAdvisories.push(ad.advisoryNumber);
+            });
+
+            pageCount = pagination?.pageCount || 1;
+            page += 1;
+          }
+        } catch {
+          setHasErrors(true);
+          return;
         }
         setPublishedAdvisories([...publishedAdvisories]);
       }
