@@ -280,7 +280,7 @@ export default function AdvisoryDashboard({
 
       if (publishedStatus?.length > 0) {
         const publishedAdvisories = [];
-        const pageSize = 100;
+        const pageSize = 2000;
         let page = 1;
         let pageCount = 1;
 
