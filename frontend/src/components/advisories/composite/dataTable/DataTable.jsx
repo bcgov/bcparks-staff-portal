@@ -1,8 +1,9 @@
 import { forwardRef } from "react";
 
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
-import MaterialTable from "@material-table/core";
+import TableContainer from "@material-ui/core/TableContainer";
+import Paper from "@material-ui/core/Paper";
+import MaterialTable from "material-table";
+import DataTablePagination from "./DataTablePagination";
 
 import "./DataTable.css";
 
@@ -47,9 +48,18 @@ const tableIcons = {
 };
 
 export default function DataTable(props) {
+  const { components, ...materialTableProps } = props;
+
   return (
     <TableContainer component={Paper} className="data-table">
-      <MaterialTable icons={tableIcons} {...props} />
+      <MaterialTable
+        icons={tableIcons}
+        components={{
+          Pagination: DataTablePagination,
+          ...components,
+        }}
+        {...materialTableProps}
+      />
     </TableContainer>
   );
 }

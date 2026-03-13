@@ -47,6 +47,16 @@
   font-size: xx-large;
 }
 
+.data-table-pagination {
+  width: 100%;
+  padding: 8px 0;
+}
+
+.data-table-pagination__select {
+  width: auto;
+  min-height: 2.4rem;
+}
+
 .data-table .MuiTableRow-root:hover {
   background: #f6f8fa !important;
 }
