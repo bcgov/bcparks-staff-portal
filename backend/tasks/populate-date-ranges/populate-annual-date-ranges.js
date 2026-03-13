@@ -83,12 +83,13 @@ export async function populateAnnualDateRangesForYear(
       });
 
       // create season if no target season found
+      // @TODO: Update criteria to create seasons in create-seasons/create-winter-seasons instead
       if (!targetSeason) {
         targetSeason = await Season.create(
           {
             publishableId: annual.publishableId,
             operatingYear: targetYear,
-            status: STATUS.APPROVED,
+            status: STATUS.PENDING_REVIEW,
             readyToPublish: true,
             seasonType: prevSeason.seasonType,
           },
