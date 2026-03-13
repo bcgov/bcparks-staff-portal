@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { cmsAxios } from "../../../axios_config";
-import { Redirect, useHistory } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useKeycloak } from "@react-keycloak/web";
 import styles from "./AdvisoryDashboard.css";
 import { Button } from "../../shared/button/Button";
 import DataTable from "../../composite/dataTable/DataTable";
 import Select from "react-select";
-import Moment from "react-moment";
+import moment from "moment";
 import { Loader } from "../../shared/loader/Loader";
-import IconButton from "@material-ui/core/IconButton";
-import Chip from "@material-ui/core/Chip";
-import Tooltip from "@material-ui/core/Tooltip";
+import IconButton from "@mui/material/IconButton";
+import Chip from "@mui/material/Chip";
+import Tooltip from "@mui/material/Tooltip";
 import LightTooltip from "../../shared/tooltip/LightTooltip";
-import MoreVertIcon from "@material-ui/icons/MoreVert";
-import WatchLaterIcon from "@material-ui/icons/WatchLater";
-import EditIcon from "@material-ui/icons/Edit";
-import InfoIcon from "@material-ui/icons/Info";
-import HelpIcon from "@material-ui/icons/Help";
-import ArchiveIcon from "@material-ui/icons/Archive";
-import PublishIcon from "@material-ui/icons/Publish";
-import ThumbUpIcon from "@material-ui/icons/ThumbUp";
-import WarningRoundedIcon from "@material-ui/icons/WarningRounded";
-import { FormControlLabel, Checkbox, SvgIcon } from "@material-ui/core";
+import MoreVertIcon from "@mui/icons-material/MoreVert";
+import WatchLaterIcon from "@mui/icons-material/WatchLater";
+import EditIcon from "@mui/icons-material/Edit";
+import InfoIcon from "@mui/icons-material/Info";
+import HelpIcon from "@mui/icons-material/Help";
+import ArchiveIcon from "@mui/icons-material/Archive";
+import PublishIcon from "@mui/icons-material/Publish";
+import ThumbUpIcon from "@mui/icons-material/ThumbUp";
+import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
+import { FormControlLabel, Checkbox, SvgIcon } from "@mui/material";
 
 import {
   getRegions,
@@ -40,7 +40,7 @@ import {
 export default function AdvisoryDashboard({
   page: { setError, cmsData, setCmsData },
 }) {
-  const history = useHistory();
+  const navigate = useNavigate();
   const { keycloak, initialized } = useKeycloak();
   const [toError, setToError] = useState(false);
   const [toCreate, setToCreate] = useState(false);
@@ -97,13 +97,6 @@ export default function AdvisoryDashboard({
     localStorage.setItem("advisoryFilters", JSON.stringify(filters));
     sessionStorage.setItem("showArchived", showArchived);
   }, [filters, showArchived]);
-
-  const getTableFilterValue = (col) => {
-    return (
-      filters.find((obj) => obj.type === "table" && obj.fieldName === col.field)
-        ?.fieldValue || ""
-    );
-  };
 
   const getPageFilterValue = (filters, filterName) => {
     return (
@@ -324,268 +317,295 @@ export default function AdvisoryDashboard({
     setIsLoading(false);
   };
 
-  const tableColumns = [
-    {
-      field: "urgency.urgency",
-      title: (
-        <Tooltip title="Urgency">
-          <WarningRoundedIcon className="warningRoundedIcon" />
-        </Tooltip>
-      ),
-      lookup: urgencies.reduce((lookup, urgency) => {
-        lookup[urgency.urgency] = urgency.urgency;
-        return lookup;
-      }, {}),
-      headerStyle: {
-        width: 10,
-      },
-      cellStyle: (e, rowData) => {
-        if (rowData.urgency !== null) {
-          switch (rowData.urgency?.urgency?.toLowerCase()) {
-            case "low":
-              return {
-                borderLeft: "8px solid #2454a4",
-              };
-            case "medium":
-              return {
-                borderLeft: "8px solid #f5d20e",
-              };
-            case "high":
-              return {
-                borderLeft: "8px solid #f30505",
-              };
-            default:
-              return {};
+  // Convert ISO date to YYYY/MM/DD format for filtering
+  const filterFormattedDate = (filterDate, rowData, column) => {
+    const value = rowData[column.field];
+    if (!filterDate) return true;
+    if (!value) return false;
+
+    return moment(value)
+      .format("YYYY/MM/DD")
+      .toLowerCase()
+      .includes(filterDate.toLowerCase());
+  };
+
+  const tableColumns = useMemo(
+    () => [
+      {
+        field: "urgency.urgency",
+        title: (
+          <Tooltip title="Urgency">
+            <WarningRoundedIcon className="warningRoundedIcon" />
+          </Tooltip>
+        ),
+        filterOnItemSelect: true,
+        lookup: urgencies.reduce((lookup, urgency) => {
+          lookup[urgency.urgency] = urgency.urgency;
+          return lookup;
+        }, {}),
+        headerStyle: {
+          width: 10,
+        },
+        cellStyle: (e, rowData) => {
+          if (rowData.urgency !== null) {
+            switch (rowData.urgency?.urgency?.toLowerCase()) {
+              case "low":
+                return {
+                  borderLeft: "8px solid #2454a4",
+                };
+              case "medium":
+                return {
+                  borderLeft: "8px solid #f5d20e",
+                };
+              case "high":
+                return {
+                  borderLeft: "8px solid #f30505",
+                };
+              default:
+                return {};
+            }
           }
-        }
+        },
+        render: (rowData) => {
+          return (
+            <>
+              <Tooltip
+                title={
+                  rowData.urgency ? rowData.urgency.urgency : "Urgency not set"
+                }
+              >
+                <div className="urgency-column">&nbsp;</div>
+              </Tooltip>
+            </>
+          );
+        },
       },
-      render: (rowData) => {
-        return (
-          <>
-            <Tooltip
-              title={
-                rowData.urgency ? rowData.urgency.urgency : "Urgency not set"
-              }
-            >
-              <div className="urgency-column">&nbsp;</div>
-            </Tooltip>
-          </>
-        );
-      },
-    },
-    {
-      field: "advisoryStatus.advisoryStatus",
-      title: "Status",
-      lookup: advisoryStatuses.reduce((lookup, status) => {
-        lookup[status.advisoryStatus] = status.advisoryStatus;
-        return lookup;
-      }, {}),
-      customSort: (a, b) =>
-        a.archived === b.archived
-          ? a.advisoryStatus.advisoryStatus < b.advisoryStatus.advisoryStatus
-            ? -1
-            : 1
-          : a.archived < b.archived
-            ? 1
-            : -1,
-      cellStyle: {
-        textAlign: "center",
-      },
-      render: (rowData) => (
-        <div className="advisory-status">
-          {rowData.advisoryStatus && !rowData.archived && (
-            <Tooltip title={rowData.advisoryStatus.advisoryStatus}>
-              <span>
-                {publishedAdvisories.includes(rowData.advisoryNumber) && (
+      {
+        field: "advisoryStatus.advisoryStatus",
+        title: "Status",
+        filterOnItemSelect: true,
+        lookup: advisoryStatuses.reduce((lookup, status) => {
+          lookup[status.advisoryStatus] = status.advisoryStatus;
+          return lookup;
+        }, {}),
+        customSort: (a, b) =>
+          a.archived === b.archived
+            ? a.advisoryStatus.advisoryStatus < b.advisoryStatus.advisoryStatus
+              ? -1
+              : 1
+            : a.archived < b.archived
+              ? 1
+              : -1,
+        cellStyle: {
+          textAlign: "center",
+        },
+        render: (rowData) => (
+          <div className="advisory-status">
+            {rowData.advisoryStatus && !rowData.archived && (
+              <Tooltip title={rowData.advisoryStatus.advisoryStatus}>
+                <span>
+                  {publishedAdvisories.includes(rowData.advisoryNumber) && (
+                    <SvgIcon>
+                      {rowData.advisoryStatus.code !== "PUB" && (
+                        <PublishIcon
+                          className="publishedIcon"
+                          viewBox="5 13 25 5"
+                        />
+                      )}
+                      {rowData.advisoryStatus.code === "DFT" && (
+                        <EditIcon
+                          className="draftIcon"
+                          viewBox="-16 -5 45 10"
+                        />
+                      )}
+                      {rowData.advisoryStatus.code === "INA" && (
+                        <WatchLaterIcon
+                          className="inactiveIcon"
+                          viewBox="-16 -5 45 10"
+                        />
+                      )}
+                      {rowData.advisoryStatus.code === "APR" && (
+                        <ThumbUpIcon
+                          className="approvedIcon"
+                          viewBox="-16 -5 45 10"
+                        />
+                      )}
+                      {rowData.advisoryStatus.code === "ARQ" && (
+                        <InfoIcon
+                          className="approvalRequestedIcon"
+                          viewBox="-16 -5 45 10"
+                        />
+                      )}
+                      {rowData.advisoryStatus.code === "PUB" && (
+                        <PublishIcon className="publishedIcon" />
+                      )}
+                    </SvgIcon>
+                  )}
+                  {!publishedAdvisories.includes(rowData.advisoryNumber) && (
+                    <>
+                      {rowData.advisoryStatus.code === "DFT" && (
+                        <EditIcon className="draftIcon" />
+                      )}
+                      {rowData.advisoryStatus.code === "INA" && (
+                        <WatchLaterIcon className="inactiveIcon" />
+                      )}
+                      {rowData.advisoryStatus.code === "APR" && (
+                        <ThumbUpIcon className="approvedIcon" />
+                      )}
+                      {rowData.advisoryStatus.code === "ARQ" && (
+                        <InfoIcon className="approvalRequestedIcon" />
+                      )}
+                      {rowData.advisoryStatus.code === "PUB" && (
+                        <PublishIcon className="publishedIcon" />
+                      )}
+                    </>
+                  )}
+                </span>
+              </Tooltip>
+            )}
+            {rowData.archived && (
+              <Tooltip title="Archived">
+                <span>
                   <SvgIcon>
-                    {rowData.advisoryStatus.code !== "PUB" && (
-                      <PublishIcon
-                        className="publishedIcon"
-                        viewBox="5 13 25 5"
-                      />
-                    )}
-                    {rowData.advisoryStatus.code === "DFT" && (
-                      <EditIcon className="draftIcon" viewBox="-16 -5 45 10" />
-                    )}
-                    {rowData.advisoryStatus.code === "INA" && (
-                      <WatchLaterIcon
-                        className="inactiveIcon"
-                        viewBox="-16 -5 45 10"
-                      />
-                    )}
-                    {rowData.advisoryStatus.code === "APR" && (
-                      <ThumbUpIcon
-                        className="approvedIcon"
-                        viewBox="-16 -5 45 10"
-                      />
-                    )}
-                    {rowData.advisoryStatus.code === "ARQ" && (
-                      <InfoIcon
-                        className="approvalRequestedIcon"
-                        viewBox="-16 -5 45 10"
-                      />
-                    )}
-                    {rowData.advisoryStatus.code === "PUB" && (
-                      <PublishIcon className="publishedIcon" />
-                    )}
+                    <ArchiveIcon className="archivedIcon" />
                   </SvgIcon>
+                </span>
+              </Tooltip>
+            )}
+          </div>
+        ),
+      },
+      {
+        field: "advisoryDate",
+        title: "Posting date",
+        customFilterAndSearch: filterFormattedDate,
+        render: (rowData) => {
+          if (rowData.advisoryDate)
+            return moment(rowData.advisoryDate).format("YYYY/MM/DD");
+        },
+      },
+      {
+        field: "endDate",
+        title: "End date",
+        customFilterAndSearch: filterFormattedDate,
+        render: (rowData) => {
+          if (rowData.endDate) {
+            return moment(rowData.endDate).format("YYYY/MM/DD");
+          }
+        },
+      },
+      {
+        field: "expiryDate",
+        title: "Expiry date",
+        customFilterAndSearch: filterFormattedDate,
+        render: (rowData) => {
+          if (rowData.expiryDate)
+            return moment(rowData.expiryDate).format("YYYY/MM/DD");
+        },
+      },
+      {
+        field: "title",
+        title: "Headline",
+        customSort: (a, b) =>
+          a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1,
+        headerStyle: { width: 400 },
+        cellStyle: { width: 400 },
+        render: (rowData) => {
+          return (
+            <div dangerouslySetInnerHTML={{ __html: rowData.title }}></div>
+          );
+        },
+      },
+      { field: "eventType.eventType", title: "Event type" },
+      {
+        field: "associatedParks",
+        title: "Associated Park(s)",
+        headerStyle: { width: 400 },
+        cellStyle: { width: 400 },
+        render: (rowData) => {
+          const displayCount = 3;
+          const regionsCount = rowData.regions?.length;
+          if (regionsCount > 0) {
+            let regions = rowData?.regions?.slice(0, displayCount);
+            return (
+              <div>
+                {regions?.map((p, i) => (
+                  <span key={i}>
+                    {p.regionName} region
+                    <Chip
+                      size="small"
+                      variant="outlined"
+                      label={`${p.count} parks`}
+                    />
+                  </span>
+                ))}
+                {regionsCount > displayCount && (
+                  <Tooltip
+                    title={`plus ${regionsCount - displayCount} more region(s)`}
+                  >
+                    <Chip
+                      size="small"
+                      label={`+${regionsCount - displayCount}`}
+                    />
+                  </Tooltip>
                 )}
-                {!publishedAdvisories.includes(rowData.advisoryNumber) && (
-                  <>
-                    {rowData.advisoryStatus.code === "DFT" && (
-                      <EditIcon className="draftIcon" />
-                    )}
-                    {rowData.advisoryStatus.code === "INA" && (
-                      <WatchLaterIcon className="inactiveIcon" />
-                    )}
-                    {rowData.advisoryStatus.code === "APR" && (
-                      <ThumbUpIcon className="approvedIcon" />
-                    )}
-                    {rowData.advisoryStatus.code === "ARQ" && (
-                      <InfoIcon className="approvalRequestedIcon" />
-                    )}
-                    {rowData.advisoryStatus.code === "PUB" && (
-                      <PublishIcon className="publishedIcon" />
-                    )}
-                  </>
-                )}
-              </span>
-            </Tooltip>
-          )}
-          {rowData.archived && (
-            <Tooltip title="Archived">
-              <span>
-                <SvgIcon>
-                  <ArchiveIcon className="archivedIcon" />
-                </SvgIcon>
-              </span>
-            </Tooltip>
-          )}
-        </div>
-      ),
-    },
-    {
-      field: "advisoryDate",
-      title: "Posting date",
-      render: (rowData) => {
-        if (rowData.advisoryDate)
-          return <Moment format="YYYY/MM/DD">{rowData.advisoryDate}</Moment>;
-      },
-    },
-    {
-      field: "endDate",
-      title: "End date",
-      render: (rowData) => {
-        if (rowData.endDate) {
-          return <Moment format="YYYY/MM/DD">{rowData.endDate}</Moment>;
-        }
-      },
-    },
-    {
-      field: "expiryDate",
-      title: "Expiry date",
-      render: (rowData) => {
-        if (rowData.expiryDate)
-          return <Moment format="YYYY/MM/DD">{rowData.expiryDate}</Moment>;
-      },
-    },
-    {
-      field: "title",
-      title: "Headline",
-      customSort: (a, b) =>
-        a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1,
-      headerStyle: { width: 400 },
-      cellStyle: { width: 400 },
-      render: (rowData) => {
-        return <div dangerouslySetInnerHTML={{ __html: rowData.title }}></div>;
-      },
-    },
-    { field: "eventType.eventType", title: "Event type" },
-    {
-      field: "associatedParks",
-      title: "Associated Park(s)",
-      headerStyle: { width: 400 },
-      cellStyle: { width: 400 },
-      render: (rowData) => {
-        const displayCount = 3;
-        const regionsCount = rowData.regions?.length;
-        if (regionsCount > 0) {
-          let regions = rowData?.regions?.slice(0, displayCount);
+              </div>
+            );
+          }
+
+          const parksCount = rowData.protectedAreas.length;
+          let protectedAreas = rowData.protectedAreas.slice(0, displayCount);
           return (
             <div>
-              {regions?.map((p, i) => (
+              {protectedAreas.map((p, i) => (
                 <span key={i}>
-                  {p.regionName} region
-                  <Chip
-                    size="small"
-                    variant="outlined"
-                    label={`${p.count} parks`}
-                  />
+                  {p.protectedAreaName}
+                  {protectedAreas.length - 1 > i && ", "}
                 </span>
               ))}
-              {regionsCount > displayCount && (
+              {parksCount > displayCount && (
                 <Tooltip
-                  title={`plus ${regionsCount - displayCount} more region(s)`}
+                  title={`plus ${parksCount - displayCount} more park(s)`}
                 >
-                  <Chip
-                    size="small"
-                    label={`+${regionsCount - displayCount}`}
-                  />
+                  <Chip size="small" label={`+${parksCount - displayCount}`} />
                 </Tooltip>
               )}
             </div>
           );
-        }
-
-        const parksCount = rowData.protectedAreas.length;
-        let protectedAreas = rowData.protectedAreas.slice(0, displayCount);
-        return (
-          <div>
-            {protectedAreas.map((p, i) => (
-              <span key={i}>
-                {p.protectedAreaName}
-                {protectedAreas.length - 1 > i && ", "}
-              </span>
-            ))}
-            {parksCount > displayCount && (
-              <Tooltip title={`plus ${parksCount - displayCount} more park(s)`}>
-                <Chip size="small" label={`+${parksCount - displayCount}`} />
-              </Tooltip>
-            )}
-          </div>
-        );
+        },
       },
-    },
-    {
-      title: "",
-      field: "id",
-      filtering: false,
-      headerStyle: {
-        width: 10,
-        maxWidth: 10,
-        minWidth: 10,
+      {
+        title: "",
+        field: "id",
+        filtering: false,
+        headerStyle: {
+          width: 10,
+          maxWidth: 10,
+          minWidth: 10,
+        },
+        cellStyle: {
+          width: 10,
+          maxWidth: 10,
+          minWidth: 10,
+          textAlign: "right",
+          paddingRight: "10px",
+        },
+        render: (rowData) => (
+          <IconButton>
+            <MoreVertIcon />
+          </IconButton>
+        ),
       },
-      cellStyle: {
-        width: 10,
-        maxWidth: 10,
-        minWidth: 10,
-        textAlign: "right",
-        paddingRight: "10px",
-      },
-      render: (rowData) => (
-        <IconButton>
-          <MoreVertIcon />
-        </IconButton>
-      ),
-    },
-  ];
+    ],
+    [urgencies, advisoryStatuses, publishedAdvisories],
+  );
 
   if (toCreate) {
-    return <Redirect to="/create-advisory" />;
+    return <Navigate to="/create-advisory" />;
   }
   if (toError || hasErrors) {
     console.log("toError || hasErrors", toError, hasErrors);
-    return <Redirect push to="/error" />;
+    return <Navigate to="/error" />;
   }
 
   return (
@@ -705,8 +725,8 @@ export default function AdvisoryDashboard({
           <br />
           <div className="container-fluid">
             <DataTable
-              key={publicAdvisories.length}
               options={{
+                debounceInterval: 75,
                 filtering: true,
                 search: false,
                 pageSize: 50,
@@ -728,14 +748,11 @@ export default function AdvisoryDashboard({
                   ...arrFilters,
                 ]);
               }}
-              columns={tableColumns.map((col) => ({
-                ...col,
-                defaultFilter: getTableFilterValue(col),
-              }))}
+              columns={tableColumns}
               data={publicAdvisories}
               title=""
               onRowClick={(event, rowData) => {
-                history.push(`/advisory-summary/${rowData.documentId}`);
+                navigate(`/advisory-summary/${rowData.documentId}`);
               }}
               components={{
                 Toolbar: (props) => <div></div>,

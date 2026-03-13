@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Redirect, useHistory } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import "../../page.css";
 import { Button } from "../../shared/button/Button";
@@ -7,26 +7,26 @@ import Header from "../../composite/header/Header";
 
 export default function Error({ page: { error } }) {
   const [toHome, setToHome] = useState(false);
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push("/advisories");
+        navigate("/advisories");
         break;
       case 1:
-        history.push("/park-access-status");
+        navigate("/park-access-status");
         break;
       case 2:
-        history.push("/activities-and-facilities");
+        navigate("/activities-and-facilities");
         break;
       default:
-        history.push("/");
+        navigate("/");
     }
   };
 
   if (toHome || error?.status === 401) {
-    return <Redirect to="/" />;
+    return <Navigate to="/" />;
   }
   let errorContent;
   if (!error) {

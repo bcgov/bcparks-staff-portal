@@ -2,7 +2,7 @@ import React from "react";
 import { ReactKeycloakProvider } from "@react-keycloak/web";
 import keycloak from "./components/keycloak";
 import AppRouter from "./routes/AppRouter";
-import { QueryClient, QueryClientProvider } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 const queryClient = new QueryClient();
 const isFirefox = typeof InstallTrigger !== "undefined";

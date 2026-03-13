@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryAreaPicker.css";
-import { FormControl, FormHelperText } from "@material-ui/core";
+import { FormControl, FormHelperText } from "@mui/material";
 import Select from "react-select";
 import LightTooltip from "../../shared/tooltip/LightTooltip";
-import HelpIcon from "@material-ui/icons/Help";
+import HelpIcon from "@mui/icons-material/Help";
 import { validateRequiredAffectedArea } from "../../../validators/AdvisoryValidator";
 import { generateProtectedAreasListForSelectedRelations } from "../../../utils/AdvisoryUtil";
 import { getParkRelations } from "../../../utils/CmsDataUtil";

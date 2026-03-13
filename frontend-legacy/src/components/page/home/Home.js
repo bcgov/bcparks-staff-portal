@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Redirect } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "../../shared/button/Button";
 import Header from "../../composite/header/Header";
 import "./Home.css";
 import config from "../../../utils/config";
-import OpenInNew from "@material-ui/icons/OpenInNew";
+import OpenInNew from "@mui/icons-material/OpenInNew";
 
 export default function Home({ page: { setError } }) {
   const { initialized, keycloak } = useKeycloak();
@@ -37,7 +37,7 @@ export default function Home({ page: { setError } }) {
 
   if (toDashboard) {
     return (
-      <Redirect
+      <Navigate
         to={{
           pathname: `/advisories`,
           index: 0,
