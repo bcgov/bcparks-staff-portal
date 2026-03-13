@@ -1,5 +1,5 @@
-# Stage 1: Build the React app in a Node 20 environment
-FROM node:20.17 AS build
+# Stage 1: Build the React app in a Node 24 environment
+FROM node:24.14 AS build
 
 WORKDIR /app
 

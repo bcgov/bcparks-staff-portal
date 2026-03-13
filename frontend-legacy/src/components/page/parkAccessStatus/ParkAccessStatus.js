@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { cmsAxios } from "../../../axios_config";
 import DataTable from "../../composite/dataTable/DataTable";
 import { Loader } from "../../shared/loader/Loader";
-import { useQuery } from "react-query";
+import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import { exportPdf } from "../../../utils/ExportPdfUtil";
 import "./ParkAccessStatus.css";
@@ -19,6 +19,7 @@ export default function ParkAccessStatus() {
     );
 
     const data = response.data.map((park) => {
+      park.id = park.orcs;
       park.managementAreasStr = park.managementAreas.join(", ");
       park.sectionsStr = park.sections.join(", ");
       park.regionsStr = park.regions.join(", ");
@@ -37,13 +38,11 @@ export default function ParkAccessStatus() {
   };
 
   const STALE_TIME_MILLISECONDS = 10 * 60 * 1000; // 10 minutes
-  const { isLoading, data } = useQuery(
-    "parkAccessStatus",
-    fetchParkAccessStatus,
-    {
-      staleTime: STALE_TIME_MILLISECONDS,
-    },
-  );
+  const { isLoading, data } = useQuery({
+    queryKey: ["parkAccessStatus"],
+    queryFn: fetchParkAccessStatus,
+    staleTime: STALE_TIME_MILLISECONDS,
+  });
 
   const title = "Park Access Status";
   const exportFilename =

@@ -13,7 +13,7 @@ jobs:
   build-frontend:
     runs-on: ubuntu-24.04
     env:
-      IMAGE_NAME: frontend-${{ github.ref_name }}
+      IMAGE_NAME: frontend-alpha
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3
@@ -58,7 +58,7 @@ jobs:
   build-backend:
     runs-on: ubuntu-24.04
     env:
-      IMAGE_NAME: backend-${{ github.ref_name }}
+      IMAGE_NAME: backend-alpha
     steps:
       - name: Git Checkout
         uses: actions/checkout@v3

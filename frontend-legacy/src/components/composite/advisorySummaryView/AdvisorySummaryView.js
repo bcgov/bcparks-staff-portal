@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 import "./AdvisorySummaryView.css";
-import LaunchIcon from "@material-ui/icons/Launch";
-import FileCopyOutlinedIcon from "@material-ui/icons/FileCopyOutlined";
-import Chip from "@material-ui/core/Chip";
+import LaunchIcon from "@mui/icons-material/Launch";
+import FileCopyOutlinedIcon from "@mui/icons-material/FileCopyOutlined";
+import Chip from "@mui/material/Chip";
 import moment from "moment";
 import AdvisoryHistory from "../advisoryHistory/AdvisoryHistory";
 import config from "../../../utils/config";
