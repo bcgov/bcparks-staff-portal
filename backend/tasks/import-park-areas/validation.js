@@ -3,7 +3,6 @@ import { ParkArea } from "../../models/index.js";
 
 /**
  * Validates DOOT Park Areas for invalid strapiOrcsAreaNumber values
- * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
 export async function validateDootParkAreas() {

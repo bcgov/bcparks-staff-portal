@@ -3,7 +3,6 @@ import { Feature } from "../../models/index.js";
 
 /**
  * Validates DOOT Features for invalid strapiOrcsFeatureNumber values
- * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
 export async function validateDootFeatures() {
