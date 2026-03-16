@@ -2,9 +2,12 @@
 
 This directory contains the code for the frontend Staff Portal web application, built with React.
 
+The `advisories/` subdirectory contains the Advisories portal, a separate React app that is also developed within this Dev Container. See the [advisories README](./advisories/README.md) for details on running it.
+
 ## Project structure
 
 - `src/`: Directory containing the main application code.
+- `advisories/`: The Advisories portal (separate React app, communicates with Strapi CMS).
 - `public/`: Directory for static assets.
 - `vite.config.js`: Configuration file for Vite, the build tool.
 

@@ -1,6 +1,6 @@
 # Caddyfile for the test-proxy docker service which is used for local development
-# testing involving both the frontend and the frontend-legacy React apps.
-# The frontend app runs in docker, but frontend-legacy runs on the host machine
+# testing involving both the DOOT frontend and the Advisories React apps.
+# The frontend app runs in docker, but the Advisories frontend runs on the host machine
 # and must be started manually using `npm run dev`. Strapi must also be running.
 :80 {
   # Redirect bare /dates to /dates/
@@ -13,7 +13,7 @@
     reverse_proxy frontend:8101
   }
 
-  # Everything else to legacy app on host
+  # Everything else to Advisories app on host
   handle {
     reverse_proxy host.docker.internal:3000
   }

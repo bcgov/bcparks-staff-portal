@@ -6,7 +6,7 @@ Expanding and modernizing the BC Parks Dates of Operation tool.
 
 This project consists of a REST API server in `backend/` and a React JS frontend in `frontend/`. For more details, refer to the specific [backend README](./backend/README.md) and [frontend README](./frontend/README.md) files.
 
-The "Legacy frontend" is located in `frontend-legacy/` and communicates with the external Strapi CMS.
+The Advisories portal is located in `frontend/advisories/` and communicates with the external Strapi CMS. It is a separate React app but is developed within the same `frontend` Dev Container. See the [advisories README](./frontend/advisories/README.md) for more details.
 
 Openshift Helm charts are located in `helm/`.
 
@@ -38,6 +38,8 @@ The servers do not automatically start in the containers, so you'll need to star
 4. **Dev Containers: Reopen in Container** - then select `frontend`.
 
 Now you'll have two VS Code windows open, each with a Dev Container for a different part of the app. Refer to the [backend README](./backend/README.md) and [frontend README](./frontend/README.md) for details on starting the dev servers (e.g., `npm run dev` in the integrated terminal).
+
+The `frontend` Dev Container is also used to develop and run the Advisories portal. See the [advisories README](./frontend/advisories/README.md) for details.
 
 The Dev Containers will not shut down automatically. This is so the containers don't stop when you close one window. You can manually stop them in Docker Desktop by clicking the Stop button in the Actions column.
 

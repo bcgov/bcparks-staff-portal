@@ -6,7 +6,7 @@
 }
 
 // Fade in animation because I couldn't find any other way to
-// prevent a flash of the login page when switching between legacy and DOOT
+// prevent a flash of the login page when switching between Advisories and DOOT
 @keyframes loginFadeIn {
   to {
     opacity: 1;

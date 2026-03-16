@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Populate env.js for the legacy frontend
+# Populate env.js for the Advisories frontend
 
 if [ -n "$REACT_APP_CMS_BASE_URL" ]; then
   echo "window.REACT_APP_CMS_BASE_URL = \"$REACT_APP_CMS_BASE_URL\";" >> $APP_ROOT/js/env.js

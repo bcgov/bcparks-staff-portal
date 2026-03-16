@@ -26,9 +26,9 @@ ENV V2_APP_ROOT=$APP_ROOT/dates
 ADD frontend/Caddyfile /etc/caddy/Caddyfile
 RUN caddy fmt --overwrite /etc/caddy/Caddyfile
 
-# Add the built legacy app to Caddy's default public directory
-COPY frontend-legacy/entrypoint.sh /entrypoint.sh
-COPY frontend-legacy/build $APP_ROOT/
+# Add the built Advisories app to Caddy's default public directory
+COPY frontend/advisories/entrypoint.sh /entrypoint.sh
+COPY frontend/advisories/build $APP_ROOT/
 
 # Copy the built app to Caddy's vs subdirectoy
 COPY --from=build /app/dist $V2_APP_ROOT

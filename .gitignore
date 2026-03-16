@@ -46,7 +46,7 @@ jspm_packages/
 web_modules/
 
 # Build directory
-frontend-legacy/build/
+frontend/advisories/build/
 
 # TypeScript cache
 *.tsbuildinfo

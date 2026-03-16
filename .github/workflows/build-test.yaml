@@ -38,13 +38,13 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: "18"
+          node-version: "24"
 
-      - name: Legacy npm build
+      - name: Advisories frontend npm build
         run: |
           npm install
           npm run build
-        working-directory: frontend-legacy
+        working-directory: frontend/advisories
 
       - name: Docker build
         run: |
