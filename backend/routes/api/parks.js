@@ -18,7 +18,7 @@ import asyncHandler from "express-async-handler";
 import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
-import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
+import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 

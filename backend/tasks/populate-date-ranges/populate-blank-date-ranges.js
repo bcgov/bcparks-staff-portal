@@ -18,7 +18,7 @@ import {
   getDateTypesForFeature,
   getDateTypesForPark,
 } from "../../utils/dateTypesHelpers.js";
-import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
+import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
 
 // Select the relevant attributes for Feature records
 const FEATURE_ATTRIBUTES = [

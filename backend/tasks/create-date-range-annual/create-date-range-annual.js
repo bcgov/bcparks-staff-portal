@@ -13,7 +13,7 @@ import {
 } from "../../models/index.js";
 import { Op } from "sequelize";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
-import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
+import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
 
 // Functions
 // finds dateableId for a given park and "Park gate open" dateType
