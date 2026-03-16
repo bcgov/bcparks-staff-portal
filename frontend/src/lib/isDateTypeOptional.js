@@ -1,4 +1,4 @@
-import * as DATE_TYPE from "../constants/dateType.js";
+import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
 
 export const optionalTypes = {
   park: [DATE_TYPE.PARK_GATE_OPEN, DATE_TYPE.TIER_2],

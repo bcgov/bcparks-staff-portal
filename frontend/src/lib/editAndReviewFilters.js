@@ -1,4 +1,4 @@
-import * as DATE_TYPES from "@/constants/dateType.js";
+import * as DATE_TYPES from "@bcparks-staff-portal/shared/constants/dateType.js";
 
 /**
  * Checks a Park against the active Park-level "hard" filters.

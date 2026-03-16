@@ -21,7 +21,7 @@ import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import * as SEASON_TYPE from "@/constants/seasonType";
-import * as DATE_TYPE from "@/constants/dateType";
+import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType";
 
 // Individual Park form section
 function FormSection({
