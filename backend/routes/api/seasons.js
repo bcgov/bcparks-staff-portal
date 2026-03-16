@@ -4,7 +4,7 @@ import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
-import * as DATE_TYPE from "../../constants/dateType.js";
+import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import {
   getAllDateTypes,

@@ -8,7 +8,7 @@ import {
   Season,
   Dateable,
 } from "../../models/index.js";
-import * as DATE_TYPE from "../../constants/dateType.js";
+import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 /**

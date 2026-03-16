@@ -32,6 +32,7 @@
     "@adminjs/express": "^6.1.0",
     "@adminjs/relations": "^1.1.2",
     "@adminjs/sequelize": "^4.1.1",
+    "@bcparks/shared": "file:../shared",
     "@date-fns/tz": "^1.4.1",
     "@dotenvx/dotenvx": "^1.52.0",
     "@fast-csv/format": "^5.0.5",

@@ -19,7 +19,7 @@ import {
   DateRangeAnnual,
   GateDetail,
 } from "../../models/index.js";
-import * as DATE_TYPE from "../../constants/dateType.js";
+import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 
 const router = Router();

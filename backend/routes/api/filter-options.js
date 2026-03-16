@@ -7,7 +7,7 @@ import {
   Section,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
-import * as DATE_TYPE from "../../constants/dateType.js";
+import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
 
 const router = Router();
 

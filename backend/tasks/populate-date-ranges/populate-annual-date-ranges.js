@@ -7,7 +7,7 @@ import { Season, DateRange, DateRangeAnnual } from "../../models/index.js";
 import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
-import * as DATE_TYPE from "../../constants/dateType.js";
+import * as DATE_TYPE from "@bcparks/shared/constants/dateType.js";
 
 // Functions
 
