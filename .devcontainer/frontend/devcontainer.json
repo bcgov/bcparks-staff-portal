@@ -16,7 +16,7 @@
   // connected. This is typically a file mount in .devcontainer/docker-compose.yml
   "workspaceFolder": "/app/frontend",
 
-  "mounts": ["type=bind,source=../../frontend,target=/frontend"],
+  "mounts": [],
 
   // Features to add to the dev container. More info: https://containers.dev/features.
   // "features": {},
