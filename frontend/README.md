@@ -57,6 +57,11 @@ The React app runs in development mode with `Vite`. The app will automatically u
 npm run dev
 ```
 
+When the Advisories app is also running in the devcontainer on `http://localhost:3000`, the Vite dev server proxies all non-`/dates` requests to it. That gives you this setup during local development:
+
+- `http://localhost:8101/dates/` serves this Vite app from `frontend/`.
+- `http://localhost:8101/` proxies through to the Advisories CRA app from `frontend/advisories/`.
+
 ### Code formatting
 
 The Dev Container is configured with Prettier and ESLint. Code will be automatically formatted on save.
