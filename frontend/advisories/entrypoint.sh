@@ -33,15 +33,15 @@ fi
 # Populate env.js for the v2 frontend
 
 if [ -n "$VITE_OIDC_AUTHORITY" ]; then
-  echo "window.envVars.VITE_OIDC_AUTHORITY = \"$VITE_OIDC_AUTHORITY\";" >> $V2_APP_ROOT/env.js
+  echo "window.envVars.VITE_OIDC_AUTHORITY = \"$VITE_OIDC_AUTHORITY\";" >> $DOOT_APP_ROOT/env.js
 fi
 
 if [ -n "$VITE_OIDC_CLIENT_ID" ]; then
-  echo "window.envVars.VITE_OIDC_CLIENT_ID = \"$VITE_OIDC_CLIENT_ID\";" >> $V2_APP_ROOT/env.js
+  echo "window.envVars.VITE_OIDC_CLIENT_ID = \"$VITE_OIDC_CLIENT_ID\";" >> $DOOT_APP_ROOT/env.js
 fi
 
 if [ -n "$VITE_API_BASE_URL" ]; then
-  echo "window.envVars.VITE_API_BASE_URL = \"$VITE_API_BASE_URL\";" >> $V2_APP_ROOT/env.js
+  echo "window.envVars.VITE_API_BASE_URL = \"$VITE_API_BASE_URL\";" >> $DOOT_APP_ROOT/env.js
 fi
 
 # Start the server
