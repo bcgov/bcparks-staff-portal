@@ -1,0 +1,108 @@
+{
+  "name": "advisories-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@bcgov/bc-sans": "^2.1.0",
+    "@bcparks-staff-portal/shared": "file:../../shared",
+    "@digitalspace/bcparks-bootstrap-theme": "^1.4.6",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@material-table/core": "^6.4.3",
+    "@mui/icons-material": "^6.1.9",
+    "@mui/material": "^6.1.9",
+    "@react-keycloak/web": "^3.4.0",
+    "@tanstack/react-query": "^5.62.7",
+    "axios": "^1.7.9",
+    "jspdf": "^4.2.0",
+    "jspdf-autotable": "^5.0.7",
+    "keycloak-js": "^26.2.2",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.5.48",
+    "prop-types": "^15.8.1",
+    "qs": "^6.14.1",
+    "react": "^19.2.4",
+    "react-datepicker": "^7.5.0",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^7.13.1",
+    "react-select": "^5.8.3",
+    "web-vitals": "^4.2.4"
+  },
+  "devDependencies": {
+    "@babel/preset-react": "^7.26.3",
+    "@craco/craco": "^7.1.0",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.6.3",
+    "@testing-library/react": "^16.1.0",
+    "@testing-library/user-event": "^14.5.2",
+    "babel-jest": "^29.7.0",
+    "babel-loader": "^9.2.1",
+    "cross-env": "^7.0.3",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "prettier": "^3.4.2",
+    "react-scripts": "^5.0.1",
+    "webpack": "^5.97.1"
+  },
+  "scripts": {
+    "start": "BROWSER=none craco start",
+    "dev": "npm run start",
+    "build": "craco build",
+    "test": "jest",
+    "eject": "craco eject",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix ."
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "ie 11",
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "watchPathIgnorePatterns": [
+      "<rootDir>/node_modules/"
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/index.js",
+      "!**/node_modules/**",
+      "!**/vendor/**"
+    ],
+    "transform": {
+      "^.+\\.[t|j]sx?$": "babel-jest"
+    },
+    "setupFilesAfterEnv": [
+      "<rootDir>/src/setupTests.js"
+    ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|PNG|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga|pdf)$": "<rootDir>/src/AssetsTransformer.js",
+      "\\.(css|less)$": "<rootDir>/src/AssetsTransformer.js"
+    },
+    "verbose": true,
+    "collectCoverage": true,
+    "coverageReporters": [
+      "text",
+      "lcov"
+    ],
+    "coverageDirectory": "coverage"
+  },
+  "overrides": {
+    "react-scripts": {
+      "typescript": "^5.7.2"
+    }
+  }
+}

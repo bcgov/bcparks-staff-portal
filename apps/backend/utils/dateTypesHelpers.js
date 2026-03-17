@@ -1,0 +1,88 @@
+import { DateType } from "../models/index.js";
+import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
+import * as SEASON_TYPE from "../constants/seasonType.js";
+
+/**
+ * Returns an array of all DateTypes, optionally filtered by a WHERE clause.
+ * @param {Object} [where={}] Where clause to filter DateTypes (by level, etc.)
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Array<DateType>>} Array of DateTypes
+ */
+export async function getAllDateTypes(where = {}, transaction = null) {
+  return DateType.findAll({
+    attributes: [
+      "id",
+      "name",
+      "strapiDateTypeId",
+      "description",
+      "parkLevel",
+      "featureLevel",
+    ],
+
+    where,
+
+    transaction,
+  });
+}
+
+/**
+ * Returns the DateTypes applicable to a Park or Feature in a specific order.
+ * @param {Object} park Park object
+ * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects
+ * @param {string} [seasonType] Season type ("winter" or "regular") to filter applicable date types
+ * @returns {Array} Applicable DateType objects for the Park, in order
+ */
+export function getDateTypesForPark(
+  park,
+  dateTypesByDateTypeId,
+  seasonType = SEASON_TYPE.REGULAR,
+) {
+  // Return the DateTypes in a specific order
+  const orderedDateTypes = [];
+
+  // Add applicable date types for the Park based on season type
+  // For winter seasons
+  if (seasonType === SEASON_TYPE.WINTER) {
+    if (park.hasWinterFeeDates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.WINTER_FEE]);
+    }
+    // For regular ("tiers and gate") seasons
+  } else if (seasonType === SEASON_TYPE.REGULAR) {
+    if (park.hasTier1Dates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_1]);
+    }
+    if (park.hasTier2Dates) {
+      orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.TIER_2]);
+    }
+
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.PARK_GATE_OPEN]);
+  }
+
+  // Filter out any undefined items (potentially caused by date types missing from the DB)
+  return orderedDateTypes.filter(Boolean);
+}
+
+/**
+ * Returns the DateTypes applicable to a Feature in a specific order.
+ * For Features, it includes Operation, Reservation, and Backcountry registration dates if applicable.
+ * @param {Object} feature Feature object
+ * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects
+ * @returns {Array} An array of DateType objects in the specified order.
+ */
+export function getDateTypesForFeature(feature, dateTypesByDateTypeId) {
+  // Return the DateTypes in a specific order
+  const orderedDateTypes = [dateTypesByDateTypeId[DATE_TYPE.OPERATION]];
+
+  // Add applicable date types for the Feature
+  if (feature.hasReservations) {
+    orderedDateTypes.push(dateTypesByDateTypeId[DATE_TYPE.RESERVATION]);
+  }
+  if (feature.hasBackcountryPermits) {
+    orderedDateTypes.push(
+      dateTypesByDateTypeId[DATE_TYPE.BACKCOUNTRY_REGISTRATION],
+    );
+  }
+
+  // Filter out any undefined items (potentially caused by date types missing from the DB)
+  return orderedDateTypes.filter(Boolean);
+}

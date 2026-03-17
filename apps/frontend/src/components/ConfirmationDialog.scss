@@ -1,0 +1,15 @@
+.confirmation-dialog-modal {
+  &.modal-content {
+    border: none;
+    border-left: 5px solid var(--support-border-color-warning);
+  }
+
+  .modal-header {
+    border-bottom: none;
+  }
+
+  .modal-footer {
+    border-top: none;
+    justify-content: space-between;
+  }
+}

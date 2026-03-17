@@ -1,0 +1,15 @@
+// Inside a dev container, click "Open Workspace" to load a multi-root workspace
+// with the backend and the shared code folders.
+{
+  "folders": [
+    {
+      "name": "shared",
+      "path": "../shared",
+    },
+    {
+      "name": "backend",
+      "path": ".",
+    },
+  ],
+  "settings": {},
+}

@@ -1,0 +1,63 @@
+# syntax=docker/dockerfile:1
+
+# Stage 1: Build the DOOT React app in a Node 24 environment
+FROM node:24.14 AS build-doot
+
+WORKDIR /app/frontend
+
+# Copy shared code folder
+COPY shared/ /app/shared/
+
+# Install dependencies
+COPY frontend/package*.json frontend/.npmrc ./
+RUN --mount=type=secret,id=FONTAWESOME_PACKAGE_TOKEN \
+    FONTAWESOME_PACKAGE_TOKEN=$(cat /run/secrets/FONTAWESOME_PACKAGE_TOKEN) \
+    npm install --production
+
+# Copy the rest of the files and build the app
+COPY --exclude=advisories frontend/ .
+RUN npm run build
+
+# Stage 2: Build the Advisories React app in a Node 24 environment
+FROM node:24.14 AS build-advisories
+
+WORKDIR /app/frontend/advisories
+
+# Copy shared code folder
+COPY shared/ /app/shared/
+
+COPY frontend/advisories/package*.json ./
+RUN npm install
+
+COPY frontend/advisories/ .
+RUN npm run build
+
+# Stage 3: Serve both apps with Caddy
+# anything newer than 2.6.2 causes an OpenShift error
+FROM caddy:2.6.2-alpine
+
+RUN apk add --no-cache ca-certificates
+
+ENV APP_ROOT=/usr/share/caddy
+ENV XDG_CONFIG_HOME=/tmp/config
+ENV DOOT_APP_ROOT=$APP_ROOT/dates
+
+ADD frontend/Caddyfile /etc/caddy/Caddyfile
+RUN caddy fmt --overwrite /etc/caddy/Caddyfile
+
+# Add the built Advisories app to Caddy's default public directory
+COPY frontend/advisories/entrypoint.sh /entrypoint.sh
+COPY --from=build-advisories /app/frontend/advisories/build $APP_ROOT/
+
+# Copy the built DOOT app to Caddy's subdirectory
+COPY --from=build-doot /app/frontend/dist $DOOT_APP_ROOT
+
+# Fix permissions
+RUN chmod +x /entrypoint.sh
+RUN chgrp -R 0 $APP_ROOT && chmod -R g=u $APP_ROOT
+
+EXPOSE 3000
+
+USER 1001
+
+CMD ["/entrypoint.sh"]

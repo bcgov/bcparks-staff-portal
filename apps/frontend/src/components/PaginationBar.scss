@@ -1,0 +1,17 @@
+ul.pagination {
+  --bs-pagination-bg: inherit;
+
+  li {
+    text-align: center;
+
+    a:hover {
+      background-color: var(--bs-secondary-bg);
+      color: var(--bs-pagination-color);
+      text-decoration: none;
+    }
+
+    a:active {
+      box-shadow: 0 0 0 0.25rem var(--bs-focus-ring-color);
+    }
+  }
+}

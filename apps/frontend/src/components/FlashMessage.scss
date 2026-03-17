@@ -1,0 +1,80 @@
+// FlashMessage.scss
+.flash-message {
+  position: fixed;
+  top: var(--layout-margin-medium);
+  right: var(--layout-margin-medium);
+  // Display above the offcanvas panel
+  z-index: 1046;
+  max-width: 75vw;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  padding: var(--layout-padding-medium);
+  border-radius: var(--layout-border-radius-large);
+  color: var(--typography-color-primary-invert);
+  animation: slideIn 0.3s ease-out;
+
+  @include from-md {
+    max-width: min(40vw, 600px);
+  }
+
+  &.success {
+    background-color: var(--support-border-color-success);
+  }
+
+  &.error {
+    background-color: var(--support-border-color-danger);
+  }
+
+  &.info {
+    background-color: var(--support-border-color-info);
+  }
+
+  &__icon {
+    font-size: 20px;
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+  }
+
+  &__title {
+    font-weight: 500;
+  }
+
+  &__subtitle {
+    font-size: var(--typography-font-size-small-body);
+    opacity: 0.9;
+  }
+
+  &__close {
+    align-self: flex-start;
+    background: none;
+    border: none;
+    color: var(--typography-color-primary-invert);
+    font-size: var(--typography-font-size-h4);
+    line-height: 1;
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 0;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

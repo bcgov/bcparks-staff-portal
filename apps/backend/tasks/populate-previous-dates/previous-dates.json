@@ -1,0 +1,184 @@
+[
+  {
+    "orcs": 45,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-03-14",
+    "endDate": "2025-06-12"
+  },
+  {
+    "orcs": 45,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-06-13",
+    "endDate": "2025-09-06"
+  },
+  {
+    "orcs": 45,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-09-07",
+    "endDate": "2025-10-30"
+  },
+  {
+    "orcs": 307,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-03-21",
+    "endDate": "2025-10-13"
+  },
+  {
+    "orcs": 54,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-03-28",
+    "endDate": "2025-06-10"
+  },
+  {
+    "orcs": 54,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-06-11",
+    "endDate": "2025-09-01"
+  },
+  {
+    "orcs": 54,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-10-13"
+  },
+  {
+    "orcs": 210,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-01-01",
+    "endDate": "2025-05-09"
+  },
+  {
+    "orcs": 210,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-05-10",
+    "endDate": "2025-08-31"
+  },
+  {
+    "orcs": 210,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-09-01",
+    "endDate": "2025-12-31"
+  },
+  {
+    "orcs": 8,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-02-28",
+    "endDate": "2025-11-30"
+  },
+  {
+    "orcs": 235,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-05-05",
+    "endDate": "2025-06-24"
+  },
+  {
+    "orcs": 235,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-06-25",
+    "endDate": "2025-09-01"
+  },
+  {
+    "orcs": 235,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-10-01"
+  },
+  {
+    "orcs": 193,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-04-11",
+    "endDate": "2025-05-15"
+  },
+  {
+    "orcs": 193,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-05-16",
+    "endDate": "2025-09-01"
+  },
+  {
+    "orcs": 193,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-10-12"
+  },
+  {
+    "orcs": 90,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-03-14",
+    "endDate": "2025-11-02"
+  },
+  {
+    "orcs": 314,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-01-01",
+    "endDate": "2025-12-31"
+  },
+  {
+    "orcs": 41,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-01-01",
+    "endDate": "2025-03-27"
+  },
+  {
+    "orcs": 41,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-03-28",
+    "endDate": "2025-11-16"
+  },
+  {
+    "orcs": 41,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-11-17",
+    "endDate": "2025-12-31"
+  },
+  {
+    "orcs": 89,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-05-01",
+    "endDate": "2025-10-12"
+  },
+  {
+    "orcs": 96,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-05-02",
+    "endDate": "2025-05-15"
+  },
+  {
+    "orcs": 96,
+    "operatingYear": 2025,
+    "dateType": "Tier 1",
+    "startDate": "2025-05-16",
+    "endDate": "2025-09-01"
+  },
+  {
+    "orcs": 96,
+    "operatingYear": 2025,
+    "dateType": "Tier 2",
+    "startDate": "2025-09-02",
+    "endDate": "2025-09-13"
+  }
+]

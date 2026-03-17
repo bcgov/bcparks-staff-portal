@@ -1,0 +1,322 @@
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  groupBy,
+  set as lodashSet,
+  get as lodashGet,
+  cloneDeep,
+} from "lodash-es";
+import { useMemo, useContext } from "react";
+import PropTypes from "prop-types";
+import { isEqual } from "date-fns";
+
+import DateRangeFields from "@/components/DateRangeFields";
+import FormContainer from "@/components/FormContainer";
+import GateForm from "@/components/GateForm";
+import ReadyToPublishBox from "@/components/ReadyToPublishBox";
+import TooltipWrapper from "@/components/TooltipWrapper";
+import PreviousDates from "@/components/SeasonForms/PreviousDates";
+import ErrorSlot from "@/components/ValidationErrorSlot";
+
+import DataContext from "@/contexts/DataContext";
+import { updateDateRangeAnnualsArray } from "@/lib/utils";
+import isDateTypeOptional from "@/lib/isDateTypeOptional";
+import { useValidationContext } from "@/hooks/useValidation/useValidation";
+
+// Individual Feature form section
+function FormSection({ dateTypes, feature, season, previousSeasonDates }) {
+  const { elements } = useValidationContext();
+  const { setData, addDeletedDateRangeId } = useContext(DataContext);
+
+  const dateRangeAnnuals = season.dateRangeAnnuals || [];
+
+  const datesByType = useMemo(
+    () => groupBy(feature.dateable.dateRanges, "dateType.name"),
+    [feature.dateable.dateRanges],
+  );
+
+  const previousDatesByType = useMemo(
+    () => groupBy(previousSeasonDates, "dateType.name"),
+    [previousSeasonDates],
+  );
+
+  // Updates the date range in the parent component
+  function updateDateRange(id, dateField, dateObj, tempId = false) {
+    const { dateRanges } = season.feature.dateable;
+    // Find the dateRanges array index from the dateRange id or tempId
+    const dateRangeIndex = dateRanges.findIndex((range) => {
+      if (tempId) {
+        return range.tempId === id;
+      }
+
+      return range.id === id;
+    });
+
+    // Path to access the date range in the season data object
+    const dateRangePath = ["feature", "dateable", "dateRanges", dateRangeIndex];
+
+    // The DateRange input component fires onSelect even if the date didn't change,
+    // so check if the value actually changed to avoid unnecessary updates.
+    // Get the original value of the date field (startDate or endDate) in the season data object
+    const existingDate = lodashGet(season, [...dateRangePath, dateField], null);
+
+    // If the value in the form hasn't changed since it loaded from the API, don't call setData
+    if (isEqual(existingDate, dateObj)) return;
+
+    // Update the local state (in the FormPanel component)
+    setData((prevData) => {
+      let updatedData = cloneDeep(prevData);
+
+      // Update the start or end date field in the current season data object
+      updatedData = lodashSet(
+        updatedData,
+        ["current", ...dateRangePath, dateField],
+        dateObj,
+      );
+
+      // Set the changed flag for the date range in the current season data object
+      return lodashSet(
+        updatedData,
+        ["current", ...dateRangePath, "changed"],
+        true,
+      );
+    });
+  }
+
+  // Adds a new date range to the Feature's dateable.dateRanges
+  function addDateRange(dateType) {
+    const newDateRange = {
+      // Add a temporary ID for records that haven't been saved yet
+      tempId: crypto.randomUUID(),
+      startDate: null,
+      endDate: null,
+      dateableId: feature.dateable.id,
+      dateType,
+      dateTypeId: dateType.id,
+      changed: true,
+    };
+
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.feature.dateable.dateRanges.push(newDateRange);
+      return updatedData;
+    });
+  }
+
+  // Removes a date range from the Feature's dateable.dateRanges by its ID or tempId
+  function removeDateRange(dateRange) {
+    // Track deleted date range IDs
+    if (dateRange.id) {
+      addDeletedDateRangeId(dateRange.id);
+    }
+
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+      const { dateRanges } = updatedData.current.feature.dateable;
+
+      const index = dateRanges.findIndex((range) => {
+        // Find by ID if dateRange has one
+        if (dateRange.id) {
+          return dateRange.id === range.id;
+        }
+
+        // Otherwise, find by tempId
+        if (dateRange.tempId) {
+          return dateRange.tempId === range.tempId;
+        }
+
+        return false;
+      });
+
+      if (index !== -1) {
+        dateRanges.splice(index, 1);
+      }
+
+      return updatedData;
+    });
+  }
+
+  // Updates the isDateRangeAnnual state in the season data object
+  function updateDateRangeAnnual(updatedAnnual) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.dateRangeAnnuals = updateDateRangeAnnualsArray(
+        updatedData.current.dateRangeAnnuals,
+        updatedAnnual,
+      );
+      return updatedData;
+    });
+  }
+
+  return (
+    <div className="row">
+      {dateTypes.map((dateType) => (
+        <div key={dateType.name} className="col-lg-6 mb-4">
+          <h6 className="fw-normal">
+            {dateType.name}{" "}
+            <TooltipWrapper placement="top" content={dateType.description}>
+              <FontAwesomeIcon icon={faCircleInfo} />
+            </TooltipWrapper>
+          </h6>
+
+          {isDateTypeOptional(dateType.strapiDateTypeId, "feature") && (
+            <div className="my-2 text-secondary-grey">(Optional)</div>
+          )}
+
+          <PreviousDates dateRanges={previousDatesByType?.[dateType.name]} />
+
+          <DateRangeFields
+            dateableId={feature.dateableId}
+            dateType={dateType}
+            dateRanges={datesByType[dateType.name] ?? []}
+            operatingYear={season.operatingYear}
+            updateDateRange={updateDateRange}
+            addDateRange={addDateRange}
+            removeDateRange={removeDateRange}
+            dateRangeAnnuals={dateRangeAnnuals}
+            updateDateRangeAnnual={updateDateRangeAnnual}
+            optional={isDateTypeOptional(dateType.strapiDateTypeId, "feature")}
+          />
+
+          <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+FormSection.propTypes = {
+  dateTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+  feature: PropTypes.object.isRequired,
+  season: PropTypes.object.isRequired,
+  previousSeasonDates: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
+
+export default function FeatureSeasonForm({
+  season,
+  previousSeasonDates,
+  dateTypes,
+  approver,
+}) {
+  const { setData } = useContext(DataContext);
+
+  const feature = season.feature;
+  const gateDetail = season.gateDetail || {};
+
+  // Show the date form sections only if there are applicable date types for this feature.
+  // If there are no date types to show, the section would be empty, so we won't render it.
+  const showDateFormSections = useMemo(
+    () => dateTypes.length > 0,
+    [dateTypes.length],
+  );
+
+  // Updates the readyToPublish state in the season data object
+  function setReadyToPublish(value) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.readyToPublish = value;
+
+      return updatedData;
+    });
+  }
+
+  // Updates the gateDetail state in the season data object
+  function updateGateDetail(updatedGateDetail) {
+    setData((prevData) => {
+      const updatedData = cloneDeep(prevData);
+
+      updatedData.current.gateDetail = {
+        ...updatedData.current.gateDetail,
+        ...updatedGateDetail,
+      };
+      return updatedData;
+    });
+  }
+
+  return (
+    <>
+      {showDateFormSections &&
+        (feature.inReservationSystem ? (
+          <FormContainer>
+            <FormSection
+              dateTypes={dateTypes}
+              feature={feature}
+              season={season}
+              previousSeasonDates={previousSeasonDates}
+            />
+          </FormContainer>
+        ) : (
+          <div className="non-bcp-reservations">
+            <FormSection
+              dateTypes={dateTypes}
+              feature={feature}
+              season={season}
+              previousSeasonDates={previousSeasonDates}
+            />
+          </div>
+        ))}
+
+      <GateForm
+        gateTitle={`${feature.name} gate`}
+        gateDescription={`Does ${feature.name} have a gated entrance?`}
+        gateDetail={gateDetail}
+        updateGateDetail={updateGateDetail}
+        level={"feature"}
+        operatingYear={season.operatingYear}
+      />
+
+      {/* Show Ready to Publish form input for approvers */}
+      {approver && (
+        <ReadyToPublishBox
+          readyToPublish={season.readyToPublish}
+          setReadyToPublish={setReadyToPublish}
+        />
+      )}
+    </>
+  );
+}
+
+// PropTypes validation
+FeatureSeasonForm.propTypes = {
+  season: PropTypes.shape({
+    feature: PropTypes.object.isRequired,
+    operatingYear: PropTypes.number.isRequired,
+    readyToPublish: PropTypes.bool.isRequired,
+    dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
+    gateDetail: PropTypes.shape({
+      hasGate: PropTypes.oneOf([true, false, null]),
+      gateOpenTime: PropTypes.string,
+      gateCloseTime: PropTypes.string,
+      gateOpensAtDawn: PropTypes.bool,
+      gateClosesAtDusk: PropTypes.bool,
+      gateOpen24Hours: PropTypes.bool,
+    }),
+  }).isRequired,
+
+  previousSeasonDates: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      startDate: PropTypes.instanceOf(Date),
+      endDate: PropTypes.instanceOf(Date),
+      dateType: PropTypes.shape({
+        name: PropTypes.string.isRequired,
+        id: PropTypes.number.isRequired,
+        strapiDateTypeId: PropTypes.number.isRequired,
+      }),
+    }),
+  ).isRequired,
+
+  dateTypes: PropTypes.arrayOf(
+    PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      id: PropTypes.number.isRequired,
+      strapiDateTypeId: PropTypes.number.isRequired,
+      description: PropTypes.string,
+    }),
+  ).isRequired,
+
+  approver: PropTypes.bool.isRequired,
+};

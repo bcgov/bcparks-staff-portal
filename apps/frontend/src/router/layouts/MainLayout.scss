@@ -1,0 +1,50 @@
+.layout.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+
+  --top-nav-height: 4.5rem;
+
+  & > header {
+    height: var(--top-nav-height);
+    border-bottom: 2px solid var(--theme-primary-gold);
+
+    .logo-link {
+      text-decoration: none;
+    }
+
+    .app-title {
+      white-space: nowrap;
+
+      // Align the title text with the logo
+      @include from-md {
+        margin-bottom: 6px;
+      }
+    }
+  }
+
+  & > main {
+    flex: 1;
+  }
+
+  & > .alert {
+    background-color: var(--support-border-color-danger);
+  }
+
+  & > footer {
+    min-height: 4.1rem;
+
+    .quick-links {
+      gap: 0 1.5em;
+
+      a {
+        color: var(--bs-white);
+        text-decoration: none;
+
+        &:hover {
+          color: var(--bs-bcgold);
+        }
+      }
+    }
+  }
+}

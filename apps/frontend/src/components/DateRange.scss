@@ -1,0 +1,17 @@
+.date-range {
+  display: flex;
+  justify-content: space-between;
+  width: fit-content;
+
+  .date {
+    max-width: fit-content;
+
+    @include from-sm {
+      min-width: 6em;
+    }
+  }
+
+  .separator {
+    margin-inline: 1em;
+  }
+}

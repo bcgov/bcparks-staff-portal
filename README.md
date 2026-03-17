@@ -22,6 +22,8 @@ If you plan to run the project locally, outside of Docker, you'll need Node.js i
 
 ## Dev Containers
 
+@TODO: make turborepo install globally in the container
+
 When you open the project's root directory in VS Code, you should be prompted to open the project in a Dev Container. You can choose to open the `frontend` or `backend` container.
 
 The containers are managed by `/docker-compose.dev.yml`, so opening one container will start all of them.

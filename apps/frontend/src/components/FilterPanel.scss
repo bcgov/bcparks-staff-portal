@@ -1,0 +1,9 @@
+.filter-panel {
+  &.offcanvas.offcanvas-end {
+    width: 100%;
+    padding: var(--layout-padding-medium);
+    @include from-md {
+      width: 50%;
+    }
+  }
+}

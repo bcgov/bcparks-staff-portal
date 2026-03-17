@@ -1,0 +1,25 @@
+.form-home {
+  display: flex;
+}
+
+.hm-container {
+  text-align: center !important;
+  align-items: center !important;
+  padding: 30px;
+}
+
+.hm-row {
+  margin-bottom: 32px;
+}
+
+.hm-row div,
+.hm-row button {
+  width: inherit;
+  margin-left: auto;
+  margin-right: auto;
+  min-height: inherit !important;
+}
+
+.hm-row div input {
+  text-align: center !important;
+}
