@@ -1,5 +1,6 @@
 {
-  "$schema": "https://turborepo.dev/schema.json",
+  "$schema": "./node_modules/turbo/schema.json",
+  "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": [
@@ -8,6 +9,11 @@
       "outputs": [
         "dist/**",
         "build/**"
+      ]
+    },
+    "lint": {
+      "dependsOn": [
+        "^lint"
       ]
     },
     "dev": {
