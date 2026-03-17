@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@bcgov/bc-sans": "^2.1.0",
+    "@bcparks-staff-portal/shared": "file:../../shared",
     "@digitalspace/bcparks-bootstrap-theme": "^1.4.6",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
@@ -44,7 +45,7 @@
     "webpack": "^5.97.1"
   },
   "scripts": {
-    "start": "cross-env BROWSER=none craco start",
+    "start": "BROWSER=none craco start",
     "dev": "npm run start",
     "build": "craco build",
     "test": "jest",
