@@ -45,7 +45,7 @@
   },
   "scripts": {
     "start": "cross-env BROWSER=none craco start",
-    "dev": "bash -c 'npm run start & sleep 2 && open http://localhost:8103'",
+    "dev": "npm run start",
     "build": "craco build",
     "test": "jest",
     "eject": "craco eject",
