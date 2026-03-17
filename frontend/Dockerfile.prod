@@ -2,7 +2,10 @@
 # Stage 1: Build the DOOT React app in a Node 24 environment
 FROM node:24.14 AS build-doot
 
-WORKDIR /app
+WORKDIR /app/frontend
+
+# Copy shared code folder
+COPY shared/ /app/shared/
 
 # Install dependencies
 COPY frontend/package*.json frontend/.npmrc ./
@@ -11,18 +14,21 @@ RUN --mount=type=secret,id=FONTAWESOME_PACKAGE_TOKEN \
     npm install --production
 
 # Copy the rest of the files and build the app
-COPY --exclude=advisories ./frontend .
+COPY --exclude=advisories frontend/ .
 RUN npm run build
 
 # Stage 2: Build the Advisories React app in a Node 24 environment
 FROM node:24.14 AS build-advisories
 
-WORKDIR /app
+WORKDIR /app/frontend/advisories
+
+# Copy shared code folder
+COPY shared/ /app/shared/
 
 COPY frontend/advisories/package*.json ./
 RUN npm install
 
-COPY frontend/advisories .
+COPY frontend/advisories/ .
 RUN npm run build
 
 # Stage 3: Serve both apps with Caddy
@@ -40,10 +46,10 @@ RUN caddy fmt --overwrite /etc/caddy/Caddyfile
 
 # Add the built Advisories app to Caddy's default public directory
 COPY frontend/advisories/entrypoint.sh /entrypoint.sh
-COPY --from=build-advisories /app/build $APP_ROOT/
+COPY --from=build-advisories /app/frontend/advisories/build $APP_ROOT/
 
 # Copy the built DOOT app to Caddy's subdirectory
-COPY --from=build-doot /app/dist $DOOT_APP_ROOT
+COPY --from=build-doot /app/frontend/dist $DOOT_APP_ROOT
 
 # Fix permissions
 RUN chmod +x /entrypoint.sh

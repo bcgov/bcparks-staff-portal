@@ -1,0 +1,14 @@
+# Ignore everything by default
+*
+
+# Allow only what the frontend build needs
+!frontend/
+!shared/
+
+# Ignore build artifacts and dev files within allowed dirs
+**/node_modules
+**/.env
+**/Dockerfile*
+**/.dockerignore
+**/*.log
+**/*.tmp
