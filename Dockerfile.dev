@@ -5,13 +5,10 @@ FROM mcr.microsoft.com/devcontainers/javascript-node:4-24
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
-RUN npm install
+# No default install or start; user will run npm manually in devcontainer
 
-COPY . .
-
+# Expose 8100 for the backend dev server
 EXPOSE 8100
 
-# Command to run the application
-CMD ["npm", "run", "dev"]
+# Expose 8101 for the frontend dev server
+EXPOSE 8101

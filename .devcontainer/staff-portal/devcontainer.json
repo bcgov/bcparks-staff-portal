@@ -1,0 +1,28 @@
+// Unified devcontainer for both frontend and backend
+{
+  "name": "bcparks-staff-portal",
+  "dockerComposeFile": ["../../docker-compose.dev.yml"],
+  "service": "staff-portal",
+  "workspaceFolder": "/app",
+  // No entrypoint or postStartCommand; user will run npm manually
+  "mounts": [],
+  "shutdownAction": "none",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        // Use ZSH as default shell
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "terminal.integrated.profiles.linux": {
+          "zsh": {
+            "path": "/bin/zsh"
+          }
+        }
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "editorconfig.editorconfig"
+      ]
+    }
+  }
+}

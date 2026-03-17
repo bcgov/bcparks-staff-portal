@@ -1,25 +1,9 @@
 # VSCode devcontainer configuration
 
 services:
-  frontend:
+  staff-portal:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    environment:
-      FONTAWESOME_PACKAGE_TOKEN: ${FONTAWESOME_PACKAGE_TOKEN}
-    ports:
-      - "8101:8101"
-    volumes:
-      - .:/app:cached
-      - ${HOME}/.config/git:/home/node/.config/git:ro
-    command: sleep infinity # Keep the container running
-    # Just send SIGKILL to stop the container (no grace period for `sleep infinity`)
-    # https://docs.docker.com/compose/faq/#why-do-my-services-take-10-seconds-to-recreate-or-stop
-    stop_signal: SIGKILL
-
-  backend:
-    build:
-      context: ./backend
+      context: .
       dockerfile: Dockerfile.dev
     environment:
       POSTGRES_SERVER: db
@@ -27,10 +11,15 @@ services:
       POSTGRES_DB: mydatabase
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
+      FONTAWESOME_PACKAGE_TOKEN: ${FONTAWESOME_PACKAGE_TOKEN}
     ports:
+      # Expose 8100 for the backend dev server
       - "8100:8100"
+      # Expose 8101 for the frontend dev server
+      - "8101:8101"
     volumes:
       - .:/app:cached
+      # Mount the host's git configuration into the container (global gitignore, etc.)
       - ${HOME}/.config/git:/home/node/.config/git:ro
     command: sleep infinity # Keep the container running
     depends_on:
@@ -54,7 +43,7 @@ services:
   test-proxy:
     image: caddy:2
     depends_on:
-      - frontend
+      - staff-portal
     ports:
       - "8103:80"
     volumes:
