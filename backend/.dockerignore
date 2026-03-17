@@ -1,9 +1,0 @@
-node_modules
-Dockerfile.*
-.adminjs
-
-.*
-!/.sequelizerc
-
-*.log
-*.tmp

@@ -1,9 +1,0 @@
-node_modules
-Dockerfile.*
-
-build
-
-.*
-
-*.log
-*.tmp
