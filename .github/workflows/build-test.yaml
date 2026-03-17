@@ -66,10 +66,9 @@ jobs:
 
       - name: Docker build
         run: |
-          docker build -t ${{ env.IMAGE_NAME }} -f Dockerfile.prod .
+          docker build -t ${{ env.IMAGE_NAME }} -f backend/Dockerfile.prod .
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:test
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
-        working-directory: backend
 
       - name: Push Docker image
         run: docker push --all-tags ${{ env.REGISTRY_IMAGE }}

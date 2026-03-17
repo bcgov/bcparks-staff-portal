@@ -1,0 +1,15 @@
+# Ignore everything by default
+*
+
+# Allow only what the backend build needs
+!backend/
+!shared/
+
+# Ignore build artifacts and dev files within allowed dirs
+**/node_modules
+**/.adminjs
+**/.env
+**/Dockerfile*
+**/.dockerignore
+**/*.log
+**/*.tmp

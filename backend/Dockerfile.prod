@@ -1,22 +1,25 @@
 # Use the official Node.js image as a base
 FROM node:24.14
 
-WORKDIR /app
+WORKDIR /app/backend
 
 ENV NODE_ENV=production
 
+# Copy shared code folder
+COPY shared/ /app/shared/
+
 # Install dependencies
-COPY package*.json ./
+COPY backend/package*.json ./
 RUN npm install --production
 
-COPY . .
+COPY backend/ .
 
 # Set permissions for OpenShift:
 # Grant group ownership to root and enable group write access
-RUN mkdir -p /app/.adminjs && \
-    chgrp -R 0 /app && \
-    chmod -R g=u /app && \
-    chmod +x /app/entrypoint.sh
+RUN mkdir -p /app/backend/.adminjs && \
+    chgrp -R 0 /app/backend/.adminjs && \
+    chmod -R g=u /app/backend/.adminjs && \
+    chmod +x /app/backend/entrypoint.sh
 
 EXPOSE 8100
 
