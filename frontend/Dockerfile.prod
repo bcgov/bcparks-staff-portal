@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+
 # Stage 1: Build the DOOT React app in a Node 24 environment
 FROM node:24.14 AS build-doot
 
