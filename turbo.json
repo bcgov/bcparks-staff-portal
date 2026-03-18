@@ -3,6 +3,7 @@
   "ui": "tui",
   "tasks": {
     "build": {
+      "env": ["FONTAWESOME_PACKAGE_TOKEN"],
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**"]
     },
@@ -10,6 +11,7 @@
       "dependsOn": ["^lint"]
     },
     "dev": {
+      "env": ["POSTGRES_*", "FONTAWESOME_PACKAGE_TOKEN"],
       "persistent": true,
       "cache": false
     }
