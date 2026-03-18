@@ -19,7 +19,7 @@ RUN npm install -g npm@11.6.2
 WORKDIR /app
 
 COPY --from=turbo-prune /app/out/json/ .
-COPY --from=turbo-prune /app/out/turbo.json ./turbo.json
+COPY --from=turbo-prune /app/out/full/.npmrc ./.npmrc
 
 RUN --mount=type=secret,id=FONTAWESOME_PACKAGE_TOKEN \
     FONTAWESOME_PACKAGE_TOKEN=$(cat /run/secrets/FONTAWESOME_PACKAGE_TOKEN) \
