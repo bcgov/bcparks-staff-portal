@@ -20,7 +20,7 @@ import {
   GateDetail,
 } from "../../models/index.js";
 import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
-import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType.js";
 
 const router = Router();
 

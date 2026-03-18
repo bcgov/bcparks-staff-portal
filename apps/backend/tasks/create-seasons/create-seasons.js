@@ -17,7 +17,7 @@ import {
   Season,
 } from "../../models/index.js";
 import * as STATUS from "../../constants/seasonStatus.js";
-import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType.js";
 import { populateAnnualDateRangesForYear } from "../populate-date-ranges/populate-annual-date-ranges.js";
 import { populateBlankDateRangesForYear } from "../populate-date-ranges/populate-blank-date-ranges.js";
 import {

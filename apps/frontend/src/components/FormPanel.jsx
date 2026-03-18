@@ -21,7 +21,7 @@ import useValidation, {
 import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus";
-import * as SEASON_TYPE from "@/constants/seasonType";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType";
 import "./FormPanel.scss";
 
 // Components

@@ -1,4 +1,4 @@
-import * as SEASON_TYPE from "@/constants/seasonType";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType";
 
 /**
  * Validates that the "hasGate" question is answered.

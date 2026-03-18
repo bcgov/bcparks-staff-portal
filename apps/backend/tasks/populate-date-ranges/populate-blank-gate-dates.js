@@ -9,7 +9,7 @@ import {
   Dateable,
 } from "../../models/index.js";
 import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
-import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType.js";
 
 /**
  * Populates blank Park gate open DateRanges for a given year by creating DateRanges for all

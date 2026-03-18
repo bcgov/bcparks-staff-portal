@@ -8,7 +8,7 @@ import path from "node:path";
 import _ from "lodash";
 import { Op } from "sequelize";
 import { Park, Season, DateRange, DateType } from "../../models/index.js";
-import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType.js";
 
 const jsonPath = path.join(import.meta.dirname, "previous-dates.json");
 const dateData = JSON.parse(fs.readFileSync(jsonPath, "utf8"));

@@ -12,9 +12,9 @@ import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
-import * as FEATURE_TYPE from "../constants/featureType";
+import * as FEATURE_TYPE from "@bcparks-staff-portal/shared/constants/featureType";
 import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType";
-import * as SEASON_TYPE from "@/constants/seasonType";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType";
 
 // Components
 function IconButton({

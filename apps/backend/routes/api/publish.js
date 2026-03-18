@@ -23,8 +23,8 @@ import * as USER_ROLES from "../../constants/userRoles.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
 import * as DATE_TYPE from "@bcparks-staff-portal/shared/constants/dateType.js";
-import * as FEATURE_TYPE from "../../constants/featureType.js";
-import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as FEATURE_TYPE from "@bcparks-staff-portal/shared/constants/featureType.js";
+import * as SEASON_TYPE from "@bcparks-staff-portal/shared/constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
 
 const router = Router();
