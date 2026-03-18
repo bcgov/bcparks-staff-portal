@@ -4,8 +4,8 @@ set -e
 MODE="$1"
 
 # Handle local dev volume mount structure vs Openshift volume structure
-if [ -d "/app/backend" ]; then
-  cd /app/backend
+if [ -d "/app/apps/backend" ]; then
+  cd /app/apps/backend
 fi
 
 echo "Running migrations..."

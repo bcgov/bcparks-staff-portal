@@ -1,27 +1,37 @@
-# Use the official Node.js image as a base
-FROM node:24.14
+# Generate a partial monorepo for the backend app with Turborepo's `turbo prune` command
+FROM node:24.14-alpine AS turbo-prune
 
-WORKDIR /app/backend
+WORKDIR /app
 
-ENV NODE_ENV=production
+COPY . .
 
-# Copy shared code folder
-COPY shared/ /app/shared/
+RUN npx turbo prune staff-portal-backend --docker
 
 # Install dependencies
-COPY backend/package*.json ./
-RUN npm install --production
+FROM node:24.14-alpine AS install
 
-COPY backend/ .
+WORKDIR /app
+
+COPY --from=turbo-prune /app/out/json/ .
+COPY --from=turbo-prune /app/out/turbo.json ./turbo.json
+
+RUN npm install --omit=dev
+
+# Start the server
+FROM node:24.14-alpine AS serve
+
+WORKDIR /app
+
+COPY --from=install /app/node_modules ./node_modules
+COPY --from=turbo-prune /app/out/full/ .
 
 # Set permissions for OpenShift:
 # Grant group ownership to root and enable group write access
-RUN mkdir -p /app/backend/.adminjs && \
-    chgrp -R 0 /app/backend/.adminjs && \
-    chmod -R g=u /app/backend/.adminjs && \
-    chmod +x /app/backend/entrypoint.sh
+RUN mkdir -p /app/apps/backend/.adminjs && \
+    chgrp -R 0 /app/apps/backend/.adminjs && \
+    chmod -R g=u /app/apps/backend/.adminjs && \
+    chmod +x /app/apps/backend/entrypoint.sh
 
 EXPOSE 8100
 
-# Command to run the application
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["./apps/backend/entrypoint.sh"]
