@@ -1,38 +1,35 @@
-# syntax=docker/dockerfile:1
+# Generate a partial monorepo for the DOOT frontend and Advisories frontend apps with Turborepo's `turbo prune` command
+FROM node:24.14-alpine AS turbo-prune
 
-# Stage 1: Build the DOOT React app in a Node 24 environment
-FROM node:24.14 AS build-doot
+# Use the same version of NPM as the dev environment
+RUN npm install -g npm@11.6.2
 
-WORKDIR /app/frontend
+WORKDIR /app
 
-# Copy shared code folder
-COPY shared/ /app/shared/
+COPY . .
 
-# Install dependencies
-COPY frontend/package*.json frontend/.npmrc ./
+RUN npx turbo prune staff-portal-frontend advisories-frontend --docker
+
+# Install dependencies and build both frontend apps
+FROM node:24.14 AS install-build
+
+# Use the same version of NPM as the dev environment
+RUN npm install -g npm@11.6.2
+
+WORKDIR /app
+
+COPY --from=turbo-prune /app/out/json/ .
+COPY --from=turbo-prune /app/out/turbo.json ./turbo.json
+
 RUN --mount=type=secret,id=FONTAWESOME_PACKAGE_TOKEN \
     FONTAWESOME_PACKAGE_TOKEN=$(cat /run/secrets/FONTAWESOME_PACKAGE_TOKEN) \
-    npm install --production
+    npm install
 
-# Copy the rest of the files and build the app
-COPY --exclude=advisories frontend/ .
+COPY --from=turbo-prune /app/out/full/ .
+
 RUN npm run build
 
-# Stage 2: Build the Advisories React app in a Node 24 environment
-FROM node:24.14 AS build-advisories
-
-WORKDIR /app/frontend/advisories
-
-# Copy shared code folder
-COPY shared/ /app/shared/
-
-COPY frontend/advisories/package*.json ./
-RUN npm install
-
-COPY frontend/advisories/ .
-RUN npm run build
-
-# Stage 3: Serve both apps with Caddy
+# Serve both apps with Caddy
 # anything newer than 2.6.2 causes an OpenShift error
 FROM caddy:2.6.2-alpine
 
@@ -42,15 +39,15 @@ ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
 ENV DOOT_APP_ROOT=$APP_ROOT/dates
 
-ADD frontend/Caddyfile /etc/caddy/Caddyfile
+ADD apps/frontend/Caddyfile /etc/caddy/Caddyfile
 RUN caddy fmt --overwrite /etc/caddy/Caddyfile
 
 # Add the built Advisories app to Caddy's default public directory
-COPY frontend/advisories/entrypoint.sh /entrypoint.sh
-COPY --from=build-advisories /app/frontend/advisories/build $APP_ROOT/
+COPY apps/advisories/entrypoint.sh /entrypoint.sh
+COPY --from=install-build /app/apps/advisories/build $APP_ROOT/
 
 # Copy the built DOOT app to Caddy's subdirectory
-COPY --from=build-doot /app/frontend/dist $DOOT_APP_ROOT
+COPY --from=install-build /app/apps/frontend/dist $DOOT_APP_ROOT
 
 # Fix permissions
 RUN chmod +x /entrypoint.sh

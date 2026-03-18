@@ -1,6 +1,9 @@
 # Generate a partial monorepo for the backend app with Turborepo's `turbo prune` command
 FROM node:24.14-alpine AS turbo-prune
 
+# Use the same version of NPM as the dev environment
+RUN npm install -g npm@11.6.2
+
 WORKDIR /app
 
 COPY . .
@@ -9,6 +12,9 @@ RUN npx turbo prune staff-portal-backend --docker
 
 # Install dependencies
 FROM node:24.14-alpine AS install
+
+# Use the same version of NPM as the dev environment
+RUN npm install -g npm@11.6.2
 
 WORKDIR /app
 
