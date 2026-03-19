@@ -381,14 +381,23 @@ function getApplicableParkDateTypeIds(park, season) {
  * @throws {Error} If no valid date ranges are found
  */
 async function formatDateRanges(entity, season, options = {}) {
-  const { allowedDateTypeIds = null, allowEmpty = false } = options;
+  const { allowedDateTypeIds = null, allowEmpty = false } = options;\
+
+  // @TEMP: Filter out FCFS dates while they're being hidden in the UI
+  const strapiDateTypeIdWhere = {
+    [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
+  };
 
   if (Array.isArray(allowedDateTypeIds) && allowedDateTypeIds.length === 0) {
     return [];
   }
 
+  if (Array.isArray(allowedDateTypeIds)) {
+    strapiDateTypeIdWhere[Op.in] = allowedDateTypeIds;
+  }
+
   // Fetch all date ranges for this season
-  let dateRangesRows = await DateRange.findAll({
+  const dateRangesRows = await DateRange.findAll({
     attributes: ["startDate", "endDate", "dateTypeId"],
 
     where: {
@@ -403,20 +412,11 @@ async function formatDateRanges(entity, season, options = {}) {
         attributes: ["id", "strapiDateTypeId"],
 
         where: {
-          // @TEMP: Filter out FCFS dates while they're being hidden in the UI
-          strapiDateTypeId: {
-            [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
-          },
+          strapiDateTypeId: strapiDateTypeIdWhere,
         },
       },
     ],
   });
-
-  if (Array.isArray(allowedDateTypeIds)) {
-    dateRangesRows = dateRangesRows.filter((dateRange) =>
-      allowedDateTypeIds.includes(dateRange.dateType.strapiDateTypeId),
-    );
-  }
 
   if (dateRangesRows.length === 0) {
     if (allowEmpty) return [];
@@ -478,7 +478,7 @@ async function formatDateRanges(entity, season, options = {}) {
 
 /**
  * Formats gate details with default values for missing fields.
- * @param {GateDetail} [gateDetails={}] The gate details object (or null, if not found)
+ * @param {GateDetail|null} [gateDetails] The gate details object (or null, if not found)
  * @returns {Object} Formatted gate info with all required fields
  */
 function formatGateInfo(gateDetails) {
