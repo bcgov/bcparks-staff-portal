@@ -4,7 +4,7 @@ import { Pagination } from "react-bootstrap";
 import "./PaginationBar.css";
 
 // Responsive wrapper around react-bootstrap Pagination component.
-// Adapted from the DOOT pagination control for legacy material-table usage.
+// Adapted from the DOOT pagination control (PaginationBar.jsx) for legacy material-table usage.
 export default function PaginationBar({
   currentPage,
   totalItems,

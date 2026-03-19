@@ -1,15 +1,14 @@
 import React from "react";
 import PropTypes from "prop-types";
-import TableCell from "@mui/material/TableCell";
 import PaginationBar from "./PaginationBar";
 
+// Adapted from the DOOT pagination control (PaginationControls.jsx) for legacy material-table usage.
 export default function DataTablePagination({
-  colSpan,
   count,
   page,
   rowsPerPage,
-  rowsPerPageOptions,
   onChangePage,
+  onRowsPerPageChange,
   onChangeRowsPerPage,
   labelDisplayedRows,
   labelRowsPerPage,
@@ -21,21 +20,22 @@ export default function DataTablePagination({
     ? labelDisplayedRows({ from, to, count, page })
     : `${from}-${to} of ${count}`;
 
-  const pageSizeOptions =
-    rowsPerPageOptions && rowsPerPageOptions.length > 0
-      ? rowsPerPageOptions
-      : [5, 10, 25, 50, 100];
+  const pageSizeOptions = [5, 10, 25, 50, 100];
+
+  const handleRowsPerPageChange = onRowsPerPageChange || onChangeRowsPerPage;
 
   return (
-    <TableCell colSpan={colSpan} style={style}>
+    <td className="data-table-pagination__container" style={style}>
       <div className="data-table-pagination d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
         <div className="d-flex flex-column flex-sm-row align-items-start align-items-sm-center gap-2">
           <div className="d-flex align-items-center gap-2">
-            <span>{labelRowsPerPage || "Rows per page:"}</span>
+            <span className="text-nowrap">
+              {labelRowsPerPage || "Rows per page:"}
+            </span>
             <select
               className="form-select form-select-sm data-table-pagination__select"
               value={rowsPerPage}
-              onChange={(e) => onChangeRowsPerPage(e)}
+              onChange={(e) => handleRowsPerPageChange(e)}
             >
               {pageSizeOptions.map((option) => (
                 <option key={option} value={option}>
@@ -55,26 +55,25 @@ export default function DataTablePagination({
           className="ms-lg-auto"
         />
       </div>
-    </TableCell>
+    </td>
   );
 }
 
 DataTablePagination.propTypes = {
-  colSpan: PropTypes.number,
   count: PropTypes.number.isRequired,
   page: PropTypes.number.isRequired,
   rowsPerPage: PropTypes.number.isRequired,
-  rowsPerPageOptions: PropTypes.array,
   onChangePage: PropTypes.func.isRequired,
-  onChangeRowsPerPage: PropTypes.func.isRequired,
+  onRowsPerPageChange: PropTypes.func,
+  onChangeRowsPerPage: PropTypes.func,
   labelDisplayedRows: PropTypes.func,
   labelRowsPerPage: PropTypes.string,
   style: PropTypes.object,
 };
 
 DataTablePagination.defaultProps = {
-  colSpan: 1,
-  rowsPerPageOptions: undefined,
+  onRowsPerPageChange: undefined,
+  onChangeRowsPerPage: undefined,
   labelDisplayedRows: undefined,
   labelRowsPerPage: "Rows per page:",
   style: undefined,
