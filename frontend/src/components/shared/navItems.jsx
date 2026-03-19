@@ -1,30 +1,29 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { ROLES } from "@/config/permissions";
 
 const navItems = [
   {
     label: "Advisories",
-    Tag: "a",
-    href: "/advisories",
+    Tag: NavLink,
+    to: "/advisories",
     allowedRoles: [ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER],
   },
   {
     label: "Park Access Status",
-    Tag: "a",
-    href: "/park-access-status",
+    Tag: NavLink,
+    to: "/park-access-status",
     allowedRoles: [ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER],
   },
   {
     label: "Activities & Facilities",
-    Tag: "a",
-    href: "/activities-and-facilities",
+    Tag: NavLink,
+    to: "/activities-and-facilities",
     allowedRoles: [ROLES.ADVISORY_APPROVER],
   },
   {
     label: "Dates of Operation",
-    Tag: Link,
-    to: "/",
-    active: true,
+    Tag: NavLink,
+    to: "/dates/",
     allowedRoles: [ROLES.DOOT_USER],
   },
 ];

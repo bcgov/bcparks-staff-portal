@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
+import PropTypes from "prop-types";
 import { Outlet, Link } from "react-router-dom";
 import "./MainLayout.scss";
 import logo from "@/assets/bc-parks-logo.svg";
@@ -10,28 +11,18 @@ import TouchMenu from "@/components/TouchMenu";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
-import { Unauthorized } from "@/components/Unauthorized";
 import UserContext from "@/contexts/UserContext";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { Alert } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
 
-export default function MainLayout() {
-  const {
-    logOut,
-    roles: jwtRoles,
-    ROLES: dootRoles,
-    isAuthenticated,
-  } = useAccess();
+export default function MainLayout({ isPublic = false }) {
+  const { logOut, isAuthenticated } = useAccess();
   const globalFlashMessage = useFlashMessage();
 
-  // Returns true if the user has the "doot-user" role
-  function isDootUser() {
-    return jwtRoles.includes(dootRoles.DOOT_USER);
-  }
-
   // Fetch the user name to display in the header
+  // @TODO: Fetch this in a hook, only if the user is authenticated
   const userDetails = useApiGet("/user");
 
   // Check if the app is running in production
@@ -43,10 +34,10 @@ export default function MainLayout() {
   const [showTouchMenu, setShowTouchMenu] = useState(false);
 
   const userName = useMemo(() => {
-    if (userDetails.loading || userDetails.error) return "";
+    if (!isAuthenticated || userDetails.loading || userDetails.error) return "";
 
     return userDetails.data.name;
-  }, [userDetails]);
+  }, [isAuthenticated, userDetails]);
 
   const flashMessageContextValue = useMemo(
     () => ({
@@ -81,9 +72,6 @@ export default function MainLayout() {
       document.removeEventListener("click", handleClick);
     };
   }, [globalFlashMessage]);
-
-  const isUnauthorized = isAuthenticated && !isDootUser();
-  const isAuthenticatedAndAuthorized = isAuthenticated && isDootUser();
 
   return (
     <FlashMessageContext.Provider value={flashMessageContextValue}>
@@ -160,17 +148,14 @@ export default function MainLayout() {
           )}
 
           <main className="p-0 d-flex flex-column flex-md-row">
-            {/* Use the layout with no sidebar for the login page */}
-            {!isAuthenticated && <Outlet />}
-
-            {/* Show unauthorized message if user lacks required roles */}
-            {isUnauthorized && <Unauthorized />}
+            {/* Use the layout with no sidebar for public pages page */}
+            {isPublic && <Outlet />}
 
             {/* Authenticated user with roles: show sidebar and main content */}
-            {isAuthenticatedAndAuthorized && (
+            {!isPublic && isAuthenticated && (
               <>
                 <NavSidebar />
-                <div className="flex-fill">
+                <div className="flex-fill" style={{ overflowX: "auto" }}>
                   {userDetails.loading ? (
                     <div className="container mt-3">
                       <LoadingBar />
@@ -210,3 +195,7 @@ export default function MainLayout() {
     </FlashMessageContext.Provider>
   );
 }
+
+MainLayout.propTypes = {
+  isPublic: PropTypes.bool,
+};

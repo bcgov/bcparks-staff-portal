@@ -1,0 +1,112 @@
+import { useState } from "react";
+import { Navigate } from "react-router-dom";
+import PropTypes from "prop-types";
+import "@/router/pages/advisories/page.scss";
+import { Button } from "@/components/advisories/shared/button/Button";
+
+export default function Error({ error }) {
+  const [toHome, setToHome] = useState(false);
+
+  if (toHome || error?.status === 401) {
+    return <Navigate to="/" />;
+  }
+  let errorContent;
+
+  if (!error) {
+    errorContent = (
+      <div>
+        <h1>Service is currently unavailable</h1>
+        <p>Please try again later.</p>
+      </div>
+    );
+  } else if (error.status === 403) {
+    if (error.message === "Login failed") {
+      errorContent = (
+        <div>
+          <h1>Login failed</h1>
+          <p>Unable to login, please try again later.</p>
+        </div>
+      );
+    } else if (error.message === "Unauthorized") {
+      errorContent = (
+        <div>
+          <h1>You are not authorized to log in yet</h1>
+          <br />
+          <p>
+            If this is your first time logging in to the staff web portal dates
+            of operation tool, you&#39;re in the right place! Email us at{" "}
+            <a href="mailto:parksweb@gov.bc.ca?subject=First%20login%20to%20Staff%20Portal">
+              parksweb@gov.bc.ca
+            </a>{" "}
+            and we&#39;ll set up your account permissions.
+          </p>
+          <p>
+            If you&#39;re here for another reason and you&#39;re unable to log
+            in, contact{" "}
+            <a href="mailto:parksweb@gov.bc.ca?subject=Unable%20to%20log%20into%20Staff%20Portal">
+              parksweb@gov.bc.ca
+            </a>{" "}
+            and we&#39;ll help you out.
+          </p>
+        </div>
+      );
+    } else {
+      errorContent = (
+        <div>
+          <h1>Unauthorized entry</h1>
+          <p>
+            Unauthorized user entry, please return to the home page and begin
+            your session again.
+          </p>
+        </div>
+      );
+    }
+  } else if (error.status === 590) {
+    errorContent = (
+      <div>
+        <h1>Your session has expired</h1>
+        <p>Please return to the home page and begin your session again.</p>
+      </div>
+    );
+  } else {
+    errorContent = (
+      <div>
+        <h1>An unknown error has occurred</h1>
+        <p>
+          The error description is below. If this error persists, please try
+          again later.
+          <br />
+          <br />
+          {console.log("error", error)}
+          {error.message}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <main className="advisories-page-styles advisories-styles">
+      <div className="page" data-testid="Error">
+        <div className="content col-md-8">
+          <br />
+          {errorContent}
+          <br />
+          <div className="buttons">
+            <Button
+              label="Home"
+              styling="bcgov-normal-blue btn"
+              onClick={() => {
+                sessionStorage.clear();
+                setToHome(true);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    </main>
+  );
+}
+
+Error.propTypes = {
+  error: PropTypes.object.isRequired,
+};

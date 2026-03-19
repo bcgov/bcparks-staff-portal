@@ -1,4 +1,3 @@
-import { Link } from "react-router-dom";
 import useAccess from "@/hooks/useAccess";
 import classNames from "classnames";
 import PropTypes from "prop-types";
@@ -29,16 +28,10 @@ export default function TouchMenu({
         {navItems
           .filter((item) => hasAnyRole(item.allowedRoles))
           // eslint-disable-next-line no-unused-vars -- allowedRoles is intentionally destructured to avoid passing it to DOM elements
-          .map(({ Tag, label, active, allowedRoles, ...itemProps }) => (
+          .map(({ Tag, label, allowedRoles, ...itemProps }) => (
             <li key={label} className="nav-item">
               {/* Use "a" for external links and Router Link components for internal links */}
-              <Tag
-                className={classNames("nav-link", {
-                  active,
-                })}
-                {...itemProps}
-                onClick={closeMenu}
-              >
+              <Tag className="nav-link" onClick={closeMenu} {...itemProps}>
                 {label}
               </Tag>
             </li>
