@@ -15,5 +15,15 @@
   "devDependencies": {
     "prettier": "^3.8.1",
     "turbo": "^2.8.17"
+  },
+  "overrides": {
+    "ajv": "^8.0.0",
+    "fork-ts-checker-webpack-plugin": {
+      "ajv": "^8.0.0",
+      "ajv-keywords": "^5.0.0"
+    },
+    "react-scripts": {
+      "typescript": "^5.7.2"
+    }
   }
 }

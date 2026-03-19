@@ -21,7 +21,7 @@ WORKDIR /app
 COPY --from=turbo-prune /app/out/json/ .
 COPY --from=turbo-prune /app/out/full/.npmrc ./.npmrc
 
-RUN npm install --omit=dev
+RUN npm install
 
 # Start the server
 FROM node:24.14-alpine AS serve
