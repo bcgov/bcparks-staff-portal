@@ -1,6 +1,6 @@
 import React from "react";
 import PropTypes from "prop-types";
-import TableCell from "@material-ui/core/TableCell";
+import TableCell from "@mui/material/TableCell";
 import PaginationBar from "./PaginationBar";
 
 export default function DataTablePagination({

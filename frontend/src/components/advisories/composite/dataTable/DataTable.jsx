@@ -1,8 +1,8 @@
 import { forwardRef } from "react";
 
-import TableContainer from "@material-ui/core/TableContainer";
-import Paper from "@material-ui/core/Paper";
-import MaterialTable from "material-table";
+import TableContainer from "@mui/material/TableContainer";
+import Paper from "@mui/material/Paper";
+import MaterialTable from "@material-table/core";
 import DataTablePagination from "./DataTablePagination";
 
 import "./DataTable.css";
