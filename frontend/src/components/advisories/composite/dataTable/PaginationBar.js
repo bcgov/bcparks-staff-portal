@@ -10,6 +10,7 @@ export default function PaginationBar({
   totalItems,
   itemsPerPage,
   onPageChange,
+  className,
   ...paginationProps
 }) {
   const [surroundingPages, setSurroundingPages] = useState(5);
@@ -33,7 +34,13 @@ export default function PaginationBar({
     return () => window.removeEventListener("resize", updateSurroundingPages);
   }, []);
 
-  if (!totalItems || totalItems <= 0) {
+  if (
+    !totalItems ||
+    totalItems <= 0 ||
+    !itemsPerPage ||
+    itemsPerPage <= 0 ||
+    !isFinite(itemsPerPage)
+  ) {
     return null;
   }
 
@@ -47,84 +54,63 @@ export default function PaginationBar({
     page = totalPages;
   }
 
-  const positions = Array.from({ length: totalPages }, (_, i) => i);
   const buttonsBetweenArrows = surroundingPages * 2 + 1;
+  const overflow = totalPages > buttonsBetweenArrows;
 
-  let range;
-
-  if (totalPages <= buttonsBetweenArrows) {
-    range = positions;
+  // Derive the start/end page indices (0-based) for the visible middle range,
+  // without allocating an array of size `totalPages`.
+  let rangeStart, rangeEnd;
+  if (!overflow) {
+    rangeStart = 0;
+    rangeEnd = totalPages - 1;
   } else if (page - 1 <= surroundingPages) {
-    range = positions.slice(0, buttonsBetweenArrows - 2);
+    rangeStart = 0;
+    rangeEnd = buttonsBetweenArrows - 3;
   } else if (page + surroundingPages >= totalPages) {
-    range = positions.slice(totalPages - buttonsBetweenArrows + 2, totalPages);
+    rangeStart = totalPages - buttonsBetweenArrows + 2;
+    rangeEnd = totalPages - 1;
   } else {
-    range = positions.slice(
-      page - surroundingPages + 1,
-      page + surroundingPages - 2,
-    );
+    rangeStart = page - surroundingPages + 1;
+    rangeEnd = page + surroundingPages - 3;
   }
 
+  const range = Array.from(
+    { length: rangeEnd - rangeStart + 1 },
+    (_, i) => rangeStart + i,
+  );
+
+  const showFirst = overflow && page - 1 > surroundingPages;
+  const showLast = overflow && page < totalPages - surroundingPages;
+
+  const pageButton = (value) => (
+    <Pagination.Item
+      key={value}
+      active={value === page - 1}
+      onClick={() => (value !== page - 1 ? onPageChange(value + 1) : void 0)}
+      aria-label={`Page ${value + 1}`}
+    >
+      {value + 1}
+    </Pagination.Item>
+  );
+
   return (
-    <Pagination {...paginationProps}>
+    <Pagination
+      className={["pagination-bar", className].filter(Boolean).join(" ")}
+      {...paginationProps}
+    >
       <Pagination.Prev
         onClick={() => (page > 1 ? onPageChange(page - 1) : void 0)}
         disabled={page <= 1}
-        aria-label="Back"
+        aria-label="Previous page"
       />
 
-      {totalPages > buttonsBetweenArrows &&
-        positions
-          .slice(0, page - 1 <= surroundingPages ? 0 : 1)
-          .map((value) => (
-            <Pagination.Item
-              key={value}
-              onClick={() =>
-                value !== page - 1 ? onPageChange(value + 1) : void 0
-              }
-              aria-label={`Page ${value + 1}`}
-            >
-              {value + 1}
-            </Pagination.Item>
-          ))}
+      {showFirst && pageButton(0)}
+      {showFirst && <Pagination.Ellipsis disabled />}
 
-      {totalPages > buttonsBetweenArrows && page - 1 > surroundingPages && (
-        <Pagination.Ellipsis disabled />
-      )}
+      {range.map(pageButton)}
 
-      {range.map((value) => (
-        <Pagination.Item
-          active={value === page - 1}
-          key={value}
-          onClick={() =>
-            value !== page - 1 ? onPageChange(value + 1) : void 0
-          }
-          aria-label={`Page ${value + 1}`}
-        >
-          {value + 1}
-        </Pagination.Item>
-      ))}
-
-      {totalPages > buttonsBetweenArrows &&
-        page < totalPages - surroundingPages && <Pagination.Ellipsis disabled />}
-
-      {totalPages > buttonsBetweenArrows &&
-        positions
-          .slice(
-            page >= totalPages - surroundingPages ? totalPages : totalPages - 1,
-            totalPages,
-          )
-          .map((value) => (
-            <Pagination.Item
-              key={value}
-              onClick={() =>
-                value !== page - 1 ? onPageChange(value + 1) : void 0
-              }
-              aria-label={`Page ${value + 1}`}
-            >
-              {value + 1}
-            </Pagination.Item>
-          ))}
+      {showLast && <Pagination.Ellipsis disabled />}
+      {showLast && pageButton(totalPages - 1)}
 
       <Pagination.Next
         onClick={() => (page < totalPages ? onPageChange(page + 1) : void 0)}
@@ -140,4 +126,5 @@ PaginationBar.propTypes = {
   totalItems: PropTypes.number.isRequired,
   itemsPerPage: PropTypes.number.isRequired,
   onPageChange: PropTypes.func.isRequired,
+  className: PropTypes.string,
 };

@@ -7,6 +7,8 @@ export default function DataTablePagination({
   count,
   page,
   rowsPerPage,
+  rowsPerPageOptions,
+  onPageChange,
   onChangePage,
   onRowsPerPageChange,
   onChangeRowsPerPage,
@@ -20,9 +22,15 @@ export default function DataTablePagination({
     ? labelDisplayedRows({ from, to, count, page })
     : `${from}-${to} of ${count}`;
 
-  const pageSizeOptions = [5, 10, 25, 50, 100];
+  const DEFAULT_PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
+  const pageSizeOptions = [
+    ...new Set([...DEFAULT_PAGE_SIZE_OPTIONS, ...(rowsPerPageOptions ?? [])]),
+  ]
+    .filter((option) => option < count)
+    .sort((a, b) => a - b);
 
   const handleRowsPerPageChange = onRowsPerPageChange || onChangeRowsPerPage;
+  const handlePageChange = onPageChange || onChangePage;
 
   return (
     <td className="data-table-pagination__container" style={style}>
@@ -51,7 +59,7 @@ export default function DataTablePagination({
           currentPage={page + 1}
           totalItems={count}
           itemsPerPage={rowsPerPage}
-          onPageChange={(nextPage) => onChangePage(null, nextPage - 1)}
+          onPageChange={(nextPage) => handlePageChange(null, nextPage - 1)}
           className="ms-lg-auto"
         />
       </div>
@@ -63,7 +71,9 @@ DataTablePagination.propTypes = {
   count: PropTypes.number.isRequired,
   page: PropTypes.number.isRequired,
   rowsPerPage: PropTypes.number.isRequired,
-  onChangePage: PropTypes.func.isRequired,
+  rowsPerPageOptions: PropTypes.array,
+  onPageChange: PropTypes.func,
+  onChangePage: PropTypes.func,
   onRowsPerPageChange: PropTypes.func,
   onChangeRowsPerPage: PropTypes.func,
   labelDisplayedRows: PropTypes.func,
@@ -72,6 +82,9 @@ DataTablePagination.propTypes = {
 };
 
 DataTablePagination.defaultProps = {
+  rowsPerPageOptions: undefined,
+  onPageChange: undefined,
+  onChangePage: undefined,
   onRowsPerPageChange: undefined,
   onChangeRowsPerPage: undefined,
   labelDisplayedRows: undefined,
