@@ -6,19 +6,19 @@
 # and then reused across various environments.
 
 if [ -n "$VITE_CMS_BASE_URL" ]; then
-  echo "window.VITE_CMS_BASE_URL = \"$VITE_CMS_BASE_URL\";" >> $APP_ROOT/env.js
+  echo "window.envVars.VITE_CMS_BASE_URL = \"$VITE_CMS_BASE_URL\";" >> $APP_ROOT/env.js
 fi
 
 if [ -n "$VITE_FRONTEND_BASE_URL" ]; then
-  echo "window.VITE_FRONTEND_BASE_URL = \"$VITE_FRONTEND_BASE_URL\";" >> $APP_ROOT/env.js
+  echo "window.envVars.VITE_FRONTEND_BASE_URL = \"$VITE_FRONTEND_BASE_URL\";" >> $APP_ROOT/env.js
 fi
 
 if [ -n "$VITE_STAT_HOLIDAY_API" ]; then
-  echo "window.VITE_STAT_HOLIDAY_API = \"$VITE_STAT_HOLIDAY_API\";" >> $APP_ROOT/env.js
+  echo "window.envVars.VITE_STAT_HOLIDAY_API = \"$VITE_STAT_HOLIDAY_API\";" >> $APP_ROOT/env.js
 fi
 
 if [ -n "$VITE_BCPARKS_PUBLIC_URL" ]; then
-  echo "window.VITE_BCPARKS_PUBLIC_URL = \"$VITE_BCPARKS_PUBLIC_URL\";" >> $APP_ROOT/env.js
+  echo "window.envVars.VITE_BCPARKS_PUBLIC_URL = \"$VITE_BCPARKS_PUBLIC_URL\";" >> $APP_ROOT/env.js
 fi
 
 if [ -n "$VITE_OIDC_AUTHORITY" ]; then
