@@ -43,4 +43,4 @@ EXPOSE 3000
 USER 1001
 
 # Populate env.js at runtime and start Caddy
-CMD ["/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
