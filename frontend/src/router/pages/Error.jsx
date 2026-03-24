@@ -12,8 +12,9 @@ export default function ErrorPage() {
 
   // If the routeError is null, it means this page was rendered manually
   // via setError in ErrorProvider, so get the error message from the ErrorProvider context instead.
-  if (routeError === null) {
+  if (routeError === null && contextError) {
     console.error("contextError:", contextError);
+    // Render the Legacy error page with the context error message
     return <LegacyErrorPage error={contextError} />;
   }
 
@@ -23,7 +24,7 @@ export default function ErrorPage() {
         <h1>Oops!</h1>
         <p>Sorry, an unexpected error has occurred.</p>
         <p>
-          <i>{routeError.statusText || routeError.message}</i>
+          <i>{routeError?.statusText || routeError?.message}</i>
         </p>
       </div>
     </div>
