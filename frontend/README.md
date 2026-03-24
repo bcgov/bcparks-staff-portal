@@ -10,11 +10,13 @@ This directory contains the code for the frontend Staff Portal web application, 
 
 ## Setup
 
-### NOTE: FontAwesome token required to build
+### NOTE: FontAwesome Pro and .npmrc required to build
 
-The frontend build process needs an access token to install the FontAwesome Pro icon kit from their private repo. This needs to exist as an environment variable before the build starts, so be sure the variables are set in the build environment (GitHub Actions "Secrets and variables").
+The frontend build process requires an access token to install the FontAwesome Pro icon kit from their private repo. This is managed using the `.npmrc` file in this directory, which configures the FontAwesome registry and uses the `FONTAWESOME_PACKAGE_TOKEN` environment variable for authentication.
 
-In development, the variable needs to be set in the `frontend` Dev Container's enviroment, so create a `.env` file in the **repository root directory** (next to the `docker-compose.dev.yml` file, which will automatically include `.env`)
+**You must have the `.npmrc` file with `FONTAWESOME_PACKAGE_TOKEN` set to install dependencies.**
+
+In development, set the token in the `frontend` Dev Container's environment by creating a `.env` file in the **repository root directory** (next to the `docker-compose.dev.yml` file, which will automatically include `.env`).
 
 ```sh
 # in the repository root directory, outside of the frontend Dev container
