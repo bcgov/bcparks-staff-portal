@@ -622,7 +622,6 @@ export default function AdvisoryDashboard() {
     return <Navigate to="/create-advisory" />;
   }
   if (toError || hasErrors) {
-    console.log("toError || hasErrors", toError, hasErrors);
     return <Navigate to="/error" />;
   }
 
