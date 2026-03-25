@@ -36,19 +36,19 @@ export default function LandingPageTabs() {
 
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/">
+              <NavLink className="nav-link" to="/dates/" end>
                 Edit{isApprover && " and review"}
               </NavLink>
             </li>
             {hqStaff && (
               <>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/publish">
+                  <NavLink className="nav-link" to="/dates/publish">
                     Publish
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/export">
+                  <NavLink className="nav-link" to="/dates/export">
                     Export
                   </NavLink>
                 </li>

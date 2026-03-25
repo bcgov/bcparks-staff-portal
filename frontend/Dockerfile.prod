@@ -3,11 +3,14 @@ FROM node:24.14 AS build
 
 WORKDIR /app
 
+# Use the same version of NPM as the dev environment
+RUN npm install -g npm@11.6.2
+
 # Install dependencies
 COPY frontend/package*.json frontend/.npmrc ./
 RUN --mount=type=secret,id=FONTAWESOME_PACKAGE_TOKEN \
     FONTAWESOME_PACKAGE_TOKEN=$(cat /run/secrets/FONTAWESOME_PACKAGE_TOKEN) \
-    npm install --production
+    npm install --omit=dev
 
 # Copy the rest of the files and build the app
 COPY ./frontend .
@@ -21,17 +24,15 @@ RUN apk add --no-cache ca-certificates
 
 ENV APP_ROOT=/usr/share/caddy
 ENV XDG_CONFIG_HOME=/tmp/config
-ENV V2_APP_ROOT=$APP_ROOT/dates
 
-ADD frontend/Caddyfile /etc/caddy/Caddyfile
+COPY frontend/Caddyfile /etc/caddy/Caddyfile
 RUN caddy fmt --overwrite /etc/caddy/Caddyfile
 
-# Add the built legacy app to Caddy's default public directory
-COPY frontend-legacy/entrypoint.sh /entrypoint.sh
-COPY frontend-legacy/build $APP_ROOT/
+# Copy the built app to Caddy's working directory
+COPY --from=build /app/dist $APP_ROOT
 
-# Copy the built app to Caddy's vs subdirectoy
-COPY --from=build /app/dist $V2_APP_ROOT
+# Copy the entrypoint script to the container
+COPY frontend/entrypoint.sh /entrypoint.sh
 
 # Fix permissions
 RUN chmod +x /entrypoint.sh
@@ -41,4 +42,5 @@ EXPOSE 3000
 
 USER 1001
 
-CMD ["/entrypoint.sh"]
+# Populate env.js at runtime and start Caddy
+ENTRYPOINT ["/entrypoint.sh"]

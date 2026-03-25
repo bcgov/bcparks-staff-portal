@@ -1,12 +1,10 @@
 # BC Parks Staff Portal
 
-Expanding and modernizing the BC Parks Dates of Operation tool.
+Expanding and modernizing the BC Parks Advisories and Dates of Operation tools.
 
 ## Structure
 
-This project consists of a REST API server in `backend/` and a React JS frontend in `frontend/`. For more details, refer to the specific [backend README](./backend/README.md) and [frontend README](./frontend/README.md) files.
-
-The "Legacy frontend" is located in `frontend-legacy/` and communicates with the external Strapi CMS.
+This project consists of a REST API server in `backend/` and a React JS frontend in `frontend/`. For more details, refer to the specific [backend README](./backend/README.md) and [frontend README](./frontend/README.md) files. The "Advisories" pages also communicate directly with the Strapi CMS via its REST API.
 
 Openshift Helm charts are located in `helm/`.
 

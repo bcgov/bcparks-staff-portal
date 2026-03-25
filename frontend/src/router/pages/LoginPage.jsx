@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from "react";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import routerconfig from "@/router/index";
 import "./LoginPage.scss";
@@ -39,12 +40,14 @@ export default function LoginPage() {
 
   // if already authenticated or login_idp is set, don't show the login page
   if (auth.isAuthenticated || sessionStorage.getItem("login_idp")) {
-    return <></>;
+    // Redirect to "/" (which will redirect to a dashboard)
+    console.log("navigate to /");
+    return <Navigate to="/" replace />;
   }
 
   return (
     <div className="container">
-      <div className="text-center login-page-content" style={{ opacity: 0 }}>
+      <div className="text-center login-page-content">
         <h2 className="mt-5 mb-2">Staff web portal</h2>
         <p>Use one of the following methods to log in</p>
 

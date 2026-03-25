@@ -20,5 +20,5 @@ RUN mkdir -p /app/.adminjs && \
 
 EXPOSE 8100
 
-# Command to run the application
+# Run migrations/cron jobs and start the server
 ENTRYPOINT ["./entrypoint.sh"]

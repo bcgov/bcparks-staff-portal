@@ -35,17 +35,6 @@ jobs:
           username: ${{vars.OPENSHIFT_SA_USERNAME}}
           password: ${{secrets.OPENSHIFT_SA_PASSWORD}}
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Legacy npm build
-        run: |
-          npm install
-          npm run build
-        working-directory: frontend-legacy
-
       - name: Docker build
         run: |
           FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }} docker build --secret id=FONTAWESOME_PACKAGE_TOKEN -t ${{ env.IMAGE_NAME }} -f frontend/Dockerfile.prod .

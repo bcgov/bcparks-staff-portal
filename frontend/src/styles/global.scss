@@ -13,6 +13,9 @@
 // Tooltip component custom styles
 @use "tooltip";
 
+// Advisories portal custom styles
+@use "advisories";
+
 // Break inside words on when nevessary on top-level headings
 h1 {
   overflow-wrap: break-word;
