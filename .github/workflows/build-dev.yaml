@@ -5,6 +5,9 @@ on:
     branches:
       - staff-portal-advisories
 
+permissions:
+  contents: read
+
 concurrency:
   group: build-dev-${{ github.ref_name }}
   cancel-in-progress: true
