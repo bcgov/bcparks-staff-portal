@@ -1,4 +1,3 @@
-import React from "react";
 import PropTypes from "prop-types";
 import PaginationBar from "./PaginationBar";
 
@@ -79,15 +78,4 @@ DataTablePagination.propTypes = {
   labelDisplayedRows: PropTypes.func,
   labelRowsPerPage: PropTypes.string,
   style: PropTypes.object,
-};
-
-DataTablePagination.defaultProps = {
-  rowsPerPageOptions: undefined,
-  onPageChange: undefined,
-  onChangePage: undefined,
-  onRowsPerPageChange: undefined,
-  onChangeRowsPerPage: undefined,
-  labelDisplayedRows: undefined,
-  labelRowsPerPage: "Rows per page:",
-  style: undefined,
 };

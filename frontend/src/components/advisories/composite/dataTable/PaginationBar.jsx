@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import { Pagination } from "react-bootstrap";
 import "./PaginationBar.css";
@@ -60,6 +60,7 @@ export default function PaginationBar({
   // Derive the start/end page indices (0-based) for the visible middle range,
   // without allocating an array of size `totalPages`.
   let rangeStart, rangeEnd;
+
   if (!overflow) {
     rangeStart = 0;
     rangeEnd = totalPages - 1;
@@ -82,16 +83,18 @@ export default function PaginationBar({
   const showFirst = overflow && page - 1 > surroundingPages;
   const showLast = overflow && page < totalPages - surroundingPages;
 
-  const pageButton = (value) => (
-    <Pagination.Item
-      key={value}
-      active={value === page - 1}
-      onClick={() => (value !== page - 1 ? onPageChange(value + 1) : void 0)}
-      aria-label={`Page ${value + 1}`}
-    >
-      {value + 1}
-    </Pagination.Item>
-  );
+  function pageButton(value) {
+    return (
+      <Pagination.Item
+        key={value}
+        active={value === page - 1}
+        onClick={() => (value !== page - 1 ? onPageChange(value + 1) : void 0)}
+        aria-label={`Page ${value + 1}`}
+      >
+        {value + 1}
+      </Pagination.Item>
+    );
+  }
 
   return (
     <Pagination
