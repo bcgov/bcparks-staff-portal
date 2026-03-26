@@ -6,6 +6,9 @@
 // https://www2.gov.bc.ca/gov/content/digital/design-system/foundations/design-tokens
 @use "@bcgov/design-tokens/css/variables.css" as *;
 
+// CKEditor styles
+@use "ckeditor";
+
 // DatePicker component custom styles
 @use "datepicker";
 // React-select component custom styles
