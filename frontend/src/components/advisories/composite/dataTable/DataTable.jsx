@@ -4,7 +4,7 @@ import PropTypes from "prop-types";
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MaterialTable from "@material-table/core";
-import PaginationControls from "../../../PaginationControls";
+import PaginationControls from "@/components/PaginationControls";
 
 import "./DataTable.css";
 
