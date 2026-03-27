@@ -1,9 +1,11 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import "./AdvisorySummaryView.css";
-import LaunchIcon from "@mui/icons-material/Launch";
-import FileCopyOutlinedIcon from "@mui/icons-material/FileCopyOutlined";
-import Chip from "@mui/material/Chip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowUpRightFromSquare,
+  faCopy,
+} from "@fa-kit/icons/classic/regular";
 import moment from "moment";
 import AdvisoryHistory from "@/components/advisories/composite/advisoryHistory/AdvisoryHistory";
 import getEnv from "@/config/getEnv";
@@ -11,7 +13,6 @@ import getEnv from "@/config/getEnv";
 export default function AdvisorySummaryView({
   data: {
     advisory,
-    isPublished,
     parkUrls,
     siteUrls,
     handleOpenSnackBar,
@@ -22,7 +23,7 @@ export default function AdvisorySummaryView({
   const [showParks, setShowParks] = useState(false);
   const [showSites, setShowSites] = useState(false);
 
-  const getDisplayedDate = (advisory) => {
+  function getDisplayedDate(advisory) {
     if (
       !advisory.isEffectiveDateDisplayed &&
       !advisory.isEndDateDisplayed &&
@@ -63,7 +64,8 @@ export default function AdvisorySummaryView({
     ) {
       return "Event date range";
     }
-  };
+    return null;
+  }
 
   return (
     <>
@@ -156,7 +158,10 @@ export default function AdvisorySummaryView({
                   className="ad-anchor"
                 >
                   {p.protectedAreaName}
-                  <LaunchIcon className="launchIcon" />
+                  <FontAwesomeIcon
+                    icon={faArrowUpRightFromSquare}
+                    className="launchIcon"
+                  />
                 </a>
               )}
               {!p.url && p.protectedAreaName}
@@ -171,10 +176,8 @@ export default function AdvisorySummaryView({
               {showParks ? "Hide" : "Show"} all parks affected
             </button>
           )}
-          <Chip
-            icon={<FileCopyOutlinedIcon />}
-            label="Copy all URLs"
-            clickable
+          <button
+            type="button"
             className="ad-copy bcgov-button bcgov-normal-white"
             onClick={() => {
               navigator.clipboard
@@ -186,7 +189,10 @@ export default function AdvisorySummaryView({
                   handleOpenSnackBar("Failed to copy to clipboard");
                 });
             }}
-          />
+          >
+            <FontAwesomeIcon icon={faCopy} className="me-2" />
+            Copy all URLs
+          </button>
         </div>
       </div>
       {advisory.sites.length > 0 && (
@@ -206,7 +212,10 @@ export default function AdvisorySummaryView({
                       className="ad-anchor"
                     >
                       {s.siteName}
-                      <LaunchIcon className="launchIcon" />
+                      <FontAwesomeIcon
+                        icon={faArrowUpRightFromSquare}
+                        className="launchIcon"
+                      />
                     </a>
                   )}
                   {!s.url && s.siteName}
@@ -222,10 +231,8 @@ export default function AdvisorySummaryView({
                 {showSites ? "Hide" : "Show"} all sites affected
               </button>
             )}
-            <Chip
-              icon={<FileCopyOutlinedIcon />}
-              label="Copy all URLs"
-              clickable
+            <button
+              type="button"
               className="ad-copy bcgov-button bcgov-normal-white"
               onClick={() => {
                 navigator.clipboard
@@ -237,7 +244,10 @@ export default function AdvisorySummaryView({
                     handleOpenSnackBar("Failed to copy to clipboard");
                   });
               }}
-            />
+            >
+              <FontAwesomeIcon icon={faCopy} className="me-2" />
+              Copy all URLs
+            </button>
           </div>
         </div>
       )}
@@ -351,7 +361,10 @@ export default function AdvisorySummaryView({
                         advisory.linkTypes.find((t) => t.id === l.type).type}
                       {l.type && " - "}
                       {l.title}
-                      <LaunchIcon className="launchIcon" />
+                      <FontAwesomeIcon
+                        icon={faArrowUpRightFromSquare}
+                        className="launchIcon"
+                      />
                     </a>
                   </>
                 )}

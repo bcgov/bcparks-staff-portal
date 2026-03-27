@@ -20,15 +20,9 @@
   border-radius: 100px;
   padding: 0;
 }
-.urgency-btn-group button .MuiButton-label,
-.safety-btn-group button .MuiButton-label {
+.urgency-btn-group button,
+.safety-btn-group button {
   font-size: 1rem;
-}
-.urgency-btn-group button .MuiButton-label .MuiSvgIcon-root,
-.safety-btn-group button .MuiButton-label .MuiSvgIcon-root {
-  width: 18px;
-  height: 18px;
-  margin-right: 4px;
 }
 
 .ad-btn-group .bcgov-button {
@@ -144,11 +138,24 @@
   position: absolute !important;
   right: 8px;
   background-color: white !important;
+  border: none;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
 }
 
 .clear-url-btn:hover,
 .clear-url-btn:active {
   background-color: white !important;
+}
+
+.ad-form .input-group {
+  position: relative;
 }
 
 .ad-btn-row {
@@ -160,10 +167,6 @@
 }
 .ad-form-error {
   text-align: center !important;
-}
-
-.ad-form .MuiButton-contained {
-  box-shadow: none !important;
 }
 
 .ad-upload-btn {

@@ -2,21 +2,17 @@ import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryForm.css";
 import { Button } from "@/components/advisories/shared/button/Button";
+import ButtonGroup from "react-bootstrap/ButtonGroup";
+import Btn from "react-bootstrap/Button";
+import Form from "react-bootstrap/Form";
+import InputGroup from "react-bootstrap/InputGroup";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  TextField,
-  ButtonGroup,
-  Radio,
-  FormControl,
-  FormHelperText,
-  Button as Btn,
-  Typography,
-  IconButton,
-} from "@mui/material";
+  faCircleExclamation,
+  faCircleInfo,
+  faXmark,
+} from "@fa-kit/icons/classic/regular";
 import Select from "react-select";
-import WarningIcon from "@mui/icons-material/Warning";
-import CloseIcon from "@mui/icons-material/Close";
-import HelpIcon from "@mui/icons-material/Help";
-import CheckIcon from "@mui/icons-material/Check";
 import {
   validateOptionalNumber,
   validateRequiredText,
@@ -270,7 +266,7 @@ export default function AdvisoryForm({
   const EVENT_DATE_RANGE = 3;
   const NO_DATE = 4;
 
-  const getDisplayedDate = () => {
+  function getDisplayedDate() {
     if (
       !displayStartDate &&
       !displayEndDate &&
@@ -311,10 +307,12 @@ export default function AdvisoryForm({
     ) {
       return displayedDateOptions[EVENT_DATE_RANGE];
     }
-  };
+
+    return null;
+  }
 
   // Check if the URL format is a file
-  const isFile = (url) => {
+  function isFile(url) {
     const fileExtensions = [".jpg", ".jpeg", ".gif", ".png", ".pdf"];
 
     for (const extension of fileExtensions) {
@@ -323,7 +321,25 @@ export default function AdvisoryForm({
       }
     }
     return false;
-  };
+  }
+
+  function renderHelperText(text, isError = false, className = "") {
+    if (!text) {
+      return null;
+    }
+
+    return (
+      <div
+        className={`ad-helper-text ${isError ? "text-danger" : ""} ${className}`.trim()}
+      >
+        {text}
+      </div>
+    );
+  }
+
+  function getControlClassName(error = false, className = "") {
+    return `bcgov-input ${error ? "is-invalid" : ""} ${className}`.trim();
+  }
 
   useEffect(() => {
     if (selectedDisplayedDateOption === "posting") {
@@ -356,7 +372,7 @@ export default function AdvisoryForm({
       setDisplayStartDate(false);
       setDisplayEndDate(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- The displayed-date flags are derived exclusively from the selected option.
   }, [selectedDisplayedDateOption]);
 
   return (
@@ -399,21 +415,20 @@ export default function AdvisoryForm({
             Headline
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
-            <TextField
+            <Form.Control
               value={headline}
               onChange={(event) => {
                 setHeadline(event.target.value);
               }}
-              className="bcgov-input"
-              variant="outlined"
-              inputProps={{ maxLength: 255 }}
-              InputProps={{ ...headlineInput }}
-              error={headlineError !== ""}
-              helperText={headlineError}
+              className={getControlClassName(headlineError !== "")}
+              maxLength={255}
+              id={headlineInput.id}
+              required={headlineInput.required}
               onBlur={() => {
                 validateRequiredText(advisoryData.headline);
               }}
             />
+            {renderHelperText(headlineError, headlineError !== "")}
           </div>
         </div>
         <div className="row">
@@ -424,16 +439,14 @@ export default function AdvisoryForm({
               title="Please select the most appropriate event type that your advisory falls under, this does impact the front-end.
                 For example, freshet and wildfire event types load conditional content to their respective flood and wildfire pages."
             >
-              <HelpIcon className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
-            <FormControl
-              variant="outlined"
+            <div
               className={`bcgov-select-form ${
                 eventTypeError !== "" ? "bcgov-select-error" : ""
               }`}
-              error
             >
               <Select
                 options={eventTypes}
@@ -446,8 +459,8 @@ export default function AdvisoryForm({
                 }}
                 isClearable
               />
-              <FormHelperText>{eventTypeError}</FormHelperText>
-            </FormControl>
+              {renderHelperText(eventTypeError, eventTypeError !== "")}
+            </div>
           </div>
         </div>
         <div className="row">
@@ -458,15 +471,14 @@ export default function AdvisoryForm({
               title="Dependant on your advisory, the urgency level can be used to prioritize your alert above existing alerts for the same park page.
                 Ie, assigning a high urgency re wildfire closure will place that advisory at the top."
             >
-              <HelpIcon className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
-            <FormControl error>
+            <div>
               <ButtonGroup
                 className="urgency-btn-group"
-                variant="outlined"
-                aria-label="outlined primary button group"
+                aria-label="Urgency level"
               >
                 {urgencies.map((u) => (
                   <Btn
@@ -475,11 +487,10 @@ export default function AdvisoryForm({
                       setUrgency(u.value);
                     }}
                     className={
-                      urgency === u.value && `btn-urgency-${u.sequence}`
+                      urgency === u.value ? `btn-urgency-${u.sequence}` : ""
                     }
-                    style={{ textTransform: "none" }}
+                    variant="outline-secondary"
                   >
-                    {urgency === u.value && <CheckIcon />}
                     {u.label}
                   </Btn>
                 ))}
@@ -504,8 +515,8 @@ export default function AdvisoryForm({
                     </div>
                   ),
               )}
-              <FormHelperText>{urgencyError}</FormHelperText>
-            </FormControl>
+              {renderHelperText(urgencyError, urgencyError !== "")}
+            </div>
           </div>
         </div>
         <div className="row">
@@ -518,11 +529,11 @@ export default function AdvisoryForm({
               If the Listing rank number is zero,
               advisories are ordered by urgency level and date added."
             >
-              <HelpIcon className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
-            <TextField
+            <Form.Control
               type="number"
               value={listingRank}
               onChange={(event) => {
@@ -534,16 +545,16 @@ export default function AdvisoryForm({
               onWheel={(event) => {
                 event.target.blur();
               }}
-              className="bcgov-input"
-              variant="outlined"
-              InputProps={{ ...listingRankInput }}
-              inputProps={{ min: 0, max: 9999 }}
-              error={listingRankError !== ""}
-              helperText={listingRankError}
+              className={getControlClassName(listingRankError !== "")}
+              id={listingRankInput.id}
+              required={listingRankInput.required}
+              min={0}
+              max={9999}
               onBlur={() => {
                 validateOptionalNumber(advisoryData.listingRank);
               }}
             />
+            {renderHelperText(listingRankError, listingRankError !== "")}
           </div>
         </div>
         <div className="row">
@@ -556,7 +567,7 @@ export default function AdvisoryForm({
               such as on the BC Parks Map, closure/warning status icons in the various park lists,
               and closure status on park pages."
             >
-              <HelpIcon className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
@@ -578,7 +589,7 @@ export default function AdvisoryForm({
                 This content will be added below any text entered in the description on the park page.
                 There is no requirement to have both a description and standard messaging."
             >
-              <HelpIcon className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
@@ -610,9 +621,8 @@ export default function AdvisoryForm({
           <div className="col-lg-7 col-md-8 col-sm-12">
             <div className="bcgov-textarea">
               {selectedStandardMessages.map((message, i) => (
-                <Typography
+                <div
                   key={i}
-                  component="div"
                   className="standard-message"
                   dangerouslySetInnerHTML={{
                     __html: message.obj.description || "",
@@ -634,12 +644,10 @@ export default function AdvisoryForm({
                     Type
                   </div>
                   <div className="col-12 col-lg-9 col-md-10 d-flex">
-                    <FormControl
-                      variant="outlined"
+                    <div
                       className={`bcgov-select-form ${
                         linkTypeErrors[idx] ? "bcgov-select-error" : ""
                       }`}
-                      error
                     >
                       <Select
                         options={linkTypes}
@@ -653,10 +661,11 @@ export default function AdvisoryForm({
                           validateLink(l, idx, "type", setLinkTypeErrors)
                         }
                       />
-                      <FormHelperText>
-                        {linkTypeErrors[idx] && "Please provide a link type"}
-                      </FormHelperText>
-                    </FormControl>
+                      {renderHelperText(
+                        linkTypeErrors[idx] && "Please provide a link type",
+                        linkTypeErrors[idx],
+                      )}
+                    </div>
                     <div
                       className="ad-link-close ad-add-link pointer div-btn"
                       tabIndex="0"
@@ -669,7 +678,7 @@ export default function AdvisoryForm({
                         }
                       }}
                     >
-                      <CloseIcon />
+                      <FontAwesomeIcon icon={faXmark} />
                     </div>
                   </div>
                 </div>
@@ -678,23 +687,23 @@ export default function AdvisoryForm({
                     Title
                   </div>
                   <div className="col-12 col-lg-9 col-md-10">
-                    <TextField
+                    <Form.Control
                       value={l.title}
                       onChange={(event) => {
                         updateLink(idx, "title", event.target.value);
                       }}
-                      className="bcgov-input"
-                      variant="outlined"
-                      inputProps={{ maxLength: 255 }}
-                      InputProps={{ ...linkTitleInput }}
-                      error={linkTitleErrors[idx]}
-                      helperText={
-                        linkTitleErrors[idx] && "Please provide a link title"
-                      }
+                      className={getControlClassName(linkTitleErrors[idx])}
+                      maxLength={255}
+                      id={linkTitleInput.id}
+                      required={linkTitleInput.required}
                       onBlur={() =>
                         validateLink(l, idx, "title", setLinkTitleErrors)
                       }
                     />
+                    {renderHelperText(
+                      linkTitleErrors[idx] && "Please provide a link title",
+                      linkTitleErrors[idx],
+                    )}
                   </div>
                 </div>
                 {l.format !== "file" && !hasFileDeleted[idx] ? (
@@ -703,40 +712,41 @@ export default function AdvisoryForm({
                       URL
                     </div>
                     <div className="col-12 col-lg-9 col-md-10">
-                      <TextField
-                        value={l.file ? l.file.url : l.url}
-                        onChange={(event) => {
-                          updateLink(idx, "url", event.target.value);
-                        }}
-                        className="bcgov-input"
-                        variant="outlined"
-                        error={linkUrlErrors[idx]}
-                        helperText={
-                          linkUrlErrors[idx] && "Please provide a URL"
-                        }
-                        onBlur={() =>
-                          validateLink(l, idx, "url", setLinkUrlErrors)
-                        }
-                        inputProps={{ maxLength: 255 }}
-                        InputProps={{
-                          ...linkUrlInput,
-                          endAdornment: (
-                            <IconButton
-                              onClick={() => {
-                                isFile(l.url) &&
-                                  setHasFileDeleted((prev) => {
-                                    hasFileDeleted[idx] = true;
-                                    return [...prev];
-                                  });
-                                updateLink(idx, "url", "");
-                              }}
-                              className="clear-url-btn"
-                            >
-                              <CloseIcon />
-                            </IconButton>
-                          ),
-                        }}
-                      />
+                      <InputGroup>
+                        <Form.Control
+                          value={l.file ? l.file.url : l.url}
+                          onChange={(event) => {
+                            updateLink(idx, "url", event.target.value);
+                          }}
+                          className={getControlClassName(linkUrlErrors[idx])}
+                          onBlur={() =>
+                            validateLink(l, idx, "url", setLinkUrlErrors)
+                          }
+                          maxLength={255}
+                          id={linkUrlInput.id}
+                          required={linkUrlInput.required}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (isFile(l.url)) {
+                              setHasFileDeleted((prev) => {
+                                hasFileDeleted[idx] = true;
+                                return [...prev];
+                              });
+                            }
+                            updateLink(idx, "url", "");
+                          }}
+                          className="clear-url-btn"
+                          aria-label="Clear URL"
+                        >
+                          <FontAwesomeIcon icon={faXmark} />
+                        </button>
+                      </InputGroup>
+                      {renderHelperText(
+                        linkUrlErrors[idx] && "Please provide a URL",
+                        linkUrlErrors[idx],
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -746,30 +756,25 @@ export default function AdvisoryForm({
                     </div>
                     <div className="col-12 col-lg-9 col-md-8 ad-flex">
                       {l.file ? (
-                        <TextField
-                          value={l.file ? l.file.name : ""}
-                          className="bcgov-input"
-                          variant="outlined"
-                          InputProps={{
-                            endAdornment: (
-                              <IconButton
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  updateLink(idx, "file", "");
-                                  validateLink(
-                                    l,
-                                    idx,
-                                    "file",
-                                    setLinkFileErrors,
-                                  );
-                                }}
-                                className="clear-url-btn"
-                              >
-                                <CloseIcon />
-                              </IconButton>
-                            ),
-                          }}
-                        />
+                        <InputGroup>
+                          <Form.Control
+                            value={l.file ? l.file.name : ""}
+                            className={getControlClassName(false)}
+                            readOnly
+                          />
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              updateLink(idx, "file", "");
+                              validateLink(l, idx, "file", setLinkFileErrors);
+                            }}
+                            className="clear-url-btn"
+                            aria-label="Clear file"
+                          >
+                            <FontAwesomeIcon icon={faXmark} />
+                          </button>
+                        </InputGroup>
                       ) : (
                         <>
                           <input
@@ -783,15 +788,14 @@ export default function AdvisoryForm({
                           />
                           <label htmlFor="file-upload" className="mb-0">
                             <Btn
-                              variant="outlined"
-                              component="span"
+                              variant="outline-secondary"
+                              as="span"
                               className="ad-add-link add-file"
-                              style={{ textTransform: "none" }}
                             >
                               Browse
                             </Btn>
                             {linkFileErrors[idx] && (
-                              <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error d-block">
+                              <span className="d-block text-danger ad-helper-text">
                                 Please upload file too
                               </span>
                             )}
@@ -817,10 +821,9 @@ export default function AdvisoryForm({
             />
             <label htmlFor="file-upload" className="mb-0">
               <Btn
-                variant="outlined"
-                component="span"
+                variant="outline-secondary"
+                as="span"
                 className="ad-add-link add-file"
-                style={{ textTransform: "none" }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     addLink("file");
@@ -835,9 +838,8 @@ export default function AdvisoryForm({
             </label>
             <span>OR</span>
             <Btn
-              variant="outlined"
+              variant="outline-secondary"
               className="ad-add-link add-url"
-              style={{ textTransform: "none" }}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   addLink("url");
@@ -876,9 +878,7 @@ export default function AdvisoryForm({
                       validateDisplayedDate(advisoryData.displayedDate);
                     }}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    month dd, yyyy
-                  </span>
+                  {renderHelperText("month dd, yyyy")}
                 </div>
                 <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
@@ -892,9 +892,7 @@ export default function AdvisoryForm({
                     dateFormat="h:mm aa"
                     className={`${startDateError !== "" ? "error" : ""}`}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    hh:mm aa
-                  </span>
+                  {renderHelperText("hh:mm aa")}
                 </div>
               </div>
               <div className="row">
@@ -905,7 +903,7 @@ export default function AdvisoryForm({
                     title="Enter the event's end date.
                       If end date is unknown, enter a date when the advisory should be reviewed for relevance."
                   >
-                    <HelpIcon className="helpIcon" />
+                    <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
                   </LightTooltip>
                 </div>
                 <div className="col-12 col-lg-5 col-md-8">
@@ -923,17 +921,12 @@ export default function AdvisoryForm({
                       validateDisplayedDate(advisoryData.displayedDate);
                     }}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    month dd, yyyy
-                  </span>
-                  {endDateError !== "" && (
-                    <>
-                      <br />
-                      <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">
-                        End date should not be before Posting date
-                      </span>
-                    </>
-                  )}
+                  {renderHelperText("month dd, yyyy")}
+                  {endDateError !== "" &&
+                    renderHelperText(
+                      "End date should not be before Posting date",
+                      true,
+                    )}
                 </div>
                 <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
@@ -947,9 +940,7 @@ export default function AdvisoryForm({
                     dateFormat="h:mm aa"
                     className={`${endDateError !== "" ? "error" : ""}`}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    hh:mm aa
-                  </span>
+                  {renderHelperText("hh:mm aa")}
                 </div>
               </div>
             </div>
@@ -960,12 +951,10 @@ export default function AdvisoryForm({
             Displayed date
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
-            <FormControl
-              variant="outlined"
+            <div
               className={`bcgov-select-form ${
                 displayedDateError !== "" ? "bcgov-select-error" : ""
               }`}
-              error
             >
               <Select
                 options={displayedDateOptions}
@@ -978,8 +967,8 @@ export default function AdvisoryForm({
                   validateDisplayedDate(advisoryData.displayedDate);
                 }}
               />
-              <FormHelperText>{displayedDateError}</FormHelperText>
-            </FormControl>
+              {renderHelperText(displayedDateError, displayedDateError !== "")}
+            </div>
           </div>
         </div>
         <div className="row heading">Internal details</div>
@@ -1008,17 +997,9 @@ export default function AdvisoryForm({
                       validateDisplayedDate(advisoryData.displayedDate);
                     }}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    month dd, yyyy
-                  </span>
-                  {advisoryDateError !== "" && (
-                    <>
-                      <br />
-                      <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">
-                        Please enter valid date
-                      </span>
-                    </>
-                  )}
+                  {renderHelperText("month dd, yyyy")}
+                  {advisoryDateError !== "" &&
+                    renderHelperText("Please enter valid date", true)}
                 </div>
                 <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
@@ -1032,9 +1013,7 @@ export default function AdvisoryForm({
                     dateFormat="h:mm aa"
                     className={`${advisoryDateError !== "" ? "error" : ""}`}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    hh:mm aa
-                  </span>
+                  {renderHelperText("hh:mm aa")}
                 </div>
               </div>
               <div className="row">
@@ -1044,7 +1023,7 @@ export default function AdvisoryForm({
                     arrow
                     title="The advisory will be automatically removed on this date."
                   >
-                    <HelpIcon className="helpIcon" />
+                    <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
                   </LightTooltip>
                 </div>
                 <div className="col-12 col-lg-5 col-md-8">
@@ -1061,17 +1040,12 @@ export default function AdvisoryForm({
                       validateOptionalDate(advisoryData.expiryDate);
                     }}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    month dd, yyyy
-                  </span>
-                  {expiryDateError !== "" && (
-                    <>
-                      <br />
-                      <span className="MuiFormHelperText-root MuiFormHelperText-contained Mui-error">
-                        Expiry date should not be before Posting date
-                      </span>
-                    </>
-                  )}
+                  {renderHelperText("month dd, yyyy")}
+                  {expiryDateError !== "" &&
+                    renderHelperText(
+                      "Expiry date should not be before Posting date",
+                      true,
+                    )}
                 </div>
                 <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                 <div className="col-12 col-lg-3 col-md-8">
@@ -1087,9 +1061,7 @@ export default function AdvisoryForm({
                     dateFormat="h:mm aa"
                     className={`${expiryDateError !== "" ? "error" : ""}`}
                   />
-                  <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                    hh:mm aa
-                  </span>
+                  {renderHelperText("hh:mm aa")}
                 </div>
               </div>
               {mode === "update" && (
@@ -1112,9 +1084,7 @@ export default function AdvisoryForm({
                         validateDisplayedDate(advisoryData.displayedDate);
                       }}
                     />
-                    <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                      month dd, yyyy
-                    </span>
+                    {renderHelperText("month dd, yyyy")}
                   </div>
                   <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
                   <div className="col-12 col-lg-3 col-md-8">
@@ -1130,9 +1100,7 @@ export default function AdvisoryForm({
                       dateFormat="h:mm aa"
                       className={`${updatedDateError !== "" ? "error" : ""}`}
                     />
-                    <span className="MuiFormHelperText-root MuiFormHelperText-contained">
-                      hh:mm aa
-                    </span>
+                    {renderHelperText("hh:mm aa")}
                   </div>
                 </div>
               )}
@@ -1146,12 +1114,10 @@ export default function AdvisoryForm({
                 Advisory status
               </div>
               <div className="col-lg-7 col-md-8 col-sm-12">
-                <FormControl
-                  variant="outlined"
+                <div
                   className={`bcgov-select-form ${
                     advisoryStatusError !== "" ? "bcgov-select-error" : ""
                   }`}
-                  error
                 >
                   <Select
                     options={advisoryStatuses}
@@ -1166,8 +1132,11 @@ export default function AdvisoryForm({
                     }}
                     isClearable
                   />
-                  <FormHelperText>{advisoryStatusError}</FormHelperText>
-                </FormControl>
+                  {renderHelperText(
+                    advisoryStatusError,
+                    advisoryStatusError !== "",
+                  )}
+                </div>
               </div>
             </div>
             <div className="row">
@@ -1175,21 +1144,23 @@ export default function AdvisoryForm({
                 Requested by
               </div>
               <div className="col-lg-7 col-md-8 col-sm-12">
-                <TextField
+                <Form.Control
                   value={submittedBy}
                   onChange={(event) => {
                     setSubmittedBy(event.target.value);
                   }}
-                  className="bcgov-input"
-                  variant="outlined"
-                  inputProps={{ maxLength: 255 }}
-                  InputProps={{ ...submitterInput }}
-                  error={submittedByError !== ""}
-                  helperText={submittedByError && "Please enter a name"}
+                  className={getControlClassName(submittedByError !== "")}
+                  maxLength={255}
+                  id={submitterInput.id}
+                  required={submitterInput.required}
                   onBlur={() => {
                     validateRequiredText(advisoryData.submittedBy);
                   }}
                 />
+                {renderHelperText(
+                  submittedByError && "Please enter a name",
+                  submittedByError !== "",
+                )}
               </div>
             </div>
           </>
@@ -1201,22 +1172,25 @@ export default function AdvisoryForm({
           <div className="col-lg-7 col-md-8 col-sm-12">
             <ButtonGroup
               className="safety-btn-group"
-              variant="outlined"
-              aria-label="outlined primary button group"
+              aria-label="Public safety related"
             >
               <Btn
                 onClick={() => setIsSafetyRelated(true)}
-                className={isSafetyRelated === true && `btn-safety-selected`}
-                style={{ textTransform: "none" }}
+                className={
+                  isSafetyRelated === true ? "btn-safety-selected" : ""
+                }
+                variant="outline-secondary"
               >
-                {isSafetyRelated && <CheckIcon />} Yes
+                Yes
               </Btn>
               <Btn
                 onClick={() => setIsSafetyRelated(false)}
-                className={isSafetyRelated === false && `btn-safety-selected`}
-                style={{ textTransform: "none" }}
+                className={
+                  isSafetyRelated === false ? "btn-safety-selected" : ""
+                }
+                variant="outline-secondary"
               >
-                {!isSafetyRelated && <CheckIcon />} No
+                No
               </Btn>
             </ButtonGroup>
           </div>
@@ -1226,14 +1200,14 @@ export default function AdvisoryForm({
             Internal notes
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
-            <TextField
+            <Form.Control
               value={notes}
               onChange={(event) => {
                 setNotes(event.target.value);
               }}
-              className="bcgov-input"
-              variant="outlined"
-              InputProps={{ ...notesInput }}
+              className={getControlClassName(false)}
+              id={notesInput.id}
+              required={notesInput.required}
             />
           </div>
         </div>
@@ -1243,24 +1217,28 @@ export default function AdvisoryForm({
               <div className="col-lg-3 col-md-4 col-sm-12 ad-label"></div>
               <div className="col-lg-7 col-md-8 col-sm-12">
                 <div className="d-flex field-bg-blue">
-                  <WarningIcon className="warningIcon" />
+                  <FontAwesomeIcon
+                    icon={faCircleExclamation}
+                    className="warningIcon"
+                  />
                   <div className="ms-3">
                     <p>
                       <b>This is an after-hours advisory</b>
                       <br />
-                      The web team's business hours are
+                      The web team business hours are
                       <br />
                       Monday to Friday, 8:30 am – 4:30 pm.
                     </p>
                     <div className="d-flex mt-3">
-                      <Radio
+                      <Form.Check
+                        type="radio"
                         checked={isAfterHourPublish}
                         onChange={() => {
                           setIsAfterHourPublish(true);
                         }}
                         value="Publish"
                         name="after-hour-submission"
-                        inputProps={{ "aria-label": "Publish immediately" }}
+                        aria-label="Publish immediately"
                         className="me-2"
                       />
                       <p>
@@ -1271,16 +1249,15 @@ export default function AdvisoryForm({
                       </p>
                     </div>
                     <div className="d-flex mt-3">
-                      <Radio
+                      <Form.Check
+                        type="radio"
                         checked={!isAfterHourPublish}
                         onChange={() => {
                           setIsAfterHourPublish(false);
                         }}
                         value="Review"
                         name="after-hour-submission"
-                        inputProps={{
-                          "aria-label": "Submit for web team review",
-                        }}
+                        aria-label="Submit for web team review"
                         className="me-2"
                       />
                       <p>
@@ -1297,9 +1274,7 @@ export default function AdvisoryForm({
         <div className="row my-2">
           <div className="col-lg-3 col-md-4"></div>
           <div className="col-lg-7 col-md-8 col-sm-12 ad-form-error">
-            <FormControl error>
-              <FormHelperText>{formError}</FormHelperText>
-            </FormControl>
+            {renderHelperText(formError, formError !== "")}
           </div>
         </div>
         <div className="row">

@@ -36,7 +36,8 @@ import {
   camelCaseToSentenceCase,
 } from "@/lib/advisories/utils/AppUtil";
 import getEnv from "@/config/getEnv";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import qs from "qs";
 import useAccess from "@/hooks/useAccess";
 import ErrorContext from "@/contexts/ErrorContext";
@@ -386,7 +387,10 @@ export default function Advisory({ mode }) {
             setIsLoadingPage(false);
           })
           .catch((error) => {
-            console.log("error occurred fetching Public Advisory data", error);
+            console.error(
+              "error occurred fetching Public Advisory data",
+              error,
+            );
             setToError(true);
             setError({
               status: 500,
@@ -670,38 +674,23 @@ export default function Advisory({ mode }) {
     cmsData,
     setCmsData,
     setIsApprover,
+    hasAnyRole,
   ]);
 
-  const setToBack = () => {
+  function setToBack() {
     if (mode === "create") {
       setToDashboard(true);
     } else {
       setIsConfirmation(true);
     }
-  };
+  }
 
-  const handleMenuChange = (event, val) => {
-    switch (val) {
-      case 0:
-        navigate("/advisories");
-        break;
-      case 1:
-        navigate("/park-access-status");
-        break;
-      case 2:
-        navigate("/activities-and-facilities");
-        break;
-      default:
-        navigate("/");
-    }
-  };
-
-  const handleAdvisoryDateChange = (e) => {
+  function handleAdvisoryDateChange(e) {
     setAdvisoryDate(e);
     advisoryDateRef.current = e;
-  };
+  }
 
-  const setLinkIds = () => {
+  function setLinkIds() {
     const linkIds = [];
 
     linksRef.current.forEach((l) => {
@@ -710,39 +699,39 @@ export default function Advisory({ mode }) {
       }
     });
     setLinks(linkIds);
-  };
+  }
 
-  const addLink = (format) => {
+  function addLink(format) {
     linksRef.current = [...linksRef.current, { title: "", url: "", format }];
     setLinkIds();
-  };
+  }
 
-  const updateLink = (index, field, value) => {
+  function updateLink(index, field, value) {
     const tempLinks = [...linksRef.current];
 
     tempLinks[index][field] = value;
     tempLinks[index].isModified = true;
     linksRef.current = [...tempLinks];
     setLinkIds();
-  };
+  }
 
-  const removeLink = (index) => {
+  function removeLink(index) {
     const tempLinks = linksRef.current.filter((link, idx) => idx !== index);
 
     linksRef.current = [...tempLinks];
     setLinkIds();
-  };
+  }
 
-  const handleFileCapture = (files, index) => {
+  function handleFileCapture(files, index) {
     const tempLinks = [...linksRef.current];
 
     tempLinks[index].file = files[0];
     tempLinks[index].isFileModified = true;
     linksRef.current = [...tempLinks];
     setLinkIds();
-  };
+  }
 
-  const isValidLink = (link) => {
+  function isValidLink(link) {
     if (
       (link.title !== "" && link.url !== "" && link.isModified) ||
       (link.file && link.isFileModified)
@@ -750,9 +739,110 @@ export default function Advisory({ mode }) {
       return true;
     }
     return false;
-  };
+  }
 
-  const createLink = async (link) => {
+  async function preSaveMediaLink(link) {
+    const linkRequest = {
+      data: {
+        type: link.type,
+        title: link.title,
+      },
+    };
+    const res = await cmsAxios
+      .post(`links`, linkRequest, {
+        headers: { Authorization: `Bearer ${keycloakToken}` },
+      })
+      .catch((error) => {
+        console.error("error occurred", error);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not save attachments",
+        });
+      });
+
+    return res.data.data.documentId;
+  }
+
+  async function uploadMedia(id, file) {
+    const data = {};
+    const fileForm = new FormData();
+
+    data.refId = id;
+    data.ref = "link";
+    data.field = "file";
+    fileForm.append("files", file);
+    fileForm.append("data", JSON.stringify(data));
+
+    const res = await cmsAxios
+      .post(`upload`, fileForm, {
+        // or { 'data': fileForm }
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${keycloakToken}`,
+        },
+      })
+      .catch((error) => {
+        console.error("error occurred", error);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not save attachments",
+        });
+      });
+
+    if (res.data.length > 0) {
+      return res.data[0];
+    }
+    setToError(true);
+    setError({
+      status: 500,
+      message: "Could not save attachments",
+    });
+
+    return null;
+  }
+
+  async function updateMediaLink(media, id, link) {
+    const isProtocolExist = /(https|http?)/giu;
+
+    const path = media.url?.match(isProtocolExist);
+    const getUrl = path?.length
+      ? media.url
+      : getEnv("VITE_CMS_BASE_URL") + media.url;
+
+    const linkRequest = {
+      data: {
+        title: link.title ? link.title : media.name,
+        type: link.type,
+        url: getUrl,
+      },
+    };
+
+    const res = await cmsAxios
+      .put(`links/${id}`, linkRequest, {
+        headers: { Authorization: `Bearer ${keycloakToken}` },
+      })
+      .catch((error) => {
+        console.error("error occurred", error);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not save attachments",
+        });
+      });
+
+    return res.data.data;
+  }
+
+  async function saveMediaAttachment(id, link) {
+    const mediaResponse = await uploadMedia(id, link.file);
+    const updateLinkResponse = await updateMediaLink(mediaResponse, id, link);
+
+    return updateLinkResponse;
+  }
+
+  async function createLink(link) {
     if (link.isFileModified) {
       const id = await preSaveMediaLink(link);
       const res = await saveMediaAttachment(id, link);
@@ -771,7 +861,7 @@ export default function Advisory({ mode }) {
         headers: { Authorization: `Bearer ${keycloakToken}` },
       })
       .catch((error) => {
-        console.log("error occurred", error);
+        console.error("error occurred", error);
         setToError(true);
         setError({
           status: 500,
@@ -780,9 +870,9 @@ export default function Advisory({ mode }) {
       });
 
     return res.data.data;
-  };
+  }
 
-  const saveLink = async (link, id) => {
+  async function saveLink(link, id) {
     if (link.isFileModified) {
       const res = await saveMediaAttachment(id, link);
 
@@ -800,7 +890,7 @@ export default function Advisory({ mode }) {
         headers: { Authorization: `Bearer ${keycloakToken}` },
       })
       .catch((error) => {
-        console.log("error occurred", error);
+        console.error("error occurred", error);
         setToError(true);
         setError({
           status: 500,
@@ -809,9 +899,9 @@ export default function Advisory({ mode }) {
       });
 
     return res.data.data;
-  };
+  }
 
-  const saveLinks = async () => {
+  async function saveLinks() {
     const savedLinks = [];
 
     for (const link of linksRef.current) {
@@ -828,39 +918,38 @@ export default function Advisory({ mode }) {
       }
     }
     return savedLinks;
-  };
+  }
 
-  const getAdvisoryFields = (type) => {
-    let publishedDate = null;
-    let adStatus = advisoryStatus;
-
+  function getAdvisoryFields(type) {
     if (isApprover) {
       setIsSubmitting(true);
       const status = advisoryStatuses.find((s) => s.value === advisoryStatus);
 
-      publishedDate = getApproverAdvisoryFields(
-        status.code,
-        setConfirmationText,
-      );
-    } else {
-      if (type === "draft") {
-        setIsSavingDraft(true);
-      } else if (type === "submit") {
-        setIsSubmitting(true);
-        if (isAfterHourPublish) type = "publish";
-      }
-      const { status, published } = getSubmitterAdvisoryFields(
-        type,
-        advisoryStatuses,
-        setConfirmationText,
-      );
-
-      publishedDate = published;
-      adStatus = status;
+      return {
+        published: getApproverAdvisoryFields(status.code, setConfirmationText),
+        status: advisoryStatus,
+      };
     }
-    return { published: publishedDate, status: adStatus };
-  };
-  const saveAdvisory = (type) => {
+
+    let submitType = type;
+
+    if (submitType === "draft") {
+      setIsSavingDraft(true);
+    } else if (submitType === "submit") {
+      setIsSubmitting(true);
+      if (isAfterHourPublish) {
+        submitType = "publish";
+      }
+    }
+
+    return getSubmitterAdvisoryFields(
+      submitType,
+      advisoryStatuses,
+      setConfirmationText,
+    );
+  }
+
+  function saveAdvisory(type) {
     try {
       const { status } = getAdvisoryFields(type);
 
@@ -881,7 +970,7 @@ export default function Advisory({ mode }) {
           description,
           revisionNumber,
           isSafetyRelated,
-          listingRank: listingRank ? parseInt(listingRank) : 0,
+          listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
           note: notes,
           submittedBy: submittedBy ? submittedBy : submitter,
           createdDate: moment().toISOString(),
@@ -931,7 +1020,7 @@ export default function Advisory({ mode }) {
             setIsConfirmation(true);
           })
           .catch((error) => {
-            console.log("error occurred", error);
+            console.error("error occurred", error);
             setToError(true);
             setError({
               status: 500,
@@ -940,16 +1029,16 @@ export default function Advisory({ mode }) {
           });
       });
     } catch (error) {
-      console.log("error occurred", error);
+      console.error("error occurred", error);
       setToError(true);
       setError({
         status: 500,
         message: "Could not process advisory update",
       });
     }
-  };
+  }
 
-  const updateAdvisory = (type) => {
+  function updateAdvisory(type) {
     try {
       const { status } = getAdvisoryFields(type);
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
@@ -981,7 +1070,7 @@ export default function Advisory({ mode }) {
             description,
             revisionNumber,
             isSafetyRelated,
-            listingRank: listingRank ? parseInt(listingRank) : 0,
+            listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
             note: notes,
             submittedBy,
             updatedDate,
@@ -1037,7 +1126,7 @@ export default function Advisory({ mode }) {
               setIsConfirmation(true);
             })
             .catch((error) => {
-              console.log("error occurred", error);
+              console.error("error occurred", error);
               setToError(true);
               setError({
                 status: 500,
@@ -1047,113 +1136,14 @@ export default function Advisory({ mode }) {
         });
       }
     } catch (error) {
-      console.log("error occurred", error);
+      console.error("error occurred", error);
       setToError(true);
       setError({
         status: 500,
         message: "Could not process advisory update",
       });
     }
-  };
-
-  const preSaveMediaLink = async (link) => {
-    const linkRequest = {
-      data: {
-        type: link.type,
-        title: link.title,
-      },
-    };
-    const res = await cmsAxios
-      .post(`links`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.log("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-      });
-
-    return res.data.data.documentId;
-  };
-
-  const updateMediaLink = async (media, id, link) => {
-    const isProtocolExist = /(https|http?)/gi;
-
-    const path = media.url?.match(isProtocolExist);
-    const getUrl = path?.length
-      ? media.url
-      : getEnv("VITE_CMS_BASE_URL") + media.url;
-
-    const linkRequest = {
-      data: {
-        title: link.title ? link.title : media.name,
-        type: link.type,
-        url: getUrl,
-      },
-    };
-
-    const res = await cmsAxios
-      .put(`links/${id}`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.log("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-      });
-
-    return res.data.data;
-  };
-
-  const saveMediaAttachment = async (id, link) => {
-    const mediaResponse = await uploadMedia(id, link.file);
-    const updateLinkResponse = await updateMediaLink(mediaResponse, id, link);
-
-    return updateLinkResponse;
-  };
-
-  const uploadMedia = async (id, file) => {
-    const data = {};
-    const fileForm = new FormData();
-
-    data.refId = id;
-    data.ref = "link";
-    data.field = "file";
-    fileForm.append("files", file);
-    fileForm.append("data", JSON.stringify(data));
-
-    const res = await cmsAxios
-      .post(`upload`, fileForm, {
-        // or { 'data': fileForm }
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${keycloakToken}`,
-        },
-      })
-      .catch((error) => {
-        console.log("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-      });
-
-    if (res.data.length > 0) {
-      return res.data[0];
-    }
-    setToError(true);
-    setError({
-      status: 500,
-      message: "Could not save attachments",
-    });
-  };
+  }
 
   if (toDashboard) {
     return (
@@ -1204,7 +1194,7 @@ export default function Advisory({ mode }) {
                     sessionStorage.clear();
                   }}
                 >
-                  <ArrowBackIcon className="me-1" />
+                  <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                   Back to{" "}
                   {mode === "create" ? "public advisories" : "advisory preview"}
                 </button>

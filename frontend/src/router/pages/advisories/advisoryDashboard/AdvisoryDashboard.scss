@@ -20,6 +20,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 0.25rem;
     width: fit-content;
     border-radius: 0.5rem;
     font-size: 0.7rem;
@@ -54,6 +55,10 @@
 
   .warningRoundedIcon {
     color: gray;
+    display: inline-flex;
+    width: 1rem;
+    justify-content: center;
+    font-weight: 700;
   }
 
   .urgency-column {
@@ -66,9 +71,22 @@
     text-align: center !important;
   }
 
-  .MuiChip-root {
+  .park-count-badge {
     margin-right: 4px;
     margin-left: 4px;
+    border: 1px solid var(--color-light-grey);
+  }
+
+  .table-row-action {
+    border: 0;
+    background: transparent;
+    color: var(--color-blue);
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .advisory-archived-toggle input {
+    margin-top: 0.2rem;
   }
 
   .advisory-dashboard-padding {

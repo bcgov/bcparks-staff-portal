@@ -2,18 +2,25 @@
   color: #234075 !important;
 }
 
-.park-tab .MuiTabs-scroller,
-.park-tab .MuiTabs-scrollable {
+.park-tab .nav-tabs {
   background-color: #f2f2f2 !important;
+  border-bottom: none;
 }
 
-.park-tab .Mui-selected {
+.park-tab .nav-link {
+  color: #234075 !important;
+  border: none !important;
+  border-radius: 0;
+}
+
+.park-tab .nav-link.active {
   background-color: #036 !important;
   color: #fff !important;
 }
 
-.park-tab .MuiTabs-indicator {
-  background-color: transparent !important;
+.park-tab .nav-item {
+  flex: 1 1 0;
+  text-align: center;
 }
 
 .park-header {
@@ -35,7 +42,7 @@
   border-right: none !important;
 }
 
-.park-info-tab-content .MuiBox-root {
+.park-tab .tab-content {
   padding-top: 3px !important;
 }
 
@@ -50,21 +57,35 @@
   color: #234075 !important;
 }
 
-.park-content .MuiPaper-elevation1 {
-  box-shadow: none !important;
+.park-desc .accordion-item {
+  border: none;
+  background-color: #f2f2f2 !important;
 }
 
-.park-desc .MuiAccordionDetails-root,
-.park-desc .MuiAccordionSummary-root {
+.park-desc .accordion-body,
+.park-desc .accordion-button {
   padding: 0px !important;
 }
 
-.park-desc .MuiAccordionSummary-content.Mui-expanded {
-  margin: 0px !important;
+.park-desc .accordion-button,
+.park-desc .accordion-button:not(.collapsed) {
+  background-color: #f2f2f2 !important;
+  color: #234075 !important;
+  box-shadow: none;
 }
 
-.park-desc .MuiAccordionSummary-root.Mui-expanded {
-  min-height: unset !important;
+.park-desc .accordion-button:focus {
+  box-shadow: none;
+}
+
+.park-desc .accordion-button::after {
+  margin-left: 8px;
+}
+
+.park-desc-actions {
+  display: flex;
+  gap: 8px;
+  padding-top: 10px;
 }
 
 .white-background {

@@ -1,19 +1,16 @@
 import { useState, useEffect, useContext } from "react";
-import {
-  Navigate,
-  useLocation,
-  useParams,
-  useNavigate,
-} from "react-router-dom";
+import { Navigate, useLocation, useParams } from "react-router-dom";
 import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
 import { cmsAxios } from "@/lib/advisories/axios_config";
 import { useAuth } from "react-oidc-context";
 import "./AdvisorySummary.css";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
-import Alert from "@mui/material/Alert";
-import { Snackbar, Link } from "@mui/material";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import Alert from "react-bootstrap/Alert";
+import Toast from "react-bootstrap/Toast";
+import ToastContainer from "react-bootstrap/ToastContainer";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { getLinkTypes } from "@/lib/advisories/utils/CmsDataUtil";
 import AdvisorySummaryView from "@/components/advisories/composite/advisorySummaryView/AdvisorySummaryView";
@@ -33,9 +30,8 @@ export default function AdvisorySummary() {
   const [toUpdate, setToUpdate] = useState(false);
   const [snackPack, setSnackPack] = useState([]);
   const [openSnack, setOpenSnack] = useState(false);
-  const [snackMessageInfo, setSnackMessageInfo] = useState(undefined);
+  const [snackMessageInfo, setSnackMessageInfo] = useState(null);
   const { documentId } = useParams();
-  const navigate = useNavigate();
   const location = useLocation();
   const confirmationText = location.state?.confirmationText;
   const index = location.state?.index;
@@ -82,7 +78,7 @@ export default function AdvisorySummary() {
 
             setCurrentSiteUrls(siteUrlText);
           })
-          .catch((error) => {
+          .catch(() => {
             // Do nothing
           });
       }
@@ -139,7 +135,7 @@ export default function AdvisorySummary() {
           setIsLoadingPage(false);
         })
         .catch((error) => {
-          console.log("error occurred fetching Public Advisory data", error);
+          console.error("error occurred fetching Public Advisory data", error);
           setToError(true);
           setError({
             status: 500,
@@ -182,36 +178,20 @@ export default function AdvisorySummary() {
     showOriginalAdvisory,
   ]);
 
-  const handleMenuChange = (event, val) => {
-    switch (val) {
-      case 0:
-        navigate("/advisories");
-        break;
-      case 1:
-        navigate("/park-access-status");
-        break;
-      case 2:
-        navigate("/activities-and-facilities");
-        break;
-      default:
-        navigate("/");
-    }
-  };
-
-  const handleOpenSnackBar = (message) => {
+  function handleOpenSnackBar(message) {
     setSnackPack((prev) => [...prev, { message, key: new Date().getTime() }]);
-  };
+  }
 
-  const handleCloseSnackBar = (event, reason) => {
+  function handleCloseSnackBar(_, reason) {
     if (reason === "clickaway") {
       return;
     }
     setOpenSnack(false);
-  };
+  }
 
-  const handleExitedSnackBar = () => {
-    setSnackMessageInfo(undefined);
-  };
+  function handleExitedSnackBar() {
+    setSnackMessageInfo(null);
+  }
 
   if (toDashboard) {
     return (
@@ -253,25 +233,26 @@ export default function AdvisorySummary() {
                       setToDashboard(true);
                     }}
                   >
-                    <ArrowBackIcon />
+                    <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
                     Back to public advisories
                   </button>
                 </div>
                 {!showOriginalAdvisory && (
                   <div className="container-fluid ad-summary mt-4">
                     {confirmationText && (
-                      <Alert severity="success">{confirmationText}</Alert>
+                      <Alert variant="success">{confirmationText}</Alert>
                     )}
                     {isCurrentlyPublished && (
                       <div className="container-fluid ad-right mt-4">
-                        <Link
-                          component="button"
+                        <button
+                          type="button"
+                          className="btn btn-link p-0"
                           onClick={() => {
                             setShowOriginalAdvisory(true);
                           }}
                         >
                           View published version
-                        </Link>
+                        </button>
                       </div>
                     )}
                     <div className="mt-5 container-fluid ad-form">
@@ -307,14 +288,15 @@ export default function AdvisorySummary() {
                   <div className="container-fluid ad-summary col-lg-9 col-md-12 col-12">
                     <div className="row">
                       <div className="col-lg-12 col-md-12 col-12 ad-right">
-                        <Link
-                          component="button"
+                        <button
+                          type="button"
+                          className="btn btn-link p-0"
                           onClick={() => {
                             setShowOriginalAdvisory(false);
                           }}
                         >
                           View recent update
-                        </Link>
+                        </button>
                       </div>
                     </div>
                     <AdvisorySummaryView
@@ -330,21 +312,20 @@ export default function AdvisorySummary() {
                   </div>
                 )}
               </div>
-              <Snackbar
-                key={snackMessageInfo ? snackMessageInfo.key : undefined}
-                anchorOrigin={{
-                  vertical: "bottom",
-                  horizontal: "left",
-                }}
-                open={openSnack}
-                autoHideDuration={3000}
-                onClose={handleCloseSnackBar}
-                onExited={handleExitedSnackBar}
-              >
-                <Alert onClose={handleCloseSnackBar} severity="info">
-                  {snackMessageInfo ? snackMessageInfo.message : undefined}
-                </Alert>
-              </Snackbar>
+              <ToastContainer position="bottom-start" className="p-3">
+                <Toast
+                  key={snackMessageInfo ? snackMessageInfo.key : null}
+                  show={openSnack}
+                  onClose={handleCloseSnackBar}
+                  onExited={handleExitedSnackBar}
+                  delay={3000}
+                  autohide
+                >
+                  <Toast.Body>
+                    {snackMessageInfo ? snackMessageInfo.message : null}
+                  </Toast.Body>
+                </Toast>
+              </ToastContainer>
             </div>
           )}
         </div>

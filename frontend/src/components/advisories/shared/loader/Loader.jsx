@@ -1,10 +1,12 @@
 import PropTypes from "prop-types";
 import "./Loader.css";
 
-export const Loader = ({ page }) => {
+export function Loader({ page }) {
   let loaderCss = "bcgov-btn-loader";
 
-  if (page) loaderCss = "bcgov-page-loader";
+  if (page) {
+    loaderCss = "bcgov-page-loader";
+  }
 
   return (
     <>
@@ -17,7 +19,7 @@ export const Loader = ({ page }) => {
       )}
     </>
   );
-};
+}
 
 Loader.propTypes = {
   page: PropTypes.bool,

@@ -1,10 +1,10 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryAreaPicker.css";
-import { FormControl, FormHelperText } from "@mui/material";
 import Select from "react-select";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
-import HelpIcon from "@mui/icons-material/Help";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { validateRequiredAffectedArea } from "@/lib/advisories/validators/AdvisoryValidator";
 import { generateProtectedAreasListForSelectedRelations } from "@/lib/advisories/utils/AdvisoryUtil";
 import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
@@ -41,7 +41,7 @@ export default function AdvisoryAreaPicker({
 }) {
   const [isShow, setIsShow] = useState(false);
 
-  const handleRemoveProtectedArea = async (updatedParksList) => {
+  async function handleRemoveProtectedArea(updatedParksList) {
     const deletedParks = selectedProtectedAreas.filter(
       (park) => !updatedParksList?.includes(park),
     );
@@ -108,9 +108,9 @@ export default function AdvisoryAreaPicker({
         setSelectedSites(newSites);
       }
     }
-  };
+  }
 
-  const handleClearProtectedAreas = () => {
+  function handleClearProtectedAreas() {
     setSelectedManagementAreas([]);
     setSelectedRegions([]);
     setSelectedSections([]);
@@ -118,9 +118,9 @@ export default function AdvisoryAreaPicker({
     setSelectedFireCentres([]);
     setSelectedNaturalResourceDistricts([]);
     setSelectedSites([]);
-  };
+  }
 
-  const handleChangeRelations = ({
+  function handleChangeRelations({
     updatedRegions,
     updatedSections,
     updatedManagementAreas,
@@ -128,7 +128,7 @@ export default function AdvisoryAreaPicker({
     updatedFireZones,
     updatedFireCentres,
     updatedNaturalResourceDistricts,
-  }) => {
+  }) {
     // get current the list of park ids before the change
     const currentlySelected = selectedProtectedAreas.map((x) => x.value);
 
@@ -159,7 +159,7 @@ export default function AdvisoryAreaPicker({
       updatedSites || selectedSites,
       updatedFireCentres || selectedFireCentres,
       updatedFireZones || selectedFireZones,
-      updatedNaturalResourceDistricts || selectedManagementAreas,
+      updatedNaturalResourceDistricts || selectedNaturalResourceDistricts,
       managementAreas,
       fireZones,
       sites,
@@ -172,15 +172,15 @@ export default function AdvisoryAreaPicker({
     const parks = protectedAreas.filter((p) => newList.has(p.value));
 
     setSelectedProtectedAreas(parks);
-  };
+  }
 
   const customSelectStyles = {
-    control: (provided, state) => ({
+    control: (provided) => ({
       ...provided,
       maxHeight: "400px",
       overflowY: "auto",
     }),
-    indicatorsContainer: (provided, state) => ({
+    indicatorsContainer: (provided) => ({
       ...provided,
       height: "2.3rem",
     }),
@@ -203,7 +203,7 @@ export default function AdvisoryAreaPicker({
                 For example, an advisory for Goldstream Park would only need Goldstream selected from the list of parks,
                 you would not need to include West Coast in the regions as this would trigger an alert for all parks in the West Coast."
           >
-            <HelpIcon className="helpIcon" />
+            <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
           </LightTooltip>
           {!isShow && (
             <button
@@ -223,7 +223,7 @@ export default function AdvisoryAreaPicker({
               Fire Centre(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl variant="outlined" className="bcgov-select-form">
+              <div className="bcgov-select-form">
                 <Select
                   options={fireCentres}
                   value={selectedFireCentres}
@@ -235,7 +235,7 @@ export default function AdvisoryAreaPicker({
                   isMulti="true"
                   className="bcgov-select"
                 />
-              </FormControl>
+              </div>
             </div>
           </div>
           <div className="row">
@@ -243,7 +243,7 @@ export default function AdvisoryAreaPicker({
               Fire Zone(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl variant="outlined" className="bcgov-select-form">
+              <div className="bcgov-select-form">
                 <Select
                   options={fireZones}
                   value={selectedFireZones}
@@ -255,7 +255,7 @@ export default function AdvisoryAreaPicker({
                   isMulti="true"
                   className="bcgov-select"
                 />
-              </FormControl>
+              </div>
             </div>
           </div>
           <div className="row">
@@ -263,7 +263,7 @@ export default function AdvisoryAreaPicker({
               Natural Resource District(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl variant="outlined" className="bcgov-select-form">
+              <div className="bcgov-select-form">
                 <Select
                   options={naturalResourceDistricts}
                   value={selectedNaturalResourceDistricts}
@@ -277,7 +277,7 @@ export default function AdvisoryAreaPicker({
                   isMulti="true"
                   className="bcgov-select"
                 />
-              </FormControl>
+              </div>
             </div>
           </div>
           <div className="row">
@@ -285,7 +285,7 @@ export default function AdvisoryAreaPicker({
               Region(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl variant="outlined" className="bcgov-select-form">
+              <div className="bcgov-select-form">
                 <Select
                   options={regions}
                   value={selectedRegions}
@@ -297,7 +297,7 @@ export default function AdvisoryAreaPicker({
                   isMulti="true"
                   className="bcgov-select"
                 />
-              </FormControl>
+              </div>
             </div>
           </div>
           <div className="row">
@@ -305,7 +305,7 @@ export default function AdvisoryAreaPicker({
               Section(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl variant="outlined" className="bcgov-select-form">
+              <div className="bcgov-select-form">
                 <Select
                   options={sections}
                   value={selectedSections}
@@ -317,7 +317,7 @@ export default function AdvisoryAreaPicker({
                   isMulti="true"
                   className="bcgov-select"
                 />
-              </FormControl>
+              </div>
             </div>
           </div>
           <div className="row">
@@ -325,7 +325,7 @@ export default function AdvisoryAreaPicker({
               Management Area(s)
             </div>
             <div className="col-lg-7 col-md-8 col-sm-12">
-              <FormControl variant="outlined" className="bcgov-select-form">
+              <div className="bcgov-select-form">
                 <Select
                   options={managementAreas}
                   value={selectedManagementAreas}
@@ -337,7 +337,7 @@ export default function AdvisoryAreaPicker({
                   isMulti="true"
                   className="bcgov-select"
                 />
-              </FormControl>
+              </div>
             </div>
           </div>
           <div className="row">
@@ -359,12 +359,10 @@ export default function AdvisoryAreaPicker({
           Park(s)
         </div>
         <div className="col-lg-7 col-md-8 col-sm-12">
-          <FormControl
-            variant="outlined"
+          <div
             className={`bcgov-select-form ${
               protectedAreaError !== "" ? "bcgov-select-error" : ""
             }`}
-            error
           >
             <Select
               options={protectedAreas}
@@ -386,14 +384,18 @@ export default function AdvisoryAreaPicker({
               }}
               styles={customSelectStyles}
             />
-            <FormHelperText>{protectedAreaError}</FormHelperText>
-          </FormControl>
+            {protectedAreaError && (
+              <div className="invalid-feedback d-block">
+                {protectedAreaError}
+              </div>
+            )}
+          </div>
         </div>
       </div>
       <div className="row">
         <div className="col-lg-3 col-md-4 col-sm-12 ad-label">Site(s)</div>
         <div className="col-lg-7 col-md-8 col-sm-12">
-          <FormControl variant="outlined" className="bcgov-select-form">
+          <div className="bcgov-select-form">
             <Select
               options={sites}
               value={selectedSites}
@@ -405,7 +407,7 @@ export default function AdvisoryAreaPicker({
               isMulti="true"
               className="bcgov-select"
             />
-          </FormControl>
+          </div>
         </div>
       </div>
     </>

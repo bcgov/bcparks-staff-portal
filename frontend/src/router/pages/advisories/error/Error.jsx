@@ -77,7 +77,6 @@ export default function Error({ error }) {
           again later.
           <br />
           <br />
-          {console.log("error", error)}
           {error.message}
         </p>
       </div>
