@@ -33,6 +33,10 @@ if [ -n "$VITE_API_BASE_URL" ]; then
   echo "window.envVars.VITE_API_BASE_URL = \"$VITE_API_BASE_URL\";" >> $APP_ROOT/env.js
 fi
 
+if [ -n "$VITE_CKEDITOR_LICENSE_KEY" ]; then
+  echo "window.envVars.VITE_CKEDITOR_LICENSE_KEY = \"$VITE_CKEDITOR_LICENSE_KEY\";" >> $APP_ROOT/env.js
+fi
+
 # Start the server
 
 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile

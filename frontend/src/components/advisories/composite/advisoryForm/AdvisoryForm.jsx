@@ -33,6 +33,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import useAccess from "@/hooks/useAccess";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import AdvisoryAreaPicker from "@/components/advisories/composite/advisoryAreaPicker/AdvisoryAreaPicker";
+import CKEditor from "@/components/advisories/composite/ckeditor/CKEditor";
 
 export default function AdvisoryForm({
   mode,
@@ -599,18 +600,7 @@ export default function AdvisoryForm({
             Description
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
-            <TextField
-              value={description}
-              onChange={(event) => {
-                setDescription(event.target.value);
-              }}
-              multiline
-              minRows={4}
-              maxRows={10}
-              className="bcgov-input"
-              variant="outlined"
-              InputProps={{ ...descriptionInput }}
-            />
+            <CKEditor value={description} onChange={setDescription} />
           </div>
         </div>
         <div className="row">

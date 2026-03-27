@@ -1,0 +1,18 @@
+// CKEditor styles are imported in the CKEditor.jsx file
+
+/*
+ * Configure the z-index of the CKEditor UI,
+ * so editors inside a Bootstrap modal will be rendered over the modal.
+ */
+:root {
+  --ck-z-default: 100;
+  --ck-z-panel: calc(var(--ck-z-default) + 999);
+}
+
+/*
+ * Override the width of the table set by Bootstrap content styles.
+ * See: https://github.com/ckeditor/ckeditor5/issues/3253.
+ */
+.ck-content .table {
+  width: auto;
+}
