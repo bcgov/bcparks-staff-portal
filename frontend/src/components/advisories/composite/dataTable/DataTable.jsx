@@ -1,8 +1,10 @@
 import { forwardRef } from "react";
+import PropTypes from "prop-types";
 
 import TableContainer from "@mui/material/TableContainer";
 import Paper from "@mui/material/Paper";
 import MaterialTable from "@material-table/core";
+import PaginationControls from "@/components/PaginationControls";
 
 import "./DataTable.css";
 
@@ -22,34 +24,95 @@ import SaveAlt from "@mui/icons-material/SaveAlt";
 import Search from "@mui/icons-material/Search";
 import ViewColumn from "@mui/icons-material/ViewColumn";
 
+function createTableIcon(IconComponent, displayName) {
+  const TableIcon = forwardRef((props, ref) => (
+    <IconComponent {...props} ref={ref} />
+  ));
+
+  TableIcon.displayName = displayName;
+
+  return TableIcon;
+}
+
 const tableIcons = {
-  Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
-  Check: forwardRef((props, ref) => <Check {...props} ref={ref} />),
-  Clear: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-  Delete: forwardRef((props, ref) => <DeleteOutline {...props} ref={ref} />),
-  DetailPanel: forwardRef((props, ref) => (
-    <ChevronRight {...props} ref={ref} />
-  )),
-  Edit: forwardRef((props, ref) => <Edit {...props} ref={ref} />),
-  Export: forwardRef((props, ref) => <SaveAlt {...props} ref={ref} />),
-  Filter: forwardRef((props, ref) => <FilterList {...props} ref={ref} />),
-  FirstPage: forwardRef((props, ref) => <FirstPage {...props} ref={ref} />),
-  LastPage: forwardRef((props, ref) => <LastPage {...props} ref={ref} />),
-  NextPage: forwardRef((props, ref) => <ChevronRight {...props} ref={ref} />),
-  PreviousPage: forwardRef((props, ref) => (
-    <ChevronLeft {...props} ref={ref} />
-  )),
-  ResetSearch: forwardRef((props, ref) => <Clear {...props} ref={ref} />),
-  Search: forwardRef((props, ref) => <Search {...props} ref={ref} />),
-  SortArrow: forwardRef((props, ref) => <ArrowDownward {...props} ref={ref} />),
-  ThirdStateCheck: forwardRef((props, ref) => <Remove {...props} ref={ref} />),
-  ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />),
+  Add: createTableIcon(AddBox, "TableIconAdd"),
+  Check: createTableIcon(Check, "TableIconCheck"),
+  Clear: createTableIcon(Clear, "TableIconClear"),
+  Delete: createTableIcon(DeleteOutline, "TableIconDelete"),
+  DetailPanel: createTableIcon(ChevronRight, "TableIconDetailPanel"),
+  Edit: createTableIcon(Edit, "TableIconEdit"),
+  Export: createTableIcon(SaveAlt, "TableIconExport"),
+  Filter: createTableIcon(FilterList, "TableIconFilter"),
+  FirstPage: createTableIcon(FirstPage, "TableIconFirstPage"),
+  LastPage: createTableIcon(LastPage, "TableIconLastPage"),
+  NextPage: createTableIcon(ChevronRight, "TableIconNextPage"),
+  PreviousPage: createTableIcon(ChevronLeft, "TableIconPreviousPage"),
+  ResetSearch: createTableIcon(Clear, "TableIconResetSearch"),
+  Search: createTableIcon(Search, "TableIconSearch"),
+  SortArrow: createTableIcon(ArrowDownward, "TableIconSortArrow"),
+  ThirdStateCheck: createTableIcon(Remove, "TableIconThirdStateCheck"),
+  ViewColumn: createTableIcon(ViewColumn, "TableIconViewColumn"),
+};
+
+function PaginationAdapter({
+  count,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onChangePage,
+  onRowsPerPageChange,
+  onChangeRowsPerPage,
+  labelRowsPerPage,
+  style,
+}) {
+  const handlePageChange = onPageChange || onChangePage;
+  const handleRowsPerPageChange = onRowsPerPageChange || onChangeRowsPerPage;
+
+  return (
+    <td style={style}>
+      <PaginationControls
+        totalItems={count}
+        currentPage={page + 1}
+        pageSize={rowsPerPage}
+        onPageChange={(nextPage) => handlePageChange(null, nextPage - 1)}
+        onPageSizeChange={(size) =>
+          handleRowsPerPageChange({ target: { value: size } })
+        }
+        pageSizeLabel={labelRowsPerPage}
+      />
+    </td>
+  );
+}
+
+PaginationAdapter.propTypes = {
+  count: PropTypes.number.isRequired,
+  page: PropTypes.number.isRequired,
+  rowsPerPage: PropTypes.number.isRequired,
+  onPageChange: PropTypes.func,
+  onChangePage: PropTypes.func,
+  onRowsPerPageChange: PropTypes.func,
+  onChangeRowsPerPage: PropTypes.func,
+  labelRowsPerPage: PropTypes.string,
+  style: PropTypes.object,
 };
 
 export default function DataTable(props) {
+  const { components, ...materialTableProps } = props;
+
   return (
     <TableContainer component={Paper} className="data-table">
-      <MaterialTable icons={tableIcons} {...props} />
+      <MaterialTable
+        icons={tableIcons}
+        components={{
+          Pagination: PaginationAdapter,
+          ...components,
+        }}
+        {...materialTableProps}
+      />
     </TableContainer>
   );
 }
+
+DataTable.propTypes = {
+  components: PropTypes.object,
+};
