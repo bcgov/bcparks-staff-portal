@@ -9,6 +9,7 @@ images:
     tag: prod
 
 frontend:
+    ckeditorLicenseSecret: ckeditor-license-key-secret-main
   env:
     externalUrl: https://staff.bcparks.ca
     publicUrl: https://bcparks.ca

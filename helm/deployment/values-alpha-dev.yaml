@@ -11,6 +11,7 @@ images:
     tag: latest
 
 frontend:
+    ckeditorLicenseSecret: ckeditor-license-key-secret-alpha
   env:
     externalUrl: https://alpha-dev-staff.bcparks.ca
     publicUrl: https://alpha-dev.bcparks.ca
