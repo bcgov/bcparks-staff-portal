@@ -17,9 +17,6 @@ frontend:
 
   componentName: frontend
 
-  # Name of the OpenShift Secret containing the CKEditor license key
-  ckeditorLicenseSecret: main-ckeditor-license-key-secret
-
   env:
     externalUrl: https://dev-staff.bcparks.ca
     statHolidayApi: https://canada-holidays.ca/api/v1/provinces/BC

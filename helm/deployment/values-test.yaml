@@ -9,7 +9,6 @@ images:
     tag: test
 
 frontend:
-    ckeditorLicenseSecret: main-ckeditor-license-key-secret
   env:
     externalUrl: https://test-staff.bcparks.ca
     publicUrl: https://test.bcparks.ca

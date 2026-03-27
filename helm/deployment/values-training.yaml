@@ -9,7 +9,6 @@ images:
     tag: training
 
 frontend:
-    ckeditorLicenseSecret: training-ckeditor-license-key-secret
   env:
     externalUrl: https://training-staff.bcparks.ca
     publicUrl: https://alpha-test.bcparks.ca
