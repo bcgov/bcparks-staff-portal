@@ -7,6 +7,7 @@ import {
   Italic,
   Link,
   SourceEditing,
+  List,
 } from "ckeditor5";
 import getEnv from "@/config/getEnv";
 
@@ -19,8 +20,26 @@ export default function StaffPortalCKEditor({ value, onChange }) {
       data={value}
       config={{
         licenseKey: getEnv("VITE_CKEDITOR_LICENSE_KEY"),
-        plugins: [Essentials, Paragraph, Bold, Italic, Link, SourceEditing],
-        toolbar: ["bold", "italic", "|", "link", "|", "sourceEditing"],
+        plugins: [
+          Essentials,
+          Paragraph,
+          Bold,
+          Italic,
+          Link,
+          SourceEditing,
+          List,
+        ],
+        toolbar: [
+          "bold",
+          "italic",
+          "|",
+          "link",
+          "|",
+          "bulletedList",
+          "numberedList",
+          "|",
+          "sourceEditing",
+        ],
       }}
       onBlur={(_, editor) => {
         onChange(editor.getData());
