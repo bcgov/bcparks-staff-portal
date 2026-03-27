@@ -18,7 +18,7 @@ frontend:
   componentName: frontend
 
   # Name of the OpenShift Secret containing the CKEditor license key
-  ckeditorLicenseSecret: ckeditor-license-key-secret-main
+  ckeditorLicenseSecret: main-ckeditor-license-key-secret
 
   env:
     externalUrl: https://dev-staff.bcparks.ca

@@ -11,7 +11,7 @@ images:
     tag: test
 
 frontend:
-    ckeditorLicenseSecret: ckeditor-license-key-secret-alpha
+    ckeditorLicenseSecret: alpha-ckeditor-license-key-secret
   env:
     externalUrl: https://alpha-test-staff.bcparks.ca
     publicUrl: https://alpha-test.bcparks.ca

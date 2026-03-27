@@ -3,7 +3,7 @@ cluster:
   cmsUrl: https://dev-cms.bcparks.ca
 
 frontend:
-    ckeditorLicenseSecret: ckeditor-license-key-secret-main
+    ckeditorLicenseSecret: main-ckeditor-license-key-secret
   env:
     externalUrl: https://dev-staff.bcparks.ca
     publicUrl: https://dev.bcparks.ca
