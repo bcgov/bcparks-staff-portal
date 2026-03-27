@@ -9,6 +9,7 @@ import {
   SourceEditing,
   List,
 } from "ckeditor5";
+import PropTypes from "prop-types";
 import getEnv from "@/config/getEnv";
 
 import "ckeditor5/ckeditor5.css";
@@ -47,3 +48,8 @@ export default function StaffPortalCKEditor({ value, onChange }) {
     />
   );
 }
+
+StaffPortalCKEditor.propTypes = {
+  value: PropTypes.string.isRequired,
+  onChange: PropTypes.func.isRequired,
+};
