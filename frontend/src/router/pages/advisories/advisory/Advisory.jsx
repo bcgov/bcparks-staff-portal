@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { cmsAxios } from "@/lib/advisories/axios_config";
-import { Navigate, useParams, useNavigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Advisory.css";
 import moment from "moment";
@@ -122,7 +122,6 @@ export default function Advisory({ mode }) {
   const keycloakToken = auth.user?.access_token;
 
   const { documentId } = useParams();
-  const navigate = useNavigate();
 
   const query = qs.stringify(
     {
@@ -170,6 +169,17 @@ export default function Advisory({ mode }) {
     cmsData,
     setCmsData,
   ]);
+
+  function setLinkIds() {
+    const linkIds = [];
+
+    linksRef.current.forEach((l) => {
+      if (l.id) {
+        linkIds.push(l.id);
+      }
+    });
+    setLinks(linkIds);
+  }
 
   useEffect(() => {
     if (mode === "update" && !isLoadingData) {
@@ -364,10 +374,10 @@ export default function Advisory({ mode }) {
                 ...selNaturalResourceDistricts,
               ]);
             }
-            const links = advisoryData.links;
+            const advisoryLinks = advisoryData.links;
 
-            if (links.length > 0) {
-              links.forEach((l) => {
+            if (advisoryLinks.length > 0) {
+              advisoryLinks.forEach((l) => {
                 linksRef.current = [
                   ...linksRef.current,
                   {
@@ -478,71 +488,71 @@ export default function Advisory({ mode }) {
       ])
         .then((res) => {
           const protectedAreaData = res[0];
-          const protectedAreas = protectedAreaData.map((p) => ({
+          const newProtectedAreas = protectedAreaData.map((p) => ({
             label: p.protectedAreaName,
             value: p.documentId,
             type: "protectedArea",
             orcs: p.orcs,
           }));
 
-          setProtectedAreas([...protectedAreas]);
+          setProtectedAreas([...newProtectedAreas]);
           const regionData = res[1];
-          const regions = regionData.map((r) => ({
+          const newRegions = regionData.map((r) => ({
             label: `${r.regionName} Region`,
             value: r.documentId,
             type: "region",
             obj: r,
           }));
 
-          setRegions([...regions]);
+          setRegions([...newRegions]);
           const sectionData = res[2];
-          const sections = sectionData.map((s) => ({
+          const newSections = sectionData.map((s) => ({
             label: `${s.sectionName} Section`,
             value: s.documentId,
             type: "section",
             obj: s,
           }));
 
-          setSections([...sections]);
+          setSections([...newSections]);
           const managementAreaData = res[3];
-          const managementAreas = managementAreaData.map((m) => ({
+          const newManagementAreas = managementAreaData.map((m) => ({
             label: `${m.managementAreaName} Management Area`,
             value: m.documentId,
             type: "managementArea",
             obj: m,
           }));
 
-          setManagementAreas([...managementAreas]);
+          setManagementAreas([...newManagementAreas]);
           const siteData = res[4];
-          const sites = siteData.map((s) => ({
+          const newSites = siteData.map((s) => ({
             label: `${s?.protectedArea?.protectedAreaName}: ${s.siteName}`,
             value: s.documentId,
             type: "site",
             obj: s,
           }));
 
-          sites.sort(labelCompare);
-          setSites([...sites]);
+          newSites.sort(labelCompare);
+          setSites([...newSites]);
           const fireCentreData = res[5];
-          const fireCentres = fireCentreData.map((f) => ({
+          const newFireCentres = fireCentreData.map((f) => ({
             label: f.fireCentreName,
             value: f.documentId,
             type: "fireCentre",
             obj: f,
           }));
 
-          setFireCentres([...fireCentres]);
+          setFireCentres([...newFireCentres]);
           const fireZoneData = res[6];
-          const fireZones = fireZoneData.map((f) => ({
+          const newFireZones = fireZoneData.map((f) => ({
             label: f.fireZoneName,
             value: f.documentId,
             type: "fireZone",
             obj: f,
           }));
 
-          setFireZones([...fireZones]);
+          setFireZones([...newFireZones]);
           const naturalResourceDistrictData = res[7];
-          const naturalResourceDistricts = naturalResourceDistrictData.map(
+          const newNaturalResourceDistricts = naturalResourceDistrictData.map(
             (f) => ({
               label: f.naturalResourceDistrictName,
               value: f.documentId,
@@ -551,32 +561,32 @@ export default function Advisory({ mode }) {
             }),
           );
 
-          setNaturalResourceDistricts([...naturalResourceDistricts]);
+          setNaturalResourceDistricts([...newNaturalResourceDistricts]);
           const eventTypeData = res[8];
-          const eventTypes = eventTypeData.map((et) => ({
+          const newEventTypes = eventTypeData.map((et) => ({
             label: et.eventType,
             value: et.documentId,
           }));
 
-          setEventTypes([...eventTypes]);
+          setEventTypes([...newEventTypes]);
           const accessStatusData = res[9];
-          const accessStatuses = accessStatusData.map((a) => ({
+          const newAccessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
             value: a.documentId,
           }));
 
-          setAccessStatuses([...accessStatuses]);
-          const accessStatus = accessStatuses.find((a) => a.label === "Open");
+          setAccessStatuses([...newAccessStatuses]);
+          const openAccessStatus = newAccessStatuses.find((a) => a.label === "Open");
 
-          setAccessStatus(accessStatus.value);
+          setAccessStatus(openAccessStatus.value);
           const urgencyData = res[10];
-          const urgencies = urgencyData.map((u) => ({
+          const newUrgencies = urgencyData.map((u) => ({
             label: u.urgency,
             value: u.documentId,
             sequence: u.sequence,
           }));
 
-          setUrgencies([...urgencies]);
+          setUrgencies([...newUrgencies]);
           const advisoryStatusData = res[11];
           const restrictedAdvisoryStatusCodes = new Set(["INA", "APR"]);
           const desiredOrder = ["PUB", "INA", "DFT", "APR", "ARQ"];
@@ -602,27 +612,27 @@ export default function Advisory({ mode }) {
             (a, b) =>
               desiredOrder.indexOf(a.code) - desiredOrder.indexOf(b.code),
           );
-          const advisoryStatuses = sortedStatus.filter((s) => s !== null);
+          const newAdvisoryStatuses = sortedStatus.filter((s) => s !== null);
 
-          setAdvisoryStatuses([...advisoryStatuses]);
+          setAdvisoryStatuses([...newAdvisoryStatuses]);
           const linkTypeData = res[12];
-          const linkTypes = linkTypeData.map((lt) => ({
+          const newLinkTypes = linkTypeData.map((lt) => ({
             label: lt.type,
             value: lt.documentId,
           }));
 
-          setLinkTypes([...linkTypes]);
+          setLinkTypes([...newLinkTypes]);
           const standardMessageData = res[13];
-          const standardMessages = standardMessageData.map((m) => ({
+          const newStandardMessages = standardMessageData.map((m) => ({
             label: m.title,
             value: m.documentId,
             type: "standardMessage",
             obj: m,
           }));
 
-          setStandardMessages([...standardMessages]);
+          setStandardMessages([...newStandardMessages]);
           if (mode === "create") {
-            const defaultUrgency = urgencies.filter((u) => u.label === "Low");
+            const defaultUrgency = newUrgencies.filter((u) => u.label === "Low");
 
             if (defaultUrgency.length > 0) {
               setUrgency(defaultUrgency[0].value);
@@ -690,16 +700,6 @@ export default function Advisory({ mode }) {
     advisoryDateRef.current = e;
   }
 
-  function setLinkIds() {
-    const linkIds = [];
-
-    linksRef.current.forEach((l) => {
-      if (l.id) {
-        linkIds.push(l.id);
-      }
-    });
-    setLinks(linkIds);
-  }
 
   function addLink(format) {
     linksRef.current = [...linksRef.current, { title: "", url: "", format }];

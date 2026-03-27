@@ -1,33 +1,39 @@
 import { forwardRef } from "react";
 import PropTypes from "prop-types";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faAnglesLeft,
+  faAnglesRight,
+  faArrowDown,
+  faCheck,
+  faChevronLeft,
+  faChevronRight,
+  faCirclePlus,
+  faDownload,
+  faFilter,
+  faMagnifyingGlass,
+  faMinus,
+  faPen,
+  faTableColumns,
+  faTrashCan,
+  faXmark,
+} from "@fa-kit/icons/classic/solid";
 
-import TableContainer from "@mui/material/TableContainer";
-import Paper from "@mui/material/Paper";
 import MaterialTable from "@material-table/core";
 import PaginationControls from "@/components/PaginationControls";
 
 import "./DataTable.css";
 
-import AddBox from "@mui/icons-material/AddBox";
-import ArrowDownward from "@mui/icons-material/ArrowDownward";
-import Check from "@mui/icons-material/Check";
-import ChevronLeft from "@mui/icons-material/ChevronLeft";
-import ChevronRight from "@mui/icons-material/ChevronRight";
-import Clear from "@mui/icons-material/Clear";
-import DeleteOutline from "@mui/icons-material/DeleteOutline";
-import Edit from "@mui/icons-material/Edit";
-import FilterList from "@mui/icons-material/FilterList";
-import FirstPage from "@mui/icons-material/FirstPage";
-import LastPage from "@mui/icons-material/LastPage";
-import Remove from "@mui/icons-material/Remove";
-import SaveAlt from "@mui/icons-material/SaveAlt";
-import Search from "@mui/icons-material/Search";
-import ViewColumn from "@mui/icons-material/ViewColumn";
+function renderTableIcon(icon, props, ref) {
+  return (
+    <span ref={ref}>
+      <FontAwesomeIcon icon={icon} {...props} />
+    </span>
+  );
+}
 
-function createTableIcon(IconComponent, displayName) {
-  const TableIcon = forwardRef((props, ref) => (
-    <IconComponent {...props} ref={ref} />
-  ));
+function createTableIcon(icon, displayName) {
+  const TableIcon = forwardRef(renderTableIcon.bind(null, icon));
 
   TableIcon.displayName = displayName;
 
@@ -35,23 +41,23 @@ function createTableIcon(IconComponent, displayName) {
 }
 
 const tableIcons = {
-  Add: createTableIcon(AddBox, "TableIconAdd"),
-  Check: createTableIcon(Check, "TableIconCheck"),
-  Clear: createTableIcon(Clear, "TableIconClear"),
-  Delete: createTableIcon(DeleteOutline, "TableIconDelete"),
-  DetailPanel: createTableIcon(ChevronRight, "TableIconDetailPanel"),
-  Edit: createTableIcon(Edit, "TableIconEdit"),
-  Export: createTableIcon(SaveAlt, "TableIconExport"),
-  Filter: createTableIcon(FilterList, "TableIconFilter"),
-  FirstPage: createTableIcon(FirstPage, "TableIconFirstPage"),
-  LastPage: createTableIcon(LastPage, "TableIconLastPage"),
-  NextPage: createTableIcon(ChevronRight, "TableIconNextPage"),
-  PreviousPage: createTableIcon(ChevronLeft, "TableIconPreviousPage"),
-  ResetSearch: createTableIcon(Clear, "TableIconResetSearch"),
-  Search: createTableIcon(Search, "TableIconSearch"),
-  SortArrow: createTableIcon(ArrowDownward, "TableIconSortArrow"),
-  ThirdStateCheck: createTableIcon(Remove, "TableIconThirdStateCheck"),
-  ViewColumn: createTableIcon(ViewColumn, "TableIconViewColumn"),
+  Add: createTableIcon(faCirclePlus, "TableIconAdd"),
+  Check: createTableIcon(faCheck, "TableIconCheck"),
+  Clear: createTableIcon(faXmark, "TableIconClear"),
+  Delete: createTableIcon(faTrashCan, "TableIconDelete"),
+  DetailPanel: createTableIcon(faChevronRight, "TableIconDetailPanel"),
+  Edit: createTableIcon(faPen, "TableIconEdit"),
+  Export: createTableIcon(faDownload, "TableIconExport"),
+  Filter: createTableIcon(faFilter, "TableIconFilter"),
+  FirstPage: createTableIcon(faAnglesLeft, "TableIconFirstPage"),
+  LastPage: createTableIcon(faAnglesRight, "TableIconLastPage"),
+  NextPage: createTableIcon(faChevronRight, "TableIconNextPage"),
+  PreviousPage: createTableIcon(faChevronLeft, "TableIconPreviousPage"),
+  ResetSearch: createTableIcon(faXmark, "TableIconResetSearch"),
+  Search: createTableIcon(faMagnifyingGlass, "TableIconSearch"),
+  SortArrow: createTableIcon(faArrowDown, "TableIconSortArrow"),
+  ThirdStateCheck: createTableIcon(faMinus, "TableIconThirdStateCheck"),
+  ViewColumn: createTableIcon(faTableColumns, "TableIconViewColumn"),
 };
 
 function PaginationAdapter({
@@ -100,7 +106,7 @@ export default function DataTable(props) {
   const { components, ...materialTableProps } = props;
 
   return (
-    <TableContainer component={Paper} className="data-table">
+    <div className="data-table">
       <MaterialTable
         icons={tableIcons}
         components={{
@@ -109,7 +115,7 @@ export default function DataTable(props) {
         }}
         {...materialTableProps}
       />
-    </TableContainer>
+    </div>
   );
 }
 

@@ -18,11 +18,15 @@ import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleInfo,
-  faArrowUpFromLine,
-  faPencil,
+  faArrowUpToLine,
   faThumbsUp,
 } from "@fa-kit/icons/classic/regular";
-import { faTriangleExclamation, faClock } from "@fa-kit/icons/classic/solid";
+import {
+  faTriangleExclamation,
+  faClock,
+  faCircleQuestion,
+  faPencil,
+} from "@fa-kit/icons/classic/solid";
 
 import {
   getRegions,
@@ -472,7 +476,7 @@ export default function AdvisoryDashboard() {
                     <>
                       {rowData.advisoryStatus.code !== "PUB" && (
                         <FontAwesomeIcon
-                          icon={faArrowUpFromLine}
+                          icon={faArrowUpToLine}
                           className="publishedIcon"
                         />
                       )}
@@ -502,7 +506,7 @@ export default function AdvisoryDashboard() {
                       )}
                       {rowData.advisoryStatus.code === "PUB" && (
                         <FontAwesomeIcon
-                          icon={faArrowUpFromLine}
+                          icon={faArrowUpToLine}
                           className="publishedIcon"
                         />
                       )}
@@ -536,7 +540,7 @@ export default function AdvisoryDashboard() {
                       )}
                       {rowData.advisoryStatus.code === "PUB" && (
                         <FontAwesomeIcon
-                          icon={faArrowUpFromLine}
+                          icon={faArrowUpToLine}
                           className="publishedIcon"
                         />
                       )}
@@ -825,7 +829,7 @@ export default function AdvisoryDashboard() {
                    box to include inactive advisories modified in the past 18 months. Older advisories are available in Strapi."
                   >
                     <FontAwesomeIcon
-                      icon={faCircleInfo}
+                      icon={faCircleQuestion}
                       className="helpIcon ms-1"
                     />
                   </LightTooltip>
