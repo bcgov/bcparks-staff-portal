@@ -30,7 +30,7 @@ export default async function importStrapiFeatures(transaction = null) {
     console.log(`Found ${strapiParkFeatures.length} Features in Strapi`);
 
     // Validate Features in DOOT and Strapi
-    const dootValid = await validateDootFeatures();
+    const dootValid = await validateDootFeatures(transaction);
     const strapiValid = validateStrapiFeatures(strapiParkFeatures);
 
     let useSafeMode = false;
