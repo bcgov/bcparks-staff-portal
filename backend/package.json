@@ -13,6 +13,7 @@
     "sync-data": "node strapi-sync/re-sync-data.js",
     "import-data": "node strapi-sync/import-data.js",
     "create-seasons": "node tasks/create-seasons/create-seasons.js",
+    "create-winter-seasons": "node tasks/create-winter-seasons/create-winter-seasons.js",
     "cron-task": "node strapi-sync/re-sync-data.js"
   },
   "author": "",

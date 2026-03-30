@@ -33,13 +33,14 @@ This script creates winter seasons for parks that have winter fee dates (`hasWin
 
 ## How to run
 
+**Usage:** The script requires an operating year as a command-line argument.
+
 From your project root, run:
 
 ```sh
+# Example: create seasons for the 2027 operating year
 node tasks/create-winter-seasons/create-winter-seasons.js 2027
 ```
-
-**Usage:** The script requires an operating year as a command-line argument.
 
 ## Output
 
