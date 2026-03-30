@@ -48,7 +48,7 @@ const tableIcons = {
   DetailPanel: createTableIcon(faChevronRight, "TableIconDetailPanel"),
   Edit: createTableIcon(faPen, "TableIconEdit"),
   Export: createTableIcon(faDownload, "TableIconExport"),
-  Filter: createTableIcon(faFilter, "TableIconFilter"),
+  Filter: createTableIcon(faBarsFilter, "TableIconFilter"),
   FirstPage: createTableIcon(faAnglesLeft, "TableIconFirstPage"),
   LastPage: createTableIcon(faAnglesRight, "TableIconLastPage"),
   NextPage: createTableIcon(faChevronRight, "TableIconNextPage"),

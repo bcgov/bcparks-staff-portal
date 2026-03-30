@@ -211,7 +211,7 @@ export default function ParkInfo() {
     return `${description.slice(0, 100)}...`;
   }
 
-  function handleActivityAccordionChange(isExpanded, activityId) {
+  function handleActivityAccordionChange(_, isExpanded, activityId) {
     if (isExpanded) {
       const currentActivities = [...expandedActivities, activityId];
 

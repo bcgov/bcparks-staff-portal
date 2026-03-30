@@ -55,7 +55,7 @@ export default function AdvisoryAreaPicker({
         fireZone,
         fireCentre,
         naturalResourceDistrict,
-        sites,
+        relatedSites,
       } = await Promise.resolve(getParkRelations(parkId));
 
       if (managementArea && selectedManagementAreas.length) {
@@ -101,8 +101,8 @@ export default function AdvisoryAreaPicker({
 
         setSelectedNaturalResourceDistricts(newNaturalResourceDistricts);
       }
-      if (sites && sites.length && selectedSites.length) {
-        const parkSites = new Set(sites.map((x) => x.documentId));
+      if (relatedSites && relatedSites.length && selectedSites.length) {
+        const parkSites = new Set(relatedSites.map((x) => x.documentId));
         const newSites = selectedSites.filter((s) => !parkSites.has(s.value));
 
         setSelectedSites(newSites);

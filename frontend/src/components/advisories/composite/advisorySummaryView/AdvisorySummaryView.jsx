@@ -23,44 +23,44 @@ export default function AdvisorySummaryView({
   const [showParks, setShowParks] = useState(false);
   const [showSites, setShowSites] = useState(false);
 
-  function getDisplayedDate(advisory) {
+  function getDisplayedDate(advisoryData) {
     if (
-      !advisory.isEffectiveDateDisplayed &&
-      !advisory.isEndDateDisplayed &&
-      !advisory.isAdvisoryDateDisplayed &&
-      !advisory.isUpdatedDateDisplayed
+      !advisoryData.isEffectiveDateDisplayed &&
+      !advisoryData.isEndDateDisplayed &&
+      !advisoryData.isAdvisoryDateDisplayed &&
+      !advisoryData.isUpdatedDateDisplayed
     ) {
       return "No date";
     }
     if (
-      !advisory.isEffectiveDateDisplayed &&
-      !advisory.isEndDateDisplayed &&
-      advisory.isAdvisoryDateDisplayed &&
-      !advisory.isUpdatedDateDisplayed
+      !advisoryData.isEffectiveDateDisplayed &&
+      !advisoryData.isEndDateDisplayed &&
+      advisoryData.isAdvisoryDateDisplayed &&
+      !advisoryData.isUpdatedDateDisplayed
     ) {
       return "Posting date";
     }
     if (
-      !advisory.isEffectiveDateDisplayed &&
-      !advisory.isEndDateDisplayed &&
-      !advisory.isAdvisoryDateDisplayed &&
-      advisory.isUpdatedDateDisplayed
+      !advisoryData.isEffectiveDateDisplayed &&
+      !advisoryData.isEndDateDisplayed &&
+      !advisoryData.isAdvisoryDateDisplayed &&
+      advisoryData.isUpdatedDateDisplayed
     ) {
       return "Updated date";
     }
     if (
-      advisory.isEffectiveDateDisplayed &&
-      !advisory.isEndDateDisplayed &&
-      !advisory.isAdvisoryDateDisplayed &&
-      !advisory.isUpdatedDateDisplayed
+      advisoryData.isEffectiveDateDisplayed &&
+      !advisoryData.isEndDateDisplayed &&
+      !advisoryData.isAdvisoryDateDisplayed &&
+      !advisoryData.isUpdatedDateDisplayed
     ) {
       return "Start date";
     }
     if (
-      advisory.isEffectiveDateDisplayed &&
-      advisory.isEndDateDisplayed &&
-      !advisory.isAdvisoryDateDisplayed &&
-      !advisory.isUpdatedDateDisplayed
+      advisoryData.isEffectiveDateDisplayed &&
+      advisoryData.isEndDateDisplayed &&
+      !advisoryData.isAdvisoryDateDisplayed &&
+      !advisoryData.isUpdatedDateDisplayed
     ) {
       return "Event date range";
     }

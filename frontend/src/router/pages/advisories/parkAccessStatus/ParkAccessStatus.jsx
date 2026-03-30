@@ -7,6 +7,29 @@ import moment from "moment";
 import { exportPdf } from "@/lib/advisories/utils/ExportPdfUtil";
 import "./ParkAccessStatus.scss";
 
+function exportCsvFile(columns, rows, fileName) {
+  const headers = columns
+    .filter((c) => c.field)
+    .map((c) => c.title ?? c.field)
+    .join(",");
+  const body = rows
+    .map((row) =>
+      columns
+        .filter((c) => c.field)
+        .map((c) => JSON.stringify(row[c.field] ?? ""))
+        .join(","),
+    )
+    .join("\n");
+  const blob = new Blob([`${headers}\n${body}`], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = `${fileName}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 function formatDate(date) {
   return moment(date).isValid() ? moment(date).format("YYYY-MM-DD") : null;
 }
@@ -58,11 +81,18 @@ export default function ParkAccessStatus() {
             options={{
               filtering: true,
               search: true,
-              exportButton: true,
-              exportAllData: true,
-              exportFileName: exportFilename,
-              exportPdf: (columns, rows) =>
-                exportPdf(columns, rows, title, exportFilename),
+              exportMenu: [
+                {
+                  label: "Export CSV",
+                  exportFunc: (cols, datas) =>
+                    exportCsvFile(cols, datas, exportFilename),
+                },
+                {
+                  label: "Export PDF",
+                  exportFunc: (cols, datas) =>
+                    exportPdf(cols, datas, title, exportFilename),
+                },
+              ],
               pageSize: 50,
               pageSizeOptions: [25, 50, 100],
             }}

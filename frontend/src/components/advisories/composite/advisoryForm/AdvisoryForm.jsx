@@ -222,10 +222,10 @@ export default function AdvisoryForm({
     id: "headline",
     required: true,
   };
-  const descriptionInput = {
-    id: "description",
-    required: false,
-  };
+  // const descriptionInput = {
+  //   id: "description",
+  //   required: false,
+  // };
   const linkTitleInput = {
     id: "link",
     required: false,
