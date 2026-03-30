@@ -7,11 +7,8 @@ import Btn from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCircleExclamation,
-  faCircleInfo,
-  faXmark,
-} from "@fa-kit/icons/classic/regular";
+import { faCircleExclamation, faXmark } from "@fa-kit/icons/classic/regular";
+import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
 import Select from "react-select";
 import {
   validateOptionalNumber,
@@ -223,7 +220,7 @@ export default function AdvisoryForm({
 
   const headlineInput = {
     id: "headline",
-    required: false,
+    required: true,
   };
   const descriptionInput = {
     id: "description",
@@ -439,7 +436,7 @@ export default function AdvisoryForm({
               title="Please select the most appropriate event type that your advisory falls under, this does impact the front-end.
                 For example, freshet and wildfire event types load conditional content to their respective flood and wildfire pages."
             >
-              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
@@ -471,7 +468,7 @@ export default function AdvisoryForm({
               title="Dependant on your advisory, the urgency level can be used to prioritize your alert above existing alerts for the same park page.
                 Ie, assigning a high urgency re wildfire closure will place that advisory at the top."
             >
-              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
@@ -529,7 +526,7 @@ export default function AdvisoryForm({
               If the Listing rank number is zero,
               advisories are ordered by urgency level and date added."
             >
-              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
@@ -567,7 +564,7 @@ export default function AdvisoryForm({
               such as on the BC Parks Map, closure/warning status icons in the various park lists,
               and closure status on park pages."
             >
-              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
@@ -589,7 +586,7 @@ export default function AdvisoryForm({
                 This content will be added below any text entered in the description on the park page.
                 There is no requirement to have both a description and standard messaging."
             >
-              <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
@@ -903,7 +900,10 @@ export default function AdvisoryForm({
                     title="Enter the event's end date.
                       If end date is unknown, enter a date when the advisory should be reviewed for relevance."
                   >
-                    <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+                    <FontAwesomeIcon
+                      icon={faCircleQuestion}
+                      className="helpIcon"
+                    />
                   </LightTooltip>
                 </div>
                 <div className="col-12 col-lg-5 col-md-8">
@@ -1023,7 +1023,10 @@ export default function AdvisoryForm({
                     arrow
                     title="The advisory will be automatically removed on this date."
                   >
-                    <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+                    <FontAwesomeIcon
+                      icon={faCircleQuestion}
+                      className="helpIcon"
+                    />
                   </LightTooltip>
                 </div>
                 <div className="col-12 col-lg-5 col-md-8">

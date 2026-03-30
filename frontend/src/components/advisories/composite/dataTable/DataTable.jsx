@@ -10,7 +10,7 @@ import {
   faChevronRight,
   faCirclePlus,
   faDownload,
-  faFilter,
+  faBarsFilter,
   faMagnifyingGlass,
   faMinus,
   faPen,

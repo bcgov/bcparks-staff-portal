@@ -22,6 +22,7 @@
 }
 
 .data-table .MuiTableCell-root .MuiSelect-root {
+  height: 40px;
   padding-right: 24px !important;
 }
 

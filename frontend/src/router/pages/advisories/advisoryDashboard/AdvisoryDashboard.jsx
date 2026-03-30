@@ -16,16 +16,14 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpToLine } from "@fa-kit/icons/classic/regular";
 import {
   faCircleInfo,
-  faArrowUpToLine,
-  faThumbsUp,
-} from "@fa-kit/icons/classic/regular";
-import {
   faTriangleExclamation,
   faClock,
   faCircleQuestion,
   faPencil,
+  faThumbsUp,
 } from "@fa-kit/icons/classic/solid";
 
 import {
@@ -460,111 +458,77 @@ export default function AdvisoryDashboard() {
         cellStyle: {
           textAlign: "center",
         },
-        render: (rowData) => (
-          <div className="advisory-status">
-            {rowData.advisoryStatus && !rowData.archived && (
-              <OverlayTrigger
-                placement="bottom"
-                overlay={
-                  <Tooltip id={`status-${rowData.documentId || rowData.id}`}>
-                    {rowData.advisoryStatus.advisoryStatus}
-                  </Tooltip>
-                }
-              >
-                <span>
-                  {publishedAdvisories.includes(rowData.advisoryNumber) && (
-                    <>
-                      {rowData.advisoryStatus.code !== "PUB" && (
+        render(rowData) {
+          const statusIconMap = {
+            DFT: { icon: faPencil, className: "draftIcon" },
+            INA: { icon: faClock, className: "inactiveIcon" },
+            APR: { icon: faThumbsUp, className: "approvedIcon" },
+            ARQ: { icon: faCircleInfo, className: "approvalRequestedIcon" },
+            PUB: { icon: faArrowUpToLine, className: "publishedIcon" },
+          };
+          const code = rowData.advisoryStatus?.code;
+          const statusEntry = statusIconMap[code];
+          const isPublished = publishedAdvisories.includes(
+            rowData.advisoryNumber,
+          );
+
+          // Two icons when the advisory already has a live published version
+          // but is currently in a different status (A = published indicator, B = current status)
+          const showDual = isPublished && code !== "PUB" && statusEntry;
+
+          return (
+            <div className="advisory-status">
+              {rowData.advisoryStatus && !rowData.archived && (
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={
+                    <Tooltip id={`status-${rowData.documentId || rowData.id}`}>
+                      {rowData.advisoryStatus.advisoryStatus}
+                    </Tooltip>
+                  }
+                >
+                  <span>
+                    {showDual ? (
+                      <span className="dual-icon">
                         <FontAwesomeIcon
                           icon={faArrowUpToLine}
-                          className="publishedIcon"
+                          className="icon-a publishedIcon"
                         />
-                      )}
-                      {rowData.advisoryStatus.code === "DFT" && (
                         <FontAwesomeIcon
-                          icon={faPencil}
-                          className="draftIcon"
+                          icon={statusEntry.icon}
+                          className={`icon-b ${statusEntry.className}`}
                         />
-                      )}
-                      {rowData.advisoryStatus.code === "INA" && (
+                      </span>
+                    ) : (
+                      statusEntry && (
                         <FontAwesomeIcon
-                          icon={faClock}
-                          className="inactiveIcon"
+                          icon={statusEntry.icon}
+                          className={statusEntry.className}
                         />
-                      )}
-                      {rowData.advisoryStatus.code === "APR" && (
-                        <FontAwesomeIcon
-                          icon={faThumbsUp}
-                          className="approvedIcon"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "ARQ" && (
-                        <FontAwesomeIcon
-                          icon={faCircleInfo}
-                          className="approvalRequestedIcon"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "PUB" && (
-                        <FontAwesomeIcon
-                          icon={faArrowUpToLine}
-                          className="publishedIcon"
-                        />
-                      )}
-                    </>
-                  )}
-                  {!publishedAdvisories.includes(rowData.advisoryNumber) && (
-                    <>
-                      {rowData.advisoryStatus.code === "DFT" && (
-                        <FontAwesomeIcon
-                          icon={faPencil}
-                          className="draftIcon"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "INA" && (
-                        <FontAwesomeIcon
-                          icon={faClock}
-                          className="inactiveIcon"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "APR" && (
-                        <FontAwesomeIcon
-                          icon={faThumbsUp}
-                          className="approvedIcon"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "ARQ" && (
-                        <FontAwesomeIcon
-                          icon={faCircleInfo}
-                          className="approvalRequestedIcon"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "PUB" && (
-                        <FontAwesomeIcon
-                          icon={faArrowUpToLine}
-                          className="publishedIcon"
-                        />
-                      )}
-                    </>
-                  )}
-                </span>
-              </OverlayTrigger>
-            )}
-            {rowData.archived && (
-              <OverlayTrigger
-                placement="top"
-                overlay={
-                  <Tooltip id={`archived-${rowData.documentId || rowData.id}`}>
-                    Archived
-                  </Tooltip>
-                }
-              >
-                <span>
-                  <FontAwesomeIcon icon={faClock} className="inactiveIcon" />
-                </span>
-              </OverlayTrigger>
-            )}
-          </div>
-        ),
+                      )
+                    )}
+                  </span>
+                </OverlayTrigger>
+              )}
+              {rowData.archived && (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={
+                    <Tooltip
+                      id={`archived-${rowData.documentId || rowData.id}`}
+                    >
+                      Archived
+                    </Tooltip>
+                  }
+                >
+                  <span>
+                    <FontAwesomeIcon icon={faClock} className="inactiveIcon" />
+                  </span>
+                </OverlayTrigger>
+              )}
+            </div>
+          );
+        },
       },
       {
         field: "advisoryDate",

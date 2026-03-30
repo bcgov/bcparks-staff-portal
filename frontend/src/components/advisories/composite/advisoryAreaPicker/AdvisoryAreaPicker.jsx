@@ -4,7 +4,7 @@ import "./AdvisoryAreaPicker.css";
 import Select from "react-select";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo } from "@fa-kit/icons/classic/regular";
+import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
 import { validateRequiredAffectedArea } from "@/lib/advisories/validators/AdvisoryValidator";
 import { generateProtectedAreasListForSelectedRelations } from "@/lib/advisories/utils/AdvisoryUtil";
 import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
@@ -203,7 +203,7 @@ export default function AdvisoryAreaPicker({
                 For example, an advisory for Goldstream Park would only need Goldstream selected from the list of parks,
                 you would not need to include West Coast in the regions as this would trigger an alert for all parks in the West Coast."
           >
-            <FontAwesomeIcon icon={faCircleInfo} className="helpIcon" />
+            <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
           </LightTooltip>
           {!isShow && (
             <button

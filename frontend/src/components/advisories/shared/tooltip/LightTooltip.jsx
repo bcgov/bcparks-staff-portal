@@ -1,8 +1,9 @@
 import PropTypes from "prop-types";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
+import "./LightTooltip.css";
 
-export default function LightTooltip({ title, children, placement = "top" }) {
+export default function LightTooltip({ title, children, placement = "bottom" }) {
   return (
     <OverlayTrigger
       placement={placement}

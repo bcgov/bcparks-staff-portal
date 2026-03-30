@@ -41,6 +41,30 @@
     color: #4989c5;
   }
 
+  .dual-icon {
+    position: relative;
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .icon-a {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .icon-b {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+  }
+
   .approvedIcon {
     color: #4989c5;
   }
