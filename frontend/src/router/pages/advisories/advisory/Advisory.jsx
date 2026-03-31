@@ -576,7 +576,9 @@ export default function Advisory({ mode }) {
           }));
 
           setAccessStatuses([...newAccessStatuses]);
-          const openAccessStatus = newAccessStatuses.find((a) => a.label === "Open");
+          const openAccessStatus = newAccessStatuses.find(
+            (a) => a.label === "Open",
+          );
 
           setAccessStatus(openAccessStatus.value);
           const urgencyData = res[10];
@@ -632,7 +634,9 @@ export default function Advisory({ mode }) {
 
           setStandardMessages([...newStandardMessages]);
           if (mode === "create") {
-            const defaultUrgency = newUrgencies.filter((u) => u.label === "Low");
+            const defaultUrgency = newUrgencies.filter(
+              (u) => u.label === "Low",
+            );
 
             if (defaultUrgency.length > 0) {
               setUrgency(defaultUrgency[0].value);
@@ -700,7 +704,6 @@ export default function Advisory({ mode }) {
     advisoryDateRef.current = e;
   }
 
-
   function addLink(format) {
     linksRef.current = [...linksRef.current, { title: "", url: "", format }];
     setLinkIds();
@@ -759,7 +762,10 @@ export default function Advisory({ mode }) {
           status: 500,
           message: "Could not save attachments",
         });
+        return null;
       });
+
+    if (!res) return null;
 
     return res.data.data.documentId;
   }
@@ -789,7 +795,10 @@ export default function Advisory({ mode }) {
           status: 500,
           message: "Could not save attachments",
         });
+        return null;
       });
+
+    if (!res) return null;
 
     if (res.data.length > 0) {
       return res.data[0];
@@ -830,13 +839,19 @@ export default function Advisory({ mode }) {
           status: 500,
           message: "Could not save attachments",
         });
+        return null;
       });
+
+    if (!res) return null;
 
     return res.data.data;
   }
 
   async function saveMediaAttachment(id, link) {
     const mediaResponse = await uploadMedia(id, link.file);
+
+    if (!mediaResponse) return null;
+
     const updateLinkResponse = await updateMediaLink(mediaResponse, id, link);
 
     return updateLinkResponse;
@@ -845,6 +860,9 @@ export default function Advisory({ mode }) {
   async function createLink(link) {
     if (link.isFileModified) {
       const id = await preSaveMediaLink(link);
+
+      if (!id) return null;
+
       const res = await saveMediaAttachment(id, link);
 
       return res;
@@ -867,7 +885,10 @@ export default function Advisory({ mode }) {
           status: 500,
           message: "Could not process advisory update",
         });
+        return null;
       });
+
+    if (!res) return null;
 
     return res.data.data;
   }
@@ -896,7 +917,10 @@ export default function Advisory({ mode }) {
           status: 500,
           message: "Could not process advisory update",
         });
+        return null;
       });
+
+    if (!res) return null;
 
     return res.data.data;
   }
@@ -909,11 +933,11 @@ export default function Advisory({ mode }) {
         if (link.id) {
           const savedLink = await saveLink(link, link.id);
 
-          savedLinks.push(savedLink.documentId);
+          if (savedLink) savedLinks.push(savedLink.documentId);
         } else {
           const savedLink = await createLink(link);
 
-          savedLinks.push(savedLink.documentId);
+          if (savedLink) savedLinks.push(savedLink.documentId);
         }
       }
     }

@@ -55,7 +55,7 @@ export default function AdvisoryAreaPicker({
         fireZone,
         fireCentre,
         naturalResourceDistrict,
-        relatedSites,
+        sites: relatedSites,
       } = await Promise.resolve(getParkRelations(parkId));
 
       if (managementArea && selectedManagementAreas.length) {
