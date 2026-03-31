@@ -9,13 +9,16 @@
 
 .park-tab .nav-link {
   color: #234075 !important;
+  background-color: #f2f2f2;
   border: none !important;
-  border-radius: 0;
+  border-radius: 0 !important;
+  opacity: 0.8;
 }
 
 .park-tab .nav-link.active {
   background-color: #036 !important;
   color: #fff !important;
+  opacity: 1;
 }
 
 .park-tab .nav-item {

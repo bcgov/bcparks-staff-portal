@@ -648,7 +648,7 @@ export default function ParkInfo() {
                     <Tab eventKey="0" title="Activities">
                       {parkActivities && parkActivities.length > 0 && (
                         <div>
-                          <div className="row pt2b2">
+                          <div className="row pt2b2 mx-0">
                             <div className="col-lg-3 col-md-12 col-12 park-header">
                               Activity
                             </div>
@@ -666,7 +666,7 @@ export default function ParkInfo() {
                             </div>
                           </div>
                           {parkActivities.map((a) => (
-                            <div className="row pt2b2" key={`activity-${a.id}`}>
+                            <div className="row pt2b2 mx-0" key={`activity-${a.id}`}>
                               <div className="col-lg-3 col-md-12 col-12 park-content">
                                 {a.name}
                               </div>
@@ -803,7 +803,7 @@ export default function ParkInfo() {
                     <Tab eventKey="1" title="Facilities">
                       {parkFacilities && parkFacilities.length > 0 && (
                         <div>
-                          <div className="row pt2b2">
+                          <div className="row pt2b2 mx-0">
                             <div className="col-lg-3 col-md-12 col-12 park-header">
                               Facility
                             </div>
@@ -821,7 +821,7 @@ export default function ParkInfo() {
                             </div>
                           </div>
                           {parkFacilities.map((f) => (
-                            <div className="row pt2b2" key={`facility-${f.id}`}>
+                            <div className="row pt2b2 mx-0" key={`facility-${f.id}`}>
                               <div className="col-lg-3 col-md-12 col-12 park-content">
                                 {f.name}
                               </div>
@@ -958,7 +958,7 @@ export default function ParkInfo() {
                     <Tab eventKey="2" title="Camping Types">
                       {parkCampingTypes && parkCampingTypes.length > 0 && (
                         <div>
-                          <div className="row pt2b2">
+                          <div className="row pt2b2 mx-0">
                             <div className="col-lg-3 col-md-12 col-12 park-header">
                               Camping Type
                             </div>
@@ -977,7 +977,7 @@ export default function ParkInfo() {
                           </div>
                           {parkCampingTypes.map((f) => (
                             <div
-                              className="row pt2b2"
+                              className="row pt2b2 mx-0"
                               key={`campingType-${f.id}`}
                             >
                               <div className="col-lg-3 col-md-12 col-12 park-content">
