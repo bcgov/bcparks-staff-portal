@@ -66,7 +66,11 @@ export default function AdvisoryDashboard() {
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
 
-  if (!keycloak && !initialized) setToError(true);
+  useEffect(() => {
+    if (initialized && !keycloak) {
+      setToError(true);
+    }
+  }, [initialized, keycloak]);
 
   // Preserve filters
   const savedFilters = JSON.parse(localStorage.getItem("advisoryFilters"));
@@ -267,7 +271,7 @@ export default function AdvisoryDashboard() {
             });
 
           let currentPublishedAdvisories = [];
-          const responseData = result?.data?.data;
+          const responseData = result?.data?.data ?? [];
 
           if (responseData.length > 0) {
             responseData.forEach((advisory) => {
