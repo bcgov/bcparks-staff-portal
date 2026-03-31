@@ -310,16 +310,22 @@ function FeaturesByFeatureTypeWithAreas({
       {parkAreas.map((parkArea) => {
         const regularSeason = parkArea.currentSeason.regular;
 
+        const featuresInCurrentGroup = parkArea.features.filter((feature) =>
+          featureTypeFilter(
+            feature.featureType.strapiFeatureTypeId,
+            featureTypeId,
+          ),
+        );
+        const featureTypeGroup = featuresInCurrentGroup[0]?.featureType;
+
         return (
-          parkArea.features.some((f) =>
-            featureTypeFilter(f.featureType.strapiFeatureTypeId, featureTypeId),
-          ) && (
+          featuresInCurrentGroup.length > 0 && (
             <React.Fragment key={parkArea.id}>
               <StatusTableRow
                 id={parkArea.id}
                 level="park-area"
                 name={`${park.name} - ${parkArea.name}`}
-                typeName={parkArea.featureType?.name}
+                typeName={featureTypeGroup?.name || ""}
                 season={regularSeason}
                 formPanelHandler={() =>
                   formPanelHandler({ ...parkArea, level: "park-area" })
@@ -327,31 +333,23 @@ function FeaturesByFeatureTypeWithAreas({
               />
 
               {/* features that belong to park area */}
-              {/* these features might not be publishable */}
-              {parkArea.features
-                .filter((f) =>
-                  featureTypeFilter(
-                    f.featureType.strapiFeatureTypeId,
-                    featureTypeId,
-                  ),
-                )
-                .map((parkFeature) => (
-                  <React.Fragment key={parkFeature.id}>
-                    <tr className="table-row--park-area-feature">
-                      <th scope="colgroup" colSpan="3">
-                        {parkFeature.name}
-                      </th>
-                    </tr>
-                    <DateTypeTableRow
-                      groupedDateRanges={parkFeature.groupedDateRanges}
-                      currentYear={regularSeason.operatingYear}
-                    />
-                    <DateTableRow
-                      groupedDateRanges={parkFeature.groupedDateRanges}
-                      currentYear={regularSeason.operatingYear}
-                    />
-                  </React.Fragment>
-                ))}
+              {featuresInCurrentGroup.map((parkFeature) => (
+                <React.Fragment key={parkFeature.id}>
+                  <tr className="table-row--park-area-feature">
+                    <th scope="colgroup" colSpan="3">
+                      {parkFeature.name}
+                    </th>
+                  </tr>
+                  <DateTypeTableRow
+                    groupedDateRanges={parkFeature.groupedDateRanges}
+                    currentYear={regularSeason.operatingYear}
+                  />
+                  <DateTableRow
+                    groupedDateRanges={parkFeature.groupedDateRanges}
+                    currentYear={regularSeason.operatingYear}
+                  />
+                </React.Fragment>
+              ))}
             </React.Fragment>
           )
         );
@@ -549,9 +547,7 @@ Table.propTypes = {
         }),
         groupedDateRanges: PropTypes.object,
         inReservationSystem: PropTypes.bool,
-        featureType: PropTypes.shape({
-          name: PropTypes.string,
-        }),
+        featureTypes: PropTypes.array,
         features: PropTypes.arrayOf(
           PropTypes.shape({
             id: PropTypes.number.isRequired,
