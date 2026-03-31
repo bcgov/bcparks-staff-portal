@@ -9,6 +9,7 @@ export default function PaginationControls({
   totalItems,
   onPageChange,
   pageSizeLabel,
+  pageSizeOptions,
 }) {
   return (
     totalItems > 0 && (
@@ -21,11 +22,11 @@ export default function PaginationControls({
             value={pageSize}
             onChange={(e) => onPageSizeChange(Number(e.target.value))}
           >
-            <option value={5}>5</option>
-            <option value={10}>10</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-            <option value={100}>100</option>
+            {pageSizeOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -48,4 +49,10 @@ PaginationControls.propTypes = {
   totalItems: PropTypes.number.isRequired,
   onPageChange: PropTypes.func.isRequired,
   pageSizeLabel: PropTypes.string,
+  pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
+};
+
+PaginationControls.defaultProps = {
+  pageSizeLabel: "Rows per page",
+  pageSizeOptions: [5, 10, 25, 50, 100],
 };

@@ -17,7 +17,6 @@
     "@digitalspace/bcparks-bootstrap-theme": "^1.4.6",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.6",
-    "@material-table/core": "^6.4.3",
     "@tanstack/react-query": "^5.62.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "axios": "^1.7.9",

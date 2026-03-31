@@ -281,19 +281,6 @@
     outline-offset: 1px;
   }
 
-  .MuiTableCell-root div,
-  .MuiTableCell-root span,
-  .MuiTableCell-root,
-  .MuiInputBase-root,
-  .MuiTypography-root {
-    font-family: "BC Sans", "Noto sans", Verdana, Arial, sans-serif !important;
-  }
-
-  .MuiInput-underline:before,
-  .MuiInput-underline:after {
-    border: none !important;
-  }
-
   .bcgov-required::after {
     content: "*";
     margin-left: 2px !important;
