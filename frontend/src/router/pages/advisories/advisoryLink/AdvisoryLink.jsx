@@ -16,7 +16,7 @@ export default function AdvisoryLink() {
   const { advisoryNumber } = useParams();
 
   useEffect(() => {
-    if (parseInt(advisoryNumber)) {
+    if (Number.parseInt(advisoryNumber, 10)) {
       if (initialized) {
         if (!auth.isAuthenticated) {
           auth.signinRedirect({
@@ -40,7 +40,7 @@ export default function AdvisoryLink() {
               replace: true,
             });
           })
-          .catch((err) => {
+          .catch(() => {
             navigate(`/advisories`, { replace: true });
           });
       }

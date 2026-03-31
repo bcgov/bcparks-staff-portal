@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { cmsAxios } from "@/lib/advisories/axios_config";
-import { Navigate, useParams, useNavigate } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Advisory.css";
 import moment from "moment";
@@ -36,7 +36,8 @@ import {
   camelCaseToSentenceCase,
 } from "@/lib/advisories/utils/AppUtil";
 import getEnv from "@/config/getEnv";
-import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import qs from "qs";
 import useAccess from "@/hooks/useAccess";
 import ErrorContext from "@/contexts/ErrorContext";
@@ -121,7 +122,6 @@ export default function Advisory({ mode }) {
   const keycloakToken = auth.user?.access_token;
 
   const { documentId } = useParams();
-  const navigate = useNavigate();
 
   const query = qs.stringify(
     {
@@ -169,6 +169,17 @@ export default function Advisory({ mode }) {
     cmsData,
     setCmsData,
   ]);
+
+  function setLinkIds() {
+    const linkIds = [];
+
+    linksRef.current.forEach((l) => {
+      if (l.id) {
+        linkIds.push(l.id);
+      }
+    });
+    setLinks(linkIds);
+  }
 
   useEffect(() => {
     if (mode === "update" && !isLoadingData) {
@@ -363,10 +374,10 @@ export default function Advisory({ mode }) {
                 ...selNaturalResourceDistricts,
               ]);
             }
-            const links = advisoryData.links;
+            const advisoryLinks = advisoryData.links;
 
-            if (links.length > 0) {
-              links.forEach((l) => {
+            if (advisoryLinks.length > 0) {
+              advisoryLinks.forEach((l) => {
                 linksRef.current = [
                   ...linksRef.current,
                   {
@@ -386,7 +397,10 @@ export default function Advisory({ mode }) {
             setIsLoadingPage(false);
           })
           .catch((error) => {
-            console.log("error occurred fetching Public Advisory data", error);
+            console.error(
+              "error occurred fetching Public Advisory data",
+              error,
+            );
             setToError(true);
             setError({
               status: 500,
@@ -474,71 +488,71 @@ export default function Advisory({ mode }) {
       ])
         .then((res) => {
           const protectedAreaData = res[0];
-          const protectedAreas = protectedAreaData.map((p) => ({
+          const newProtectedAreas = protectedAreaData.map((p) => ({
             label: p.protectedAreaName,
             value: p.documentId,
             type: "protectedArea",
             orcs: p.orcs,
           }));
 
-          setProtectedAreas([...protectedAreas]);
+          setProtectedAreas([...newProtectedAreas]);
           const regionData = res[1];
-          const regions = regionData.map((r) => ({
+          const newRegions = regionData.map((r) => ({
             label: `${r.regionName} Region`,
             value: r.documentId,
             type: "region",
             obj: r,
           }));
 
-          setRegions([...regions]);
+          setRegions([...newRegions]);
           const sectionData = res[2];
-          const sections = sectionData.map((s) => ({
+          const newSections = sectionData.map((s) => ({
             label: `${s.sectionName} Section`,
             value: s.documentId,
             type: "section",
             obj: s,
           }));
 
-          setSections([...sections]);
+          setSections([...newSections]);
           const managementAreaData = res[3];
-          const managementAreas = managementAreaData.map((m) => ({
+          const newManagementAreas = managementAreaData.map((m) => ({
             label: `${m.managementAreaName} Management Area`,
             value: m.documentId,
             type: "managementArea",
             obj: m,
           }));
 
-          setManagementAreas([...managementAreas]);
+          setManagementAreas([...newManagementAreas]);
           const siteData = res[4];
-          const sites = siteData.map((s) => ({
+          const newSites = siteData.map((s) => ({
             label: `${s?.protectedArea?.protectedAreaName}: ${s.siteName}`,
             value: s.documentId,
             type: "site",
             obj: s,
           }));
 
-          sites.sort(labelCompare);
-          setSites([...sites]);
+          newSites.sort(labelCompare);
+          setSites([...newSites]);
           const fireCentreData = res[5];
-          const fireCentres = fireCentreData.map((f) => ({
+          const newFireCentres = fireCentreData.map((f) => ({
             label: f.fireCentreName,
             value: f.documentId,
             type: "fireCentre",
             obj: f,
           }));
 
-          setFireCentres([...fireCentres]);
+          setFireCentres([...newFireCentres]);
           const fireZoneData = res[6];
-          const fireZones = fireZoneData.map((f) => ({
+          const newFireZones = fireZoneData.map((f) => ({
             label: f.fireZoneName,
             value: f.documentId,
             type: "fireZone",
             obj: f,
           }));
 
-          setFireZones([...fireZones]);
+          setFireZones([...newFireZones]);
           const naturalResourceDistrictData = res[7];
-          const naturalResourceDistricts = naturalResourceDistrictData.map(
+          const newNaturalResourceDistricts = naturalResourceDistrictData.map(
             (f) => ({
               label: f.naturalResourceDistrictName,
               value: f.documentId,
@@ -547,32 +561,34 @@ export default function Advisory({ mode }) {
             }),
           );
 
-          setNaturalResourceDistricts([...naturalResourceDistricts]);
+          setNaturalResourceDistricts([...newNaturalResourceDistricts]);
           const eventTypeData = res[8];
-          const eventTypes = eventTypeData.map((et) => ({
+          const newEventTypes = eventTypeData.map((et) => ({
             label: et.eventType,
             value: et.documentId,
           }));
 
-          setEventTypes([...eventTypes]);
+          setEventTypes([...newEventTypes]);
           const accessStatusData = res[9];
-          const accessStatuses = accessStatusData.map((a) => ({
+          const newAccessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
             value: a.documentId,
           }));
 
-          setAccessStatuses([...accessStatuses]);
-          const accessStatus = accessStatuses.find((a) => a.label === "Open");
+          setAccessStatuses([...newAccessStatuses]);
+          const openAccessStatus = newAccessStatuses.find(
+            (a) => a.label === "Open",
+          );
 
-          setAccessStatus(accessStatus.value);
+          setAccessStatus(openAccessStatus.value);
           const urgencyData = res[10];
-          const urgencies = urgencyData.map((u) => ({
+          const newUrgencies = urgencyData.map((u) => ({
             label: u.urgency,
             value: u.documentId,
             sequence: u.sequence,
           }));
 
-          setUrgencies([...urgencies]);
+          setUrgencies([...newUrgencies]);
           const advisoryStatusData = res[11];
           const restrictedAdvisoryStatusCodes = new Set(["INA", "APR"]);
           const desiredOrder = ["PUB", "INA", "DFT", "APR", "ARQ"];
@@ -598,27 +614,29 @@ export default function Advisory({ mode }) {
             (a, b) =>
               desiredOrder.indexOf(a.code) - desiredOrder.indexOf(b.code),
           );
-          const advisoryStatuses = sortedStatus.filter((s) => s !== null);
+          const newAdvisoryStatuses = sortedStatus.filter((s) => s !== null);
 
-          setAdvisoryStatuses([...advisoryStatuses]);
+          setAdvisoryStatuses([...newAdvisoryStatuses]);
           const linkTypeData = res[12];
-          const linkTypes = linkTypeData.map((lt) => ({
+          const newLinkTypes = linkTypeData.map((lt) => ({
             label: lt.type,
             value: lt.documentId,
           }));
 
-          setLinkTypes([...linkTypes]);
+          setLinkTypes([...newLinkTypes]);
           const standardMessageData = res[13];
-          const standardMessages = standardMessageData.map((m) => ({
+          const newStandardMessages = standardMessageData.map((m) => ({
             label: m.title,
             value: m.documentId,
             type: "standardMessage",
             obj: m,
           }));
 
-          setStandardMessages([...standardMessages]);
+          setStandardMessages([...newStandardMessages]);
           if (mode === "create") {
-            const defaultUrgency = urgencies.filter((u) => u.label === "Low");
+            const defaultUrgency = newUrgencies.filter(
+              (u) => u.label === "Low",
+            );
 
             if (defaultUrgency.length > 0) {
               setUrgency(defaultUrgency[0].value);
@@ -670,79 +688,53 @@ export default function Advisory({ mode }) {
     cmsData,
     setCmsData,
     setIsApprover,
+    hasAnyRole,
   ]);
 
-  const setToBack = () => {
+  function setToBack() {
     if (mode === "create") {
       setToDashboard(true);
     } else {
       setIsConfirmation(true);
     }
-  };
+  }
 
-  const handleMenuChange = (event, val) => {
-    switch (val) {
-      case 0:
-        navigate("/advisories");
-        break;
-      case 1:
-        navigate("/park-access-status");
-        break;
-      case 2:
-        navigate("/activities-and-facilities");
-        break;
-      default:
-        navigate("/");
-    }
-  };
-
-  const handleAdvisoryDateChange = (e) => {
+  function handleAdvisoryDateChange(e) {
     setAdvisoryDate(e);
     advisoryDateRef.current = e;
-  };
+  }
 
-  const setLinkIds = () => {
-    const linkIds = [];
-
-    linksRef.current.forEach((l) => {
-      if (l.id) {
-        linkIds.push(l.id);
-      }
-    });
-    setLinks(linkIds);
-  };
-
-  const addLink = (format) => {
+  function addLink(format) {
     linksRef.current = [...linksRef.current, { title: "", url: "", format }];
     setLinkIds();
-  };
+  }
 
-  const updateLink = (index, field, value) => {
+  function updateLink(index, field, value) {
     const tempLinks = [...linksRef.current];
 
     tempLinks[index][field] = value;
     tempLinks[index].isModified = true;
     linksRef.current = [...tempLinks];
     setLinkIds();
-  };
+  }
 
-  const removeLink = (index) => {
+  function removeLink(index) {
     const tempLinks = linksRef.current.filter((link, idx) => idx !== index);
 
     linksRef.current = [...tempLinks];
     setLinkIds();
-  };
+  }
 
-  const handleFileCapture = (files, index) => {
+  function handleFileCapture(files, index) {
     const tempLinks = [...linksRef.current];
 
     tempLinks[index].file = files[0];
     tempLinks[index].isFileModified = true;
     linksRef.current = [...tempLinks];
     setLinkIds();
-  };
+  }
 
-  const isValidLink = (link) => {
+  function isValidLink(link) {
     if (
       (link.title !== "" && link.url !== "" && link.isModified) ||
       (link.file && link.isFileModified)
@@ -750,11 +742,127 @@ export default function Advisory({ mode }) {
       return true;
     }
     return false;
-  };
+  }
 
-  const createLink = async (link) => {
+  async function preSaveMediaLink(link) {
+    const linkRequest = {
+      data: {
+        type: link.type,
+        title: link.title,
+      },
+    };
+    const res = await cmsAxios
+      .post(`links`, linkRequest, {
+        headers: { Authorization: `Bearer ${keycloakToken}` },
+      })
+      .catch((error) => {
+        console.error("error occurred", error);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not save attachments",
+        });
+        return null;
+      });
+
+    if (!res) return null;
+
+    return res.data.data.documentId;
+  }
+
+  async function uploadMedia(id, file) {
+    const data = {};
+    const fileForm = new FormData();
+
+    data.refId = id;
+    data.ref = "link";
+    data.field = "file";
+    fileForm.append("files", file);
+    fileForm.append("data", JSON.stringify(data));
+
+    const res = await cmsAxios
+      .post(`upload`, fileForm, {
+        // or { 'data': fileForm }
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${keycloakToken}`,
+        },
+      })
+      .catch((error) => {
+        console.error("error occurred", error);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not save attachments",
+        });
+        return null;
+      });
+
+    if (!res) return null;
+
+    if (res.data.length > 0) {
+      return res.data[0];
+    }
+    setToError(true);
+    setError({
+      status: 500,
+      message: "Could not save attachments",
+    });
+
+    return null;
+  }
+
+  async function updateMediaLink(media, id, link) {
+    const isProtocolExist = /(https|http?)/giu;
+
+    const path = media.url?.match(isProtocolExist);
+    const getUrl = path?.length
+      ? media.url
+      : getEnv("VITE_CMS_BASE_URL") + media.url;
+
+    const linkRequest = {
+      data: {
+        title: link.title ? link.title : media.name,
+        type: link.type,
+        url: getUrl,
+      },
+    };
+
+    const res = await cmsAxios
+      .put(`links/${id}`, linkRequest, {
+        headers: { Authorization: `Bearer ${keycloakToken}` },
+      })
+      .catch((error) => {
+        console.error("error occurred", error);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not save attachments",
+        });
+        return null;
+      });
+
+    if (!res) return null;
+
+    return res.data.data;
+  }
+
+  async function saveMediaAttachment(id, link) {
+    const mediaResponse = await uploadMedia(id, link.file);
+
+    if (!mediaResponse) return null;
+
+    const updateLinkResponse = await updateMediaLink(mediaResponse, id, link);
+
+    return updateLinkResponse;
+  }
+
+  async function createLink(link) {
     if (link.isFileModified) {
       const id = await preSaveMediaLink(link);
+
+      if (!id) return null;
+
       const res = await saveMediaAttachment(id, link);
 
       return res;
@@ -771,18 +879,21 @@ export default function Advisory({ mode }) {
         headers: { Authorization: `Bearer ${keycloakToken}` },
       })
       .catch((error) => {
-        console.log("error occurred", error);
+        console.error("error occurred", error);
         setToError(true);
         setError({
           status: 500,
           message: "Could not process advisory update",
         });
+        return null;
       });
 
-    return res.data.data;
-  };
+    if (!res) return null;
 
-  const saveLink = async (link, id) => {
+    return res.data.data;
+  }
+
+  async function saveLink(link, id) {
     if (link.isFileModified) {
       const res = await saveMediaAttachment(id, link);
 
@@ -800,18 +911,21 @@ export default function Advisory({ mode }) {
         headers: { Authorization: `Bearer ${keycloakToken}` },
       })
       .catch((error) => {
-        console.log("error occurred", error);
+        console.error("error occurred", error);
         setToError(true);
         setError({
           status: 500,
           message: "Could not process advisory update",
         });
+        return null;
       });
 
-    return res.data.data;
-  };
+    if (!res) return null;
 
-  const saveLinks = async () => {
+    return res.data.data;
+  }
+
+  async function saveLinks() {
     const savedLinks = [];
 
     for (const link of linksRef.current) {
@@ -819,48 +933,47 @@ export default function Advisory({ mode }) {
         if (link.id) {
           const savedLink = await saveLink(link, link.id);
 
-          savedLinks.push(savedLink.documentId);
+          if (savedLink) savedLinks.push(savedLink.documentId);
         } else {
           const savedLink = await createLink(link);
 
-          savedLinks.push(savedLink.documentId);
+          if (savedLink) savedLinks.push(savedLink.documentId);
         }
       }
     }
     return savedLinks;
-  };
+  }
 
-  const getAdvisoryFields = (type) => {
-    let publishedDate = null;
-    let adStatus = advisoryStatus;
-
+  function getAdvisoryFields(type) {
     if (isApprover) {
       setIsSubmitting(true);
       const status = advisoryStatuses.find((s) => s.value === advisoryStatus);
 
-      publishedDate = getApproverAdvisoryFields(
-        status.code,
-        setConfirmationText,
-      );
-    } else {
-      if (type === "draft") {
-        setIsSavingDraft(true);
-      } else if (type === "submit") {
-        setIsSubmitting(true);
-        if (isAfterHourPublish) type = "publish";
-      }
-      const { status, published } = getSubmitterAdvisoryFields(
-        type,
-        advisoryStatuses,
-        setConfirmationText,
-      );
-
-      publishedDate = published;
-      adStatus = status;
+      return {
+        published: getApproverAdvisoryFields(status.code, setConfirmationText),
+        status: advisoryStatus,
+      };
     }
-    return { published: publishedDate, status: adStatus };
-  };
-  const saveAdvisory = (type) => {
+
+    let submitType = type;
+
+    if (submitType === "draft") {
+      setIsSavingDraft(true);
+    } else if (submitType === "submit") {
+      setIsSubmitting(true);
+      if (isAfterHourPublish) {
+        submitType = "publish";
+      }
+    }
+
+    return getSubmitterAdvisoryFields(
+      submitType,
+      advisoryStatuses,
+      setConfirmationText,
+    );
+  }
+
+  function saveAdvisory(type) {
     try {
       const { status } = getAdvisoryFields(type);
 
@@ -881,7 +994,7 @@ export default function Advisory({ mode }) {
           description,
           revisionNumber,
           isSafetyRelated,
-          listingRank: listingRank ? parseInt(listingRank) : 0,
+          listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
           note: notes,
           submittedBy: submittedBy ? submittedBy : submitter,
           createdDate: moment().toISOString(),
@@ -931,7 +1044,7 @@ export default function Advisory({ mode }) {
             setIsConfirmation(true);
           })
           .catch((error) => {
-            console.log("error occurred", error);
+            console.error("error occurred", error);
             setToError(true);
             setError({
               status: 500,
@@ -940,16 +1053,16 @@ export default function Advisory({ mode }) {
           });
       });
     } catch (error) {
-      console.log("error occurred", error);
+      console.error("error occurred", error);
       setToError(true);
       setError({
         status: 500,
         message: "Could not process advisory update",
       });
     }
-  };
+  }
 
-  const updateAdvisory = (type) => {
+  function updateAdvisory(type) {
     try {
       const { status } = getAdvisoryFields(type);
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
@@ -981,7 +1094,7 @@ export default function Advisory({ mode }) {
             description,
             revisionNumber,
             isSafetyRelated,
-            listingRank: listingRank ? parseInt(listingRank) : 0,
+            listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
             note: notes,
             submittedBy,
             updatedDate,
@@ -1037,7 +1150,7 @@ export default function Advisory({ mode }) {
               setIsConfirmation(true);
             })
             .catch((error) => {
-              console.log("error occurred", error);
+              console.error("error occurred", error);
               setToError(true);
               setError({
                 status: 500,
@@ -1047,113 +1160,14 @@ export default function Advisory({ mode }) {
         });
       }
     } catch (error) {
-      console.log("error occurred", error);
+      console.error("error occurred", error);
       setToError(true);
       setError({
         status: 500,
         message: "Could not process advisory update",
       });
     }
-  };
-
-  const preSaveMediaLink = async (link) => {
-    const linkRequest = {
-      data: {
-        type: link.type,
-        title: link.title,
-      },
-    };
-    const res = await cmsAxios
-      .post(`links`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.log("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-      });
-
-    return res.data.data.documentId;
-  };
-
-  const updateMediaLink = async (media, id, link) => {
-    const isProtocolExist = /(https|http?)/gi;
-
-    const path = media.url?.match(isProtocolExist);
-    const getUrl = path?.length
-      ? media.url
-      : getEnv("VITE_CMS_BASE_URL") + media.url;
-
-    const linkRequest = {
-      data: {
-        title: link.title ? link.title : media.name,
-        type: link.type,
-        url: getUrl,
-      },
-    };
-
-    const res = await cmsAxios
-      .put(`links/${id}`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.log("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-      });
-
-    return res.data.data;
-  };
-
-  const saveMediaAttachment = async (id, link) => {
-    const mediaResponse = await uploadMedia(id, link.file);
-    const updateLinkResponse = await updateMediaLink(mediaResponse, id, link);
-
-    return updateLinkResponse;
-  };
-
-  const uploadMedia = async (id, file) => {
-    const data = {};
-    const fileForm = new FormData();
-
-    data.refId = id;
-    data.ref = "link";
-    data.field = "file";
-    fileForm.append("files", file);
-    fileForm.append("data", JSON.stringify(data));
-
-    const res = await cmsAxios
-      .post(`upload`, fileForm, {
-        // or { 'data': fileForm }
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${keycloakToken}`,
-        },
-      })
-      .catch((error) => {
-        console.log("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-      });
-
-    if (res.data.length > 0) {
-      return res.data[0];
-    }
-    setToError(true);
-    setError({
-      status: 500,
-      message: "Could not save attachments",
-    });
-  };
+  }
 
   if (toDashboard) {
     return (
@@ -1204,7 +1218,7 @@ export default function Advisory({ mode }) {
                     sessionStorage.clear();
                   }}
                 >
-                  <ArrowBackIcon className="me-1" />
+                  <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                   Back to{" "}
                   {mode === "create" ? "public advisories" : "advisory preview"}
                 </button>

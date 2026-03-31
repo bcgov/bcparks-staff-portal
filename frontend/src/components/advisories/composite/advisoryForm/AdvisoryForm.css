@@ -12,23 +12,34 @@
   text-align: right;
 }
 
-.urgency-btn-group button,
-.safety-btn-group button {
+.urgency-btn-group,
+.safety-btn-group {
+  display: inline-flex;
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.urgency-btn-group button.btn,
+.safety-btn-group button.btn {
   width: 100px;
   height: 40px;
-  line-height: 1;
-  border-radius: 100px;
-  padding: 0;
-}
-.urgency-btn-group button .MuiButton-label,
-.safety-btn-group button .MuiButton-label {
   font-size: 1rem;
+  color: var(--color-grey);
+  line-height: 1;
+  border-color: var(--color-light-grey) !important;
+  border-radius: 0 !important;
 }
-.urgency-btn-group button .MuiButton-label .MuiSvgIcon-root,
-.safety-btn-group button .MuiButton-label .MuiSvgIcon-root {
-  width: 18px;
-  height: 18px;
-  margin-right: 4px;
+
+.urgency-btn-group button.btn:first-child,
+.safety-btn-group button.btn:first-child {
+  border-top-left-radius: 100px !important;
+  border-bottom-left-radius: 100px !important;
+}
+
+.urgency-btn-group button.btn:last-child,
+.safety-btn-group button.btn:last-child {
+  border-top-right-radius: 100px !important;
+  border-bottom-right-radius: 100px !important;
 }
 
 .ad-btn-group .bcgov-button {
@@ -125,9 +136,10 @@
 .ad-add-link:not(.ad-link-close) {
   height: 40px;
   font-size: 0.875rem;
-  line-height: 2;
+  color: var(--color-grey);
+  line-height: 40px;
   background-color: white;
-  border-radius: 100px;
+  border-radius: 100px !important;
   border: 1px solid var(--color-med-grey);
   padding: 0 16px;
 }
@@ -144,11 +156,24 @@
   position: absolute !important;
   right: 8px;
   background-color: white !important;
+  border: none;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
 }
 
 .clear-url-btn:hover,
 .clear-url-btn:active {
   background-color: white !important;
+}
+
+.ad-form .input-group {
+  position: relative;
 }
 
 .ad-btn-row {
@@ -162,15 +187,13 @@
   text-align: center !important;
 }
 
-.ad-form .MuiButton-contained {
-  box-shadow: none !important;
-}
-
 .ad-upload-btn {
   height: 44px !important;
 }
 
 .helpIcon {
+  width: 1.25rem;
+  height: 1.25rem;
   margin-left: 4px;
 }
 

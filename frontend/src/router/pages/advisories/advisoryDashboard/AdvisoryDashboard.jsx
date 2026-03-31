@@ -10,20 +10,21 @@ import DataTable from "@/components/advisories/composite/dataTable/DataTable";
 import Select from "react-select";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
-import IconButton from "@mui/material/IconButton";
-import Chip from "@mui/material/Chip";
-import Tooltip from "@mui/material/Tooltip";
+import Badge from "react-bootstrap/Badge";
+import Form from "react-bootstrap/Form";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
-import WatchLaterIcon from "@mui/icons-material/WatchLater";
-import EditIcon from "@mui/icons-material/Edit";
-import InfoIcon from "@mui/icons-material/Info";
-import HelpIcon from "@mui/icons-material/Help";
-import ArchiveIcon from "@mui/icons-material/Archive";
-import PublishIcon from "@mui/icons-material/Publish";
-import ThumbUpIcon from "@mui/icons-material/ThumbUp";
-import WarningRoundedIcon from "@mui/icons-material/WarningRounded";
-import { FormControlLabel, Checkbox, SvgIcon } from "@mui/material";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowUpToLine } from "@fa-kit/icons/classic/regular";
+import {
+  faCircleInfo,
+  faTriangleExclamation,
+  faClock,
+  faCircleQuestion,
+  faPencil,
+  faThumbsUp,
+} from "@fa-kit/icons/classic/solid";
 
 import {
   getRegions,
@@ -65,17 +66,11 @@ export default function AdvisoryDashboard() {
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
 
-  if (!keycloak && !initialized) setToError(true);
-
   useEffect(() => {
-    filterAdvisoriesByRegionId(selectedRegionId);
-  }, [selectedRegionId, originalPublicAdvisories]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  useEffect(() => {
-    if (selectedParkId !== -1) {
-      filterAdvisoriesByParkId(selectedParkId);
+    if (initialized && !keycloak) {
+      setToError(true);
     }
-  }, [selectedParkId, regionalPublicAdvisories]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [initialized, keycloak]);
 
   // Preserve filters
   const savedFilters = JSON.parse(localStorage.getItem("advisoryFilters"));
@@ -91,10 +86,10 @@ export default function AdvisoryDashboard() {
   const [showArchived, setShowArchived] = useState(archived);
 
   useEffect(() => {
-    const filters = JSON.parse(localStorage.getItem("advisoryFilters"));
+    const storedFilters = JSON.parse(localStorage.getItem("advisoryFilters"));
 
-    if (filters) {
-      setFilters([...filters]);
+    if (storedFilters) {
+      setFilters([...storedFilters]);
     }
   }, []);
 
@@ -103,26 +98,209 @@ export default function AdvisoryDashboard() {
     sessionStorage.setItem("showArchived", showArchived);
   }, [filters, showArchived]);
 
-  const getPageFilterValue = (filters, filterName) =>
-    filters.find((obj) => obj.type === "page" && obj.filterName === filterName)
-      ?.filterValue || 0;
-  /*-------------------------------------------------------------------------*/
+  function getPageFilterValue(storedFilters, filterName) {
+    return (
+      storedFilters.find(
+        (obj) => obj.type === "page" && obj.filterName === filterName,
+      )?.filterValue || 0
+    );
+  }
+
+  function removeDuplicatesById(arr) {
+    return arr.filter(
+      (obj, index, self) => index === self.findIndex((o) => o.id === obj.id),
+    );
+  }
+
+  function filterAdvisoriesByParkId(pId) {
+    const advisories = selectedRegionId
+      ? regionalPublicAdvisories
+      : originalPublicAdvisories;
+
+    if (pId) {
+      const filteredPublicAdvisories = [];
+      const currentParkObj = protectedAreas.find((o) => o.documentId === pId);
+
+      advisories.forEach((obj) => {
+        if (
+          obj.protectedAreas.some(
+            (park) => park.documentId === currentParkObj.documentId,
+          )
+        ) {
+          filteredPublicAdvisories.push(obj);
+        }
+      });
+      setPublicAdvisories([...filteredPublicAdvisories]);
+    } else {
+      setPublicAdvisories([...advisories]);
+    }
+  }
+
+  function filterAdvisoriesByRegionId(regId) {
+    if (regId) {
+      const filteredManagementAreas = managementAreas.filter(
+        (managementArea) => managementArea.region?.id === regId,
+      );
+
+      // Filter park names dropdown list
+      let list = [];
+
+      filteredManagementAreas.forEach((obj) => {
+        list = [...list.concat(obj.protectedAreas)];
+      });
+
+      // Remove duplicates
+      const filteredProtectedAreas = removeDuplicatesById(list);
+
+      // Filter advisories in grid
+      const filteredPublicAdvisories = [];
+
+      originalPublicAdvisories.forEach((obj) => {
+        obj.protectedAreas.forEach((park) => {
+          const idx = filteredProtectedAreas.findIndex(
+            (protectedArea) => protectedArea?.orcs === park?.orcs,
+          );
+
+          if (idx !== -1) {
+            filteredPublicAdvisories.push(obj);
+          }
+        });
+      });
+
+      setProtectedAreas([...filteredProtectedAreas]);
+      setPublicAdvisories([...removeDuplicatesById(filteredPublicAdvisories)]);
+      setRegionalPublicAdvisories([
+        ...removeDuplicatesById(filteredPublicAdvisories),
+      ]);
+    } else {
+      setProtectedAreas([...originalProtectedAreas]);
+      setPublicAdvisories([...originalPublicAdvisories]);
+      setRegionalPublicAdvisories([...originalPublicAdvisories]);
+    }
+  }
+
+  async function toggleArchivedAdvisories(shouldShowArchived) {
+    setShowArchived(shouldShowArchived);
+    setIsLoading(true);
+    setPublicAdvisories([]);
+
+    let res = null;
+
+    try {
+      res = await getLatestPublicAdvisoryAudits(
+        keycloakToken,
+        shouldShowArchived,
+      );
+    } catch {
+      setError({ status: 500, message: "Error loading data" });
+      setToError(true);
+      setIsLoading(false);
+    }
+
+    const advisoryAuditRows = res?.data.data;
+    const updatedPublicAdvisories = updatePublicAdvisories(
+      advisoryAuditRows,
+      cmsData.managementAreas,
+    );
+
+    setPublicAdvisories(updatedPublicAdvisories);
+    setOriginalPublicAdvisories(updatedPublicAdvisories);
+    setIsLoading(false);
+  }
+
+  function filterFormattedDate(filterDate, rowData, column) {
+    const value = rowData[column.field];
+
+    if (!filterDate) {
+      return true;
+    }
+    if (!value) {
+      return false;
+    }
+
+    return moment(value)
+      .format("YYYY/MM/DD")
+      .toLowerCase()
+      .includes(filterDate.toLowerCase());
+  }
+
+  function renderCountBadge(label) {
+    return (
+      <Badge pill bg="light" text="dark" className="park-count-badge">
+        {label}
+      </Badge>
+    );
+  }
+
+  useEffect(() => {
+    filterAdvisoriesByRegionId(selectedRegionId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Region filtering intentionally derives from the selected region id and the base advisory list.
+  }, [selectedRegionId, originalPublicAdvisories]);
+
+  useEffect(() => {
+    if (selectedParkId !== -1) {
+      filterAdvisoriesByParkId(selectedParkId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Park filtering intentionally derives from the selected park id and the region-scoped advisory list.
+  }, [selectedParkId, regionalPublicAdvisories]);
 
   useEffect(() => {
     let isMounted = true;
 
-    const fetchData = async () => {
+    async function loadCurrentPublishedAdvisories() {
+      const fetchedAdvisoryStatuses = await getAdvisoryStatuses(
+        cmsData,
+        setCmsData,
+      );
+      const fetchedUrgencies = await getUrgencies(cmsData, setCmsData);
+
+      setAdvisoryStatuses(fetchedAdvisoryStatuses);
+      setUrgencies(fetchedUrgencies);
+      if (fetchedAdvisoryStatuses) {
+        const publishedStatus = fetchedAdvisoryStatuses.filter(
+          (status) => status.code === "PUB",
+        );
+
+        if (publishedStatus?.length > 0) {
+          const result = await cmsAxios
+            .get(
+              `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
+            )
+            .catch(() => {
+              setHasErrors(true);
+            });
+
+          let currentPublishedAdvisories = [];
+          const responseData = result?.data?.data ?? [];
+
+          if (responseData.length > 0) {
+            responseData.forEach((advisory) => {
+              currentPublishedAdvisories = [
+                ...currentPublishedAdvisories,
+                advisory.advisoryNumber,
+              ];
+            });
+          }
+          setPublishedAdvisories([...currentPublishedAdvisories]);
+        }
+      }
+    }
+
+    async function fetchData() {
       setIsLoading(true);
       if (initialized && keycloak) {
-        const filters = JSON.parse(localStorage.getItem("advisoryFilters"));
-        const archived = sessionStorage.getItem("showArchived") === "true";
+        const storedFilters = JSON.parse(
+          localStorage.getItem("advisoryFilters"),
+        );
+        const archivedSetting =
+          sessionStorage.getItem("showArchived") === "true";
 
-        setShowArchived(archived);
+        setShowArchived(archivedSetting);
         const res = await Promise.all([
           getRegions(cmsData, setCmsData),
           getManagementAreas(cmsData, setCmsData),
           getProtectedAreas(cmsData, setCmsData),
-          getLatestPublicAdvisoryAudits(keycloakToken, archived),
+          getLatestPublicAdvisoryAudits(keycloakToken, archivedSetting),
         ]).catch(() => {
           setError({
             status: 500,
@@ -133,23 +311,25 @@ export default function AdvisoryDashboard() {
         });
 
         // If no response, return
-        if (!res) return;
+        if (!res) {
+          return;
+        }
         // Regions
         const regionsData = res[0];
         // Management Areas
         const managementAreasData = res[1];
         // Protected Areas
         const protectedAreasData = res[2];
-        const publicAdvisories = res[3]?.data.data;
+        const advisoryAuditRows = res[3]?.data.data;
         // Public Advisories
         const updatedPublicAdvisories = updatePublicAdvisories(
-          publicAdvisories,
+          advisoryAuditRows,
           managementAreasData,
         );
 
         if (isMounted) {
           // Published Advisories
-          getCurrentPublishedAdvisories(cmsData, setCmsData);
+          loadCurrentPublishedAdvisories();
           setRegions([...regionsData]);
           setManagementAreas([...managementAreasData]);
           setProtectedAreas([...protectedAreasData]);
@@ -158,7 +338,7 @@ export default function AdvisoryDashboard() {
           setOriginalPublicAdvisories(updatedPublicAdvisories);
 
           // Preserve filters
-          const regionId = getPageFilterValue(filters, "region");
+          const regionId = getPageFilterValue(storedFilters || [], "region");
 
           if (regionId) {
             const region = regionsData.find((r) => r.id === regionId);
@@ -172,7 +352,7 @@ export default function AdvisoryDashboard() {
             }
           }
 
-          const parkId = getPageFilterValue(filters, "park");
+          const parkId = getPageFilterValue(storedFilters || [], "park");
 
           if (parkId) {
             const park = protectedAreasData.find(
@@ -190,168 +370,29 @@ export default function AdvisoryDashboard() {
         }
       }
       setIsLoading(false);
-    };
+    }
 
     fetchData();
 
     return () => {
       isMounted = false;
     };
-  }, [initialized, keycloak, cmsData, setCmsData, setError]);
-
-  const removeDuplicatesById = (arr) =>
-    arr.filter(
-      (obj, index, self) => index === self.findIndex((o) => o.id === obj.id),
-    );
-
-  const filterAdvisoriesByParkId = (pId) => {
-    const advisories = selectedRegionId
-      ? regionalPublicAdvisories
-      : originalPublicAdvisories;
-
-    if (pId) {
-      const filteredPublicAdvsories = [];
-      const currentParkObj = protectedAreas.find((o) => o.documentId === pId);
-
-      advisories.forEach((obj) => {
-        if (
-          obj.protectedAreas.some(
-            (p) => p.documentId === currentParkObj.documentId,
-          )
-        ) {
-          filteredPublicAdvsories.push(obj);
-        }
-      });
-      setPublicAdvisories([...filteredPublicAdvsories]);
-    } else {
-      setPublicAdvisories([...advisories]);
-    }
-  };
-
-  const filterAdvisoriesByRegionId = (regId) => {
-    if (regId) {
-      const filteredManagementAreas = managementAreas.filter(
-        (m) => m.region?.id === regId,
-      );
-
-      // Filter park names dropdown list
-      let list = [];
-
-      filteredManagementAreas.forEach((obj) => {
-        list = [...list.concat(obj.protectedAreas)];
-      });
-
-      // Remove duplicates
-      const filteredProtectedAreas = removeDuplicatesById(list);
-
-      // Filter advisories in grid
-      const filteredPublicAdvsories = [];
-
-      originalPublicAdvisories.forEach((obj) => {
-        obj.protectedAreas.forEach((p) => {
-          const idx = filteredProtectedAreas.findIndex(
-            (o) => o?.orcs === p?.orcs,
-          );
-
-          if (idx !== -1) {
-            filteredPublicAdvsories.push(obj);
-          }
-        });
-      });
-
-      setProtectedAreas([...filteredProtectedAreas]);
-      setProtectedAreas([...originalProtectedAreas]);
-      setPublicAdvisories([...removeDuplicatesById(filteredPublicAdvsories)]);
-      setRegionalPublicAdvisories([
-        ...removeDuplicatesById(filteredPublicAdvsories),
-      ]);
-    } else {
-      setProtectedAreas([...originalProtectedAreas]);
-      setPublicAdvisories([...originalPublicAdvisories]);
-      setRegionalPublicAdvisories([...originalPublicAdvisories]);
-    }
-  };
-
-  const getCurrentPublishedAdvisories = async (cmsData, setCmsData) => {
-    const advisoryStatuses = await getAdvisoryStatuses(cmsData, setCmsData);
-    const urgencies = await getUrgencies(cmsData, setCmsData);
-
-    setAdvisoryStatuses(advisoryStatuses);
-    setUrgencies(urgencies);
-    if (advisoryStatuses) {
-      const publishedStatus = advisoryStatuses.filter(
-        (as) => as.code === "PUB",
-      );
-
-      if (publishedStatus?.length > 0) {
-        const result = await cmsAxios
-          .get(
-            `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
-          )
-          .catch(() => {
-            setHasErrors(true);
-          });
-
-        let publishedAdvisories = [];
-        const res = result?.data?.data;
-
-        if (res.length > 0) {
-          res.forEach((ad) => {
-            publishedAdvisories = [...publishedAdvisories, ad.advisoryNumber];
-          });
-        }
-        setPublishedAdvisories([...publishedAdvisories]);
-      }
-    }
-  };
-
-  const toggleArchivedAdvisories = async (showArchived) => {
-    setShowArchived(showArchived);
-    setIsLoading(true);
-    setPublicAdvisories([]);
-
-    let res = null;
-
-    try {
-      res = await getLatestPublicAdvisoryAudits(keycloakToken, showArchived);
-    } catch {
-      setError({ status: 500, message: "Error loading data" });
-      setToError(true);
-      setIsLoading(false);
-    }
-
-    const publicAdvisories = res?.data.data;
-    const updatedPublicAdvisories = updatePublicAdvisories(
-      publicAdvisories,
-      cmsData.managementAreas,
-    );
-
-    setPublicAdvisories(updatedPublicAdvisories);
-    setOriginalPublicAdvisories(updatedPublicAdvisories);
-    setIsLoading(false);
-  };
-
-  // Convert ISO date to YYYY/MM/DD format for filtering
-  const filterFormattedDate = (filterDate, rowData, column) => {
-    const value = rowData[column.field];
-
-    if (!filterDate) return true;
-    if (!value) return false;
-
-    return moment(value)
-      .format("YYYY/MM/DD")
-      .toLowerCase()
-      .includes(filterDate.toLowerCase());
-  };
+  }, [initialized, keycloak, keycloakToken, cmsData, setCmsData, setError]);
 
   const tableColumns = useMemo(
     () => [
       {
         field: "urgency.urgency",
         title: (
-          <Tooltip title="Urgency">
-            <WarningRoundedIcon className="warningRoundedIcon" />
-          </Tooltip>
+          <OverlayTrigger
+            placement="top"
+            overlay={<Tooltip id="advisory-urgency-tooltip">Urgency</Tooltip>}
+          >
+            <FontAwesomeIcon
+              icon={faTriangleExclamation}
+              className="warningRoundedIcon"
+            />
+          </OverlayTrigger>
         ),
         filterOnItemSelect: true,
         lookup: urgencies.reduce((lookup, urgency) => {
@@ -380,18 +421,23 @@ export default function AdvisoryDashboard() {
                 return {};
             }
           }
+
+          return {};
         },
         render(rowData) {
           return (
-            <>
-              <Tooltip
-                title={
-                  rowData.urgency ? rowData.urgency.urgency : "Urgency not set"
-                }
-              >
-                <div className="urgency-column">&nbsp;</div>
-              </Tooltip>
-            </>
+            <OverlayTrigger
+              placement="top"
+              overlay={
+                <Tooltip id={`urgency-${rowData.documentId || rowData.id}`}>
+                  {rowData.urgency
+                    ? rowData.urgency.urgency
+                    : "Urgency not set"}
+                </Tooltip>
+              }
+            >
+              <div className="urgency-column">&nbsp;</div>
+            </OverlayTrigger>
           );
         },
       },
@@ -403,100 +449,101 @@ export default function AdvisoryDashboard() {
           lookup[status.advisoryStatus] = status.advisoryStatus;
           return lookup;
         }, {}),
-        customSort: (a, b) =>
-          a.archived === b.archived
-            ? a.advisoryStatus.advisoryStatus < b.advisoryStatus.advisoryStatus
-              ? -1
-              : 1
-            : a.archived < b.archived
-              ? 1
-              : -1,
+        customSort(a, b) {
+          if (a.archived !== b.archived) {
+            return a.archived < b.archived ? 1 : -1;
+          }
+
+          return a.advisoryStatus.advisoryStatus <
+            b.advisoryStatus.advisoryStatus
+            ? -1
+            : 1;
+        },
         cellStyle: {
           textAlign: "center",
         },
-        render: (rowData) => (
-          <div className="advisory-status">
-            {rowData.advisoryStatus && !rowData.archived && (
-              <Tooltip title={rowData.advisoryStatus.advisoryStatus}>
-                <span>
-                  {publishedAdvisories.includes(rowData.advisoryNumber) && (
-                    <SvgIcon>
-                      {rowData.advisoryStatus.code !== "PUB" && (
-                        <PublishIcon
-                          className="publishedIcon"
-                          viewBox="5 13 25 5"
+        render(rowData) {
+          const statusIconMap = {
+            DFT: { icon: faPencil, className: "draftIcon" },
+            INA: { icon: faClock, className: "inactiveIcon" },
+            APR: { icon: faThumbsUp, className: "approvedIcon" },
+            ARQ: { icon: faCircleInfo, className: "approvalRequestedIcon" },
+            PUB: { icon: faArrowUpToLine, className: "publishedIcon" },
+          };
+          const code = rowData.advisoryStatus?.code;
+          const statusEntry = statusIconMap[code];
+          const isPublished = publishedAdvisories.includes(
+            rowData.advisoryNumber,
+          );
+
+          // Two icons when the advisory already has a live published version
+          // but is currently in a different status (A = published indicator, B = current status)
+          const showDual = isPublished && code !== "PUB" && statusEntry;
+
+          return (
+            <div className="advisory-status">
+              {rowData.advisoryStatus && !rowData.archived && (
+                <OverlayTrigger
+                  placement="bottom"
+                  overlay={
+                    <Tooltip id={`status-${rowData.documentId || rowData.id}`}>
+                      {rowData.advisoryStatus.advisoryStatus}
+                    </Tooltip>
+                  }
+                >
+                  <span>
+                    {showDual ? (
+                      <span className="dual-icon">
+                        <FontAwesomeIcon
+                          icon={faArrowUpToLine}
+                          className="icon-a publishedIcon"
                         />
-                      )}
-                      {rowData.advisoryStatus.code === "DFT" && (
-                        <EditIcon
-                          className="draftIcon"
-                          viewBox="-16 -5 45 10"
+                        <FontAwesomeIcon
+                          icon={statusEntry.icon}
+                          className={`icon-b ${statusEntry.className}`}
                         />
-                      )}
-                      {rowData.advisoryStatus.code === "INA" && (
-                        <WatchLaterIcon
-                          className="inactiveIcon"
-                          viewBox="-16 -5 45 10"
+                      </span>
+                    ) : (
+                      statusEntry && (
+                        <FontAwesomeIcon
+                          icon={statusEntry.icon}
+                          className={statusEntry.className}
                         />
-                      )}
-                      {rowData.advisoryStatus.code === "APR" && (
-                        <ThumbUpIcon
-                          className="approvedIcon"
-                          viewBox="-16 -5 45 10"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "ARQ" && (
-                        <InfoIcon
-                          className="approvalRequestedIcon"
-                          viewBox="-16 -5 45 10"
-                        />
-                      )}
-                      {rowData.advisoryStatus.code === "PUB" && (
-                        <PublishIcon className="publishedIcon" />
-                      )}
-                    </SvgIcon>
-                  )}
-                  {!publishedAdvisories.includes(rowData.advisoryNumber) && (
-                    <>
-                      {rowData.advisoryStatus.code === "DFT" && (
-                        <EditIcon className="draftIcon" />
-                      )}
-                      {rowData.advisoryStatus.code === "INA" && (
-                        <WatchLaterIcon className="inactiveIcon" />
-                      )}
-                      {rowData.advisoryStatus.code === "APR" && (
-                        <ThumbUpIcon className="approvedIcon" />
-                      )}
-                      {rowData.advisoryStatus.code === "ARQ" && (
-                        <InfoIcon className="approvalRequestedIcon" />
-                      )}
-                      {rowData.advisoryStatus.code === "PUB" && (
-                        <PublishIcon className="publishedIcon" />
-                      )}
-                    </>
-                  )}
-                </span>
-              </Tooltip>
-            )}
-            {rowData.archived && (
-              <Tooltip title="Archived">
-                <span>
-                  <SvgIcon>
-                    <ArchiveIcon className="archivedIcon" />
-                  </SvgIcon>
-                </span>
-              </Tooltip>
-            )}
-          </div>
-        ),
+                      )
+                    )}
+                  </span>
+                </OverlayTrigger>
+              )}
+              {rowData.archived && (
+                <OverlayTrigger
+                  placement="top"
+                  overlay={
+                    <Tooltip
+                      id={`archived-${rowData.documentId || rowData.id}`}
+                    >
+                      Archived
+                    </Tooltip>
+                  }
+                >
+                  <span>
+                    <FontAwesomeIcon icon={faClock} className="inactiveIcon" />
+                  </span>
+                </OverlayTrigger>
+              )}
+            </div>
+          );
+        },
       },
       {
         field: "advisoryDate",
         title: "Posting date",
         customFilterAndSearch: filterFormattedDate,
         render(rowData) {
-          if (rowData.advisoryDate)
+          if (rowData.advisoryDate) {
             return moment(rowData.advisoryDate).format("YYYY/MM/DD");
+          }
+
+          return null;
         },
       },
       {
@@ -507,6 +554,8 @@ export default function AdvisoryDashboard() {
           if (rowData.endDate) {
             return moment(rowData.endDate).format("YYYY/MM/DD");
           }
+
+          return null;
         },
       },
       {
@@ -514,8 +563,11 @@ export default function AdvisoryDashboard() {
         title: "Expiry date",
         customFilterAndSearch: filterFormattedDate,
         render(rowData) {
-          if (rowData.expiryDate)
+          if (rowData.expiryDate) {
             return moment(rowData.expiryDate).format("YYYY/MM/DD");
+          }
+
+          return null;
         },
       },
       {
@@ -542,51 +594,65 @@ export default function AdvisoryDashboard() {
           const regionsCount = rowData.regions?.length;
 
           if (regionsCount > 0) {
-            const regions = rowData?.regions?.slice(0, displayCount);
+            const displayedRegions = rowData?.regions?.slice(0, displayCount);
 
             return (
               <div>
-                {regions?.map((p, i) => (
+                {displayedRegions?.map((p, i) => (
                   <span key={i}>
                     {p.regionName} region
-                    <Chip
-                      size="small"
-                      variant="outlined"
-                      label={`${p.count} parks`}
-                    />
+                    {renderCountBadge(`${p.count} parks`)}
                   </span>
                 ))}
                 {regionsCount > displayCount && (
-                  <Tooltip
-                    title={`plus ${regionsCount - displayCount} more region(s)`}
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={
+                      <Tooltip
+                        id={`regions-more-${rowData.documentId || rowData.id}`}
+                      >
+                        {`plus ${regionsCount - displayCount} more region(s)`}
+                      </Tooltip>
+                    }
                   >
-                    <Chip
-                      size="small"
-                      label={`+${regionsCount - displayCount}`}
-                    />
-                  </Tooltip>
+                    <span>
+                      {renderCountBadge(`+${regionsCount - displayCount}`)}
+                    </span>
+                  </OverlayTrigger>
                 )}
               </div>
             );
           }
 
           const parksCount = rowData.protectedAreas.length;
-          const protectedAreas = rowData.protectedAreas.slice(0, displayCount);
+          const displayedProtectedAreas = rowData.protectedAreas.slice(
+            0,
+            displayCount,
+          );
 
           return (
             <div>
-              {protectedAreas.map((p, i) => (
+              {displayedProtectedAreas.map((p, i) => (
                 <span key={i}>
                   {p.protectedAreaName}
-                  {protectedAreas.length - 1 > i && ", "}
+                  {displayedProtectedAreas.length - 1 > i && ", "}
                 </span>
               ))}
               {parksCount > displayCount && (
-                <Tooltip
-                  title={`plus ${parksCount - displayCount} more park(s)`}
+                <OverlayTrigger
+                  placement="top"
+                  overlay={
+                    <Tooltip
+                      id={`parks-more-${rowData.documentId || rowData.id}`}
+                    >
+                      {`plus ${parksCount - displayCount} more park(s)`}
+                    </Tooltip>
+                  }
                 >
-                  <Chip size="small" label={`+${parksCount - displayCount}`} />
-                </Tooltip>
+                  <span>
+                    {renderCountBadge(`+${parksCount - displayCount}`)}
+                  </span>
+                </OverlayTrigger>
               )}
             </div>
           );
@@ -608,10 +674,14 @@ export default function AdvisoryDashboard() {
           textAlign: "right",
           paddingRight: "10px",
         },
-        render: (rowData) => (
-          <IconButton>
-            <MoreVertIcon />
-          </IconButton>
+        render: () => (
+          <button
+            type="button"
+            className="table-row-action"
+            aria-label="row actions"
+          >
+            ...
+          </button>
         ),
       },
     ],
@@ -707,31 +777,31 @@ export default function AdvisoryDashboard() {
             />
           </div>
           <div className="col-xl-3 col-md-4 col-sm-12">
-            <FormControlLabel
-              className="ms-1"
-              control={
-                <Checkbox
-                  checked={showArchived}
-                  onChange={(e) => {
-                    const showArchived = e ? e.target.checked : false;
+            <Form.Check
+              className="ms-1 advisory-archived-toggle"
+              type="checkbox"
+              id="show-archived"
+              checked={showArchived}
+              onChange={(e) => {
+                const shouldShowArchived = e ? e.target.checked : false;
 
-                    sessionStorage.setItem("showArchived", showArchived);
-                    toggleArchivedAdvisories(showArchived);
-                  }}
-                  inputProps={{ "aria-label": "archived" }}
-                />
-              }
+                sessionStorage.setItem("showArchived", shouldShowArchived);
+                toggleArchivedAdvisories(shouldShowArchived);
+              }}
               label={
-                <>
+                <span>
                   <small>Show archived</small>
                   <LightTooltip
                     arrow
                     title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this
                    box to include inactive advisories modified in the past 18 months. Older advisories are available in Strapi."
                   >
-                    <HelpIcon className="helpIcon ms-1" />
+                    <FontAwesomeIcon
+                      icon={faCircleQuestion}
+                      className="helpIcon ms-1"
+                    />
                   </LightTooltip>
-                </>
+                </span>
               }
             />
           </div>
@@ -749,11 +819,11 @@ export default function AdvisoryDashboard() {
                 pageSize: 50,
                 pageSizeOptions: [25, 50, publicAdvisories.length],
               }}
-              onFilterChange={(filters) => {
+              onFilterChange={(tableFilters) => {
                 const advisoryFilters = JSON.parse(
                   localStorage.getItem("advisoryFilters"),
                 );
-                const arrFilters = filters.map((obj) => ({
+                const arrFilters = tableFilters.map((obj) => ({
                   fieldName: obj.column.field,
                   fieldValue: obj.value,
                   type: "table",
@@ -771,7 +841,7 @@ export default function AdvisoryDashboard() {
                 navigate(`/advisory-summary/${rowData.documentId}`);
               }}
               components={{
-                Toolbar: (props) => <div></div>,
+                Toolbar: () => <div></div>,
               }}
             />
           </div>

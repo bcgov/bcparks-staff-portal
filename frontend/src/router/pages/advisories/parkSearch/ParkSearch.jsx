@@ -6,10 +6,11 @@ import "./ParkSearch.scss";
 import "@/components/advisories/composite/advisoryForm/AdvisoryForm.css";
 import { useAuth } from "react-oidc-context";
 import { Navigate } from "react-router-dom";
-import SearchIcon from "@mui/icons-material/Search";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
 import Select, { components } from "react-select";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
-import { List, ListItem, Divider } from "@mui/material";
+import ListGroup from "react-bootstrap/ListGroup";
 import {
   getProtectedAreas,
   getRegions,
@@ -45,74 +46,76 @@ export default function ParkSearch() {
   const [toDetails, setToDetails] = useState(false);
   const [parkList, setParkList] = useState([]);
 
-  const DropdownIndicator = (props) => (
-    <components.DropdownIndicator {...props}>
-      <SearchIcon />
-    </components.DropdownIndicator>
-  );
+  function DropdownIndicator(props) {
+    return (
+      <components.DropdownIndicator {...props}>
+        <FontAwesomeIcon icon={faMagnifyingGlass} />
+      </components.DropdownIndicator>
+    );
+  }
 
   useEffect(() => {
     if (!isLoading) {
       setParkList([]);
-      let parkList = [];
+      let newParkList = [];
       const parkIds = [];
 
       if (protectedArea > 0) {
         setToDetails(true);
       }
       if (managementArea && !isEmpty(managementArea)) {
-        parkList = addProtectedAreas(
+        newParkList = addProtectedAreas(
           managementArea.obj.protectedAreas,
           null,
           parkIds,
           null,
-          parkList,
+          newParkList,
         );
-        setParkList(parkList);
+        setParkList(newParkList);
       } else if (section && !isEmpty(section)) {
-        parkList = addProtectedAreasFromArea(
+        newParkList = addProtectedAreasFromArea(
           section.obj,
           "managementAreas",
           parkIds,
           null,
           null,
           managementAreas,
-          parkList,
+          newParkList,
         );
-        setParkList(parkList);
+        setParkList(newParkList);
       } else if (region && !isEmpty(region)) {
-        parkList = addProtectedAreasFromArea(
+        newParkList = addProtectedAreasFromArea(
           region.obj,
           "managementAreas",
           parkIds,
           null,
           null,
           managementAreas,
-          parkList,
+          newParkList,
         );
-        setParkList(parkList);
+        setParkList(newParkList);
       }
       setFilteredSections(sections);
       setFilteredManagementAreas(managementAreas);
       if (section && !isEmpty(section)) {
-        const filteredManagementAreas = managementAreas.filter(
+        const newFilteredManagementAreas = managementAreas.filter(
           (m) => m.obj.section?.id === section.value,
         );
 
-        setFilteredManagementAreas([...filteredManagementAreas]);
+        setFilteredManagementAreas([...newFilteredManagementAreas]);
       }
       if (region && !isEmpty(region)) {
-        const filteredSections = sections.filter(
+        const newFilteredSections = sections.filter(
           (s) => s.obj.region?.id === region.value,
         );
 
-        setFilteredSections([...filteredSections]);
+        setFilteredSections([...newFilteredSections]);
         if (!section) {
-          const filteredManagementAreas = managementAreas.filter(
+          const newFilteredManagementAreas = managementAreas.filter(
             (m) => m.obj.region?.id === region.value,
           );
 
-          setFilteredManagementAreas([...filteredManagementAreas]);
+          setFilteredManagementAreas([...newFilteredManagementAreas]);
         }
       }
     }
@@ -141,43 +144,43 @@ export default function ParkSearch() {
       ])
         .then((res) => {
           const protectedAreaData = res[0];
-          const protectedAreas = protectedAreaData.map((p) => ({
+          const protectedAreaOptions = protectedAreaData.map((p) => ({
             label: p.protectedAreaName,
             value: p.id,
             orcs: p.orcs,
             type: "protectedArea",
           }));
 
-          setProtectedAreas([...protectedAreas]);
+          setProtectedAreas([...protectedAreaOptions]);
           const regionData = res[1];
-          const regions = regionData.map((r) => ({
+          const regionOptions = regionData.map((r) => ({
             label: `${r.regionName} Region`,
             value: r.id,
             type: "region",
             obj: r,
           }));
 
-          setRegions([...regions]);
+          setRegions([...regionOptions]);
           const sectionData = res[2];
-          const sections = sectionData.map((s) => ({
+          const sectionOptions = sectionData.map((s) => ({
             label: `${s.sectionName} Section`,
             value: s.id,
             type: "section",
             obj: s,
           }));
 
-          setFilteredSections([...sections]);
-          setSections([...sections]);
+          setFilteredSections([...sectionOptions]);
+          setSections([...sectionOptions]);
           const managementAreaData = res[3];
-          const managementAreas = managementAreaData.map((m) => ({
+          const managementAreaOptions = managementAreaData.map((m) => ({
             label: `${m.managementAreaName} Management Area`,
             value: m.id,
             type: "managementArea",
             obj: m,
           }));
 
-          setFilteredManagementAreas([...managementAreas]);
-          setManagementAreas([...managementAreas]);
+          setFilteredManagementAreas([...managementAreaOptions]);
+          setManagementAreas([...managementAreaOptions]);
           // const siteData = res[4];
           // const sites = siteData.map((s) => ({
           //   label: s.protectedArea.protectedAreaName + ": " + s.siteName,
@@ -200,25 +203,29 @@ export default function ParkSearch() {
     }
   }, [cmsData, initialized, keycloak, setCmsData, setError, setIsLoading]);
 
-  const filterSection = (event) => {
+  function filterSection(event) {
     if (event) {
-      const section = sections.filter((s) => s.value === event.obj.section.id);
+      const matchingSections = sections.filter(
+        (s) => s.value === event.obj.section.id,
+      );
 
-      if (section.length > 0) {
-        setSection(section[0]);
+      if (matchingSections.length > 0) {
+        setSection(matchingSections[0]);
       }
     }
-  };
+  }
 
-  const filterRegion = (event) => {
+  function filterRegion(event) {
     if (event) {
-      const region = regions.filter((r) => r.value === event.obj.region?.id);
+      const matchingRegions = regions.filter(
+        (r) => r.value === event.obj.region?.id,
+      );
 
-      if (region.length > 0) {
-        setRegion(region[0]);
+      if (matchingRegions.length > 0) {
+        setRegion(matchingRegions[0]);
       }
     }
-  };
+  }
 
   if (toDetails) {
     return <Navigate to={`/park-info/${protectedArea}`} />;
@@ -314,13 +321,16 @@ export default function ParkSearch() {
                 <div className="container">
                   <div className="row mt20">
                     <div className="col-lg-10 col-md-12 col-sm-12 ad-auto-margin">
-                      <List>
-                        <ListItem className="da-list-header" key="item-header">
+                      <ListGroup as="div">
+                        <ListGroup.Item className="da-list-header" as="div">
                           Park name
-                        </ListItem>
-                        <Divider />
+                        </ListGroup.Item>
                         {parkList.map((p) => (
-                          <ListItem key={p.orcs} className="da-list-item">
+                          <ListGroup.Item
+                            key={p.orcs}
+                            className="da-list-item"
+                            as="div"
+                          >
                             <div
                               className="ad-anchor pointer"
                               onClick={() => {
@@ -329,9 +339,9 @@ export default function ParkSearch() {
                             >
                               {p.name}
                             </div>
-                          </ListItem>
+                          </ListGroup.Item>
                         ))}
-                      </List>
+                      </ListGroup>
                     </div>
                   </div>
                 </div>

@@ -1,10 +1,11 @@
 .ad-copy {
   border-radius: 5px !important;
   margin: 16px 0 !important;
+  border: none;
 }
 
 .launchIcon,
-.ad-copy .MuiChip-icon {
+.ad-copy svg {
   width: 20px !important;
   height: 20px !important;
   margin-top: -2px !important;
@@ -14,7 +15,7 @@
   margin-left: 8px;
 }
 
-.ad-copy .MuiChip-icon {
+.ad-copy svg {
   color: var(--color-blue) !important;
 }
 

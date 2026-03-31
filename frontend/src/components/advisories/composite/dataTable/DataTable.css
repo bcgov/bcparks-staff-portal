@@ -1,52 +1,140 @@
-.data-table .MuiTable-root {
-  width: 100% !important;
-}
-
-.data-table .MuiTableCell-root {
-  padding: 2px !important;
-}
-
-.data-table .MuiTableCell-root .MuiTextField-root {
-  width: 100%;
-}
-
-.data-table .MuiTableCell-root input,
-.data-table .MuiTableCell-root .MuiInput-input {
-  height: 32px;
-  color: var(--color-blue);
-  background-color: #f0f2f5;
-  font-size: 0.875rem;
-  line-height: 2rem;
-  margin: 2px 0px 2px 0px !important;
-  padding: 2px !important;
-}
-
-.data-table .MuiTableCell-root .MuiSelect-root {
-  padding-right: 24px !important;
-}
-
-.data-table .MuiTablePagination-input {
-  padding-right: 5px !important;
-}
-
-.data-table .MuiTableRow-head th {
-  background-color: #f0f2f5 !important;
-  font-weight: bold;
-  padding: 2px !important;
-  margin: 2px 0px 2px 0px !important;
-  z-index: 0;
-}
-
-.data-table .MuiToolbar-root {
+.data-table-toolbar {
   padding: 2px;
   margin: 2px;
 }
 
-.data-table .MuiToolbar-gutters h6 {
+.data-table-title {
   font-weight: bold;
   font-size: xx-large;
+  line-height: 1.2;
 }
 
-.data-table .MuiTableRow-root:hover {
+.data-table-search {
+  min-width: 240px;
+  min-height: 2.4rem;
+}
+
+.data-table-table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-color: var(--surface-color-border-default);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.data-table-table thead th {
+  font-weight: bold;
+  padding: 2px !important;
+  margin: 2px 0 !important;
+  vertical-align: middle;
+  border-color: var(--surface-color-border-default) !important;
+  border-top: 1px solid var(--surface-color-border-default) !important;
+  border-bottom: 1px solid var(--surface-color-border-default) !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  z-index: 0;
+}
+
+.data-table-table thead th.data-table-header-cell {
+  background-color: #f0f2f5 !important;
+  border-bottom: none !important;
+}
+
+.data-table-table td {
+  padding: 2px !important;
+  vertical-align: middle;
+  border-top: 0 !important;
+  border-bottom: 1px solid var(--surface-color-border-default) !important;
+  border-left: 0;
+  border-right: 0 !important;
+  background-color: var(--surface-color-background-white);
+}
+
+.data-table-table input,
+.data-table-table select {
+  min-height: 32px;
+  color: var(--color-blue);
+  background-color: #f0f2f5;
+  font-size: 0.875rem;
+  line-height: 2rem;
+  margin: 2px 0 !important;
+  padding: 2px !important;
+  border-color: var(--surface-color-border-default) !important;
+  box-shadow: none !important;
+}
+
+.data-table-table .form-control,
+.data-table-table .form-select {
+  width: 100%;
+}
+
+.data-table-filter-text {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.data-table-filter-icon {
+  color: var(--typography-color-secondary);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.data-table-header-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.data-table-header-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-size: 0.875rem;
+  font-weight: inherit;
+  text-align: left;
+}
+
+.data-table-header-button:focus,
+.data-table-header-button:focus-visible {
+  outline: 2px solid var(--color-med-blue);
+  outline-offset: 1px;
+}
+
+.data-table-sort-indicator {
+  color: var(--color-med-grey);
+  font-size: 0.875rem;
+  line-height: 1;
+  flex-shrink: 0;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+}
+
+.data-table-header-button:hover .data-table-sort-indicator,
+.data-table-header-button:focus .data-table-sort-indicator,
+.data-table-header-button:focus-visible .data-table-sort-indicator,
+.data-table-sort-indicator.is-active {
+  opacity: 1;
+}
+
+.data-table-clickable-row {
+  cursor: pointer;
+}
+
+.data-table-toolbar .dropdown-toggle {
+  min-height: 2.4rem;
+}
+
+.data-table-table tbody tr:hover {
   background: #f6f8fa !important;
+}
+
+.data-table-table.no-hover tbody tr:hover {
+  background: inherit !important;
 }

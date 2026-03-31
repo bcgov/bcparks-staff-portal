@@ -1,15 +1,32 @@
-import { styled } from "@mui/material/styles";
-import Tooltip, { tooltipClasses } from "@mui/material/Tooltip";
+import { useId } from "react";
+import PropTypes from "prop-types";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
+import "./LightTooltip.css";
 
-const LightTooltip = styled(({ className, ...props }) => (
-  <Tooltip {...props} classes={{ popper: className }} />
-))(() => ({
-  [`& .${tooltipClasses.tooltip}`]: {
-    backgroundColor: "#fff",
-    color: "rgba(0, 0, 0, 0.87)",
-    boxShadow: "rgba(0, 0, 0, 0.35) 1px 1px 15px",
-    fontSize: 12,
-  },
-}));
+export default function LightTooltip({
+  title,
+  children,
+  placement = "bottom",
+}) {
+  const id = useId();
 
-export default LightTooltip;
+  return (
+    <OverlayTrigger
+      placement={placement}
+      overlay={
+        <Tooltip id={id} className="light-tooltip">
+          {title}
+        </Tooltip>
+      }
+    >
+      <span className="d-inline-flex align-items-center">{children}</span>
+    </OverlayTrigger>
+  );
+}
+
+LightTooltip.propTypes = {
+  children: PropTypes.node.isRequired,
+  placement: PropTypes.string,
+  title: PropTypes.node.isRequired,
+};

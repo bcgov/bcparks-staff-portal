@@ -2,29 +2,31 @@ import PropTypes from "prop-types";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import "./Button.css";
 
-export const Button = ({
+export function Button({
   hasLoader,
   onClick,
   label,
   styling,
   disabled,
   testId,
-}) => (
-  <button
-    className={`bcgov-button ${styling}`}
-    onClick={onClick}
-    type="button"
-    disabled={disabled}
-    data-test-id={testId}
-  >
-    {label}
-    {hasLoader && (
-      <div className="bcgov-loader-show">
-        <Loader />
-      </div>
-    )}
-  </button>
-);
+}) {
+  return (
+    <button
+      className={`bcgov-button ${styling}`}
+      onClick={onClick}
+      type="button"
+      disabled={disabled}
+      data-test-id={testId}
+    >
+      {label}
+      {hasLoader && (
+        <div className="bcgov-loader-show">
+          <Loader />
+        </div>
+      )}
+    </button>
+  );
+}
 
 Button.propTypes = {
   onClick: PropTypes.func,

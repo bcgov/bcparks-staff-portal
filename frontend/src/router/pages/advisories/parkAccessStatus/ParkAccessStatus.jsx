@@ -7,34 +7,52 @@ import moment from "moment";
 import { exportPdf } from "@/lib/advisories/utils/ExportPdfUtil";
 import "./ParkAccessStatus.scss";
 
+function exportCsvFile(columns, rows, fileName) {
+  const headers = columns
+    .filter((c) => c.field)
+    .map((c) => c.title ?? c.field)
+    .join(",");
+  const body = rows
+    .map((row) =>
+      columns
+        .filter((c) => c.field)
+        .map((c) => JSON.stringify(row[c.field] ?? ""))
+        .join(","),
+    )
+    .join("\n");
+  const blob = new Blob([`${headers}\n${body}`], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+
+  a.href = url;
+  a.download = `${fileName}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function formatDate(date) {
+  return moment(date).isValid() ? moment(date).format("YYYY-MM-DD") : null;
+}
+async function fetchParkAccessStatus() {
+  const response = await cmsAxios.get(
+    `/protected-areas/status?limit=-1&sort=protectedAreaName`,
+  );
+
+  return response.data.map((park) => {
+    park.id = park.orcs;
+    park.managementAreasStr = park.managementAreas.join(", ");
+    park.sectionsStr = park.sections.join(", ");
+    park.regionsStr = park.regions.join(", ");
+    park.fireCentresStr = park.fireCentres.join(", ");
+    park.fireZonesStr = park.fireZones.join(", ");
+    park.naturalResourceDistrictsStr = park.naturalResourceDistricts.join(", ");
+    park.accessStatusEffectiveDate = formatDate(park.accessStatusEffectiveDate);
+    park.campfireBanEffectiveDate = formatDate(park.campfireBanEffectiveDate);
+    return park;
+  });
+}
+
 export default function ParkAccessStatus() {
-  const formatDate = (date) =>
-    moment(date).isValid() ? moment(date).format("YYYY-MM-DD") : null;
-
-  const fetchParkAccessStatus = async ({ queryKey }) => {
-    const response = await cmsAxios.get(
-      `/protected-areas/status?limit=-1&sort=protectedAreaName`,
-    );
-
-    const data = response.data.map((park) => {
-      park.id = park.orcs;
-      park.managementAreasStr = park.managementAreas.join(", ");
-      park.sectionsStr = park.sections.join(", ");
-      park.regionsStr = park.regions.join(", ");
-      park.fireCentresStr = park.fireCentres.join(", ");
-      park.fireZonesStr = park.fireZones.join(", ");
-      park.naturalResourceDistrictsStr =
-        park.naturalResourceDistricts.join(", ");
-      park.accessStatusEffectiveDate = formatDate(
-        park.accessStatusEffectiveDate,
-      );
-      park.campfireBanEffectiveDate = formatDate(park.campfireBanEffectiveDate);
-      return park;
-    });
-
-    return data;
-  };
-
   const STALE_TIME_MILLISECONDS = 10 * 60 * 1000; // 10 minutes
   const { isLoading, data } = useQuery({
     queryKey: ["parkAccessStatus"],
@@ -63,11 +81,18 @@ export default function ParkAccessStatus() {
             options={{
               filtering: true,
               search: true,
-              exportButton: true,
-              exportAllData: true,
-              exportFileName: exportFilename,
-              exportPdf: (columns, data) =>
-                exportPdf(columns, data, title, exportFilename),
+              exportMenu: [
+                {
+                  label: "Export CSV",
+                  exportFunc: (cols, datas) =>
+                    exportCsvFile(cols, datas, exportFilename),
+                },
+                {
+                  label: "Export PDF",
+                  exportFunc: (cols, datas) =>
+                    exportPdf(cols, datas, title, exportFilename),
+                },
+              ],
               pageSize: 50,
               pageSizeOptions: [25, 50, 100],
             }}

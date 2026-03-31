@@ -77,7 +77,6 @@ export default function Error({ error }) {
           again later.
           <br />
           <br />
-          {console.log("error", error)}
           {error.message}
         </p>
       </div>
@@ -85,7 +84,7 @@ export default function Error({ error }) {
   }
 
   return (
-    <main className="advisories-page-styles advisories-styles">
+    <main className="advisories-styles">
       <div className="page" data-testid="Error">
         <div className="content col-md-8">
           <br />
