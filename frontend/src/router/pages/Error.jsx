@@ -6,7 +6,7 @@ import LegacyErrorPage from "@/router/pages/advisories/error/Error";
 export default function ErrorPage() {
   // Get the error from the route context (errorElement)
   const routeError = useRouteError();
-  const { error: contextError } = useContext(ErrorContext);
+  const { error: contextError } = useContext(ErrorContext) ?? { error: null };
 
   console.error(routeError);
 
