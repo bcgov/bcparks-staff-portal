@@ -121,6 +121,10 @@ export default function Advisory({ mode }) {
   const keycloak = auth.isAuthenticated;
   const keycloakToken = auth.user?.access_token;
 
+  // In "update" mode, track when the original data from the CMS is loaded
+  // to prevent re-fetching
+  const originalDataLoaded = useRef(false);
+
   const { documentId } = useParams();
 
   const query = qs.stringify(
@@ -182,7 +186,7 @@ export default function Advisory({ mode }) {
   }
 
   useEffect(() => {
-    if (mode === "update" && !isLoadingData) {
+    if (mode === "update" && !isLoadingData && !originalDataLoaded.current) {
       if (documentId) {
         setAdvisoryId(documentId);
         cmsAxios
@@ -395,6 +399,7 @@ export default function Advisory({ mode }) {
             }
             setLinkIds();
             setIsLoadingPage(false);
+            originalDataLoaded.current = true;
           })
           .catch((error) => {
             console.error(
