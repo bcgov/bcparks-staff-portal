@@ -8,8 +8,8 @@ export default function PaginationControls({
   currentPage,
   totalItems,
   onPageChange,
-  pageSizeLabel,
-  pageSizeOptions,
+  pageSizeLabel = "Rows per page",
+  pageSizeOptions = [5, 10, 25, 50, 100],
 }) {
   return (
     totalItems > 0 && (
@@ -50,9 +50,4 @@ PaginationControls.propTypes = {
   onPageChange: PropTypes.func.isRequired,
   pageSizeLabel: PropTypes.string,
   pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
-};
-
-PaginationControls.defaultProps = {
-  pageSizeLabel: "Rows per page",
-  pageSizeOptions: [5, 10, 25, 50, 100],
 };
