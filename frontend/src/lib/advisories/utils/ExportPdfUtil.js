@@ -38,7 +38,11 @@ async function getLogoDataUrl() {
 }
 
 export async function exportPdf(columns, data, reportTitle, exportFilename) {
-  if (typeof window !== "undefined") {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  try {
     const today = moment(new Date()).format("YYYY-MM-DD");
     const logoDataUrl = await getLogoDataUrl();
     const unit = "pt";
@@ -69,5 +73,10 @@ export async function exportPdf(columns, data, reportTitle, exportFilename) {
     pdfDocument.setFontSize(10);
     autoTable(pdfDocument, content);
     pdfDocument.save(exportFilename);
+
+    return true;
+  } catch (error) {
+    console.error("Failed to export PDF", error);
+    return false;
   }
 }
