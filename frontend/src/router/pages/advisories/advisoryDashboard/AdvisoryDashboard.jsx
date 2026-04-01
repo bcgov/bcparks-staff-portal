@@ -663,16 +663,15 @@ export default function AdvisoryDashboard() {
         field: "id",
         filtering: false,
         headerStyle: {
-          width: 10,
-          maxWidth: 10,
-          minWidth: 10,
+          width: 30,
+          maxWidth: 30,
+          minWidth: 30,
         },
         cellStyle: {
-          width: 10,
-          maxWidth: 10,
-          minWidth: 10,
-          textAlign: "right",
-          paddingRight: "10px",
+          width: 30,
+          maxWidth: 30,
+          minWidth: 30,
+          textAlign: "left",
         },
         render: () => (
           <button

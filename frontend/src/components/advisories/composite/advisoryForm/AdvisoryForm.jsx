@@ -8,7 +8,7 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation, faXmark } from "@fa-kit/icons/classic/regular";
-import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
+import { faCheck, faCircleQuestion } from "@fa-kit/icons/classic/solid";
 import Select from "react-select";
 import {
   validateOptionalNumber,
@@ -488,6 +488,9 @@ export default function AdvisoryForm({
                     }
                     variant="outline-secondary"
                   >
+                    {urgency === u.value && (
+                      <FontAwesomeIcon icon={faCheck} className="me-1" />
+                    )}
                     {u.label}
                   </Btn>
                 ))}
@@ -1184,6 +1187,9 @@ export default function AdvisoryForm({
                 }
                 variant="outline-secondary"
               >
+                {isSafetyRelated === true && (
+                  <FontAwesomeIcon icon={faCheck} className="me-1" />
+                )}
                 Yes
               </Btn>
               <Btn
@@ -1193,6 +1199,9 @@ export default function AdvisoryForm({
                 }
                 variant="outline-secondary"
               >
+                {isSafetyRelated === false && (
+                  <FontAwesomeIcon icon={faCheck} className="me-1" />
+                )}
                 No
               </Btn>
             </ButtonGroup>
