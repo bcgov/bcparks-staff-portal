@@ -193,11 +193,12 @@ export function getMatchingAreas(parkAreas, filters) {
       !filters.featureTypes.some(
         // Check parkAreas.featureTypes
         (filterFeatureType) => {
-          // If the parkArea doesn't have a featureType (if its features have varying types),
-          // Exclude it from the results
-          if (!parkArea.featureType) return false;
+          // If the parkArea doesn't have any featureTypes, exclude it from the results
+          if (!parkArea.featureTypes.length) return false;
 
-          return parkArea.featureType.id === filterFeatureType.id;
+          return parkArea.featureTypes.some(
+            (featureType) => featureType.id === filterFeatureType.id,
+          );
         },
       )
     ) {

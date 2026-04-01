@@ -246,8 +246,11 @@ function buildParkAreaOutput(parkArea) {
     // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
     .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
 
-  // Use the featureType of the first feature as the parkArea's featureType
-  const featureType = parkArea.features[0].featureType.get({ plain: true });
+  // Get a distinct list of feature types in the park area for filtering purposes
+  const featureTypes = _.uniqBy(
+    parkArea.features.map((feature) => feature.featureType),
+    "id",
+  );
 
   // get a current season
   const currentSeason = buildCurrentSeasonOutput(parkArea.seasons);
@@ -261,7 +264,7 @@ function buildParkAreaOutput(parkArea) {
     features: parkArea.features.map((feature) =>
       buildFeatureOutput(feature, parkArea.seasons, false),
     ),
-    featureType: featureType ?? null,
+    featureTypes,
     seasons: parkArea.seasons,
     currentSeason,
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
