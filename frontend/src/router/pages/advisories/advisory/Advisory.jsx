@@ -118,7 +118,7 @@ export default function Advisory({ mode }) {
 
   const auth = useAuth();
   const initialized = !auth.isLoading;
-  const keycloak = auth.isAuthenticated;
+  const isAuthenticated = auth.isAuthenticated;
   const keycloakToken = auth.user?.access_token;
 
   // In "update" mode, track when the original data from the CMS is loaded
@@ -154,7 +154,7 @@ export default function Advisory({ mode }) {
   );
 
   useEffect(() => {
-    if (initialized && keycloak) {
+    if (initialized && isAuthenticated) {
       Promise.resolve(getBusinessHours(cmsData, setCmsData)).then((res) => {
         setIsAfterHours(calculateAfterHours(res));
       });
@@ -166,7 +166,7 @@ export default function Advisory({ mode }) {
       );
     }
   }, [
-    keycloak,
+    isAuthenticated,
     initialized,
     setIsStatHoliday,
     setIsAfterHours,
@@ -471,7 +471,7 @@ export default function Advisory({ mode }) {
   ]);
 
   useEffect(() => {
-    if (initialized && keycloak) {
+    if (initialized && isAuthenticated) {
       const approver = hasAnyRole(["approver"]);
 
       setIsApprover(approver);
@@ -681,7 +681,7 @@ export default function Advisory({ mode }) {
     setUrgency,
     setToError,
     setError,
-    keycloak,
+    isAuthenticated,
     initialized,
     auth.user?.profile?.name,
     setIsLoadingData,
