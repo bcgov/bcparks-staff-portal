@@ -118,7 +118,7 @@ export default function Advisory({ mode }) {
 
   const auth = useAuth();
   const initialized = !auth.isLoading;
-  const keycloak = auth.isAuthenticated ? auth.user : null;
+  const keycloak = auth.isAuthenticated;
   const keycloakToken = auth.user?.access_token;
 
   const { documentId } = useParams();
