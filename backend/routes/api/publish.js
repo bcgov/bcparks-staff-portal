@@ -481,24 +481,30 @@ async function formatParkData(park, season) {
  * Fetches and formats Feature-level data for publishing.
  * @param {Feature} feature The Feature object for the season
  * @param {Season} season The season object
+ * @param {boolean} includeGateInfo Whether to include gate info (default: false)
  * @returns {Object|null} Formatted feature data for publishing, or null to skip publishing
  */
-async function formatFeatureData(feature, season) {
+async function formatFeatureData(feature, season, includeGateInfo = false) {
   // Return null to skip publishing if the ORCS Feature Number is missing
   // We can't connect to anything in Strapi without this key
   if (!feature.strapiOrcsFeatureNumber) return null;
 
   try {
     const dateRanges = await formatDateRanges(feature, season);
-    const gateInfo = formatGateInfo(feature.gateDetails);
 
     // Return formatted Feature data
-    return {
+    const featureData = {
       orcsFeatureNumber: feature.strapiOrcsFeatureNumber,
       operatingYear: season.operatingYear,
       dateRanges,
-      gateInfo,
     };
+
+    // Only include gate info for independent features (not in park area)
+    if (includeGateInfo) {
+      featureData.gateInfo = formatGateInfo(feature.gateDetails);
+    }
+
+    return featureData;
   } catch (error) {
     console.error("Error formatting date ranges for feature:", error);
     return null;
@@ -536,6 +542,7 @@ async function formatParkAreaData(parkArea, season) {
   const formattedFeatures = [];
 
   for (const feature of features) {
+    // Features in park areas should not have gate info
     const featureData = await formatFeatureData(feature, season);
 
     // If the formatting function returned null for any reason,
@@ -648,9 +655,11 @@ router.post(
         publishedSeasonIds.push(season.id);
       } else if (publishableEntity.type === "feature") {
         // If the season is for a Feature, fetch the Feature's dates and format the data
+        // Independent features (not in park area) should include gate info
         const featureData = await formatFeatureData(
           publishableEntity.feature,
           season,
+          true,
         );
 
         // If the formatting function returned null for any reason,

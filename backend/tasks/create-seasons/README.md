@@ -35,13 +35,14 @@ This script creates Season records for Parks, ParkAreas, and Features for a spec
 
 ## How to run
 
+**Usage:** The script requires an operating year as a command-line argument.
+
 From your project root, run:
 
 ```sh
+# Example: create seasons for the 2027 operating year
 node tasks/create-seasons/create-seasons.js 2027
 ```
-
-**Usage:** The script requires an operating year as a command-line argument.
 
 ## Output
 
