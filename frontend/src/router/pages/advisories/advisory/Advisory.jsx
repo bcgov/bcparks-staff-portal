@@ -118,8 +118,12 @@ export default function Advisory({ mode }) {
 
   const auth = useAuth();
   const initialized = !auth.isLoading;
-  const keycloak = auth.isAuthenticated ? auth.user : null;
+  const isAuthenticated = auth.isAuthenticated;
   const keycloakToken = auth.user?.access_token;
+
+  // In "update" mode, track when the original data from the CMS is loaded
+  // to prevent re-fetching
+  const originalDataLoaded = useRef(false);
 
   const { documentId } = useParams();
 
@@ -149,8 +153,14 @@ export default function Advisory({ mode }) {
     },
   );
 
+  // Reset originalDataLoaded to false when documentId or mode changes
+  // (if navigating to a different advisory or changing editing modes)
   useEffect(() => {
-    if (initialized && keycloak) {
+    originalDataLoaded.current = false;
+  }, [documentId, mode]);
+
+  useEffect(() => {
+    if (initialized && isAuthenticated) {
       Promise.resolve(getBusinessHours(cmsData, setCmsData)).then((res) => {
         setIsAfterHours(calculateAfterHours(res));
       });
@@ -162,7 +172,7 @@ export default function Advisory({ mode }) {
       );
     }
   }, [
-    keycloak,
+    isAuthenticated,
     initialized,
     setIsStatHoliday,
     setIsAfterHours,
@@ -182,7 +192,7 @@ export default function Advisory({ mode }) {
   }
 
   useEffect(() => {
-    if (mode === "update" && !isLoadingData) {
+    if (mode === "update" && !isLoadingData && !originalDataLoaded.current) {
       if (documentId) {
         setAdvisoryId(documentId);
         cmsAxios
@@ -395,6 +405,7 @@ export default function Advisory({ mode }) {
             }
             setLinkIds();
             setIsLoadingPage(false);
+            originalDataLoaded.current = true;
           })
           .catch((error) => {
             console.error(
@@ -466,7 +477,7 @@ export default function Advisory({ mode }) {
   ]);
 
   useEffect(() => {
-    if (initialized && keycloak) {
+    if (initialized && isAuthenticated) {
       const approver = hasAnyRole(["approver"]);
 
       setIsApprover(approver);
@@ -676,7 +687,7 @@ export default function Advisory({ mode }) {
     setUrgency,
     setToError,
     setError,
-    keycloak,
+    isAuthenticated,
     initialized,
     auth.user?.profile?.name,
     setIsLoadingData,
