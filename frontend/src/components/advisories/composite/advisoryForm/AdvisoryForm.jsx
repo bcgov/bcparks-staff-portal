@@ -660,6 +660,8 @@ export default function AdvisoryForm({
                         onBlur={() =>
                           validateLink(l, idx, "type", setLinkTypeErrors)
                         }
+                        menuPosition="fixed"
+                        menuPortalTarget={document.body}
                       />
                       {renderHelperText(
                         linkTypeErrors[idx] && "Please provide a link type",
