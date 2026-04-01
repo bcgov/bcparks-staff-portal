@@ -34,7 +34,7 @@ export default async function importStrapiParkAreas(transaction = null) {
 
     // Validate Park Areas in DOOT and Strapi
     const strapiValid = await validateStrapiParkAreas(strapiParkAreas);
-    const dootValid = await validateDootParkAreas();
+    const dootValid = await validateDootParkAreas(transaction);
 
     let useSafeMode = false;
 

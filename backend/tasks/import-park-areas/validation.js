@@ -6,7 +6,7 @@ import { ParkArea } from "../../models/index.js";
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
-export async function validateDootParkAreas() {
+export async function validateDootParkAreas(transaction = null) {
   let isValid = true;
 
   // Make sure all records DOOT have a strapiOrcsAreaNumber in the format #-# (e.g. "1234-1")
@@ -17,6 +17,7 @@ export async function validateDootParkAreas() {
         { strapiOrcsAreaNumber: { [Op.notRegexp]: "^[0-9]+-[0-9]+$" } },
       ],
     },
+    transaction,
   });
 
   if (invalidParkAreas.length > 0) {

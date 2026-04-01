@@ -6,7 +6,7 @@ import { Feature } from "../../models/index.js";
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
-export async function validateDootFeatures() {
+export async function validateDootFeatures(transaction = null) {
   let isValid = true;
 
   // Validate DOOT Features to make sure all records have a strapiOrcsFeatureNumber in the
@@ -18,6 +18,7 @@ export async function validateDootFeatures() {
         { strapiOrcsFeatureNumber: { [Op.notRegexp]: "^[0-9]+-[0-9]+$" } },
       ],
     },
+    transaction,
   });
 
   if (invalidFeatures.length > 0) {
