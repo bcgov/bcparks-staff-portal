@@ -10,7 +10,7 @@ import { Alert } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
 
-export default function MainLayout() {
+export default function MainLayoutPublic() {
   const globalFlashMessage = useFlashMessage();
 
   // Check if the app is running in production
