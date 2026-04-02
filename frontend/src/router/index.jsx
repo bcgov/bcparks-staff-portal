@@ -36,8 +36,8 @@ const RouterConfig = createBrowserRouter([
   // Root path - Advisories portal
   {
     path: "/",
-    // Protect the entire route with the AuthProvider
 
+    // Protect the entire route with the ProtectedRoute component
     element: (
       <ProtectedRoute>
         <ErrorProvider>
@@ -152,7 +152,8 @@ const RouterConfig = createBrowserRouter([
   // /dates/ path - Dates of Operation Tool
   {
     path: "/dates/",
-    // Protect the entire app with the AuthProvider
+
+    // Protect the entire route with the ProtectedRoute component
     element: (
       <ProtectedRoute>
         <AccessControlledRoute
