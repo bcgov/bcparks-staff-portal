@@ -8,22 +8,17 @@ This script creates winter seasons for parks that have winter fee dates (`hasWin
    - Finds all parks where `hasWinterFeeDates = true`
    - Ensures each park has required `publishableId` and `dateableId` (creates them if missing)
 
-2. **Cleans up existing Winter fee DateRanges from regular seasons:**
-   - Finds all regular seasons (`seasonType = "regular"` or `null`) for each park
-   - Removes any Winter fee DateRanges from these regular seasons
-   - Logs the number of DateRanges removed for each park
-
-3. **Creates winter seasons for the specified operating year:**
+2. **Creates winter seasons for the specified operating year:**
    - Creates new seasons with `seasonType = "winter"`
    - Sets `status = "REQUESTED"` and `readyToPublish = true` (requires manual approval)
    - Skips creation if a winter season already exists for the park and year
 
-4. **Creates Winter fee DateRanges in winter seasons:**
+3. **Creates Winter fee DateRanges in winter seasons:**
    - Creates new Winter fee DateRanges linked to the winter seasons
    - Sets `startDate = null` and `endDate = null` (to be filled later by park staff)
    - Uses the "Winter fee" DateType from the database
 
-5. **All operations are performed inside a transaction** for safety and atomicity.
+4. **All operations are performed inside a transaction** for safety and atomicity.
 
 ## How does it find Winter fee DateType?
 
@@ -33,13 +28,14 @@ This script creates winter seasons for parks that have winter fee dates (`hasWin
 
 ## How to run
 
+**Usage:** The script requires an operating year as a command-line argument.
+
 From your project root, run:
 
 ```sh
+# Example: create seasons for the 2027 operating year
 node tasks/create-winter-seasons/create-winter-seasons.js 2027
 ```
-
-**Usage:** The script requires an operating year as a command-line argument.
 
 ## Output
 
@@ -48,7 +44,6 @@ Creating Winter Seasons for 2027
 Found Winter fee DateType: 5
 Found 12 Parks with Winter Fee Dates
 Processing park: Cypress Provincial Park
-Removed 1 Winter fee date ranges from regular seasons for Cypress Provincial Park
 Created winter season for Cypress Provincial Park (Publishable 123) - 2027
 Created winter fee date range for Cypress Provincial Park (Season 456)
 Processing park: Mount Seymour Provincial Park
@@ -61,7 +56,6 @@ Added 0 missing Park Publishables
 Added 0 missing Park Dateables
 Added 11 new Winter Seasons
 Added 11 new Winter Fee DateRanges
-Removed 15 Winter Fee DateRanges from regular seasons
 Committing transaction...
 Done
 ```

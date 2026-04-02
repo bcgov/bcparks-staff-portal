@@ -78,6 +78,7 @@ async function fixDateRangesForFeatureParkAreaChanges(
     attributes: [
       [col("dateRanges.dateableId"), "dateableId"],
       ["id", "seasonId"],
+      ["seasonType", "seasonType"],
       [col("feature.parkArea.publishableId"), "featureParkAreaPublishableId"],
       [col("parkArea.publishableId"), "seasonParkAreaPublishableId"],
     ],
@@ -134,13 +135,15 @@ async function fixDateRangesForFeatureParkAreaChanges(
   );
 
   for (const row of results) {
-    const { dateableId, seasonId, featureParkAreaPublishableId } = row;
+    const { dateableId, seasonId, seasonType, featureParkAreaPublishableId } =
+      row;
 
     // Find the target Season
     const targetSeason = await Season.findOne({
       where: {
         operatingYear,
         publishableId: featureParkAreaPublishableId,
+        seasonType,
       },
       include: [
         {

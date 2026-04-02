@@ -13,7 +13,7 @@ import {
 } from "../../models/index.js";
 import { Op } from "sequelize";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
-import * as DATE_TYPE from "../../constants/dateType.js"
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 // Functions
 // finds dateableId for a given park and "Park gate open" dateType
@@ -77,12 +77,11 @@ export async function createDateRangeAnnualEntries() {
     const parkOperationIsAnnualByOrcs = {};
 
     for (const parkOperation of parkOperationData.items) {
-      const orcs =
-        parkOperation.attributes?.protectedArea?.data?.attributes?.orcs;
+      const orcs = parkOperation?.protectedArea?.orcs;
 
       if (orcs) {
         parkOperationIsAnnualByOrcs[orcs] =
-          parkOperation.attributes.isDateRangeAnnual ?? false;
+          parkOperation.isDateRangeAnnual ?? false;
       }
     }
 

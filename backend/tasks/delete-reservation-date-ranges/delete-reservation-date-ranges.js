@@ -52,7 +52,7 @@ async function deleteReservationDateRanges(transaction = null) {
 
     // Group by feature (dateableId)
     const dateRangeIds = [];
-    const grouped = _.groupBy(dateRanges, 'dateableId');
+    const grouped = _.groupBy(dateRanges, "dateableId");
 
     Object.values(grouped).forEach((ranges) => {
       // Find all dateRanges for operating year 2026

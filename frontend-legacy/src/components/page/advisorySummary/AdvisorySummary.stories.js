@@ -1,6 +1,6 @@
 /* eslint-disable */
-import React from 'react';
-import { storiesOf } from '@storybook/react';
-import AdvisorySummary from './AdvisorySummary';
+import React from "react";
+import { storiesOf } from "@storybook/react";
+import AdvisorySummary from "./AdvisorySummary";
 
-storiesOf('AdvisorySummary', module).add('default', () => <AdvisorySummary />);
+storiesOf("AdvisorySummary", module).add("default", () => <AdvisorySummary />);

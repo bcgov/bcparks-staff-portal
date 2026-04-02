@@ -1,13 +1,13 @@
-import React from 'react';
-import { render, screen } from '@testing-library/react';
-import '@testing-library/jest-dom/extend-expect';
-import AdvisoryLink from './AdvisoryLink';
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import "@testing-library/jest-dom/extend-expect";
+import AdvisoryLink from "./AdvisoryLink";
 
-describe('<AdvisoryLink />', () => {
-  test('it should mount', () => {
+describe("<AdvisoryLink />", () => {
+  test("it should mount", () => {
     render(<AdvisoryLink />);
-    
-    const advisoryLink = screen.getByTestId('AdvisoryLink');
+
+    const advisoryLink = screen.getByTestId("AdvisoryLink");
 
     expect(advisoryLink).toBeInTheDocument();
   });

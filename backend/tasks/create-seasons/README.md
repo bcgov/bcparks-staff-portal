@@ -5,33 +5,28 @@ This script creates Season records for Parks, ParkAreas, and Features for a spec
 ## What does the script do?
 
 1. **Creates Seasons for all Parks with Features:**
-
    - Finds all parks that have at least one active feature
    - Ensures each park has required `publishableId` and `dateableId` (creates them if missing)
    - Creates a new Season record for the specified operating year
    - Creates blank Tier 2 date ranges for parks that had them in the previous year
 
 2. **Creates Seasons for all ParkAreas with Features:**
-
    - Finds all park areas that contain at least one active feature
    - Ensures each park area has required `publishableId` and `dateableId` (creates them if missing)
    - Creates a new Season record for the specified operating year
 
 3. **Creates Seasons for all Features without a ParkArea:**
-
    - Finds all active features that are not part of a park area
    - Ensures each feature has required `publishableId` and `dateableId` (creates them if missing)
    - Creates a new Season record for the specified operating year
 
 4. **Creates next-year Seasons for Group Camping and Picnic Shelter Features:**
-
    - Finds all Group Camping and Picnic Shelter features in the BC Parks reservation system
    - Creates seasons for the **following year** (operating year + 1)
    - Creates seasons for parent ParkAreas if the feature belongs to one
    - Creates seasons for the feature itself if it doesn't belong to a ParkArea
 
 5. **Populates DateRanges for new seasons:**
-
    - Copies annual date ranges from the previous year (where `isDateRangeAnnual = true`)
    - Creates blank date ranges for all new seasons
    - Populates date ranges for both the current year and next year
@@ -40,13 +35,14 @@ This script creates Season records for Parks, ParkAreas, and Features for a spec
 
 ## How to run
 
+**Usage:** The script requires an operating year as a command-line argument.
+
 From your project root, run:
 
 ```sh
+# Example: create seasons for the 2027 operating year
 node tasks/create-seasons/create-seasons.js 2027
 ```
-
-**Usage:** The script requires an operating year as a command-line argument.
 
 ## Output
 
@@ -113,4 +109,3 @@ Done
 - [`populate-date-ranges/populate-annual-date-ranges.js`](../populate-date-ranges/populate-annual-date-ranges.js) - Copies annual date ranges from previous year
 - [`populate-date-ranges/populate-blank-date-ranges.js`](../populate-date-ranges/populate-blank-date-ranges.js) - Creates blank date ranges for new seasons
 - [`create-winter-seasons/`](../create-winter-seasons/README.md) - Creates winter seasons for parks with winter fee dates
-- [`create-gate-details/`](../create-gate-details/README.md) - Creates gate details for park seasons

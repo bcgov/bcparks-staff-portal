@@ -131,18 +131,18 @@ class ImagePruner {
   async #deleteImageTags() {
     if (this.dryRun) {
       console.log(
-        "This is only a dryrun, nothing will be removed.  Set dry run env to false to perform actual deletions.\n"
+        "This is only a dryrun, nothing will be removed.  Set dry run env to false to perform actual deletions.\n",
       );
     }
     console.log(
-      `${this.imageTagsToDelete.length} images tags matched pruned criteria\n`
+      `${this.imageTagsToDelete.length} images tags matched pruned criteria\n`,
     );
 
     for (const tag of this.imageTagsToDelete) {
       console.log(
         `${this.dryRun ? "--DRY-RUN--" : ""}Deleting ${tag.imageName}:${
           tag.tagName
-        }`
+        }`,
       );
       if (!this.dryRun) {
         try {

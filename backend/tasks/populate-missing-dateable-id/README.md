@@ -6,7 +6,6 @@ It does **not** create new `DateRange` records—only updates those where `datea
 ## What does the script do?
 
 1. **For each `DateRange` with a missing `dateableId`:**
-
    - Looks up the associated `Season` using `seasonId`.
    - Uses the `publishableId` from the `Season` to find the corresponding `dateableId` from the `Park`, `ParkArea`, or `Feature` tables.
    - Updates the `DateRange` with the found `dateableId`.

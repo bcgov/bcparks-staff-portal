@@ -5,11 +5,9 @@ This script populates the `AccessGroup`, `AccessGroupPark`, `User`, and `UserAcc
 ## What does the script do?
 
 1. **Cleanup Existing Data (optional):**
-
    - Deletes all records from `AccessGroup`, `AccessGroupPark`, and `UserAccessGroup` tables before populating new data.
 
 2. **For each agreement in `agreements-with-usernames.json`:**
-
    - **Creates (or updates) an AccessGroup** using the agreement's `id`, and updating the name if it has changed.
    - **Finds Parks** by their ORCS codes and links them to the AccessGroup via `AccessGroupPark`.
    - **Creates (or finds) Users** using usernames, emails, and names from the agreement data. Skips users without a username.

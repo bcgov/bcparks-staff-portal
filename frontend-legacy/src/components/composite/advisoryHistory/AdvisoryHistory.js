@@ -14,10 +14,10 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
     if (initialized && keycloak && advisoryNumber) {
       cmsAxios
         .get(`public-advisory-audits/history/${advisoryNumber}`, {
-          headers: { Authorization: `Bearer ${keycloak.token}` }
+          headers: { Authorization: `Bearer ${keycloak.token}` },
         })
         .then((res) => {
-          const advisories = res.data;// for info: data obj - just once
+          const advisories = res.data; // for info: data obj - just once
           const advisoriesHistory = [];
           if (advisories && advisories.length > 0) {
             advisories.forEach((ad) => {
@@ -26,7 +26,7 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.modifiedBy,
                   submittedTime: moment(ad.modifiedDate).format(
-                    "MMMM DD, yyyy hh:mm A"
+                    "MMMM DD, yyyy hh:mm A",
                   ),
                   displayText: "Published by",
                   dateToCompare: moment(ad.modifiedDate).valueOf(),
@@ -40,7 +40,7 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.submittedBy,
                   submittedTime: moment(ad.createdDate).format(
-                    "MMMM DD, yyyy hh:mm A"
+                    "MMMM DD, yyyy hh:mm A",
                   ),
                   displayText: "Requested by",
                   dateToCompare: moment(ad.createdDate).valueOf(),
@@ -51,7 +51,7 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.modifiedBy,
                   submittedTime: moment(ad.modifiedDate).format(
-                    "MMMM DD, yyyy hh:mm A"
+                    "MMMM DD, yyyy hh:mm A",
                   ),
                   displayText: "Updated by",
                   dateToCompare: moment(ad.modifiedDate).valueOf(),
@@ -67,13 +67,13 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
   }, [advisoryNumber, initialized, keycloak, setAdvisoryHistory]);
   return (
     <div className="ad-history-container px-3">
-      {advisoryHistory.length > 0 && (
+      {advisoryHistory.length > 0 &&
         advisoryHistory.map((ah, index) => (
           <div key={index} className="row">
-            Revision number {ah.revisionNumber} {ah.displayText.toLowerCase()} {ah.submitter} at {ah.submittedTime}
+            Revision number {ah.revisionNumber} {ah.displayText.toLowerCase()}{" "}
+            {ah.submitter} at {ah.submittedTime}
           </div>
-        ))
-      )}
+        ))}
     </div>
   );
 }

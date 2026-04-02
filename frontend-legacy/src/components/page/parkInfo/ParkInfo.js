@@ -24,7 +24,7 @@ import SwitchButton from "../../base/switchButton/SwitchButton";
 import TabPanel from "../../base/tabPanel/TabPanel";
 import HTMLArea from "../../base/HTMLArea/HTMLArea";
 
-const qs = require('qs');
+const qs = require("qs");
 
 export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
   const [isLoading, setIsLoading] = useState(true);
@@ -52,32 +52,35 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
   useEffect(() => {
     let isMounted = true;
 
-    const query = qs.stringify({
-      populate: [
-        'managementAreas',
-        'managementAreas.region',
-        'managementAreas.section',
-        'parkActivities',
-        'parkActivities.activityType',
-        'parkActivities.protectedArea',
-        'parkActivities.site',
-        'parkFacilities',
-        'parkFacilities.facilityType',
-        'parkFacilities.protectedArea',
-        'parkFacilities.site',
-        'parkCampingTypes',
-        'parkCampingTypes.campingType',
-        'parkCampingTypes.protectedArea',
-        'parkCampingTypes.site',
-      ],
-      filters: {
-        orcs: {
-          $eq: `${id}`,
+    const query = qs.stringify(
+      {
+        populate: [
+          "managementAreas",
+          "managementAreas.region",
+          "managementAreas.section",
+          "parkActivities",
+          "parkActivities.activityType",
+          "parkActivities.protectedArea",
+          "parkActivities.site",
+          "parkFacilities",
+          "parkFacilities.facilityType",
+          "parkFacilities.protectedArea",
+          "parkFacilities.site",
+          "parkCampingTypes",
+          "parkCampingTypes.campingType",
+          "parkCampingTypes.protectedArea",
+          "parkCampingTypes.site",
+        ],
+        filters: {
+          orcs: {
+            $eq: `${id}`,
+          },
         },
       },
-    }, {
+      {
         encodeValuesOnly: true,
-    })
+      },
+    );
 
     if (initialized && keycloak && loadParkInfo) {
       Promise.all([
@@ -87,73 +90,70 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       ])
         .then((res) => {
           const protectedAreaData = res[0].data.data[0];
-          if (protectedAreaData.attributes.managementAreas.data.length > 0) {
-            const managementArea = protectedAreaData.attributes.managementAreas.data[0].attributes;
+          if (protectedAreaData.managementAreas?.length > 0) {
+            const managementArea = protectedAreaData.managementAreas[0];
             protectedAreaData.managementAreaName =
               managementArea.managementAreaName;
             const region = cmsData.regions.filter(
-              (r) => r.id === managementArea.region.data.id
+              (r) => r.documentId === managementArea.region.documentId,
             );
             if (region.length > 0) {
               protectedAreaData.regionName = region[0].regionName;
             }
             const section = cmsData.sections.filter(
-              (s) => s.id === managementArea.section.data.id
+              (s) => s.documentId === managementArea.section.documentId,
             );
             if (section.length > 0) {
               protectedAreaData.sectionName = section[0].sectionName;
             }
           }
-          if (protectedAreaData.attributes.parkActivities.data) {
-            const activities = [];
-            protectedAreaData.attributes.parkActivities.data.map((activity) => {
-              return activities.push({
-                id: activity.id,
-                description: activity.attributes.description,
-                name: activity.attributes.name,
-                isActivityOpen: activity.attributes.isActivityOpen,
-                isActive: activity.attributes.isActive,
-                protectedArea: activity.attributes.protectedArea.data,
-                site: activity.attributes.site.data,
-                activityType: activity.attributes.activityType.data,
-              });
-            });
+          if (protectedAreaData.parkActivities?.length > 0) {
+            const activities = protectedAreaData.parkActivities.map(
+              (activity) => ({
+                id: activity.documentId,
+                description: activity.description,
+                name: activity.name,
+                isActivityOpen: activity.isActivityOpen,
+                isActive: activity.isActive,
+                protectedArea: activity.protectedArea,
+                site: activity.site,
+                activityType: activity.activityType,
+              }),
+            );
             if (isMounted) {
               setParkActivities([...activities]);
             }
           }
-          if (protectedAreaData.attributes.parkFacilities.data) {
-            const facilities = [];
-            protectedAreaData.attributes.parkFacilities.data.map((facility) => {
-              return facilities.push({
-                id: facility.id,
-                description: facility.attributes.description,
-                name: facility.attributes.name,
-                isFacilityOpen: facility.attributes.isFacilityOpen,
-                isActive: facility.attributes.isActive,
-                protectedArea: facility.attributes.protectedArea.data,
-                site: facility.attributes.site.data,
-                facilityType: facility.attributes.facilityType.data,
-              });
-            });
+          if (protectedAreaData.parkFacilities?.length > 0) {
+            const facilities = protectedAreaData.parkFacilities.map(
+              (facility) => ({
+                id: facility.documentId,
+                description: facility.description,
+                name: facility.name,
+                isFacilityOpen: facility.isFacilityOpen,
+                isActive: facility.isActive,
+                protectedArea: facility.protectedArea,
+                site: facility.site,
+                facilityType: facility.facilityType,
+              }),
+            );
             if (isMounted) {
               setParkFacilities([...facilities]);
             }
           }
-          if (protectedAreaData.attributes.parkCampingTypes.data) {
-            const campingTypes = [];
-            protectedAreaData.attributes.parkCampingTypes.data.map((campingType) => {
-              return campingTypes.push({
-                id: campingType.id,
-                description: campingType.attributes.description,
-                name: campingType.attributes.name,
-                isCampingOpen: campingType.attributes.isCampingOpen,
-                isActive: campingType.attributes.isActive,
-                protectedArea: campingType.attributes.protectedArea.data,
-                site: campingType.attributes.site.data,
-                campingType: campingType.attributes.campingType.data,
-              });
-            });
+          if (protectedAreaData.parkCampingTypes?.length > 0) {
+            const campingTypes = protectedAreaData.parkCampingTypes.map(
+              (campingType) => ({
+                id: campingType.documentId,
+                description: campingType.description,
+                name: campingType.name,
+                isCampingOpen: campingType.isCampingOpen,
+                isActive: campingType.isActive,
+                protectedArea: campingType.protectedArea,
+                site: campingType.site,
+                campingType: campingType.campingType,
+              }),
+            );
             if (isMounted) {
               setParkCampingTypes([...campingTypes]);
             }
@@ -192,7 +192,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     setLoadParkInfo,
     setParkActivities,
     setParkFacilities,
-    setParkCampingTypes
+    setParkCampingTypes,
   ]);
 
   const handleTabChange = (event, val) => {
@@ -202,16 +202,16 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push('/advisories');
+        history.push("/advisories");
         break;
       case 1:
-        history.push('/park-access-status');
+        history.push("/park-access-status");
         break;
       case 2:
-        history.push('/activities-and-facilities');
+        history.push("/activities-and-facilities");
         break;
       default:
-        history.push('/');
+        history.push("/");
     }
   };
 
@@ -221,7 +221,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       setExpandedActivities([...currentActivities]);
     } else {
       const currentActivities = expandedActivities.filter(
-        (a) => a !== activityId
+        (a) => a !== activityId,
       );
       setExpandedActivities([...currentActivities]);
     }
@@ -234,18 +234,18 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
 
   const cancelEditActivityDesc = (activityId) => {
     const currentActivity = parkActivities.filter(
-      (a) => a.id === activityId
+      (a) => a.id === activityId,
     )[0];
-    const unchangedActivity = protectedArea.attributes.parkActivities.data.filter(
-      (a) => a.id === activityId
+    const unchangedActivity = protectedArea.parkActivities.filter(
+      (a) => a.documentId === activityId,
     )[0];
-    currentActivity.description = unchangedActivity.attributes.description;
+    currentActivity.description = unchangedActivity.description;
     finishEditActivityDesc(activityId, true);
   };
 
   const finishEditActivityDesc = (activityId, expand) => {
     const currentActivities = editableActivities.filter(
-      (a) => a !== activityId
+      (a) => a !== activityId,
     );
     setEditableActivities([...currentActivities]);
     handleActivityAccordionChange(null, expand, activityId);
@@ -301,17 +301,21 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
         isActive: activity.isActive,
         modifiedBy: keycloak.tokenParsed.name,
         modifiedDate: moment().toISOString(),
-        protectedArea: activity.protectedArea,
-        site: activity.site,
-        activityType: activity.activityType,
+        protectedArea: activity.protectedArea?.documentId,
+        site: activity.site?.documentId,
+        activityType: activity.activityType?.documentId,
       };
       cmsAxios
-        .put(`park-activities/${activityId}`, {data:parkActivity}, {
-          headers: { Authorization: `Bearer ${keycloak.token}` }
-        })
+        .put(
+          `park-activities/${activityId}`,
+          { data: parkActivity },
+          {
+            headers: { Authorization: `Bearer ${keycloak.token}` },
+          },
+        )
         .then((res) => {
           const currentActivities = submittingActivities.filter(
-            (a) => a !== activityId
+            (a) => a !== activityId,
           );
           setSubmittingActivities([...currentActivities]);
           finishEditActivityDesc(activityId, expand);
@@ -334,7 +338,7 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
       setExpandedFacilities([...currentFacilities]);
     } else {
       const currentFacilities = expandedFacilities.filter(
-        (f) => f !== facilityId
+        (f) => f !== facilityId,
       );
       setExpandedFacilities([...currentFacilities]);
     }
@@ -347,18 +351,18 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
 
   const cancelEditFacilityDesc = (facilityId) => {
     const currentFacility = parkFacilities.filter(
-      (f) => f.id === facilityId
+      (f) => f.id === facilityId,
     )[0];
-    const unchangedFacility = protectedArea.attributes.parkFacilities.data.filter(
-      (f) => f.id === facilityId
+    const unchangedFacility = protectedArea.parkFacilities.filter(
+      (f) => f.documentId === facilityId,
     )[0];
-    currentFacility.description = unchangedFacility.attributes.description;
+    currentFacility.description = unchangedFacility.description;
     finishEditFacilityDesc(facilityId, true);
   };
 
   const finishEditFacilityDesc = (facilityId, expand) => {
     const currentFacilities = editableFacilities.filter(
-      (f) => f !== facilityId
+      (f) => f !== facilityId,
     );
     setEditableFacilities([...currentFacilities]);
     handleFacilityAccordionChange(null, expand, facilityId);
@@ -414,17 +418,21 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
         isActive: facility.isActive,
         modifiedBy: keycloak.tokenParsed.name,
         modifiedDate: moment().toISOString(),
-        protectedArea: facility.protectedArea,
-        site: facility.site,
-        facilityType: facility.facilityType,
+        protectedArea: facility.protectedArea?.documentId,
+        site: facility.site?.documentId,
+        facilityType: facility.facilityType?.documentId,
       };
       cmsAxios
-        .put(`park-facilities/${facilityId}`, {data:parkFacility}, {
-          headers: { Authorization: `Bearer ${keycloak.token}` }
-        })
+        .put(
+          `park-facilities/${facilityId}`,
+          { data: parkFacility },
+          {
+            headers: { Authorization: `Bearer ${keycloak.token}` },
+          },
+        )
         .then((res) => {
           const currentFacilities = submittingFacilities.filter(
-            (f) => f !== facilityId
+            (f) => f !== facilityId,
           );
           setSubmittingFacilities([...currentFacilities]);
           finishEditFacilityDesc(facilityId, expand);
@@ -441,13 +449,17 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
     }
   };
 
-  const handleCampingTypeAccordionChange = (event, isExpanded, campingTypeId) => {
+  const handleCampingTypeAccordionChange = (
+    event,
+    isExpanded,
+    campingTypeId,
+  ) => {
     if (isExpanded) {
       const currentCampingTypes = [...expandedCampingTypes, campingTypeId];
       setExpandedCampingTypes([...currentCampingTypes]);
     } else {
       const currentCampingTypes = expandedCampingTypes.filter(
-        (f) => f !== campingTypeId
+        (f) => f !== campingTypeId,
       );
       setExpandedCampingTypes([...currentCampingTypes]);
     }
@@ -460,18 +472,18 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
 
   const cancelEditCampingTypeDesc = (campingTypeId) => {
     const currentCampingType = parkCampingTypes.filter(
-      (f) => f.id === campingTypeId
+      (f) => f.id === campingTypeId,
     )[0];
-    const unchangedCampingType = protectedArea.attributes.parkCampingTypes.data.filter(
-      (f) => f.id === campingTypeId
+    const unchangedCampingType = protectedArea.parkCampingTypes.filter(
+      (f) => f.documentId === campingTypeId,
     )[0];
-    currentCampingType.description = unchangedCampingType.attributes.description;
+    currentCampingType.description = unchangedCampingType.description;
     finishEditCampingTypeDesc(campingTypeId, true);
   };
 
   const finishEditCampingTypeDesc = (campingTypeId, expand) => {
     const currentCampingTypes = editableCampingTypes.filter(
-      (f) => f !== campingTypeId
+      (f) => f !== campingTypeId,
     );
     setEditableCampingTypes([...currentCampingTypes]);
     handleCampingTypeAccordionChange(null, expand, campingTypeId);
@@ -527,17 +539,21 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
         isActive: campingType.isActive,
         modifiedBy: keycloak.tokenParsed.name,
         modifiedDate: moment().toISOString(),
-        protectedArea: campingType.protectedArea,
-        site: campingType.site,
-        campingTypeType: campingType.campingTypeType,
+        protectedArea: campingType.protectedArea?.documentId,
+        site: campingType.site?.documentId,
+        campingType: campingType.campingType?.documentId,
       };
       cmsAxios
-        .put(`park-camping-types/${campingTypeId}`, {data:parkCampingType}, {
-          headers: { Authorization: `Bearer ${keycloak.token}` }
-        })
+        .put(
+          `park-camping-types/${campingTypeId}`,
+          { data: parkCampingType },
+          {
+            headers: { Authorization: `Bearer ${keycloak.token}` },
+          },
+        )
         .then((res) => {
           const currentCampingTypes = submittingCampingTypes.filter(
-            (f) => f !== campingTypeId
+            (f) => f !== campingTypeId,
           );
           setSubmittingCampingTypes([...currentCampingTypes]);
           finishEditCampingTypeDesc(campingTypeId, expand);
@@ -575,14 +591,14 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
                   label="Back"
                   styling="bcgov-normal-white btn mt-4"
                   onClick={() => {
-                    history.push('/activities-and-facilities');
+                    history.push("/activities-and-facilities");
                   }}
                 />
               </div>
               <br />
               <div className="pt10b30">
                 <div className="container-fluid">
-                  <h3>{protectedArea.attributes.protectedAreaName}</h3>
+                  <h3>{protectedArea.protectedAreaName}</h3>
                   {protectedArea.regionName && (
                     <div>{protectedArea.regionName} Region</div>
                   )}
@@ -608,168 +624,160 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
                     <Tab label="Camping Types" {...a11yProps(2, "park-info")} />
                   </Tabs>
                   <TabPanel value={tabIndex} index={0} label="park-info">
-                    {parkActivities &&
-                      parkActivities.length > 0 && (
-                        <div>
-                          <div className="row pt2b2">
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
-                              Activity
-                            </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
-                              Display
-                            </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
-                              Open
-                            </div>
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
-                              Fees
-                            </div>
-                            <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
-                              Description
-                            </div>
+                    {parkActivities && parkActivities.length > 0 && (
+                      <div>
+                        <div className="row pt2b2">
+                          <div className="col-lg-3 col-md-12 col-12 park-header">
+                            Activity
                           </div>
-                          {parkActivities.map((a) => {
-                            return (
-                              <div
-                                className="row pt2b2"
-                                key={`activity-${a.id}`}
-                              >
-                                <div className="col-lg-3 col-md-12 col-12 park-content">
-                                  {a.name.split(":")[1]}
-                                </div>
-                                <div className="col-lg-1 col-md-12 col-12 park-content">
-                                  <SwitchButton
-                                    checked={a.isActive}
-                                    name={`${a.id}-is-active`}
-                                    inputProps={{
-                                      "aria-label": "active activity",
+                          <div className="col-lg-1 col-md-12 col-12 park-header">
+                            Display
+                          </div>
+                          <div className="col-lg-1 col-md-12 col-12 park-header">
+                            Open
+                          </div>
+                          <div className="col-lg-3 col-md-12 col-12 park-header">
+                            Fees
+                          </div>
+                          <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
+                            Description
+                          </div>
+                        </div>
+                        {parkActivities.map((a) => {
+                          return (
+                            <div className="row pt2b2" key={`activity-${a.id}`}>
+                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                                {a.name.split(":")[1]}
+                              </div>
+                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                                <SwitchButton
+                                  checked={a.isActive}
+                                  name={`${a.id}-is-active`}
+                                  inputProps={{
+                                    "aria-label": "active activity",
+                                  }}
+                                  onChange={() => {
+                                    handleActivityDisplayChange(a.id);
+                                  }}
+                                />
+                              </div>
+                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                                <SwitchButton
+                                  checked={a.isActivityOpen}
+                                  name={`${a.id}-is-open`}
+                                  inputProps={{
+                                    "aria-label": "open activity",
+                                  }}
+                                  onChange={() => {
+                                    handleActivityOpenChange(a.id);
+                                  }}
+                                />
+                              </div>
+                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                                Add a fee
+                              </div>
+                              <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
+                                <div className="wrap-text">
+                                  <Accordion
+                                    onChange={(event, isExpanded) => {
+                                      handleActivityAccordionChange(
+                                        event,
+                                        isExpanded,
+                                        a.id,
+                                      );
                                     }}
-                                    onChange={() => {
-                                      handleActivityDisplayChange(a.id);
-                                    }}
-                                  />
-                                </div>
-                                <div className="col-lg-1 col-md-12 col-12 park-content">
-                                  <SwitchButton
-                                    checked={a.isActivityOpen}
-                                    name={`${a.id}-is-open`}
-                                    inputProps={{
-                                      "aria-label": "open activity",
-                                    }}
-                                    onChange={() => {
-                                      handleActivityOpenChange(a.id);
-                                    }}
-                                  />
-                                </div>
-                                <div className="col-lg-3 col-md-12 col-12 park-content">
-                                  Add a fee
-                                </div>
-                                <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
-                                  <div className="wrap-text">
-                                    <Accordion
-                                      onChange={(event, isExpanded) => {
-                                        handleActivityAccordionChange(
-                                          event,
-                                          isExpanded,
-                                          a.id
-                                        );
-                                      }}
-                                      className="park-desc"
-                                      expanded={expandedActivities.includes(
-                                        a.id
-                                      )}
+                                    className="park-desc"
+                                    expanded={expandedActivities.includes(a.id)}
+                                  >
+                                    <AccordionSummary
+                                      expandIcon={<ExpandMoreIcon />}
+                                      aria-controls="activity-description"
+                                      id="activity-description"
                                     >
-                                      <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls="activity-description"
-                                        id="activity-description"
-                                      >
-                                        {!expandedActivities.includes(a.id) && (
-                                          <HTMLArea>
-                                            {a.description
-                                              ? a.description.length < 100
-                                                ? a.description
-                                                : a.description.substring(
-                                                  0,
-                                                    100
-                                                  ) + "..."
-                                              : "No description"}
-                                          </HTMLArea>
-                                        )}
-                                      </AccordionSummary>
-
-                                      <AccordionDetails className="">
-                                        {!editableActivities.includes(a.id) && (
-                                          <HTMLArea>
-                                            {a.description
+                                      {!expandedActivities.includes(a.id) && (
+                                        <HTMLArea>
+                                          {a.description
+                                            ? a.description.length < 100
                                               ? a.description
-                                              : "No description"}
-                                          </HTMLArea>
-                                        )}
-                                        {editableActivities.includes(a.id) && (
-                                          <TextField
-                                            multiline
-                                            value={a.description || ""}
-                                            onChange={(event) => {
-                                              handleActivityDescriptionChange(
-                                                event,
-                                                a.id
-                                              );
-                                            }}
-                                            className="bcgov-input white-background"
-                                            variant="outlined"
-                                            InputProps={{
-                                              id: `activity-${a.id}-desc`,
-                                              required: false,
-                                              placeholder:
-                                                "Enter activity description",
+                                              : a.description.substring(
+                                                  0,
+                                                  100,
+                                                ) + "..."
+                                            : "No description"}
+                                        </HTMLArea>
+                                      )}
+                                    </AccordionSummary>
+
+                                    <AccordionDetails className="">
+                                      {!editableActivities.includes(a.id) && (
+                                        <HTMLArea>
+                                          {a.description
+                                            ? a.description
+                                            : "No description"}
+                                        </HTMLArea>
+                                      )}
+                                      {editableActivities.includes(a.id) && (
+                                        <TextField
+                                          multiline
+                                          value={a.description || ""}
+                                          onChange={(event) => {
+                                            handleActivityDescriptionChange(
+                                              event,
+                                              a.id,
+                                            );
+                                          }}
+                                          className="bcgov-input white-background"
+                                          variant="outlined"
+                                          InputProps={{
+                                            id: `activity-${a.id}-desc`,
+                                            required: false,
+                                            placeholder:
+                                              "Enter activity description",
+                                          }}
+                                        />
+                                      )}
+                                    </AccordionDetails>
+                                    <AccordionActions>
+                                      {!editableActivities.includes(a.id) && (
+                                        <Button
+                                          label="Edit"
+                                          styling="bcgov-normal-blue btn mt10"
+                                          onClick={() => {
+                                            editActivityDesc(a.id);
+                                          }}
+                                        />
+                                      )}
+                                      {editableActivities.includes(a.id) && (
+                                        <>
+                                          <Button
+                                            label="Cancel"
+                                            styling="bcgov-normal-white btn mt10"
+                                            onClick={() => {
+                                              cancelEditActivityDesc(a.id);
                                             }}
                                           />
-                                        )}
-                                      </AccordionDetails>
-                                      <AccordionActions>
-                                        {!editableActivities.includes(a.id) && (
                                           <Button
-                                            label="Edit"
+                                            label="Save"
                                             styling="bcgov-normal-blue btn mt10"
                                             onClick={() => {
-                                              editActivityDesc(a.id);
+                                              handleActivitySubmitLoader(a.id);
+                                              saveActivity(a.id, true);
                                             }}
+                                            hasLoader={submittingActivities.includes(
+                                              a.id,
+                                            )}
                                           />
-                                        )}
-                                        {editableActivities.includes(a.id) && (
-                                          <>
-                                            <Button
-                                              label="Cancel"
-                                              styling="bcgov-normal-white btn mt10"
-                                              onClick={() => {
-                                                cancelEditActivityDesc(a.id);
-                                              }}
-                                            />
-                                            <Button
-                                              label="Save"
-                                              styling="bcgov-normal-blue btn mt10"
-                                              onClick={() => {
-                                                handleActivitySubmitLoader(
-                                                  a.id
-                                                );
-                                                saveActivity(a.id, true);
-                                              }}
-                                              hasLoader={submittingActivities.includes(
-                                                a.id
-                                              )}
-                                            />
-                                          </>
-                                        )}
-                                      </AccordionActions>
-                                    </Accordion>
-                                  </div>
+                                        </>
+                                      )}
+                                    </AccordionActions>
+                                  </Accordion>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     {!parkActivities ||
                       (parkActivities.length === 0 && (
                         <div className="park-empty-info">
@@ -778,169 +786,160 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
                       ))}
                   </TabPanel>
                   <TabPanel value={tabIndex} index={1} label="park-info">
-                    {parkFacilities &&
-                      parkFacilities.length > 0 && (
-                        <div>
-                          <div className="row pt2b2">
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
-                              Facility
-                            </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
-                              Display
-                            </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
-                              Open
-                            </div>
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
-                              Fees
-                            </div>
-                            <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
-                              Description
-                            </div>
+                    {parkFacilities && parkFacilities.length > 0 && (
+                      <div>
+                        <div className="row pt2b2">
+                          <div className="col-lg-3 col-md-12 col-12 park-header">
+                            Facility
                           </div>
-                          {parkFacilities.map((f) => {
-                            return (
-                              <div
-                                className="row pt2b2"
-                                key={`facility-${f.id}`}
-                              >
-                                <div className="col-lg-3 col-md-12 col-12 park-content">
-                                  {f.name.split(":")[1]}
-                                </div>
-                                <div className="col-lg-1 col-md-12 col-12 park-content">
-                                  <SwitchButton
-                                    checked={f.isActive}
-                                    name={`${f.id}-is-active`}
-                                    inputProps={{
-                                      "aria-label": "active facility",
+                          <div className="col-lg-1 col-md-12 col-12 park-header">
+                            Display
+                          </div>
+                          <div className="col-lg-1 col-md-12 col-12 park-header">
+                            Open
+                          </div>
+                          <div className="col-lg-3 col-md-12 col-12 park-header">
+                            Fees
+                          </div>
+                          <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
+                            Description
+                          </div>
+                        </div>
+                        {parkFacilities.map((f) => {
+                          return (
+                            <div className="row pt2b2" key={`facility-${f.id}`}>
+                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                                {f.name.split(":")[1]}
+                              </div>
+                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                                <SwitchButton
+                                  checked={f.isActive}
+                                  name={`${f.id}-is-active`}
+                                  inputProps={{
+                                    "aria-label": "active facility",
+                                  }}
+                                  onChange={() => {
+                                    handleFacilityDisplayChange(f.id);
+                                  }}
+                                />
+                              </div>
+                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                                <SwitchButton
+                                  checked={f.isFacilityOpen}
+                                  name={`${f.id}-is-open`}
+                                  inputProps={{
+                                    "aria-label": "open facility",
+                                  }}
+                                  onChange={() => {
+                                    handleFacilityOpenChange(f.id);
+                                  }}
+                                />
+                              </div>
+                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                                Add a fee
+                              </div>
+                              <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
+                                <div className="wrap-text">
+                                  <Accordion
+                                    onChange={(event, isExpanded) => {
+                                      handleFacilityAccordionChange(
+                                        event,
+                                        isExpanded,
+                                        f.id,
+                                      );
                                     }}
-                                    onChange={() => {
-                                      handleFacilityDisplayChange(f.id);
-                                    }}
-                                  />
-                                </div>
-                                <div className="col-lg-1 col-md-12 col-12 park-content">
-                                  <SwitchButton
-                                    checked={f.isFacilityOpen}
-                                    name={`${f.id}-is-open`}
-                                    inputProps={{
-                                      "aria-label": "open facility",
-                                    }}
-                                    onChange={() => {
-                                      handleFacilityOpenChange(f.id);
-                                    }}
-                                  />
-                                </div>
-                                <div className="col-lg-3 col-md-12 col-12 park-content">
-                                  Add a fee
-                                </div>
-                                <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
-                                  <div className="wrap-text">
-                                    <Accordion
-                                      onChange={(event, isExpanded) => {
-                                        handleFacilityAccordionChange(
-                                          event,
-                                          isExpanded,
-                                          f.id
-                                        );
-                                      }}
-                                      className="park-desc"
-                                      expanded={expandedFacilities.includes(
-                                        f.id
-                                      )}
+                                    className="park-desc"
+                                    expanded={expandedFacilities.includes(f.id)}
+                                  >
+                                    <AccordionSummary
+                                      expandIcon={<ExpandMoreIcon />}
+                                      aria-controls="facility-description"
+                                      id="facility-description"
                                     >
-                                      <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls="facility-description"
-                                        id="facility-description"
-                                      >
-                                        {!expandedFacilities.includes(f.id) && (
-                                          <HTMLArea>
-                                            {f.description
-                                              ? f.description.length <
-                                                100
-                                                ? f.description
-                                                : f.description.substring(
-                                                    0,
-                                                    100
-                                                  ) + "..."
-                                              : "No description"}
-                                          </HTMLArea>
-                                        )}
-                                      </AccordionSummary>
-
-                                      <AccordionDetails className="">
-                                        {!editableFacilities.includes(f.id) && (
-                                          <HTMLArea>
-                                            {f.description
+                                      {!expandedFacilities.includes(f.id) && (
+                                        <HTMLArea>
+                                          {f.description
+                                            ? f.description.length < 100
                                               ? f.description
-                                              : "No description"}
-                                          </HTMLArea>
-                                        )}
-                                        {editableFacilities.includes(f.id) && (
-                                          <TextField
-                                            multiline
-                                            value={f.description || ""}
-                                            onChange={(event) => {
-                                              handleFacilityDescriptionChange(
-                                                event,
-                                                f.id
-                                              );
-                                            }}
-                                            className="bcgov-input white-background"
-                                            variant="outlined"
-                                            InputProps={{
-                                              id: `facility-${f.id}-desc`,
-                                              required: false,
-                                              placeholder:
-                                                "Enter facility description",
+                                              : f.description.substring(
+                                                  0,
+                                                  100,
+                                                ) + "..."
+                                            : "No description"}
+                                        </HTMLArea>
+                                      )}
+                                    </AccordionSummary>
+
+                                    <AccordionDetails className="">
+                                      {!editableFacilities.includes(f.id) && (
+                                        <HTMLArea>
+                                          {f.description
+                                            ? f.description
+                                            : "No description"}
+                                        </HTMLArea>
+                                      )}
+                                      {editableFacilities.includes(f.id) && (
+                                        <TextField
+                                          multiline
+                                          value={f.description || ""}
+                                          onChange={(event) => {
+                                            handleFacilityDescriptionChange(
+                                              event,
+                                              f.id,
+                                            );
+                                          }}
+                                          className="bcgov-input white-background"
+                                          variant="outlined"
+                                          InputProps={{
+                                            id: `facility-${f.id}-desc`,
+                                            required: false,
+                                            placeholder:
+                                              "Enter facility description",
+                                          }}
+                                        />
+                                      )}
+                                    </AccordionDetails>
+                                    <AccordionActions>
+                                      {!editableFacilities.includes(f.id) && (
+                                        <Button
+                                          label="Edit"
+                                          styling="bcgov-normal-blue btn mt10"
+                                          onClick={() => {
+                                            editFacilityDesc(f.id);
+                                          }}
+                                        />
+                                      )}
+                                      {editableFacilities.includes(f.id) && (
+                                        <>
+                                          <Button
+                                            label="Cancel"
+                                            styling="bcgov-normal-white btn mt10"
+                                            onClick={() => {
+                                              cancelEditFacilityDesc(f.id);
                                             }}
                                           />
-                                        )}
-                                      </AccordionDetails>
-                                      <AccordionActions>
-                                        {!editableFacilities.includes(f.id) && (
                                           <Button
-                                            label="Edit"
+                                            label="Save"
                                             styling="bcgov-normal-blue btn mt10"
                                             onClick={() => {
-                                              editFacilityDesc(f.id);
+                                              handleFacilitySubmitLoader(f.id);
+                                              saveFacility(f.id, true);
                                             }}
+                                            hasLoader={submittingFacilities.includes(
+                                              f.id,
+                                            )}
                                           />
-                                        )}
-                                        {editableFacilities.includes(f.id) && (
-                                          <>
-                                            <Button
-                                              label="Cancel"
-                                              styling="bcgov-normal-white btn mt10"
-                                              onClick={() => {
-                                                cancelEditFacilityDesc(f.id);
-                                              }}
-                                            />
-                                            <Button
-                                              label="Save"
-                                              styling="bcgov-normal-blue btn mt10"
-                                              onClick={() => {
-                                                handleFacilitySubmitLoader(
-                                                  f.id
-                                                );
-                                                saveFacility(f.id, true);
-                                              }}
-                                              hasLoader={submittingFacilities.includes(
-                                                f.id
-                                              )}
-                                            />
-                                          </>
-                                        )}
-                                      </AccordionActions>
-                                    </Accordion>
-                                  </div>
+                                        </>
+                                      )}
+                                    </AccordionActions>
+                                  </Accordion>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     {!parkFacilities ||
                       (parkFacilities.length === 0 && (
                         <div className="park-empty-info">
@@ -949,176 +948,174 @@ export default function ParkInfo({ page: { setError, cmsData, setCmsData } }) {
                       ))}
                   </TabPanel>
                   <TabPanel value={tabIndex} index={2} label="park-info">
-                    {parkCampingTypes &&
-                      parkCampingTypes.length > 0 && (
-                        <div>
-                          <div className="row pt2b2">
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
-                              Camping Type
-                            </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
-                              Display
-                            </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
-                              Open
-                            </div>
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
-                              Fees
-                            </div>
-                            <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
-                              Description
-                            </div>
+                    {parkCampingTypes && parkCampingTypes.length > 0 && (
+                      <div>
+                        <div className="row pt2b2">
+                          <div className="col-lg-3 col-md-12 col-12 park-header">
+                            Camping Type
                           </div>
-                          {parkCampingTypes.map((f) => {
-                            return (
-                              <div
-                                className="row pt2b2"
-                                key={`campingType-${f.id}`}
-                              >
-                                <div className="col-lg-3 col-md-12 col-12 park-content">
-                                  {f.name.split(":")[1]}
-                                </div>
-                                <div className="col-lg-1 col-md-12 col-12 park-content">
-                                  <SwitchButton
-                                    checked={f.isActive}
-                                    name={`${f.id}-is-active`}
-                                    inputProps={{
-                                      "aria-label": "active campingType",
+                          <div className="col-lg-1 col-md-12 col-12 park-header">
+                            Display
+                          </div>
+                          <div className="col-lg-1 col-md-12 col-12 park-header">
+                            Open
+                          </div>
+                          <div className="col-lg-3 col-md-12 col-12 park-header">
+                            Fees
+                          </div>
+                          <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
+                            Description
+                          </div>
+                        </div>
+                        {parkCampingTypes.map((f) => {
+                          return (
+                            <div
+                              className="row pt2b2"
+                              key={`campingType-${f.id}`}
+                            >
+                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                                {f.name.split(":")[1]}
+                              </div>
+                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                                <SwitchButton
+                                  checked={f.isActive}
+                                  name={`${f.id}-is-active`}
+                                  inputProps={{
+                                    "aria-label": "active campingType",
+                                  }}
+                                  onChange={() => {
+                                    handleCampingTypeDisplayChange(f.id);
+                                  }}
+                                />
+                              </div>
+                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                                <SwitchButton
+                                  checked={f.isCampingOpen}
+                                  name={`${f.id}-is-open`}
+                                  inputProps={{
+                                    "aria-label": "open campingType",
+                                  }}
+                                  onChange={() => {
+                                    handleCampingTypeOpenChange(f.id);
+                                  }}
+                                />
+                              </div>
+                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                                Add a fee
+                              </div>
+                              <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
+                                <div className="wrap-text">
+                                  <Accordion
+                                    onChange={(event, isExpanded) => {
+                                      handleCampingTypeAccordionChange(
+                                        event,
+                                        isExpanded,
+                                        f.id,
+                                      );
                                     }}
-                                    onChange={() => {
-                                      handleCampingTypeDisplayChange(f.id);
-                                    }}
-                                  />
-                                </div>
-                                <div className="col-lg-1 col-md-12 col-12 park-content">
-                                  <SwitchButton
-                                    checked={f.isCampingOpen}
-                                    name={`${f.id}-is-open`}
-                                    inputProps={{
-                                      "aria-label": "open campingType",
-                                    }}
-                                    onChange={() => {
-                                      handleCampingTypeOpenChange(f.id);
-                                    }}
-                                  />
-                                </div>
-                                <div className="col-lg-3 col-md-12 col-12 park-content">
-                                  Add a fee
-                                </div>
-                                <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
-                                  <div className="wrap-text">
-                                    <Accordion
-                                      onChange={(event, isExpanded) => {
-                                        handleCampingTypeAccordionChange(
-                                          event,
-                                          isExpanded,
-                                          f.id
-                                        );
-                                      }}
-                                      className="park-desc"
-                                      expanded={expandedCampingTypes.includes(
-                                        f.id
-                                      )}
+                                    className="park-desc"
+                                    expanded={expandedCampingTypes.includes(
+                                      f.id,
+                                    )}
+                                  >
+                                    <AccordionSummary
+                                      expandIcon={<ExpandMoreIcon />}
+                                      aria-controls="campingType-description"
+                                      id="campingType-description"
                                     >
-                                      <AccordionSummary
-                                        expandIcon={<ExpandMoreIcon />}
-                                        aria-controls="campingType-description"
-                                        id="campingType-description"
-                                      >
-                                        {!expandedCampingTypes.includes(f.id) && (
-                                          <HTMLArea>
-                                            {f.description
-                                              ? f.description.length <
-                                                100
-                                                ? f.description
-                                                : f.description.substring(
-                                                    0,
-                                                    100
-                                                  ) + "..."
-                                              : "No description"}
-                                          </HTMLArea>
-                                        )}
-                                      </AccordionSummary>
-
-                                      <AccordionDetails className="">
-                                        {!editableCampingTypes.includes(f.id) && (
-                                          <HTMLArea>
-                                            {f.description
+                                      {!expandedCampingTypes.includes(f.id) && (
+                                        <HTMLArea>
+                                          {f.description
+                                            ? f.description.length < 100
                                               ? f.description
-                                              : "No description"}
-                                          </HTMLArea>
-                                        )}
-                                        {editableCampingTypes.includes(f.id) && (
-                                          <TextField
-                                            multiline
-                                            value={f.description || ""}
-                                            onChange={(event) => {
-                                              handleCampingTypeDescriptionChange(
-                                                event,
-                                                f.id
-                                              );
-                                            }}
-                                            className="bcgov-input white-background"
-                                            variant="outlined"
-                                            InputProps={{
-                                              id: `campingType-${f.id}-desc`,
-                                              required: false,
-                                              placeholder:
-                                                "Enter campingType description",
+                                              : f.description.substring(
+                                                  0,
+                                                  100,
+                                                ) + "..."
+                                            : "No description"}
+                                        </HTMLArea>
+                                      )}
+                                    </AccordionSummary>
+
+                                    <AccordionDetails className="">
+                                      {!editableCampingTypes.includes(f.id) && (
+                                        <HTMLArea>
+                                          {f.description
+                                            ? f.description
+                                            : "No description"}
+                                        </HTMLArea>
+                                      )}
+                                      {editableCampingTypes.includes(f.id) && (
+                                        <TextField
+                                          multiline
+                                          value={f.description || ""}
+                                          onChange={(event) => {
+                                            handleCampingTypeDescriptionChange(
+                                              event,
+                                              f.id,
+                                            );
+                                          }}
+                                          className="bcgov-input white-background"
+                                          variant="outlined"
+                                          InputProps={{
+                                            id: `campingType-${f.id}-desc`,
+                                            required: false,
+                                            placeholder:
+                                              "Enter campingType description",
+                                          }}
+                                        />
+                                      )}
+                                    </AccordionDetails>
+                                    <AccordionActions>
+                                      {!editableCampingTypes.includes(f.id) && (
+                                        <Button
+                                          label="Edit"
+                                          styling="bcgov-normal-blue btn mt10"
+                                          onClick={() => {
+                                            editCampingTypeDesc(f.id);
+                                          }}
+                                        />
+                                      )}
+                                      {editableCampingTypes.includes(f.id) && (
+                                        <>
+                                          <Button
+                                            label="Cancel"
+                                            styling="bcgov-normal-white btn mt10"
+                                            onClick={() => {
+                                              cancelEditCampingTypeDesc(f.id);
                                             }}
                                           />
-                                        )}
-                                      </AccordionDetails>
-                                      <AccordionActions>
-                                        {!editableCampingTypes.includes(f.id) && (
                                           <Button
-                                            label="Edit"
+                                            label="Save"
                                             styling="bcgov-normal-blue btn mt10"
                                             onClick={() => {
-                                              editCampingTypeDesc(f.id);
+                                              handleCampingTypeSubmitLoader(
+                                                f.id,
+                                              );
+                                              saveCampingType(f.id, true);
                                             }}
+                                            hasLoader={submittingCampingTypes.includes(
+                                              f.id,
+                                            )}
                                           />
-                                        )}
-                                        {editableCampingTypes.includes(f.id) && (
-                                          <>
-                                            <Button
-                                              label="Cancel"
-                                              styling="bcgov-normal-white btn mt10"
-                                              onClick={() => {
-                                                cancelEditCampingTypeDesc(f.id);
-                                              }}
-                                            />
-                                            <Button
-                                              label="Save"
-                                              styling="bcgov-normal-blue btn mt10"
-                                              onClick={() => {
-                                                handleCampingTypeSubmitLoader(
-                                                  f.id
-                                                );
-                                                saveCampingType(f.id, true);
-                                              }}
-                                              hasLoader={submittingCampingTypes.includes(
-                                                f.id
-                                              )}
-                                            />
-                                          </>
-                                        )}
-                                      </AccordionActions>
-                                    </Accordion>
-                                  </div>
+                                        </>
+                                      )}
+                                    </AccordionActions>
+                                  </Accordion>
                                 </div>
                               </div>
-                            );
-                          })}
-                        </div>
-                      )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                     {!parkCampingTypes ||
                       (parkCampingTypes.length === 0 && (
                         <div className="park-empty-info">
                           No camping types found
                         </div>
                       ))}
-                  </TabPanel>                  
+                  </TabPanel>
                 </div>
               </div>
             </div>

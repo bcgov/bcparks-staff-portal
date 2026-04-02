@@ -5,11 +5,9 @@ This script populates the `inReservationSystem` field on each `ParkArea` based o
 ## What does the script do?
 
 1. **For each ParkArea:**
-
    - Fetches all child `Feature` records.
 
 2. **Logic for setting `inReservationSystem`:**
-
    - If **any** child `Feature` has `inReservationSystem === true`, sets the parent `ParkArea.inReservationSystem` to `true`.
    - If **all** child `Feature` records have `inReservationSystem === false`, sets the parent to `false`.
    - If there are **no child features**, the script skips that `ParkArea`.

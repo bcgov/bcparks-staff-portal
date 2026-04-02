@@ -12,7 +12,7 @@ const TOOLS_NAMESPACE = process.env.TOOLS_NAMESPACE || "a7dd13-tools";
 const GIT_SHA_HASH_REGEX =
   process.env.GIT_SHA_HASH_REGEX || "\\b[0-9a-f]{7}\\b";
 
-  // Regex pattern used to match release tags, e.g., v1.12.3
+// Regex pattern used to match release tags, e.g., v1.12.3
 const RELEASE_TAG_REGEX =
   process.env.RELEASE_TAG_REGEX || "^v[0-9]*\\.[0-9]*\\.[0-9]*-?.*";
 

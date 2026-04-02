@@ -12,16 +12,16 @@ export default function Error({ page: { error } }) {
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push('/advisories');
+        history.push("/advisories");
         break;
       case 1:
-        history.push('/park-access-status');
+        history.push("/park-access-status");
         break;
       case 2:
-        history.push('/activities-and-facilities');
+        history.push("/activities-and-facilities");
         break;
       default:
-        history.push('/');
+        history.push("/");
     }
   };
 
@@ -94,7 +94,7 @@ export default function Error({ page: { error } }) {
           again later.
           <br />
           <br />
-          {console.log('error', error)}
+          {console.log("error", error)}
           {error.message}
         </p>
       </div>

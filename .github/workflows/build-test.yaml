@@ -1,13 +1,12 @@
-name: Build dev on branch push
+name: Build alpha-test on alpha branch push
 
 on:
   push:
     branches:
-      - main
       - alpha
 
 concurrency:
-  group: build-dev-${{ github.ref_name }}
+  group: build-test-${{ github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -50,7 +49,7 @@ jobs:
       - name: Docker build
         run: |
           FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }} docker build --secret id=FONTAWESOME_PACKAGE_TOKEN -t ${{ env.IMAGE_NAME }} -f frontend/Dockerfile.prod .
-          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:latest
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:test
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
 
       - name: Push Docker image
@@ -79,7 +78,7 @@ jobs:
       - name: Docker build
         run: |
           docker build -t ${{ env.IMAGE_NAME }} -f Dockerfile.prod .
-          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:latest
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:test
           docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
         working-directory: backend
 
@@ -102,5 +101,5 @@ jobs:
 
       - name: Trigger rollout
         run: |
-          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-frontend
-          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-backend
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-test rollout restart deployment ${{ github.ref_name }}-frontend
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-test rollout restart deployment ${{ github.ref_name }}-backend

@@ -60,7 +60,10 @@ export default function Advisory({
   const [fireZones, setFireZones] = useState([]);
   const [selectedFireZones, setSelectedFireZones] = useState([]);
   const [naturalResourceDistricts, setNaturalResourceDistricts] = useState([]);
-  const [selectedNaturalResourceDistricts, setSelectedNaturalResourceDistricts] = useState([]);
+  const [
+    selectedNaturalResourceDistricts,
+    setSelectedNaturalResourceDistricts,
+  ] = useState([]);
   const [eventTypes, setEventTypes] = useState([]);
   const [eventType, setEventType] = useState();
   const [accessStatuses, setAccessStatuses] = useState([]);
@@ -75,7 +78,7 @@ export default function Advisory({
   const [description, setDescription] = useState("");
   const [isSafetyRelated, setIsSafetyRelated] = useState(false);
   const [advisoryDate, setAdvisoryDate] = useState(
-    moment().tz("America/Vancouver").toDate()
+    moment().tz("America/Vancouver").toDate(),
   );
   const [displayAdvisoryDate, setDisplayAdvisoryDate] = useState(true);
   const [startDate, setStartDate] = useState(null);
@@ -87,7 +90,7 @@ export default function Advisory({
   const [displayUpdatedDate, setDisplayUpdatedDate] = useState(false);
   const [notes, setNotes] = useState("");
   const [submittedBy, setSubmittedBy] = useState("");
-  const [submitter, setSubmitter] = useState("")
+  const [submitter, setSubmitter] = useState("");
   const [listingRank, setListingRank] = useState(0);
   const [toError, setToError] = useState(false);
   const [toDashboard, setToDashboard] = useState(false);
@@ -107,30 +110,34 @@ export default function Advisory({
   const [isApprover, setIsApprover] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { id } = useParams();
+  const { documentId } = useParams();
   const history = useHistory();
 
-  const query = qs.stringify({
-    publicationState: "preview",
-    populate: {
-      accessStatus: { populate: "*" },
-      advisoryStatus: { populate: "*" },
-      eventType: { populate: "*" },
-      fireCentres: { fields: ["id"] },
-      fireZones: { fields: ["id"] },
-      naturalResourceDistricts: { fields: ["id"] },
-      links: { populate: { type: { populate: "*" }, file: { populate: "*" } } },
-      urgency: { populate: "*" },
-      managementAreas: { fields: ["id"] },
-      protectedAreas: { fields: ["id"] },
-      regions: { fields: ["id"] },
-      sections: { fields: ["id"] },
-      sites: { fields: ["id"] },
-      standardMessages: { populate: "*" },
+  const query = qs.stringify(
+    {
+      populate: {
+        accessStatus: { populate: "*" },
+        advisoryStatus: { populate: "*" },
+        eventType: { populate: "*" },
+        fireCentres: { fields: ["id"] },
+        fireZones: { fields: ["id"] },
+        naturalResourceDistricts: { fields: ["id"] },
+        links: {
+          populate: { type: { populate: "*" }, file: { populate: "*" } },
+        },
+        urgency: { populate: "*" },
+        managementAreas: { fields: ["id"] },
+        protectedAreas: { fields: ["id"] },
+        regions: { fields: ["id"] },
+        sections: { fields: ["id"] },
+        sites: { fields: ["id"] },
+        standardMessages: { populate: "*" },
+      },
     },
-  }, {
-    encodeValuesOnly: true,
-  });
+    {
+      encodeValuesOnly: true,
+    },
+  );
 
   useEffect(() => {
     if (initialized && keycloak) {
@@ -141,7 +148,7 @@ export default function Advisory({
         setIsStatHoliday,
         cmsData,
         setCmsData,
-        keycloak.token
+        keycloak.token,
       );
     }
   }, [
@@ -155,15 +162,12 @@ export default function Advisory({
 
   useEffect(() => {
     if (mode === "update" && !isLoadingData) {
-      if (parseInt(id)) {
-        setAdvisoryId(id);
+      if (documentId) {
+        setAdvisoryId(documentId);
         cmsAxios
-          .get(
-            `public-advisory-audits/${id}?${query}`,
-            {
-              headers: { Authorization: `Bearer ${keycloak.token}` }
-            }
-          )
+          .get(`public-advisory-audits/${documentId}?${query}`, {
+            headers: { Authorization: `Bearer ${keycloak.token}` },
+          })
           .then((res) => {
             linksRef.current = [];
             const advisoryData = res.data.data;
@@ -174,64 +178,73 @@ export default function Advisory({
               setIsSafetyRelated(advisoryData.isSafetyRelated);
             }
             setListingRank(
-              advisoryData.listingRank ? advisoryData.listingRank : 0
+              advisoryData.listingRank ? advisoryData.listingRank : 0,
             );
             setNotes(advisoryData.note || "");
             setSubmittedBy(advisoryData.submittedBy || "");
             if (advisoryData.advisoryDate) {
               setAdvisoryDate(
-                moment(advisoryData.advisoryDate).tz("America/Vancouver").toDate()
+                moment(advisoryData.advisoryDate)
+                  .tz("America/Vancouver")
+                  .toDate(),
               );
-              advisoryDateRef.current =
-                moment(advisoryData.advisoryDate).tz("America/Vancouver").toDate();
+              advisoryDateRef.current = moment(advisoryData.advisoryDate)
+                .tz("America/Vancouver")
+                .toDate();
             }
             if (advisoryData.effectiveDate) {
               setStartDate(
-                moment(advisoryData.effectiveDate).tz("America/Vancouver").toDate()
+                moment(advisoryData.effectiveDate)
+                  .tz("America/Vancouver")
+                  .toDate(),
               );
             }
             if (advisoryData.endDate) {
               setEndDate(
-                moment(advisoryData.endDate).tz("America/Vancouver").toDate()
+                moment(advisoryData.endDate).tz("America/Vancouver").toDate(),
               );
             }
 
             if (advisoryData.expiryDate) {
               setExpiryDate(
-                moment(advisoryData.expiryDate).tz("America/Vancouver").toDate()
+                moment(advisoryData.expiryDate)
+                  .tz("America/Vancouver")
+                  .toDate(),
               );
             }
             if (advisoryData.updatedDate) {
               setUpdatedDate(
-                moment(advisoryData.updatedDate).tz("America/Vancouver").toDate()
+                moment(advisoryData.updatedDate)
+                  .tz("America/Vancouver")
+                  .toDate(),
               );
             }
             if (advisoryData.accessStatus) {
-              setAccessStatus(advisoryData.accessStatus.id);
+              setAccessStatus(advisoryData.accessStatus.documentId);
             }
             if (advisoryData.eventType) {
-              setEventType(advisoryData.eventType.id);
+              setEventType(advisoryData.eventType.documentId);
             }
             if (advisoryData.urgency) {
-              setUrgency(advisoryData.urgency.id);
+              setUrgency(advisoryData.urgency.documentId);
             }
             if (advisoryData.advisoryStatus) {
-              setAdvisoryStatus(advisoryData.advisoryStatus.id);
+              setAdvisoryStatus(advisoryData.advisoryStatus.documentId);
             }
             setDisplayAdvisoryDate(
               advisoryData.isAdvisoryDateDisplayed
                 ? advisoryData.isAdvisoryDateDisplayed
-                : false
+                : false,
             );
             setDisplayStartDate(
               advisoryData.isEffectiveDateDisplayed
                 ? advisoryData.isEffectiveDateDisplayed
-                : false
+                : false,
             );
             setDisplayEndDate(
               advisoryData.isEndDateDisplayed
                 ? advisoryData.isEndDateDisplayed
-                : false
+                : false,
             );
             if (advisoryData.isUpdatedDateDisplayed !== null) {
               setDisplayUpdatedDate(advisoryData.isUpdatedDateDisplayed);
@@ -245,13 +258,14 @@ export default function Advisory({
             const siteInfo = advisoryData.sites;
             const fireCentreInfo = advisoryData.fireCentres;
             const fireZoneInfo = advisoryData.fireZones;
-            const naturalResourceDistrictInfo = advisoryData.naturalResourceDistricts;
+            const naturalResourceDistrictInfo =
+              advisoryData.naturalResourceDistricts;
 
             if (standardMessageInfo) {
               const selStandardMessages = [];
               standardMessageInfo.forEach((p) => {
                 selStandardMessages.push(
-                  standardMessages.find((l) => l.value === p.id)
+                  standardMessages.find((l) => l.value === p.documentId),
                 );
               });
               setSelectedStandardMessages([...selStandardMessages]);
@@ -261,7 +275,7 @@ export default function Advisory({
               const selProtectedAreas = [];
               protectedAreaInfo.forEach((p) => {
                 selProtectedAreas.push(
-                  protectedAreas.find((l) => l.value === p.id)
+                  protectedAreas.find((l) => l.value === p.documentId),
                 );
               });
               setSelectedProtectedAreas([...selProtectedAreas]);
@@ -269,14 +283,16 @@ export default function Advisory({
             if (regionInfo) {
               const selRegions = [];
               regionInfo.forEach((r) => {
-                selRegions.push(regions.find((l) => l.value === r.id));
+                selRegions.push(regions.find((l) => l.value === r.documentId));
               });
               setSelectedRegions([...selRegions]);
             }
             if (sectionInfo) {
               const selSections = [];
               sectionInfo.forEach((s) => {
-                selSections.push(sections.find((l) => l.value === s.id));
+                selSections.push(
+                  sections.find((l) => l.value === s.documentId),
+                );
               });
               setSelectedSections([...selSections]);
             }
@@ -284,7 +300,7 @@ export default function Advisory({
               const selManagementAreas = [];
               managementAreaInfo.forEach((m) => {
                 selManagementAreas.push(
-                  managementAreas.find((l) => l.value === m.id)
+                  managementAreas.find((l) => l.value === m.documentId),
                 );
               });
               setSelectedManagementAreas([...selManagementAreas]);
@@ -292,30 +308,40 @@ export default function Advisory({
             if (siteInfo) {
               const selSites = [];
               siteInfo.forEach((s) => {
-                selSites.push(sites.find((l) => l.value === s.id));
+                selSites.push(sites.find((l) => l.value === s.documentId));
               });
               setSelectedSites([...selSites]);
             }
             if (fireCentreInfo) {
               const selFireCentres = [];
               fireCentreInfo.forEach((f) => {
-                selFireCentres.push(fireCentres.find((l) => l.value === f.id));
+                selFireCentres.push(
+                  fireCentres.find((l) => l.value === f.documentId),
+                );
               });
               setSelectedFireCentres([...selFireCentres]);
             }
             if (fireZoneInfo) {
               const selFireZones = [];
               fireZoneInfo.forEach((f) => {
-                selFireZones.push(fireZones.find((l) => l.value === f.id));
+                selFireZones.push(
+                  fireZones.find((l) => l.value === f.documentId),
+                );
               });
               setSelectedFireZones([...selFireZones]);
             }
             if (naturalResourceDistrictInfo) {
               const selNaturalResourceDistricts = [];
               naturalResourceDistrictInfo.forEach((f) => {
-                selNaturalResourceDistricts.push(naturalResourceDistricts.find((l) => l.value === f.id));
+                selNaturalResourceDistricts.push(
+                  naturalResourceDistricts.find(
+                    (l) => l.value === f.documentId,
+                  ),
+                );
               });
-              setSelectedNaturalResourceDistricts([...selNaturalResourceDistricts]);
+              setSelectedNaturalResourceDistricts([
+                ...selNaturalResourceDistricts,
+              ]);
             }
             const links = advisoryData.links;
             if (links.length > 0) {
@@ -323,10 +349,10 @@ export default function Advisory({
                 linksRef.current = [
                   ...linksRef.current,
                   {
-                    type: l.type.id,
+                    type: l.type.documentId,
                     title: l.title || "",
                     url: l.url || "",
-                    id: l.id,
+                    id: l.documentId,
                     file: l.file || "",
                     format: l.format || "",
                     isModified: false,
@@ -357,7 +383,7 @@ export default function Advisory({
       }
     }
   }, [
-    id,
+    documentId,
     query,
     mode,
     setHeadline,
@@ -428,15 +454,15 @@ export default function Advisory({
           const protectedAreaData = res[0];
           const protectedAreas = protectedAreaData.map((p) => ({
             label: p.protectedAreaName,
-            value: p.id,
+            value: p.documentId,
             type: "protectedArea",
-            orcs: p.orcs
+            orcs: p.orcs,
           }));
           setProtectedAreas([...protectedAreas]);
           const regionData = res[1];
           const regions = regionData.map((r) => ({
             label: r.regionName + " Region",
-            value: r.id,
+            value: r.documentId,
             type: "region",
             obj: r,
           }));
@@ -444,7 +470,7 @@ export default function Advisory({
           const sectionData = res[2];
           const sections = sectionData.map((s) => ({
             label: s.sectionName + " Section",
-            value: s.id,
+            value: s.documentId,
             type: "section",
             obj: s,
           }));
@@ -452,15 +478,15 @@ export default function Advisory({
           const managementAreaData = res[3];
           const managementAreas = managementAreaData.map((m) => ({
             label: m.managementAreaName + " Management Area",
-            value: m.id,
+            value: m.documentId,
             type: "managementArea",
             obj: m,
           }));
           setManagementAreas([...managementAreas]);
           const siteData = res[4];
           const sites = siteData.map((s) => ({
-            label: s?.attributes.protectedArea?.data?.attributes.protectedAreaName + ": " + s.attributes.siteName,
-            value: s.id,
+            label: s?.protectedArea?.protectedAreaName + ": " + s.siteName,
+            value: s.documentId,
             type: "site",
             obj: s,
           }));
@@ -469,7 +495,7 @@ export default function Advisory({
           const fireCentreData = res[5];
           const fireCentres = fireCentreData.map((f) => ({
             label: f.fireCentreName,
-            value: f.id,
+            value: f.documentId,
             type: "fireCentre",
             obj: f,
           }));
@@ -477,29 +503,31 @@ export default function Advisory({
           const fireZoneData = res[6];
           const fireZones = fireZoneData.map((f) => ({
             label: f.fireZoneName,
-            value: f.id,
+            value: f.documentId,
             type: "fireZone",
             obj: f,
           }));
           setFireZones([...fireZones]);
           const naturalResourceDistrictData = res[7];
-          const naturalResourceDistricts = naturalResourceDistrictData.map((f) => ({
-            label: f.naturalResourceDistrictName,
-            value: f.id,
-            type: "naturalResourceDistrict",
-            obj: f,
-          }));
+          const naturalResourceDistricts = naturalResourceDistrictData.map(
+            (f) => ({
+              label: f.naturalResourceDistrictName,
+              value: f.documentId,
+              type: "naturalResourceDistrict",
+              obj: f,
+            }),
+          );
           setNaturalResourceDistricts([...naturalResourceDistricts]);
           const eventTypeData = res[8];
           const eventTypes = eventTypeData.map((et) => ({
             label: et.eventType,
-            value: et.id,
+            value: et.documentId,
           }));
           setEventTypes([...eventTypes]);
           const accessStatusData = res[9];
           const accessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
-            value: a.id,
+            value: a.documentId,
           }));
           setAccessStatuses([...accessStatuses]);
           const accessStatus = accessStatuses.filter((a) => a.label === "Open");
@@ -507,47 +535,46 @@ export default function Advisory({
           const urgencyData = res[10];
           const urgencies = urgencyData.map((u) => ({
             label: u.urgency,
-            value: u.id,
-            sequence: u.sequence
+            value: u.documentId,
+            sequence: u.sequence,
           }));
           setUrgencies([...urgencies]);
           const advisoryStatusData = res[11];
           const restrictedAdvisoryStatusCodes = ["INA", "APR"];
-          const desiredOrder = ['PUB', 'INA', 'DFT', 'APR', 'ARQ'];
+          const desiredOrder = ["PUB", "INA", "DFT", "APR", "ARQ"];
           const tempAdvisoryStatuses = advisoryStatusData.map((s) => {
             let result = {};
             if (restrictedAdvisoryStatusCodes.includes(s.code) && approver) {
               result = {
                 code: s.code,
                 label: camelCaseToSentenceCase(s.advisoryStatus),
-                value: s.id,
+                value: s.documentId,
               };
             } else if (!restrictedAdvisoryStatusCodes.includes(s.code)) {
               result = {
                 code: s.code,
                 label: camelCaseToSentenceCase(s.advisoryStatus),
-                value: s.id,
+                value: s.documentId,
               };
             }
             return result;
           });
           const sortedStatus = tempAdvisoryStatuses.sort(
-            (a, b) => desiredOrder.indexOf(a.code) - desiredOrder.indexOf(b.code)
+            (a, b) =>
+              desiredOrder.indexOf(a.code) - desiredOrder.indexOf(b.code),
           );
-          const advisoryStatuses = sortedStatus.filter(
-            (s) => s !== null
-          );
+          const advisoryStatuses = sortedStatus.filter((s) => s !== null);
           setAdvisoryStatuses([...advisoryStatuses]);
           const linkTypeData = res[12];
           const linkTypes = linkTypeData.map((lt) => ({
             label: lt.type,
-            value: lt.id,
+            value: lt.documentId,
           }));
           setLinkTypes([...linkTypes]);
           const standardMessageData = res[13];
           const standardMessages = standardMessageData.map((m) => ({
             label: m.title,
-            value: m.id,
+            value: m.documentId,
             type: "standardMessage",
             obj: m,
           }));
@@ -615,16 +642,16 @@ export default function Advisory({
   const handleMenuChange = (event, val) => {
     switch (val) {
       case 0:
-        history.push('/advisories');
+        history.push("/advisories");
         break;
       case 1:
-        history.push('/park-access-status');
+        history.push("/park-access-status");
         break;
       case 2:
-        history.push('/activities-and-facilities');
+        history.push("/activities-and-facilities");
         break;
       default:
-        history.push('/');
+        history.push("/");
     }
   };
 
@@ -694,11 +721,11 @@ export default function Advisory({
           title: link.title,
           url: link.url.startsWith("http") ? link.url : "https://" + link.url,
           type: link.type,
-        }
-      }
+        },
+      };
       const res = await cmsAxios
         .post(`links`, linkRequest, {
-          headers: { Authorization: `Bearer ${keycloak.token}` }
+          headers: { Authorization: `Bearer ${keycloak.token}` },
         })
         .catch((error) => {
           console.log("error occurred", error);
@@ -722,11 +749,11 @@ export default function Advisory({
           title: link.title,
           url: link.url.startsWith("http") ? link.url : "https://" + link.url,
           type: link.type,
-        }
+        },
       };
       const res = await cmsAxios
         .put(`links/${id}`, linkRequest, {
-          headers: { Authorization: `Bearer ${keycloak.token}` }
+          headers: { Authorization: `Bearer ${keycloak.token}` },
         })
         .catch((error) => {
           console.log("error occurred", error);
@@ -744,12 +771,12 @@ export default function Advisory({
     const savedLinks = [];
     for (let link of linksRef.current) {
       if (isValidLink(link)) {
-        if (parseInt(link.id) > 0) {
+        if (link.id) {
           const savedLink = await saveLink(link, link.id);
-          savedLinks.push(savedLink.id);
+          savedLinks.push(savedLink.documentId);
         } else {
           const savedLink = await createLink(link);
-          savedLinks.push(savedLink.id);
+          savedLinks.push(savedLink.documentId);
         }
       }
     }
@@ -764,7 +791,7 @@ export default function Advisory({
       const status = advisoryStatuses.filter((s) => s.value === advisoryStatus);
       publishedDate = getApproverAdvisoryFields(
         status[0]["code"],
-        setConfirmationText
+        setConfirmationText,
       );
     } else {
       if (type === "draft") {
@@ -776,7 +803,7 @@ export default function Advisory({
       const { status, published } = getSubmitterAdvisoryFields(
         type,
         advisoryStatuses,
-        setConfirmationText
+        setConfirmationText,
       );
       publishedDate = published;
       adStatus = status;
@@ -787,14 +814,16 @@ export default function Advisory({
     try {
       const { status } = getAdvisoryFields(type);
 
-      const selProtectedAreas = selectedProtectedAreas.map(x => x.value);
-      const selRegions = selectedRegions.map(x => x.value);
-      const selSections = selectedSections.map(x => x.value);
-      const selManagementAreas = selectedManagementAreas.map(x => x.value);
-      const selSites = selectedSites.map(x => x.value);
-      const selFireCentres = selectedFireCentres.map(x => x.value);
-      const selFireZones = selectedFireZones.map(x => x.value);
-      const selNaturalResourceDistricts = selectedNaturalResourceDistricts.map(x => x.value);
+      const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
+      const selRegions = selectedRegions.map((x) => x.value);
+      const selSections = selectedSections.map((x) => x.value);
+      const selManagementAreas = selectedManagementAreas.map((x) => x.value);
+      const selSites = selectedSites.map((x) => x.value);
+      const selFireCentres = selectedFireCentres.map((x) => x.value);
+      const selFireZones = selectedFireZones.map((x) => x.value);
+      const selNaturalResourceDistricts = selectedNaturalResourceDistricts.map(
+        (x) => x.value,
+      );
 
       Promise.resolve(saveLinks()).then((savedLinks) => {
         const newAdvisory = {
@@ -827,19 +856,26 @@ export default function Advisory({
           isAdvisoryDateDisplayed: displayAdvisoryDate,
           isEffectiveDateDisplayed: displayStartDate,
           isEndDateDisplayed: displayEndDate,
-          published_at: new Date(),
+          publishedAt: new Date(),
           isLatestRevision: true,
           createdByName: keycloak.tokenParsed.name,
           createdByRole: isApprover ? "approver" : "submitter",
-          isUrgentAfterHours: !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish
+          isUrgentAfterHours:
+            !isApprover &&
+            (isAfterHours || isStatHoliday) &&
+            isAfterHourPublish,
         };
 
         cmsAxios // -audit OR -audits
-          .post(`public-advisory-audits`, { data: newAdvisory }, {
-            headers: { Authorization: `Bearer ${keycloak.token}` }
-          })
+          .post(
+            `public-advisory-audits`,
+            { data: newAdvisory },
+            {
+              headers: { Authorization: `Bearer ${keycloak.token}` },
+            },
+          )
           .then((res) => {
-            setAdvisoryId(res.data.data.id);
+            setAdvisoryId(res.data.data.documentId);
             setIsSubmitting(false);
             setIsSavingDraft(false);
             setIsConfirmation(true);
@@ -866,14 +902,16 @@ export default function Advisory({
   const updateAdvisory = (type) => {
     try {
       const { status } = getAdvisoryFields(type);
-      const selProtectedAreas = selectedProtectedAreas.map(x => x.value);
-      const selRegions = selectedRegions.map(x => x.value);
-      const selSections = selectedSections.map(x => x.value);
-      const selManagementAreas = selectedManagementAreas.map(x => x.value);
-      const selSites = selectedSites.map(x => x.value);
-      const selFireCentres = selectedFireCentres.map(x => x.value);
-      const selFireZones = selectedFireZones.map(x => x.value);
-      const selNaturalResourceDistricts = selectedNaturalResourceDistricts.map(x => x.value);
+      const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
+      const selRegions = selectedRegions.map((x) => x.value);
+      const selSections = selectedSections.map((x) => x.value);
+      const selManagementAreas = selectedManagementAreas.map((x) => x.value);
+      const selSites = selectedSites.map((x) => x.value);
+      const selFireCentres = selectedFireCentres.map((x) => x.value);
+      const selFireZones = selectedFireZones.map((x) => x.value);
+      const selNaturalResourceDistricts = selectedNaturalResourceDistricts.map(
+        (x) => x.value,
+      );
 
       if (
         (!selProtectedAreas || selProtectedAreas.length === 0) &&
@@ -923,19 +961,27 @@ export default function Advisory({
             isEndDateDisplayed: displayEndDate,
             isUpdatedDateDisplayed: displayUpdatedDate,
             publishedAt: new Date(),
-            isLatestRevision: true
+            isLatestRevision: true,
           };
 
-          if (!isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish) {
+          if (
+            !isApprover &&
+            (isAfterHours || isStatHoliday) &&
+            isAfterHourPublish
+          ) {
             updatedAdvisory.isUrgentAfterHours = true;
           }
 
           cmsAxios
-            .put(`public-advisory-audits/${id}`, { data: updatedAdvisory }, {
-              headers: { Authorization: `Bearer ${keycloak.token}` }
-            })
+            .put(
+              `public-advisory-audits/${documentId}`,
+              { data: updatedAdvisory },
+              {
+                headers: { Authorization: `Bearer ${keycloak.token}` },
+              },
+            )
             .then((res) => {
-              setAdvisoryId(res.data.data.id);
+              setAdvisoryId(res.data.data.documentId);
               setIsSubmitting(false);
               setIsSavingDraft(false);
               setIsConfirmation(true);
@@ -965,11 +1011,11 @@ export default function Advisory({
       data: {
         type: link.type,
         title: link.title,
-      }
+      },
     };
     const res = await cmsAxios
       .post(`links`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloak.token}` }
+        headers: { Authorization: `Bearer ${keycloak.token}` },
       })
       .catch((error) => {
         console.log("error occurred", error);
@@ -979,26 +1025,28 @@ export default function Advisory({
           message: "Could not save attachments",
         });
       });
-    return res.data.data.id;
+    return res.data.data.documentId;
   };
 
   const updateMediaLink = async (media, id, link) => {
     const isProtocolExist = /(https|http?)/gi;
 
     const path = media.url?.match(isProtocolExist);
-    const getUrl = path?.length ? media.url : config.REACT_APP_CMS_BASE_URL + media.url
+    const getUrl = path?.length
+      ? media.url
+      : config.REACT_APP_CMS_BASE_URL + media.url;
 
     const linkRequest = {
       data: {
         title: link.title ? link.title : media.name,
         type: link.type,
         url: getUrl,
-      }
+      },
     };
 
     const res = await cmsAxios
       .put(`links/${id}`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloak.token}` }
+        headers: { Authorization: `Bearer ${keycloak.token}` },
       })
       .catch((error) => {
         console.log("error occurred", error);
@@ -1027,11 +1075,12 @@ export default function Advisory({
     fileForm.append("data", JSON.stringify(data));
 
     const res = await cmsAxios
-      .post(`upload`, fileForm, { // or { 'data': fileForm }
+      .post(`upload`, fileForm, {
+        // or { 'data': fileForm }
         headers: {
           "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${keycloak.token}`,
-        }
+        },
       })
       .catch((error) => {
         console.log("error occurred", error);
@@ -1100,9 +1149,11 @@ export default function Advisory({
                   onClick={() => {
                     setToBack();
                     sessionStorage.clear();
-                  }}>
+                  }}
+                >
                   <ArrowBackIcon className="me-1" />
-                  Back to {mode === "create" ? "public advisories" : "advisory preview"}
+                  Back to{" "}
+                  {mode === "create" ? "public advisories" : "advisory preview"}
                 </button>
                 <h4 className="mt-5 mb-0">
                   {mode === "create" ? "Create a new" : "Edit"} advisory
