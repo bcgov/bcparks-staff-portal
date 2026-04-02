@@ -182,6 +182,11 @@
   position: relative;
 }
 
+.ad-form .input-group input.url {
+  z-index: 1 !important;
+  border-radius: var(--bs-border-radius) !important;
+}
+
 .ad-btn-row {
   display: table-row !important;
 }
