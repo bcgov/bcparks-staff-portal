@@ -16,7 +16,7 @@
     "@fortawesome/fontawesome-svg-core": "^6.6.0",
     "@fortawesome/react-fontawesome": "^0.2.6",
     "@vitejs/plugin-react-swc": "^3.11.0",
-    "axios": "^1.7.5",
+    "axios": "^1.14.0",
     "classnames": "^2.5.1",
     "date-fns": "^4.1.0",
     "file-saver": "^2.0.5",
