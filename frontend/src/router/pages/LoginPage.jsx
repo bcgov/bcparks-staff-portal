@@ -1,7 +1,7 @@
 import { useEffect, useCallback } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
-import routerconfig from "@/router/index";
+import getEnv from "@/config/getEnv";
 import "./LoginPage.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fa-kit/icons/classic/regular";
@@ -9,22 +9,19 @@ import { faArrowUpRightFromSquare } from "@fa-kit/icons/classic/regular";
 export default function LoginPage() {
   const auth = useAuth();
 
-  // get the base path from the router config
-  const basepath = routerconfig.basename;
-
   // function to redirect to Keycloak for the selected login provider
   const handleLogin = useCallback(
     (idp) => {
       auth.signinRedirect({
         // eslint-disable-next-line camelcase -- 'redirect_uri' is required by Keycloak
-        redirect_uri: `${window.location.origin}${basepath}`,
+        redirect_uri: getEnv("VITE_FRONTEND_BASE_URL"),
         extraQueryParams: {
           // eslint-disable-next-line camelcase -- 'kc_idp_hint' is required by Keycloak
           kc_idp_hint: idp,
         },
       });
     },
-    [auth, basepath],
+    [auth],
   );
 
   useEffect(() => {
@@ -38,10 +35,9 @@ export default function LoginPage() {
     }
   }, [handleLogin]);
 
-  // if already authenticated or login_idp is set, don't show the login page
-  if (auth.isAuthenticated || sessionStorage.getItem("login_idp")) {
+  // if already authenticated, don't show the login page
+  if (auth.isAuthenticated) {
     // Redirect to "/" (which will redirect to a dashboard)
-    console.log("navigate to /");
     return <Navigate to="/" replace />;
   }
 

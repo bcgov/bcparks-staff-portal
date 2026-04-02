@@ -7,7 +7,14 @@ export default function AccessControlledRoute({
   allowedRoles,
   redirectTo = "/",
 }) {
-  const { hasAnyRole } = useAccess();
+  const { hasAnyRole, isAuthenticated } = useAccess();
+
+  // If not authenticated, redirect to login
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If authenticated but lacks required roles, redirect to the provided location
   const hasAccess = hasAnyRole(allowedRoles);
 
   if (!hasAccess) {
