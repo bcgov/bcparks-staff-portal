@@ -33,7 +33,7 @@
 
 .urgency-btn-group button.btn:hover,
 .safety-btn-group button.btn:hover {
-  background-color: var(--color-background-grey) !important;
+  background-color: var(--color-background-grey);
 }
 
 .urgency-btn-group button.btn:first-child,
