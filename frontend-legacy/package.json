@@ -15,7 +15,7 @@
     "@storybook/addon-queryparams": "^6.1.21",
     "@storybook/addon-storyshots": "^6.1.21",
     "@storybook/react": "^6.1.21",
-    "axios": "^0.21.1",
+    "axios": "^1.14.0",
     "axios-mock-adapter": "^1.22.0",
     "history": "^5.0.0",
     "jsonwebtoken": "^8.5.1",
@@ -24,7 +24,7 @@
     "moment": "^2.30.1",
     "moment-timezone": "^0.5.45",
     "prop-types": "^15.7.2",
-    "qs": "^6.11.0",
+    "qs": "^6.15.0",
     "query-string": "^6.14.1",
     "react": "^17.0.1",
     "react-datepicker": "^4.25.0",
@@ -47,7 +47,7 @@
     "cross-env": "^7.0.3",
     "jest": "26.6.0",
     "react-scripts": "^5.0.1",
-    "webpack": "5.91.0"
+    "webpack": "5.105.4"
   },
   "scripts": {
     "start": "cross-env NODE_OPTIONS=--openssl-legacy-provider BROWSER=none craco start",
