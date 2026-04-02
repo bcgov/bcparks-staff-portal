@@ -41,7 +41,7 @@ export default function ProtectedRoute({ children }) {
   }, [auth, navigate]);
 
   /**
-   * Attempt to auomatically sign in
+   * Attempt to automatically sign in
    * See {@link https://github.com/authts/react-oidc-context?tab=readme-ov-file#automatic-sign-in}
    */
   useEffect(() => {
