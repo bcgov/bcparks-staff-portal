@@ -720,7 +720,7 @@ export default function AdvisoryForm({
                           onChange={(event) => {
                             updateLink(idx, "url", event.target.value);
                           }}
-                          className={getControlClassName(linkUrlErrors[idx])}
+                          className={getControlClassName(linkUrlErrors[idx], "url")}
                           onBlur={() =>
                             validateLink(l, idx, "url", setLinkUrlErrors)
                           }
