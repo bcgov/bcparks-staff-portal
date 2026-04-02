@@ -1,0 +1,105 @@
+name: Build dev on alpha & main branch push
+on:
+  push:
+    branches:
+      - main
+      - alpha
+
+concurrency:
+  group: build-dev-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-24.04
+    env:
+      IMAGE_NAME: frontend-${{ github.ref_name }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+
+      - name: Set env
+        run: |
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "REGISTRY_IMAGE=${{ vars.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ vars.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+
+      - name: Install OpenShift CLI tools
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "4.14"
+
+      - name: Login to OpenShift Container Repository
+        uses: docker/login-action@v3
+        with:
+          registry: ${{vars.OPENSHIFT_EXTERNAL_REPOSITORY}}
+          username: ${{vars.OPENSHIFT_SA_USERNAME}}
+          password: ${{secrets.OPENSHIFT_SA_PASSWORD}}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+
+      - name: Legacy npm build
+        run: |
+          npm install
+          npm run build
+        working-directory: frontend-legacy
+
+      - name: Docker build
+        run: |
+          FONTAWESOME_PACKAGE_TOKEN=${{ secrets.FONTAWESOME_PACKAGE_TOKEN }} docker build --secret id=FONTAWESOME_PACKAGE_TOKEN -t ${{ env.IMAGE_NAME }} -f frontend/Dockerfile.prod .
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:latest
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
+
+      - name: Push Docker image
+        run: docker push --all-tags ${{ env.REGISTRY_IMAGE }}
+
+  build-backend:
+    runs-on: ubuntu-24.04
+    env:
+      IMAGE_NAME: backend-${{ github.ref_name }}
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v3
+
+      - name: Set env
+        run: |
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "REGISTRY_IMAGE=${{ vars.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ vars.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
+
+      - name: Login to OpenShift Container Repository
+        uses: docker/login-action@v3
+        with:
+          registry: ${{vars.OPENSHIFT_EXTERNAL_REPOSITORY}}
+          username: ${{vars.OPENSHIFT_SA_USERNAME}}
+          password: ${{secrets.OPENSHIFT_SA_PASSWORD}}
+
+      - name: Docker build
+        run: |
+          docker build -t ${{ env.IMAGE_NAME }} -f Dockerfile.prod .
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:latest
+          docker tag ${{ env.IMAGE_NAME }} ${{ env.REGISTRY_IMAGE }}:${{ env.SHORT_SHA }}
+        working-directory: backend
+
+      - name: Push Docker image
+        run: docker push --all-tags ${{ env.REGISTRY_IMAGE }}
+  deploy:
+    runs-on: ubuntu-24.04
+    needs: [build-frontend, build-backend]
+    steps:
+      - name: Install OpenShift CLI tools
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: "4.14"
+
+      - name: Login OpenShift
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: ${{ vars.OPENSHIFT_SERVER_URL }}
+          openshift_token: ${{ secrets.OPENSHIFT_SERVICE_TOKEN }}
+
+      - name: Trigger rollout
+        run: |
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-frontend
+          oc -n ${{ vars.OPENSHIFT_LICENSE_PLATE }}-dev rollout restart deployment ${{ github.ref_name }}-backend
