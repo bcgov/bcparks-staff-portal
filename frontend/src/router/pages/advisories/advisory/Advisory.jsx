@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect, useContext } from "react";
-import { cmsAxios } from "@/lib/advisories/axios_config";
 import { Navigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Advisory.css";
@@ -10,27 +9,9 @@ import {
   calculateAfterHours,
   getApproverAdvisoryFields,
   getSubmitterAdvisoryFields,
-  calculateIsStatHoliday,
 } from "@/lib/advisories/utils/AdvisoryUtil";
 import AdvisoryForm from "@/components/advisories/composite/advisoryForm/AdvisoryForm";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
-import {
-  getProtectedAreas,
-  getRegions,
-  getSections,
-  getManagementAreas,
-  getSites,
-  getFireCentres,
-  getFireZones,
-  getNaturalResourceDistricts,
-  getEventTypes,
-  getAccessStatuses,
-  getUrgencies,
-  getAdvisoryStatuses,
-  getLinkTypes,
-  getBusinessHours,
-  getStandardMessages,
-} from "@/lib/advisories/utils/CmsDataUtil";
 import {
   labelCompare,
   camelCaseToSentenceCase,
@@ -40,12 +21,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import qs from "qs";
 import useAccess from "@/hooks/useAccess";
+import useCms from "@/hooks/useCms";
 import ErrorContext from "@/contexts/ErrorContext";
-import CmsDataContext from "@/contexts/CmsDataContext";
 
 export default function Advisory({ mode }) {
   const { setError } = useContext(ErrorContext);
-  const { cmsData, setCmsData } = useContext(CmsDataContext);
 
   const [revisionNumber, setRevisionNumber] = useState();
   const [standardMessages, setStandardMessages] = useState([]);
@@ -115,11 +95,31 @@ export default function Advisory({ mode }) {
   const [formError, setFormError] = useState("");
 
   const { hasAnyRole } = useAccess();
+  const {
+    calculateIsStatHoliday,
+    cmsGet,
+    cmsPost,
+    cmsPut,
+    getProtectedAreas,
+    getRegions,
+    getSections,
+    getManagementAreas,
+    getSites,
+    getFireCentres,
+    getFireZones,
+    getNaturalResourceDistricts,
+    getEventTypes,
+    getAccessStatuses,
+    getUrgencies,
+    getAdvisoryStatuses,
+    getLinkTypes,
+    getBusinessHours,
+    getStandardMessages,
+  } = useCms();
 
   const auth = useAuth();
   const initialized = !auth.isLoading;
   const isAuthenticated = auth.isAuthenticated;
-  const keycloakToken = auth.user?.access_token;
 
   // In "update" mode, track when the original data from the CMS is loaded
   // to prevent re-fetching
@@ -154,31 +154,19 @@ export default function Advisory({ mode }) {
   );
 
   // Reset originalDataLoaded to false when documentId or mode changes
-  // (if navigating to a different advisory or changing editing modes)
+  // when navigating to a different advisory or changing editing modes
   useEffect(() => {
     originalDataLoaded.current = false;
   }, [documentId, mode]);
 
   useEffect(() => {
     if (initialized && isAuthenticated) {
-      Promise.resolve(getBusinessHours(cmsData, setCmsData)).then((res) => {
+      Promise.resolve(getBusinessHours()).then((res) => {
         setIsAfterHours(calculateAfterHours(res));
       });
-      calculateIsStatHoliday(
-        setIsStatHoliday,
-        cmsData,
-        setCmsData,
-        keycloakToken,
-      );
+      calculateIsStatHoliday(setIsStatHoliday);
     }
-  }, [
-    isAuthenticated,
-    initialized,
-    setIsStatHoliday,
-    setIsAfterHours,
-    cmsData,
-    setCmsData,
-  ]);
+  }, [isAuthenticated, initialized, calculateIsStatHoliday, getBusinessHours]);
 
   function setLinkIds() {
     const linkIds = [];
@@ -195,13 +183,9 @@ export default function Advisory({ mode }) {
     if (mode === "update" && !isLoadingData && !originalDataLoaded.current) {
       if (documentId) {
         setAdvisoryId(documentId);
-        cmsAxios
-          .get(`public-advisory-audits/${documentId}?${query}`, {
-            headers: { Authorization: `Bearer ${keycloakToken}` },
-          })
-          .then((res) => {
+        cmsGet(`public-advisory-audits/${documentId}?${query}`)
+          .then((advisoryData) => {
             linksRef.current = [];
-            const advisoryData = res.data.data;
 
             setRevisionNumber(advisoryData.revisionNumber);
             setHeadline(advisoryData.title || "");
@@ -432,48 +416,18 @@ export default function Advisory({ mode }) {
     documentId,
     query,
     mode,
-    setHeadline,
-    setDescription,
-    setIsSafetyRelated,
-    setListingRank,
-    setSubmittedBy,
-    setEventType,
-    setUrgency,
-    setAdvisoryStatus,
-    setAdvisoryDate,
-    setUpdatedDate,
-    setStartDate,
-    setEndDate,
-    setExpiryDate,
-    setAccessStatus,
-    setDisplayAdvisoryDate,
-    setDisplayStartDate,
-    setDisplayEndDate,
-    setDisplayUpdatedDate,
-    setNotes,
     isLoadingData,
-    eventTypes,
-    setToError,
     setError,
     standardMessages,
-    setSelectedStandardMessages,
     protectedAreas,
-    setSelectedProtectedAreas,
     regions,
-    setSelectedRegions,
     sections,
-    setSelectedSections,
     managementAreas,
-    setSelectedManagementAreas,
     sites,
-    setSelectedSites,
     fireCentres,
-    setSelectedFireCentres,
     fireZones,
-    setSelectedFireZones,
     naturalResourceDistricts,
-    setSelectedNaturalResourceDistricts,
-    keycloakToken,
+    cmsGet,
   ]);
 
   useEffect(() => {
@@ -482,20 +436,20 @@ export default function Advisory({ mode }) {
 
       setIsApprover(approver);
       Promise.all([
-        getProtectedAreas(cmsData, setCmsData),
-        getRegions(cmsData, setCmsData),
-        getSections(cmsData, setCmsData),
-        getManagementAreas(cmsData, setCmsData),
-        getSites(cmsData, setCmsData),
-        getFireCentres(cmsData, setCmsData),
-        getFireZones(cmsData, setCmsData),
-        getNaturalResourceDistricts(cmsData, setCmsData),
-        getEventTypes(cmsData, setCmsData),
-        getAccessStatuses(cmsData, setCmsData),
-        getUrgencies(cmsData, setCmsData),
-        getAdvisoryStatuses(cmsData, setCmsData),
-        getLinkTypes(cmsData, setCmsData),
-        getStandardMessages(cmsData, setCmsData),
+        getProtectedAreas(),
+        getRegions(),
+        getSections(),
+        getManagementAreas(),
+        getSites(),
+        getFireCentres(),
+        getFireZones(),
+        getNaturalResourceDistricts(),
+        getEventTypes(),
+        getAccessStatuses(),
+        getUrgencies(),
+        getAdvisoryStatuses(),
+        getLinkTypes(),
+        getStandardMessages(),
       ])
         .then((res) => {
           const protectedAreaData = res[0];
@@ -670,36 +624,26 @@ export default function Advisory({ mode }) {
         });
     }
   }, [
-    setStandardMessages,
-    setProtectedAreas,
-    setRegions,
-    setSections,
-    setManagementAreas,
-    setSites,
-    setFireCentres,
-    setFireZones,
-    setNaturalResourceDistricts,
-    setUrgencies,
-    setAdvisoryStatuses,
-    setAccessStatuses,
-    setEventTypes,
-    setLinkTypes,
-    setUrgency,
-    setToError,
     setError,
     isAuthenticated,
     initialized,
     auth.user?.profile?.name,
-    setIsLoadingData,
-    setIsLoadingPage,
-    setIsAfterHours,
-    setLinks,
-    setSubmittedBy,
     mode,
-    cmsData,
-    setCmsData,
-    setIsApprover,
     hasAnyRole,
+    getProtectedAreas,
+    getRegions,
+    getSections,
+    getManagementAreas,
+    getSites,
+    getFireCentres,
+    getFireZones,
+    getNaturalResourceDistricts,
+    getEventTypes,
+    getAccessStatuses,
+    getUrgencies,
+    getAdvisoryStatuses,
+    getLinkTypes,
+    getStandardMessages,
   ]);
 
   function setToBack() {
@@ -762,23 +706,19 @@ export default function Advisory({ mode }) {
         title: link.title,
       },
     };
-    const res = await cmsAxios
-      .post(`links`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.error("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-        return null;
+    const res = await cmsPost(`links`, linkRequest).catch((error) => {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not save attachments",
       });
+      return null;
+    });
 
     if (!res) return null;
 
-    return res.data.data.documentId;
+    return res.documentId;
   }
 
   async function uploadMedia(id, file) {
@@ -791,28 +731,24 @@ export default function Advisory({ mode }) {
     fileForm.append("files", file);
     fileForm.append("data", JSON.stringify(data));
 
-    const res = await cmsAxios
-      .post(`upload`, fileForm, {
-        // or { 'data': fileForm }
-        headers: {
-          "Content-Type": "multipart/form-data",
-          Authorization: `Bearer ${keycloakToken}`,
-        },
-      })
-      .catch((error) => {
-        console.error("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-        return null;
+    const res = await cmsPost(`upload`, fileForm, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }).catch((error) => {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not save attachments",
       });
+      return null;
+    });
 
     if (!res) return null;
 
-    if (res.data.length > 0) {
-      return res.data[0];
+    if (res.length > 0) {
+      return res[0];
     }
     setToError(true);
     setError({
@@ -839,23 +775,19 @@ export default function Advisory({ mode }) {
       },
     };
 
-    const res = await cmsAxios
-      .put(`links/${id}`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.error("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not save attachments",
-        });
-        return null;
+    const res = await cmsPut(`links/${id}`, linkRequest).catch((error) => {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not save attachments",
       });
+      return null;
+    });
 
     if (!res) return null;
 
-    return res.data.data;
+    return res;
   }
 
   async function saveMediaAttachment(id, link) {
@@ -885,23 +817,19 @@ export default function Advisory({ mode }) {
         type: link.type,
       },
     };
-    const res = await cmsAxios
-      .post(`links`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.error("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not process advisory update",
-        });
-        return null;
+    const res = await cmsPost(`links`, linkRequest).catch((error) => {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not process advisory update",
       });
+      return null;
+    });
 
     if (!res) return null;
 
-    return res.data.data;
+    return res;
   }
 
   async function saveLink(link, id) {
@@ -917,23 +845,19 @@ export default function Advisory({ mode }) {
         type: link.type,
       },
     };
-    const res = await cmsAxios
-      .put(`links/${id}`, linkRequest, {
-        headers: { Authorization: `Bearer ${keycloakToken}` },
-      })
-      .catch((error) => {
-        console.error("error occurred", error);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not process advisory update",
-        });
-        return null;
+    const res = await cmsPut(`links/${id}`, linkRequest).catch((error) => {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not process advisory update",
       });
+      return null;
+    });
 
     if (!res) return null;
 
-    return res.data.data;
+    return res;
   }
 
   async function saveLinks() {
@@ -1040,16 +964,9 @@ export default function Advisory({ mode }) {
             isAfterHourPublish,
         };
 
-        cmsAxios // -audit OR -audits
-          .post(
-            `public-advisory-audits`,
-            { data: newAdvisory },
-            {
-              headers: { Authorization: `Bearer ${keycloakToken}` },
-            },
-          )
-          .then((res) => {
-            setAdvisoryId(res.data.data.documentId);
+        cmsPost(`public-advisory-audits`, { data: newAdvisory })
+          .then((advisory) => {
+            setAdvisoryId(advisory.documentId);
             setIsSubmitting(false);
             setIsSavingDraft(false);
             setIsConfirmation(true);
@@ -1146,16 +1063,11 @@ export default function Advisory({ mode }) {
             updatedAdvisory.isUrgentAfterHours = true;
           }
 
-          cmsAxios
-            .put(
-              `public-advisory-audits/${documentId}`,
-              { data: updatedAdvisory },
-              {
-                headers: { Authorization: `Bearer ${keycloakToken}` },
-              },
-            )
-            .then((res) => {
-              setAdvisoryId(res.data.data.documentId);
+          cmsPut(`public-advisory-audits/${documentId}`, {
+            data: updatedAdvisory,
+          })
+            .then((advisory) => {
+              setAdvisoryId(advisory.documentId);
               setIsSubmitting(false);
               setIsSavingDraft(false);
               setIsConfirmation(true);
