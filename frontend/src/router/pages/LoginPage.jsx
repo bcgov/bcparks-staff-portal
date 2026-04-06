@@ -14,7 +14,7 @@ export default function LoginPage() {
     (idp) => {
       auth.signinRedirect({
         // eslint-disable-next-line camelcase -- 'redirect_uri' is required by Keycloak
-        redirect_uri: getEnv("VITE_FRONTEND_BASE_URL"),
+        redirect_uri: new URL("/", getEnv("VITE_FRONTEND_BASE_URL")).toString(),
         extraQueryParams: {
           // eslint-disable-next-line camelcase -- 'kc_idp_hint' is required by Keycloak
           kc_idp_hint: idp,

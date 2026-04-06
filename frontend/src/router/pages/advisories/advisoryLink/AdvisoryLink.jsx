@@ -21,7 +21,7 @@ export default function AdvisoryLink() {
         if (!auth.isAuthenticated) {
           auth.signinRedirect({
             // eslint-disable-next-line camelcase -- 'redirect_uri' is required by Keycloak
-            redirect_uri: `${getEnv("VITE_FRONTEND_BASE_URL")}/advisory-link/${advisoryNumber}`,
+            redirect_uri: new URL(`/advisory-link/${advisoryNumber}`, getEnv("VITE_FRONTEND_BASE_URL")).toString(),
             // eslint-disable-next-line camelcase -- 'kc_idp_hint' is required by Keycloak
             extraQueryParams: { kc_idp_hint: "idir" },
           });
