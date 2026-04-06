@@ -343,13 +343,59 @@ function formatDate(date) {
 }
 
 /**
+ * Returns the applicable park-level date type IDs for the season.
+ * @param {Park} park The park model
+ * @param {Season} season The season model
+ * @returns {number[]} Applicable Strapi date type IDs
+ */
+function getApplicableParkDateTypeIds(park, season) {
+  if (season.seasonType === SEASON_TYPE.WINTER) {
+    return park.hasWinterFeeDates ? [DATE_TYPE.WINTER_FEE] : [];
+  }
+
+  const dateTypeIds = [];
+
+  if (park.hasTier1Dates) {
+    dateTypeIds.push(DATE_TYPE.TIER_1);
+  }
+
+  if (park.hasTier2Dates) {
+    dateTypeIds.push(DATE_TYPE.TIER_2);
+  }
+
+  if (park.gateDetails?.hasGate === true) {
+    dateTypeIds.push(DATE_TYPE.PARK_GATE_OPEN);
+  }
+
+  return dateTypeIds;
+}
+
+/**
  * Fetches date ranges for an entity and season, and formats them for publishing.
  * @param {Object} entity The entity object (e.g., Park, Feature)
  * @param {Season} season The season object
+ * @param {Object} [options={}] Formatting options
+ * @param {number[]|null} [options.allowedDateTypeIds=null] Allowed Strapi date type IDs
+ * @param {boolean} [options.allowEmpty=false] Whether an empty dateRanges result is allowed
  * @returns {Array} Array of formatted DateRange objects
  * @throws {Error} If no valid date ranges are found
  */
-async function formatDateRanges(entity, season) {
+async function formatDateRanges(entity, season, options = {}) {
+  const { allowedDateTypeIds = null, allowEmpty = false } = options;\
+
+  // @TEMP: Filter out FCFS dates while they're being hidden in the UI
+  const strapiDateTypeIdWhere = {
+    [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
+  };
+
+  if (Array.isArray(allowedDateTypeIds) && allowedDateTypeIds.length === 0) {
+    return [];
+  }
+
+  if (Array.isArray(allowedDateTypeIds)) {
+    strapiDateTypeIdWhere[Op.in] = allowedDateTypeIds;
+  }
+
   // Fetch all date ranges for this season
   const dateRangesRows = await DateRange.findAll({
     attributes: ["startDate", "endDate", "dateTypeId"],
@@ -366,16 +412,15 @@ async function formatDateRanges(entity, season) {
         attributes: ["id", "strapiDateTypeId"],
 
         where: {
-          // @TEMP: Filter out FCFS dates while they're being hidden in the UI
-          strapiDateTypeId: {
-            [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
-          },
+          strapiDateTypeId: strapiDateTypeIdWhere,
         },
       },
     ],
   });
 
   if (dateRangesRows.length === 0) {
+    if (allowEmpty) return [];
+
     throw new Error(
       `No date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}, dateableId: ${entity.dateableId}`,
     );
@@ -433,17 +478,19 @@ async function formatDateRanges(entity, season) {
 
 /**
  * Formats gate details with default values for missing fields.
- * @param {GateDetail} [gateDetails={}] The gate details object (or null, if not found)
+ * @param {GateDetail|null} [gateDetails] The gate details object (or null, if not found)
  * @returns {Object} Formatted gate info with all required fields
  */
-function formatGateInfo(gateDetails = {}) {
+function formatGateInfo(gateDetails) {
+  const gate = gateDetails ?? {};
+
   return {
-    hasGate: gateDetails.hasGate ?? false,
-    gateOpenTime: gateDetails.gateOpenTime ?? null,
-    gateCloseTime: gateDetails.gateCloseTime ?? null,
-    gateOpensAtDawn: gateDetails.gateOpensAtDawn ?? false,
-    gateClosesAtDusk: gateDetails.gateClosesAtDusk ?? false,
-    gateOpen24Hours: gateDetails.gateOpen24Hours ?? false,
+    hasGate: gate.hasGate ?? false,
+    gateOpenTime: gate.gateOpenTime ?? null,
+    gateCloseTime: gate.gateCloseTime ?? null,
+    gateOpensAtDawn: gate.gateOpensAtDawn ?? false,
+    gateClosesAtDusk: gate.gateClosesAtDusk ?? false,
+    gateOpen24Hours: gate.gateOpen24Hours ?? false,
     gateNote: "", // Currently no note field in GateDetails
   };
 }
@@ -460,7 +507,11 @@ async function formatParkData(park, season) {
   if (!park.orcs) return null;
 
   try {
-    const dateRanges = await formatDateRanges(park, season);
+    const allowedDateTypeIds = getApplicableParkDateTypeIds(park, season);
+    const dateRanges = await formatDateRanges(park, season, {
+      allowedDateTypeIds,
+      allowEmpty: allowedDateTypeIds.length === 0,
+    });
     const gateInfo = formatGateInfo(park.gateDetails);
 
     // Return formatted Park data
@@ -577,7 +628,15 @@ router.post(
           model: Park,
           as: "park",
 
-          attributes: ["id", "orcs", "publishableId", "dateableId"],
+          attributes: [
+            "id",
+            "orcs",
+            "publishableId",
+            "dateableId",
+            "hasTier1Dates",
+            "hasTier2Dates",
+            "hasWinterFeeDates",
+          ],
 
           include: [
             {
