@@ -649,28 +649,28 @@ export default function ParkInfo() {
                       {parkActivities && parkActivities.length > 0 && (
                         <div>
                           <div className="row pt2b2 mx-0">
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
+                            <div className="col-xl-3 col-12 park-header">
                               Activity
                             </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
+                            <div className="col-xl-1 col-12 park-header">
                               Display
                             </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
+                            <div className="col-xl-1 col-12 park-header">
                               Open
                             </div>
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
+                            <div className="col-xl-3 col-12 park-header">
                               Fees
                             </div>
-                            <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
+                            <div className="col-xl-4 col-12 park-header no-right-border">
                               Description
                             </div>
                           </div>
                           {parkActivities.map((a) => (
                             <div className="row pt2b2 mx-0" key={`activity-${a.id}`}>
-                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                              <div className="col-xl-3 col-12 park-content">
                                 {a.name}
                               </div>
-                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                              <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
                                   checked={a.isActive}
                                   name={`${a.id}-is-active`}
@@ -682,7 +682,7 @@ export default function ParkInfo() {
                                   }}
                                 />
                               </div>
-                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                              <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
                                   checked={a.isActivityOpen}
                                   name={`${a.id}-is-open`}
@@ -694,10 +694,10 @@ export default function ParkInfo() {
                                   }}
                                 />
                               </div>
-                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                              <div className="col-xl-3 col-12 park-content">
                                 Add a fee
                               </div>
-                              <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
+                              <div className="col-xl-4 col-12 park-content no-right-border">
                                 <div className="wrap-text">
                                   <Accordion
                                     className="park-desc"
@@ -804,28 +804,28 @@ export default function ParkInfo() {
                       {parkFacilities && parkFacilities.length > 0 && (
                         <div>
                           <div className="row pt2b2 mx-0">
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
+                            <div className="col-xl-3 col-12 park-header">
                               Facility
                             </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
+                            <div className="col-xl-1 col-12 park-header">
                               Display
                             </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
+                            <div className="col-xl-1 col-12 park-header">
                               Open
                             </div>
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
+                            <div className="col-xl-3 col-12 park-header">
                               Fees
                             </div>
-                            <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
+                            <div className="col-xl-4 col-12 park-header no-right-border">
                               Description
                             </div>
                           </div>
                           {parkFacilities.map((f) => (
                             <div className="row pt2b2 mx-0" key={`facility-${f.id}`}>
-                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                              <div className="col-xl-3 col-12 park-content">
                                 {f.name}
                               </div>
-                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                              <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
                                   checked={f.isActive}
                                   name={`${f.id}-is-active`}
@@ -837,7 +837,7 @@ export default function ParkInfo() {
                                   }}
                                 />
                               </div>
-                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                              <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
                                   checked={f.isFacilityOpen}
                                   name={`${f.id}-is-open`}
@@ -849,10 +849,10 @@ export default function ParkInfo() {
                                   }}
                                 />
                               </div>
-                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                              <div className="col-xl-3 col-12 park-content">
                                 Add a fee
                               </div>
-                              <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
+                              <div className="col-xl-4 col-12 park-content no-right-border">
                                 <div className="wrap-text">
                                   <Accordion
                                     className="park-desc"
@@ -959,19 +959,19 @@ export default function ParkInfo() {
                       {parkCampingTypes && parkCampingTypes.length > 0 && (
                         <div>
                           <div className="row pt2b2 mx-0">
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
+                            <div className="col-xl-3 col-12 park-header">
                               Camping Type
                             </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
+                            <div className="col-xl-1 col-12 park-header">
                               Display
                             </div>
-                            <div className="col-lg-1 col-md-12 col-12 park-header">
+                            <div className="col-xl-1 col-12 park-header">
                               Open
                             </div>
-                            <div className="col-lg-3 col-md-12 col-12 park-header">
+                            <div className="col-xl-3 col-12 park-header">
                               Fees
                             </div>
-                            <div className="col-lg-4 col-md-12 col-12 park-header no-right-border">
+                            <div className="col-xl-4 col-12 park-header no-right-border">
                               Description
                             </div>
                           </div>
@@ -980,10 +980,10 @@ export default function ParkInfo() {
                               className="row pt2b2 mx-0"
                               key={`campingType-${f.id}`}
                             >
-                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                              <div className="col-xl-3 col-12 park-content">
                                 {f.name.split(":")[1] || f.name}
                               </div>
-                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                              <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
                                   checked={f.isActive}
                                   name={`${f.id}-is-active`}
@@ -995,7 +995,7 @@ export default function ParkInfo() {
                                   }}
                                 />
                               </div>
-                              <div className="col-lg-1 col-md-12 col-12 park-content">
+                              <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
                                   checked={f.isCampingOpen}
                                   name={`${f.id}-is-open`}
@@ -1007,10 +1007,10 @@ export default function ParkInfo() {
                                   }}
                                 />
                               </div>
-                              <div className="col-lg-3 col-md-12 col-12 park-content">
+                              <div className="col-xl-3 col-12 park-content">
                                 Add a fee
                               </div>
-                              <div className="col-lg-4 col-md-12 col-12 park-content no-right-border">
+                              <div className="col-xl-4 col-12 park-content no-right-border">
                                 <div className="wrap-text">
                                   <Accordion
                                     className="park-desc"
