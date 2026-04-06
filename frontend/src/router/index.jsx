@@ -5,6 +5,7 @@ import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
 import MainLayout from "./layouts/MainLayout";
+import MainLayoutPublic from "./layouts/MainLayoutPublic";
 import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
 import LoginPage from "./pages/LoginPage";
@@ -19,6 +20,7 @@ import ParkInfo from "./pages/advisories/parkInfo/ParkInfo";
 import Advisory from "./pages/advisories/advisory/Advisory";
 import AdvisorySummary from "./pages/advisories/advisorySummary/AdvisorySummary";
 import AdvisoryLink from "./pages/advisories/advisoryLink/AdvisoryLink";
+import ProtectedRoute from "./ProtectedRoute";
 
 import { ROLES } from "@/config/permissions";
 
@@ -27,21 +29,23 @@ const RouterConfig = createBrowserRouter([
   // or redirect to "/" if already authenticated.
   {
     path: "/login",
-    element: <MainLayout isPublic />,
+    element: <MainLayoutPublic />,
     children: [{ path: "", element: <LoginPage /> }],
   },
 
   // Root path - Advisories portal
   {
     path: "/",
-    // Protect the entire route with the AuthProvider
 
+    // Protect the entire route with the ProtectedRoute component
     element: (
-      <ErrorProvider>
-        <CmsDataProvider>
-          <MainLayout />
-        </CmsDataProvider>
-      </ErrorProvider>
+      <ProtectedRoute>
+        <ErrorProvider>
+          <CmsDataProvider>
+            <MainLayout />
+          </CmsDataProvider>
+        </ErrorProvider>
+      </ProtectedRoute>
     ),
 
     children: [
@@ -141,21 +145,24 @@ const RouterConfig = createBrowserRouter([
   // DOOT "Unauthorized" message for users without the doot user role in Keycloak
   {
     path: "/dates/unauthorized",
-    element: <MainLayout isPublic />,
+    element: <MainLayoutPublic />,
     children: [{ path: "", element: <Unauthorized /> }],
   },
 
   // /dates/ path - Dates of Operation Tool
   {
     path: "/dates/",
-    // Protect the entire app with the AuthProvider
+
+    // Protect the entire route with the ProtectedRoute component
     element: (
-      <AccessControlledRoute
-        redirectTo="/dates/unauthorized"
-        allowedRoles={[ROLES.DOOT_USER]}
-      >
-        <MainLayout />
-      </AccessControlledRoute>
+      <ProtectedRoute>
+        <AccessControlledRoute
+          redirectTo="/dates/unauthorized"
+          allowedRoles={[ROLES.DOOT_USER]}
+        >
+          <MainLayout />
+        </AccessControlledRoute>
+      </ProtectedRoute>
     ),
     errorElement: <ErrorPage />,
 

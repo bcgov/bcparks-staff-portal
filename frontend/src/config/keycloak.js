@@ -1,6 +1,8 @@
 import getEnv from "./getEnv";
 import { WebStorageStateStore } from "oidc-client-ts";
 
+const frontendBaseUrl = getEnv("VITE_FRONTEND_BASE_URL");
+
 export const oidcConfig = {
   authority: getEnv("VITE_OIDC_AUTHORITY"),
   client_id: getEnv("VITE_OIDC_CLIENT_ID"),
@@ -10,8 +12,11 @@ export const oidcConfig = {
   }),
 
   // Redirect back to the page you were on after logging in
-  redirect_uri: `${window.location.origin}${window.location.pathname}`,
-  post_logout_redirect_uri: `${window.location.origin}/dates/?logged-out`,
+  redirect_uri: new URL(window.location.pathname, frontendBaseUrl).toString(),
+  post_logout_redirect_uri: new URL(
+    "/login?logged-out",
+    frontendBaseUrl,
+  ).toString(),
 
   // Automatically renew the access token before it expires
   automaticSilentRenew: true,

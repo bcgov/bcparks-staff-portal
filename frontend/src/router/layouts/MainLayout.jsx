@@ -1,5 +1,4 @@
 import { useMemo, useState, useEffect } from "react";
-import PropTypes from "prop-types";
 import { Outlet, Link } from "react-router-dom";
 import "./MainLayout.scss";
 import logo from "@/assets/bc-parks-logo.svg";
@@ -17,7 +16,7 @@ import { Alert } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
 
-export default function MainLayout({ isPublic = false }) {
+export default function MainLayout() {
   const { logOut, isAuthenticated } = useAccess();
   const globalFlashMessage = useFlashMessage();
 
@@ -148,11 +147,8 @@ export default function MainLayout({ isPublic = false }) {
           )}
 
           <main className="p-0 d-flex flex-column flex-md-row">
-            {/* Use the layout with no sidebar for public pages page */}
-            {isPublic && <Outlet />}
-
             {/* Authenticated user with roles: show sidebar and main content */}
-            {!isPublic && isAuthenticated && (
+            {isAuthenticated && (
               <>
                 <NavSidebar />
                 <div className="flex-fill" style={{ overflowX: "auto" }}>
@@ -195,7 +191,3 @@ export default function MainLayout({ isPublic = false }) {
     </FlashMessageContext.Provider>
   );
 }
-
-MainLayout.propTypes = {
-  isPublic: PropTypes.bool,
-};
