@@ -14,13 +14,12 @@ function querySort(key) {
   return qs.stringify(
     {
       sort: [key],
-    },
-    {
       pagination: {
-        limit: -1,
+        // Large number to return all items on a single page
+        limit: 2000,
       },
-      encodeValuesOnly: true,
     },
+    { encodeValuesOnly: true },
   );
 }
 
