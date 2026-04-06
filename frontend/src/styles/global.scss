@@ -19,6 +19,9 @@
 // Advisories portal custom styles
 @use "advisories";
 
+// UL and OL styles
+@use "list";
+
 // Break inside words on when nevessary on top-level headings
 h1 {
   overflow-wrap: break-word;
