@@ -660,8 +660,9 @@ export default function AdvisoryForm({
                         onBlur={() =>
                           validateLink(l, idx, "type", setLinkTypeErrors)
                         }
-                        menuPosition="fixed"
-                        menuPortalTarget={document.body}
+                        styles={{
+                          menu: (base) => ({ ...base, zIndex: 9999 }),
+                        }}
                       />
                       {renderHelperText(
                         linkTypeErrors[idx] && "Please provide a link type",
@@ -720,7 +721,10 @@ export default function AdvisoryForm({
                           onChange={(event) => {
                             updateLink(idx, "url", event.target.value);
                           }}
-                          className={getControlClassName(linkUrlErrors[idx], "url")}
+                          className={getControlClassName(
+                            linkUrlErrors[idx],
+                            "url",
+                          )}
                           onBlur={() =>
                             validateLink(l, idx, "url", setLinkUrlErrors)
                           }
