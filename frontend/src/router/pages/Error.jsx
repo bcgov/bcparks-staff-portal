@@ -8,8 +8,6 @@ export default function ErrorPage() {
   const routeError = useRouteError();
   const { error: contextError } = useContext(ErrorContext) ?? { error: null };
 
-  console.error(routeError);
-
   // If the routeError is null, it means this page was rendered manually
   // via setError in ErrorProvider, so get the error message from the ErrorProvider context instead.
   if (routeError === null && contextError) {
@@ -17,6 +15,8 @@ export default function ErrorPage() {
     // Render the Legacy error page with the context error message
     return <LegacyErrorPage error={contextError} />;
   }
+
+  console.error(routeError);
 
   return (
     <div id="error-page">

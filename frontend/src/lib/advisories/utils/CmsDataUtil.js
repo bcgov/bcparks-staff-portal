@@ -1,6 +1,12 @@
 import { cmsAxios } from "@/lib/advisories/axios_config";
 import qs from "qs";
 
+/*
+ * DEPRECATED: use the `useCms` hook instead.
+ * These functions will be phased out as we add new features in the Advisory pages.
+ * All exported functions from this file can be replaced with the corresponding functions from the `useCms` hook.
+ */
+
 const querySort = (key) =>
   qs.stringify(
     {
