@@ -535,6 +535,9 @@ export default function Advisory({ mode }) {
 
           setEventTypes([...newEventTypes]);
           const accessStatusData = res[9];
+
+          console.log("Access Status Data:", accessStatusData);
+
           const newAccessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
             value: a.documentId,
@@ -613,7 +616,9 @@ export default function Advisory({ mode }) {
           setSubmitter(auth.user?.profile?.name);
           setIsLoadingData(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error("error occurred fetching dropdown data?", error);
+
           setToError(true);
           setError({
             status: 500,
