@@ -379,6 +379,21 @@ export default function AdvisoryDashboard() {
     };
   }, [initialized, keycloak, keycloakToken, cmsData, setCmsData, setError]);
 
+  const regionOptions = useMemo(
+    () =>
+      regions.map((r) => ({ label: `${r.regionName} Region`, value: r.id })),
+    [regions],
+  );
+
+  const parkOptions = useMemo(
+    () =>
+      protectedAreas.map((p) => ({
+        label: p.protectedAreaName,
+        value: p.documentId,
+      })),
+    [protectedAreas],
+  );
+
   const tableColumns = useMemo(
     () => [
       {
@@ -716,10 +731,7 @@ export default function AdvisoryDashboard() {
           <div className="col-xl-4 col-md-4 col-sm-12">
             <Select
               value={selectedRegion}
-              options={regions.map((r) => ({
-                label: `${r.regionName} Region`,
-                value: r.id,
-              }))}
+              options={regionOptions}
               onChange={(e) => {
                 setSelectedRegion(e);
                 setSelectedRegionId(e ? e.value : 0);
@@ -747,10 +759,7 @@ export default function AdvisoryDashboard() {
           <div className="col-xl-5 col-md-4 col-sm-12">
             <Select
               value={selectedPark}
-              options={protectedAreas.map((p) => ({
-                label: p.protectedAreaName,
-                value: p.documentId,
-              }))}
+              options={parkOptions}
               onChange={(e) => {
                 setSelectedPark(e);
                 setSelectedParkId(e ? e.value : 0);
