@@ -5,8 +5,7 @@ import "./ParkInfo.css";
 import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import { useAuth } from "react-oidc-context";
-import { cmsAxios } from "@/lib/advisories/axios_config";
-import { getRegions, getSections } from "@/lib/advisories/utils/CmsDataUtil";
+import useCms from "@/hooks/useCms";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { Accordion, Form, Tab, Tabs } from "react-bootstrap";
 import moment from "moment";
@@ -15,6 +14,7 @@ import HTMLArea from "@/components/advisories/base/HTMLArea/HTMLArea";
 import qs from "qs";
 
 export default function ParkInfo() {
+  const { cmsGet, cmsPut, getRegions, getSections } = useCms();
   const { setError } = useContext(ErrorContext);
   const { cmsData, setCmsData } = useContext(CmsDataContext);
   const [isLoading, setIsLoading] = useState(true);
@@ -36,7 +36,6 @@ export default function ParkInfo() {
   const auth = useAuth();
   const initialized = !auth.isLoading;
   const keycloak = auth.isAuthenticated ? auth.user : null;
-  const keycloakToken = auth.user?.access_token;
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -77,26 +76,26 @@ export default function ParkInfo() {
 
     if (initialized && keycloak && loadParkInfo) {
       Promise.all([
-        cmsAxios.get(`/protected-areas?${query}`),
-        getRegions(cmsData, setCmsData),
-        getSections(cmsData, setCmsData),
+        cmsGet(`/protected-areas?${query}`),
+        getRegions(),
+        getSections(),
       ])
-        .then((res) => {
-          const protectedAreaData = res[0].data.data[0];
+        .then(([protectedAreas, regions, sections]) => {
+          const protectedAreaData = protectedAreas[0];
 
           if (protectedAreaData.managementAreas?.length > 0) {
             const managementArea = protectedAreaData.managementAreas[0];
 
             protectedAreaData.managementAreaName =
               managementArea.managementAreaName;
-            const region = cmsData.regions.filter(
+            const region = regions.filter(
               (r) => r.documentId === managementArea.region.documentId,
             );
 
             if (region.length > 0) {
               protectedAreaData.regionName = region[0].regionName;
             }
-            const section = cmsData.sections.filter(
+            const section = sections.filter(
               (s) => s.documentId === managementArea.section.documentId,
             );
 
@@ -267,14 +266,7 @@ export default function ParkInfo() {
         activityType: activity.activityType?.documentId,
       };
 
-      cmsAxios
-        .put(
-          `park-activities/${activityId}`,
-          { data: parkActivity },
-          {
-            headers: { Authorization: `Bearer ${keycloakToken}` },
-          },
-        )
+      cmsPut(`park-activities/${activityId}`, { data: parkActivity })
         .then(() => {
           const currentActivities = submittingActivities.filter(
             (a) => a !== activityId,
@@ -395,14 +387,7 @@ export default function ParkInfo() {
         facilityType: facility.facilityType?.documentId,
       };
 
-      cmsAxios
-        .put(
-          `park-facilities/${facilityId}`,
-          { data: parkFacility },
-          {
-            headers: { Authorization: `Bearer ${keycloakToken}` },
-          },
-        )
+      cmsPut(`park-facilities/${facilityId}`, { data: parkFacility })
         .then(() => {
           const currentFacilities = submittingFacilities.filter(
             (f) => f !== facilityId,
@@ -525,14 +510,7 @@ export default function ParkInfo() {
         campingType: campingType.campingType?.documentId,
       };
 
-      cmsAxios
-        .put(
-          `park-camping-types/${campingTypeId}`,
-          { data: parkCampingType },
-          {
-            headers: { Authorization: `Bearer ${keycloakToken}` },
-          },
-        )
+      cmsPut(`park-camping-types/${campingTypeId}`, { data: parkCampingType })
         .then(() => {
           const currentCampingTypes = submittingCampingTypes.filter(
             (f) => f !== campingTypeId,
