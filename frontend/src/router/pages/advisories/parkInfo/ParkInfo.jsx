@@ -666,9 +666,12 @@ export default function ParkInfo() {
                             </div>
                           </div>
                           {parkActivities.map((a) => (
-                            <div className="row pt2b2 mx-0" key={`activity-${a.id}`}>
+                            <div
+                              className="row pt2b2 mx-0"
+                              key={`activity-${a.id}`}
+                            >
                               <div className="col-xl-3 col-12 park-content">
-                                {a.name}
+                                {a.activityType.activityName}
                               </div>
                               <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
@@ -821,9 +824,12 @@ export default function ParkInfo() {
                             </div>
                           </div>
                           {parkFacilities.map((f) => (
-                            <div className="row pt2b2 mx-0" key={`facility-${f.id}`}>
+                            <div
+                              className="row pt2b2 mx-0"
+                              key={`facility-${f.id}`}
+                            >
                               <div className="col-xl-3 col-12 park-content">
-                                {f.name}
+                                {f.facilityType.facilityName}
                               </div>
                               <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
@@ -981,7 +987,7 @@ export default function ParkInfo() {
                               key={`campingType-${f.id}`}
                             >
                               <div className="col-xl-3 col-12 park-content">
-                                {f.name.split(":")[1] || f.name}
+                                {f.campingType.campingTypeName}
                               </div>
                               <div className="col-xl-1 col-12 park-content">
                                 <SwitchButton
