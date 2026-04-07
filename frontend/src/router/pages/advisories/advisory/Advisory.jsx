@@ -1116,12 +1116,8 @@ export default function Advisory({ mode }) {
   if (isConfirmation) {
     return (
       <Navigate
-        push
-        to={{
-          pathname: `/advisory-summary/${advisoryId}`,
-          confirmationText,
-          index: 0,
-        }}
+        to={`/advisory-summary/${advisoryId}`}
+        state={{ confirmationText }}
       />
     );
   }
