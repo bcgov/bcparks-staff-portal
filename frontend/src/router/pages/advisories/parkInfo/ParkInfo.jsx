@@ -159,7 +159,9 @@ export default function ParkInfo() {
           setIsLoading(false);
           setLoadParkInfo(false);
         }
-      } catch {
+      } catch (error) {
+        console.error("Error fetching park information", error);
+
         if (isMountedRef.current) {
           setToError(true);
           setError({
