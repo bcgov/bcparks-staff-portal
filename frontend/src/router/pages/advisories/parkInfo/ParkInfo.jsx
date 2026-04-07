@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext, useCallback } from "react";
+import { useState, useEffect, useContext, useCallback, useRef } from "react";
 import { orderBy } from "lodash-es";
 import ErrorContext from "@/contexts/ErrorContext";
 import "./ParkInfo.css";
@@ -47,12 +47,12 @@ export default function ParkInfo() {
    * - facilities
    * - camping types
    * Handles error and loading state. Called by useEffect when dependencies change.
-   * @param {boolean} isMounted Whether the component is still mounted (prevents state updates on unmounted components).
+   * @param {{ current: boolean }} isMountedRef Ref object tracking if the component is still mounted (prevents state updates on unmounted components).
    * @param {string} query Query string for the CMS API request.
    * @returns {Promise<void>} Resolves when park info is loaded and state is updated.
    */
   const fetchParkInfo = useCallback(
-    async (isMounted, query) => {
+    async (isMountedRef, query) => {
       try {
         const [protectedAreas, regions, sections] = await Promise.all([
           cmsGet(`/protected-areas?${query}`),
@@ -102,7 +102,7 @@ export default function ParkInfo() {
             ["asc"],
           );
 
-          if (isMounted) {
+          if (isMountedRef.current) {
             setParkActivities([...sortedActivities]);
           }
         }
@@ -127,7 +127,7 @@ export default function ParkInfo() {
             ["asc"],
           );
 
-          if (isMounted) {
+          if (isMountedRef.current) {
             setParkFacilities([...sortedFacilities]);
           }
         }
@@ -152,17 +152,17 @@ export default function ParkInfo() {
             ["asc"],
           );
 
-          if (isMounted) {
+          if (isMountedRef.current) {
             setParkCampingTypes([...sortedCampingTypes]);
           }
         }
-        if (isMounted) {
+        if (isMountedRef.current) {
           setProtectedArea(protectedAreaData);
           setIsLoading(false);
           setLoadParkInfo(false);
         }
       } catch {
-        if (isMounted) {
+        if (isMountedRef.current) {
           setToError(true);
           setError({
             status: 500,
@@ -175,8 +175,10 @@ export default function ParkInfo() {
     [cmsGet, getRegions, getSections, setError],
   );
 
+  const isMountedRef = useRef(true);
+
   useEffect(() => {
-    let isMounted = true;
+    isMountedRef.current = true;
 
     const query = qs.stringify(
       {
@@ -210,10 +212,10 @@ export default function ParkInfo() {
     );
 
     if (initialized && isAuthenticated && loadParkInfo) {
-      fetchParkInfo(isMounted, query);
+      fetchParkInfo(isMountedRef, query);
     }
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
   }, [id, initialized, isAuthenticated, loadParkInfo, fetchParkInfo]);
 
