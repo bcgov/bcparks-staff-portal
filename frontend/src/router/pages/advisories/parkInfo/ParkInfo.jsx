@@ -81,81 +81,79 @@ export default function ParkInfo() {
             protectedAreaData.sectionName = section[0].sectionName;
           }
         }
-        if (protectedAreaData.parkActivities?.length > 0) {
-          const activities = protectedAreaData.parkActivities.map(
-            (activity) => ({
-              id: activity.documentId,
-              description: activity.description,
-              name: activity.name,
-              isActivityOpen: activity.isActivityOpen,
-              isActive: activity.isActive,
-              protectedArea: activity.protectedArea,
-              site: activity.site,
-              activityType: activity.activityType,
-            }),
-          );
 
-          // Sort results alphabetically by activity type name
-          const sortedActivities = orderBy(
-            activities,
-            ["activityType.activityName"],
-            ["asc"],
-          );
+        const activities = (protectedAreaData.parkActivities || []).map(
+          (activity) => ({
+            id: activity.documentId,
+            description: activity.description,
+            name: activity.name,
+            isActivityOpen: activity.isActivityOpen,
+            isActive: activity.isActive,
+            protectedArea: activity.protectedArea,
+            site: activity.site,
+            activityType: activity.activityType,
+          }),
+        );
 
-          if (isMountedRef.current) {
-            setParkActivities([...sortedActivities]);
-          }
+        // Sort results alphabetically by activity type name
+        const sortedActivities = orderBy(
+          activities,
+          ["activityType.activityName"],
+          ["asc"],
+        );
+
+        if (isMountedRef.current) {
+          setParkActivities([...sortedActivities]);
         }
-        if (protectedAreaData.parkFacilities?.length > 0) {
-          const facilities = protectedAreaData.parkFacilities.map(
-            (facility) => ({
-              id: facility.documentId,
-              description: facility.description,
-              name: facility.name,
-              isFacilityOpen: facility.isFacilityOpen,
-              isActive: facility.isActive,
-              protectedArea: facility.protectedArea,
-              site: facility.site,
-              facilityType: facility.facilityType,
-            }),
-          );
 
-          // Sort results alphabetically by facility type name
-          const sortedFacilities = orderBy(
-            facilities,
-            ["facilityType.facilityName"],
-            ["asc"],
-          );
+        const facilities = (protectedAreaData.parkFacilities || []).map(
+          (facility) => ({
+            id: facility.documentId,
+            description: facility.description,
+            name: facility.name,
+            isFacilityOpen: facility.isFacilityOpen,
+            isActive: facility.isActive,
+            protectedArea: facility.protectedArea,
+            site: facility.site,
+            facilityType: facility.facilityType,
+          }),
+        );
 
-          if (isMountedRef.current) {
-            setParkFacilities([...sortedFacilities]);
-          }
+        // Sort results alphabetically by facility type name
+        const sortedFacilities = orderBy(
+          facilities,
+          ["facilityType.facilityName"],
+          ["asc"],
+        );
+
+        if (isMountedRef.current) {
+          setParkFacilities([...sortedFacilities]);
         }
-        if (protectedAreaData.parkCampingTypes?.length > 0) {
-          const campingTypes = protectedAreaData.parkCampingTypes.map(
-            (campingType) => ({
-              id: campingType.documentId,
-              description: campingType.description,
-              name: campingType.name,
-              isCampingOpen: campingType.isCampingOpen,
-              isActive: campingType.isActive,
-              protectedArea: campingType.protectedArea,
-              site: campingType.site,
-              campingType: campingType.campingType,
-            }),
-          );
 
-          // Sort results alphabetically by camping type name
-          const sortedCampingTypes = orderBy(
-            campingTypes,
-            ["campingType.campingTypeName"],
-            ["asc"],
-          );
+        const campingTypes = (protectedAreaData.parkCampingTypes || []).map(
+          (campingType) => ({
+            id: campingType.documentId,
+            description: campingType.description,
+            name: campingType.name,
+            isCampingOpen: campingType.isCampingOpen,
+            isActive: campingType.isActive,
+            protectedArea: campingType.protectedArea,
+            site: campingType.site,
+            campingType: campingType.campingType,
+          }),
+        );
 
-          if (isMountedRef.current) {
-            setParkCampingTypes([...sortedCampingTypes]);
-          }
+        // Sort results alphabetically by camping type name
+        const sortedCampingTypes = orderBy(
+          campingTypes,
+          ["campingType.campingTypeName"],
+          ["asc"],
+        );
+
+        if (isMountedRef.current) {
+          setParkCampingTypes([...sortedCampingTypes]);
         }
+
         if (isMountedRef.current) {
           setProtectedArea(protectedAreaData);
           setIsLoading(false);
