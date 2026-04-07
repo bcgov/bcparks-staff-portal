@@ -124,9 +124,7 @@ const RouterConfig = createBrowserRouter([
       {
         path: "activities-and-facilities",
         element: (
-          <AccessControlledRoute
-            allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}
-          >
+          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_APPROVER]}>
             <ParkSearch />
           </AccessControlledRoute>
         ),
