@@ -332,6 +332,7 @@ export default function DataTable(props) {
 
       return null;
     });
+    setPage(1);
   }
 
   function handleFilterInputChange(column, index, value) {
