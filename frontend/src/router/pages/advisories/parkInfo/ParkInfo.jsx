@@ -1,6 +1,6 @@
 import { useState, useEffect, useContext, useCallback } from "react";
+import { orderBy } from "lodash-es";
 import ErrorContext from "@/contexts/ErrorContext";
-import CmsDataContext from "@/contexts/CmsDataContext";
 import "./ParkInfo.css";
 import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
@@ -95,8 +95,15 @@ export default function ParkInfo() {
             }),
           );
 
+          // Sort results alphabetically by activity type name
+          const sortedActivities = orderBy(
+            activities,
+            ["activityType.activityName"],
+            ["asc"],
+          );
+
           if (isMounted) {
-            setParkActivities([...activities]);
+            setParkActivities([...sortedActivities]);
           }
         }
         if (protectedAreaData.parkFacilities?.length > 0) {
@@ -113,8 +120,15 @@ export default function ParkInfo() {
             }),
           );
 
+          // Sort results alphabetically by facility type name
+          const sortedFacilities = orderBy(
+            facilities,
+            ["facilityType.facilityName"],
+            ["asc"],
+          );
+
           if (isMounted) {
-            setParkFacilities([...facilities]);
+            setParkFacilities([...sortedFacilities]);
           }
         }
         if (protectedAreaData.parkCampingTypes?.length > 0) {
@@ -131,8 +145,15 @@ export default function ParkInfo() {
             }),
           );
 
+          // Sort results alphabetically by camping type name
+          const sortedCampingTypes = orderBy(
+            campingTypes,
+            ["campingType.campingTypeName"],
+            ["asc"],
+          );
+
           if (isMounted) {
-            setParkCampingTypes([...campingTypes]);
+            setParkCampingTypes([...sortedCampingTypes]);
           }
         }
         if (isMounted) {
@@ -176,6 +197,7 @@ export default function ParkInfo() {
           "parkCampingTypes.protectedArea",
           "parkCampingTypes.site",
         ],
+
         filters: {
           orcs: {
             $eq: `${id}`,
