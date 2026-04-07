@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon index.js",
+    "develop": "npm run dev",
     "start": "node index.js",
     "lint": "eslint .",
     "migrate": "sequelize-cli db:migrate",
