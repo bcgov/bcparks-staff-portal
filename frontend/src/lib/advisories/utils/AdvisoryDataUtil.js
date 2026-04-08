@@ -7,24 +7,27 @@ const advisoryArchiveDays = 30;
 const archiveDate = moment()
   .subtract(advisoryArchiveDays, "days")
   .format("YYYY-MM-DD");
+const modifiedDate = moment().subtract(18, "months").format("YYYY-MM-DD");
 
 export function getLatestPublicAdvisoryAudits(keycloakToken, showArchived) {
-  let advisoryFilter = {};
+  const advisoryFilter = showArchived
+    ? {
+        $or: [
+          { advisoryStatus: { code: { $ne: "INA" } } },
+          {
+            updatedAt: {
+              $gt: modifiedDate,
+            },
+          },
+        ],
+      }
+    : {
+        $or: [
+          { advisoryStatus: { code: { $ne: "INA" } } },
+          { updatedAt: { $gt: archiveDate } },
+        ],
+      };
 
-  if (!showArchived) {
-    advisoryFilter = {
-      $or: [
-        { advisoryStatus: { code: { $ne: "INA" } } },
-        { updatedAt: { $gt: archiveDate } },
-      ],
-    };
-  } else {
-    const modifiedDate = moment().subtract(18, "months").format("YYYY-MM-DD");
-
-    advisoryFilter = {
-      updatedAt: { $gt: modifiedDate },
-    };
-  }
   const query = qs.stringify(
     {
       fields: [
