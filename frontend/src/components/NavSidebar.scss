@@ -2,9 +2,9 @@
   background: var(--theme-gray-20);
   width: clamp(17em, 20%, 20em);
   padding: 3rem 0;
+  align-self: stretch;
   position: sticky;
   top: 0;
-  height: 100vh;
   overflow: auto;
   flex-shrink: 0;
 
