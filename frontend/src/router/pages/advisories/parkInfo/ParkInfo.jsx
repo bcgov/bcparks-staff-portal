@@ -1,12 +1,11 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useCallback, useRef } from "react";
+import { orderBy } from "lodash-es";
 import ErrorContext from "@/contexts/ErrorContext";
-import CmsDataContext from "@/contexts/CmsDataContext";
 import "./ParkInfo.css";
 import { Navigate, useParams, useNavigate } from "react-router-dom";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import { useAuth } from "react-oidc-context";
-import { cmsAxios } from "@/lib/advisories/axios_config";
-import { getRegions, getSections } from "@/lib/advisories/utils/CmsDataUtil";
+import useCms from "@/hooks/useCms";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { Accordion, Form, Tab, Tabs } from "react-bootstrap";
 import moment from "moment";
@@ -15,8 +14,8 @@ import HTMLArea from "@/components/advisories/base/HTMLArea/HTMLArea";
 import qs from "qs";
 
 export default function ParkInfo() {
+  const { cmsGet, cmsPut, getRegions, getSections } = useCms();
   const { setError } = useContext(ErrorContext);
-  const { cmsData, setCmsData } = useContext(CmsDataContext);
   const [isLoading, setIsLoading] = useState(true);
   const [toError, setToError] = useState(false);
   const [protectedArea, setProtectedArea] = useState();
@@ -35,15 +34,151 @@ export default function ParkInfo() {
   const [loadParkInfo, setLoadParkInfo] = useState(true);
   const auth = useAuth();
   const initialized = !auth.isLoading;
-  const keycloak = auth.isAuthenticated ? auth.user : null;
-  const keycloakToken = auth.user?.access_token;
+  const isAuthenticated = auth.isAuthenticated;
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [tabIndex, setTabIndex] = useState(0);
 
+  /**
+   * Fetches and sets CMS data for the selected park:
+   * - protected area details
+   * - activities
+   * - facilities
+   * - camping types
+   * Handles error and loading state. Called by useEffect when dependencies change.
+   * @param {{ current: boolean }} isMountedRef Ref object tracking if the component is still mounted (prevents state updates on unmounted components).
+   * @param {string} query Query string for the CMS API request.
+   * @returns {Promise<void>} Resolves when park info is loaded and state is updated.
+   */
+  const fetchParkInfo = useCallback(
+    async (isMountedRef, query) => {
+      try {
+        const [protectedAreas, regions, sections] = await Promise.all([
+          cmsGet(`/protected-areas?${query}`),
+          getRegions(),
+          getSections(),
+        ]);
+        const protectedAreaData = protectedAreas[0];
+
+        if (protectedAreaData.managementAreas?.length > 0) {
+          const managementArea = protectedAreaData.managementAreas[0];
+
+          protectedAreaData.managementAreaName =
+            managementArea.managementAreaName;
+          const region = regions.filter(
+            (r) => r.documentId === managementArea.region.documentId,
+          );
+
+          if (region.length > 0) {
+            protectedAreaData.regionName = region[0].regionName;
+          }
+          const section = sections.filter(
+            (s) => s.documentId === managementArea.section.documentId,
+          );
+
+          if (section.length > 0) {
+            protectedAreaData.sectionName = section[0].sectionName;
+          }
+        }
+
+        const activities = (protectedAreaData.parkActivities || []).map(
+          (activity) => ({
+            id: activity.documentId,
+            description: activity.description,
+            name: activity.name,
+            isActivityOpen: activity.isActivityOpen,
+            isActive: activity.isActive,
+            protectedArea: activity.protectedArea,
+            site: activity.site,
+            activityType: activity.activityType,
+          }),
+        );
+
+        // Sort results alphabetically by activity type name
+        const sortedActivities = orderBy(
+          activities,
+          ["activityType.activityName"],
+          ["asc"],
+        );
+
+        if (isMountedRef.current) {
+          setParkActivities([...sortedActivities]);
+        }
+
+        const facilities = (protectedAreaData.parkFacilities || []).map(
+          (facility) => ({
+            id: facility.documentId,
+            description: facility.description,
+            name: facility.name,
+            isFacilityOpen: facility.isFacilityOpen,
+            isActive: facility.isActive,
+            protectedArea: facility.protectedArea,
+            site: facility.site,
+            facilityType: facility.facilityType,
+          }),
+        );
+
+        // Sort results alphabetically by facility type name
+        const sortedFacilities = orderBy(
+          facilities,
+          ["facilityType.facilityName"],
+          ["asc"],
+        );
+
+        if (isMountedRef.current) {
+          setParkFacilities([...sortedFacilities]);
+        }
+
+        const campingTypes = (protectedAreaData.parkCampingTypes || []).map(
+          (campingType) => ({
+            id: campingType.documentId,
+            description: campingType.description,
+            name: campingType.name,
+            isCampingOpen: campingType.isCampingOpen,
+            isActive: campingType.isActive,
+            protectedArea: campingType.protectedArea,
+            site: campingType.site,
+            campingType: campingType.campingType,
+          }),
+        );
+
+        // Sort results alphabetically by camping type name
+        const sortedCampingTypes = orderBy(
+          campingTypes,
+          ["campingType.campingTypeName"],
+          ["asc"],
+        );
+
+        if (isMountedRef.current) {
+          setParkCampingTypes([...sortedCampingTypes]);
+        }
+
+        if (isMountedRef.current) {
+          setProtectedArea(protectedAreaData);
+          setIsLoading(false);
+          setLoadParkInfo(false);
+        }
+      } catch (error) {
+        console.error("Error fetching park information", error);
+
+        if (isMountedRef.current) {
+          setToError(true);
+          setError({
+            status: 500,
+            message: "Error fetching park information",
+          });
+          setIsLoading(false);
+        }
+      }
+    },
+    [cmsGet, getRegions, getSections, setError],
+  );
+
+  const isMountedRef = useRef(true);
+
   useEffect(() => {
-    let isMounted = true;
+    isMountedRef.current = true;
 
     const query = qs.stringify(
       {
@@ -64,6 +199,7 @@ export default function ParkInfo() {
           "parkCampingTypes.protectedArea",
           "parkCampingTypes.site",
         ],
+
         filters: {
           orcs: {
             $eq: `${id}`,
@@ -75,125 +211,13 @@ export default function ParkInfo() {
       },
     );
 
-    if (initialized && keycloak && loadParkInfo) {
-      Promise.all([
-        cmsAxios.get(`/protected-areas?${query}`),
-        getRegions(cmsData, setCmsData),
-        getSections(cmsData, setCmsData),
-      ])
-        .then((res) => {
-          const protectedAreaData = res[0].data.data[0];
-
-          if (protectedAreaData.managementAreas?.length > 0) {
-            const managementArea = protectedAreaData.managementAreas[0];
-
-            protectedAreaData.managementAreaName =
-              managementArea.managementAreaName;
-            const region = cmsData.regions.filter(
-              (r) => r.documentId === managementArea.region.documentId,
-            );
-
-            if (region.length > 0) {
-              protectedAreaData.regionName = region[0].regionName;
-            }
-            const section = cmsData.sections.filter(
-              (s) => s.documentId === managementArea.section.documentId,
-            );
-
-            if (section.length > 0) {
-              protectedAreaData.sectionName = section[0].sectionName;
-            }
-          }
-          if (protectedAreaData.parkActivities?.length > 0) {
-            const activities = protectedAreaData.parkActivities.map(
-              (activity) => ({
-                id: activity.documentId,
-                description: activity.description,
-                name: activity.name,
-                isActivityOpen: activity.isActivityOpen,
-                isActive: activity.isActive,
-                protectedArea: activity.protectedArea,
-                site: activity.site,
-                activityType: activity.activityType,
-              }),
-            );
-
-            if (isMounted) {
-              setParkActivities([...activities]);
-            }
-          }
-          if (protectedAreaData.parkFacilities?.length > 0) {
-            const facilities = protectedAreaData.parkFacilities.map(
-              (facility) => ({
-                id: facility.documentId,
-                description: facility.description,
-                name: facility.name,
-                isFacilityOpen: facility.isFacilityOpen,
-                isActive: facility.isActive,
-                protectedArea: facility.protectedArea,
-                site: facility.site,
-                facilityType: facility.facilityType,
-              }),
-            );
-
-            if (isMounted) {
-              setParkFacilities([...facilities]);
-            }
-          }
-          if (protectedAreaData.parkCampingTypes?.length > 0) {
-            const campingTypes = protectedAreaData.parkCampingTypes.map(
-              (campingType) => ({
-                id: campingType.documentId,
-                description: campingType.description,
-                name: campingType.name,
-                isCampingOpen: campingType.isCampingOpen,
-                isActive: campingType.isActive,
-                protectedArea: campingType.protectedArea,
-                site: campingType.site,
-                campingType: campingType.campingType,
-              }),
-            );
-
-            if (isMounted) {
-              setParkCampingTypes([...campingTypes]);
-            }
-          }
-          if (isMounted) {
-            setProtectedArea(protectedAreaData);
-            setIsLoading(false);
-            setLoadParkInfo(false);
-          }
-        })
-        .catch(() => {
-          if (isMounted) {
-            setToError(true);
-            setError({
-              status: 500,
-              message: "Error fetching park information",
-            });
-            setIsLoading(false);
-          }
-        });
+    if (initialized && isAuthenticated && loadParkInfo) {
+      fetchParkInfo(isMountedRef, query);
     }
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
     };
-  }, [
-    cmsData,
-    id,
-    initialized,
-    keycloak,
-    setCmsData,
-    setError,
-    setIsLoading,
-    loadParkInfo,
-    setProtectedArea,
-    setToError,
-    setLoadParkInfo,
-    setParkActivities,
-    setParkFacilities,
-    setParkCampingTypes,
-  ]);
+  }, [id, initialized, isAuthenticated, loadParkInfo, fetchParkInfo]);
 
   function handleTabChange(val) {
     setTabIndex(val);
@@ -250,6 +274,33 @@ export default function ParkInfo() {
     finishEditActivityDesc(activityId, true);
   }
 
+  /**
+   * Saves the updated activity data to the CMS and updates state accordingly.
+   * @param {string} activityId The ID of the activity to update.
+   * @param {Object} parkActivity The activity data to save.
+   * @param {boolean} expand Whether to expand the activity accordion after save.
+   * @returns {Promise<void>} Resolves when the activity is saved and state is updated.
+   */
+  async function saveActivityToCms(activityId, parkActivity, expand) {
+    try {
+      await cmsPut(`park-activities/${activityId}`, { data: parkActivity });
+      const currentActivities = submittingActivities.filter(
+        (a) => a !== activityId,
+      );
+
+      setSubmittingActivities([...currentActivities]);
+      finishEditActivityDesc(activityId, expand);
+      setLoadParkInfo(true);
+    } catch (error) {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not update activity",
+      });
+    }
+  }
+
   function saveActivity(activityId, expand) {
     const activities = parkActivities.filter((d) => d.id === activityId);
 
@@ -267,31 +318,7 @@ export default function ParkInfo() {
         activityType: activity.activityType?.documentId,
       };
 
-      cmsAxios
-        .put(
-          `park-activities/${activityId}`,
-          { data: parkActivity },
-          {
-            headers: { Authorization: `Bearer ${keycloakToken}` },
-          },
-        )
-        .then(() => {
-          const currentActivities = submittingActivities.filter(
-            (a) => a !== activityId,
-          );
-
-          setSubmittingActivities([...currentActivities]);
-          finishEditActivityDesc(activityId, expand);
-          setLoadParkInfo(true);
-        })
-        .catch((error) => {
-          console.error("error occurred", error);
-          setToError(true);
-          setError({
-            status: 500,
-            message: "Could not update activity",
-          });
-        });
+      saveActivityToCms(activityId, parkActivity, expand);
     }
   }
 
@@ -378,6 +405,33 @@ export default function ParkInfo() {
     finishEditFacilityDesc(facilityId, true);
   }
 
+  /**
+   * Saves the updated facility data to the CMS and updates state accordingly.
+   * @param {string} facilityId The ID of the facility to update.
+   * @param {Object} parkFacility The facility data to save.
+   * @param {boolean} expand Whether to expand the facility accordion after save.
+   * @returns {Promise<void>} Resolves when the facility is saved and state is updated.
+   */
+  async function saveFacilityToCms(facilityId, parkFacility, expand) {
+    try {
+      await cmsPut(`park-facilities/${facilityId}`, { data: parkFacility });
+      const currentFacilities = submittingFacilities.filter(
+        (f) => f !== facilityId,
+      );
+
+      setSubmittingFacilities([...currentFacilities]);
+      finishEditFacilityDesc(facilityId, expand);
+      setLoadParkInfo(true);
+    } catch (error) {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not update facility",
+      });
+    }
+  }
+
   function saveFacility(facilityId, expand) {
     const facilities = parkFacilities.filter((d) => d.id === facilityId);
 
@@ -395,31 +449,7 @@ export default function ParkInfo() {
         facilityType: facility.facilityType?.documentId,
       };
 
-      cmsAxios
-        .put(
-          `park-facilities/${facilityId}`,
-          { data: parkFacility },
-          {
-            headers: { Authorization: `Bearer ${keycloakToken}` },
-          },
-        )
-        .then(() => {
-          const currentFacilities = submittingFacilities.filter(
-            (f) => f !== facilityId,
-          );
-
-          setSubmittingFacilities([...currentFacilities]);
-          finishEditFacilityDesc(facilityId, expand);
-          setLoadParkInfo(true);
-        })
-        .catch((error) => {
-          console.error("error occurred", error);
-          setToError(true);
-          setError({
-            status: 500,
-            message: "Could not update facility",
-          });
-        });
+      saveFacilityToCms(facilityId, parkFacility, expand);
     }
   }
 
@@ -508,6 +538,35 @@ export default function ParkInfo() {
     finishEditCampingTypeDesc(campingTypeId, true);
   }
 
+  /**
+   * Saves the updated camping type data to the CMS and updates state accordingly.
+   * @param {string} campingTypeId The ID of the camping type to update.
+   * @param {Object} parkCampingType The camping type data to save.
+   * @param {boolean} expand Whether to expand the camping type accordion after save.
+   * @returns {Promise<void>} Resolves when the camping type is saved and state is updated.
+   */
+  async function saveCampingTypeToCms(campingTypeId, parkCampingType, expand) {
+    try {
+      await cmsPut(`park-camping-types/${campingTypeId}`, {
+        data: parkCampingType,
+      });
+      const currentCampingTypes = submittingCampingTypes.filter(
+        (f) => f !== campingTypeId,
+      );
+
+      setSubmittingCampingTypes([...currentCampingTypes]);
+      finishEditCampingTypeDesc(campingTypeId, expand);
+      setLoadParkInfo(true);
+    } catch (error) {
+      console.error("error occurred", error);
+      setToError(true);
+      setError({
+        status: 500,
+        message: "Could not update campingType",
+      });
+    }
+  }
+
   function saveCampingType(campingTypeId, expand) {
     const campingTypes = parkCampingTypes.filter((d) => d.id === campingTypeId);
 
@@ -525,31 +584,7 @@ export default function ParkInfo() {
         campingType: campingType.campingType?.documentId,
       };
 
-      cmsAxios
-        .put(
-          `park-camping-types/${campingTypeId}`,
-          { data: parkCampingType },
-          {
-            headers: { Authorization: `Bearer ${keycloakToken}` },
-          },
-        )
-        .then(() => {
-          const currentCampingTypes = submittingCampingTypes.filter(
-            (f) => f !== campingTypeId,
-          );
-
-          setSubmittingCampingTypes([...currentCampingTypes]);
-          finishEditCampingTypeDesc(campingTypeId, expand);
-          setLoadParkInfo(true);
-        })
-        .catch((error) => {
-          console.error("error occurred", error);
-          setToError(true);
-          setError({
-            status: 500,
-            message: "Could not update campingType",
-          });
-        });
+      saveCampingTypeToCms(campingTypeId, parkCampingType, expand);
     }
   }
 
