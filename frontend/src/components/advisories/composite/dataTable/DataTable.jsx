@@ -127,7 +127,7 @@ function renderCell(column, row) {
 
 function renderSortIndicator(isActive, direction) {
   if (!isActive) {
-    return <span className="data-table-sort-indicator">↕</span>;
+    return null;
   }
 
   return (
@@ -332,6 +332,7 @@ export default function DataTable(props) {
 
       return null;
     });
+    setPage(1);
   }
 
   function handleFilterInputChange(column, index, value) {
