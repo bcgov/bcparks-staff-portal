@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
@@ -12,8 +12,6 @@ import "./DataTable.css";
 function getColumnId(column, index) {
   return column.field || `column-${index}`;
 }
-
-function doNothing() {}
 
 function getFieldValue(row, field) {
   if (!field) {
@@ -102,15 +100,6 @@ function rowMatchesFilter(row, column, filterValue) {
   return normalizeValue(cellValue)
     .toLowerCase()
     .includes(normalizeValue(filterValue).toLowerCase());
-}
-
-function buildFilterPayload(columns, filterValues) {
-  return columns
-    .map((column, index) => ({
-      column,
-      value: filterValues[getColumnId(column, index)] || "",
-    }))
-    .filter((filterEntry) => filterEntry.value !== "");
 }
 
 function getVisibleColumns(columns) {
@@ -208,19 +197,22 @@ export default function DataTable(props) {
     options,
     title,
     onRowClick,
-    onFilterChange,
+    initialFilterValues,
+    onFilterValuesChange,
     components,
     hover,
   } = props;
   const visibleColumns = useMemo(() => getVisibleColumns(columns), [columns]);
   const [searchText, setSearchText] = useState("");
-  const [filterValues, setFilterValues] = useState({});
+  // Table filter state: controlled if parent passes initialFilterValues/onFilterValuesChange, otherwise local only
+  // - initialFilterValues: initial value for filters (e.g. from persisted storage)
+  // - onFilterValuesChange: callback to notify parent of changes
+  // - If parent does not pass these, DataTable manages its own filter state (uncontrolled)
+  const [filterValues, setFilterValues] = useState(initialFilterValues || {});
   const [sortConfig, setSortConfig] = useState(null);
   const [page, setPage] = useState(1);
   const initialPageSize = options.pageSize || 5;
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const firstFilterEffect = useRef(true);
-  const debounceInterval = options.debounceInterval || 0;
   const pageSizeOptions = useMemo(() => {
     const configured = options.pageSizeOptions || [5, 10, 25, 50, 100];
     const combined = [...configured, initialPageSize].filter(
@@ -233,27 +225,6 @@ export default function DataTable(props) {
   useEffect(() => {
     setPageSize(initialPageSize);
   }, [initialPageSize]);
-
-  useEffect(() => {
-    if (!onFilterChange) {
-      return doNothing;
-    }
-
-    if (firstFilterEffect.current) {
-      firstFilterEffect.current = false;
-      return doNothing;
-    }
-
-    const timeoutId = window.setTimeout(() => {
-      onFilterChange(buildFilterPayload(visibleColumns, filterValues));
-    }, debounceInterval);
-
-    function clearFilterChangeTimeout() {
-      window.clearTimeout(timeoutId);
-    }
-
-    return clearFilterChangeTimeout;
-  }, [debounceInterval, filterValues, onFilterChange, visibleColumns]);
 
   const filteredRows = useMemo(
     () =>
@@ -335,14 +306,19 @@ export default function DataTable(props) {
     setPage(1);
   }
 
+  // Handle a change to a column filter input
+  // - Updates local filter state for immediate UI feedback
+  // - Notifies parent (if provided) to persist filters across sessions
   function handleFilterInputChange(column, index, value) {
     const columnId = getColumnId(column, index);
 
-    setFilterValues((currentFilterValues) => ({
-      ...currentFilterValues,
-      [columnId]: value,
-    }));
+    const nextFilterValues = { ...filterValues, [columnId]: value };
+
+    // always update local state for UI
+    setFilterValues(nextFilterValues);
     setPage(1);
+    // Pass the new values to the parent if a callback was provided
+    onFilterValuesChange?.(nextFilterValues);
   }
 
   function handleSearchChange(value) {
@@ -527,7 +503,6 @@ DataTable.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
   options: PropTypes.shape({
-    debounceInterval: PropTypes.number,
     exportMenu: PropTypes.arrayOf(
       PropTypes.shape({
         label: PropTypes.string.isRequired,
@@ -541,7 +516,8 @@ DataTable.propTypes = {
   }),
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   onRowClick: PropTypes.func,
-  onFilterChange: PropTypes.func,
+  initialFilterValues: PropTypes.objectOf(PropTypes.string),
+  onFilterValuesChange: PropTypes.func,
   components: PropTypes.shape({
     Toolbar: PropTypes.elementType,
   }),
@@ -552,7 +528,8 @@ DataTable.defaultProps = {
   options: {},
   title: "",
   onRowClick: null,
-  onFilterChange: null,
+  initialFilterValues: null,
+  onFilterValuesChange: null,
   components: null,
   hover: false,
 };
