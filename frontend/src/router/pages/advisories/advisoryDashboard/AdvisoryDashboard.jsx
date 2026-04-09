@@ -427,36 +427,29 @@ export default function AdvisoryDashboard() {
           return leftRank - rightRank;
         },
         headerStyle: {
-          width: urgencyColumnWidth,
+          width: 10,
         },
         cellStyle(e, rowData) {
-          const widthStyle = {
-            width: urgencyColumnWidth,
-          };
-
           if (rowData.urgency !== null) {
             switch (rowData.urgency?.urgency?.toLowerCase()) {
               case "low":
                 return {
-                  ...widthStyle,
                   borderLeft: "8px solid #2454a4",
                 };
               case "medium":
                 return {
-                  ...widthStyle,
                   borderLeft: "8px solid #f5d20e",
                 };
               case "high":
                 return {
-                  ...widthStyle,
                   borderLeft: "8px solid #f30505",
                 };
               default:
-                return widthStyle;
+                return {};
             }
           }
 
-          return widthStyle;
+          return {};
         },
         render(rowData) {
           return (
@@ -493,12 +486,8 @@ export default function AdvisoryDashboard() {
             ? -1
             : 1;
         },
-        headerStyle: {
-          width: statusColumnWidth,
-        },
         cellStyle: {
           textAlign: "center",
-          width: statusColumnWidth,
         },
         render(rowData) {
           const statusIconMap = {
@@ -722,13 +711,7 @@ export default function AdvisoryDashboard() {
         ),
       },
     ],
-    [
-      urgencies,
-      advisoryStatuses,
-      publishedAdvisories,
-      urgencyColumnWidth,
-      statusColumnWidth,
-    ],
+    [urgencies, advisoryStatuses, publishedAdvisories],
   );
 
   if (toCreate) {

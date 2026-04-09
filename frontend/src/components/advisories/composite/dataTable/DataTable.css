@@ -94,6 +94,12 @@
   width: 100%;
 }
 
+.data-table-table .form-select {
+  width: fit-content;
+  background-position: right 2px center;
+  padding-right: 18px !important;
+}
+
 .data-table-filter-text {
   display: flex;
   align-items: center;
