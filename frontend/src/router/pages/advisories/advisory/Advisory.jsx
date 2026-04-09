@@ -536,8 +536,6 @@ export default function Advisory({ mode }) {
           setEventTypes([...newEventTypes]);
           const accessStatusData = res[9];
 
-          console.log("Access Status Data:", accessStatusData);
-
           const newAccessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
             value: a.documentId,
@@ -1139,7 +1137,6 @@ export default function Advisory({ mode }) {
                   className="btn btn-link btn-back mt-4"
                   onClick={() => {
                     setToBack();
-                    sessionStorage.clear();
                   }}
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
