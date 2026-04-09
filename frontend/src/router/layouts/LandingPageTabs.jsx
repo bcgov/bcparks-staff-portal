@@ -13,11 +13,11 @@ export default function LandingPageTabs() {
   // Check user permissions
   const { isApprover, hqStaff, hasAllParkAccess } = useMemo(
     () => ({
-      isApprover: checkAccess(ROLES.APPROVER),
-      hqStaff: hasAnyRole([ROLES.APPROVER]),
-      hasAllParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
+      isApprover: checkAccess(ROLES.DOOT_APPROVER),
+      hqStaff: hasAnyRole([ROLES.DOOT_APPROVER]),
+      hasAllParkAccess: checkAccess(ROLES.DOOT_ALL_PARK_ACCESS),
     }),
-    [checkAccess, hasAnyRole, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
+    [checkAccess, hasAnyRole, ROLES.DOOT_APPROVER, ROLES.DOOT_ALL_PARK_ACCESS],
   );
 
   // This prevents flashing the tabs layout to unauthenticated users

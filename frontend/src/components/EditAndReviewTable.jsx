@@ -218,8 +218,8 @@ function StatusTableRow({
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
+    () => checkAccess(ROLES.DOOT_APPROVER),
+    [checkAccess, ROLES.DOOT_APPROVER],
   );
 
   /**
