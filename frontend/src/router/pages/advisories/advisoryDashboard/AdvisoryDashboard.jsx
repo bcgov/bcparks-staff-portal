@@ -56,7 +56,7 @@ function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
   return (
     storedFilters.find(
       (obj) => obj.type === "page" && obj.filterName === filterName,
-    )?.filterValue || defaultValue
+    )?.filterValue ?? defaultValue
   );
 }
 
