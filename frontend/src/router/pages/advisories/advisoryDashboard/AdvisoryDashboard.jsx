@@ -50,7 +50,7 @@ function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
-  const { cmsData, setCmsData } = useContext(CmsDataContext);
+  const { cmsData } = useContext(CmsDataContext);
   const navigate = useNavigate();
   const {
     getRegions,
@@ -463,8 +463,8 @@ export default function AdvisoryDashboard() {
     return () => {
       isMounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Effect uses storedFilters but doesn't need to re-run when it changes.
-  }, [cmsData, setCmsData, setError, showArchived]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- This effect should only run once on mount to load initial data.
+  }, []);
 
   const regionOptions = useMemo(
     () =>
