@@ -754,6 +754,9 @@ export default function AdvisoryDashboard() {
               placeholder="Select a Region..."
               className="bcgov-select"
               isClearable
+              styles={{
+                menu: (base) => ({ ...base, zIndex: 999 }),
+              }}
             />
           </div>
           <div className="col-xl-5 col-md-4 col-sm-12">
@@ -782,6 +785,9 @@ export default function AdvisoryDashboard() {
               placeholder="Select a Park..."
               className="bcgov-select"
               isClearable
+              styles={{
+                menu: (base) => ({ ...base, zIndex: 999 }),
+              }}
             />
           </div>
           <div className="col-xl-3 col-md-4 col-sm-12">

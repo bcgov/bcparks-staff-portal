@@ -661,7 +661,7 @@ export default function AdvisoryForm({
                           validateLink(l, idx, "type", setLinkTypeErrors)
                         }
                         styles={{
-                          menu: (base) => ({ ...base, zIndex: 9999 }),
+                          menu: (base) => ({ ...base, zIndex: 999 }),
                         }}
                       />
                       {renderHelperText(
