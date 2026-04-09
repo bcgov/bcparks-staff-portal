@@ -1,80 +1,10 @@
-import { cmsAxios } from "@/lib/advisories/axios_config";
 import moment from "moment";
 import "moment-timezone";
-import qs from "qs";
 
 const standardInactiveAdvisoryWindowDays = 30;
 const standardInactiveAdvisoryCutoffDate = moment()
   .subtract(standardInactiveAdvisoryWindowDays, "days")
   .format("YYYY-MM-DD");
-const extendedInactiveAdvisoryCutoffDate = moment().subtract(18, "months").format("YYYY-MM-DD");
-
-export function getLatestPublicAdvisoryAudits(keycloakToken, showArchived) {
-  const advisoryFilter = showArchived
-    ? {
-        $or: [
-          { advisoryStatus: { code: { $ne: "INA" } } },
-          {
-            updatedAt: {
-              $gt: extendedInactiveAdvisoryCutoffDate,
-            },
-          },
-        ],
-      }
-    : {
-        $or: [
-          { advisoryStatus: { code: { $ne: "INA" } } },
-          { updatedAt: { $gt: standardInactiveAdvisoryCutoffDate } },
-        ],
-      };
-
-  const query = qs.stringify(
-    {
-      fields: [
-        "advisoryNumber",
-        "advisoryDate",
-        "title",
-        "effectiveDate",
-        "endDate",
-        "expiryDate",
-        "updatedAt",
-      ],
-      populate: {
-        protectedAreas: {
-          fields: ["orcs", "protectedAreaName"],
-        },
-        advisoryStatus: {
-          fields: ["advisoryStatus", "code"],
-        },
-        eventType: {
-          fields: ["eventType"],
-        },
-        urgency: {
-          fields: ["urgency"],
-        },
-        regions: {
-          fields: ["regionName"],
-        },
-      },
-      filters: {
-        $and: [{ isLatestRevision: true }, advisoryFilter],
-      },
-      pagination: {
-        limit: 2000,
-      },
-      sort: ["advisoryDate:DESC"],
-    },
-    {
-      encodeValuesOnly: true,
-    },
-  );
-
-  return cmsAxios.get(`public-advisory-audits?${query}`, {
-    headers: {
-      Authorization: `Bearer ${keycloakToken}`,
-    },
-  });
-}
 
 export function updatePublicAdvisories(publicAdvisories, managementAreas) {
   const today = moment(new Date()).tz("America/Vancouver").toISOString();

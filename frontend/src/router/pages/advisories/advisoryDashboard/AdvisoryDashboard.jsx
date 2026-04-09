@@ -4,11 +4,11 @@ import {
   useSessionStorage,
   useDebounceCallback,
 } from "usehooks-ts";
-import { cmsAxios } from "@/lib/advisories/axios_config";
+import qs from "qs";
 import { Navigate, useNavigate } from "react-router-dom";
 import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
-import { useAuth } from "react-oidc-context";
+import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
@@ -31,19 +31,7 @@ import {
   faPencil,
   faThumbsUp,
 } from "@fa-kit/icons/classic/solid";
-
-import {
-  getRegions,
-  getManagementAreas,
-  getProtectedAreas,
-  getAdvisoryStatuses,
-  getUrgencies,
-} from "@/lib/advisories/utils/CmsDataUtil";
-
-import {
-  getLatestPublicAdvisoryAudits,
-  updatePublicAdvisories,
-} from "@/lib/advisories/utils/AdvisoryDataUtil";
+import { updatePublicAdvisories } from "@/lib/advisories/utils/AdvisoryDataUtil";
 
 /**
  * Returns the value of a page-level filter from the stored filters array, or a default if not found.
@@ -64,10 +52,15 @@ export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
   const { cmsData, setCmsData } = useContext(CmsDataContext);
   const navigate = useNavigate();
-  const auth = useAuth();
-  const initialized = !auth.isLoading;
-  const keycloak = auth.isAuthenticated ? auth.user : null;
-  const keycloakToken = auth.user?.access_token;
+  const {
+    getRegions,
+    getManagementAreas,
+    getProtectedAreas,
+    getAdvisoryStatuses,
+    getUrgencies,
+    cmsGet,
+  } = useCms();
+
   const [toError, setToError] = useState(false);
   const [toCreate, setToCreate] = useState(false);
   const [selectedRegionId, setSelectedRegionId] = useState(0);
@@ -131,11 +124,92 @@ export default function AdvisoryDashboard() {
     });
   }, 75);
 
-  useEffect(() => {
-    if (initialized && !keycloak) {
-      setToError(true);
-    }
-  }, [initialized, keycloak]);
+  /**
+   * Fetches the latest public advisory audits from the CMS API.
+   *
+   * - If showArchived is false, returns advisories that are not inactive (INA) or have been updated in the last 30 days.
+   * - If showArchived is true, returns advisories updated in the last 18 months (for archive view).
+   * @param {boolean} showArchived Whether to include archived advisories (18 months) or only recent (30 days)
+   * @returns {Promise<Array>} Array of advisory audit objects from the CMS
+   */
+  async function fetchLatestPublicAdvisoryAudits(showArchived) {
+    // Number of days to keep non-archived advisories
+    const standardInactiveAdvisoryWindowDays = 30;
+
+    // Calculate the cutoff date for recent advisories
+    const standardInactiveAdvisoryCutoffDate = moment()
+      .subtract(standardInactiveAdvisoryWindowDays, "days")
+      .format("YYYY-MM-DD");
+    const extendedInactiveAdvisoryCutoffDate = moment()
+      .subtract(18, "months")
+      .format("YYYY-MM-DD");
+
+    const advisoryFilter = showArchived
+      ? {
+          $or: [
+            { advisoryStatus: { code: { $ne: "INA" } } },
+            {
+              updatedAt: {
+                $gt: extendedInactiveAdvisoryCutoffDate,
+              },
+            },
+          ],
+        }
+      : {
+          $or: [
+            { advisoryStatus: { code: { $ne: "INA" } } },
+            { updatedAt: { $gt: standardInactiveAdvisoryCutoffDate } },
+          ],
+        };
+
+    const query = qs.stringify(
+      {
+        fields: [
+          "advisoryNumber",
+          "advisoryDate",
+          "title",
+          "effectiveDate",
+          "endDate",
+          "expiryDate",
+          "updatedAt",
+        ],
+        // Populate related entities with selected fields
+        populate: {
+          protectedAreas: {
+            fields: ["orcs", "protectedAreaName"],
+          },
+          advisoryStatus: {
+            fields: ["advisoryStatus", "code"],
+          },
+          eventType: {
+            fields: ["eventType"],
+          },
+          urgency: {
+            fields: ["urgency"],
+          },
+          regions: {
+            fields: ["regionName"],
+          },
+        },
+        // Filter for latest revision and by archive/active status
+        filters: {
+          $and: [{ isLatestRevision: true }, advisoryFilter],
+        },
+        // Large limit to fetch all advisories
+        pagination: {
+          limit: 2000,
+        },
+        // Sort by most recent advisory date
+        sort: ["advisoryDate:DESC"],
+      },
+      {
+        encodeValuesOnly: true,
+      },
+    );
+
+    // Fetch advisory audits data from the CMS with the constructed query
+    return await cmsGet(`/public-advisory-audits?${query}`);
+  }
 
   // Persist showArchived in sessionStorage
   const [showArchived, setShowArchived] = useSessionStorage(
@@ -222,12 +296,8 @@ export default function AdvisoryDashboard() {
     setPublicAdvisories([]);
 
     try {
-      const res = await getLatestPublicAdvisoryAudits(
-        keycloakToken,
-        shouldShowArchived,
-      );
-
-      const advisoryAuditRows = res?.data.data;
+      const advisoryAuditRows =
+        await fetchLatestPublicAdvisoryAudits(shouldShowArchived);
       const updatedPublicAdvisories = updatePublicAdvisories(
         advisoryAuditRows,
         cmsData.managementAreas,
@@ -283,11 +353,9 @@ export default function AdvisoryDashboard() {
     let isMounted = true;
 
     async function loadCurrentPublishedAdvisories() {
-      const fetchedAdvisoryStatuses = await getAdvisoryStatuses(
-        cmsData,
-        setCmsData,
-      );
-      const fetchedUrgencies = await getUrgencies(cmsData, setCmsData);
+      // Fetch advisory statuses and urgencies for filter options and table icons
+      const fetchedAdvisoryStatuses = await getAdvisoryStatuses();
+      const fetchedUrgencies = await getUrgencies();
 
       setAdvisoryStatuses(fetchedAdvisoryStatuses);
       setUrgencies(fetchedUrgencies);
@@ -297,61 +365,40 @@ export default function AdvisoryDashboard() {
         );
 
         if (publishedStatus?.length > 0) {
-          const result = await cmsAxios
-            .get(
+          try {
+            // Fetch advisories with status PUB
+            const result = await cmsGet(
               `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
-            )
-            .catch(() => {
-              setHasErrors(true);
-            });
+            );
 
-          let currentPublishedAdvisories = [];
-          const responseData = result?.data?.data ?? [];
+            const currentPublishedAdvisories = result.map(
+              (advisory) => advisory.advisoryNumber,
+            );
 
-          if (responseData.length > 0) {
-            responseData.forEach((advisory) => {
-              currentPublishedAdvisories = [
-                ...currentPublishedAdvisories,
-                advisory.advisoryNumber,
-              ];
-            });
+            setPublishedAdvisories(currentPublishedAdvisories);
+          } catch {
+            setHasErrors(true);
           }
-          setPublishedAdvisories([...currentPublishedAdvisories]);
         }
       }
     }
 
     async function fetchData() {
       setIsLoading(true);
-      if (initialized && keycloak) {
-        // Use showArchived from useSessionStorage hook
-        const archivedSetting = showArchived;
 
-        const res = await Promise.all([
-          getRegions(cmsData, setCmsData),
-          getManagementAreas(cmsData, setCmsData),
-          getProtectedAreas(cmsData, setCmsData),
-          getLatestPublicAdvisoryAudits(keycloakToken, archivedSetting),
-        ]).catch(() => {
-          setError({
-            status: 500,
-            message: "Error loading data. Make sure Strapi is running.",
-          });
-          setToError(true);
-          setIsLoading(false);
-        });
+      try {
+        const [
+          regionsData,
+          managementAreasData,
+          protectedAreasData,
+          advisoryAuditRows,
+        ] = await Promise.all([
+          getRegions(),
+          getManagementAreas(),
+          getProtectedAreas(),
+          fetchLatestPublicAdvisoryAudits(showArchived),
+        ]);
 
-        // If no response, return
-        if (!res) {
-          return;
-        }
-        // Regions
-        const regionsData = res[0];
-        // Management Areas
-        const managementAreasData = res[1];
-        // Protected Areas
-        const protectedAreasData = res[2];
-        const advisoryAuditRows = res[3]?.data.data;
         // Public Advisories
         const updatedPublicAdvisories = updatePublicAdvisories(
           advisoryAuditRows,
@@ -399,6 +446,14 @@ export default function AdvisoryDashboard() {
             }
           }
         }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setError({
+          status: 500,
+          message: "Error loading data. Make sure Strapi is running.",
+        });
+        setToError(true);
+        setIsLoading(false);
       }
       setIsLoading(false);
     }
@@ -409,15 +464,7 @@ export default function AdvisoryDashboard() {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- Effect uses storedFilters but doesn't need to re-run when it changes.
-  }, [
-    initialized,
-    keycloak,
-    keycloakToken,
-    cmsData,
-    setCmsData,
-    setError,
-    showArchived,
-  ]);
+  }, [cmsData, setCmsData, setError, showArchived]);
 
   const regionOptions = useMemo(
     () =>
