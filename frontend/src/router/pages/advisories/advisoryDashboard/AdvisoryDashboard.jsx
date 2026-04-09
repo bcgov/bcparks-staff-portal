@@ -353,19 +353,22 @@ export default function AdvisoryDashboard() {
     let isMounted = true;
 
     async function loadCurrentPublishedAdvisories() {
-      // Fetch advisory statuses and urgencies for filter options and table icons
-      const fetchedAdvisoryStatuses = await getAdvisoryStatuses();
-      const fetchedUrgencies = await getUrgencies();
+      try {
+        // Fetch advisory statuses and urgencies for filter options and table icons
+        const [fetchedAdvisoryStatuses, fetchedUrgencies] = await Promise.all([
+          getAdvisoryStatuses(),
+          getUrgencies(),
+        ]);
 
-      setAdvisoryStatuses(fetchedAdvisoryStatuses);
-      setUrgencies(fetchedUrgencies);
-      if (fetchedAdvisoryStatuses) {
-        const publishedStatus = fetchedAdvisoryStatuses.filter(
-          (status) => status.code === "PUB",
-        );
+        setAdvisoryStatuses(fetchedAdvisoryStatuses);
+        setUrgencies(fetchedUrgencies);
 
-        if (publishedStatus?.length > 0) {
-          try {
+        if (fetchedAdvisoryStatuses) {
+          const publishedStatus = fetchedAdvisoryStatuses.filter(
+            (status) => status.code === "PUB",
+          );
+
+          if (publishedStatus?.length > 0) {
             // Fetch advisories with status PUB
             const result = await cmsGet(
               `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
@@ -376,10 +379,15 @@ export default function AdvisoryDashboard() {
             );
 
             setPublishedAdvisories(currentPublishedAdvisories);
-          } catch {
-            setHasErrors(true);
           }
         }
+      } catch (error) {
+        console.error("Error fetching published advisories:", error);
+        setHasErrors(true);
+        setError({
+          status: 500,
+          message: "Error loading published advisories.",
+        });
       }
     }
 
