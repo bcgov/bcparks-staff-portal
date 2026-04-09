@@ -15,8 +15,8 @@ export const DOOT_CONTRIBUTOR = "doot-contributor";
 // Permission to submit dates for approval
 export const DOOT_SUBMITTER = "doot-submitter";
 
-// Full access to all features in DOOT. All permission checks pass for Super Admins
-export const SUPER_ADMIN = "doot-super-admin";
+// Full access to all staff portal features. All permission checks pass for Super Admins
+export const SUPER_ADMIN = "super-admin";
 
 // Role for admin/web team to approve submitted public advisories and edit activities/facilities
 export const ADVISORY_APPROVER = "advisory-approver";
