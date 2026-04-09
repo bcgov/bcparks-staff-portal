@@ -312,7 +312,10 @@ export default function AdvisorySummary() {
                   </div>
                 )}
               </div>
-              <ToastContainer position="bottom-start" className="p-3">
+              <ToastContainer
+                position="bottom-start"
+                className="p-3 position-fixed"
+              >
                 <Toast
                   key={snackMessageInfo ? snackMessageInfo.key : null}
                   show={openSnack}
