@@ -559,7 +559,7 @@ async function formatParkAreaData(parkArea, season) {
 // For a list of season IDs, fetch the season data from our DB and send it to Strapi
 router.post(
   "/publish-to-api/",
-  checkPermissions([USER_ROLES.APPROVER]),
+  checkPermissions([USER_ROLES.DOOT_APPROVER]),
   asyncHandler(async (req, res) => {
     const seasonIds = req.body.seasonIds;
 

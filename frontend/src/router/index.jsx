@@ -180,7 +180,7 @@ const RouterConfig = createBrowserRouter([
           {
             path: "export",
             element: (
-              <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
+              <AccessControlledRoute allowedRoles={[ROLES.DOOT_APPROVER]}>
                 <ExportPage />
               </AccessControlledRoute>
             ),
@@ -190,7 +190,7 @@ const RouterConfig = createBrowserRouter([
           {
             path: "publish",
             element: (
-              <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
+              <AccessControlledRoute allowedRoles={[ROLES.DOOT_APPROVER]}>
                 <PublishPage />
               </AccessControlledRoute>
             ),
