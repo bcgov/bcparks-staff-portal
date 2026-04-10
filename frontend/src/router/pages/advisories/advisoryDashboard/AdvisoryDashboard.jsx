@@ -702,6 +702,9 @@ export default function AdvisoryDashboard() {
     [urgencies, advisoryStatuses, publishedAdvisories],
   );
 
+  const totalPageSizeOption =
+    publicAdvisories.length > 50 ? [publicAdvisories.length] : [];
+
   if (toCreate) {
     return <Navigate to="/create-advisory" />;
   }
@@ -831,7 +834,7 @@ export default function AdvisoryDashboard() {
                 filtering: true,
                 search: false,
                 pageSize: 50,
-                pageSizeOptions: [25, 50, publicAdvisories.length],
+                pageSizeOptions: [25, 50, ...totalPageSizeOption],
               }}
               onFilterChange={(tableFilters) => {
                 const advisoryFilters = JSON.parse(
