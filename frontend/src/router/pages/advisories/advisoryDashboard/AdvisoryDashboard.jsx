@@ -1,4 +1,9 @@
 import { useState, useEffect, useMemo, useContext } from "react";
+import {
+  useLocalStorage,
+  useSessionStorage,
+  useDebounceCallback,
+} from "usehooks-ts";
 import { cmsAxios } from "@/lib/advisories/axios_config";
 import { Navigate, useNavigate } from "react-router-dom";
 import ErrorContext from "@/contexts/ErrorContext";
@@ -40,6 +45,21 @@ import {
   updatePublicAdvisories,
 } from "@/lib/advisories/utils/AdvisoryDataUtil";
 
+/**
+ * Returns the value of a page-level filter from the stored filters array, or a default if not found.
+ * @param {Array} storedFilters Stored filters, each with { type, filterName/fieldName, filterValue/fieldValue }
+ * @param {string} filterName The name of the filter to retrieve (e.g. "region" or "park")
+ * @param {any} [defaultValue=0] Default value to return if the filter isn't found in storage
+ * @returns {any} The filter value, or default if not found
+ */
+function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
+  return (
+    storedFilters.find(
+      (obj) => obj.type === "page" && obj.filterName === filterName,
+    )?.filterValue ?? defaultValue
+  );
+}
+
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
   const { cmsData, setCmsData } = useContext(CmsDataContext);
@@ -67,45 +87,61 @@ export default function AdvisoryDashboard() {
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
 
+  const defaultPageFilters = [
+    { filterName: "region", filterValue: "", type: "page" },
+    { filterName: "park", filterValue: "", type: "page" },
+  ];
+
+  // Persisted filter state for the dashboard (region, park, and table filters)
+  // Saved to localStorage as an array of { type: "page"|"table", filterName/fieldName, filterValue/fieldValue }
+  const [storedFilters, setStoredFilters] = useLocalStorage(
+    "advisoryFilters",
+    defaultPageFilters,
+  );
+
+  // Load table filter values from the latest storedFilters
+  const initialTableFilterValues = useMemo(() => {
+    const tableEntries = (storedFilters || []).filter(
+      (f) => f.type === "table",
+    );
+
+    // Convert [{fieldName, fieldValue}] to { [fieldName]: fieldValue }
+    return Object.fromEntries(
+      tableEntries.map((f) => [f.fieldName, f.fieldValue]),
+    );
+  }, [storedFilters]);
+
+  // Debounced callback: persist table filter values to localStorage
+  // Called by DataTable after user stops typing
+  const persistTableFilterValues = useDebounceCallback((values) => {
+    setStoredFilters((currentFilters) => {
+      // Keep page-level filters (region, park)
+      const pageFilters = currentFilters.filter((f) => f.type === "page");
+      // Convert { [fieldName]: value } to array of { fieldName, fieldValue, type: "table" }
+      const tableFilters = Object.entries(values)
+        // Only save non-empty filters
+        .filter(([, value]) => value !== "")
+        .map(([fieldName, fieldValue]) => ({
+          fieldName,
+          fieldValue,
+          type: "table",
+        }));
+
+      return [...pageFilters, ...tableFilters];
+    });
+  }, 75);
+
   useEffect(() => {
     if (initialized && !keycloak) {
       setToError(true);
     }
   }, [initialized, keycloak]);
 
-  // Preserve filters
-  const savedFilters = JSON.parse(localStorage.getItem("advisoryFilters"));
-  const defaultPageFilters = [
-    { filterName: "region", filterValue: "", type: "page" },
-    { filterName: "park", filterValue: "", type: "page" },
-  ];
-  const [filters, setFilters] = useState([
-    ...(savedFilters || defaultPageFilters),
-  ]);
-
-  const archived = sessionStorage.getItem("showArchived") === "true";
-  const [showArchived, setShowArchived] = useState(archived);
-
-  useEffect(() => {
-    const storedFilters = JSON.parse(localStorage.getItem("advisoryFilters"));
-
-    if (storedFilters) {
-      setFilters([...storedFilters]);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem("advisoryFilters", JSON.stringify(filters));
-    sessionStorage.setItem("showArchived", showArchived);
-  }, [filters, showArchived]);
-
-  function getPageFilterValue(storedFilters, filterName) {
-    return (
-      storedFilters.find(
-        (obj) => obj.type === "page" && obj.filterName === filterName,
-      )?.filterValue || 0
-    );
-  }
+  // Persist showArchived in sessionStorage
+  const [showArchived, setShowArchived] = useSessionStorage(
+    "showArchived",
+    false,
+  );
 
   function removeDuplicatesById(arr) {
     return arr.filter(
@@ -185,29 +221,26 @@ export default function AdvisoryDashboard() {
     setIsLoading(true);
     setPublicAdvisories([]);
 
-    let res;
-
     try {
-      res = await getLatestPublicAdvisoryAudits(
+      const res = await getLatestPublicAdvisoryAudits(
         keycloakToken,
         shouldShowArchived,
       );
+
+      const advisoryAuditRows = res?.data.data;
+      const updatedPublicAdvisories = updatePublicAdvisories(
+        advisoryAuditRows,
+        cmsData.managementAreas,
+      );
+
+      setPublicAdvisories(updatedPublicAdvisories);
+      setOriginalPublicAdvisories(updatedPublicAdvisories);
+      setIsLoading(false);
     } catch {
       setError({ status: 500, message: "Error loading data" });
       setToError(true);
       setIsLoading(false);
-      return;
     }
-
-    const advisoryAuditRows = res?.data.data;
-    const updatedPublicAdvisories = updatePublicAdvisories(
-      advisoryAuditRows,
-      cmsData.managementAreas,
-    );
-
-    setPublicAdvisories(updatedPublicAdvisories);
-    setOriginalPublicAdvisories(updatedPublicAdvisories);
-    setIsLoading(false);
   }
 
   function filterFormattedDate(filterDate, rowData, column) {
@@ -291,13 +324,9 @@ export default function AdvisoryDashboard() {
     async function fetchData() {
       setIsLoading(true);
       if (initialized && keycloak) {
-        const storedFilters = JSON.parse(
-          localStorage.getItem("advisoryFilters"),
-        );
-        const archivedSetting =
-          sessionStorage.getItem("showArchived") === "true";
+        // Use showArchived from useSessionStorage hook
+        const archivedSetting = showArchived;
 
-        setShowArchived(archivedSetting);
         const res = await Promise.all([
           getRegions(cmsData, setCmsData),
           getManagementAreas(cmsData, setCmsData),
@@ -379,7 +408,16 @@ export default function AdvisoryDashboard() {
     return () => {
       isMounted = false;
     };
-  }, [initialized, keycloak, keycloakToken, cmsData, setCmsData, setError]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Effect uses storedFilters but doesn't need to re-run when it changes.
+  }, [
+    initialized,
+    keycloak,
+    keycloakToken,
+    cmsData,
+    setCmsData,
+    setError,
+    showArchived,
+  ]);
 
   const regionOptions = useMemo(
     () =>
@@ -555,7 +593,10 @@ export default function AdvisoryDashboard() {
                   }
                 >
                   <span>
-                    <FontAwesomeIcon icon={faFolderArrowDown} className="archivedIcon" />
+                    <FontAwesomeIcon
+                      icon={faFolderArrowDown}
+                      className="archivedIcon"
+                    />
                   </span>
                 </OverlayTrigger>
               )}
@@ -756,17 +797,21 @@ export default function AdvisoryDashboard() {
                 setSelectedPark(null);
                 setSelectedParkId(-1); // Do not filter by parkId
 
-                const arr = [...filters.filter((o) => !(o.type === "page"))];
+                setStoredFilters((currentFilters) => {
+                  const nonPageFilters = currentFilters.filter(
+                    (o) => o.type !== "page",
+                  );
 
-                setFilters([
-                  ...arr,
-                  {
-                    type: "page",
-                    filterName: "region",
-                    filterValue: e ? e.value : 0,
-                  },
-                  { type: "page", filterName: "park", filterValue: 0 }, // Reset park filter
-                ]);
+                  return [
+                    ...nonPageFilters,
+                    {
+                      type: "page",
+                      filterName: "region",
+                      filterValue: e ? e.value : 0,
+                    },
+                    { type: "page", filterName: "park", filterValue: 0 }, // Reset park filter
+                  ];
+                });
               }}
               placeholder="Select a Region..."
               className="bcgov-select"
@@ -784,20 +829,21 @@ export default function AdvisoryDashboard() {
                 setSelectedPark(e);
                 setSelectedParkId(e ? e.value : 0);
 
-                const arr = [
-                  ...filters.filter(
+                setStoredFilters((currentFilters) => {
+                  // Remove any existing "park" page filter
+                  const nonParkPageFilters = currentFilters.filter(
                     (o) => !(o.type === "page" && o.filterName === "park"),
-                  ),
-                ];
+                  );
 
-                setFilters([
-                  ...arr,
-                  {
-                    type: "page",
-                    filterName: "park",
-                    filterValue: e ? e.value : 0,
-                  },
-                ]);
+                  return [
+                    ...nonParkPageFilters,
+                    {
+                      type: "page",
+                      filterName: "park",
+                      filterValue: e ? e.value : 0,
+                    },
+                  ];
+                });
               }}
               placeholder="Select a Park..."
               className="bcgov-select"
@@ -816,7 +862,6 @@ export default function AdvisoryDashboard() {
               onChange={(e) => {
                 const shouldShowArchived = e ? e.target.checked : false;
 
-                sessionStorage.setItem("showArchived", shouldShowArchived);
                 toggleArchivedAdvisories(shouldShowArchived);
               }}
               label={
@@ -844,27 +889,15 @@ export default function AdvisoryDashboard() {
           <div className="container-fluid">
             <DataTable
               options={{
-                debounceInterval: 75,
                 filtering: true,
                 search: false,
                 pageSize: 50,
                 pageSizeOptions: [25, 50, ...totalPageSizeOption],
               }}
-              onFilterChange={(tableFilters) => {
-                const advisoryFilters = JSON.parse(
-                  localStorage.getItem("advisoryFilters"),
-                );
-                const arrFilters = tableFilters.map((obj) => ({
-                  fieldName: obj.column.field,
-                  fieldValue: obj.value,
-                  type: "table",
-                }));
-
-                setFilters([
-                  ...advisoryFilters.filter((o) => o.type === "page"),
-                  ...arrFilters,
-                ]);
-              }}
+              // Initial filter values: loaded from localStorage on mount
+              initialFilterValues={initialTableFilterValues}
+              // Debounced callback to persist filters to localStorage when they change
+              onFilterValuesChange={persistTableFilterValues}
               columns={tableColumns}
               data={publicAdvisories}
               title=""
