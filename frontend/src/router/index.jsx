@@ -21,6 +21,7 @@ import Advisory from "./pages/advisories/advisory/Advisory";
 import AdvisorySummary from "./pages/advisories/advisorySummary/AdvisorySummary";
 import AdvisoryLink from "./pages/advisories/advisoryLink/AdvisoryLink";
 import ProtectedRoute from "./ProtectedRoute";
+import IdirSsoPage from "./pages/IdirSsoPage";
 
 import { ROLES } from "@/config/permissions";
 
@@ -31,6 +32,13 @@ const RouterConfig = createBrowserRouter([
     path: "/login",
     element: <MainLayoutPublic />,
     children: [{ path: "", element: <LoginPage /> }],
+  },
+
+  // Special IDIR SSO landing page for cross-realm authentication
+  {
+    path: "/idir-sso",
+    element: <MainLayoutPublic />, // Use public layout for SSO landing
+    children: [{ path: "", element: <IdirSsoPage /> }],
   },
 
   // Root path - Advisories portal
