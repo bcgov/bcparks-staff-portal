@@ -414,6 +414,18 @@ export default function AdvisoryDashboard() {
           lookup[urgency.urgency] = urgency.urgency;
           return lookup;
         }, {}),
+        customSort(a, b) {
+          const urgencyRank = {
+            low: 1,
+            medium: 2,
+            high: 3,
+          };
+
+          const leftRank = urgencyRank[a.urgency?.urgency?.toLowerCase()] || 0;
+          const rightRank = urgencyRank[b.urgency?.urgency?.toLowerCase()] || 0;
+
+          return leftRank - rightRank;
+        },
         headerStyle: {
           width: 10,
         },
