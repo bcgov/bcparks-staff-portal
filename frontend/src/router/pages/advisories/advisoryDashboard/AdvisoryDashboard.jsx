@@ -22,6 +22,7 @@ import {
   faTriangleExclamation,
   faClock,
   faCircleQuestion,
+  faFolderArrowDown,
   faPencil,
   faThumbsUp,
 } from "@fa-kit/icons/classic/solid";
@@ -184,7 +185,7 @@ export default function AdvisoryDashboard() {
     setIsLoading(true);
     setPublicAdvisories([]);
 
-    let res = null;
+    let res;
 
     try {
       res = await getLatestPublicAdvisoryAudits(
@@ -195,6 +196,7 @@ export default function AdvisoryDashboard() {
       setError({ status: 500, message: "Error loading data" });
       setToError(true);
       setIsLoading(false);
+      return;
     }
 
     const advisoryAuditRows = res?.data.data;
@@ -553,7 +555,7 @@ export default function AdvisoryDashboard() {
                   }
                 >
                   <span>
-                    <FontAwesomeIcon icon={faClock} className="inactiveIcon" />
+                    <FontAwesomeIcon icon={faFolderArrowDown} className="archivedIcon" />
                   </span>
                 </OverlayTrigger>
               )}

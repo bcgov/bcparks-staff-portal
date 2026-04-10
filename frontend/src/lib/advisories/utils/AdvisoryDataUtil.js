@@ -3,28 +3,31 @@ import moment from "moment";
 import "moment-timezone";
 import qs from "qs";
 
-const advisoryArchiveDays = 30;
-const archiveDate = moment()
-  .subtract(advisoryArchiveDays, "days")
+const standardInactiveAdvisoryWindowDays = 30;
+const standardInactiveAdvisoryCutoffDate = moment()
+  .subtract(standardInactiveAdvisoryWindowDays, "days")
   .format("YYYY-MM-DD");
+const extendedInactiveAdvisoryCutoffDate = moment().subtract(18, "months").format("YYYY-MM-DD");
 
 export function getLatestPublicAdvisoryAudits(keycloakToken, showArchived) {
-  let advisoryFilter = {};
+  const advisoryFilter = showArchived
+    ? {
+        $or: [
+          { advisoryStatus: { code: { $ne: "INA" } } },
+          {
+            updatedAt: {
+              $gt: extendedInactiveAdvisoryCutoffDate,
+            },
+          },
+        ],
+      }
+    : {
+        $or: [
+          { advisoryStatus: { code: { $ne: "INA" } } },
+          { updatedAt: { $gt: standardInactiveAdvisoryCutoffDate } },
+        ],
+      };
 
-  if (!showArchived) {
-    advisoryFilter = {
-      $or: [
-        { advisoryStatus: { code: { $ne: "INA" } } },
-        { updatedAt: { $gt: archiveDate } },
-      ],
-    };
-  } else {
-    const modifiedDate = moment().subtract(18, "months").format("YYYY-MM-DD");
-
-    advisoryFilter = {
-      updatedAt: { $gt: modifiedDate },
-    };
-  }
   const query = qs.stringify(
     {
       fields: [
@@ -100,7 +103,7 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
 
     publicAdvisory.archived =
       publicAdvisory.advisoryStatus.code === "INA" &&
-      publicAdvisory.updatedAt < archiveDate;
+      publicAdvisory.updatedAt < standardInactiveAdvisoryCutoffDate;
 
     return publicAdvisory;
   });
