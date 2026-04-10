@@ -240,7 +240,6 @@ export default function AdvisoryDashboard() {
       setError({ status: 500, message: "Error loading data" });
       setToError(true);
       setIsLoading(false);
-      return;
     }
   }
 
@@ -594,7 +593,10 @@ export default function AdvisoryDashboard() {
                   }
                 >
                   <span>
-                    <FontAwesomeIcon icon={faFolderArrowDown} className="archivedIcon" />
+                    <FontAwesomeIcon
+                      icon={faFolderArrowDown}
+                      className="archivedIcon"
+                    />
                   </span>
                 </OverlayTrigger>
               )}
