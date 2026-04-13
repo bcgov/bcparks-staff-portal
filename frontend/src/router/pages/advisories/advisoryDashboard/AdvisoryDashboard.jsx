@@ -31,6 +31,10 @@ import {
   faThumbsUp,
 } from "@fa-kit/icons/classic/solid";
 import { updatePublicAdvisories } from "@/lib/advisories/utils/AdvisoryDataUtil";
+import {
+  buildFilter,
+  buildSort,
+} from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 
 /**
  * Returns the value of a page-level filter from the stored filters array, or a default if not found.
@@ -72,19 +76,18 @@ export default function AdvisoryDashboard() {
   const [publishedAdvisories, setPublishedAdvisories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
-  const [originalPublicAdvisories, setOriginalPublicAdvisories] = useState([]);
-  const [regionalPublicAdvisories, setRegionalPublicAdvisories] = useState([]);
   const [publicAdvisories, setPublicAdvisories] = useState([]);
   const [regions, setRegions] = useState([]);
   const [managementAreas, setManagementAreas] = useState([]);
   const [protectedAreas, setProtectedAreas] = useState([]);
-  const [originalProtectedAreas, setOriginalProtectedAreas] = useState([]);
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalPublicAdvisories, setTotalPublicAdvisories] = useState(0);
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
+  const [tableFilterValues, setTableFilterValues] = useState({});
+  const [sortConfig, setSortConfig] = useState(null);
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: "", type: "page" },
@@ -137,102 +140,12 @@ export default function AdvisoryDashboard() {
     false,
   );
 
-  function filterFormattedDate(filterDate, rowData, column) {
-    const value = rowData[column.field];
-
-    if (!filterDate) {
-      return true;
-    }
-    if (!value) {
-      return false;
-    }
-
-    return moment(value)
-      .format("YYYY/MM/DD")
-      .toLowerCase()
-      .includes(filterDate.toLowerCase());
-  }
-
   function renderCountBadge(label) {
     return (
       <Badge pill bg="light" text="dark" className="park-count-badge">
         {label}
       </Badge>
     );
-  }
-
-  function removeDuplicatesById(arr) {
-    return arr.filter(
-      (obj, index, self) => index === self.findIndex((o) => o.id === obj.id),
-    );
-  }
-
-  function filterAdvisoriesByParkId(pId) {
-    const advisories = selectedRegionId
-      ? regionalPublicAdvisories
-      : originalPublicAdvisories;
-
-    if (pId) {
-      const filteredPublicAdvisories = [];
-      const currentParkObj = protectedAreas.find((o) => o.documentId === pId);
-
-      advisories.forEach((obj) => {
-        if (
-          currentParkObj &&
-          obj.protectedAreas.some(
-            (park) => park.documentId === currentParkObj.documentId,
-          )
-        ) {
-          filteredPublicAdvisories.push(obj);
-        }
-      });
-      setPublicAdvisories([...filteredPublicAdvisories]);
-    } else {
-      setPublicAdvisories([...advisories]);
-    }
-  }
-
-  function filterAdvisoriesByRegionId(regId) {
-    if (regId) {
-      const filteredManagementAreas = managementAreas.filter(
-        (managementArea) => managementArea.region?.id === regId,
-      );
-
-      // Filter park names dropdown list
-      let list = [];
-
-      filteredManagementAreas.forEach((obj) => {
-        list = [...list.concat(obj.protectedAreas)];
-      });
-
-      // Remove duplicates
-      const filteredProtectedAreas = removeDuplicatesById(list);
-
-      // Filter advisories in grid
-      const filteredPublicAdvisories = [];
-
-      originalPublicAdvisories.forEach((obj) => {
-        obj.protectedAreas.forEach((park) => {
-          const idx = filteredProtectedAreas.findIndex(
-            (protectedArea) => protectedArea?.orcs === park?.orcs,
-          );
-
-          if (idx !== -1) {
-            filteredPublicAdvisories.push(obj);
-          }
-        });
-      });
-
-      setProtectedAreas([...filteredProtectedAreas]);
-      setPublicAdvisories([...removeDuplicatesById(filteredPublicAdvisories)]);
-      setRegionalPublicAdvisories([
-        ...removeDuplicatesById(filteredPublicAdvisories),
-      ]);
-    } else {
-      setProtectedAreas([...originalProtectedAreas]);
-      setPublicAdvisories([...originalPublicAdvisories]);
-      setRegionalPublicAdvisories([...originalPublicAdvisories]);
-    }
   }
 
   // Load management areas, advisory statuses, urgencies, and published advisories once on mount.
@@ -260,7 +173,6 @@ export default function AdvisoryDashboard() {
         setRegions(regionsData);
         setManagementAreas(managementAreasData);
         setProtectedAreas(protectedAreasData);
-        setOriginalProtectedAreas(protectedAreasData);
 
         // Fetch advisory statuses and urgencies for filter options and table icons
         setAdvisoryStatuses(fetchedAdvisoryStatuses);
@@ -345,18 +257,6 @@ export default function AdvisoryDashboard() {
     setError,
   ]);
 
-  useEffect(() => {
-    filterAdvisoriesByRegionId(selectedRegionId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Region filtering intentionally derives from the selected region id and the current page of advisories.
-  }, [selectedRegionId, originalPublicAdvisories]);
-
-  useEffect(() => {
-    if (selectedParkId !== -1) {
-      filterAdvisoriesByParkId(selectedParkId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Park filtering intentionally derives from the selected park id and the region-scoped advisory list.
-  }, [selectedParkId, regionalPublicAdvisories]);
-
   // Fetch one page of advisories whenever page, pageSize, or showArchived changes.
   useEffect(() => {
     let isMounted = true;
@@ -395,6 +295,16 @@ export default function AdvisoryDashboard() {
               }
             : { page: currentPage, pageSize };
 
+        // Build server-side filter params from column filter values and region/park dropdowns
+        const columnFilterClauses = buildFilter(
+          tableFilterValues,
+          selectedRegionId,
+          selectedParkId,
+          protectedAreas,
+        );
+
+        const sort = buildSort(sortConfig);
+
         const query = qs.stringify(
           {
             fields: [
@@ -414,10 +324,14 @@ export default function AdvisoryDashboard() {
               regions: { fields: ["regionName"] },
             },
             filters: {
-              $and: [{ isLatestRevision: true }, advisoryFilter],
+              $and: [
+                { isLatestRevision: true },
+                advisoryFilter,
+                ...columnFilterClauses,
+              ],
             },
             pagination,
-            sort: ["advisoryDate:DESC"],
+            sort,
           },
           { encodeValuesOnly: true },
         );
@@ -432,8 +346,6 @@ export default function AdvisoryDashboard() {
 
         if (isMounted) {
           setPublicAdvisories(updatedPublicAdvisories);
-          setOriginalPublicAdvisories(updatedPublicAdvisories);
-          setRegionalPublicAdvisories(updatedPublicAdvisories);
           setTotalPublicAdvisories(total);
           setIsLoading(false);
         }
@@ -461,8 +373,13 @@ export default function AdvisoryDashboard() {
     isCmsDataLoaded,
     managementAreas,
     pageSize,
+    protectedAreas,
+    selectedParkId,
+    selectedRegionId,
     setError,
     showArchived,
+    sortConfig,
+    tableFilterValues,
     totalPublicAdvisories,
   ]);
 
@@ -654,7 +571,6 @@ export default function AdvisoryDashboard() {
       {
         field: "advisoryDate",
         title: "Posting date",
-        customFilterAndSearch: filterFormattedDate,
         render(rowData) {
           if (rowData.advisoryDate) {
             return moment(rowData.advisoryDate).format("YYYY/MM/DD");
@@ -666,7 +582,6 @@ export default function AdvisoryDashboard() {
       {
         field: "endDate",
         title: "End date",
-        customFilterAndSearch: filterFormattedDate,
         render(rowData) {
           if (rowData.endDate) {
             return moment(rowData.endDate).format("YYYY/MM/DD");
@@ -678,7 +593,6 @@ export default function AdvisoryDashboard() {
       {
         field: "expiryDate",
         title: "Expiry date",
-        customFilterAndSearch: filterFormattedDate,
         render(rowData) {
           if (rowData.expiryDate) {
             return moment(rowData.expiryDate).format("YYYY/MM/DD");
@@ -838,7 +752,8 @@ export default function AdvisoryDashboard() {
                 setSelectedRegionId(e ? e.value : 0);
 
                 setSelectedPark(null);
-                setSelectedParkId(-1); // Do not filter by parkId
+                setSelectedParkId(0);
+                setCurrentPage(1);
 
                 setStoredFilters((currentFilters) => {
                   const nonPageFilters = currentFilters.filter(
@@ -871,6 +786,7 @@ export default function AdvisoryDashboard() {
               onChange={(e) => {
                 setSelectedPark(e);
                 setSelectedParkId(e ? e.value : 0);
+                setCurrentPage(1);
 
                 setStoredFilters((currentFilters) => {
                   // Remove any existing "park" page filter
@@ -941,6 +857,14 @@ export default function AdvisoryDashboard() {
                 onPageChange: setCurrentPage,
                 onPageSizeChange(nextPageSize) {
                   setPageSize(nextPageSize);
+                  setCurrentPage(1);
+                },
+                onFilterChange({ field, value }) {
+                  setTableFilterValues((prev) => ({ ...prev, [field]: value }));
+                  setCurrentPage(1);
+                },
+                onSortChange(next) {
+                  setSortConfig(next);
                   setCurrentPage(1);
                 },
               }}

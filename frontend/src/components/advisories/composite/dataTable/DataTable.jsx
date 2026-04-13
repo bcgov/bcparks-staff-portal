@@ -234,22 +234,32 @@ export default function DataTable(props) {
     setPageSize(initialPageSize);
   }, [initialPageSize]);
 
-  const filteredRows = useMemo(
-    () =>
-      data.filter((row) => {
-        const matchesSearch = options.search
-          ? rowMatchesSearch(row, visibleColumns, searchText)
-          : true;
-        const matchesFilters = visibleColumns.every((column, index) => {
-          const filterValue = filterValues[getColumnId(column, index)] || "";
+  const filteredRows = useMemo(() => {
+    // Skip local filtering when the parent handles it server-side
+    if (options.serverSide) {
+      return data;
+    }
 
-          return rowMatchesFilter(row, column, filterValue);
-        });
+    return data.filter((row) => {
+      const matchesSearch = options.search
+        ? rowMatchesSearch(row, visibleColumns, searchText)
+        : true;
+      const matchesFilters = visibleColumns.every((column, index) => {
+        const filterValue = filterValues[getColumnId(column, index)] || "";
 
-        return matchesSearch && matchesFilters;
-      }),
-    [data, filterValues, options.search, searchText, visibleColumns],
-  );
+        return rowMatchesFilter(row, column, filterValue);
+      });
+
+      return matchesSearch && matchesFilters;
+    });
+  }, [
+    data,
+    filterValues,
+    options.search,
+    options.serverSide,
+    searchText,
+    visibleColumns,
+  ]);
 
   const sortedRows = useMemo(() => {
     if (!sortConfig || options.serverSide) {
@@ -298,15 +308,25 @@ export default function DataTable(props) {
     const columnId = getColumnId(column, index);
 
     setSortConfig((currentSortConfig) => {
+      let nextSort;
+
       if (!currentSortConfig || currentSortConfig.columnId !== columnId) {
-        return { columnId, direction: "asc" };
+        nextSort = { columnId, direction: "asc" };
+      } else if (currentSortConfig.direction === "asc") {
+        nextSort = { columnId, direction: "desc" };
+      } else {
+        nextSort = null;
       }
 
-      if (currentSortConfig.direction === "asc") {
-        return { columnId, direction: "desc" };
+      if (options.onSortChange) {
+        options.onSortChange(
+          nextSort
+            ? { field: column.field, direction: nextSort.direction }
+            : null,
+        );
       }
 
-      return null;
+      return nextSort;
     });
     setPage(1);
   }
@@ -322,6 +342,10 @@ export default function DataTable(props) {
     // always update local state for UI
     setFilterValues(nextFilterValues);
     setPage(1);
+    // Notify parent of server-side filter change
+    if (options.onFilterChange) {
+      options.onFilterChange({ field: column.field, value });
+    }
     // Pass the new values to the parent if a callback was provided
     onFilterValuesChange?.(nextFilterValues);
   }
@@ -525,6 +549,7 @@ DataTable.propTypes = {
     onPageChange: PropTypes.func,
     onPageSizeChange: PropTypes.func,
     onSortChange: PropTypes.func,
+    onFilterChange: PropTypes.func,
   }),
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   onRowClick: PropTypes.func,
