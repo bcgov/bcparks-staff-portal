@@ -95,7 +95,6 @@ export default function Error({ error }) {
               label="Home"
               styling="bcgov-normal-blue btn"
               onClick={() => {
-                sessionStorage.clear();
                 setToHome(true);
               }}
             />

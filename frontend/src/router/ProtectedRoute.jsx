@@ -68,11 +68,17 @@ export default function ProtectedRoute({ children }) {
     }
   }, [auth, hasTriedSignin, params, navigate]);
 
+  useEffect(() => {
+    if (auth.error) {
+      // If there's an error, redirect to the sign-in page
+      console.error("Authentication error:", auth.error);
+      console.error("Redirecting to sign-in page...");
+      auth.signoutRedirect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- auth.signoutRedirect is stable; only re-run when error status changes
+  }, [auth.error]);
+
   if (auth.error) {
-    // If there's an error, redirect to the sign-in page
-    console.error("Authentication error:", auth.error);
-    console.error("Redirecting to sign-in page...");
-    auth.signoutRedirect();
     return <div>Authentication error: {auth.error?.message}</div>;
   }
 

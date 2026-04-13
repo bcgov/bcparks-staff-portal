@@ -834,7 +834,6 @@ export default function AdvisoryDashboard() {
               label="Create a new Advisory"
               styling="bcgov-normal-yellow btn"
               onClick={() => {
-                sessionStorage.clear();
                 setToCreate(true);
               }}
             />
