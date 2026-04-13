@@ -68,6 +68,19 @@ export default function useCms() {
     [withAuthorization],
   );
 
+  /**
+   * Get full response payload including meta.pagination.
+   * Use this instead of cmsGet when you need pagination metadata.
+   */
+  const cmsGetRaw = useCallback(
+    async (url, config = {}) => {
+      const response = await cmsAxios.get(url, withAuthorization(config));
+
+      return response.data;
+    },
+    [withAuthorization],
+  );
+
   const cmsPost = useCallback(
     async (url, data, config = {}) => {
       const response = await cmsAxios.post(
@@ -264,6 +277,7 @@ export default function useCms() {
   return {
     calculateIsStatHoliday,
     cmsGet,
+    cmsGetRaw,
     cmsPost,
     cmsPut,
     getProtectedAreas,

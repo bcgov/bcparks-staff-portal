@@ -213,13 +213,21 @@ export default function DataTable(props) {
   const [page, setPage] = useState(1);
   const initialPageSize = options.pageSize || 5;
   const [pageSize, setPageSize] = useState(initialPageSize);
+  const hasRemoteSort = Boolean(options.onSortChange);
+  const currentPage = options.currentPage ?? page;
+  const currentPageSize = options.pageSize ?? pageSize;
   const pageSizeOptions = useMemo(() => {
     const configured = options.pageSizeOptions || [5, 10, 25, 50, 100];
     const combined = [...configured, initialPageSize].filter(
-      (value) => value > 0,
+      (value) => value !== 0,
     );
+    const unique = [...new Set(combined)];
 
-    return [...new Set(combined)].sort((left, right) => left - right);
+    return unique.sort((left, right) => {
+      if (left < 0) return 1; // negative (All) sorts to end
+      if (right < 0) return -1;
+      return left - right;
+    });
   }, [initialPageSize, options.pageSizeOptions]);
 
   useEffect(() => {
@@ -244,7 +252,7 @@ export default function DataTable(props) {
   );
 
   const sortedRows = useMemo(() => {
-    if (!sortConfig) {
+    if (!sortConfig || options.serverSide) {
       return filteredRows;
     }
 
@@ -269,7 +277,7 @@ export default function DataTable(props) {
     });
 
     return nextRows;
-  }, [filteredRows, sortConfig, visibleColumns]);
+  }, [filteredRows, options.serverSide, sortConfig, visibleColumns]);
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize));
@@ -279,11 +287,8 @@ export default function DataTable(props) {
     }
   }, [page, pageSize, sortedRows.length]);
 
-  const paginatedRows = useMemo(() => {
-    const startIndex = (page - 1) * pageSize;
-
-    return sortedRows.slice(startIndex, startIndex + pageSize);
-  }, [page, pageSize, sortedRows]);
+  const totalItems = options.totalItems ?? sortedRows.length;
+  const paginatedRows = sortedRows;
 
   function handleSort(column, index) {
     if ((!column.field && !column.customSort) || column.sorting === false) {
@@ -404,6 +409,7 @@ export default function DataTable(props) {
                 const columnId = getColumnId(column, index);
                 const isSorted = sortConfig?.columnId === columnId;
                 const isSortable =
+                  (!options.serverSide || hasRemoteSort) &&
                   (column.field || column.customSort) &&
                   column.sorting !== false;
 
@@ -487,11 +493,11 @@ export default function DataTable(props) {
       </div>
 
       <PaginationControls
-        totalItems={sortedRows.length}
-        currentPage={page}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={handlePageSizeChange}
+        totalItems={totalItems}
+        currentPage={currentPage}
+        pageSize={currentPageSize}
+        onPageChange={options.onPageChange ?? setPage}
+        onPageSizeChange={options.onPageSizeChange ?? handlePageSizeChange}
         pageSizeLabel="Rows per page"
         pageSizeOptions={pageSizeOptions}
       />
@@ -513,6 +519,12 @@ DataTable.propTypes = {
     pageSize: PropTypes.number,
     pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
     search: PropTypes.bool,
+    serverSide: PropTypes.bool,
+    totalItems: PropTypes.number,
+    currentPage: PropTypes.number,
+    onPageChange: PropTypes.func,
+    onPageSizeChange: PropTypes.func,
+    onSortChange: PropTypes.func,
   }),
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   onRowClick: PropTypes.func,

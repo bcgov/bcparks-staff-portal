@@ -7,7 +7,6 @@ import {
 import qs from "qs";
 import { Navigate, useNavigate } from "react-router-dom";
 import ErrorContext from "@/contexts/ErrorContext";
-import CmsDataContext from "@/contexts/CmsDataContext";
 import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
@@ -49,8 +48,10 @@ function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
 }
 
 export default function AdvisoryDashboard() {
+  const ALL_PAGE_SIZE = -1;
+  const DEFAULT_PAGE_SIZE = 50;
+
   const { setError } = useContext(ErrorContext);
-  const { cmsData } = useContext(CmsDataContext);
   const navigate = useNavigate();
   const {
     getRegions,
@@ -59,6 +60,7 @@ export default function AdvisoryDashboard() {
     getAdvisoryStatuses,
     getUrgencies,
     cmsGet,
+    cmsGetRaw,
   } = useCms();
 
   const [toError, setToError] = useState(false);
@@ -79,6 +81,10 @@ export default function AdvisoryDashboard() {
   const [originalProtectedAreas, setOriginalProtectedAreas] = useState([]);
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [totalPublicAdvisories, setTotalPublicAdvisories] = useState(0);
+  const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: "", type: "page" },
@@ -91,6 +97,7 @@ export default function AdvisoryDashboard() {
     "advisoryFilters",
     defaultPageFilters,
   );
+  const [initialStoredFilters] = useState(() => storedFilters || []);
 
   // Load table filter values from the latest storedFilters
   const initialTableFilterValues = useMemo(() => {
@@ -124,98 +131,35 @@ export default function AdvisoryDashboard() {
     });
   }, 75);
 
-  /**
-   * Fetches the latest public advisory audits from the CMS API.
-   *
-   * - If showArchived is false, returns advisories that are not inactive (INA) or have been updated in the last 30 days.
-   * - If showArchived is true, returns advisories updated in the last 18 months (for archive view).
-   * @param {boolean} showArchived Whether to include archived advisories (18 months) or only recent (30 days)
-   * @returns {Promise<Array>} Array of advisory audit objects from the CMS
-   */
-  async function fetchLatestPublicAdvisoryAudits(showArchived) {
-    // Number of days to keep non-archived advisories
-    const standardInactiveAdvisoryWindowDays = 30;
-
-    // Calculate the cutoff date for recent advisories
-    const standardInactiveAdvisoryCutoffDate = moment()
-      .subtract(standardInactiveAdvisoryWindowDays, "days")
-      .format("YYYY-MM-DD");
-    const extendedInactiveAdvisoryCutoffDate = moment()
-      .subtract(18, "months")
-      .format("YYYY-MM-DD");
-
-    const advisoryFilter = showArchived
-      ? {
-          $or: [
-            { advisoryStatus: { code: { $ne: "INA" } } },
-            {
-              updatedAt: {
-                $gt: extendedInactiveAdvisoryCutoffDate,
-              },
-            },
-          ],
-        }
-      : {
-          $or: [
-            { advisoryStatus: { code: { $ne: "INA" } } },
-            { updatedAt: { $gt: standardInactiveAdvisoryCutoffDate } },
-          ],
-        };
-
-    const query = qs.stringify(
-      {
-        fields: [
-          "advisoryNumber",
-          "advisoryDate",
-          "title",
-          "effectiveDate",
-          "endDate",
-          "expiryDate",
-          "updatedAt",
-        ],
-        // Populate related entities with selected fields
-        populate: {
-          protectedAreas: {
-            fields: ["orcs", "protectedAreaName"],
-          },
-          advisoryStatus: {
-            fields: ["advisoryStatus", "code"],
-          },
-          eventType: {
-            fields: ["eventType"],
-          },
-          urgency: {
-            fields: ["urgency"],
-          },
-          regions: {
-            fields: ["regionName"],
-          },
-        },
-        // Filter for latest revision and by archive/active status
-        filters: {
-          $and: [{ isLatestRevision: true }, advisoryFilter],
-        },
-        // Large limit to fetch all advisories
-        pagination: {
-          limit: 2000,
-        },
-        // Sort by most recent advisory date
-        sort: ["advisoryDate:DESC"],
-      },
-      {
-        encodeValuesOnly: true,
-      },
-    );
-
-    // Fetch advisory audits data from the CMS with the constructed query
-    return await cmsGet(`/public-advisory-audits?${query}`);
-  }
-
   // Persist showArchived in sessionStorage
   const [showArchived, setShowArchived] = useSessionStorage(
     "showArchived",
     false,
   );
+
+  function filterFormattedDate(filterDate, rowData, column) {
+    const value = rowData[column.field];
+
+    if (!filterDate) {
+      return true;
+    }
+    if (!value) {
+      return false;
+    }
+
+    return moment(value)
+      .format("YYYY/MM/DD")
+      .toLowerCase()
+      .includes(filterDate.toLowerCase());
+  }
+
+  function renderCountBadge(label) {
+    return (
+      <Badge pill bg="light" text="dark" className="park-count-badge">
+        {label}
+      </Badge>
+    );
+  }
 
   function removeDuplicatesById(arr) {
     return arr.filter(
@@ -234,6 +178,7 @@ export default function AdvisoryDashboard() {
 
       advisories.forEach((obj) => {
         if (
+          currentParkObj &&
           obj.protectedAreas.some(
             (park) => park.documentId === currentParkObj.documentId,
           )
@@ -290,141 +235,63 @@ export default function AdvisoryDashboard() {
     }
   }
 
-  async function toggleArchivedAdvisories(shouldShowArchived) {
-    setShowArchived(shouldShowArchived);
-    setIsLoading(true);
-    setPublicAdvisories([]);
-
-    try {
-      const advisoryAuditRows =
-        await fetchLatestPublicAdvisoryAudits(shouldShowArchived);
-      const updatedPublicAdvisories = updatePublicAdvisories(
-        advisoryAuditRows,
-        cmsData.managementAreas,
-      );
-
-      setPublicAdvisories(updatedPublicAdvisories);
-      setOriginalPublicAdvisories(updatedPublicAdvisories);
-      setIsLoading(false);
-    } catch {
-      setError({ status: 500, message: "Error loading data" });
-      setToError(true);
-      setIsLoading(false);
-    }
-  }
-
-  function filterFormattedDate(filterDate, rowData, column) {
-    const value = rowData[column.field];
-
-    if (!filterDate) {
-      return true;
-    }
-    if (!value) {
-      return false;
-    }
-
-    return moment(value)
-      .format("YYYY/MM/DD")
-      .toLowerCase()
-      .includes(filterDate.toLowerCase());
-  }
-
-  function renderCountBadge(label) {
-    return (
-      <Badge pill bg="light" text="dark" className="park-count-badge">
-        {label}
-      </Badge>
-    );
-  }
-
-  useEffect(() => {
-    filterAdvisoriesByRegionId(selectedRegionId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Region filtering intentionally derives from the selected region id and the base advisory list.
-  }, [selectedRegionId, originalPublicAdvisories]);
-
-  useEffect(() => {
-    if (selectedParkId !== -1) {
-      filterAdvisoriesByParkId(selectedParkId);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- Park filtering intentionally derives from the selected park id and the region-scoped advisory list.
-  }, [selectedParkId, regionalPublicAdvisories]);
-
+  // Load management areas, advisory statuses, urgencies, and published advisories once on mount.
   useEffect(() => {
     let isMounted = true;
 
-    async function loadCurrentPublishedAdvisories() {
-      try {
-        // Fetch advisory statuses and urgencies for filter options and table icons
-        const [fetchedAdvisoryStatuses, fetchedUrgencies] = await Promise.all([
-          getAdvisoryStatuses(),
-          getUrgencies(),
-        ]);
-
-        setAdvisoryStatuses(fetchedAdvisoryStatuses);
-        setUrgencies(fetchedUrgencies);
-
-        if (fetchedAdvisoryStatuses) {
-          const publishedStatus = fetchedAdvisoryStatuses.filter(
-            (status) => status.code === "PUB",
-          );
-
-          if (publishedStatus?.length > 0) {
-            // Fetch advisories with status PUB
-            const result = await cmsGet(
-              `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
-            );
-
-            const currentPublishedAdvisories = result.map(
-              (advisory) => advisory.advisoryNumber,
-            );
-
-            setPublishedAdvisories(currentPublishedAdvisories);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching published advisories:", error);
-        setHasErrors(true);
-        setError({
-          status: 500,
-          message: "Error loading published advisories.",
-        });
-      }
-    }
-
-    async function fetchData() {
-      setIsLoading(true);
-
+    async function loadDashboardContext() {
       try {
         const [
           regionsData,
           managementAreasData,
           protectedAreasData,
-          advisoryAuditRows,
+          fetchedAdvisoryStatuses,
+          fetchedUrgencies,
         ] = await Promise.all([
           getRegions(),
           getManagementAreas(),
           getProtectedAreas(),
-          fetchLatestPublicAdvisoryAudits(showArchived),
+          getAdvisoryStatuses(),
+          getUrgencies(),
         ]);
 
-        // Public Advisories
-        const updatedPublicAdvisories = updatePublicAdvisories(
-          advisoryAuditRows,
-          managementAreasData,
-        );
+        if (!isMounted) return;
+
+        setRegions(regionsData);
+        setManagementAreas(managementAreasData);
+        setProtectedAreas(protectedAreasData);
+        setOriginalProtectedAreas(protectedAreasData);
+
+        // Fetch advisory statuses and urgencies for filter options and table icons
+        setAdvisoryStatuses(fetchedAdvisoryStatuses);
+        setUrgencies(fetchedUrgencies);
+
+        // Fetch the list of advisory numbers that currently have a live PUB version
+        if (fetchedAdvisoryStatuses?.length > 0) {
+          const publishedStatus = fetchedAdvisoryStatuses.filter(
+            (status) => status.code === "PUB",
+          );
+
+          if (publishedStatus?.length > 0) {
+            try {
+              const result = await cmsGet(
+                `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
+              );
+
+              if (isMounted) {
+                setPublishedAdvisories(
+                  result.map((advisory) => advisory.advisoryNumber),
+                );
+              }
+            } catch (error) {
+              console.error("Error fetching published advisories:", error);
+            }
+          }
+        }
 
         if (isMounted) {
-          // Published Advisories
-          loadCurrentPublishedAdvisories();
-          setRegions([...regionsData]);
-          setManagementAreas([...managementAreasData]);
-          setProtectedAreas([...protectedAreasData]);
-          setOriginalProtectedAreas([...protectedAreasData]);
-          setPublicAdvisories(updatedPublicAdvisories);
-          setOriginalPublicAdvisories(updatedPublicAdvisories);
-
           // Preserve filters
-          const regionId = getPageFilterValue(storedFilters || [], "region");
+          const regionId = getPageFilterValue(initialStoredFilters, "region");
 
           if (regionId) {
             const region = regionsData.find((r) => r.id === regionId);
@@ -438,7 +305,7 @@ export default function AdvisoryDashboard() {
             }
           }
 
-          const parkId = getPageFilterValue(storedFilters || [], "park");
+          const parkId = getPageFilterValue(initialStoredFilters, "park");
 
           if (parkId) {
             const park = protectedAreasData.find(
@@ -453,9 +320,125 @@ export default function AdvisoryDashboard() {
               });
             }
           }
+          setIsCmsDataLoaded(true);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("Error loading dashboard context:", error);
+        setHasErrors(true);
+        setError({ status: 500, message: "Error loading data." });
+      }
+    }
+
+    loadDashboardContext();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    cmsGet,
+    getAdvisoryStatuses,
+    getManagementAreas,
+    getProtectedAreas,
+    getRegions,
+    getUrgencies,
+    initialStoredFilters,
+    setError,
+  ]);
+
+  useEffect(() => {
+    filterAdvisoriesByRegionId(selectedRegionId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Region filtering intentionally derives from the selected region id and the current page of advisories.
+  }, [selectedRegionId, originalPublicAdvisories]);
+
+  useEffect(() => {
+    if (selectedParkId !== -1) {
+      filterAdvisoriesByParkId(selectedParkId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- Park filtering intentionally derives from the selected park id and the region-scoped advisory list.
+  }, [selectedParkId, regionalPublicAdvisories]);
+
+  // Fetch one page of advisories whenever page, pageSize, or showArchived changes.
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchAdvisories() {
+      setIsLoading(true);
+      setPublicAdvisories([]);
+
+      try {
+        const standardCutoffDate = moment()
+          .subtract(30, "days")
+          .format("YYYY-MM-DD");
+        const extendedCutoffDate = moment()
+          .subtract(18, "months")
+          .format("YYYY-MM-DD");
+
+        const advisoryFilter = showArchived
+          ? {
+              $or: [
+                { advisoryStatus: { code: { $ne: "INA" } } },
+                { updatedAt: { $gt: extendedCutoffDate } },
+              ],
+            }
+          : {
+              $or: [
+                { advisoryStatus: { code: { $ne: "INA" } } },
+                { updatedAt: { $gt: standardCutoffDate } },
+              ],
+            };
+
+        const pagination =
+          pageSize < 0
+            ? {
+                page: 1,
+                pageSize: Math.max(totalPublicAdvisories, DEFAULT_PAGE_SIZE),
+              }
+            : { page: currentPage, pageSize };
+
+        const query = qs.stringify(
+          {
+            fields: [
+              "advisoryNumber",
+              "advisoryDate",
+              "title",
+              "effectiveDate",
+              "endDate",
+              "expiryDate",
+              "updatedAt",
+            ],
+            populate: {
+              protectedAreas: { fields: ["orcs", "protectedAreaName"] },
+              advisoryStatus: { fields: ["advisoryStatus", "code"] },
+              eventType: { fields: ["eventType"] },
+              urgency: { fields: ["urgency"] },
+              regions: { fields: ["regionName"] },
+            },
+            filters: {
+              $and: [{ isLatestRevision: true }, advisoryFilter],
+            },
+            pagination,
+            sort: ["advisoryDate:DESC"],
+          },
+          { encodeValuesOnly: true },
+        );
+
+        const result = await cmsGetRaw(`/public-advisory-audits?${query}`);
+        const rows = result.data ?? [];
+        const total = result.meta?.pagination?.total ?? 0;
+        const updatedPublicAdvisories = updatePublicAdvisories(
+          rows,
+          managementAreas,
+        );
+
+        if (isMounted) {
+          setPublicAdvisories(updatedPublicAdvisories);
+          setOriginalPublicAdvisories(updatedPublicAdvisories);
+          setRegionalPublicAdvisories(updatedPublicAdvisories);
+          setTotalPublicAdvisories(total);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching advisories:", error);
         setError({
           status: 500,
           message: "Error loading data. Make sure Strapi is running.",
@@ -463,16 +446,25 @@ export default function AdvisoryDashboard() {
         setToError(true);
         setIsLoading(false);
       }
-      setIsLoading(false);
     }
 
-    fetchData();
+    if (isCmsDataLoaded) {
+      fetchAdvisories();
+    }
 
     return () => {
       isMounted = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- This effect should only run once on mount to load initial data.
-  }, []);
+  }, [
+    cmsGetRaw,
+    currentPage,
+    isCmsDataLoaded,
+    managementAreas,
+    pageSize,
+    setError,
+    showArchived,
+    totalPublicAdvisories,
+  ]);
 
   const regionOptions = useMemo(
     () =>
@@ -812,9 +804,6 @@ export default function AdvisoryDashboard() {
     [urgencies, advisoryStatuses, publishedAdvisories],
   );
 
-  const totalPageSizeOption =
-    publicAdvisories.length > 50 ? [publicAdvisories.length] : [];
-
   if (toCreate) {
     return <Navigate to="/create-advisory" />;
   }
@@ -914,9 +903,8 @@ export default function AdvisoryDashboard() {
               id="show-archived"
               checked={showArchived}
               onChange={(e) => {
-                const shouldShowArchived = e ? e.target.checked : false;
-
-                toggleArchivedAdvisories(shouldShowArchived);
+                setShowArchived(e.target.checked);
+                setCurrentPage(1);
               }}
               label={
                 <span>
@@ -945,12 +933,18 @@ export default function AdvisoryDashboard() {
               options={{
                 filtering: true,
                 search: false,
-                pageSize: 50,
-                pageSizeOptions: [25, 50, ...totalPageSizeOption],
+                pageSize,
+                pageSizeOptions: [25, 50, ALL_PAGE_SIZE],
+                serverSide: true,
+                totalItems: totalPublicAdvisories,
+                currentPage,
+                onPageChange: setCurrentPage,
+                onPageSizeChange(nextPageSize) {
+                  setPageSize(nextPageSize);
+                  setCurrentPage(1);
+                },
               }}
-              // Initial filter values: loaded from localStorage on mount
               initialFilterValues={initialTableFilterValues}
-              // Debounced callback to persist filters to localStorage when they change
               onFilterValuesChange={persistTableFilterValues}
               columns={tableColumns}
               data={publicAdvisories}
