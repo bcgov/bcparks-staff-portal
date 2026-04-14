@@ -107,13 +107,23 @@ export function buildFilter(
 }
 
 /**
+ * Maps a DataTable column field to the Strapi sort field.
+ * Some columns display a name string but should sort by a numeric sequence field.
+ */
+const SORT_FIELD_MAP = {
+  "urgency.urgency": "urgency.sequence",
+};
+
+/**
  * Builds an array of sorts
  * @param {{ field: string, direction: "asc"|"desc" } | null} sortConfig Current sort state (null = default)
  * @returns {string[]} Array of Strapi sorts
  */
 export function buildSort(sortConfig) {
   if (sortConfig) {
-    return [`${sortConfig.field}:${sortConfig.direction.toUpperCase()}`];
+    const field = SORT_FIELD_MAP[sortConfig.field] ?? sortConfig.field;
+
+    return [`${field}:${sortConfig.direction.toUpperCase()}`];
   }
 
   return ["advisoryDate:DESC"];

@@ -213,7 +213,7 @@ export default function DataTable(props) {
   const [page, setPage] = useState(1);
   const initialPageSize = options.pageSize || 5;
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const hasRemoteSort = Boolean(options.onSortChange);
+  const hasSort = Boolean(options.onSortChange);
   const currentPage = options.currentPage ?? page;
   const currentPageSize = options.pageSize ?? pageSize;
   const pageSizeOptions = useMemo(() => {
@@ -224,7 +224,8 @@ export default function DataTable(props) {
     const unique = [...new Set(combined)];
 
     return unique.sort((left, right) => {
-      if (left < 0) return 1; // negative (All) sorts to end
+      // "All" (-1) sorts to end
+      if (left < 0) return 1;
       if (right < 0) return -1;
       return left - right;
     });
@@ -433,7 +434,7 @@ export default function DataTable(props) {
                 const columnId = getColumnId(column, index);
                 const isSorted = sortConfig?.columnId === columnId;
                 const isSortable =
-                  (!options.serverSide || hasRemoteSort) &&
+                  (!options.serverSide || hasSort) &&
                   (column.field || column.customSort) &&
                   column.sorting !== false;
 
