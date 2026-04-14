@@ -59,7 +59,7 @@ export default function winterAndReservationNoOverlap(seasonData, context) {
     // Show the error below the Winter fee date range section
     context.addError(
       elements.dateableDateType(current.park.dateableId, "Winter fee"),
-      "Winter dates must not overlap with reservation dates. (To change reservation dates, edit the park's frontcountry campsite reservation dates)",
+      "Winter dates must not overlap with reservation dates. (To change reservation dates, edit the park's frontcountry campground reservation dates)",
     );
   }
 }
