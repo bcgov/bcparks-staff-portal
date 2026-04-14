@@ -71,9 +71,10 @@ function validate(seasonData, seasonContext) {
     errors.push({ element, message });
   };
 
-  // Provide the flat array of Feature Reservation dates in the context, for Park-level validation
-  validationContext.featureReservationDates =
-    seasonData.featureReservationDates ?? [];
+  // Provide the flat array of Frontcountry Campground Feature Reservation dates in the context,
+  // for Park-level validation
+  validationContext.frontcountryFeatureReservationDates =
+    seasonData.frontcountryFeatureReservationDates ?? [];
 
   // Provide flat arrays of some Park-level dates in the context, for Feature/Area Reservation validation
   validationContext.parkTier1Dates = seasonData.parkTier1Dates ?? [];

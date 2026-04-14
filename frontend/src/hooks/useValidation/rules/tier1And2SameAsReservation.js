@@ -3,13 +3,13 @@ import { isEqual } from "date-fns";
 import consolidateRanges from "@/lib/consolidateDateRanges";
 
 /**
- * Validates that the Park-level Tier 1 and 2 dates match the reservation dates.
+ * Validates that the Park-level Tier 1 and 2 dates match the Frontcountry Campground Feature Reservation dates.
  * @param {Object} seasonData The season form data to validate
  * @param {Object} context Validation context with errors array
  * @returns {void}
  */
 export default function tier1And2SameAsReservation(seasonData, context) {
-  const { dateRanges, elements, featureReservationDates } = context;
+  const { dateRanges, elements, frontcountryFeatureReservationDates } = context;
   const { current } = seasonData;
 
   // This rule applies to the Park level. Skip for other levels
@@ -18,7 +18,6 @@ export default function tier1And2SameAsReservation(seasonData, context) {
   // Skip if the Park doesn't have Tier 1 or Tier 2 dates
   if (!(current.park.hasTier1Dates || current.park.hasTier2Dates)) return;
 
-  // Skip if Tier 1 and Reservation dates are not provided
   const tier1Dates = dateRanges.filter(
     (dateRange) =>
       dateRange.dateType.name === "Tier 1" &&
@@ -38,12 +37,12 @@ export default function tier1And2SameAsReservation(seasonData, context) {
     ...tier2Dates,
   ]);
 
-  // Consolidate Reservation dates for comparison
+  // Consolidate Frontcountry Campground Feature Reservation dates for comparison
   const consolidatedReservationDates = consolidateRanges(
-    featureReservationDates,
+    frontcountryFeatureReservationDates,
   );
 
-  // Skip if there are no reservation dates, or if the Park doesn't have Tier 1 dates
+  // Skip if there are no applicable reservation dates, or if the Park doesn't have Tier 1 dates
   if (consolidatedReservationDates.length === 0 || tier1Dates.length === 0)
     return;
 
