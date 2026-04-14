@@ -21,7 +21,9 @@ const COLUMN_FILTERS = [
   },
   {
     key: "advisoryDate",
-    build: (value) => ({ advisoryDate: { $containsi: toIsoDateFilter(value) } }),
+    build: (value) => ({
+      advisoryDate: { $containsi: toIsoDateFilter(value) },
+    }),
   },
   {
     key: "endDate",
@@ -91,11 +93,16 @@ export function buildFilter(
 }
 
 /**
- * Maps a DataTable column field to the Strapi sort field.
+ * Maps a DataTable column field to Strapi sort fields.
  * Some columns display a name string but should sort by a numeric sequence field.
+ * Array values send multiple sort keys (useful when a column can hold different relation types).
  */
 const SORT_FIELD_MAP = {
   "urgency.urgency": "urgency.sequence",
+  associatedParks: [
+    "protectedAreas.protectedAreaName",
+    "recreationResources.resourceName",
+  ],
 };
 
 /**
@@ -105,9 +112,11 @@ const SORT_FIELD_MAP = {
  */
 export function buildSort(sortConfig) {
   if (sortConfig) {
-    const field = SORT_FIELD_MAP[sortConfig.field] ?? sortConfig.field;
+    const mapped = SORT_FIELD_MAP[sortConfig.field] ?? sortConfig.field;
+    const fields = Array.isArray(mapped) ? mapped : [mapped];
+    const direction = sortConfig.direction.toUpperCase();
 
-    return [`${field}:${sortConfig.direction.toUpperCase()}`];
+    return fields.map((field) => `${field}:${direction}`);
   }
 
   return ["advisoryDate:DESC"];
