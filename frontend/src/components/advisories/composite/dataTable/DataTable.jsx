@@ -299,7 +299,6 @@ export default function DataTable(props) {
   }, [page, pageSize, sortedRows.length]);
 
   const totalItems = options.totalItems ?? sortedRows.length;
-  const paginatedRows = sortedRows;
 
   function handleSort(column, index) {
     if ((!column.field && !column.customSort) || column.sorting === false) {
@@ -308,28 +307,26 @@ export default function DataTable(props) {
 
     const columnId = getColumnId(column, index);
 
-    setSortConfig((currentSortConfig) => {
-      let nextSort;
+    let nextSort;
 
-      if (!currentSortConfig || currentSortConfig.columnId !== columnId) {
-        nextSort = { columnId, direction: "asc" };
-      } else if (currentSortConfig.direction === "asc") {
-        nextSort = { columnId, direction: "desc" };
-      } else {
-        nextSort = null;
-      }
+    if (!sortConfig || sortConfig.columnId !== columnId) {
+      nextSort = { columnId, direction: "asc" };
+    } else if (sortConfig.direction === "asc") {
+      nextSort = { columnId, direction: "desc" };
+    } else {
+      nextSort = null;
+    }
 
-      if (options.onSortChange) {
-        options.onSortChange(
-          nextSort
-            ? { field: column.field, direction: nextSort.direction }
-            : null,
-        );
-      }
-
-      return nextSort;
-    });
+    setSortConfig(nextSort);
     setPage(1);
+
+    if (options.onSortChange) {
+      options.onSortChange(
+        nextSort
+          ? { field: column.field, direction: nextSort.direction }
+          : null,
+      );
+    }
   }
 
   // Handle a change to a column filter input
@@ -475,7 +472,7 @@ export default function DataTable(props) {
             )}
           </thead>
           <tbody>
-            {paginatedRows.length === 0 && (
+            {sortedRows.length === 0 && (
               <tr>
                 <td
                   colSpan={visibleColumns.length}
@@ -485,7 +482,7 @@ export default function DataTable(props) {
                 </td>
               </tr>
             )}
-            {paginatedRows.map((row, rowIndex) => {
+            {sortedRows.map((row, rowIndex) => {
               const rowKey = row.documentId || row.id || rowIndex;
               const rowProps = {};
 

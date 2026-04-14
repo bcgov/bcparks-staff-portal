@@ -8,6 +8,46 @@ function toIsoDateFilter(value) {
 }
 
 /**
+ * Maps a DataTable column field to the Strapi $and filter builder.
+ */
+const COLUMN_FILTERS = [
+  {
+    key: "urgency.urgency",
+    build: (value) => ({ urgency: { urgency: { $eq: value } } }),
+  },
+  {
+    key: "advisoryStatus.advisoryStatus",
+    build: (value) => ({ advisoryStatus: { advisoryStatus: { $eq: value } } }),
+  },
+  {
+    key: "advisoryDate",
+    build: (value) => ({ advisoryDate: { $containsi: toIsoDateFilter(value) } }),
+  },
+  {
+    key: "endDate",
+    build: (value) => ({ endDate: { $containsi: toIsoDateFilter(value) } }),
+  },
+  {
+    key: "expiryDate",
+    build: (value) => ({ expiryDate: { $containsi: toIsoDateFilter(value) } }),
+  },
+  {
+    key: "title",
+    build: (value) => ({ title: { $containsi: value } }),
+  },
+  {
+    key: "eventType.eventType",
+    build: (value) => ({ eventType: { eventType: { $containsi: value } } }),
+  },
+  {
+    key: "associatedParks",
+    build: (value) => ({
+      protectedAreas: { protectedAreaName: { $containsi: value } },
+    }),
+  },
+];
+
+/**
  * Builds an array of filters
  * @param {Object} tableFilterValues Column filter values keyed by column field name
  * @param {number} selectedRegionId Selected region id (0 = none)
@@ -23,66 +63,10 @@ export function buildFilter(
 ) {
   const filters = [];
 
-  if (tableFilterValues["urgency.urgency"]) {
-    filters.push({
-      urgency: { urgency: { $eq: tableFilterValues["urgency.urgency"] } },
-    });
-  }
-
-  if (tableFilterValues["advisoryStatus.advisoryStatus"]) {
-    filters.push({
-      advisoryStatus: {
-        advisoryStatus: {
-          $eq: tableFilterValues["advisoryStatus.advisoryStatus"],
-        },
-      },
-    });
-  }
-
-  if (tableFilterValues.advisoryDate) {
-    filters.push({
-      advisoryDate: {
-        $containsi: toIsoDateFilter(tableFilterValues.advisoryDate),
-      },
-    });
-  }
-
-  if (tableFilterValues.endDate) {
-    filters.push({
-      endDate: { $containsi: toIsoDateFilter(tableFilterValues.endDate) },
-    });
-  }
-
-  if (tableFilterValues.expiryDate) {
-    filters.push({
-      expiryDate: { $containsi: toIsoDateFilter(tableFilterValues.expiryDate) },
-    });
-  }
-
-  if (tableFilterValues.title) {
-    filters.push({
-      title: { $containsi: tableFilterValues.title },
-    });
-  }
-
-  if (tableFilterValues["eventType.eventType"]) {
-    filters.push({
-      eventType: {
-        eventType: {
-          $containsi: tableFilterValues["eventType.eventType"],
-        },
-      },
-    });
-  }
-
-  if (tableFilterValues.associatedParks) {
-    filters.push({
-      protectedAreas: {
-        protectedAreaName: {
-          $containsi: tableFilterValues.associatedParks,
-        },
-      },
-    });
+  for (const { key, build } of COLUMN_FILTERS) {
+    if (tableFilterValues[key]) {
+      filters.push(build(tableFilterValues[key]));
+    }
   }
 
   if (selectedRegionId) {

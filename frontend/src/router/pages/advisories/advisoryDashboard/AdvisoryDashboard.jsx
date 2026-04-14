@@ -43,6 +43,9 @@ import {
  * @param {any} [defaultValue=0] Default value to return if the filter isn't found in storage
  * @returns {any} The filter value, or default if not found
  */
+const ALL_PAGE_SIZE = -1;
+const DEFAULT_PAGE_SIZE = 50;
+
 function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
   return (
     storedFilters.find(
@@ -52,9 +55,6 @@ function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
 }
 
 export default function AdvisoryDashboard() {
-  const ALL_PAGE_SIZE = -1;
-  const DEFAULT_PAGE_SIZE = 50;
-
   const { setError } = useContext(ErrorContext);
   const navigate = useNavigate();
   const {
@@ -418,18 +418,6 @@ export default function AdvisoryDashboard() {
           lookup[urgency.urgency] = urgency.urgency;
           return lookup;
         }, {}),
-        customSort(a, b) {
-          const urgencyRank = {
-            low: 1,
-            medium: 2,
-            high: 3,
-          };
-
-          const leftRank = urgencyRank[a.urgency?.urgency?.toLowerCase()] || 0;
-          const rightRank = urgencyRank[b.urgency?.urgency?.toLowerCase()] || 0;
-
-          return leftRank - rightRank;
-        },
         headerStyle: {
           width: 10,
         },
@@ -480,16 +468,6 @@ export default function AdvisoryDashboard() {
           lookup[status.advisoryStatus] = status.advisoryStatus;
           return lookup;
         }, {}),
-        customSort(a, b) {
-          if (a.archived !== b.archived) {
-            return a.archived < b.archived ? 1 : -1;
-          }
-
-          return a.advisoryStatus.advisoryStatus <
-            b.advisoryStatus.advisoryStatus
-            ? -1
-            : 1;
-        },
         cellStyle: {
           textAlign: "center",
         },
@@ -604,8 +582,6 @@ export default function AdvisoryDashboard() {
       {
         field: "title",
         title: "Headline",
-        customSort: (a, b) =>
-          a.title.toLowerCase() > b.title.toLowerCase() ? 1 : -1,
         headerStyle: { width: 400 },
         cellStyle: { width: 400 },
         render(rowData) {
