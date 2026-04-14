@@ -5,7 +5,7 @@ import consolidateRanges from "@/lib/consolidateDateRanges";
 import * as FEATURE_TYPE from "@/constants/featureType";
 
 /**
- * Validates that the Feature/Area-level Frontcountry Campground reservation dates match the Park-level Tier 1 and 2 dates.
+ * Validates that Frontcountry Campground Feature Reservation dates match the Park-level Tier 1 and 2 dates.
  * Each feature's dates must be the same as the Park's combined Tier 1 and Tier 2 dates.
  * @param {Object} seasonData The season form data to validate
  * @param {Object} context Validation context with errors array
