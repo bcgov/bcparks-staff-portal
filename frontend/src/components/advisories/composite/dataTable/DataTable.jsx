@@ -300,6 +300,18 @@ export default function DataTable(props) {
 
   const totalItems = options.totalItems ?? sortedRows.length;
 
+  // In server-side mode, the parent already sends only the current page's rows.
+  // In client-side mode, slice sortedRows to the current page/pageSize here.
+  const displayedRows = useMemo(() => {
+    if (options.serverSide || currentPageSize < 0) {
+      return sortedRows;
+    }
+
+    const start = (currentPage - 1) * currentPageSize;
+
+    return sortedRows.slice(start, start + currentPageSize);
+  }, [currentPage, currentPageSize, options.serverSide, sortedRows]);
+
   function handleSort(column, index) {
     if ((!column.field && !column.customSort) || column.sorting === false) {
       return;
@@ -482,7 +494,7 @@ export default function DataTable(props) {
                 </td>
               </tr>
             )}
-            {sortedRows.map((row, rowIndex) => {
+            {displayedRows.map((row, rowIndex) => {
               const rowKey = row.documentId || row.id || rowIndex;
               const rowProps = {};
 

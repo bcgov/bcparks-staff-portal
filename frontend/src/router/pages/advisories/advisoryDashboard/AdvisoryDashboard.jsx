@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useContext } from "react";
+import { useState, useEffect, useMemo, useContext, useRef } from "react";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -85,8 +85,9 @@ export default function AdvisoryDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalPublicAdvisories, setTotalPublicAdvisories] = useState(0);
+  // Ref keeps the latest total accessible inside fetchAdvisories
+  const totalPublicAdvisoriesRef = useRef(0);
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
-  const [tableFilterValues, setTableFilterValues] = useState({});
   const [sortConfig, setSortConfig] = useState(null);
 
   const defaultPageFilters = [
@@ -113,6 +114,10 @@ export default function AdvisoryDashboard() {
       tableEntries.map((f) => [f.fieldName, f.fieldValue]),
     );
   }, [storedFilters]);
+
+  const [tableFilterValues, setTableFilterValues] = useState(
+    initialTableFilterValues,
+  );
 
   // Debounced callback: persist table filter values to localStorage
   // Called by DataTable after user stops typing
@@ -291,7 +296,10 @@ export default function AdvisoryDashboard() {
           pageSize < 0
             ? {
                 page: 1,
-                pageSize: Math.max(totalPublicAdvisories, DEFAULT_PAGE_SIZE),
+                pageSize: Math.max(
+                  totalPublicAdvisoriesRef.current,
+                  DEFAULT_PAGE_SIZE,
+                ),
               }
             : { page: currentPage, pageSize };
 
@@ -318,6 +326,9 @@ export default function AdvisoryDashboard() {
             ],
             populate: {
               protectedAreas: { fields: ["orcs", "protectedAreaName"] },
+              recreationResources: {
+                fields: ["recResourceId", "resourceName"],
+              },
               advisoryStatus: { fields: ["advisoryStatus", "code"] },
               eventType: { fields: ["eventType"] },
               urgency: { fields: ["urgency"] },
@@ -346,6 +357,7 @@ export default function AdvisoryDashboard() {
 
         if (isMounted) {
           setPublicAdvisories(updatedPublicAdvisories);
+          totalPublicAdvisoriesRef.current = total;
           setTotalPublicAdvisories(total);
           setIsLoading(false);
         }
@@ -380,7 +392,6 @@ export default function AdvisoryDashboard() {
     showArchived,
     sortConfig,
     tableFilterValues,
-    totalPublicAdvisories,
   ]);
 
   const regionOptions = useMemo(
@@ -631,33 +642,70 @@ export default function AdvisoryDashboard() {
             );
           }
 
+          // park advisories
           const parksCount = rowData.protectedAreas.length;
           const displayedProtectedAreas = rowData.protectedAreas.slice(
             0,
             displayCount,
           );
 
+          if (parksCount > 0) {
+            return (
+              <div>
+                {displayedProtectedAreas.map((p, i) => (
+                  <span key={i}>
+                    {p.protectedAreaName}
+                    {displayedProtectedAreas.length - 1 > i && ", "}
+                  </span>
+                ))}
+                {parksCount > displayCount && (
+                  <OverlayTrigger
+                    placement="top"
+                    overlay={
+                      <Tooltip
+                        id={`parks-more-${rowData.documentId || rowData.id}`}
+                      >
+                        {`plus ${parksCount - displayCount} more park(s)`}
+                      </Tooltip>
+                    }
+                  >
+                    <span>
+                      {renderCountBadge(`+${parksCount - displayCount}`)}
+                    </span>
+                  </OverlayTrigger>
+                )}
+              </div>
+            );
+          }
+
+          // RST closures
+          const resourcesCount = rowData.recreationResources.length;
+          const displayedResources = rowData.recreationResources.slice(
+            0,
+            displayCount,
+          );
+
           return (
             <div>
-              {displayedProtectedAreas.map((p, i) => (
+              {displayedResources.map((r, i) => (
                 <span key={i}>
-                  {p.protectedAreaName}
-                  {displayedProtectedAreas.length - 1 > i && ", "}
+                  {r.resourceName}
+                  {displayedResources.length - 1 > i && ", "}
                 </span>
               ))}
-              {parksCount > displayCount && (
+              {resourcesCount > displayCount && (
                 <OverlayTrigger
                   placement="top"
                   overlay={
                     <Tooltip
-                      id={`parks-more-${rowData.documentId || rowData.id}`}
+                      id={`resources-more-${rowData.documentId || rowData.id}`}
                     >
-                      {`plus ${parksCount - displayCount} more park(s)`}
+                      {`plus ${resourcesCount - displayCount} more resource(s)`}
                     </Tooltip>
                   }
                 >
                   <span>
-                    {renderCountBadge(`+${parksCount - displayCount}`)}
+                    {renderCountBadge(`+${resourcesCount - displayCount}`)}
                   </span>
                 </OverlayTrigger>
               )}
