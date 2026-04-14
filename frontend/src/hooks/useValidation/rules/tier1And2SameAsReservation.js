@@ -61,7 +61,7 @@ export default function tier1And2SameAsReservation(seasonData, context) {
 
   if (!sameDates) {
     const errorText =
-      "The tier 1 and tier 2 dates must include all reservation dates. (To change reservation dates, edit the park’s reservable features)";
+      "The tier 1 and tier 2 dates must include all reservation dates. (To change reservation dates, edit the park's frontcountry campsite reservation dates)";
 
     // Show the error below the Tier 1 and Tier 2 date range sections
     context.addError(
