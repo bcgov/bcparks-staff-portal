@@ -310,7 +310,7 @@ async function getFrontcountryFeatureReservationDates(park, operatingYear) {
         [Op.in]: featureSeasonIds,
       },
 
-      // Filter out blank date ranges (null startDate and endDate) and return
+      // Filter out blank date ranges (null startDate and endDate)
       startDate: {
         [Op.ne]: null,
       },
