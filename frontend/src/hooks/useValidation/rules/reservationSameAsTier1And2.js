@@ -2,9 +2,10 @@ import { isEqual } from "date-fns";
 import { groupBy } from "lodash-es";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import * as FEATURE_TYPE from "@/constants/featureType";
 
 /**
- * Validates that the Feature/Area-level reservation dates match the Park-level Tier 1 and 2 dates.
+ * Validates that the Feature/Area-level Frontcountry Campground reservation dates match the Park-level Tier 1 and 2 dates.
  * Each feature's dates must be the same as the Park's combined Tier 1 and Tier 2 dates.
  * @param {Object} seasonData The season form data to validate
  * @param {Object} context Validation context with errors array
@@ -19,16 +20,20 @@ export default function reservationSameAsTier1And2(seasonData, context) {
   // Skip if the Park doesn't have Tier 1 dates
   if (parkTier1Dates.length === 0) return;
 
-  // Get a list of the populated Reservation dates on this form
-  const allReservationDates = dateRanges.filter(
+  // Get a list of the populated Frontcountry Campground Feature Reservation dates on this form
+  const frontcountryReservationDates = dateRanges.filter(
     (dateRange) =>
       dateRange.dateType.name === "Reservation" &&
+      dateRange.strapiFeatureTypeId === FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND &&
       dateRange.startDate &&
       dateRange.endDate,
   );
 
   // Group reservation dates by dateableId
-  const reservationDatesByFeature = groupBy(allReservationDates, "dateableId");
+  const reservationDatesByFeature = groupBy(
+    frontcountryReservationDates,
+    "dateableId",
+  );
 
   // Consolidate Tier 1 + 2 ranges for comparison
   const consolidatedTierDates = consolidateRanges([

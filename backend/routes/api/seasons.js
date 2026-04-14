@@ -249,7 +249,7 @@ function featureTypeQueryPart() {
   return {
     model: FeatureType,
     as: "featureType",
-    attributes: ["id", "name", "icon"],
+    attributes: ["id", "name", "icon", "strapiFeatureTypeId"],
   };
 }
 
