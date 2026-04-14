@@ -1,6 +1,8 @@
 import { areIntervalsOverlapping } from "date-fns";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import * as SEASON_TYPE from "@/constants/seasonType";
+import * as DATE_TYPE from "@/constants/dateType";
 
 /**
  * Validates that Park-level Winter fee dates do not overlap with Frontcountry Campground Feature Reservation dates.
@@ -12,13 +14,16 @@ export default function winterAndReservationNoOverlap(seasonData, context) {
   const { dateRanges, elements, frontcountryFeatureReservationDates } = context;
   const { current } = seasonData;
 
+  // This rule applies to winter seasons only. Skip for regular seasons
+  if (current.seasonType !== SEASON_TYPE.WINTER) return;
+
   // This rule applies to the Park level. Skip for other levels
   if (context.level !== "park") return;
 
   // Get a list of Park-level winter dates
   const winterDates = dateRanges.filter(
     (dateRange) =>
-      dateRange.dateType.name === "Winter fee" &&
+      dateRange.dateType.strapiDateTypeId === DATE_TYPE.WINTER_FEE &&
       dateRange.startDate &&
       dateRange.endDate,
   );
