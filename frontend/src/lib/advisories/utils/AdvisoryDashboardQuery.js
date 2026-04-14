@@ -44,7 +44,10 @@ const COLUMN_FILTERS = [
   {
     key: "associatedParks",
     build: (value) => ({
-      protectedAreas: { protectedAreaName: { $containsi: value } },
+      $or: [
+        { protectedAreas: { protectedAreaName: { $containsi: value } } },
+        { recreationResources: { resourceName: { $containsi: value } } },
+      ],
     }),
   },
 ];

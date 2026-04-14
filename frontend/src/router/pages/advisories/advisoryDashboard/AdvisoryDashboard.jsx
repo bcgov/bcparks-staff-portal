@@ -3,6 +3,7 @@ import {
   useLocalStorage,
   useSessionStorage,
   useDebounceCallback,
+  useDebounceValue,
 } from "usehooks-ts";
 import qs from "qs";
 import { Navigate, useNavigate } from "react-router-dom";
@@ -118,6 +119,9 @@ export default function AdvisoryDashboard() {
   const [tableFilterValues, setTableFilterValues] = useState(
     initialTableFilterValues,
   );
+  // Debounced copy used as the fetchAdvisories dependency
+  // Prevents Strapi request on every keystroke while keeping filter inputs responsive
+  const [debouncedTableFilterValues] = useDebounceValue(tableFilterValues, 300);
 
   // Debounced callback: persist table filter values to localStorage
   // Called by DataTable after user stops typing
@@ -292,24 +296,43 @@ export default function AdvisoryDashboard() {
               ],
             };
 
-        const pagination =
-          pageSize < 0
-            ? {
-                page: 1,
-                pageSize: Math.max(
-                  totalPublicAdvisoriesRef.current,
-                  DEFAULT_PAGE_SIZE,
-                ),
-              }
-            : { page: currentPage, pageSize };
-
         // Build server-side filter params from column filter values and region/park dropdowns
         const columnFilterClauses = buildFilter(
-          tableFilterValues,
+          debouncedTableFilterValues,
           selectedRegionId,
           selectedParkId,
           protectedAreas,
         );
+
+        // When "All" is selected, first fetch the current total with
+        // the active filters applied, then request exactly that many rows
+        let pagination;
+
+        if (pageSize < 0) {
+          const countQuery = qs.stringify(
+            {
+              fields: ["id"],
+              filters: {
+                $and: [
+                  { isLatestRevision: true },
+                  advisoryFilter,
+                  ...columnFilterClauses,
+                ],
+              },
+              pagination: { page: 1, pageSize: 1 },
+            },
+            { encodeValuesOnly: true },
+          );
+          const countResult = await cmsGetRaw(
+            `/public-advisory-audits?${countQuery}`,
+          );
+          const allTotal =
+            countResult.meta?.pagination?.total ?? DEFAULT_PAGE_SIZE;
+
+          pagination = { page: 1, pageSize: Math.max(allTotal, 1) };
+        } else {
+          pagination = { page: currentPage, pageSize };
+        }
 
         const sort = buildSort(sortConfig);
 
@@ -391,7 +414,7 @@ export default function AdvisoryDashboard() {
     setError,
     showArchived,
     sortConfig,
-    tableFilterValues,
+    debouncedTableFilterValues,
   ]);
 
   const regionOptions = useMemo(
