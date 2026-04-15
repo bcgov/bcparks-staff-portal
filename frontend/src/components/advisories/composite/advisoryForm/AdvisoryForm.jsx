@@ -7,8 +7,8 @@ import Btn from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleExclamation, faXmark } from "@fa-kit/icons/classic/regular";
-import { faCheck, faCircleQuestion } from "@fa-kit/icons/classic/solid";
+import { faXmark } from "@fa-kit/icons/classic/regular";
+import { faCheck, faCircleQuestion, faTriangleExclamation } from "@fa-kit/icons/classic/solid";
 import Select from "react-select";
 import {
   validateOptionalNumber,
@@ -1236,7 +1236,7 @@ export default function AdvisoryForm({
               <div className="col-lg-7 col-md-8 col-sm-12">
                 <div className="d-flex field-bg-blue">
                   <FontAwesomeIcon
-                    icon={faCircleExclamation}
+                    icon={faTriangleExclamation}
                     className="warningIcon"
                   />
                   <div className="ms-3">
