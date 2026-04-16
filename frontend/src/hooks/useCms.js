@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useRef } from "react";
 import qs from "qs";
+import get from "lodash-es/get";
 import { useAuth } from "react-oidc-context";
 import { cmsAxios } from "@/lib/advisories/axios_config";
 import CmsDataContext from "@/contexts/CmsDataContext";
@@ -58,25 +59,25 @@ export default function useCms() {
 
   // Authenticated wrappers around cmsAxios methods
 
-  const cmsGet = useCallback(
-    async (url, config = {}) => {
-      const response = await cmsAxios.get(url, withAuthorization(config));
-
-      // Read the Axios response payload and strip the extra Strapi "data" wrapper if it exists.
-      return response.data?.data ?? response.data;
-    },
-    [withAuthorization],
-  );
-
   /**
-   * Get full response payload including meta.pagination.
-   * Use this instead of cmsGet when you need pagination metadata.
+   * Performs a GET request to the CMS and returns the nested data at the provided `path`.
+   * @param {string} url CMS endpoint to fetch
+   * @param {Object} [config={}] axios.get request config
+   * @param {string|Array} [path="data"] lodash.get path to the nested data in the response
+   * @returns {Promise<any>} The nested data at the provided path in the CMS response
    */
-  const cmsGetRaw = useCallback(
-    async (url, config = {}) => {
+  const cmsGet = useCallback(
+    async (url, config = {}, path = "data.data") => {
       const response = await cmsAxios.get(url, withAuthorization(config));
 
-      return response.data;
+      // If an empty path is provided, return the whole response data
+      if (path.length === 0) {
+        return response.data;
+      }
+
+      // Default to Strapi's usual response.data.data shape,
+      // but allow callers to request a different path (e.g. response.data when meta is needed)
+      return get(response, path) ?? response.data;
     },
     [withAuthorization],
   );
@@ -277,7 +278,6 @@ export default function useCms() {
   return {
     calculateIsStatHoliday,
     cmsGet,
-    cmsGetRaw,
     cmsPost,
     cmsPut,
     getProtectedAreas,

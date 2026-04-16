@@ -224,7 +224,9 @@ export default function DataTable(props) {
     const unique = [...new Set(combined)];
 
     return unique.sort((left, right) => {
-      // "All" (-1) sorts to end
+      // Keep numeric page sizes ascending
+      // but force "All" (value -1) to the end
+      // so the selector reads naturally: 25, 50, All
       if (left < 0) return 1;
       if (right < 0) return -1;
       return left - right;

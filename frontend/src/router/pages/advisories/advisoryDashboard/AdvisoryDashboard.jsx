@@ -37,6 +37,9 @@ import {
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 
+const ALL_PAGE_SIZE = -1;
+const DEFAULT_PAGE_SIZE = 50;
+
 /**
  * Returns the value of a page-level filter from the stored filters array, or a default if not found.
  * @param {Array} storedFilters Stored filters, each with { type, filterName/fieldName, filterValue/fieldValue }
@@ -44,8 +47,6 @@ import {
  * @param {any} [defaultValue=0] Default value to return if the filter isn't found in storage
  * @returns {any} The filter value, or default if not found
  */
-const ALL_PAGE_SIZE = -1;
-const DEFAULT_PAGE_SIZE = 50;
 
 function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
   return (
@@ -65,7 +66,6 @@ export default function AdvisoryDashboard() {
     getAdvisoryStatuses,
     getUrgencies,
     cmsGet,
-    cmsGetRaw,
   } = useCms();
 
   const [toError, setToError] = useState(false);
@@ -188,7 +188,7 @@ export default function AdvisoryDashboard() {
         setUrgencies(fetchedUrgencies);
 
         // Fetch the list of advisory numbers that currently have a live PUB version
-        if (fetchedAdvisoryStatuses?.length > 0) {
+        if (fetchedAdvisoryStatuses.length > 0) {
           const publishedStatus = fetchedAdvisoryStatuses.filter(
             (status) => status.code === "PUB",
           );
@@ -323,8 +323,10 @@ export default function AdvisoryDashboard() {
             },
             { encodeValuesOnly: true },
           );
-          const countResult = await cmsGetRaw(
+          const countResult = await cmsGet(
             `/public-advisory-audits?${countQuery}`,
+            {},
+            "data",
           );
           const allTotal =
             countResult.meta?.pagination?.total ?? DEFAULT_PAGE_SIZE;
@@ -370,7 +372,11 @@ export default function AdvisoryDashboard() {
           { encodeValuesOnly: true },
         );
 
-        const result = await cmsGetRaw(`/public-advisory-audits?${query}`);
+        const result = await cmsGet(
+          `/public-advisory-audits?${query}`,
+          {},
+          "data",
+        );
         const rows = result.data ?? [];
         const total = result.meta?.pagination?.total ?? 0;
         const updatedPublicAdvisories = updatePublicAdvisories(
@@ -403,7 +409,7 @@ export default function AdvisoryDashboard() {
       isMounted = false;
     };
   }, [
-    cmsGetRaw,
+    cmsGet,
     currentPage,
     isCmsDataLoaded,
     managementAreas,
