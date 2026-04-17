@@ -18,6 +18,12 @@ jobs:
           echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
+      # Check out the commit to access its git tags, if needed
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-tags: true
+
       - name: Install OpenShift CLI tools
         uses: redhat-actions/openshift-tools-installer@v1
         with:
@@ -30,11 +36,36 @@ jobs:
           openshift_token: ${{ secrets.OPENSHIFT_SERVICE_TOKEN }}
 
       - name: Tag images
+        # Determine the source tag: try SHORT_SHA first, and fall back to an existing Git tag on this commit
         run: |
-          oc -n ${{ env.TOOLS_NAMESPACE }} tag frontend-main:${{ env.SHORT_SHA }} frontend-main:${{ env.RELEASE_VERSION }}
-          oc -n ${{ env.TOOLS_NAMESPACE }} tag backend-main:${{ env.SHORT_SHA }} backend-main:${{ env.RELEASE_VERSION }}
+          SOURCE_TAG=""
 
-      - name: Delete images tags with commit hash
-        run: |
-          oc -n ${{ env.TOOLS_NAMESPACE }} tag -d frontend-main:${{ env.SHORT_SHA }}
-          oc -n ${{ env.TOOLS_NAMESPACE }} tag -d backend-main:${{ env.SHORT_SHA }}
+          # Use the SHORT_SHA tag if it exists
+          if oc -n "$TOOLS_NAMESPACE" get istag "frontend-main:$SHORT_SHA" &>/dev/null; then
+            SOURCE_TAG="$SHORT_SHA"
+          else
+            # If the SHORT_SHA tag has been pruned, look for any other tag on this commit
+            # to use as the source. (like "v1.2.3-uat.5")
+            echo "SHORT_SHA tag not found, checking other Git tags on this commit..."
+            for candidate in $(git tag --points-at HEAD); do
+              # Skip the tag we're currently creating
+              if [ "$candidate" = "$RELEASE_VERSION" ]; then
+                continue
+              fi
+
+              # If this candidate tag exists as an imagestream tag in OpenShift, use it as the source tag
+              if oc -n "$TOOLS_NAMESPACE" get istag "frontend-main:$candidate" &>/dev/null; then
+                SOURCE_TAG="$candidate"
+                echo "Found existing imagestream tag: $candidate"
+                break
+              fi
+            done
+          fi
+
+          if [ -z "$SOURCE_TAG" ]; then
+            echo "::error::No source imagestream tag found for commit $SHORT_SHA. Cannot add release tag $RELEASE_VERSION."
+            exit 1
+          fi
+
+          oc -n "$TOOLS_NAMESPACE" tag "frontend-main:$SOURCE_TAG" "frontend-main:$RELEASE_VERSION"
+          oc -n "$TOOLS_NAMESPACE" tag "backend-main:$SOURCE_TAG" "backend-main:$RELEASE_VERSION"
