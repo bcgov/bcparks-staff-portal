@@ -63,21 +63,21 @@ export default function useCms() {
    * Performs a GET request to the CMS and returns the nested data at the provided `path`.
    * @param {string} url CMS endpoint to fetch
    * @param {Object} [config={}] axios.get request config
-   * @param {string|Array} [path="data"] lodash.get path to the nested data in the response
-   * @returns {Promise<any>} The nested data at the provided path in the CMS response
+   * @param {string|Array} [path="data"] lodash.get path inside the CMS response body
+   * @returns {Promise<any>} The nested data at the provided path in the CMS response body
    */
   const cmsGet = useCallback(
-    async (url, config = {}, path = "data.data") => {
+    async (url, config = {}, path = "data") => {
       const response = await cmsAxios.get(url, withAuthorization(config));
 
-      // If an empty path is provided, return the whole response data
+      // If an empty path is provided, return the full CMS response body
       if (path.length === 0) {
         return response.data;
       }
 
-      // Default to Strapi's usual response.data.data shape,
-      // but allow callers to request a different path (e.g. response.data when meta is needed)
-      return get(response, path) ?? response.data;
+      // Default to Strapi's usual data path,
+      // but allow callers to request a different CMS response path such as meta.pagination
+      return get(response.data, path);
     },
     [withAuthorization],
   );
@@ -126,15 +126,16 @@ export default function useCms() {
    * Returns cached CMS data if available, or fetches it from the CMS and caches the result.
    * @param {string} key Cache key in CmsDataContext
    * @param {string} url CMS endpoint to fetch
+   * @param {string|Array} [path="data"] lodash.get path inside the CMS response body
    * @returns {Promise<any>} The value from the CMS or the CmsDataContext cache
    */
   const fetchCached = useCallback(
-    async (key, url) => {
+    async (key, url, path = "data") => {
       if (cmsData[key]) {
         return cmsData[key];
       }
 
-      const payload = await cmsGet(url);
+      const payload = await cmsGet(url, {}, path);
 
       return storeResult(key, payload);
     },
@@ -144,7 +145,8 @@ export default function useCms() {
   // Metadata getters using fetchCached so each endpoint API is hit only once per session.
 
   const getProtectedAreas = useCallback(
-    () => fetchCached("protectedAreas", "/protected-areas/items"),
+    // This custom endpoint returns an array at the response root, not under data.
+    () => fetchCached("protectedAreas", "/protected-areas/items", ""),
     [fetchCached],
   );
 

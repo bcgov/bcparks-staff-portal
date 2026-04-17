@@ -78,24 +78,22 @@ export default function ParkAccessStatus() {
           <DataTable
             key={data.length}
             hover
-            options={{
-              filtering: true,
-              search: true,
-              exportMenu: [
-                {
-                  label: "Export CSV",
-                  exportFunc: (cols, datas) =>
-                    exportCsvFile(cols, datas, exportFilename),
-                },
-                {
-                  label: "Export PDF",
-                  exportFunc: (cols, datas) =>
-                    exportPdf(cols, datas, title, exportFilename),
-                },
-              ],
-              pageSize: 50,
-              pageSizeOptions: [25, 50, 100],
-            }}
+            filtering
+            search
+            exportMenu={[
+              {
+                label: "Export CSV",
+                exportFunc: (cols, datas) =>
+                  exportCsvFile(cols, datas, exportFilename),
+              },
+              {
+                label: "Export PDF",
+                exportFunc: (cols, datas) =>
+                  exportPdf(cols, datas, title, exportFilename),
+              },
+            ]}
+            pageSize={50}
+            pageSizeOptions={[25, 50, 100]}
             columns={[
               {
                 title: "ORCS",

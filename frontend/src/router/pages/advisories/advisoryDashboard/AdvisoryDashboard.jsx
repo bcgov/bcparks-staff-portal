@@ -47,7 +47,6 @@ const DEFAULT_PAGE_SIZE = 50;
  * @param {any} [defaultValue=0] Default value to return if the filter isn't found in storage
  * @returns {any} The filter value, or default if not found
  */
-
 function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
   return (
     storedFilters.find(
@@ -326,7 +325,7 @@ export default function AdvisoryDashboard() {
           const countResult = await cmsGet(
             `/public-advisory-audits?${countQuery}`,
             {},
-            "data",
+            "",
           );
           const allTotal =
             countResult.meta?.pagination?.total ?? DEFAULT_PAGE_SIZE;
@@ -372,11 +371,7 @@ export default function AdvisoryDashboard() {
           { encodeValuesOnly: true },
         );
 
-        const result = await cmsGet(
-          `/public-advisory-audits?${query}`,
-          {},
-          "data",
-        );
+        const result = await cmsGet(`/public-advisory-audits?${query}`, {}, "");
         const rows = result.data ?? [];
         const total = result.meta?.pagination?.total ?? 0;
         const updatedPublicAdvisories = updatePublicAdvisories(
@@ -425,13 +420,16 @@ export default function AdvisoryDashboard() {
 
   const regionOptions = useMemo(
     () =>
-      regions.map((r) => ({ label: `${r.regionName} Region`, value: r.id })),
+      (regions || []).map((r) => ({
+        label: `${r.regionName} Region`,
+        value: r.id,
+      })),
     [regions],
   );
 
   const parkOptions = useMemo(
     () =>
-      protectedAreas.map((p) => ({
+      (protectedAreas || []).map((p) => ({
         label: p.protectedAreaName,
         value: p.documentId,
       })),
@@ -899,27 +897,25 @@ export default function AdvisoryDashboard() {
           <br />
           <div className="container-fluid">
             <DataTable
-              options={{
-                filtering: true,
-                search: false,
-                pageSize,
-                pageSizeOptions: [25, 50, ALL_PAGE_SIZE],
-                serverSide: true,
-                totalItems: totalPublicAdvisories,
-                currentPage,
-                onPageChange: setCurrentPage,
-                onPageSizeChange(nextPageSize) {
-                  setPageSize(nextPageSize);
-                  setCurrentPage(1);
-                },
-                onFilterChange({ field, value }) {
-                  setTableFilterValues((prev) => ({ ...prev, [field]: value }));
-                  setCurrentPage(1);
-                },
-                onSortChange(next) {
-                  setSortConfig(next);
-                  setCurrentPage(1);
-                },
+              filtering
+              search={false}
+              pageSize={pageSize}
+              pageSizeOptions={[25, 50, ALL_PAGE_SIZE]}
+              serverSide
+              totalItems={totalPublicAdvisories}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                setCurrentPage(1);
+              }}
+              onFilterChange={({ field, value }) => {
+                setTableFilterValues((prev) => ({ ...prev, [field]: value }));
+                setCurrentPage(1);
+              }}
+              onSortChange={(next) => {
+                setSortConfig(next);
+                setCurrentPage(1);
               }}
               initialFilterValues={initialTableFilterValues}
               onFilterValuesChange={persistTableFilterValues}

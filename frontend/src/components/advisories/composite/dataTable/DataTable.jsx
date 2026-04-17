@@ -194,7 +194,18 @@ export default function DataTable(props) {
   const {
     columns,
     data,
-    options,
+    exportMenu,
+    filtering,
+    pageSize: pageSizeProp,
+    pageSizeOptions: pageSizeOptionsProp,
+    search,
+    serverSide,
+    totalItems: totalItemsProp,
+    currentPage: currentPageProp,
+    onPageChange,
+    onPageSizeChange: onPageSizeChangeProp,
+    onSortChange,
+    onFilterChange,
     title,
     onRowClick,
     initialFilterValues,
@@ -211,13 +222,13 @@ export default function DataTable(props) {
   const [filterValues, setFilterValues] = useState(initialFilterValues || {});
   const [sortConfig, setSortConfig] = useState(null);
   const [page, setPage] = useState(1);
-  const initialPageSize = options.pageSize || 5;
+  const initialPageSize = pageSizeProp || 5;
   const [pageSize, setPageSize] = useState(initialPageSize);
-  const hasSort = Boolean(options.onSortChange);
-  const currentPage = options.currentPage ?? page;
-  const currentPageSize = options.pageSize ?? pageSize;
+  const hasSort = Boolean(onSortChange);
+  const currentPage = currentPageProp ?? page;
+  const currentPageSize = pageSizeProp ?? pageSize;
   const pageSizeOptions = useMemo(() => {
-    const configured = options.pageSizeOptions || [5, 10, 25, 50, 100];
+    const configured = pageSizeOptionsProp || [5, 10, 25, 50, 100];
     const combined = [...configured, initialPageSize].filter(
       (value) => value !== 0,
     );
@@ -231,7 +242,7 @@ export default function DataTable(props) {
       if (right < 0) return -1;
       return left - right;
     });
-  }, [initialPageSize, options.pageSizeOptions]);
+  }, [initialPageSize, pageSizeOptionsProp]);
 
   useEffect(() => {
     setPageSize(initialPageSize);
@@ -239,12 +250,12 @@ export default function DataTable(props) {
 
   const filteredRows = useMemo(() => {
     // Skip local filtering when the parent handles it server-side
-    if (options.serverSide) {
+    if (serverSide) {
       return data;
     }
 
     return data.filter((row) => {
-      const matchesSearch = options.search
+      const matchesSearch = search
         ? rowMatchesSearch(row, visibleColumns, searchText)
         : true;
       const matchesFilters = visibleColumns.every((column, index) => {
@@ -258,14 +269,14 @@ export default function DataTable(props) {
   }, [
     data,
     filterValues,
-    options.search,
-    options.serverSide,
+    search,
+    serverSide,
     searchText,
     visibleColumns,
   ]);
 
   const sortedRows = useMemo(() => {
-    if (!sortConfig || options.serverSide) {
+    if (!sortConfig || serverSide) {
       return filteredRows;
     }
 
@@ -290,7 +301,7 @@ export default function DataTable(props) {
     });
 
     return nextRows;
-  }, [filteredRows, options.serverSide, sortConfig, visibleColumns]);
+  }, [filteredRows, serverSide, sortConfig, visibleColumns]);
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize));
@@ -300,20 +311,22 @@ export default function DataTable(props) {
     }
   }, [page, pageSize, sortedRows.length]);
 
-  const totalItems = options.totalItems ?? sortedRows.length;
+  const totalItems = totalItemsProp ?? sortedRows.length;
 
   // In server-side mode, the parent already sends only the current page's rows.
   // In client-side mode, slice sortedRows to the current page/pageSize here.
   const displayedRows = useMemo(() => {
-    if (options.serverSide || currentPageSize < 0) {
+    if (serverSide || currentPageSize < 0) {
       return sortedRows;
     }
 
     const start = (currentPage - 1) * currentPageSize;
 
     return sortedRows.slice(start, start + currentPageSize);
-  }, [currentPage, currentPageSize, options.serverSide, sortedRows]);
+  }, [currentPage, currentPageSize, serverSide, sortedRows]);
 
+  // Toggles sort state for a column (asc -> desc -> unsorted),
+  // resets to page 1, and notifies the parent in server-side mode.
   function handleSort(column, index) {
     if ((!column.field && !column.customSort) || column.sorting === false) {
       return;
@@ -321,8 +334,10 @@ export default function DataTable(props) {
 
     const columnId = getColumnId(column, index);
 
+    // Determine next sort state (asc -> desc -> unsorted)
     let nextSort;
 
+    // Cycle sort direction each time the same header is clicked
     if (!sortConfig || sortConfig.columnId !== columnId) {
       nextSort = { columnId, direction: "asc" };
     } else if (sortConfig.direction === "asc") {
@@ -334,8 +349,8 @@ export default function DataTable(props) {
     setSortConfig(nextSort);
     setPage(1);
 
-    if (options.onSortChange) {
-      options.onSortChange(
+    if (onSortChange) {
+      onSortChange(
         nextSort
           ? { field: column.field, direction: nextSort.direction }
           : null,
@@ -355,8 +370,8 @@ export default function DataTable(props) {
     setFilterValues(nextFilterValues);
     setPage(1);
     // Notify parent of server-side filter change
-    if (options.onFilterChange) {
-      options.onFilterChange({ field: column.field, value });
+    if (onFilterChange) {
+      onFilterChange({ field: column.field, value });
     }
     // Pass the new values to the parent if a callback was provided
     onFilterValuesChange?.(nextFilterValues);
@@ -428,10 +443,10 @@ export default function DataTable(props) {
       ) : (
         <DefaultToolbar
           title={title}
-          searchEnabled={Boolean(options.search)}
+          searchEnabled={Boolean(search)}
           searchText={searchText}
           onSearchChange={handleSearchChange}
-          exportMenu={options.exportMenu || []}
+          exportMenu={exportMenu || []}
           exportColumns={visibleColumns}
           exportRows={sortedRows}
         />
@@ -445,7 +460,7 @@ export default function DataTable(props) {
                 const columnId = getColumnId(column, index);
                 const isSorted = sortConfig?.columnId === columnId;
                 const isSortable =
-                  (!options.serverSide || hasSort) &&
+                  (!serverSide || hasSort) &&
                   (column.field || column.customSort) &&
                   column.sorting !== false;
 
@@ -471,7 +486,7 @@ export default function DataTable(props) {
                 );
               })}
             </tr>
-            {options.filtering && (
+            {filtering && (
               <tr>
                 {visibleColumns.map((column, index) => {
                   const columnId = getColumnId(column, index);
@@ -532,8 +547,8 @@ export default function DataTable(props) {
         totalItems={totalItems}
         currentPage={currentPage}
         pageSize={currentPageSize}
-        onPageChange={options.onPageChange ?? setPage}
-        onPageSizeChange={options.onPageSizeChange ?? handlePageSizeChange}
+        onPageChange={onPageChange ?? setPage}
+        onPageSizeChange={onPageSizeChangeProp ?? handlePageSizeChange}
         pageSizeLabel="Rows per page"
         pageSizeOptions={pageSizeOptions}
       />
@@ -544,25 +559,23 @@ export default function DataTable(props) {
 DataTable.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
-  options: PropTypes.shape({
-    exportMenu: PropTypes.arrayOf(
-      PropTypes.shape({
-        label: PropTypes.string.isRequired,
-        exportFunc: PropTypes.func.isRequired,
-      }),
-    ),
-    filtering: PropTypes.bool,
-    pageSize: PropTypes.number,
-    pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
-    search: PropTypes.bool,
-    serverSide: PropTypes.bool,
-    totalItems: PropTypes.number,
-    currentPage: PropTypes.number,
-    onPageChange: PropTypes.func,
-    onPageSizeChange: PropTypes.func,
-    onSortChange: PropTypes.func,
-    onFilterChange: PropTypes.func,
-  }),
+  exportMenu: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      exportFunc: PropTypes.func.isRequired,
+    }),
+  ),
+  filtering: PropTypes.bool,
+  pageSize: PropTypes.number,
+  pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
+  search: PropTypes.bool,
+  serverSide: PropTypes.bool,
+  totalItems: PropTypes.number,
+  currentPage: PropTypes.number,
+  onPageChange: PropTypes.func,
+  onPageSizeChange: PropTypes.func,
+  onSortChange: PropTypes.func,
+  onFilterChange: PropTypes.func,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   onRowClick: PropTypes.func,
   initialFilterValues: PropTypes.objectOf(PropTypes.string),
@@ -574,7 +587,18 @@ DataTable.propTypes = {
 };
 
 DataTable.defaultProps = {
-  options: {},
+  exportMenu: null,
+  filtering: false,
+  pageSize: null,
+  pageSizeOptions: null,
+  search: false,
+  serverSide: false,
+  totalItems: null,
+  currentPage: null,
+  onPageChange: null,
+  onPageSizeChange: null,
+  onSortChange: null,
+  onFilterChange: null,
   title: "",
   onRowClick: null,
   initialFilterValues: null,
