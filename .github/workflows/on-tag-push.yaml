@@ -40,23 +40,25 @@ jobs:
         run: |
           SOURCE_TAG=""
 
-          # Use the SHORT_SHA tag if it exists
-          if oc -n "$TOOLS_NAMESPACE" get istag "frontend-main:$SHORT_SHA" &>/dev/null; then
+          # Use the SHORT_SHA tag if it exists for both imagestreams
+          if oc -n "$TOOLS_NAMESPACE" get istag "frontend-main:$SHORT_SHA" &>/dev/null && \
+             oc -n "$TOOLS_NAMESPACE" get istag "backend-main:$SHORT_SHA" &>/dev/null; then
             SOURCE_TAG="$SHORT_SHA"
           else
-            # If the SHORT_SHA tag has been pruned, look for any other tag on this commit
+            # If the SHORT_SHA tags have been pruned, look for any other tag on this commit
             # to use as the source. (like "v1.2.3-uat.5")
-            echo "SHORT_SHA tag not found, checking other Git tags on this commit..."
+            echo "SHORT_SHA tag not found in both imagestreams, checking other Git tags on this commit..."
             for candidate in $(git tag --points-at HEAD); do
               # Skip the tag we're currently creating
               if [ "$candidate" = "$RELEASE_VERSION" ]; then
                 continue
               fi
 
-              # If this candidate tag exists as an imagestream tag in OpenShift, use it as the source tag
-              if oc -n "$TOOLS_NAMESPACE" get istag "frontend-main:$candidate" &>/dev/null; then
+              # Use this candidate if it exists as a tag for both imagestreams in OpenShift
+              if oc -n "$TOOLS_NAMESPACE" get istag "frontend-main:$candidate" &>/dev/null && \
+                 oc -n "$TOOLS_NAMESPACE" get istag "backend-main:$candidate" &>/dev/null; then
                 SOURCE_TAG="$candidate"
-                echo "Found existing imagestream tag: $candidate"
+                echo "Found existing tags for both imagestreams: $candidate"
                 break
               fi
             done
