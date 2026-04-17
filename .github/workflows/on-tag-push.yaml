@@ -13,16 +13,16 @@ jobs:
   tag:
     runs-on: ubuntu-24.04
     steps:
-      - name: Set env
-        run: |
-          echo "SHORT_SHA=${GITHUB_SHA::7}" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
-
-      # Check out the commit to access its git tags, if needed
+      # Check out the commit to access its SHA hash and tags
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-tags: true
+
+      - name: Set env
+        run: |
+          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: Install OpenShift CLI tools
         uses: redhat-actions/openshift-tools-installer@v1
