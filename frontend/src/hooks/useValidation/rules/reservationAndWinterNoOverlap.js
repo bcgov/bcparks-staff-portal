@@ -2,9 +2,10 @@ import { areIntervalsOverlapping } from "date-fns";
 import { groupBy } from "lodash-es";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import * as FEATURE_TYPE from "@/constants/featureType";
 
 /**
- * Validates that Feature/Area Reservation dates do not overlap with Park-level Winter fee dates.
+ * Validates that Frontcountry Campground Feature Reservation dates do not overlap with Park-level Winter fee dates.
  * @param {Object} seasonData The season form data to validate
  * @param {Object} context Validation context with errors array
  * @returns {void}
@@ -15,16 +16,20 @@ export default function reservationAndWinterNoOverlap(seasonData, context) {
   // This rule applies to the Feature and ParkArea level. Skip for Parks
   if (context.level === "park") return;
 
-  // Get a list of the populated Reservation dates on this form
-  const allReservationDates = dateRanges.filter(
+  // Get a list of the populated Frontcountry Campground Feature Reservation dates on this form
+  const frontcountryReservationDates = dateRanges.filter(
     (dateRange) =>
       dateRange.dateType.name === "Reservation" &&
+      dateRange.strapiFeatureTypeId === FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND &&
       dateRange.startDate &&
       dateRange.endDate,
   );
 
   // Group reservation dateRanges by dateableId so we can test each dateable feature
-  const reservationDatesByFeature = groupBy(allReservationDates, "dateableId");
+  const reservationDatesByFeature = groupBy(
+    frontcountryReservationDates,
+    "dateableId",
+  );
 
   // Consolidate Park-level winter dates for comparison
   const consolidatedWinterDates = consolidateRanges(parkWinterDates);

@@ -43,6 +43,16 @@ const elements = {
 };
 
 /**
+ * Adds the Strapi Feature Type ID to a date range object as `strapiFeatureTypeId`
+ * @param {number} strapiFeatureTypeId The Strapi Feature Type ID to add to the date range
+ * @param {Object} dateRange The date range object
+ * @returns {Object} The date range object with the added `strapiFeatureTypeId` property
+ */
+function addFeatureTypeToDateRange(strapiFeatureTypeId, dateRange) {
+  return { ...dateRange, strapiFeatureTypeId };
+}
+
+/**
  * Synchronously validates the form data.
  * Called automatically by the useValidate hook, or manually by the validateForm method.
  * @param {Object} seasonData The season form data to validate
@@ -71,9 +81,10 @@ function validate(seasonData, seasonContext) {
     errors.push({ element, message });
   };
 
-  // Provide the flat array of Feature Reservation dates in the context, for Park-level validation
-  validationContext.featureReservationDates =
-    seasonData.featureReservationDates ?? [];
+  // Provide the flat array of Frontcountry Campground Feature Reservation dates in the context,
+  // for Park-level validation
+  validationContext.frontcountryFeatureReservationDates =
+    seasonData.frontcountryFeatureReservationDates ?? [];
 
   // Provide flat arrays of some Park-level dates in the context, for Feature/Area Reservation validation
   validationContext.parkTier1Dates = seasonData.parkTier1Dates ?? [];
@@ -91,13 +102,30 @@ function validate(seasonData, seasonContext) {
   } else if (level === "park-area") {
     // For parkArea-level forms, don't include any parkArea-level dates,
     // just include all feature-level dates within the parkArea.
-    const featureDateRanges = current.parkArea.features.flatMap(
-      (feature) => feature.dateable.dateRanges,
+    const featureDateRanges = current.parkArea.features.flatMap((feature) =>
+      feature.dateable.dateRanges.map((dateRange) =>
+        // Add feature type for validation rules that need it (Winter fee/Tier 1 and 2 rules)
+        addFeatureTypeToDateRange(
+          feature.featureType.strapiFeatureTypeId,
+          dateRange,
+        ),
+      ),
     );
 
     dateRanges.push(...featureDateRanges);
   } else if (level === "feature") {
-    dateRanges.push(...current.feature.dateable.dateRanges);
+    const { feature } = current;
+
+    // Add feature type for validation rules that need it (Winter fee/Tier 1 and 2 rules)
+    const dateRangesWithFeatureType = feature.dateable.dateRanges.map(
+      (dateRange) =>
+        addFeatureTypeToDateRange(
+          feature.featureType.strapiFeatureTypeId,
+          dateRange,
+        ),
+    );
+
+    dateRanges.push(...dateRangesWithFeatureType);
   }
 
   validationContext.dateRanges = dateRanges;

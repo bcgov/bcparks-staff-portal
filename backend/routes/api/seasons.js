@@ -6,6 +6,7 @@ import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as FEATURE_TYPE from "../../constants/featureType.js";
 import {
   getAllDateTypes,
   getDateTypesForFeature,
@@ -248,7 +249,7 @@ function featureTypeQueryPart() {
   return {
     model: FeatureType,
     as: "featureType",
-    attributes: ["id", "name", "icon"],
+    attributes: ["id", "name", "icon", "strapiFeatureTypeId"],
   };
 }
 
@@ -264,25 +265,16 @@ const SEASON_ATTRIBUTES = [
 ];
 
 /**
- * Returns all reservation feature dates for a specific park and operating year.
+ * Returns all Frontcountry Campground feature reservation dates for a park and operating year.
  * @param {Object} park Park model with features and parkAreas
  * @param {number} operatingYear Operating year for the Seasons
- * @returns {Promise<Array>} - Array of reservation feature dates
+ * @returns {Promise<Array>} - Array of Frontcountry Campground feature reservation dates
  */
-async function getFeatureReservationDates(park, operatingYear) {
+async function getFrontcountryFeatureReservationDates(park, operatingYear) {
   // Only fetch dates if the park has Winter fee dates or either Tier 1 or Tier 2 dates.
   // This data is needed for Winter/Tier date validation.
   if (!(park.hasWinterFeeDates || park.hasTier1Dates || park.hasTier2Dates))
     return [];
-
-  // Get the ID of the applicable Reservation date type
-  const reservationDateType = await DateType.findOne({
-    attributes: ["id"],
-
-    where: {
-      name: "Reservation",
-    },
-  });
 
   const featurePublishableIds = park.features
     // Filter out any park features without Publishable IDs
@@ -310,20 +302,63 @@ async function getFeatureReservationDates(park, operatingYear) {
 
   const featureSeasonIds = featureSeasons.map((season) => season.id);
 
-  // Get all Reservation DateRanges for these Seasons
-  const reservationDateRanges = await DateRange.findAll({
+  // Get all Frontcountry Campground Reservation DateRanges for these Seasons
+  return DateRange.findAll({
+    attributes: ["id", "startDate", "endDate", "dateTypeId", "seasonId"],
     where: {
       seasonId: {
         [Op.in]: featureSeasonIds,
       },
-      dateTypeId: reservationDateType.id,
-    },
-  });
 
-  // Filter out blank date ranges (null startDate and endDate) and return
-  return reservationDateRanges.filter(
-    (dateRange) => dateRange.startDate && dateRange.endDate,
-  );
+      // Filter out blank date ranges (null startDate and endDate)
+      startDate: {
+        [Op.ne]: null,
+      },
+      endDate: {
+        [Op.ne]: null,
+      },
+    },
+
+    include: [
+      // Only include DateRanges with the Reservation DateType
+      {
+        model: DateType,
+        as: "dateType",
+        attributes: ["id"],
+        where: {
+          strapiDateTypeId: DATE_TYPE.RESERVATION,
+        },
+        required: true,
+      },
+
+      // Only include DateRanges that are associated with a Frontcountry Campground feature
+      {
+        model: Dateable,
+        as: "dateable",
+        attributes: ["id"],
+        required: true,
+        include: [
+          {
+            model: Feature,
+            as: "feature",
+            required: true,
+            attributes: ["id"],
+            include: [
+              {
+                model: FeatureType,
+                as: "featureType",
+                attributes: ["id"],
+                where: {
+                  strapiFeatureTypeId: FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND,
+                },
+                required: true,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  });
 }
 
 /**
@@ -947,12 +982,10 @@ router.get(
 
     const { park } = seasonModel;
 
-    // Add the parkArea- and feature-level reservation dates to the payload
-    // (for Tier 1 and Tier 2 validation rules)
-    const featureReservationDates = getFeatureReservationDates(
-      park,
-      seasonModel.operatingYear,
-    );
+    // Add the parkArea- and feature-level Frontcountry Campground reservation dates
+    // to the payload (for Tier 1 and Tier 2 validation rules)
+    const frontcountryFeatureReservationDates =
+      getFrontcountryFeatureReservationDates(park, seasonModel.operatingYear);
 
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel, {
@@ -1019,7 +1052,8 @@ router.get(
       icon: null,
       featureTypeName: null,
       name: seasonModel.park.name,
-      featureReservationDates: await featureReservationDates,
+      frontcountryFeatureReservationDates:
+        await frontcountryFeatureReservationDates,
     };
 
     res.json(output);
