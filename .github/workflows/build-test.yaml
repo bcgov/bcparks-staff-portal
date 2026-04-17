@@ -20,7 +20,7 @@ jobs:
 
       - name: Set env
         run: |
-          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "SHORT_SHA=$(git rev-parse --short=8 HEAD)" >> $GITHUB_ENV
           echo "REGISTRY_IMAGE=${{ vars.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ vars.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
 
       - name: Install OpenShift CLI tools
@@ -65,7 +65,7 @@ jobs:
 
       - name: Set env
         run: |
-          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "SHORT_SHA=$(git rev-parse --short=8 HEAD)" >> $GITHUB_ENV
           echo "REGISTRY_IMAGE=${{ vars.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ vars.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
 
       - name: Login to OpenShift Container Repository

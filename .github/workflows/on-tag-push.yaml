@@ -22,7 +22,7 @@ jobs:
 
       - name: Set env
         run: |
-          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "SHORT_SHA=$(git rev-parse --short=8 HEAD)" >> $GITHUB_ENV
           echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 
       - name: Install OpenShift CLI tools
