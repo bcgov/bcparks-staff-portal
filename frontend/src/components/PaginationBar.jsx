@@ -41,7 +41,10 @@ export default function PaginationBar({
     return <></>;
   }
 
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+  // If "All" is selected, itemsPerPage will be -1
+  // We set totalPages to 1 to show all items on a single page
+  const totalPages =
+    itemsPerPage > 0 ? Math.ceil(totalItems / itemsPerPage) : 1;
 
   let page = currentPage;
 

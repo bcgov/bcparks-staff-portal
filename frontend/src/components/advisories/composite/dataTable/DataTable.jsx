@@ -194,7 +194,18 @@ export default function DataTable(props) {
   const {
     columns,
     data,
-    options,
+    exportMenu,
+    filtering,
+    pageSize: pageSizeProp,
+    pageSizeOptions: pageSizeOptionsProp,
+    search,
+    serverSide,
+    totalItems: totalItemsProp,
+    currentPage: currentPageProp,
+    onPageChange,
+    onPageSizeChange: onPageSizeChangeProp,
+    onSortChange,
+    onFilterChange,
     title,
     onRowClick,
     initialFilterValues,
@@ -211,40 +222,61 @@ export default function DataTable(props) {
   const [filterValues, setFilterValues] = useState(initialFilterValues || {});
   const [sortConfig, setSortConfig] = useState(null);
   const [page, setPage] = useState(1);
-  const initialPageSize = options.pageSize || 5;
+  const initialPageSize = pageSizeProp || 5;
   const [pageSize, setPageSize] = useState(initialPageSize);
+  const hasSort = Boolean(onSortChange);
+  const currentPage = currentPageProp ?? page;
+  const currentPageSize = pageSizeProp ?? pageSize;
   const pageSizeOptions = useMemo(() => {
-    const configured = options.pageSizeOptions || [5, 10, 25, 50, 100];
+    const configured = pageSizeOptionsProp || [5, 10, 25, 50, 100];
     const combined = [...configured, initialPageSize].filter(
-      (value) => value > 0,
+      (value) => value !== 0,
     );
+    const unique = [...new Set(combined)];
 
-    return [...new Set(combined)].sort((left, right) => left - right);
-  }, [initialPageSize, options.pageSizeOptions]);
+    return unique.sort((left, right) => {
+      // Keep numeric page sizes ascending
+      // but force "All" (value -1) to the end
+      // so the selector reads naturally: 25, 50, All
+      if (left < 0) return 1;
+      if (right < 0) return -1;
+      return left - right;
+    });
+  }, [initialPageSize, pageSizeOptionsProp]);
 
   useEffect(() => {
     setPageSize(initialPageSize);
   }, [initialPageSize]);
 
-  const filteredRows = useMemo(
-    () =>
-      data.filter((row) => {
-        const matchesSearch = options.search
-          ? rowMatchesSearch(row, visibleColumns, searchText)
-          : true;
-        const matchesFilters = visibleColumns.every((column, index) => {
-          const filterValue = filterValues[getColumnId(column, index)] || "";
+  const filteredRows = useMemo(() => {
+    // Skip local filtering when the parent handles it server-side
+    if (serverSide) {
+      return data;
+    }
 
-          return rowMatchesFilter(row, column, filterValue);
-        });
+    return data.filter((row) => {
+      const matchesSearch = search
+        ? rowMatchesSearch(row, visibleColumns, searchText)
+        : true;
+      const matchesFilters = visibleColumns.every((column, index) => {
+        const filterValue = filterValues[getColumnId(column, index)] || "";
 
-        return matchesSearch && matchesFilters;
-      }),
-    [data, filterValues, options.search, searchText, visibleColumns],
-  );
+        return rowMatchesFilter(row, column, filterValue);
+      });
+
+      return matchesSearch && matchesFilters;
+    });
+  }, [
+    data,
+    filterValues,
+    search,
+    serverSide,
+    searchText,
+    visibleColumns,
+  ]);
 
   const sortedRows = useMemo(() => {
-    if (!sortConfig) {
+    if (!sortConfig || serverSide) {
       return filteredRows;
     }
 
@@ -269,7 +301,7 @@ export default function DataTable(props) {
     });
 
     return nextRows;
-  }, [filteredRows, sortConfig, visibleColumns]);
+  }, [filteredRows, serverSide, sortConfig, visibleColumns]);
 
   useEffect(() => {
     const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize));
@@ -279,12 +311,22 @@ export default function DataTable(props) {
     }
   }, [page, pageSize, sortedRows.length]);
 
-  const paginatedRows = useMemo(() => {
-    const startIndex = (page - 1) * pageSize;
+  const totalItems = totalItemsProp ?? sortedRows.length;
 
-    return sortedRows.slice(startIndex, startIndex + pageSize);
-  }, [page, pageSize, sortedRows]);
+  // In server-side mode, the parent already sends only the current page's rows.
+  // In client-side mode, slice sortedRows to the current page/pageSize here.
+  const displayedRows = useMemo(() => {
+    if (serverSide || currentPageSize < 0) {
+      return sortedRows;
+    }
 
+    const start = (currentPage - 1) * currentPageSize;
+
+    return sortedRows.slice(start, start + currentPageSize);
+  }, [currentPage, currentPageSize, serverSide, sortedRows]);
+
+  // Toggles sort state for a column (asc -> desc -> unsorted),
+  // resets to page 1, and notifies the parent in server-side mode.
   function handleSort(column, index) {
     if ((!column.field && !column.customSort) || column.sorting === false) {
       return;
@@ -292,18 +334,28 @@ export default function DataTable(props) {
 
     const columnId = getColumnId(column, index);
 
-    setSortConfig((currentSortConfig) => {
-      if (!currentSortConfig || currentSortConfig.columnId !== columnId) {
-        return { columnId, direction: "asc" };
-      }
+    // Determine next sort state (asc -> desc -> unsorted)
+    let nextSort;
 
-      if (currentSortConfig.direction === "asc") {
-        return { columnId, direction: "desc" };
-      }
+    // Cycle sort direction each time the same header is clicked
+    if (!sortConfig || sortConfig.columnId !== columnId) {
+      nextSort = { columnId, direction: "asc" };
+    } else if (sortConfig.direction === "asc") {
+      nextSort = { columnId, direction: "desc" };
+    } else {
+      nextSort = null;
+    }
 
-      return null;
-    });
+    setSortConfig(nextSort);
     setPage(1);
+
+    if (onSortChange) {
+      onSortChange(
+        nextSort
+          ? { field: column.field, direction: nextSort.direction }
+          : null,
+      );
+    }
   }
 
   // Handle a change to a column filter input
@@ -317,6 +369,10 @@ export default function DataTable(props) {
     // always update local state for UI
     setFilterValues(nextFilterValues);
     setPage(1);
+    // Notify parent of server-side filter change
+    if (onFilterChange) {
+      onFilterChange({ field: column.field, value });
+    }
     // Pass the new values to the parent if a callback was provided
     onFilterValuesChange?.(nextFilterValues);
   }
@@ -387,10 +443,10 @@ export default function DataTable(props) {
       ) : (
         <DefaultToolbar
           title={title}
-          searchEnabled={Boolean(options.search)}
+          searchEnabled={Boolean(search)}
           searchText={searchText}
           onSearchChange={handleSearchChange}
-          exportMenu={options.exportMenu || []}
+          exportMenu={exportMenu || []}
           exportColumns={visibleColumns}
           exportRows={sortedRows}
         />
@@ -404,6 +460,7 @@ export default function DataTable(props) {
                 const columnId = getColumnId(column, index);
                 const isSorted = sortConfig?.columnId === columnId;
                 const isSortable =
+                  (!serverSide || hasSort) &&
                   (column.field || column.customSort) &&
                   column.sorting !== false;
 
@@ -429,7 +486,7 @@ export default function DataTable(props) {
                 );
               })}
             </tr>
-            {options.filtering && (
+            {filtering && (
               <tr>
                 {visibleColumns.map((column, index) => {
                   const columnId = getColumnId(column, index);
@@ -444,7 +501,7 @@ export default function DataTable(props) {
             )}
           </thead>
           <tbody>
-            {paginatedRows.length === 0 && (
+            {sortedRows.length === 0 && (
               <tr>
                 <td
                   colSpan={visibleColumns.length}
@@ -454,7 +511,7 @@ export default function DataTable(props) {
                 </td>
               </tr>
             )}
-            {paginatedRows.map((row, rowIndex) => {
+            {displayedRows.map((row, rowIndex) => {
               const rowKey = row.documentId || row.id || rowIndex;
               const rowProps = {};
 
@@ -487,11 +544,11 @@ export default function DataTable(props) {
       </div>
 
       <PaginationControls
-        totalItems={sortedRows.length}
-        currentPage={page}
-        pageSize={pageSize}
-        onPageChange={setPage}
-        onPageSizeChange={handlePageSizeChange}
+        totalItems={totalItems}
+        currentPage={currentPage}
+        pageSize={currentPageSize}
+        onPageChange={onPageChange ?? setPage}
+        onPageSizeChange={onPageSizeChangeProp ?? handlePageSizeChange}
         pageSizeLabel="Rows per page"
         pageSizeOptions={pageSizeOptions}
       />
@@ -502,18 +559,23 @@ export default function DataTable(props) {
 DataTable.propTypes = {
   columns: PropTypes.arrayOf(PropTypes.object).isRequired,
   data: PropTypes.arrayOf(PropTypes.object).isRequired,
-  options: PropTypes.shape({
-    exportMenu: PropTypes.arrayOf(
-      PropTypes.shape({
-        label: PropTypes.string.isRequired,
-        exportFunc: PropTypes.func.isRequired,
-      }),
-    ),
-    filtering: PropTypes.bool,
-    pageSize: PropTypes.number,
-    pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
-    search: PropTypes.bool,
-  }),
+  exportMenu: PropTypes.arrayOf(
+    PropTypes.shape({
+      label: PropTypes.string.isRequired,
+      exportFunc: PropTypes.func.isRequired,
+    }),
+  ),
+  filtering: PropTypes.bool,
+  pageSize: PropTypes.number,
+  pageSizeOptions: PropTypes.arrayOf(PropTypes.number),
+  search: PropTypes.bool,
+  serverSide: PropTypes.bool,
+  totalItems: PropTypes.number,
+  currentPage: PropTypes.number,
+  onPageChange: PropTypes.func,
+  onPageSizeChange: PropTypes.func,
+  onSortChange: PropTypes.func,
+  onFilterChange: PropTypes.func,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   onRowClick: PropTypes.func,
   initialFilterValues: PropTypes.objectOf(PropTypes.string),
@@ -525,7 +587,18 @@ DataTable.propTypes = {
 };
 
 DataTable.defaultProps = {
-  options: {},
+  exportMenu: null,
+  filtering: false,
+  pageSize: null,
+  pageSizeOptions: null,
+  search: false,
+  serverSide: false,
+  totalItems: null,
+  currentPage: null,
+  onPageChange: null,
+  onPageSizeChange: null,
+  onSortChange: null,
+  onFilterChange: null,
   title: "",
   onRowClick: null,
   initialFilterValues: null,

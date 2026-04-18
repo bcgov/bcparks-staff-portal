@@ -24,7 +24,7 @@ export default function PaginationControls({
           >
             {pageSizeOptions.map((option) => (
               <option key={option} value={option}>
-                {option}
+                {option < 0 ? "All" : option}
               </option>
             ))}
           </select>
