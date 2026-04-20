@@ -56,15 +56,13 @@ const COLUMN_FILTERS = [
  * Builds an array of filters
  * @param {Object} tableFilterValues Column filter values keyed by column field name
  * @param {number} selectedRegionId Selected region id (0 = none)
- * @param {string|number} selectedParkId Selected park documentId (0 = none)
- * @param {Array} protectedAreas Full list of protected areas (used to resolve orcs from documentId)
+ * @param {string} selectedDistrictId Selected district id ("" = none)
  * @returns {Array} Array of Strapi filters
  */
 export function buildFilter(
   tableFilterValues,
   selectedRegionId,
-  selectedParkId,
-  protectedAreas,
+  selectedDistrictId,
 ) {
   const filters = [];
 
@@ -80,16 +78,10 @@ export function buildFilter(
     });
   }
 
-  if (selectedParkId && selectedParkId !== -1) {
-    const park = protectedAreas.find(
-      (protectedArea) => protectedArea.documentId === selectedParkId,
-    );
-
-    if (park) {
-      filters.push({
-        protectedAreas: { orcs: { $eq: park.orcs } },
-      });
-    }
+  if (selectedDistrictId) {
+    filters.push({
+      resourceDistricts: { documentId: { $eq: selectedDistrictId } },
+    });
   }
 
   return filters;

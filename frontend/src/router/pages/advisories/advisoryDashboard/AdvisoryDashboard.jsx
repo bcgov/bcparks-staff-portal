@@ -61,7 +61,7 @@ export default function AdvisoryDashboard() {
   const {
     getRegions,
     getManagementAreas,
-    getProtectedAreas,
+    getRecreationDistricts,
     getAdvisoryStatuses,
     getUrgencies,
     cmsGet,
@@ -71,15 +71,15 @@ export default function AdvisoryDashboard() {
   const [toCreate, setToCreate] = useState(false);
   const [selectedRegionId, setSelectedRegionId] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState(null);
-  const [selectedParkId, setSelectedParkId] = useState(0);
-  const [selectedPark, setSelectedPark] = useState(null);
+  const [selectedDistrictId, setSelectedDistrictId] = useState("");
+  const [selectedDistrict, setSelectedDistrict] = useState(null);
   const [publishedAdvisories, setPublishedAdvisories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
   const [publicAdvisories, setPublicAdvisories] = useState([]);
   const [regions, setRegions] = useState([]);
   const [managementAreas, setManagementAreas] = useState([]);
-  const [protectedAreas, setProtectedAreas] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -90,12 +90,16 @@ export default function AdvisoryDashboard() {
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
 
+  console.log("districts", districts);
+  console.log("selectedDistrict", selectedDistrict);
+  console.log("selectedDistrictId", selectedDistrictId);
+
   const defaultPageFilters = [
     { filterName: "region", filterValue: "", type: "page" },
-    { filterName: "park", filterValue: "", type: "page" },
+    { filterName: "district", filterValue: "", type: "page" },
   ];
 
-  // Persisted filter state for the dashboard (region, park, and table filters)
+  // Persisted filter state for the dashboard (region, district, and table filters)
   // Saved to localStorage as an array of { type: "page"|"table", filterName/fieldName, filterValue/fieldValue }
   const [storedFilters, setStoredFilters] = useLocalStorage(
     "advisoryFilters",
@@ -126,7 +130,7 @@ export default function AdvisoryDashboard() {
   // Called by DataTable after user stops typing
   const persistTableFilterValues = useDebounceCallback((values) => {
     setStoredFilters((currentFilters) => {
-      // Keep page-level filters (region, park)
+      // Keep page-level filters (region, district)
       const pageFilters = currentFilters.filter((f) => f.type === "page");
       // Convert { [fieldName]: value } to array of { fieldName, fieldValue, type: "table" }
       const tableFilters = Object.entries(values)
@@ -165,13 +169,13 @@ export default function AdvisoryDashboard() {
         const [
           regionsData,
           managementAreasData,
-          protectedAreasData,
+          districtsData,
           fetchedAdvisoryStatuses,
           fetchedUrgencies,
         ] = await Promise.all([
           getRegions(),
           getManagementAreas(),
-          getProtectedAreas(),
+          getRecreationDistricts(),
           getAdvisoryStatuses(),
           getUrgencies(),
         ]);
@@ -180,7 +184,7 @@ export default function AdvisoryDashboard() {
 
         setRegions(regionsData);
         setManagementAreas(managementAreasData);
-        setProtectedAreas(protectedAreasData);
+        setDistricts(districtsData);
 
         // Fetch advisory statuses and urgencies for filter options and table icons
         setAdvisoryStatuses(fetchedAdvisoryStatuses);
@@ -225,18 +229,21 @@ export default function AdvisoryDashboard() {
             }
           }
 
-          const parkId = getPageFilterValue(initialStoredFilters, "park");
+          const districtId = getPageFilterValue(
+            initialStoredFilters,
+            "district",
+          );
 
-          if (parkId) {
-            const park = protectedAreasData.find(
-              (p) => p.documentId === parkId,
+          if (districtId) {
+            const district = districtsData.find(
+              (d) => d.documentId === districtId,
             );
 
-            if (park) {
-              setSelectedParkId(parkId);
-              setSelectedPark({
-                label: park.protectedAreaName,
-                value: park.documentId,
+            if (district) {
+              setSelectedDistrictId(districtId);
+              setSelectedDistrict({
+                label: district.district,
+                value: district.documentId,
               });
             }
           }
@@ -258,7 +265,7 @@ export default function AdvisoryDashboard() {
     cmsGet,
     getAdvisoryStatuses,
     getManagementAreas,
-    getProtectedAreas,
+    getRecreationDistricts,
     getRegions,
     getUrgencies,
     initialStoredFilters,
@@ -299,8 +306,7 @@ export default function AdvisoryDashboard() {
         const columnFilterClauses = buildFilter(
           debouncedTableFilterValues,
           selectedRegionId,
-          selectedParkId,
-          protectedAreas,
+          selectedDistrictId,
         );
 
         // When "All" is selected, first fetch the current total with
@@ -409,8 +415,7 @@ export default function AdvisoryDashboard() {
     isCmsDataLoaded,
     managementAreas,
     pageSize,
-    protectedAreas,
-    selectedParkId,
+    selectedDistrictId,
     selectedRegionId,
     setError,
     showArchived,
@@ -427,13 +432,13 @@ export default function AdvisoryDashboard() {
     [regions],
   );
 
-  const parkOptions = useMemo(
+  const districtOptions = useMemo(
     () =>
-      (protectedAreas || []).map((p) => ({
-        label: p.protectedAreaName,
-        value: p.documentId,
+      (districts || []).map((district) => ({
+        label: district.district,
+        value: district.documentId,
       })),
-    [protectedAreas],
+    [districts],
   );
 
   const tableColumns = useMemo(
@@ -801,24 +806,22 @@ export default function AdvisoryDashboard() {
               onChange={(e) => {
                 setSelectedRegion(e);
                 setSelectedRegionId(e ? e.value : 0);
-
-                setSelectedPark(null);
-                setSelectedParkId(0);
+                setSelectedDistrict(null);
+                setSelectedDistrictId("");
                 setCurrentPage(1);
 
                 setStoredFilters((currentFilters) => {
-                  const nonPageFilters = currentFilters.filter(
-                    (o) => o.type !== "page",
+                  const nonRegionPageFilters = currentFilters.filter(
+                    (o) => !(o.type === "page" && o.filterName === "region"),
                   );
 
                   return [
-                    ...nonPageFilters,
+                    ...nonRegionPageFilters,
                     {
                       type: "page",
                       filterName: "region",
                       filterValue: e ? e.value : 0,
                     },
-                    { type: "page", filterName: "park", filterValue: 0 }, // Reset park filter
                   ];
                 });
               }}
@@ -832,30 +835,29 @@ export default function AdvisoryDashboard() {
           </div>
           <div className="col-xl-5 col-md-4 col-sm-12">
             <Select
-              value={selectedPark}
-              options={parkOptions}
+              value={selectedDistrict}
+              options={districtOptions}
               onChange={(e) => {
-                setSelectedPark(e);
-                setSelectedParkId(e ? e.value : 0);
+                setSelectedDistrict(e);
+                setSelectedDistrictId(e ? e.value : "");
                 setCurrentPage(1);
 
                 setStoredFilters((currentFilters) => {
-                  // Remove any existing "park" page filter
-                  const nonParkPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "park"),
+                  const nonDistrictPageFilters = currentFilters.filter(
+                    (o) => !(o.type === "page" && o.filterName === "district"),
                   );
 
                   return [
-                    ...nonParkPageFilters,
+                    ...nonDistrictPageFilters,
                     {
                       type: "page",
-                      filterName: "park",
-                      filterValue: e ? e.value : 0,
+                      filterName: "district",
+                      filterValue: e ? e.value : "",
                     },
                   ];
                 });
               }}
-              placeholder="Select a Park..."
+              placeholder="Select a district..."
               className="bcgov-select"
               isClearable
               styles={{
