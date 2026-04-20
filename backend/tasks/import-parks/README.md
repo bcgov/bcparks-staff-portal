@@ -23,6 +23,7 @@ Imports and updates `Park` records from Strapi's `protected-area` collection by 
 | `parkOperation.hasWinterFeeDates`   | `hasWinterFeeDates`   | Defaults to false if not set          |
 | `parkOperation.hasTier1Dates`       | `hasTier1Dates`       | Defaults to false if not set          |
 | `parkOperation.hasTier2Dates`       | `hasTier2Dates`       | Defaults to false if not set          |
+| `parkOperation.hasDates`            | `hasDates`            | Defaults to false if not set          |
 | `managementAreas`                   | `managementAreas`     | Array of management area/section data |
 
 ## Transaction Safety

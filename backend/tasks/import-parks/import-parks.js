@@ -100,6 +100,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
         hasWinterFeeDates,
         hasTier1Dates,
         hasTier2Dates,
+        hasDates,
       } = parkOperation || {};
 
       // get the managementAreas from Strapi
@@ -141,6 +142,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
         hasWinterFeeDates: hasWinterFeeDates ?? false,
         hasTier1Dates: hasTier1Dates ?? false,
         hasTier2Dates: hasTier2Dates ?? false,
+        hasDates: hasDates ?? false,
         managementAreas: managementAreaArray,
       };
 
