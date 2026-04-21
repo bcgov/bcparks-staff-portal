@@ -24,7 +24,31 @@ export const oidcConfig = {
   monitorSession: true,
 };
 
-// Strips OIDC parameters from the URL after redirecting back to the app
+/**
+ * Strips OIDC callback params from the URL after sign-in,
+ * preserving any other query params and hash that were on the redirect_uri.
+ * Removes: code, state, session_state, iss, error, error_description, error_uri (per OIDC spec and RFC 9207).
+ * @returns {void}
+ */
 export function onSigninCallback() {
-  window.history.replaceState({}, document.title, window.location.pathname);
+  const url = new URL(window.location.href);
+
+  // Standard OIDC authorization response params
+  for (const param of [
+    "code",
+    "state",
+    "session_state",
+    "iss",
+    "error",
+    "error_description",
+    "error_uri",
+  ]) {
+    url.searchParams.delete(param);
+  }
+
+  window.history.replaceState(
+    {},
+    document.title,
+    `${url.pathname}${url.search}${url.hash}`,
+  );
 }
