@@ -77,8 +77,8 @@ export default function AdvisoryDashboard() {
   const navigate = useNavigate();
   const {
     getRegions,
-    getProtectedAreas,
     getManagementAreas,
+    getProtectedAreas,
     getRecreationDistricts,
     getAdvisoryStatuses,
     getUrgencies,
@@ -98,8 +98,8 @@ export default function AdvisoryDashboard() {
   const [hasErrors, setHasErrors] = useState(false);
   const [publicAdvisories, setPublicAdvisories] = useState([]);
   const [regions, setRegions] = useState([]);
-  const [protectedAreas, setProtectedAreas] = useState([]);
   const [managementAreas, setManagementAreas] = useState([]);
+  const [protectedAreas, setProtectedAreas] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [urgencies, setUrgencies] = useState([]);
@@ -117,7 +117,7 @@ export default function AdvisoryDashboard() {
     { filterName: "park", filterValue: [], type: "page" },
   ];
 
-  // Persisted filter state for the dashboard (region, district, and table filters)
+  // Persisted filter state for the dashboard (region, district, park, and table filters)
   // Saved to localStorage as an array of { type: "page"|"table", filterName/fieldName, filterValue/fieldValue }
   const [storedFilters, setStoredFilters] = useLocalStorage(
     "advisoryFilters",
@@ -148,7 +148,7 @@ export default function AdvisoryDashboard() {
   // Called by DataTable after user stops typing
   const persistTableFilterValues = useDebounceCallback((values) => {
     setStoredFilters((currentFilters) => {
-      // Keep page-level filters (region, district)
+      // Keep page-level filters (region, district, park)
       const pageFilters = currentFilters.filter((f) => f.type === "page");
       // Convert { [fieldName]: value } to array of { fieldName, fieldValue, type: "table" }
       const tableFilters = Object.entries(values)
@@ -186,15 +186,15 @@ export default function AdvisoryDashboard() {
       try {
         const [
           regionsData,
-          protectedAreasData,
           managementAreasData,
+          protectedAreasData,
           districtsData,
           fetchedAdvisoryStatuses,
           fetchedUrgencies,
         ] = await Promise.all([
           getRegions(),
-          getProtectedAreas(),
           getManagementAreas(),
+          getProtectedAreas(),
           getRecreationDistricts(),
           getAdvisoryStatuses(),
           getUrgencies(),
@@ -203,8 +203,8 @@ export default function AdvisoryDashboard() {
         if (!isMounted) return;
 
         setRegions(regionsData);
-        setProtectedAreas(protectedAreasData);
         setManagementAreas(managementAreasData);
+        setProtectedAreas(protectedAreasData);
         setDistricts(districtsData);
 
         // Fetch advisory statuses and urgencies for filter options and table icons
@@ -854,7 +854,7 @@ export default function AdvisoryDashboard() {
         </div>
         <div className="row ad-row">
           <div className="col-xl-3 col-md-6 col-sm-12">
-            <Form.Label className="mb-1">RST rRecreation district</Form.Label>
+            <Form.Label className="mb-1">RST Recreation district</Form.Label>
             <Select
               value={selectedDistrict}
               options={districtOptions}
