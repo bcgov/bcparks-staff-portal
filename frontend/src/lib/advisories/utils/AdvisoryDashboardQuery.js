@@ -55,14 +55,14 @@ const COLUMN_FILTERS = [
 /**
  * Builds an array of filters
  * @param {Object} tableFilterValues Column filter values keyed by column field name
- * @param {number} selectedRegionId Selected region id (0 = none)
- * @param {string} selectedDistrictId Selected district id ("" = none)
+ * @param {number[]} selectedRegionIds Selected region ids ([] = none)
+ * @param {string[]} selectedDistrictIds Selected district documentIds ([] = none)
  * @returns {Array} Array of Strapi filters
  */
 export function buildFilter(
   tableFilterValues,
-  selectedRegionId,
-  selectedDistrictId,
+  selectedRegionIds,
+  selectedDistrictIds,
 ) {
   const filters = [];
 
@@ -72,15 +72,15 @@ export function buildFilter(
     }
   }
 
-  if (selectedRegionId) {
+  if (selectedRegionIds.length > 0) {
     filters.push({
-      regions: { id: { $eq: selectedRegionId } },
+      regions: { id: { $in: selectedRegionIds } },
     });
   }
 
-  if (selectedDistrictId) {
+  if (selectedDistrictIds.length > 0) {
     filters.push({
-      resourceDistricts: { documentId: { $eq: selectedDistrictId } },
+      recreationDistricts: { documentId: { $in: selectedDistrictIds } },
     });
   }
 

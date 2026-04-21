@@ -55,6 +55,23 @@ function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
   );
 }
 
+function normalizePageFilterValues(filterValue) {
+  if (Array.isArray(filterValue)) {
+    return filterValue;
+  }
+
+  if (
+    filterValue === "" ||
+    filterValue === 0 ||
+    filterValue === null ||
+    typeof filterValue === "undefined"
+  ) {
+    return [];
+  }
+
+  return [filterValue];
+}
+
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
   const navigate = useNavigate();
@@ -69,10 +86,10 @@ export default function AdvisoryDashboard() {
 
   const [toError, setToError] = useState(false);
   const [toCreate, setToCreate] = useState(false);
-  const [selectedRegionId, setSelectedRegionId] = useState(0);
-  const [selectedRegion, setSelectedRegion] = useState(null);
-  const [selectedDistrictId, setSelectedDistrictId] = useState("");
-  const [selectedDistrict, setSelectedDistrict] = useState(null);
+  const [selectedRegionId, setSelectedRegionId] = useState([]);
+  const [selectedRegion, setSelectedRegion] = useState([]);
+  const [selectedDistrictId, setSelectedDistrictId] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState([]);
   const [publishedAdvisories, setPublishedAdvisories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
@@ -90,13 +107,9 @@ export default function AdvisoryDashboard() {
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
 
-  console.log("districts", districts);
-  console.log("selectedDistrict", selectedDistrict);
-  console.log("selectedDistrictId", selectedDistrictId);
-
   const defaultPageFilters = [
-    { filterName: "region", filterValue: "", type: "page" },
-    { filterName: "district", filterValue: "", type: "page" },
+    { filterName: "region", filterValue: [], type: "page" },
+    { filterName: "district", filterValue: [], type: "page" },
   ];
 
   // Persisted filter state for the dashboard (region, district, and table filters)
@@ -215,36 +228,39 @@ export default function AdvisoryDashboard() {
 
         if (isMounted) {
           // Preserve filters
-          const regionId = getPageFilterValue(initialStoredFilters, "region");
+          const regionIds = normalizePageFilterValues(
+            getPageFilterValue(initialStoredFilters, "region", []),
+          );
 
-          if (regionId) {
-            const region = regionsData.find((r) => r.id === regionId);
-
-            if (region) {
-              setSelectedRegionId(regionId);
-              setSelectedRegion({
+          if (regionIds.length > 0) {
+            const selectedRegions = regionsData
+              .filter((region) => regionIds.includes(region.id))
+              .map((region) => ({
                 label: `${region.regionName} Region`,
                 value: region.id,
-              });
+              }));
+
+            if (selectedRegions.length > 0) {
+              setSelectedRegionId(regionIds);
+              setSelectedRegion(selectedRegions);
             }
           }
 
-          const districtId = getPageFilterValue(
-            initialStoredFilters,
-            "district",
+          const districtIds = normalizePageFilterValues(
+            getPageFilterValue(initialStoredFilters, "district", []),
           );
 
-          if (districtId) {
-            const district = districtsData.find(
-              (d) => d.documentId === districtId,
-            );
-
-            if (district) {
-              setSelectedDistrictId(districtId);
-              setSelectedDistrict({
+          if (districtIds.length > 0) {
+            const selectedDistricts = districtsData
+              .filter((district) => districtIds.includes(district.documentId))
+              .map((district) => ({
                 label: district.district,
                 value: district.documentId,
-              });
+              }));
+
+            if (selectedDistricts.length > 0) {
+              setSelectedDistrictId(districtIds);
+              setSelectedDistrict(selectedDistricts);
             }
           }
           setIsCmsDataLoaded(true);
@@ -800,46 +816,63 @@ export default function AdvisoryDashboard() {
         </div>
         <div className="row ad-row">
           <div className="col-xl-4 col-md-4 col-sm-12">
+            <Form.Label className="mb-1">BC Parks region</Form.Label>
             <Select
               value={selectedRegion}
               options={regionOptions}
               onChange={(e) => {
-                setSelectedRegion(e);
-                setSelectedRegionId(e ? e.value : 0);
-                setSelectedDistrict(null);
-                setSelectedDistrictId("");
+                const selectedRegions = e || [];
+                const selectedRegionIds = selectedRegions.map((region) => region.value);
+
+                setSelectedRegion(selectedRegions);
+                setSelectedRegionId(selectedRegionIds);
+                setSelectedDistrict([]);
+                setSelectedDistrictId([]);
                 setCurrentPage(1);
 
                 setStoredFilters((currentFilters) => {
-                  const nonRegionPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "region"),
+                  const nonPageFilters = currentFilters.filter(
+                    (o) => o.type !== "page",
                   );
 
                   return [
-                    ...nonRegionPageFilters,
+                    ...nonPageFilters,
                     {
                       type: "page",
                       filterName: "region",
-                      filterValue: e ? e.value : 0,
+                      filterValue: selectedRegionIds,
+                    },
+                    {
+                      type: "page",
+                      filterName: "district",
+                      filterValue: [],
                     },
                   ];
                 });
               }}
               placeholder="Select a Region..."
               className="bcgov-select"
+              isMulti
               isClearable
+              closeMenuOnSelect={false}
               styles={{
                 menu: (base) => ({ ...base, zIndex: 999 }),
               }}
             />
           </div>
           <div className="col-xl-5 col-md-4 col-sm-12">
+            <Form.Label className="mb-1">RST Recreation district</Form.Label>
             <Select
               value={selectedDistrict}
               options={districtOptions}
               onChange={(e) => {
-                setSelectedDistrict(e);
-                setSelectedDistrictId(e ? e.value : "");
+                const selectedDistricts = e || [];
+                const selectedDistrictIds = selectedDistricts.map(
+                  (district) => district.value,
+                );
+
+                setSelectedDistrict(selectedDistricts);
+                setSelectedDistrictId(selectedDistrictIds);
                 setCurrentPage(1);
 
                 setStoredFilters((currentFilters) => {
@@ -852,14 +885,16 @@ export default function AdvisoryDashboard() {
                     {
                       type: "page",
                       filterName: "district",
-                      filterValue: e ? e.value : "",
+                      filterValue: selectedDistrictIds,
                     },
                   ];
                 });
               }}
               placeholder="Select a district..."
               className="bcgov-select"
+              isMulti
               isClearable
+              closeMenuOnSelect={false}
               styles={{
                 menu: (base) => ({ ...base, zIndex: 999 }),
               }}
