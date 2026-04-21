@@ -68,6 +68,16 @@ export default function LoginPage() {
     location.search,
   ]);
 
+  // Clear the stored redirect destination on explicit logout or auth error,
+  // so a subsequent manual login defaults to "/"
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+
+    if (params.has("logged-out") || params.has("error")) {
+      removePostLoginRedirectPath();
+    }
+  }, [location.search, removePostLoginRedirectPath]);
+
   // Clear the stored login redirect destination after authentication succeeds
   useEffect(() => {
     if (auth.isAuthenticated && postLoginRedirectPath) {
