@@ -1,44 +1,95 @@
-import { useEffect, useCallback } from "react";
-import { Navigate } from "react-router-dom";
-import { useAuth } from "react-oidc-context";
+import { useEffect, useCallback, useRef } from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { hasAuthParams, useAuth } from "react-oidc-context";
+import { useSessionStorage } from "usehooks-ts";
 import getEnv from "@/config/getEnv";
 import "./LoginPage.scss";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowUpRightFromSquare } from "@fa-kit/icons/classic/regular";
+import ALLOWED_IDPS from "@/constants/allowedIdps";
+
+const frontendBaseUrl = getEnv("VITE_FRONTEND_BASE_URL");
 
 export default function LoginPage() {
   const auth = useAuth();
+  const location = useLocation();
 
-  // function to redirect to Keycloak for the selected login provider
+  // Track auto sign-in attempts to prevent multiple redirects
+  const autoSigninAttempted = useRef(false);
+
+  // Store the path to redirect to after login. Use session storage to persist through the redirect flow
+  const [postLoginRedirectPath, , removePostLoginRedirectPath] =
+    useSessionStorage("post_login_redirect_path", "");
+
+  // Redirects to Keycloak with the selected login provider
   const handleLogin = useCallback(
     (idp) => {
       auth.signinRedirect({
         // eslint-disable-next-line camelcase -- 'redirect_uri' is required by Keycloak
-        redirect_uri: new URL("/", getEnv("VITE_FRONTEND_BASE_URL")).toString(),
+        redirect_uri:
+          postLoginRedirectPath || new URL("/", frontendBaseUrl).toString(),
         extraQueryParams: {
           // eslint-disable-next-line camelcase -- 'kc_idp_hint' is required by Keycloak
           kc_idp_hint: idp,
         },
       });
     },
-    [auth],
+    [auth, postLoginRedirectPath],
   );
 
+  // Try to automatically sign in when an `idp` query param is provided
   useEffect(() => {
-    // if the login_idp is already set in session storage, use that to log in automatically
-    const savedIdp = sessionStorage.getItem("login_idp");
-
-    if (savedIdp) {
-      // delete the saved IDP to avoid infinite redirects
-      sessionStorage.removeItem("login_idp");
-      handleLogin(savedIdp);
+    // If auth is already in progress or completed, do nothing
+    if (auth.isAuthenticated || auth.activeNavigator || auth.isLoading) {
+      return;
     }
-  }, [handleLogin]);
 
-  // if already authenticated, don't show the login page
+    if (autoSigninAttempted.current) return;
+
+    const params = new URLSearchParams(location.search);
+
+    // Don't sign in automatically in after explicit logout or after auth errors
+    if (params.has("logged-out") || params.has("error") || hasAuthParams()) {
+      return;
+    }
+
+    // Auto sign-in only when an `idp` query param is provided
+    const queryIdp = params.get("idp");
+
+    if (!queryIdp || !ALLOWED_IDPS.has(queryIdp)) return;
+
+    autoSigninAttempted.current = true;
+    handleLogin(queryIdp);
+  }, [
+    auth.isAuthenticated,
+    auth.activeNavigator,
+    auth.isLoading,
+    handleLogin,
+    location.search,
+  ]);
+
+  // Clear the stored login redirect destination after authentication succeeds
+  useEffect(() => {
+    if (auth.isAuthenticated && postLoginRedirectPath) {
+      removePostLoginRedirectPath();
+    }
+  }, [
+    auth.isAuthenticated,
+    postLoginRedirectPath,
+    removePostLoginRedirectPath,
+  ]);
+
+  // Redirect authenticated users to their original destination, or fallback to "/"
   if (auth.isAuthenticated) {
-    // Redirect to "/" (which will redirect to a dashboard)
-    return <Navigate to="/" replace />;
+    let redirectPath = "/";
+
+    if (postLoginRedirectPath) {
+      const url = new URL(postLoginRedirectPath);
+
+      redirectPath = `${url.pathname}${url.search}${url.hash}`;
+    }
+
+    return <Navigate to={redirectPath} replace />;
   }
 
   return (

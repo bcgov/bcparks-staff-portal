@@ -1,8 +1,45 @@
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { hasAuthParams, useAuth } from "react-oidc-context";
+import { useSessionStorage } from "usehooks-ts";
 import PropTypes from "prop-types";
 import AccessProvider from "@/router/AccessProvider";
+import getEnv from "@/config/getEnv";
+import ALLOWED_IDPS from "@/constants/allowedIdps";
+
+const frontendBaseUrl = getEnv("VITE_FRONTEND_BASE_URL");
+
+/**
+ * Returns the original destination URL after login, removing the temporary idp helper param.
+ * @param {Object} location The location object from react-router, containing pathname, search, and hash
+ * @returns {string} The cleaned absolute URL for post-login redirect
+ */
+function getPostLoginRedirectUrl(location) {
+  const query = new URLSearchParams(location.search);
+
+  query.delete("idp");
+  const cleanedSearch = query.toString();
+
+  return new URL(
+    `${location.pathname}${cleanedSearch ? `?${cleanedSearch}` : ""}${location.hash}`,
+    frontendBaseUrl,
+  ).toString();
+}
+
+/**
+ * Returns the login path, forwarding a valid idp hint if present in the query string.
+ * @param {Object} location The location object from react-router, containing search params
+ * @returns {string} The login path, with idp param if valid, otherwise "/login"
+ */
+function getLoginPath(location) {
+  const idp = new URLSearchParams(location.search).get("idp");
+
+  if (idp && ALLOWED_IDPS.has(idp)) {
+    return `/login?idp=${encodeURIComponent(idp)}`;
+  }
+
+  return "/login";
+}
 
 // Higher-order component that wraps a route component for authentication
 // Wrap a "layout" component in this component to protect all of its children
@@ -11,8 +48,13 @@ import AccessProvider from "@/router/AccessProvider";
 export default function ProtectedRoute({ children }) {
   const auth = useAuth();
   const navigate = useNavigate();
-  // Get the query params from the URL
-  const params = useMemo(() => new URLSearchParams(window.location.search), []);
+  const location = useLocation();
+
+  // Store the path to redirect to after login in session storage so it persists through the redirect flow
+  const [, setPostLoginRedirectPath] = useSessionStorage(
+    "post_login_redirect_path",
+    "",
+  );
 
   // Track if a redirect has happened to prevent redirect loops
   const [hasTriedSignin, setHasTriedSignin] = useState(false);
@@ -26,28 +68,27 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     const unsubscribeSignedOut = auth.events.addUserSignedOut(() => {
       auth.removeUser();
-      navigate("/login", { replace: true });
+      setPostLoginRedirectPath(getPostLoginRedirectUrl(location));
+      navigate(getLoginPath(location), { replace: true });
     });
 
     const unsubscribeRenewError = auth.events.addSilentRenewError(() => {
       auth.removeUser();
-      navigate("/login", { replace: true });
+      setPostLoginRedirectPath(getPostLoginRedirectUrl(location));
+      navigate(getLoginPath(location), { replace: true });
     });
 
     return () => {
       unsubscribeSignedOut();
       unsubscribeRenewError();
     };
-  }, [auth, navigate]);
+  }, [auth, navigate, setPostLoginRedirectPath, location]);
 
   /**
    * Attempt to automatically sign in
    * See {@link https://github.com/authts/react-oidc-context?tab=readme-ov-file#automatic-sign-in}
    */
   useEffect(() => {
-    // If the URL has the "logged-out" query param, do not redirect
-    if (params.has("logged-out")) return;
-
     if (
       !(
         hasAuthParams() ||
@@ -61,13 +102,15 @@ export default function ProtectedRoute({ children }) {
       auth.clearStaleState();
       setHasTriedSignin(true);
 
-      // Only redirect if not already on the login page
-      if (!auth.isAuthenticated && window.location.pathname !== "/login") {
-        navigate("/login", { replace: true });
+      // Navigate to the login page, which will trigger the sign-in flow and redirect to Keycloak as needed
+      if (!auth.isAuthenticated) {
+        setPostLoginRedirectPath(getPostLoginRedirectUrl(location));
+        navigate(getLoginPath(location), { replace: true });
       }
     }
-  }, [auth, hasTriedSignin, params, navigate]);
+  }, [auth, hasTriedSignin, navigate, setPostLoginRedirectPath, location]);
 
+  // Clear broken auth state by sending the user through a fresh sign-out flow
   useEffect(() => {
     if (auth.error) {
       // If there's an error, redirect to the sign-in page
@@ -84,11 +127,6 @@ export default function ProtectedRoute({ children }) {
 
   if (auth.isLoading && auth.activeNavigator !== "signinSilent") {
     return <div>Checking authentication...</div>;
-  }
-
-  // If the URL has the "logged-out" query param, display a message
-  if (params.has("logged-out")) {
-    return <div>Logged out.</div>;
   }
 
   if (!auth.isAuthenticated) {
