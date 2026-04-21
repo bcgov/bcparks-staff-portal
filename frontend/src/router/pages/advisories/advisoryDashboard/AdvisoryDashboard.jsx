@@ -77,6 +77,7 @@ export default function AdvisoryDashboard() {
   const navigate = useNavigate();
   const {
     getRegions,
+    getProtectedAreas,
     getManagementAreas,
     getRecreationDistricts,
     getAdvisoryStatuses,
@@ -90,11 +91,14 @@ export default function AdvisoryDashboard() {
   const [selectedRegion, setSelectedRegion] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState([]);
   const [selectedDistrict, setSelectedDistrict] = useState([]);
+  const [selectedParkId, setSelectedParkId] = useState([]);
+  const [selectedPark, setSelectedPark] = useState([]);
   const [publishedAdvisories, setPublishedAdvisories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
   const [publicAdvisories, setPublicAdvisories] = useState([]);
   const [regions, setRegions] = useState([]);
+  const [protectedAreas, setProtectedAreas] = useState([]);
   const [managementAreas, setManagementAreas] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
@@ -110,6 +114,7 @@ export default function AdvisoryDashboard() {
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
     { filterName: "district", filterValue: [], type: "page" },
+    { filterName: "park", filterValue: [], type: "page" },
   ];
 
   // Persisted filter state for the dashboard (region, district, and table filters)
@@ -181,12 +186,14 @@ export default function AdvisoryDashboard() {
       try {
         const [
           regionsData,
+          protectedAreasData,
           managementAreasData,
           districtsData,
           fetchedAdvisoryStatuses,
           fetchedUrgencies,
         ] = await Promise.all([
           getRegions(),
+          getProtectedAreas(),
           getManagementAreas(),
           getRecreationDistricts(),
           getAdvisoryStatuses(),
@@ -196,6 +203,7 @@ export default function AdvisoryDashboard() {
         if (!isMounted) return;
 
         setRegions(regionsData);
+        setProtectedAreas(protectedAreasData);
         setManagementAreas(managementAreasData);
         setDistricts(districtsData);
 
@@ -234,10 +242,10 @@ export default function AdvisoryDashboard() {
 
           if (regionIds.length > 0) {
             const selectedRegions = regionsData
-              .filter((region) => regionIds.includes(region.id))
+              .filter((region) => regionIds.includes(region.documentId))
               .map((region) => ({
                 label: `${region.regionName} Region`,
-                value: region.id,
+                value: region.documentId,
               }));
 
             if (selectedRegions.length > 0) {
@@ -263,6 +271,24 @@ export default function AdvisoryDashboard() {
               setSelectedDistrict(selectedDistricts);
             }
           }
+
+          const parkIds = normalizePageFilterValues(
+            getPageFilterValue(initialStoredFilters, "park", []),
+          );
+
+          if (parkIds.length > 0) {
+            const selectedParks = protectedAreasData
+              .filter((park) => parkIds.includes(park.documentId))
+              .map((park) => ({
+                label: park.protectedAreaName,
+                value: park.documentId,
+              }));
+
+            if (selectedParks.length > 0) {
+              setSelectedParkId(parkIds);
+              setSelectedPark(selectedParks);
+            }
+          }
           setIsCmsDataLoaded(true);
         }
       } catch (error) {
@@ -281,6 +307,7 @@ export default function AdvisoryDashboard() {
     cmsGet,
     getAdvisoryStatuses,
     getManagementAreas,
+    getProtectedAreas,
     getRecreationDistricts,
     getRegions,
     getUrgencies,
@@ -323,6 +350,7 @@ export default function AdvisoryDashboard() {
           debouncedTableFilterValues,
           selectedRegionId,
           selectedDistrictId,
+          selectedParkId,
         );
 
         // When "All" is selected, first fetch the current total with
@@ -432,6 +460,7 @@ export default function AdvisoryDashboard() {
     managementAreas,
     pageSize,
     selectedDistrictId,
+    selectedParkId,
     selectedRegionId,
     setError,
     showArchived,
@@ -441,9 +470,9 @@ export default function AdvisoryDashboard() {
 
   const regionOptions = useMemo(
     () =>
-      (regions || []).map((r) => ({
-        label: `${r.regionName} Region`,
-        value: r.id,
+      (regions || []).map((region) => ({
+        label: `${region.regionName} Region`,
+        value: region.documentId,
       })),
     [regions],
   );
@@ -455,6 +484,15 @@ export default function AdvisoryDashboard() {
         value: district.documentId,
       })),
     [districts],
+  );
+
+  const parkOptions = useMemo(
+    () =>
+      (protectedAreas || []).map((park) => ({
+        label: park.protectedAreaName,
+        value: park.documentId,
+      })),
+    [protectedAreas],
   );
 
   const tableColumns = useMemo(
@@ -815,53 +853,8 @@ export default function AdvisoryDashboard() {
           </div>
         </div>
         <div className="row ad-row">
-          <div className="col-xl-4 col-md-4 col-sm-12">
-            <Form.Label className="mb-1">BC Parks region</Form.Label>
-            <Select
-              value={selectedRegion}
-              options={regionOptions}
-              onChange={(e) => {
-                const selectedRegions = e || [];
-                const selectedRegionIds = selectedRegions.map((region) => region.value);
-
-                setSelectedRegion(selectedRegions);
-                setSelectedRegionId(selectedRegionIds);
-                setSelectedDistrict([]);
-                setSelectedDistrictId([]);
-                setCurrentPage(1);
-
-                setStoredFilters((currentFilters) => {
-                  const nonPageFilters = currentFilters.filter(
-                    (o) => o.type !== "page",
-                  );
-
-                  return [
-                    ...nonPageFilters,
-                    {
-                      type: "page",
-                      filterName: "region",
-                      filterValue: selectedRegionIds,
-                    },
-                    {
-                      type: "page",
-                      filterName: "district",
-                      filterValue: [],
-                    },
-                  ];
-                });
-              }}
-              placeholder="Select a Region..."
-              className="bcgov-select"
-              isMulti
-              isClearable
-              closeMenuOnSelect={false}
-              styles={{
-                menu: (base) => ({ ...base, zIndex: 999 }),
-              }}
-            />
-          </div>
-          <div className="col-xl-5 col-md-4 col-sm-12">
-            <Form.Label className="mb-1">RST Recreation district</Form.Label>
+          <div className="col-xl-3 col-md-6 col-sm-12">
+            <Form.Label className="mb-1">RST rRecreation district</Form.Label>
             <Select
               value={selectedDistrict}
               options={districtOptions}
@@ -900,7 +893,85 @@ export default function AdvisoryDashboard() {
               }}
             />
           </div>
-          <div className="col-xl-3 col-md-4 col-sm-12">
+          <div className="col-xl-3 col-md-6 col-sm-12">
+            <Form.Label className="mb-1">BC Parks region</Form.Label>
+            <Select
+              value={selectedRegion}
+              options={regionOptions}
+              onChange={(e) => {
+                const selectedRegions = e || [];
+                const selectedRegionIds = selectedRegions.map(
+                  (region) => region.value,
+                );
+
+                setSelectedRegion(selectedRegions);
+                setSelectedRegionId(selectedRegionIds);
+                setCurrentPage(1);
+
+                setStoredFilters((currentFilters) => {
+                  const nonRegionPageFilters = currentFilters.filter(
+                    (o) => !(o.type === "page" && o.filterName === "region"),
+                  );
+
+                  return [
+                    ...nonRegionPageFilters,
+                    {
+                      type: "page",
+                      filterName: "region",
+                      filterValue: selectedRegionIds,
+                    },
+                  ];
+                });
+              }}
+              placeholder="Select a Region..."
+              className="bcgov-select"
+              isMulti
+              isClearable
+              closeMenuOnSelect={false}
+              styles={{
+                menu: (base) => ({ ...base, zIndex: 999 }),
+              }}
+            />
+          </div>
+          <div className="col-xl-3 col-md-6 col-sm-12">
+            <Form.Label className="mb-1">BC Parks park</Form.Label>
+            <Select
+              value={selectedPark}
+              options={parkOptions}
+              onChange={(e) => {
+                const selectedParks = e || [];
+                const selectedParkIds = selectedParks.map((park) => park.value);
+
+                setSelectedPark(selectedParks);
+                setSelectedParkId(selectedParkIds);
+                setCurrentPage(1);
+
+                setStoredFilters((currentFilters) => {
+                  const nonParkPageFilters = currentFilters.filter(
+                    (o) => !(o.type === "page" && o.filterName === "park"),
+                  );
+
+                  return [
+                    ...nonParkPageFilters,
+                    {
+                      type: "page",
+                      filterName: "park",
+                      filterValue: selectedParkIds,
+                    },
+                  ];
+                });
+              }}
+              placeholder="Select a park..."
+              className="bcgov-select"
+              isMulti
+              isClearable
+              closeMenuOnSelect={false}
+              styles={{
+                menu: (base) => ({ ...base, zIndex: 999 }),
+              }}
+            />
+          </div>
+          <div className="col-xl-3 col-md-6 col-sm-12">
             <Form.Check
               className="ms-1 advisory-archived-toggle"
               type="checkbox"
