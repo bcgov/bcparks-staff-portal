@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { hasAuthParams, useAuth } from "react-oidc-context";
 import { useSessionStorage } from "usehooks-ts";
@@ -59,6 +59,12 @@ export default function ProtectedRoute({ children }) {
   // Track if a redirect has happened to prevent redirect loops
   const [hasTriedSignin, setHasTriedSignin] = useState(false);
 
+  // Keep a ref to the latest location so event handlers always use the current page
+  // without needing `location` in dependency arrays (which would re-subscribe on every navigation)
+  const locationRef = useRef(location);
+
+  locationRef.current = location;
+
   /**
    * Immediately redirect to /login when the library detects the Keycloak
    * session has ended (e.g. killed from the admin panel) or silent renew fails.
@@ -68,21 +74,21 @@ export default function ProtectedRoute({ children }) {
   useEffect(() => {
     const unsubscribeSignedOut = auth.events.addUserSignedOut(() => {
       auth.removeUser();
-      setPostLoginRedirectPath(getPostLoginRedirectUrl(location));
-      navigate(getLoginPath(location), { replace: true });
+      setPostLoginRedirectPath(getPostLoginRedirectUrl(locationRef.current));
+      navigate(getLoginPath(locationRef.current), { replace: true });
     });
 
     const unsubscribeRenewError = auth.events.addSilentRenewError(() => {
       auth.removeUser();
-      setPostLoginRedirectPath(getPostLoginRedirectUrl(location));
-      navigate(getLoginPath(location), { replace: true });
+      setPostLoginRedirectPath(getPostLoginRedirectUrl(locationRef.current));
+      navigate(getLoginPath(locationRef.current), { replace: true });
     });
 
     return () => {
       unsubscribeSignedOut();
       unsubscribeRenewError();
     };
-  }, [auth, navigate, setPostLoginRedirectPath, location]);
+  }, [auth, navigate, setPostLoginRedirectPath]);
 
   /**
    * Attempt to automatically sign in
@@ -104,11 +110,11 @@ export default function ProtectedRoute({ children }) {
 
       // Navigate to the login page, which will trigger the sign-in flow and redirect to Keycloak as needed
       if (!auth.isAuthenticated) {
-        setPostLoginRedirectPath(getPostLoginRedirectUrl(location));
-        navigate(getLoginPath(location), { replace: true });
+        setPostLoginRedirectPath(getPostLoginRedirectUrl(locationRef.current));
+        navigate(getLoginPath(locationRef.current), { replace: true });
       }
     }
-  }, [auth, hasTriedSignin, navigate, setPostLoginRedirectPath, location]);
+  }, [auth, hasTriedSignin, navigate, setPostLoginRedirectPath]);
 
   // Clear broken auth state by sending the user through a fresh sign-out flow
   useEffect(() => {
