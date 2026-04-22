@@ -5,6 +5,9 @@ on:
       - main
       - alpha
 
+permissions:
+  contents: read
+
 concurrency:
   group: build-dev-${{ github.ref_name }}
   cancel-in-progress: true
@@ -34,17 +37,6 @@ jobs:
           registry: ${{vars.OPENSHIFT_EXTERNAL_REPOSITORY}}
           username: ${{vars.OPENSHIFT_SA_USERNAME}}
           password: ${{secrets.OPENSHIFT_SA_PASSWORD}}
-
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-
-      - name: Legacy npm build
-        run: |
-          npm install
-          npm run build
-        working-directory: frontend-legacy
 
       - name: Docker build
         run: |
