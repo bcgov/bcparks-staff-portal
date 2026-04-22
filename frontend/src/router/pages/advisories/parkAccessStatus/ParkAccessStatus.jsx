@@ -54,8 +54,8 @@ async function fetchParkAccessStatus() {
 }
 
 export default function ParkAccessStatus() {
+  const ALL_PAGE_SIZE = -1;
   const STALE_TIME_MILLISECONDS = 10 * 60 * 1000; // 10 minutes
-  const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const { isLoading, data } = useQuery({
     queryKey: ["parkAccessStatus"],
@@ -96,14 +96,10 @@ export default function ParkAccessStatus() {
               },
             ]}
             pageSize={pageSize}
-            pageSizeOptions={[25, 50, -1]}
-            currentPage={currentPage}
-            onPageChange={setCurrentPage}
+            pageSizeOptions={[25, 50, ALL_PAGE_SIZE]}
             onPageSizeChange={(next) => {
               setPageSize(next);
-              setCurrentPage(1);
             }}
-            onFilterChange={() => setCurrentPage(1)}
             columns={[
               {
                 title: "ORCS",
