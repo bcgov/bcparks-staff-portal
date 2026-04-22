@@ -19,22 +19,29 @@ export default function AccessProvider({ children, auth }) {
     const payloadRoles =
       parsedPayload?.resource_access?.[clientId]?.roles ?? [];
 
-    return [...payloadRoles];
+    return payloadRoles.toSorted();
   }, [auth?.user?.access_token]);
+
+  // The roles array gets recreated on every token refresh, even if the roles themselves do not change.
+  // Memoize it to prevent unnecessary re-renders and recalculations in consuming components.
+
+  // Stringify the roles array to use as a key for memoization
+  const rolesKey = useMemo(() => JSON.stringify(roles), [roles]);
+  const memoizedRoles = useMemo(() => JSON.parse(rolesKey), [rolesKey]);
 
   // @TODO: implement fine-grained permission checks here
   const checkAccess = useCallback(
     (requiredRole) => {
       // Super admin can access everything
-      if (roles.includes(ROLES.SUPER_ADMIN)) return true;
+      if (memoizedRoles.includes(ROLES.SUPER_ADMIN)) return true;
 
-      return roles.includes(requiredRole);
+      return memoizedRoles.includes(requiredRole);
     },
-    [roles],
+    [memoizedRoles],
   );
 
   // Log out of Keycloak (and show the login page again)
-  async function logOut() {
+  const logOut = useCallback(async () => {
     auth.stopSilentRenew();
     await auth.clearStaleState();
 
@@ -46,18 +53,22 @@ export default function AccessProvider({ children, auth }) {
       .catch(() => {
         auth.signoutRedirect();
       });
-  }
+  }, [auth]);
+
+  // Memoize the context value to prevent unnecessary re-renders in consuming components
+  const providerValue = useMemo(
+    () => ({
+      roles: memoizedRoles,
+      checkAccess,
+      logOut,
+      isAuthenticated: auth.isAuthenticated,
+    }),
+    [memoizedRoles, checkAccess, logOut, auth.isAuthenticated],
+  );
 
   // Provide the context value to child components
   return (
-    <AccessContext.Provider
-      value={{
-        roles,
-        checkAccess,
-        logOut,
-        isAuthenticated: auth.isAuthenticated,
-      }}
-    >
+    <AccessContext.Provider value={providerValue}>
       {children}
     </AccessContext.Provider>
   );

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { hasAuthParams, useAuth } from "react-oidc-context";
 import PropTypes from "prop-types";
 import AccessProvider from "@/router/AccessProvider";
-import routerconfig from "@/router/index";
 
 // Higher-order component that wraps a route component for authentication
 // Wrap a "layout" component in this component to protect all of its children
@@ -10,17 +10,38 @@ import routerconfig from "@/router/index";
 // https://github.com/authts/sample-keycloak-react-oidc-context/
 export default function ProtectedRoute({ children }) {
   const auth = useAuth();
+  const navigate = useNavigate();
   // Get the query params from the URL
   const params = useMemo(() => new URLSearchParams(window.location.search), []);
-
-  // Get the base path from the router config
-  const basepath = routerconfig.basename;
 
   // Track if a redirect has happened to prevent redirect loops
   const [hasTriedSignin, setHasTriedSignin] = useState(false);
 
   /**
-   * Attempt to auomatically sign in
+   * Immediately redirect to /login when the library detects the Keycloak
+   * session has ended (e.g. killed from the admin panel) or silent renew fails.
+   * This fires faster than waiting for the next render cycle.
+   * See {@link https://authts.github.io/oidc-client-ts/interfaces/UserManagerEvents.html}
+   */
+  useEffect(() => {
+    const unsubscribeSignedOut = auth.events.addUserSignedOut(() => {
+      auth.removeUser();
+      navigate("/login", { replace: true });
+    });
+
+    const unsubscribeRenewError = auth.events.addSilentRenewError(() => {
+      auth.removeUser();
+      navigate("/login", { replace: true });
+    });
+
+    return () => {
+      unsubscribeSignedOut();
+      unsubscribeRenewError();
+    };
+  }, [auth, navigate]);
+
+  /**
+   * Attempt to automatically sign in
    * See {@link https://github.com/authts/react-oidc-context?tab=readme-ov-file#automatic-sign-in}
    */
   useEffect(() => {
@@ -40,30 +61,39 @@ export default function ProtectedRoute({ children }) {
       auth.clearStaleState();
       setHasTriedSignin(true);
 
-      if (
-        !auth.isAuthenticated &&
-        !window.location.pathname.startsWith(`${basepath}login`)
-      ) {
-        window.location.replace(`${basepath}login`);
+      // Only redirect if not already on the login page
+      if (!auth.isAuthenticated && window.location.pathname !== "/login") {
+        navigate("/login", { replace: true });
       }
     }
-  }, [auth, hasTriedSignin, params, basepath]);
+  }, [auth, hasTriedSignin, params, navigate]);
+
+  useEffect(() => {
+    if (auth.error) {
+      // If there's an error, redirect to the sign-in page
+      console.error("Authentication error:", auth.error);
+      console.error("Redirecting to sign-in page...");
+      auth.signoutRedirect();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- auth.signoutRedirect is stable; only re-run when error status changes
+  }, [auth.error]);
 
   if (auth.error) {
-    // If there's an error, redirect to the sign-in page
-    console.error("Authentication error:", auth.error);
-    console.error("Redirecting to sign-in page...");
-    auth.signoutRedirect();
     return <div>Authentication error: {auth.error?.message}</div>;
   }
 
   if (auth.isLoading && auth.activeNavigator !== "signinSilent") {
-    return <div>Redirecting...</div>;
+    return <div>Checking authentication...</div>;
   }
 
   // If the URL has the "logged-out" query param, display a message
   if (params.has("logged-out")) {
     return <div>Logged out.</div>;
+  }
+
+  if (!auth.isAuthenticated) {
+    // Block rendering until authenticated, or redirecting
+    return <div>Redirecting to login...</div>;
   }
 
   return <AccessProvider auth={auth}>{children}</AccessProvider>;

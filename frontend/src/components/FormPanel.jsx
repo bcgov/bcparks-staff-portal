@@ -112,8 +112,8 @@ function SeasonForm({
 
   // Hooks
   const { ROLES, checkAccess } = useAccess();
-  const approver = checkAccess(ROLES.APPROVER);
-  const submitter = checkAccess(ROLES.SUBMITTER);
+  const approver = checkAccess(ROLES.DOOT_APPROVER);
+  const submitter = checkAccess(ROLES.DOOT_SUBMITTER);
 
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");

@@ -13,11 +13,11 @@ export default function LandingPageTabs() {
   // Check user permissions
   const { isApprover, hqStaff, hasAllParkAccess } = useMemo(
     () => ({
-      isApprover: checkAccess(ROLES.APPROVER),
-      hqStaff: hasAnyRole([ROLES.APPROVER]),
-      hasAllParkAccess: checkAccess(ROLES.ALL_PARK_ACCESS),
+      isApprover: checkAccess(ROLES.DOOT_APPROVER),
+      hqStaff: hasAnyRole([ROLES.DOOT_APPROVER]),
+      hasAllParkAccess: checkAccess(ROLES.DOOT_ALL_PARK_ACCESS),
     }),
-    [checkAccess, hasAnyRole, ROLES.APPROVER, ROLES.ALL_PARK_ACCESS],
+    [checkAccess, hasAnyRole, ROLES.DOOT_APPROVER, ROLES.DOOT_ALL_PARK_ACCESS],
   );
 
   // This prevents flashing the tabs layout to unauthenticated users
@@ -36,19 +36,19 @@ export default function LandingPageTabs() {
 
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/">
+              <NavLink className="nav-link" to="/dates/" end>
                 Edit{isApprover && " and review"}
               </NavLink>
             </li>
             {hqStaff && (
               <>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/publish">
+                  <NavLink className="nav-link" to="/dates/publish">
                     Publish
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/export">
+                  <NavLink className="nav-link" to="/dates/export">
                     Export
                   </NavLink>
                 </li>

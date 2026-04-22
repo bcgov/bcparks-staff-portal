@@ -1063,7 +1063,7 @@ router.get(
 // Save draft
 router.post(
   "/:seasonId/save/",
-  checkPermissions([USER_ROLES.SUBMITTER, USER_ROLES.CONTRIBUTOR]),
+  checkPermissions([USER_ROLES.DOOT_SUBMITTER, USER_ROLES.DOOT_CONTRIBUTOR]),
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const {
@@ -1089,8 +1089,8 @@ router.post(
 
     // Check the user's roles from their auth data
     const userRoles = getRolesFromAuth(req.auth);
-    const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
-    const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.SUBMITTER]);
+    const isApprover = checkUserRoles(userRoles, [USER_ROLES.DOOT_APPROVER]);
+    const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.DOOT_SUBMITTER]);
 
     // Contributors can only save drafts. If the payload is trying to set status
     // to anything other than "requested", check if the user has permission.

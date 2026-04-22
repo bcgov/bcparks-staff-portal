@@ -12,8 +12,8 @@ import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
-import * as FEATURE_TYPE from "../constants/featureType";
-import * as DATE_TYPE from "../constants/dateType";
+import * as FEATURE_TYPE from "@/constants/featureType";
+import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
 
 // Components
@@ -218,8 +218,8 @@ function StatusTableRow({
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
+    () => checkAccess(ROLES.DOOT_APPROVER),
+    [checkAccess, ROLES.DOOT_APPROVER],
   );
 
   /**

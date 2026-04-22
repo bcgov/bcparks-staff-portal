@@ -35,8 +35,12 @@ spec:
               containerPort: {{ .Values.frontend.service.port }}
               protocol: TCP
           env:
+            - name: VITE_CMS_BASE_URL
+              value: {{ .Values.cluster.cmsUrl }}
             - name: REACT_APP_CMS_BASE_URL
               value: {{ .Values.cluster.cmsUrl }}
+            - name: VITE_FRONTEND_BASE_URL
+              value: {{ .Values.frontend.env.externalUrl }}
             - name: REACT_APP_FRONTEND_BASE_URL
               value: {{ .Values.frontend.env.externalUrl }}
             - name: REACT_APP_KEYCLOAK_AUTH_URL
@@ -45,8 +49,12 @@ spec:
               value: {{ .Values.cluster.ssoRealm }}
             - name: REACT_APP_KEYCLOAK_CLIENT_ID
               value: {{ .Values.cluster.ssoClientId }}
+            - name: VITE_STAT_HOLIDAY_API
+              value: {{ .Values.frontend.env.statHolidayApi }}
             - name: REACT_APP_STAT_HOLIDAY_API
               value: {{ .Values.frontend.env.statHolidayApi }}
+            - name: VITE_BCPARKS_PUBLIC_URL
+              value: {{ .Values.frontend.env.publicUrl }}
             - name: REACT_APP_PUBLIC_URL
               value: {{ .Values.frontend.env.publicUrl }}
             - name: VITE_OIDC_AUTHORITY
@@ -55,6 +63,9 @@ spec:
               value: {{ .Values.cluster.ssoClientId }}
             - name: VITE_API_BASE_URL
               value: {{ .Values.backend.env.externalUrl }}/api
+          envFrom:
+            - secretRef:
+                name: {{ .Release.Name }}-ckeditor-license-key-secret
           readinessProbe:
             httpGet:
               path: /

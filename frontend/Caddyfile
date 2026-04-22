@@ -5,16 +5,12 @@
     redir /v2/ /dates/
     redir /dates /dates/
 
-    handle_path /dates/* {
-        try_files /dates/{path} /dates/index.html
-    }
-
     handle {
         try_files {path} /index.html
     }
 
     header /* Cache-Control "no-store, must-revalidate, no-cache, max-age=0, private"
-    header /dates/assets/* -Cache-Control
+    header /assets/* -Cache-Control
     header /static/* -Cache-Control
     header /images/* -Cache-Control
 
@@ -27,4 +23,3 @@
         format console
     }
 }
-

@@ -1,0 +1,129 @@
+.advisory-dashboard-page-wrap {
+  padding: 1rem;
+
+  .low {
+    border-left: 5px solid #2454a4;
+    text-align: left;
+  }
+
+  .medium {
+    border-left: 5px solid #f5d20e;
+    text-align: left;
+  }
+
+  .high {
+    border-left: 5px solid #f30505;
+    text-align: left;
+  }
+
+  .advisory-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    width: fit-content;
+    border-radius: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: bold;
+  }
+
+  svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .revisionIcon {
+    color: gray;
+    font-size: 14px;
+  }
+
+  .draftIcon {
+    color: #4989c5;
+  }
+
+  .dual-icon {
+    position: relative;
+    display: inline-block;
+    width: 1.5rem;
+    height: 1.5rem;
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+    }
+
+    .icon-a {
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .icon-b {
+      position: absolute;
+      bottom: 0;
+      right: 0;
+    }
+  }
+
+  .approvedIcon {
+    color: #4989c5;
+  }
+
+  .publishedIcon {
+    color: #4989c5;
+  }
+  .approvalRequestedIcon {
+    color: #ee5f3b;
+  }
+  .inactiveIcon {
+    color: #bdd9ed;
+  }
+  .archivedIcon {
+    color: #bdd9ed;
+  }
+  .helpIcon {
+    color: #234075;
+  }
+
+  .warningRoundedIcon {
+    color: gray;
+    display: inline-flex;
+    width: 1rem;
+    justify-content: center;
+    font-weight: 700;
+  }
+
+  .urgency-column {
+    padding-left: 10px;
+    width: 2px;
+  }
+
+  .page-loader {
+    padding-top: 2% !important;
+    text-align: center !important;
+  }
+
+  .park-count-badge {
+    margin-right: 4px;
+    margin-left: 4px;
+    border: 1px solid var(--color-light-grey);
+  }
+
+  .table-row-action {
+    border: 0;
+    background: transparent;
+    color: var(--color-blue);
+    font-weight: 700;
+    line-height: 1;
+    transform: rotate(90deg);
+  }
+
+  .advisory-archived-toggle input {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .advisory-dashboard-padding {
+    padding: 16px;
+  }
+}

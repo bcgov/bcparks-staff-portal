@@ -8,9 +8,10 @@ services:
     environment:
       FONTAWESOME_PACKAGE_TOKEN: ${FONTAWESOME_PACKAGE_TOKEN}
     ports:
-      - "8101:8101"
+      - "3000:3000"
     volumes:
       - .:/app:cached
+      - ${HOME}/.config/git:/home/node/.config/git:ro
     command: sleep infinity # Keep the container running
     # Just send SIGKILL to stop the container (no grace period for `sleep infinity`)
     # https://docs.docker.com/compose/faq/#why-do-my-services-take-10-seconds-to-recreate-or-stop
@@ -30,6 +31,7 @@ services:
       - "8100:8100"
     volumes:
       - .:/app:cached
+      - ${HOME}/.config/git:/home/node/.config/git:ro
     command: sleep infinity # Keep the container running
     depends_on:
       - db
@@ -48,15 +50,6 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-  test-proxy:
-    image: caddy:2
-    depends_on:
-      - frontend
-    ports:
-      - "8103:80"
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro
 
 volumes:
   db-data:

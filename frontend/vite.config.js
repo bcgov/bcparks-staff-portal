@@ -9,11 +9,11 @@ const dirname = url.fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   plugins: [react()],
 
-  base: "/dates/",
+  base: "/",
 
   server: {
     host: true,
-    port: 8101,
+    port: 3000,
   },
 
   resolve: {

@@ -1,0 +1,10 @@
+.tooltip.light-tooltip .tooltip-inner {
+  font-size: 0.75rem;
+  color: #000 !important;
+  background-color: #fff !important;
+}
+
+.tooltip.light-tooltip {
+  opacity: 1 !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16) !important;
+}
