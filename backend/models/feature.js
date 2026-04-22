@@ -71,6 +71,12 @@ export default (sequelize) => {
         defaultValue: false,
       },
 
+      hasDates: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+
       strapiOrcsFeatureNumber: {
         type: DataTypes.STRING,
         allowNull: true,

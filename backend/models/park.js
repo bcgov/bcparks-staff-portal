@@ -91,6 +91,12 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+
+      hasDates: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
     },
     {
       sequelize,
