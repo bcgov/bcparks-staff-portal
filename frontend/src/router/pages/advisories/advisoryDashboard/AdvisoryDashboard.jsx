@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useContext, useRef } from "react";
+import PropTypes from "prop-types";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -12,7 +13,7 @@ import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
-import Select from "react-select";
+import Select, { components } from "react-select";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Badge from "react-bootstrap/Badge";
@@ -71,6 +72,38 @@ function normalizePageFilterValues(filterValue) {
 
   return [filterValue];
 }
+
+function getSelectionPlaceholder(label, selectedOptions, defaultLabel) {
+  if ((selectedOptions || []).length > 0) {
+    return `${label}(${selectedOptions.length})`;
+  }
+
+  return defaultLabel;
+}
+
+function CheckboxOption(props) {
+  const { isSelected, label } = props;
+
+  return (
+    <components.Option {...props}>
+      <div className="multi-select-option">
+        <input
+          className="multi-select-option-checkbox"
+          type="checkbox"
+          checked={isSelected}
+          readOnly
+          tabIndex={-1}
+        />
+        <span>{label}</span>
+      </div>
+    </components.Option>
+  );
+}
+
+CheckboxOption.propTypes = {
+  isSelected: PropTypes.bool,
+  label: PropTypes.string,
+};
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
@@ -858,6 +891,7 @@ export default function AdvisoryDashboard() {
             <Select
               value={selectedDistrict}
               options={districtOptions}
+              components={{ Option: CheckboxOption }}
               onChange={(e) => {
                 const selectedDistricts = e || [];
                 const selectedDistrictIds = selectedDistricts.map(
@@ -883,10 +917,16 @@ export default function AdvisoryDashboard() {
                   ];
                 });
               }}
-              placeholder="Select a district..."
+              placeholder={getSelectionPlaceholder(
+                "RST Recreation district",
+                selectedDistrict,
+                "Select a district...",
+              )}
               className="bcgov-select"
               isMulti
               isClearable
+              hideSelectedOptions={false}
+              controlShouldRenderValue={false}
               closeMenuOnSelect={false}
               styles={{
                 menu: (base) => ({ ...base, zIndex: 999 }),
@@ -898,6 +938,7 @@ export default function AdvisoryDashboard() {
             <Select
               value={selectedRegion}
               options={regionOptions}
+              components={{ Option: CheckboxOption }}
               onChange={(e) => {
                 const selectedRegions = e || [];
                 const selectedRegionIds = selectedRegions.map(
@@ -923,10 +964,16 @@ export default function AdvisoryDashboard() {
                   ];
                 });
               }}
-              placeholder="Select a Region..."
+              placeholder={getSelectionPlaceholder(
+                "BC Parks region",
+                selectedRegion,
+                "Select a Region...",
+              )}
               className="bcgov-select"
               isMulti
               isClearable
+              hideSelectedOptions={false}
+              controlShouldRenderValue={false}
               closeMenuOnSelect={false}
               styles={{
                 menu: (base) => ({ ...base, zIndex: 999 }),
@@ -938,6 +985,7 @@ export default function AdvisoryDashboard() {
             <Select
               value={selectedPark}
               options={parkOptions}
+              components={{ Option: CheckboxOption }}
               onChange={(e) => {
                 const selectedParks = e || [];
                 const selectedParkIds = selectedParks.map((park) => park.value);
@@ -961,19 +1009,25 @@ export default function AdvisoryDashboard() {
                   ];
                 });
               }}
-              placeholder="Select a park..."
+              placeholder={getSelectionPlaceholder(
+                "BC Parks park",
+                selectedPark,
+                "Select a park...",
+              )}
               className="bcgov-select"
               isMulti
               isClearable
+              hideSelectedOptions={false}
+              controlShouldRenderValue={false}
               closeMenuOnSelect={false}
               styles={{
                 menu: (base) => ({ ...base, zIndex: 999 }),
               }}
             />
           </div>
-          <div className="col-xl-3 col-md-6 col-sm-12">
+          <div className="col-12">
             <Form.Check
-              className="ms-1 advisory-archived-toggle"
+              className="mt-4 mb-0 advisory-archived-toggle"
               type="checkbox"
               id="show-archived"
               checked={showArchived}
@@ -983,7 +1037,8 @@ export default function AdvisoryDashboard() {
               }}
               label={
                 <span>
-                  <small>Show archived</small>
+                  Show advisories and closures that have not been updated in 30
+                  days
                   <LightTooltip
                     arrow
                     title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this
