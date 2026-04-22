@@ -1,3 +1,4 @@
+import { useId } from "react";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 import Select, { components } from "react-select";
@@ -13,6 +14,7 @@ function CheckboxOption(props) {
           className="multi-select-option-checkbox"
           type="checkbox"
           checked={isSelected}
+          aria-hidden="true"
           readOnly
           tabIndex={-1}
         />
@@ -35,13 +37,20 @@ export function MultiSelect({
   onChange,
   placeholder,
 }) {
+  const generatedId = useId();
   const displayPlaceholder =
     value.length > 0 ? `${countLabel} (${value.length})` : placeholder;
 
   return (
     <>
-      {label && <Form.Label className="mb-1">{label}</Form.Label>}
+      {label && (
+        <Form.Label htmlFor={generatedId} className="mb-1">
+          {label}
+        </Form.Label>
+      )}
       <Select
+        inputId={generatedId}
+        instanceId={generatedId}
         value={value}
         options={options}
         components={{ Option: CheckboxOption }}
