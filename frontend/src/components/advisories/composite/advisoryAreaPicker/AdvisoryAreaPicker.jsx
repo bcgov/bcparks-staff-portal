@@ -355,8 +355,8 @@ export default function AdvisoryAreaPicker({
         </>
       )}
       <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
-          Park(s)
+        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+          <span className="append-required">Park(s)</span>
         </div>
         <div className="col-lg-7 col-md-8 col-sm-12">
           <div

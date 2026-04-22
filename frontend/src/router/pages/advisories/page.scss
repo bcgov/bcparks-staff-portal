@@ -281,13 +281,6 @@
     outline-offset: 1px;
   }
 
-  .bcgov-required::after {
-    content: "*";
-    margin-left: 2px !important;
-    margin-right: -10px !important;
-    color: var(--typography-color-danger) !important;
-  }
-
   .bcgov-datepicker-wrapper-error input,
   .bcgov-select-error [class*="-control"] {
     border-color: red !important;

@@ -3,7 +3,7 @@ import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
 import "./ParkSearch.scss";
 // Include styles from AdvisoryForm component
-import "@/components/advisories/composite/advisoryForm/AdvisoryForm.css";
+import "@/components/advisories/composite/advisoryForm/AdvisoryForm.scss";
 import { useAuth } from "react-oidc-context";
 import { Navigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import "./AdvisoryForm.css";
+import "./AdvisoryForm.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Btn from "react-bootstrap/Button";
@@ -8,7 +8,11 @@ import Form from "react-bootstrap/Form";
 import InputGroup from "react-bootstrap/InputGroup";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faXmark } from "@fa-kit/icons/classic/regular";
-import { faCheck, faCircleQuestion, faTriangleExclamation } from "@fa-kit/icons/classic/solid";
+import {
+  faCheck,
+  faCircleQuestion,
+  faTriangleExclamation,
+} from "@fa-kit/icons/classic/solid";
 import Select from "react-select";
 import {
   validateOptionalNumber,
@@ -374,7 +378,7 @@ export default function AdvisoryForm({
 
   return (
     <form className="mt-5">
-      <div className="container-fluid ad-form">
+      <div className="container-fluid ad-form advisory-form">
         <div className="row heading">Affected area</div>
         <AdvisoryAreaPicker
           data={{
@@ -406,31 +410,42 @@ export default function AdvisoryForm({
             protectedAreaError,
           }}
         />
-        <div className="row heading">Advisory content</div>
+        <div className="row heading">Public advisory / closure content</div>
         <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
-            Headline
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Form.Control
-              value={headline}
-              onChange={(event) => {
-                setHeadline(event.target.value);
-              }}
-              className={getControlClassName(headlineError !== "")}
-              maxLength={255}
-              id={headlineInput.id}
-              required={headlineInput.required}
-              onBlur={() => {
-                validateRequiredText(advisoryData.headline);
-              }}
-            />
-            {renderHelperText(headlineError, headlineError !== "")}
+          <div className="col-12">
+            <p>This information is displayed on the public website.</p>
           </div>
         </div>
+
         <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
-            Event type
+          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+            <span className="append-required">Resource status</span>
+
+            <LightTooltip
+              arrow
+              title="This status describes how the advisory event affects access to the park.
+              The default is 'Open'. This selection triggers information to be displayed in various areas,
+              such as on the BC Parks Map, closure/warning status icons in the various park lists,
+              and closure status on park pages."
+            >
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </div>
+          <div className="col-lg-7 col-md-8 col-sm-12">
+            <Select
+              options={accessStatuses}
+              value={accessStatuses.filter((e) => e.value === accessStatus)}
+              onChange={(e) => setAccessStatus(e ? e.value : 0)}
+              placeholder="Select resource status"
+              className="bcgov-select"
+            />
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+            <span className="append-required">Event type</span>
+
             <LightTooltip
               arrow
               title="Please select the most appropriate event type that your advisory falls under, this does impact the front-end.
@@ -460,9 +475,33 @@ export default function AdvisoryForm({
             </div>
           </div>
         </div>
+
         <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
-            Urgency level
+          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+            <span className="append-required">Headline</span>
+          </div>
+          <div className="col-lg-7 col-md-8 col-sm-12">
+            <Form.Control
+              value={headline}
+              onChange={(event) => {
+                setHeadline(event.target.value);
+              }}
+              className={getControlClassName(headlineError !== "")}
+              maxLength={255}
+              id={headlineInput.id}
+              required={headlineInput.required}
+              onBlur={() => {
+                validateRequiredText(advisoryData.headline);
+              }}
+            />
+            {renderHelperText(headlineError, headlineError !== "")}
+          </div>
+        </div>
+
+        <div className="row">
+          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+            <span className="append-required">Urgency level</span>
+
             <LightTooltip
               arrow
               title="Dependant on your advisory, the urgency level can be used to prioritize your alert above existing alerts for the same park page.
@@ -519,75 +558,17 @@ export default function AdvisoryForm({
             </div>
           </div>
         </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Listing rank
-            <LightTooltip
-              arrow
-              title="To display an advisory at the top of the list, add a Listing rank number.
-              The advisory with the highest number will be displayed at the top.
-              If the Listing rank number is zero,
-              advisories are ordered by urgency level and date added."
-            >
-              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
-            </LightTooltip>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Form.Control
-              type="number"
-              value={listingRank}
-              onChange={(event) => {
-                const value = event.target.value;
-                const parsed = parseInt(value, 10);
 
-                setListingRank(isNaN(parsed) ? 0 : parsed);
-              }}
-              onWheel={(event) => {
-                event.target.blur();
-              }}
-              className={getControlClassName(listingRankError !== "")}
-              id={listingRankInput.id}
-              required={listingRankInput.required}
-              min={0}
-              max={9999}
-              onBlur={() => {
-                validateOptionalNumber(advisoryData.listingRank);
-              }}
-            />
-            {renderHelperText(listingRankError, listingRankError !== "")}
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
-            Park access status
-            <LightTooltip
-              arrow
-              title="This status describes how the advisory event affects access to the park.
-              The default is 'Open'. This selection triggers information to be displayed in various areas,
-              such as on the BC Parks Map, closure/warning status icons in the various park lists,
-              and closure status on park pages."
-            >
-              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
-            </LightTooltip>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Select
-              options={accessStatuses}
-              value={accessStatuses.filter((e) => e.value === accessStatus)}
-              onChange={(e) => setAccessStatus(e ? e.value : 0)}
-              placeholder="Select park access status"
-              className="bcgov-select"
-            />
-          </div>
-        </div>
+        <div className="row sub-section-heading">Description</div>
+
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
             Standard message(s)
             <LightTooltip
               arrow
               title="Standard messages are chosen from a list of generic, pre-defined and approved messages.
-                This content will be added below any text entered in the description on the park page.
-                There is no requirement to have both a description and standard messaging."
+                This content will be added below any text entered in the custom message on the park page.
+                There is no requirement to have both a custom message and standard messaging."
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
@@ -608,40 +589,49 @@ export default function AdvisoryForm({
         </div>
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Description
+            Custom message
+            <br />
+            <span className="field-description">
+              Appears before any selected standard message(s)
+            </span>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
             <CKEditor value={description} onChange={setDescription} />
           </div>
         </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Standard message preview
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <div className="bcgov-textarea">
-              {selectedStandardMessages.map((message, i) => (
-                <div
-                  key={i}
-                  className="standard-message"
-                  dangerouslySetInnerHTML={{
-                    __html: message.obj.description || "",
-                  }}
-                />
-              ))}
+
+        {/* Render a preview of selected standard messages */}
+        {selectedStandardMessages.length > 0 && (
+          <div className="row">
+            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+              Standard message preview
+            </div>
+            <div className="col-lg-7 col-md-8 col-sm-12">
+              <div className="bcgov-textarea standard-message-preview">
+                {selectedStandardMessages.map((message, i) => (
+                  <div
+                    key={i}
+                    className="standard-message"
+                    dangerouslySetInnerHTML={{
+                      __html: message.obj.description || "",
+                    }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
+
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Add supporting information
+            Attach item(s) below the advisory/closure message
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
             {linksRef.current.map((l, idx) => (
               <div key={idx} className="field-bg-grey">
                 <div className="row">
-                  <div className="col-12 col-lg-3 col-md-2 ad-label bcgov-required">
-                    Type
+                  <div className="col-12 col-lg-3 col-md-2 ad-label">
+                    <span className="append-required">Type</span>
                   </div>
                   <div className="col-12 col-lg-9 col-md-10 d-flex">
                     <div
@@ -686,8 +676,8 @@ export default function AdvisoryForm({
                   </div>
                 </div>
                 <div className="row">
-                  <div className="col-12 col-lg-3 col-md-2 ad-label bcgov-required">
-                    Title
+                  <div className="col-12 col-lg-3 col-md-2 ad-label">
+                    <span className="append-required">Title</span>
                   </div>
                   <div className="col-12 col-lg-9 col-md-10">
                     <Form.Control
@@ -711,8 +701,8 @@ export default function AdvisoryForm({
                 </div>
                 {l.format !== "file" && !hasFileDeleted[idx] ? (
                   <div className="row">
-                    <div className="col-12 col-lg-3 col-md-2 ad-label bcgov-required">
-                      URL
+                    <div className="col-12 col-lg-3 col-md-2 ad-label">
+                      <span className="append-required">URL</span>
                     </div>
                     <div className="col-12 col-lg-9 col-md-10">
                       <InputGroup>
@@ -757,8 +747,8 @@ export default function AdvisoryForm({
                   </div>
                 ) : (
                   <div className="row">
-                    <div className="col-12 col-lg-3 col-md-2 ad-label bcgov-required">
-                      File
+                    <div className="col-12 col-lg-3 col-md-2 ad-label">
+                      <span className="append-required">File</span>
                     </div>
                     <div className="col-12 col-lg-9 col-md-8 ad-flex">
                       {l.file ? (
@@ -859,6 +849,9 @@ export default function AdvisoryForm({
             </Btn>
           </div>
         </div>
+
+        <div className="row sub-section-heading">Advisory / Closure dates</div>
+
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label pt-4">
             Event dates
@@ -988,8 +981,8 @@ export default function AdvisoryForm({
           <div className="col-lg-7 col-md-8 col-sm-12">
             <div className="field-bg-grey">
               <div className="row">
-                <div className="col-12 col-lg-3 col-md-4 ad-label bcgov-required">
-                  Posting date
+                <div className="col-12 col-lg-3 col-md-4 ad-label">
+                  <span className="append-required">Posting date</span>
                 </div>
                 <div className="col-12 col-lg-5 col-md-8">
                   <DatePicker
@@ -1122,8 +1115,8 @@ export default function AdvisoryForm({
         {hasAnyRole(["approver"]) && (
           <>
             <div className="row">
-              <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
-                Advisory status
+              <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+                <span className="append-required">Advisory status</span>
               </div>
               <div className="col-lg-7 col-md-8 col-sm-12">
                 <div
@@ -1152,8 +1145,8 @@ export default function AdvisoryForm({
               </div>
             </div>
             <div className="row">
-              <div className="col-lg-3 col-md-4 col-sm-12 ad-label bcgov-required">
-                Requested by
+              <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+                <span className="append-required">Requested by</span>
               </div>
               <div className="col-lg-7 col-md-8 col-sm-12">
                 <Form.Control
@@ -1229,6 +1222,45 @@ export default function AdvisoryForm({
             />
           </div>
         </div>
+        <div className="row">
+          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+            Listing rank
+            <LightTooltip
+              arrow
+              title="To display an advisory at the top of the list, add a Listing rank number.
+              The advisory with the highest number will be displayed at the top.
+              If the Listing rank number is zero,
+              advisories are ordered by urgency level and date added."
+            >
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </div>
+          <div className="col-lg-7 col-md-8 col-sm-12">
+            <Form.Control
+              type="number"
+              value={listingRank}
+              onChange={(event) => {
+                const value = event.target.value;
+                const parsed = parseInt(value, 10);
+
+                setListingRank(isNaN(parsed) ? 0 : parsed);
+              }}
+              onWheel={(event) => {
+                event.target.blur();
+              }}
+              className={getControlClassName(listingRankError !== "")}
+              id={listingRankInput.id}
+              required={listingRankInput.required}
+              min={0}
+              max={9999}
+              onBlur={() => {
+                validateOptionalNumber(advisoryData.listingRank);
+              }}
+            />
+            {renderHelperText(listingRankError, listingRankError !== "")}
+          </div>
+        </div>
+
         {!hasAnyRole(["approver"]) && (isStatHoliday || isAfterHours) && (
           <div className="ad-af-hour-box">
             <div className="row">
