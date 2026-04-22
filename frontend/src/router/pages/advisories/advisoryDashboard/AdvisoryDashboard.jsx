@@ -585,53 +585,8 @@ export default function AdvisoryDashboard() {
         },
       },
       {
-        field: "advisoryDate",
-        title: "Posting date",
-        render(rowData) {
-          if (rowData.advisoryDate) {
-            return moment(rowData.advisoryDate).format("YYYY/MM/DD");
-          }
-
-          return null;
-        },
-      },
-      {
-        field: "endDate",
-        title: "End date",
-        render(rowData) {
-          if (rowData.endDate) {
-            return moment(rowData.endDate).format("YYYY/MM/DD");
-          }
-
-          return null;
-        },
-      },
-      {
-        field: "expiryDate",
-        title: "Expiry date",
-        render(rowData) {
-          if (rowData.expiryDate) {
-            return moment(rowData.expiryDate).format("YYYY/MM/DD");
-          }
-
-          return null;
-        },
-      },
-      {
-        field: "title",
-        title: "Headline",
-        headerStyle: { width: 400 },
-        cellStyle: { width: 400 },
-        render(rowData) {
-          return (
-            <div dangerouslySetInnerHTML={{ __html: rowData.title }}></div>
-          );
-        },
-      },
-      { field: "eventType.eventType", title: "Event type" },
-      {
-        field: "associatedParks",
-        title: "Associated Park(s)",
+        field: "associatedResources",
+        title: "Associated Resource(s)",
         headerStyle: { width: 400 },
         cellStyle: { width: 400 },
         render(rowData) {
@@ -716,7 +671,7 @@ export default function AdvisoryDashboard() {
             <div>
               {displayedResources.map((r, i) => (
                 <span key={i}>
-                  {r.resourceName}
+                  {r.resourceName} {`(${r.recResourceId})`}
                   {displayedResources.length - 1 > i && ", "}
                 </span>
               ))}
@@ -738,6 +693,40 @@ export default function AdvisoryDashboard() {
               )}
             </div>
           );
+        },
+      },
+      { field: "eventType.eventType", title: "Event type" },
+      {
+        field: "title",
+        title: "Headline",
+        headerStyle: { width: 400 },
+        cellStyle: { width: 400 },
+        render(rowData) {
+          return (
+            <div dangerouslySetInnerHTML={{ __html: rowData.title }}></div>
+          );
+        },
+      },
+      {
+        field: "advisoryDate",
+        title: "Posting date",
+        render(rowData) {
+          if (rowData.advisoryDate) {
+            return moment(rowData.advisoryDate).format("YYYY/MM/DD");
+          }
+
+          return null;
+        },
+      },
+      {
+        field: "expiryDate",
+        title: "Expiry date",
+        render(rowData) {
+          if (rowData.expiryDate) {
+            return moment(rowData.expiryDate).format("YYYY/MM/DD");
+          }
+
+          return null;
         },
       },
       {
