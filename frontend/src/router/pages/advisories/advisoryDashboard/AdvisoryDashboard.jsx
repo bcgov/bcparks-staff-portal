@@ -1,5 +1,4 @@
 import { useState, useEffect, useMemo, useContext, useRef } from "react";
-import PropTypes from "prop-types";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -12,8 +11,8 @@ import ErrorContext from "@/contexts/ErrorContext";
 import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
+import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
-import Select, { components } from "react-select";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Badge from "react-bootstrap/Badge";
@@ -72,38 +71,6 @@ function normalizePageFilterValues(filterValue) {
 
   return [filterValue];
 }
-
-function getSelectionPlaceholder(label, selectedOptions, defaultLabel) {
-  if ((selectedOptions || []).length > 0) {
-    return `${label}(${selectedOptions.length})`;
-  }
-
-  return defaultLabel;
-}
-
-function CheckboxOption(props) {
-  const { isSelected, label } = props;
-
-  return (
-    <components.Option {...props}>
-      <div className="multi-select-option">
-        <input
-          className="multi-select-option-checkbox"
-          type="checkbox"
-          checked={isSelected}
-          readOnly
-          tabIndex={-1}
-        />
-        <span>{label}</span>
-      </div>
-    </components.Option>
-  );
-}
-
-CheckboxOption.propTypes = {
-  isSelected: PropTypes.bool,
-  label: PropTypes.string,
-};
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
@@ -887,11 +854,12 @@ export default function AdvisoryDashboard() {
         </div>
         <div className="row ad-row">
           <div className="col-xl-3 col-md-6 col-sm-12">
-            <Form.Label className="mb-1">RST Recreation district</Form.Label>
-            <Select
+            <MultiSelect
+              label="RST Recreation district"
+              countLabel="RST Recreation district"
+              placeholder="Select a district"
               value={selectedDistrict}
               options={districtOptions}
-              components={{ Option: CheckboxOption }}
               onChange={(e) => {
                 const selectedDistricts = e || [];
                 const selectedDistrictIds = selectedDistricts.map(
@@ -917,28 +885,15 @@ export default function AdvisoryDashboard() {
                   ];
                 });
               }}
-              placeholder={getSelectionPlaceholder(
-                "RST Recreation district",
-                selectedDistrict,
-                "Select a district...",
-              )}
-              className="bcgov-select"
-              isMulti
-              isClearable
-              hideSelectedOptions={false}
-              controlShouldRenderValue={false}
-              closeMenuOnSelect={false}
-              styles={{
-                menu: (base) => ({ ...base, zIndex: 999 }),
-              }}
             />
           </div>
           <div className="col-xl-3 col-md-6 col-sm-12">
-            <Form.Label className="mb-1">BC Parks region</Form.Label>
-            <Select
+            <MultiSelect
+              label="BC Parks region"
+              countLabel="BC Parks region"
+              placeholder="Select a region"
               value={selectedRegion}
               options={regionOptions}
-              components={{ Option: CheckboxOption }}
               onChange={(e) => {
                 const selectedRegions = e || [];
                 const selectedRegionIds = selectedRegions.map(
@@ -964,28 +919,15 @@ export default function AdvisoryDashboard() {
                   ];
                 });
               }}
-              placeholder={getSelectionPlaceholder(
-                "BC Parks region",
-                selectedRegion,
-                "Select a Region...",
-              )}
-              className="bcgov-select"
-              isMulti
-              isClearable
-              hideSelectedOptions={false}
-              controlShouldRenderValue={false}
-              closeMenuOnSelect={false}
-              styles={{
-                menu: (base) => ({ ...base, zIndex: 999 }),
-              }}
             />
           </div>
           <div className="col-xl-3 col-md-6 col-sm-12">
-            <Form.Label className="mb-1">BC Parks park</Form.Label>
-            <Select
+            <MultiSelect
+              label="BC Parks park"
+              countLabel="BC Parks park"
+              placeholder="Select a park"
               value={selectedPark}
               options={parkOptions}
-              components={{ Option: CheckboxOption }}
               onChange={(e) => {
                 const selectedParks = e || [];
                 const selectedParkIds = selectedParks.map((park) => park.value);
@@ -1008,20 +950,6 @@ export default function AdvisoryDashboard() {
                     },
                   ];
                 });
-              }}
-              placeholder={getSelectionPlaceholder(
-                "BC Parks park",
-                selectedPark,
-                "Select a park...",
-              )}
-              className="bcgov-select"
-              isMulti
-              isClearable
-              hideSelectedOptions={false}
-              controlShouldRenderValue={false}
-              closeMenuOnSelect={false}
-              styles={{
-                menu: (base) => ({ ...base, zIndex: 999 }),
               }}
             />
           </div>
