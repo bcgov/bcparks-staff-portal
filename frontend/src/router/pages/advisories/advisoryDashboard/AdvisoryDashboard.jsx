@@ -14,6 +14,7 @@ import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
 import StatusBadge from "@/components/StatusBadge";
+import FilterStatus from "@/components/advisories/shared/filterStatus/FilterStatus";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Badge from "react-bootstrap/Badge";
@@ -906,6 +907,66 @@ export default function AdvisoryDashboard() {
               }
             />
           </div>
+          <FilterStatus
+            totalResults={totalPublicAdvisories}
+            selectedRegion={selectedRegion}
+            onClearRegion={() => {
+              setSelectedRegion(null);
+              setSelectedRegionId(0);
+              setSelectedPark(null);
+              setSelectedParkId(0);
+              setCurrentPage(1);
+              setStoredFilters((currentFilters) => {
+                const nonPageFilters = currentFilters.filter(
+                  (o) => o.type !== "page",
+                );
+
+                return [
+                  ...nonPageFilters,
+                  {
+                    type: "page",
+                    filterName: "region",
+                    filterValue: 0,
+                  },
+                  {
+                    type: "page",
+                    filterName: "park",
+                    filterValue: 0,
+                  },
+                ];
+              });
+            }}
+            selectedPark={selectedPark}
+            onClearPark={() => {
+              setSelectedPark(null);
+              setSelectedParkId(0);
+              setCurrentPage(1);
+              setStoredFilters((currentFilters) => {
+                const nonParkPageFilters = currentFilters.filter(
+                  (o) => !(o.type === "page" && o.filterName === "park"),
+                );
+
+                return [
+                  ...nonParkPageFilters,
+                  {
+                    type: "page",
+                    filterName: "park",
+                    filterValue: 0,
+                  },
+                ];
+              });
+            }}
+            hasAnyFilters={selectedRegion || selectedPark}
+            onClearAll={() => {
+              setSelectedRegion(null);
+              setSelectedRegionId(0);
+              setSelectedPark(null);
+              setSelectedParkId(0);
+              setTableFilterValues({});
+              setCurrentPage(1);
+              setStoredFilters(defaultPageFilters);
+            }}
+          />
         </div>
       </div>
       {
