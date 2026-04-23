@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { cmsAxios } from "@/lib/advisories/axios_config";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
@@ -53,7 +54,9 @@ async function fetchParkAccessStatus() {
 }
 
 export default function ParkAccessStatus() {
+  const ALL_PAGE_SIZE = -1;
   const STALE_TIME_MILLISECONDS = 10 * 60 * 1000; // 10 minutes
+  const [pageSize, setPageSize] = useState(50);
   const { isLoading, data } = useQuery({
     queryKey: ["parkAccessStatus"],
     queryFn: fetchParkAccessStatus,
@@ -92,8 +95,11 @@ export default function ParkAccessStatus() {
                   exportPdf(cols, datas, title, exportFilename),
               },
             ]}
-            pageSize={50}
-            pageSizeOptions={[25, 50, 100]}
+            pageSize={pageSize}
+            pageSizeOptions={[25, 50, ALL_PAGE_SIZE]}
+            onPageSizeChange={(next) => {
+              setPageSize(next);
+            }}
             columns={[
               {
                 title: "ORCS",
