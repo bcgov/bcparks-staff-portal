@@ -26,10 +26,6 @@ const COLUMN_FILTERS = [
     }),
   },
   {
-    key: "endDate",
-    build: (value) => ({ endDate: { $containsi: toIsoDateFilter(value) } }),
-  },
-  {
     key: "expiryDate",
     build: (value) => ({ expiryDate: { $containsi: toIsoDateFilter(value) } }),
   },

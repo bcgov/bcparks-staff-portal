@@ -21,7 +21,8 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
     publicAdvisory.associatedResources =
       publicAdvisory.protectedAreas.map((p) => p.protectedAreaName).join(", ") +
         publicAdvisory.regions.map((r) => r.regionName).join(", ") ||
-      publicAdvisory.recreationResources.map((r) => r.resourceName).join(", ");
+      publicAdvisory.recreationResources.map((r) => r.resourceName).join(", ") +
+        publicAdvisory.recreationResources.map((r) => r.district).join(", ");
 
     let regionsWithParkCount = [];
 

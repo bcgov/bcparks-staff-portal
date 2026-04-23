@@ -344,7 +344,6 @@ export default function AdvisoryDashboard() {
               "advisoryDate",
               "title",
               "effectiveDate",
-              "endDate",
               "expiryDate",
               "updatedAt",
             ],
@@ -357,6 +356,7 @@ export default function AdvisoryDashboard() {
               eventType: { fields: ["eventType"] },
               urgency: { fields: ["urgency"] },
               regions: { fields: ["regionName"] },
+              recreationDistricts: { fields: ["district"] },
             },
             filters: {
               $and: [
