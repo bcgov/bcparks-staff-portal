@@ -34,7 +34,7 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
     }
 
     publicAdvisory.archived =
-      publicAdvisory.advisoryStatus.code === "INA" &&
+      publicAdvisory.advisoryStatus.code === "UNP" &&
       publicAdvisory.updatedAt < standardInactiveAdvisoryCutoffDate;
 
     return publicAdvisory;

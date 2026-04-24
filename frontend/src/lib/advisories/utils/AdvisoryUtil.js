@@ -53,7 +53,7 @@ export function getSubmitterAdvisoryFields(
     setConfirmationText("Your advisory has been published successfully!");
     published = moment().tz("America/Vancouver");
   } else {
-    status = advisoryStatuses.filter((s) => s.code === "ARQ");
+    status = advisoryStatuses.filter((s) => s.code === "HQR");
     setConfirmationText("Your advisory has been sent for review successfully!");
   }
   return { status: status[0].value, published };

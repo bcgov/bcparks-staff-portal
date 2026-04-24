@@ -556,33 +556,34 @@ export default function Advisory({ mode }) {
 
           setUrgencies([...newUrgencies]);
           const advisoryStatusData = res[11];
-          const restrictedAdvisoryStatusCodes = new Set(["INA", "APR"]);
-          const desiredOrder = ["PUB", "INA", "DFT", "APR", "ARQ"];
+          const restrictedAdvisoryStatusCodes = new Set(["UNP", "SCH"]);
+          const desiredOrder = ["PUB", "UNP", "DFT", "SCH", "HQR"];
           const tempAdvisoryStatuses = advisoryStatusData.map((s) => {
-            let result = {};
-
             if (restrictedAdvisoryStatusCodes.has(s.code) && approver) {
-              result = {
-                code: s.code,
-                label: camelCaseToSentenceCase(s.advisoryStatus),
-                value: s.documentId,
-              };
-            } else if (!restrictedAdvisoryStatusCodes.has(s.code)) {
-              result = {
+              return {
                 code: s.code,
                 label: camelCaseToSentenceCase(s.advisoryStatus),
                 value: s.documentId,
               };
             }
-            return result;
+            if (!restrictedAdvisoryStatusCodes.has(s.code)) {
+              return {
+                code: s.code,
+                label: camelCaseToSentenceCase(s.advisoryStatus),
+                value: s.documentId,
+              };
+            }
+            return null;
           });
-          const sortedStatus = tempAdvisoryStatuses.sort(
+          const filteredStatuses = tempAdvisoryStatuses.filter(
+            (s) => s !== null,
+          );
+          const sortedStatus = filteredStatuses.sort(
             (a, b) =>
               desiredOrder.indexOf(a.code) - desiredOrder.indexOf(b.code),
           );
-          const newAdvisoryStatuses = sortedStatus.filter((s) => s !== null);
 
-          setAdvisoryStatuses([...newAdvisoryStatuses]);
+          setAdvisoryStatuses([...sortedStatus]);
           const linkTypeData = res[12];
           const newLinkTypes = linkTypeData.map((lt) => ({
             label: lt.type,
