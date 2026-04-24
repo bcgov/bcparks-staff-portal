@@ -1,3 +1,23 @@
+.advisory-form {
+  // Description below a form label
+  .field-description {
+    font-size: 0.8em;
+  }
+
+  // Sub-section headings: similar to section headings without the bg color
+  .sub-section-heading {
+    font-weight: bold;
+    font-size: 1.125rem;
+    margin: 32px 0;
+    padding: 4px 16px;
+  }
+
+  // Read-only field: use "disabled" background color
+  .standard-message-preview {
+    background: var(--surface-color-primary-disabled);
+  }
+}
+
 .button-row {
   text-align: center !important;
   align-items: center !important;
