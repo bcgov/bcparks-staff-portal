@@ -94,8 +94,10 @@
   }
 
   .urgency-column {
-    padding-left: 10px;
-    width: 2px;
+    position: absolute;
+    inset: 0;
+    // same width as the urgency border
+    left: -8px;
   }
 
   .page-loader {

@@ -1,9 +1,8 @@
 import { useMemo, useEffect } from "react";
-import { Outlet, Link } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import "./MainLayout.scss";
-import logo from "@/assets/bc-parks-logo.svg";
-import logoVertical from "@/assets/bc-parks-logo-vertical.svg";
 import FlashMessage from "@/components/FlashMessage";
+import HeaderTitle from "@/components/HeaderTitle";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { Alert } from "react-bootstrap";
@@ -56,29 +55,7 @@ export default function MainLayoutPublic() {
     <FlashMessageContext.Provider value={flashMessageContextValue}>
       <div className="layout main">
         <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
-          <Link
-            to={`/`}
-            className="d-inline-block d-flex align-items-center align-items-md-end logo-link"
-            href="/"
-          >
-            <img
-              className="d-block d-md-none"
-              src={logoVertical}
-              height="60"
-              alt="BC Parks logo"
-            />
-            {/* swap logo images on larger screens */}
-            <img
-              className="d-none d-md-block"
-              src={logo}
-              height="60"
-              alt="BC Parks logo"
-            />
-
-            <div className="app-title text-white mx-3 mx-md-1">
-              Staff web portal
-            </div>
-          </Link>
+          <HeaderTitle />
         </header>
 
         {!isProduction && (

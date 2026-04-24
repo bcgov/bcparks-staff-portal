@@ -4,4 +4,28 @@
     background-color: var(--surface-color-primary-disabled);
     color: var(--typography-color-primary) !important;
   }
+
+  &.advisory-status-badge {
+    font-size: 15px;
+    color: var(--typography-color-primary) !important;
+    &.status-draft {
+      background-color: var(--theme-gold-50) !important;
+    }
+    // status-hq-review
+    &.status-requested {
+      background-color: rgba(199, 199, 199, 0.8) !important;
+    }
+    // status-scheduled
+    &.status-approved {
+      background-color: var(--bc-standard-03100, #E0EBDB) !important;
+    }
+    &.status-published {
+      background-color: var(--primary-light-blue, #C7E3FD) !important;
+    }
+    // status-inactive
+    &.status-inactive,
+    &.status-archived {
+      background-color: var(--secondary-light-brown-01, #F2F0EB) !important;
+    }
+  }
 }

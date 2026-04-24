@@ -3,9 +3,9 @@ import PropTypes from "prop-types";
 import * as STATUS from "@/constants/seasonStatus.js";
 import "./StatusBadge.scss";
 
-export default function StatusBadge({ status }) {
+export default function StatusBadge({ status, label, className }) {
   let colorClass = "text-bg-dark";
-  let label = status;
+  let badgeLabel = label ?? status;
 
   // Don't render anything if the status is null
   if (!status) {
@@ -40,7 +40,7 @@ export default function StatusBadge({ status }) {
     const { cssClass, displayText } = statusMap.get(status);
 
     colorClass = cssClass;
-    label = displayText;
+    badgeLabel = label ?? displayText;
   }
 
   const classes = classNames([
@@ -48,11 +48,19 @@ export default function StatusBadge({ status }) {
     "rounded-pill",
     "status-badge",
     colorClass,
+    className,
   ]);
 
-  return <span className={classes}>{label}</span>;
+  return <span className={classes}>{badgeLabel}</span>;
 }
 
 StatusBadge.propTypes = {
   status: PropTypes.string,
+  label: PropTypes.string,
+  className: PropTypes.string,
+};
+
+StatusBadge.defaultProps = {
+  label: null,
+  className: "",
 };
