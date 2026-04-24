@@ -1,15 +1,42 @@
 .advisory-form {
+  .form-group {
+    &:not(:last-of-type) {
+      margin-bottom: 1rem;
+    }
+
+    .form-label,
+    label {
+      // override "important" styles from the Bootstrap theme
+      font-size: 0.85em !important;
+    }
+  }
+
+  section {
+    padding: 1rem;
+    max-width: 40em;
+
+    &:not(:last-of-type) {
+      margin-bottom: 2rem;
+    }
+
+    border: var(--layout-border-width-small) solid transparent;
+    border-radius: var(--layout-border-radius-large);
+
+    &.shown-on-public-site {
+      border: var(--layout-border-width-small) solid
+        var(--surface-color-border-default);
+    }
+  }
+
   // Description below a form label
   .field-description {
     font-size: 0.8em;
   }
 
-  // Sub-section headings: similar to section headings without the bg color
-  .sub-section-heading {
-    font-weight: bold;
-    font-size: 1.125rem;
-    margin: 32px 0;
-    padding: 4px 16px;
+  .sub-section {
+    background: var(--color-background-grey);
+    padding: 1rem;
+    margin-bottom: 1rem;
   }
 
   // Read-only field: use "disabled" background color
@@ -86,10 +113,6 @@
   display: flex;
 }
 
-.ad-link-close {
-  margin-left: auto !important;
-}
-
 .ad-flex-wrap {
   flex-wrap: wrap !important;
 }
@@ -127,10 +150,6 @@
 }
 
 .ad-af-hour-box {
-  margin-top: 10px !important;
-}
-
-.ad-af-hour-box .field-bg-blue {
   padding: 15px;
 }
 
@@ -145,10 +164,6 @@
 .ad-interval-select {
   width: 100% !important;
   margin-left: 8px !important;
-}
-
-.ad-link-select {
-  width: calc(100% - 48px) !important;
 }
 
 .ad-link-group div {
@@ -168,14 +183,6 @@
   border-radius: 100px !important;
   border: 1px solid var(--color-med-grey);
   padding: 0 16px;
-}
-
-.ad-add-link.add-file {
-  margin-right: 16px;
-}
-
-.ad-add-link.add-url {
-  margin-left: 16px;
 }
 
 .clear-url-btn {

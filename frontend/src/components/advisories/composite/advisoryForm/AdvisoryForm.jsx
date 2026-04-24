@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import "./AdvisoryForm.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
@@ -28,6 +29,7 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 import useAccess from "@/hooks/useAccess";
+import { ROLES } from "@/config/permissions";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import AdvisoryAreaPicker from "@/components/advisories/composite/advisoryAreaPicker/AdvisoryAreaPicker";
 import CKEditor from "@/components/advisories/composite/ckeditor/CKEditor";
@@ -187,11 +189,6 @@ export default function AdvisoryForm({
     endDate: { value: endDate, setError: setEndDateError },
     expiryDate: { value: expiryDate, setError: setExpiryDateError },
     updatedDate: { value: updatedDate, setError: setUpdatedDateError },
-    submittedBy: {
-      value: submittedBy,
-      setError: setSubmittedByError,
-      text: "requested by",
-    },
     advisoryStatus: {
       value: advisoryStatus,
       setError: setAdvisoryStatusError,
@@ -377,9 +374,9 @@ export default function AdvisoryForm({
   }, [selectedDisplayedDateOption]);
 
   return (
-    <form className="mt-5">
-      <div className="container-fluid ad-form advisory-form">
-        <div className="row heading">Affected area</div>
+    <form className="advisory-form">
+      <section>
+        <h3>Affected area</h3>
         <AdvisoryAreaPicker
           data={{
             protectedAreas,
@@ -410,17 +407,15 @@ export default function AdvisoryForm({
             protectedAreaError,
           }}
         />
-        <div className="row heading">Public advisory / closure content</div>
-        <div className="row">
-          <div className="col-12">
-            <p>This information is displayed on the public website.</p>
-          </div>
-        </div>
+      </section>
 
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            <span className="append-required">Resource status</span>
+      <section className="shown-on-public-site">
+        <h3>Public advisory / closure content</h3>
+        <p>This information is displayed on the public website.</p>
 
+        <Form.Group className="form-group" controlId="resource-status">
+          <Form.Label>
+            Resource status{" "}
             <LightTooltip
               arrow
               title="This status describes how the advisory event affects access to the park.
@@ -430,22 +425,21 @@ export default function AdvisoryForm({
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Select
-              options={accessStatuses}
-              value={accessStatuses.filter((e) => e.value === accessStatus)}
-              onChange={(e) => setAccessStatus(e ? e.value : 0)}
-              placeholder="Select resource status"
-              className="bcgov-select"
-            />
-          </div>
-        </div>
+          </Form.Label>
 
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+          <Select
+            id="resource-status"
+            options={accessStatuses}
+            value={accessStatuses.filter((e) => e.value === accessStatus)}
+            onChange={(e) => setAccessStatus(e ? e.value : 0)}
+            placeholder="Select resource status"
+            className="bcgov-select"
+          />
+        </Form.Group>
+
+        <Form.Group className="form-group" controlId="event-type">
+          <Form.Label>
             <span className="append-required">Event type</span>
-
             <LightTooltip
               arrow
               title="Please select the most appropriate event type that your advisory falls under, this does impact the front-end.
@@ -453,55 +447,51 @@ export default function AdvisoryForm({
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <div
-              className={`bcgov-select-form ${
-                eventTypeError !== "" ? "bcgov-select-error" : ""
-              }`}
-            >
-              <Select
-                options={eventTypes}
-                value={eventTypes.filter((e) => e.value === eventType)}
-                onChange={(e) => setEventType(e ? e.value : 0)}
-                placeholder="Select an event type"
-                className="bcgov-select"
-                onBlur={() => {
-                  validateRequiredSelect(advisoryData.eventType);
-                }}
-                isClearable
-              />
-              {renderHelperText(eventTypeError, eventTypeError !== "")}
-            </div>
-          </div>
-        </div>
-
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            <span className="append-required">Headline</span>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Form.Control
-              value={headline}
-              onChange={(event) => {
-                setHeadline(event.target.value);
-              }}
-              className={getControlClassName(headlineError !== "")}
-              maxLength={255}
-              id={headlineInput.id}
-              required={headlineInput.required}
+          </Form.Label>
+          <div
+            className={classNames({
+              "bcgov-select-error": eventTypeError !== "",
+            })}
+          >
+            <Select
+              id="event-type"
+              options={eventTypes}
+              value={eventTypes.filter((e) => e.value === eventType)}
+              onChange={(e) => setEventType(e ? e.value : 0)}
+              placeholder="Select an event type"
+              className="bcgov-select"
               onBlur={() => {
-                validateRequiredText(advisoryData.headline);
+                validateRequiredSelect(advisoryData.eventType);
               }}
+              isClearable
             />
-            {renderHelperText(headlineError, headlineError !== "")}
+            {renderHelperText(eventTypeError, eventTypeError !== "")}
           </div>
-        </div>
+        </Form.Group>
 
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+        <Form.Group className="form-group">
+          <Form.Label htmlFor={headlineInput.id}>
+            <span className="append-required">Headline</span>
+          </Form.Label>
+          <Form.Control
+            value={headline}
+            onChange={(event) => {
+              setHeadline(event.target.value);
+            }}
+            className={getControlClassName(headlineError !== "")}
+            maxLength={255}
+            id={headlineInput.id}
+            required={headlineInput.required}
+            onBlur={() => {
+              validateRequiredText(advisoryData.headline);
+            }}
+          />
+          {renderHelperText(headlineError, headlineError !== "")}
+        </Form.Group>
+
+        <Form.Group className="form-group" controlId="urgency-level">
+          <Form.Label>
             <span className="append-required">Urgency level</span>
-
             <LightTooltip
               arrow
               title="Dependant on your advisory, the urgency level can be used to prioritize your alert above existing alerts for the same park page.
@@ -509,60 +499,58 @@ export default function AdvisoryForm({
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <div>
-              <ButtonGroup
-                className="urgency-btn-group"
-                aria-label="Urgency level"
-              >
-                {urgencies.map((u) => (
-                  <Btn
-                    key={u.value}
-                    onClick={() => {
-                      setUrgency(u.value);
-                    }}
-                    className={
-                      urgency === u.value ? `btn-urgency-${u.sequence}` : ""
-                    }
-                    variant="outline-secondary"
-                  >
-                    {urgency === u.value && (
-                      <FontAwesomeIcon icon={faCheck} className="me-1" />
+          </Form.Label>
+          <div>
+            <ButtonGroup
+              className="urgency-btn-group"
+              aria-label="Urgency level"
+            >
+              {urgencies.map((u) => (
+                <Btn
+                  key={u.value}
+                  onClick={() => {
+                    setUrgency(u.value);
+                  }}
+                  className={
+                    urgency === u.value ? `btn-urgency-${u.sequence}` : ""
+                  }
+                  variant="outline-secondary"
+                >
+                  {urgency === u.value && (
+                    <FontAwesomeIcon icon={faCheck} className="me-1" />
+                  )}
+                  {u.label}
+                </Btn>
+              ))}
+            </ButtonGroup>
+            {urgencies.map(
+              (u) =>
+                urgency === u.value && (
+                  <div key={u.value} className="urgency-helper-text mt-1">
+                    {u.sequence === 1 && (
+                      <small>Low urgency for discretion and warnings</small>
                     )}
-                    {u.label}
-                  </Btn>
-                ))}
-              </ButtonGroup>
-              {urgencies.map(
-                (u) =>
-                  urgency === u.value && (
-                    <div key={u.value} className="urgency-helper-text mt-1">
-                      {u.sequence === 1 && (
-                        <small>Low urgency for discretion and warnings</small>
-                      )}
-                      {u.sequence === 2 && (
-                        <small>
-                          Medium urgency for safety and health related
-                        </small>
-                      )}
-                      {u.sequence === 3 && (
-                        <small>
-                          High urgency for immediate danger and closures
-                        </small>
-                      )}
-                    </div>
-                  ),
-              )}
-              {renderHelperText(urgencyError, urgencyError !== "")}
-            </div>
+                    {u.sequence === 2 && (
+                      <small>
+                        Medium urgency for safety and health related
+                      </small>
+                    )}
+                    {u.sequence === 3 && (
+                      <small>
+                        High urgency for immediate danger and closures
+                      </small>
+                    )}
+                  </div>
+                ),
+            )}
+            {renderHelperText(urgencyError, urgencyError !== "")}
           </div>
-        </div>
+        </Form.Group>
 
-        <div className="row sub-section-heading">Description</div>
+        <h4>Description</h4>
 
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+        <Form.Group className="form-group" controlId="standard-messages">
+          <Form.Label>
             Standard message(s)
             <LightTooltip
               arrow
@@ -572,237 +560,244 @@ export default function AdvisoryForm({
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Select
-              options={standardMessages}
-              value={selectedStandardMessages}
-              onChange={(e) => {
-                setSelectedStandardMessages(e);
-              }}
-              placeholder="Add standard message(s)"
-              className="bcgov-select"
-              isMulti
-              isClearable
-            />
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+          </Form.Label>
+
+          <Select
+            id="standard-messages"
+            options={standardMessages}
+            value={selectedStandardMessages}
+            onChange={(e) => {
+              setSelectedStandardMessages(e);
+            }}
+            placeholder="Add standard message(s)"
+            className="bcgov-select"
+            isMulti
+            isClearable
+          />
+        </Form.Group>
+
+        <Form.Group className="form-group" controlId="custom-message">
+          <Form.Label>
             Custom message
             <br />
             <span className="field-description">
               Appears before any selected standard message(s)
             </span>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <CKEditor value={description} onChange={setDescription} />
-          </div>
-        </div>
+          </Form.Label>
+
+          <CKEditor
+            id="custom-message"
+            value={description}
+            onChange={setDescription}
+          />
+        </Form.Group>
 
         {/* Render a preview of selected standard messages */}
         {selectedStandardMessages.length > 0 && (
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              Standard message preview
+          <Form.Group
+            className="form-group"
+            controlId="standard-message-preview"
+          >
+            <Form.Label>Standard message preview</Form.Label>
+            <div className="bcgov-textarea standard-message-preview">
+              {selectedStandardMessages.map((message, i) => (
+                <div
+                  key={i}
+                  className="standard-message"
+                  dangerouslySetInnerHTML={{
+                    __html: message.obj.description || "",
+                  }}
+                />
+              ))}
             </div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <div className="bcgov-textarea standard-message-preview">
-                {selectedStandardMessages.map((message, i) => (
-                  <div
-                    key={i}
-                    className="standard-message"
-                    dangerouslySetInnerHTML={{
-                      __html: message.obj.description || "",
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-          </div>
+          </Form.Group>
         )}
 
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+        <Form.Group className="form-group">
+          <Form.Label>
             Attach item(s) below the advisory/closure message
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            {linksRef.current.map((l, idx) => (
-              <div key={idx} className="field-bg-grey">
-                <div className="row">
-                  <div className="col-12 col-lg-3 col-md-2 ad-label">
-                    <span className="append-required">Type</span>
-                  </div>
-                  <div className="col-12 col-lg-9 col-md-10 d-flex">
-                    <div
-                      className={`bcgov-select-form ${
-                        linkTypeErrors[idx] ? "bcgov-select-error" : ""
-                      }`}
-                    >
-                      <Select
-                        options={linkTypes}
-                        onChange={(e) => {
-                          updateLink(idx, "type", e.value);
-                        }}
-                        value={linkTypes.filter((o) => o.value === l.type)}
-                        className="ad-link-select bcgov-select"
-                        placeholder="Link or document type"
-                        onBlur={() =>
-                          validateLink(l, idx, "type", setLinkTypeErrors)
-                        }
-                        styles={{
-                          menu: (base) => ({ ...base, zIndex: 999 }),
-                        }}
-                      />
-                      {renderHelperText(
-                        linkTypeErrors[idx] && "Please provide a link type",
-                        linkTypeErrors[idx],
-                      )}
-                    </div>
-                    <div
-                      className="ad-link-close ad-add-link pointer div-btn"
-                      tabIndex="0"
-                      onClick={() => {
-                        removeLink(idx);
+          </Form.Label>
+        </Form.Group>
+
+        {linksRef.current.map((l, idx) => (
+          <div key={idx} className="sub-section">
+            <Form.Group className="form-group" controlId={`link-type-${idx}`}>
+              <Form.Label>
+                <span className="append-required">Type</span>
+              </Form.Label>
+
+              <div className="d-flex">
+                <div
+                  className={classNames(
+                    "bcgov-select-form flex-grow-1 flex-shrink-1",
+                    {
+                      "bcgov-select-error": linkTypeErrors[idx],
+                    },
+                  )}
+                >
+                  <Select
+                    id={`link-type-${idx}`}
+                    options={linkTypes}
+                    onChange={(e) => {
+                      updateLink(idx, "type", e.value);
+                    }}
+                    value={linkTypes.filter((o) => o.value === l.type)}
+                    className="bcgov-select"
+                    placeholder="Link or document type"
+                    onBlur={() =>
+                      validateLink(l, idx, "type", setLinkTypeErrors)
+                    }
+                    styles={{
+                      menu: (base) => ({ ...base, zIndex: 999 }),
+                    }}
+                  />
+                  {renderHelperText(
+                    linkTypeErrors[idx] && "Please provide a link type",
+                    linkTypeErrors[idx],
+                  )}
+                </div>
+
+                <button
+                  className="pointer btn flex-shrink-0 flex-grow-0 ms-2"
+                  tabIndex="0"
+                  style={{
+                    width: "36px",
+                    minWidth: "36px",
+                    maxWidth: "36px",
+                    height: "36px",
+                    display: "flex",
+                    alignSelf: "flex-start",
+                    justifyContent: "center",
+                    alignItems: "center",
+                  }}
+                  onClick={() => {
+                    removeLink(idx);
+                  }}
+                >
+                  <FontAwesomeIcon icon={faXmark} />
+                </button>
+              </div>
+            </Form.Group>
+
+            <Form.Group className="form-group" controlId={`link-title-${idx}`}>
+              <Form.Label>
+                <span className="append-required">Title</span>
+              </Form.Label>
+
+              <Form.Control
+                value={l.title}
+                onChange={(event) => {
+                  updateLink(idx, "title", event.target.value);
+                }}
+                className={getControlClassName(linkTitleErrors[idx])}
+                maxLength={255}
+                required={linkTitleInput.required}
+                onBlur={() => validateLink(l, idx, "title", setLinkTitleErrors)}
+              />
+              {renderHelperText(
+                linkTitleErrors[idx] && "Please provide a link title",
+                linkTitleErrors[idx],
+              )}
+            </Form.Group>
+
+            {l.format !== "file" && !hasFileDeleted[idx] ? (
+              <Form.Group className="form-group">
+                <Form.Label htmlFor={`${linkUrlInput.id}-${idx}`}>
+                  <span className="append-required">URL</span>
+                </Form.Label>
+
+                <InputGroup>
+                  <Form.Control
+                    value={l.file ? l.file.url : l.url}
+                    onChange={(event) => {
+                      updateLink(idx, "url", event.target.value);
+                    }}
+                    className={getControlClassName(linkUrlErrors[idx], "url")}
+                    onBlur={() => validateLink(l, idx, "url", setLinkUrlErrors)}
+                    maxLength={255}
+                    id={`${linkUrlInput.id}-${idx}`}
+                    required={linkUrlInput.required}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (isFile(l.url)) {
+                        setHasFileDeleted((prev) => {
+                          hasFileDeleted[idx] = true;
+                          return [...prev];
+                        });
+                      }
+                      updateLink(idx, "url", "");
+                    }}
+                    className="clear-url-btn"
+                    aria-label="Clear URL"
+                  >
+                    <FontAwesomeIcon icon={faXmark} />
+                  </button>
+                </InputGroup>
+                {renderHelperText(
+                  linkUrlErrors[idx] && "Please provide a URL",
+                  linkUrlErrors[idx],
+                )}
+              </Form.Group>
+            ) : (
+              <Form.Group className="form-group">
+                <Form.Label htmlFor={`file-upload-${idx}`}>
+                  <span className="append-required">File</span>
+                </Form.Label>
+
+                {l.file ? (
+                  <InputGroup>
+                    <Form.Control
+                      value={l.file ? l.file.name : ""}
+                      className={getControlClassName(false)}
+                      readOnly
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        updateLink(idx, "file", "");
+                        validateLink(l, idx, "file", setLinkFileErrors);
                       }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          removeLink(idx);
-                        }
-                      }}
+                      className="clear-url-btn"
+                      aria-label="Clear file"
                     >
                       <FontAwesomeIcon icon={faXmark} />
-                    </div>
-                  </div>
-                </div>
-                <div className="row">
-                  <div className="col-12 col-lg-3 col-md-2 ad-label">
-                    <span className="append-required">Title</span>
-                  </div>
-                  <div className="col-12 col-lg-9 col-md-10">
-                    <Form.Control
-                      value={l.title}
-                      onChange={(event) => {
-                        updateLink(idx, "title", event.target.value);
-                      }}
-                      className={getControlClassName(linkTitleErrors[idx])}
-                      maxLength={255}
-                      id={linkTitleInput.id}
-                      required={linkTitleInput.required}
-                      onBlur={() =>
-                        validateLink(l, idx, "title", setLinkTitleErrors)
-                      }
-                    />
-                    {renderHelperText(
-                      linkTitleErrors[idx] && "Please provide a link title",
-                      linkTitleErrors[idx],
-                    )}
-                  </div>
-                </div>
-                {l.format !== "file" && !hasFileDeleted[idx] ? (
-                  <div className="row">
-                    <div className="col-12 col-lg-3 col-md-2 ad-label">
-                      <span className="append-required">URL</span>
-                    </div>
-                    <div className="col-12 col-lg-9 col-md-10">
-                      <InputGroup>
-                        <Form.Control
-                          value={l.file ? l.file.url : l.url}
-                          onChange={(event) => {
-                            updateLink(idx, "url", event.target.value);
-                          }}
-                          className={getControlClassName(
-                            linkUrlErrors[idx],
-                            "url",
-                          )}
-                          onBlur={() =>
-                            validateLink(l, idx, "url", setLinkUrlErrors)
-                          }
-                          maxLength={255}
-                          id={linkUrlInput.id}
-                          required={linkUrlInput.required}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => {
-                            if (isFile(l.url)) {
-                              setHasFileDeleted((prev) => {
-                                hasFileDeleted[idx] = true;
-                                return [...prev];
-                              });
-                            }
-                            updateLink(idx, "url", "");
-                          }}
-                          className="clear-url-btn"
-                          aria-label="Clear URL"
-                        >
-                          <FontAwesomeIcon icon={faXmark} />
-                        </button>
-                      </InputGroup>
-                      {renderHelperText(
-                        linkUrlErrors[idx] && "Please provide a URL",
-                        linkUrlErrors[idx],
-                      )}
-                    </div>
-                  </div>
+                    </button>
+                  </InputGroup>
                 ) : (
-                  <div className="row">
-                    <div className="col-12 col-lg-3 col-md-2 ad-label">
-                      <span className="append-required">File</span>
-                    </div>
-                    <div className="col-12 col-lg-9 col-md-8 ad-flex">
-                      {l.file ? (
-                        <InputGroup>
-                          <Form.Control
-                            value={l.file ? l.file.name : ""}
-                            className={getControlClassName(false)}
-                            readOnly
-                          />
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              updateLink(idx, "file", "");
-                              validateLink(l, idx, "file", setLinkFileErrors);
-                            }}
-                            className="clear-url-btn"
-                            aria-label="Clear file"
-                          >
-                            <FontAwesomeIcon icon={faXmark} />
-                          </button>
-                        </InputGroup>
-                      ) : (
-                        <>
-                          <input
-                            id="file-upload"
-                            hidden
-                            type="file"
-                            accept=".jpg,.gif,.png,.gif,.pdf"
-                            onChange={(e) => {
-                              handleFileCapture(e.target.files, idx);
-                            }}
-                          />
-                          <label htmlFor="file-upload" className="mb-0">
-                            <Btn
-                              variant="outline-secondary"
-                              as="span"
-                              className="ad-add-link add-file"
-                            >
-                              Browse
-                            </Btn>
-                            {linkFileErrors[idx] && (
-                              <span className="d-block text-danger ad-helper-text">
-                                Please upload file too
-                              </span>
-                            )}
-                          </label>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  <>
+                    <input
+                      id={`file-upload-${idx}`}
+                      hidden
+                      type="file"
+                      accept=".jpg,.gif,.png,.gif,.pdf"
+                      onChange={(e) => {
+                        handleFileCapture(e.target.files, idx);
+                      }}
+                    />
+                    <Btn
+                      variant="outline-secondary"
+                      as="span"
+                      className="ad-add-link add-file ms-2"
+                    >
+                      Browse
+                    </Btn>
+                    {linkFileErrors[idx] && (
+                      <span className="d-block text-danger ad-helper-text">
+                        Please upload file too
+                      </span>
+                    )}
+                  </>
                 )}
-              </div>
-            ))}
+              </Form.Group>
+            )}
+          </div>
+        ))}
+
+        <Form.Group className="form-group">
+          <div className="d-flex align-items-center justify-content-center">
             <input
               id="file-upload"
               hidden
@@ -832,7 +827,7 @@ export default function AdvisoryForm({
                 + Upload file
               </Btn>
             </label>
-            <span>OR</span>
+            <span className="mx-2">OR</span>
             <Btn
               variant="outline-secondary"
               className="ad-add-link add-url"
@@ -848,333 +843,346 @@ export default function AdvisoryForm({
               Add URL
             </Btn>
           </div>
-        </div>
+        </Form.Group>
+      </section>
 
-        <div className="row sub-section-heading">Advisory / Closure dates</div>
+      <section>
+        <h3>Advisory / Closure dates</h3>
 
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label pt-4">
-            Event dates
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <div className="field-bg-grey">
-              <div className="row">
-                <div className="col-12 col-lg-3 col-md-4 ad-label">
-                  Start date
-                </div>
-                <div className="col-12 col-lg-5 col-md-8">
-                  <DatePicker
-                    id="startDate"
-                    selected={startDate}
-                    onChange={(date) => {
-                      setStartDate(date);
-                    }}
-                    dateFormat="MMMM d, yyyy"
-                    maxDate={endDate}
-                    className={`${startDateError !== "" ? "error" : ""}`}
-                    onBlur={() => {
-                      validateOptionalDate(advisoryData.startDate);
-                      validateDisplayedDate(advisoryData.displayedDate);
-                    }}
-                  />
-                  {renderHelperText("month dd, yyyy")}
-                </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
-                <div className="col-12 col-lg-3 col-md-8">
-                  <DatePicker
-                    selected={startDate}
-                    onChange={(date) => setStartDate(date)}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeCaption="Time"
-                    dateFormat="h:mm aa"
-                    className={`${startDateError !== "" ? "error" : ""}`}
-                  />
-                  {renderHelperText("hh:mm aa")}
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-12 col-lg-3 col-md-4 ad-label">
-                  End date
-                  <LightTooltip
-                    arrow
-                    title="Enter the event's end date.
+        <div className="sub-section">
+          <h5>Event dates</h5>
+
+          <Form.Group className="form-group" controlId="event-start-date">
+            <Form.Label>Start date</Form.Label>
+            <DatePicker
+              id="start-date"
+              selected={startDate}
+              onChange={(date) => {
+                setStartDate(date);
+              }}
+              dateFormat="MMMM d, yyyy"
+              maxDate={endDate}
+              className={`${startDateError !== "" ? "error" : ""}`}
+              onBlur={() => {
+                validateOptionalDate(advisoryData.startDate);
+                validateDisplayedDate(advisoryData.displayedDate);
+              }}
+            />
+            {renderHelperText("month dd, yyyy")}
+          </Form.Group>
+          <Form.Group className="form-group">
+            <Form.Label htmlFor="event-start-time">Time</Form.Label>
+
+            <DatePicker
+              id="event-start-time"
+              selected={startDate}
+              onChange={(date) => setStartDate(date)}
+              showTimeSelect
+              showTimeSelectOnly
+              timeIntervals={15}
+              timeCaption="Time"
+              dateFormat="h:mm aa"
+              className={`${startDateError !== "" ? "error" : ""}`}
+            />
+            {renderHelperText("hh:mm aa")}
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="event-end-date">
+            <Form.Label>
+              End date
+              <LightTooltip
+                arrow
+                title="Enter the event's end date.
                       If end date is unknown, enter a date when the advisory should be reviewed for relevance."
-                  >
-                    <FontAwesomeIcon
-                      icon={faCircleQuestion}
-                      className="helpIcon"
-                    />
-                  </LightTooltip>
-                </div>
-                <div className="col-12 col-lg-5 col-md-8">
-                  <DatePicker
-                    id="endDate"
-                    selected={endDate}
-                    onChange={(date) => {
-                      setEndDate(date);
-                    }}
-                    dateFormat="MMMM d, yyyy"
-                    minDate={startDate}
-                    className={`${endDateError !== "" ? "error" : ""}`}
-                    onBlur={() => {
-                      validateOptionalDate(advisoryData.endDate);
-                      validateDisplayedDate(advisoryData.displayedDate);
-                    }}
-                  />
-                  {renderHelperText("month dd, yyyy")}
-                  {endDateError !== "" &&
-                    renderHelperText(
-                      "End date should not be before Posting date",
-                      true,
-                    )}
-                </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
-                <div className="col-12 col-lg-3 col-md-8">
-                  <DatePicker
-                    selected={endDate}
-                    onChange={(date) => setEndDate(date)}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeCaption="Time"
-                    dateFormat="h:mm aa"
-                    className={`${endDateError !== "" ? "error" : ""}`}
-                  />
-                  {renderHelperText("hh:mm aa")}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Displayed date
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <div
-              className={`bcgov-select-form ${
-                displayedDateError !== "" ? "bcgov-select-error" : ""
-              }`}
-            >
-              <Select
-                options={displayedDateOptions}
-                defaultValue={getDisplayedDate()}
-                onChange={(e) => {
-                  setSelectedDisplayedDateOption(e.value);
-                }}
-                className="bcgov-select"
-                onBlur={() => {
-                  validateDisplayedDate(advisoryData.displayedDate);
-                }}
-              />
-              {renderHelperText(displayedDateError, displayedDateError !== "")}
-            </div>
-          </div>
-        </div>
-        <div className="row heading">Internal details</div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label pt-4">
-            Post dates
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <div className="field-bg-grey">
-              <div className="row">
-                <div className="col-12 col-lg-3 col-md-4 ad-label">
-                  <span className="append-required">Posting date</span>
-                </div>
-                <div className="col-12 col-lg-5 col-md-8">
-                  <DatePicker
-                    id="advisoryDate"
-                    selected={advisoryDate}
-                    onChange={(date) => {
-                      handleAdvisoryDateChange(date);
-                    }}
-                    dateFormat="MMMM d, yyyy"
-                    maxDate={expiryDate}
-                    className={`${advisoryDateError !== "" ? "error" : ""}`}
-                    onBlur={() => {
-                      validateRequiredDate(advisoryData.advisoryDate);
-                      validateDisplayedDate(advisoryData.displayedDate);
-                    }}
-                  />
-                  {renderHelperText("month dd, yyyy")}
-                  {advisoryDateError !== "" &&
-                    renderHelperText("Please enter valid date", true)}
-                </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
-                <div className="col-12 col-lg-3 col-md-8">
-                  <DatePicker
-                    selected={advisoryDate}
-                    onChange={(date) => handleAdvisoryDateChange(date)}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeCaption="Time"
-                    dateFormat="h:mm aa"
-                    className={`${advisoryDateError !== "" ? "error" : ""}`}
-                  />
-                  {renderHelperText("hh:mm aa")}
-                </div>
-              </div>
-              <div className="row">
-                <div className="col-12 col-lg-3 col-md-4 ad-label">
-                  Expiry date
-                  <LightTooltip
-                    arrow
-                    title="The advisory will be automatically removed on this date."
-                  >
-                    <FontAwesomeIcon
-                      icon={faCircleQuestion}
-                      className="helpIcon"
-                    />
-                  </LightTooltip>
-                </div>
-                <div className="col-12 col-lg-5 col-md-8">
-                  <DatePicker
-                    id="expiryDate"
-                    selected={expiryDate}
-                    onChange={(date) => {
-                      setExpiryDate(date);
-                    }}
-                    dateFormat="MMMM d, yyyy"
-                    minDate={advisoryDate}
-                    className={`${expiryDateError !== "" ? "error" : ""}`}
-                    onBlur={() => {
-                      validateOptionalDate(advisoryData.expiryDate);
-                    }}
-                  />
-                  {renderHelperText("month dd, yyyy")}
-                  {expiryDateError !== "" &&
-                    renderHelperText(
-                      "Expiry date should not be before Posting date",
-                      true,
-                    )}
-                </div>
-                <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
-                <div className="col-12 col-lg-3 col-md-8">
-                  <DatePicker
-                    selected={expiryDate}
-                    onChange={(date) => {
-                      setExpiryDate(date);
-                    }}
-                    showTimeSelect
-                    showTimeSelectOnly
-                    timeIntervals={15}
-                    timeCaption="Time"
-                    dateFormat="h:mm aa"
-                    className={`${expiryDateError !== "" ? "error" : ""}`}
-                  />
-                  {renderHelperText("hh:mm aa")}
-                </div>
-              </div>
-              {mode === "update" && (
-                <div className="row">
-                  <div className="col-12 col-lg-3 col-md-4 ad-label">
-                    Updated date
-                  </div>
-                  <div className="col-12 col-lg-5 col-md-8">
-                    <DatePicker
-                      id="updatedDate"
-                      selected={updatedDate}
-                      onChange={(date) => {
-                        setUpdatedDate(date);
-                      }}
-                      dateFormat="MMMM d, yyyy"
-                      minDate={advisoryDate}
-                      className={`${updatedDateError !== "" ? "error" : ""}`}
-                      onBlur={() => {
-                        validateOptionalDate(advisoryData.updatedDate);
-                        validateDisplayedDate(advisoryData.displayedDate);
-                      }}
-                    />
-                    {renderHelperText("month dd, yyyy")}
-                  </div>
-                  <div className="col-12 col-lg-1 col-md-4 ad-label">Time</div>
-                  <div className="col-12 col-lg-3 col-md-8">
-                    <DatePicker
-                      selected={updatedDate}
-                      onChange={(date) => {
-                        setUpdatedDate(date);
-                      }}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      timeCaption="Time"
-                      dateFormat="h:mm aa"
-                      className={`${updatedDateError !== "" ? "error" : ""}`}
-                    />
-                    {renderHelperText("hh:mm aa")}
-                  </div>
-                </div>
+              >
+                <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+              </LightTooltip>
+            </Form.Label>
+
+            <DatePicker
+              id="event-end-date"
+              selected={endDate}
+              onChange={(date) => {
+                setEndDate(date);
+              }}
+              dateFormat="MMMM d, yyyy"
+              minDate={startDate}
+              className={`${endDateError !== "" ? "error" : ""}`}
+              onBlur={() => {
+                validateOptionalDate(advisoryData.endDate);
+                validateDisplayedDate(advisoryData.displayedDate);
+              }}
+            />
+            {renderHelperText("month dd, yyyy")}
+            {endDateError !== "" &&
+              renderHelperText(
+                "End date should not be before Posting date",
+                true,
               )}
-            </div>
-          </div>
+          </Form.Group>
+
+          <Form.Group className="form-group">
+            <Form.Label htmlFor="event-end-time">Time</Form.Label>
+
+            <DatePicker
+              id="event-end-time"
+              selected={endDate}
+              onChange={(date) => setEndDate(date)}
+              showTimeSelect
+              showTimeSelectOnly
+              timeIntervals={15}
+              timeCaption="Time"
+              dateFormat="h:mm aa"
+              className={`${endDateError !== "" ? "error" : ""}`}
+            />
+            {renderHelperText("hh:mm aa")}
+          </Form.Group>
         </div>
-        {hasAnyRole(["approver"]) && (
-          <>
-            <div className="row">
-              <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-                <span className="append-required">Advisory status</span>
-              </div>
-              <div className="col-lg-7 col-md-8 col-sm-12">
-                <div
-                  className={`bcgov-select-form ${
-                    advisoryStatusError !== "" ? "bcgov-select-error" : ""
-                  }`}
-                >
-                  <Select
-                    options={advisoryStatuses}
-                    value={advisoryStatuses.filter(
-                      (a) => a.value === advisoryStatus,
-                    )}
-                    onChange={(e) => setAdvisoryStatus(e ? e.value : 0)}
-                    placeholder="Select an advisory status"
-                    className="bcgov-select"
-                    onBlur={() => {
-                      validateRequiredSelect(advisoryData.advisoryStatus);
-                    }}
-                    isClearable
-                  />
-                  {renderHelperText(
-                    advisoryStatusError,
-                    advisoryStatusError !== "",
-                  )}
-                </div>
-              </div>
-            </div>
-            <div className="row">
-              <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-                <span className="append-required">Requested by</span>
-              </div>
-              <div className="col-lg-7 col-md-8 col-sm-12">
-                <Form.Control
-                  value={submittedBy}
-                  onChange={(event) => {
-                    setSubmittedBy(event.target.value);
+
+        <div className="sub-section">
+          <h5>Post dates</h5>
+
+          <Form.Group className="form-group">
+            <Form.Label htmlFor="post-start-date">
+              <span className="append-required">Posting date</span>
+            </Form.Label>
+
+            <DatePicker
+              id="post-start-date"
+              selected={advisoryDate}
+              onChange={(date) => {
+                handleAdvisoryDateChange(date);
+              }}
+              dateFormat="MMMM d, yyyy"
+              maxDate={expiryDate}
+              className={`${advisoryDateError !== "" ? "error" : ""}`}
+              onBlur={() => {
+                validateRequiredDate(advisoryData.advisoryDate);
+                validateDisplayedDate(advisoryData.displayedDate);
+              }}
+            />
+            {renderHelperText("month dd, yyyy")}
+            {advisoryDateError !== "" &&
+              renderHelperText("Please enter valid date", true)}
+          </Form.Group>
+
+          <Form.Group className="form-group">
+            <Form.Label htmlFor="post-start-time">Time</Form.Label>
+
+            <DatePicker
+              id="post-start-time"
+              selected={advisoryDate}
+              onChange={(date) => handleAdvisoryDateChange(date)}
+              showTimeSelect
+              showTimeSelectOnly
+              timeIntervals={15}
+              timeCaption="Time"
+              dateFormat="h:mm aa"
+              className={`${advisoryDateError !== "" ? "error" : ""}`}
+            />
+            {renderHelperText("hh:mm aa")}
+          </Form.Group>
+
+          <Form.Group className="form-group">
+            <Form.Label htmlFor="post-expiry-date">
+              Expiry date
+              <LightTooltip
+                arrow
+                title="The advisory will be automatically removed on this date."
+              >
+                <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+              </LightTooltip>
+            </Form.Label>
+
+            <DatePicker
+              id="post-expiry-date"
+              selected={expiryDate}
+              onChange={(date) => {
+                setExpiryDate(date);
+              }}
+              dateFormat="MMMM d, yyyy"
+              minDate={advisoryDate}
+              className={`${expiryDateError !== "" ? "error" : ""}`}
+              onBlur={() => {
+                validateOptionalDate(advisoryData.expiryDate);
+              }}
+            />
+            {renderHelperText("month dd, yyyy")}
+            {expiryDateError !== "" &&
+              renderHelperText(
+                "Expiry date should not be before Posting date",
+                true,
+              )}
+          </Form.Group>
+
+          <Form.Group className="form-group">
+            <Form.Label htmlFor="post-expiry-time">Time</Form.Label>
+
+            <DatePicker
+              id="post-expiry-time"
+              selected={expiryDate}
+              onChange={(date) => {
+                setExpiryDate(date);
+              }}
+              showTimeSelect
+              showTimeSelectOnly
+              timeIntervals={15}
+              timeCaption="Time"
+              dateFormat="h:mm aa"
+              className={`${expiryDateError !== "" ? "error" : ""}`}
+            />
+            {renderHelperText("hh:mm aa")}
+          </Form.Group>
+
+          {mode === "update" && (
+            <>
+              <Form.Group className="form-group">
+                <Form.Label htmlFor="updated-date">Updated date</Form.Label>
+
+                <DatePicker
+                  id="updated-date"
+                  selected={updatedDate}
+                  onChange={(date) => {
+                    setUpdatedDate(date);
                   }}
-                  className={getControlClassName(submittedByError !== "")}
-                  maxLength={255}
-                  id={submitterInput.id}
-                  required={submitterInput.required}
+                  dateFormat="MMMM d, yyyy"
+                  minDate={advisoryDate}
+                  className={`${updatedDateError !== "" ? "error" : ""}`}
                   onBlur={() => {
-                    validateRequiredText(advisoryData.submittedBy);
+                    validateOptionalDate(advisoryData.updatedDate);
+                    validateDisplayedDate(advisoryData.displayedDate);
                   }}
                 />
-                {renderHelperText(
-                  submittedByError && "Please enter a name",
-                  submittedByError !== "",
-                )}
-              </div>
-            </div>
-          </>
-        )}
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Public safety related
+
+                {renderHelperText("month dd, yyyy")}
+              </Form.Group>
+
+              <Form.Group className="form-group">
+                <Form.Label htmlFor="updated-time">Time</Form.Label>
+
+                <DatePicker
+                  id="updated-time"
+                  selected={updatedDate}
+                  onChange={(date) => {
+                    setUpdatedDate(date);
+                  }}
+                  showTimeSelect
+                  showTimeSelectOnly
+                  timeIntervals={15}
+                  timeCaption="Time"
+                  dateFormat="h:mm aa"
+                  className={`${updatedDateError !== "" ? "error" : ""}`}
+                />
+                {renderHelperText("hh:mm aa")}
+              </Form.Group>
+            </>
+          )}
+        </div>
+
+        <Form.Group className="form-group">
+          <Form.Label htmlFor="displayed-date">Displayed date</Form.Label>
+
+          <div
+            className={classNames("bcgov-select-form", {
+              "bcgov-select-error": displayedDateError !== "",
+            })}
+          >
+            <Select
+              id="displayed-date"
+              options={displayedDateOptions}
+              defaultValue={getDisplayedDate()}
+              onChange={(e) => {
+                setSelectedDisplayedDateOption(e.value);
+              }}
+              className="bcgov-select"
+              onBlur={() => {
+                validateDisplayedDate(advisoryData.displayedDate);
+              }}
+            />
+            {renderHelperText(displayedDateError, displayedDateError !== "")}
           </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
+        </Form.Group>
+      </section>
+
+      <section>
+        <h3>Internal details</h3>
+
+        <Form.Group className="form-group" controlId={notesInput.id}>
+          <Form.Label>Internal notes</Form.Label>
+
+          <Form.Control
+            value={notes}
+            onChange={(event) => {
+              setNotes(event.target.value);
+            }}
+            className={getControlClassName(false)}
+            required={notesInput.required}
+          />
+        </Form.Group>
+
+        {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
+          <Form.Group className="form-group" controlId={submitterInput.id}>
+            <Form.Label>Requested by</Form.Label>
+
+            <Form.Control
+              value={submittedBy}
+              onChange={(event) => {
+                setSubmittedBy(event.target.value);
+              }}
+              className={getControlClassName(submittedByError !== "")}
+              maxLength={255}
+              required={submitterInput.required}
+            />
+            {renderHelperText(
+              submittedByError && "Please enter a name",
+              submittedByError !== "",
+            )}
+          </Form.Group>
+        )}
+
+        <Form.Group className="form-group" controlId={listingRankInput.id}>
+          <Form.Label>
+            Listing rank
+            <LightTooltip
+              arrow
+              title="To display an advisory at the top of the list, add a Listing rank number.
+              The advisory with the highest number will be displayed at the top.
+              If the Listing rank number is zero,
+              advisories are ordered by urgency level and date added."
+            >
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </Form.Label>
+
+          <div style={{ width: "8em" }}>
+            <Form.Control
+              type="number"
+              value={listingRank}
+              onChange={(event) => {
+                const value = event.target.value;
+                const parsed = parseInt(value, 10);
+
+                setListingRank(isNaN(parsed) ? 0 : parsed);
+              }}
+              onWheel={(event) => {
+                event.target.blur();
+              }}
+              className={getControlClassName(listingRankError !== "")}
+              required={listingRankInput.required}
+              min={0}
+              max={9999}
+              onBlur={() => {
+                validateOptionalNumber(advisoryData.listingRank);
+              }}
+            />
+            {renderHelperText(listingRankError, listingRankError !== "")}
+          </div>
+        </Form.Group>
+
+        <Form.Group className="form-group" controlId="public-safety-related">
+          <Form.Label>Public safety related</Form.Label>
+
+          <div>
             <ButtonGroup
               className="safety-btn-group"
               aria-label="Public safety related"
@@ -1205,268 +1213,234 @@ export default function AdvisoryForm({
               </Btn>
             </ButtonGroup>
           </div>
-        </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Internal notes
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Form.Control
-              value={notes}
-              onChange={(event) => {
-                setNotes(event.target.value);
-              }}
-              className={getControlClassName(false)}
-              id={notesInput.id}
-              required={notesInput.required}
-            />
-          </div>
-        </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Listing rank
-            <LightTooltip
-              arrow
-              title="To display an advisory at the top of the list, add a Listing rank number.
-              The advisory with the highest number will be displayed at the top.
-              If the Listing rank number is zero,
-              advisories are ordered by urgency level and date added."
+        </Form.Group>
+
+        {hasAnyRole([ROLES.SUPER_ADMIN]) && (
+          <Form.Group className="form-group">
+            <Form.Label htmlFor="advisory-status">Advisory status</Form.Label>
+
+            <div
+              className={classNames("bcgov-select-form", {
+                "bcgov-select-error": advisoryStatusError !== "",
+              })}
             >
-              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
-            </LightTooltip>
-          </div>
-          <div className="col-lg-7 col-md-8 col-sm-12">
-            <Form.Control
-              type="number"
-              value={listingRank}
-              onChange={(event) => {
-                const value = event.target.value;
-                const parsed = parseInt(value, 10);
+              <Select
+                id="advisory-status"
+                options={advisoryStatuses}
+                value={advisoryStatuses.filter(
+                  (a) => a.value === advisoryStatus,
+                )}
+                onChange={(e) => setAdvisoryStatus(e ? e.value : 0)}
+                placeholder="Select an advisory status"
+                className="bcgov-select"
+                isClearable
+              />
+              {renderHelperText(
+                advisoryStatusError,
+                advisoryStatusError !== "",
+              )}
+            </div>
+          </Form.Group>
+        )}
+      </section>
 
-                setListingRank(isNaN(parsed) ? 0 : parsed);
-              }}
-              onWheel={(event) => {
-                event.target.blur();
-              }}
-              className={getControlClassName(listingRankError !== "")}
-              id={listingRankInput.id}
-              required={listingRankInput.required}
-              min={0}
-              max={9999}
-              onBlur={() => {
-                validateOptionalNumber(advisoryData.listingRank);
-              }}
+      {!hasAnyRole([ROLES.ADVISORY_SUBMITTER]) &&
+        (isStatHoliday || isAfterHours) && (
+          <div className="ad-af-hour-box d-flex field-bg-blue">
+            <FontAwesomeIcon
+              icon={faTriangleExclamation}
+              className="warningIcon"
             />
-            {renderHelperText(listingRankError, listingRankError !== "")}
-          </div>
-        </div>
+            <div className="ms-3">
+              <p>
+                <b>This is an after-hours advisory</b>
+                <br />
+                The web team&rsquo;s business hours are
+                <br />
+                Monday to Friday, 8:30 am – 4:30 pm.
+              </p>
 
-        {!hasAnyRole(["approver"]) && (isStatHoliday || isAfterHours) && (
-          <div className="ad-af-hour-box">
-            <div className="row">
-              <div className="col-lg-3 col-md-4 col-sm-12 ad-label"></div>
-              <div className="col-lg-7 col-md-8 col-sm-12">
-                <div className="d-flex field-bg-blue">
-                  <FontAwesomeIcon
-                    icon={faTriangleExclamation}
-                    className="warningIcon"
+              <div className="d-flex flex-column gap-2 mt-3">
+                <Form.Check>
+                  <Form.Check.Input
+                    id="urgent-publish-immediately"
+                    type="radio"
+                    checked={isAfterHourPublish}
+                    onChange={() => {
+                      setIsAfterHourPublish(true);
+                    }}
+                    value="Publish"
+                    name="after-hour-submission"
+                    aria-label="Publish immediately"
                   />
-                  <div className="ms-3">
-                    <p>
-                      <b>This is an after-hours advisory</b>
-                      <br />
-                      The web team&rsquo;s business hours are
-                      <br />
-                      Monday to Friday, 8:30 am – 4:30 pm.
-                    </p>
-                    <div className="d-flex mt-3">
-                      <Form.Check
-                        type="radio"
-                        checked={isAfterHourPublish}
-                        onChange={() => {
-                          setIsAfterHourPublish(true);
-                        }}
-                        value="Publish"
-                        name="after-hour-submission"
-                        aria-label="Publish immediately"
-                        className="me-2"
-                      />
-                      <p>
-                        <b className="required">
-                          Urgent/safety-related advisory.
-                        </b>{" "}
-                        Publish immediately.
-                      </p>
-                    </div>
-                    <div className="d-flex mt-3">
-                      <Form.Check
-                        type="radio"
-                        checked={!isAfterHourPublish}
-                        onChange={() => {
-                          setIsAfterHourPublish(false);
-                        }}
-                        value="Review"
-                        name="after-hour-submission"
-                        aria-label="Submit for web team review"
-                        className="me-2"
-                      />
-                      <p>
-                        <b>Advisory is not urgent.</b> Submit for web team
-                        review.
-                      </p>
-                    </div>
-                  </div>
-                </div>
+
+                  <Form.Check.Label htmlFor="urgent-publish-immediately">
+                    <b className="required">Urgent/safety-related advisory.</b>{" "}
+                    Publish immediately.
+                  </Form.Check.Label>
+                </Form.Check>
+
+                <Form.Check>
+                  <Form.Check.Input
+                    id="urgent-publish-review"
+                    type="radio"
+                    checked={!isAfterHourPublish}
+                    onChange={() => {
+                      setIsAfterHourPublish(false);
+                    }}
+                    value="Review"
+                    name="after-hour-submission"
+                    aria-label="Submit for web team review"
+                  />
+
+                  <Form.Check.Label htmlFor="urgent-publish-review">
+                    <b>Advisory is not urgent.</b> Submit for web team review.
+                  </Form.Check.Label>
+                </Form.Check>
               </div>
             </div>
           </div>
         )}
-        <div className="row my-2">
-          <div className="col-lg-3 col-md-4"></div>
-          <div className="col-lg-7 col-md-8 col-sm-12 ad-form-error">
-            {renderHelperText(formError, formError !== "")}
-          </div>
+
+      <div className="row my-2">
+        <div className="col-lg-3 col-md-4"></div>
+        <div className="col-lg-7 col-md-8 col-sm-12 ad-form-error">
+          {renderHelperText(formError, formError !== "")}
         </div>
-        <div className="row">
-          <div className="col-lg-3 col-md-4"></div>
-          <div className="col-lg-7 col-md-8 col-sm-12 ad-btn-group">
-            {!hasAnyRole(["approver"]) && (
-              <>
-                {mode === "create" && (
-                  <>
-                    <Button
-                      label={
-                        isStatHoliday || isAfterHours
-                          ? "Submit"
-                          : "Submit for approval"
-                      }
-                      styling="bcgov-normal-blue btn"
-                      onClick={() => {
-                        if (
-                          validAdvisoryData(
-                            advisoryData,
-                            linksRef,
-                            false,
-                            mode,
-                            linkErrorsStatus,
-                          )
-                        ) {
-                          saveAdvisory("submit");
-                        }
-                      }}
-                      hasLoader={isSubmitting}
-                    />
-                    <Button
-                      label="Save draft"
-                      styling="bcgov-normal-white btn"
-                      onClick={() => {
-                        if (
-                          validAdvisoryData(
-                            advisoryData,
-                            linksRef,
-                            false,
-                            mode,
-                            linkErrorsStatus,
-                          )
-                        ) {
-                          saveAdvisory("draft");
-                        }
-                      }}
-                      hasLoader={isSavingDraft}
-                    />
-                  </>
-                )}
-                {mode === "update" && (
-                  <>
-                    <Button
-                      label={
-                        isStatHoliday || isAfterHours
-                          ? "Submit"
-                          : "Submit for approval"
-                      }
-                      styling="bcgov-normal-blue btn"
-                      onClick={() => {
-                        if (
-                          validAdvisoryData(
-                            advisoryData,
-                            linksRef,
-                            false,
-                            mode,
-                            linkErrorsStatus,
-                          )
-                        ) {
-                          updateAdvisory("submit");
-                        }
-                      }}
-                      hasLoader={isSubmitting}
-                    />
-                    <Button
-                      label="Save draft"
-                      styling="bcgov-normal-white btn"
-                      onClick={() => {
-                        if (
-                          validAdvisoryData(
-                            advisoryData,
-                            linksRef,
-                            false,
-                            mode,
-                            linkErrorsStatus,
-                          )
-                        ) {
-                          updateAdvisory("draft");
-                        }
-                      }}
-                      hasLoader={isSavingDraft}
-                    />
-                  </>
-                )}
-              </>
-            )}
-            {hasAnyRole(["approver"]) && (
-              <>
-                {mode === "create" && (
+      </div>
+      <div className="row">
+        <div className="col-lg-3 col-md-4"></div>
+        <div className="col-lg-7 col-md-8 col-sm-12 ad-btn-group">
+          {!hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
+            <>
+              {mode === "create" && (
+                <>
                   <Button
-                    label="Create advisory"
+                    label={
+                      isStatHoliday || isAfterHours
+                        ? "Submit"
+                        : "Submit for approval"
+                    }
                     styling="bcgov-normal-blue btn"
                     onClick={() => {
                       if (
                         validAdvisoryData(
                           advisoryData,
                           linksRef,
-                          true,
                           mode,
                           linkErrorsStatus,
                         )
                       ) {
-                        saveAdvisory();
+                        saveAdvisory("submit");
                       }
                     }}
                     hasLoader={isSubmitting}
                   />
-                )}
-                {mode === "update" && (
                   <Button
-                    label="Update advisory"
+                    label="Save draft"
+                    styling="bcgov-normal-white btn"
+                    onClick={() => {
+                      if (
+                        validAdvisoryData(
+                          advisoryData,
+                          linksRef,
+                          mode,
+                          linkErrorsStatus,
+                        )
+                      ) {
+                        saveAdvisory("draft");
+                      }
+                    }}
+                    hasLoader={isSavingDraft}
+                  />
+                </>
+              )}
+              {mode === "update" && (
+                <>
+                  <Button
+                    label={
+                      isStatHoliday || isAfterHours
+                        ? "Submit"
+                        : "Submit for approval"
+                    }
                     styling="bcgov-normal-blue btn"
                     onClick={() => {
                       if (
                         validAdvisoryData(
                           advisoryData,
                           linksRef,
-                          true,
                           mode,
                           linkErrorsStatus,
                         )
                       ) {
-                        updateAdvisory();
+                        updateAdvisory("submit");
                       }
                     }}
                     hasLoader={isSubmitting}
                   />
-                )}
-              </>
-            )}
-          </div>
+                  <Button
+                    label="Save draft"
+                    styling="bcgov-normal-white btn"
+                    onClick={() => {
+                      if (
+                        validAdvisoryData(
+                          advisoryData,
+                          linksRef,
+                          mode,
+                          linkErrorsStatus,
+                        )
+                      ) {
+                        updateAdvisory("draft");
+                      }
+                    }}
+                    hasLoader={isSavingDraft}
+                  />
+                </>
+              )}
+            </>
+          )}
+          {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
+            <>
+              {mode === "create" && (
+                <Button
+                  label="Create advisory"
+                  styling="bcgov-normal-blue btn"
+                  onClick={() => {
+                    if (
+                      validAdvisoryData(
+                        advisoryData,
+                        linksRef,
+                        mode,
+                        linkErrorsStatus,
+                      )
+                    ) {
+                      saveAdvisory();
+                    }
+                  }}
+                  hasLoader={isSubmitting}
+                />
+              )}
+              {mode === "update" && (
+                <Button
+                  label="Update advisory"
+                  styling="bcgov-normal-blue btn"
+                  onClick={() => {
+                    if (
+                      validAdvisoryData(
+                        advisoryData,
+                        linksRef,
+                        mode,
+                        linkErrorsStatus,
+                      )
+                    ) {
+                      updateAdvisory();
+                    }
+                  }}
+                  hasLoader={isSubmitting}
+                />
+              )}
+            </>
+          )}
         </div>
       </div>
     </form>

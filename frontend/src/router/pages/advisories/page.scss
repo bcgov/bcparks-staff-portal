@@ -128,7 +128,6 @@
     border-color: var(--color-light-grey) !important;
   }
 
-  .div-btn:focus,
   .bcgov-datepicker-wrapper input:focus,
   .react-datepicker-wrapper input:focus,
   .bcgov-input.form-control:focus {
@@ -267,18 +266,6 @@
 
   .field-bg-blue {
     background-color: var(--color-light-blue);
-  }
-
-  .field-bg-grey {
-    color: var(--color-grey);
-    background-color: var(--color-background-grey);
-    margin-bottom: 8px;
-    padding: 16px;
-  }
-
-  :focus {
-    outline: none !important;
-    outline-offset: 1px;
   }
 
   .bcgov-datepicker-wrapper-error input,

@@ -11,28 +11,6 @@
   --color-yellow: #fcba19;
   --color-red: #d8292f;
 
-  color: var(--color-grey) !important;
-
-  h1,
-  h2,
-  h3,
-  h4 {
-    color: var(--color-blue) !important;
-  }
-
-  a {
-    color: var(--color-med-blue) !important;
-  }
-
-  a:hover {
-    color: var(--color-blue) !important;
-  }
-
-  a:focus-visible {
-    outline: 2px auto var(--color-med-blue) !important;
-    outline-offset: 2px !important;
-  }
-
   .page-loader {
     padding-top: 20% !important;
     text-align: center !important;
