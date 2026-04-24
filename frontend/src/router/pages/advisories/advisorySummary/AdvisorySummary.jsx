@@ -234,7 +234,7 @@ export default function AdvisorySummary() {
                     }}
                   >
                     <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
-                    Back to advisories and closures
+                    Back to advisories and closures dashboard
                   </button>
                 </div>
                 {!showOriginalAdvisory && (

@@ -162,7 +162,6 @@ export function validateDisplayedDate(field) {
 export function validAdvisoryData(
   advisoryData,
   linksRef,
-  validateStatus,
   mode,
   linkErrorsStatus,
 ) {
@@ -195,18 +194,6 @@ export function validAdvisoryData(
     validDisplayedDate &&
     validLinks;
 
-  if (validateStatus) {
-    const validAdvisoryStatus = validateRequiredSelect(
-      advisoryData.advisoryStatus,
-    );
-
-    validData = validData && validAdvisoryStatus;
-  }
-  if (validateStatus) {
-    const validSubmittedBy = validateRequiredText(advisoryData.submittedBy);
-
-    validData = validData && validSubmittedBy;
-  }
   if (mode === "update") {
     const validUpdatedDate = validateOptionalDate(advisoryData.updatedDate);
 

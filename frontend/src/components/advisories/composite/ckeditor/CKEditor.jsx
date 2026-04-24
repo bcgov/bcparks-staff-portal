@@ -14,9 +14,14 @@ import getEnv from "@/config/getEnv";
 
 import "ckeditor5/ckeditor5.css";
 
-export default function StaffPortalCKEditor({ value, onChange }) {
+export default function StaffPortalCKEditor({
+  value,
+  onChange,
+  ...otherProps
+}) {
   return (
     <CKEditor
+      {...otherProps}
       editor={ClassicEditor}
       data={value}
       config={{

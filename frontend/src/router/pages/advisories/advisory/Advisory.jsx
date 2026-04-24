@@ -20,6 +20,7 @@ import qs from "qs";
 import useAccess from "@/hooks/useAccess";
 import useCms from "@/hooks/useCms";
 import ErrorContext from "@/contexts/ErrorContext";
+import { ROLES } from "@/config/permissions";
 
 export default function Advisory({ mode }) {
   const { setError } = useContext(ErrorContext);
@@ -911,7 +912,36 @@ export default function Advisory({ mode }) {
 
   function saveAdvisory(type) {
     try {
-      const { status } = getAdvisoryFields(type);
+      // TEMPORARY WORKAROUND: Find a status from the older dataset until the DB is updated
+      // @TODO: Update the Advisory-status collection in CMS-1701
+      // @TODO: Update advisory status logic in CMS-1671
+
+      let status;
+
+      if (hasAnyRole([ROLES.ADVISORY_SUBMITTER])) {
+        status = advisoryStatus
+          ? advisoryStatus
+          : advisoryStatuses.find((s) => s.code === "PUB")?.value;
+      } else {
+        let statusCode = "HQR"; // Default: Approval requested
+
+        if (type === "draft") {
+          statusCode = "DFT";
+        }
+
+        status = advisoryStatuses.find((s) => s.code === statusCode)?.value;
+      }
+
+      if (!status) {
+        setIsSubmitting(false);
+        setIsSavingDraft(false);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not resolve advisory status",
+        });
+        return;
+      }
 
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);
@@ -993,7 +1023,37 @@ export default function Advisory({ mode }) {
 
   function updateAdvisory(type) {
     try {
-      const { status } = getAdvisoryFields(type);
+      // TEMPORARY WORKAROUND: Find a status from the older dataset until the DB is updated
+      // @TODO: Update the Advisory-status collection in CMS-1701
+      // @TODO: Update advisory status logic in CMS-1671
+
+      let status;
+
+      if (hasAnyRole([ROLES.ADVISORY_SUBMITTER])) {
+        status = advisoryStatus
+          ? advisoryStatus
+          : advisoryStatuses.find((s) => s.code === "PUB")?.value;
+      } else {
+        let statusCode = "HQR"; // Default: Approval requested
+
+        if (type === "draft") {
+          statusCode = "DFT";
+        }
+
+        status = advisoryStatuses.find((s) => s.code === statusCode)?.value;
+      }
+
+      if (!status) {
+        setIsSubmitting(false);
+        setIsSavingDraft(false);
+        setToError(true);
+        setError({
+          status: 500,
+          message: "Could not resolve advisory status",
+        });
+        return;
+      }
+
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);
       const selSections = selectedSections.map((x) => x.value);
@@ -1129,7 +1189,7 @@ export default function Advisory({ mode }) {
           )}
           {!isLoadingPage && (
             <>
-              <div className="container-fluid">
+              <div>
                 <button
                   type="button"
                   className="btn btn-link btn-back mt-4"
@@ -1140,15 +1200,27 @@ export default function Advisory({ mode }) {
                   <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                   Back to{" "}
                   {mode === "create"
-                    ? "advisories and closures"
+                    ? "advisories and closures dashboard"
                     : "advisory / closure preview"}
                 </button>
-                <h4 className="mt-5 mb-0">
-                  {mode === "create" ? "Create a new" : "Edit"} advisory
-                </h4>
-                <small className="small-text">
-                  <span className="required">*</span> indicates a required field
-                </small>
+                <h2 className="mt-5 mb-0">
+                  {mode === "create" ? "Create" : "Edit"} advisory / closure
+                </h2>
+                <p>
+                  <small className="small-text">
+                    <span className="required">*</span> indicates a required
+                    field
+                  </small>
+                </p>
+                <p>
+                  <a
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href="https://intranet.gov.bc.ca/env/card/prp/voss/information-services/staff-portal/create-advisory"
+                  >
+                    View guide for creating an advisory / closure
+                  </a>
+                </p>
               </div>
               <AdvisoryForm
                 mode={mode}
