@@ -556,8 +556,8 @@ export default function Advisory({ mode }) {
 
           setUrgencies([...newUrgencies]);
           const advisoryStatusData = res[11];
-          const restrictedAdvisoryStatusCodes = new Set(["INA", "APR"]);
-          const desiredOrder = ["PUB", "INA", "DFT", "APR", "ARQ"];
+          const restrictedAdvisoryStatusCodes = new Set(["UNP", "SCH"]);
+          const desiredOrder = ["PUB", "UNP", "DFT", "SCH", "HQR"];
           const tempAdvisoryStatuses = advisoryStatusData.map((s) => {
             let result = {};
 

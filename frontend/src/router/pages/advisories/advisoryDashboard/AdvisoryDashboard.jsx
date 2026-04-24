@@ -284,13 +284,13 @@ export default function AdvisoryDashboard() {
         const advisoryFilter = showArchived
           ? {
               $or: [
-                { advisoryStatus: { code: { $ne: "INA" } } },
+                { advisoryStatus: { code: { $ne: "UNP" } } },
                 { updatedAt: { $gt: extendedCutoffDate } },
               ],
             }
           : {
               $or: [
-                { advisoryStatus: { code: { $ne: "INA" } } },
+                { advisoryStatus: { code: { $ne: "UNP" } } },
                 { updatedAt: { $gt: standardCutoffDate } },
               ],
             };
@@ -512,9 +512,9 @@ export default function AdvisoryDashboard() {
         render(rowData) {
           const statusIconMap = {
             DFT: { icon: faPencil, className: "draftIcon" },
-            INA: { icon: faClock, className: "inactiveIcon" },
-            APR: { icon: faThumbsUp, className: "approvedIcon" },
-            ARQ: { icon: faCircleInfo, className: "approvalRequestedIcon" },
+            UNP: { icon: faClock, className: "inactiveIcon" },
+            SCH: { icon: faThumbsUp, className: "approvedIcon" },
+            HQR: { icon: faCircleInfo, className: "approvalRequestedIcon" },
             PUB: { icon: faArrowUpToLine, className: "publishedIcon" },
           };
           const code = rowData.advisoryStatus?.code;
