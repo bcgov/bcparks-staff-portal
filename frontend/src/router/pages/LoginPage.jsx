@@ -105,7 +105,7 @@ export default function LoginPage() {
   return (
     <div className="container">
       <div className="text-center login-page-content">
-        <h2 className="mt-5 mb-2">Staff web portal</h2>
+        <h2 className="mt-5 mb-2">Parks and Recreation <br />staff web portal</h2>
         <p>Use one of the following methods to log in</p>
 
         {/* Uncomment the following section if you want to enable BC Services Card login */}

@@ -3,9 +3,9 @@ import { ROLES } from "@/config/permissions";
 
 const navItems = [
   {
-    label: "Advisories",
+    label: "Advisories and closures",
     Tag: NavLink,
-    to: "/advisories",
+    to: "/advisories-and-closures",
     allowedRoles: [ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER],
   },
   {

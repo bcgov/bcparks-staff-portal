@@ -49,10 +49,10 @@ const RouterConfig = createBrowserRouter([
     ),
 
     children: [
-      // "/" will redirect to "/advisories" if authenticated
+      // "/" will redirect to "/advisories-and-closures" if authenticated
       {
         path: "",
-        element: <Navigate to="/advisories" replace />,
+        element: <Navigate to="/advisories-and-closures" replace />,
       },
 
       // Legacy staff portal error route
@@ -62,9 +62,9 @@ const RouterConfig = createBrowserRouter([
         element: <ErrorPage />,
       },
 
-      // Public Advisories
+      // Advisories and closures
       {
-        path: "advisories",
+        path: "advisories-and-closures",
         element: (
           <AccessControlledRoute
             allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}

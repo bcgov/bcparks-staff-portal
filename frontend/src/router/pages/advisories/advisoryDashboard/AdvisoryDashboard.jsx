@@ -760,17 +760,19 @@ export default function AdvisoryDashboard() {
     <div className="advisory-dashboard-page-wrap advisories-styles">
       <div className="container-fluid">
         <div className="row ad-row">
-          <div className="col-lg-6 col-md-4 col-sm-12">
-            <h4 className="float-left">Advisories and closures</h4>
+          <div className="col-12">
+            <h1 className="title">Advisories and closures</h1>
           </div>
-          <div className="col-lg-6 col-md-4 col-sm-12 text-end">
-            <Button
-              label="+ Create advisory / closure"
-              styling="bcgov-normal-blue btn"
-              onClick={() => {
-                setToCreate(true);
-              }}
-            />
+          <div className="row ad-row">
+            <div className="col-12 text-end">
+              <Button
+                label="+ Create advisory / closure"
+                styling="bcgov-normal-blue btn"
+                onClick={() => {
+                  setToCreate(true);
+                }}
+              />
+            </div>
           </div>
         </div>
         <div className="row ad-row">

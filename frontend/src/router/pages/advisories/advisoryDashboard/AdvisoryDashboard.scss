@@ -128,4 +128,11 @@
   .advisory-dashboard-padding {
     padding: 16px;
   }
+
+  .ad-row {
+    h1.title {
+      color: var(--typography-color-primary) !important;
+      font-weight: 400;
+    }
+  }
 }

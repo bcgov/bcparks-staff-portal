@@ -11,8 +11,8 @@
 
     .nav-link {
       padding: 0.75rem 1.5rem;
-      text-align: right;
-      font-weight: 700;
+      text-align: left;
+      font-weight: 400;
       opacity: 0.6;
       transition: opacity 150ms ease-in-out;
 
@@ -23,6 +23,7 @@
 
       &.active {
         opacity: 1;
+        font-weight: 700;
         background: var(--surface-color-background-white);
         color: var(--theme-primary-blue);
       }
