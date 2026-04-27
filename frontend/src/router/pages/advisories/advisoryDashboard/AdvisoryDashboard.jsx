@@ -550,8 +550,8 @@ export default function AdvisoryDashboard() {
           const statusClassMap = {
             DFT: "status-draft",
             UNP: "status-unpublished",
-            HQR: "status-scheduled",
-            SCH: "status-hq-review",
+            HQR: "status-hq-review",
+            SCH: "status-scheduled",
             PUB: "status-published",
             ARCHIVED: "status-archived",
           };
@@ -763,16 +763,16 @@ export default function AdvisoryDashboard() {
           <div className="col-12">
             <h1 className="title">Advisories and closures</h1>
           </div>
-          <div className="row ad-row">
-            <div className="col-12 text-end">
-              <Button
-                label="+ Create advisory / closure"
-                styling="bcgov-normal-blue btn"
-                onClick={() => {
-                  setToCreate(true);
-                }}
-              />
-            </div>
+        </div>
+        <div className="row ad-row">
+          <div className="col-12 text-end">
+            <Button
+              label="+ Create advisory / closure"
+              styling="bcgov-normal-blue btn"
+              onClick={() => {
+                setToCreate(true);
+              }}
+            />
           </div>
         </div>
         <div className="row ad-row">

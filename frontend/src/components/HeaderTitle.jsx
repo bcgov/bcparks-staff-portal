@@ -19,7 +19,7 @@ export default function HeaderTitle() {
         className="d-none d-md-block"
         src={logo}
         height="68"
-        alt="BC Parks logo"
+        alt="Ministry of Environment and Parks logo"
       />
 
       <div className="app-title text-white mx-3 mx-md-1">
