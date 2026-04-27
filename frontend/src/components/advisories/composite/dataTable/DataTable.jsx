@@ -209,6 +209,7 @@ export default function DataTable(props) {
     title,
     onRowClick,
     initialFilterValues,
+    filterValues: filterValuesProp,
     onFilterValuesChange,
     components,
     hover,
@@ -220,6 +221,10 @@ export default function DataTable(props) {
   // - onFilterValuesChange: callback to notify parent of changes
   // - If parent does not pass these, DataTable manages its own filter state (uncontrolled)
   const [filterValues, setFilterValues] = useState(initialFilterValues || {});
+  const isFilterValuesControlled = filterValuesProp !== null;
+  const effectiveFilterValues = isFilterValuesControlled
+    ? filterValuesProp
+    : filterValues;
   const [sortConfig, setSortConfig] = useState(null);
   const [page, setPage] = useState(1);
   const initialPageSize = pageSizeProp || 5;
@@ -259,7 +264,8 @@ export default function DataTable(props) {
         ? rowMatchesSearch(row, visibleColumns, searchText)
         : true;
       const matchesFilters = visibleColumns.every((column, index) => {
-        const filterValue = filterValues[getColumnId(column, index)] || "";
+        const filterValue =
+          effectiveFilterValues[getColumnId(column, index)] || "";
 
         return rowMatchesFilter(row, column, filterValue);
       });
@@ -268,7 +274,7 @@ export default function DataTable(props) {
     });
   }, [
     data,
-    filterValues,
+    effectiveFilterValues,
     search,
     serverSide,
     searchText,
@@ -364,10 +370,15 @@ export default function DataTable(props) {
   function handleFilterInputChange(column, index, value) {
     const columnId = getColumnId(column, index);
 
-    const nextFilterValues = { ...filterValues, [columnId]: value };
+    const nextFilterValues = {
+      ...effectiveFilterValues,
+      [columnId]: value,
+    };
 
-    // always update local state for UI
-    setFilterValues(nextFilterValues);
+    // keep local state in uncontrolled mode for UI
+    if (!isFilterValuesControlled) {
+      setFilterValues(nextFilterValues);
+    }
     setPage(1);
     // Notify parent of server-side filter change
     if (onFilterChange) {
@@ -389,7 +400,7 @@ export default function DataTable(props) {
 
   function renderFilterControl(column, index) {
     const columnId = getColumnId(column, index);
-    const filterValue = filterValues[columnId] || "";
+    const filterValue = effectiveFilterValues[columnId] || "";
 
     if (column.filtering === false) {
       return null;
@@ -579,6 +590,7 @@ DataTable.propTypes = {
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   onRowClick: PropTypes.func,
   initialFilterValues: PropTypes.objectOf(PropTypes.string),
+  filterValues: PropTypes.objectOf(PropTypes.string),
   onFilterValuesChange: PropTypes.func,
   components: PropTypes.shape({
     Toolbar: PropTypes.elementType,
@@ -602,6 +614,7 @@ DataTable.defaultProps = {
   title: "",
   onRowClick: null,
   initialFilterValues: null,
+  filterValues: null,
   onFilterValuesChange: null,
   components: null,
   hover: false,

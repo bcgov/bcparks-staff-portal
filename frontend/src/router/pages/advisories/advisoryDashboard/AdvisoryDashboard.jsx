@@ -42,6 +42,16 @@ import useAdvisoryFlashMessage from "@/router/pages/advisories/AdvisoryFlashMess
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
+const TABLE_FILTER_LABELS = {
+  "urgency.urgency": "Urgency",
+  "advisoryStatus.advisoryStatus": "Status",
+  advisoryDate: "Posting date",
+  endDate: "End date",
+  expiryDate: "Expiry date",
+  title: "Headline",
+  "eventType.eventType": "Event type",
+  associatedParks: "Associated Resource(s)",
+};
 
 /**
  * Returns the value of a page-level filter from the stored filters array, or a default if not found.
@@ -165,6 +175,16 @@ export default function AdvisoryDashboard() {
 
   const [tableFilterValues, setTableFilterValues] = useState(
     initialTableFilterValues,
+  );
+  const activeTableFilters = useMemo(
+    () =>
+      Object.entries(tableFilterValues || {})
+        .filter(([, value]) => value !== "" && value !== null)
+        .map(([field, value]) => ({
+          field,
+          label: `${TABLE_FILTER_LABELS[field] || field}: ${value}`,
+        })),
+    [tableFilterValues],
   );
   // Debounced copy used as the fetchAdvisories dependency
   // Prevents Strapi request on every keystroke while keeping filter inputs responsive
@@ -980,7 +1000,7 @@ export default function AdvisoryDashboard() {
               setCurrentPage(1);
               setStoredFilters((currentFilters) => {
                 const nonPageFilters = currentFilters.filter(
-                  (o) => o.type !== "page",
+                  (currentFilter) => currentFilter.type !== "page",
                 );
 
                 return [
@@ -1005,7 +1025,11 @@ export default function AdvisoryDashboard() {
               setCurrentPage(1);
               setStoredFilters((currentFilters) => {
                 const nonParkPageFilters = currentFilters.filter(
-                  (o) => !(o.type === "page" && o.filterName === "park"),
+                  (currentFilter) =>
+                    !(
+                      currentFilter.type === "page" &&
+                      currentFilter.filterName === "park"
+                    ),
                 );
 
                 return [
@@ -1018,12 +1042,37 @@ export default function AdvisoryDashboard() {
                 ];
               });
             }}
-            hasAnyFilters={selectedRegion || selectedPark}
+            selectedTableFilters={activeTableFilters}
+            onClearTableFilter={(field) => {
+              setTableFilterValues((prev) => ({ ...prev, [field]: "" }));
+              setCurrentPage(1);
+              setStoredFilters((currentFilters) =>
+                currentFilters.filter(
+                  (currentFilter) =>
+                    !(
+                      currentFilter.type === "table" &&
+                      currentFilter.fieldName === field
+                    ),
+                ),
+              );
+            }}
+            showArchived={showArchived}
+            onClearShowArchived={() => {
+              setShowArchived(false);
+              setCurrentPage(1);
+            }}
+            hasAnyFilters={
+              Boolean(selectedRegion) ||
+              Boolean(selectedPark) ||
+              showArchived ||
+              activeTableFilters.length > 0
+            }
             onClearAll={() => {
               setSelectedRegion(null);
               setSelectedRegionId(0);
               setSelectedPark(null);
               setSelectedParkId(0);
+              setShowArchived(false);
               setTableFilterValues({});
               setCurrentPage(1);
               setStoredFilters(defaultPageFilters);
@@ -1057,6 +1106,7 @@ export default function AdvisoryDashboard() {
                 setCurrentPage(1);
               }}
               initialFilterValues={initialTableFilterValues}
+              filterValues={tableFilterValues}
               onFilterValuesChange={persistTableFilterValues}
               columns={tableColumns}
               data={publicAdvisories}
