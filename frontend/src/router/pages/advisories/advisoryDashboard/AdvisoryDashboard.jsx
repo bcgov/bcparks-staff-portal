@@ -35,6 +35,8 @@ import {
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
+const REGION_FILTER_NAME = "region";
+const PARK_FILTER_NAME = "park";
 const TABLE_FILTER_LABELS = {
   "urgency.urgency": "Urgency",
   "advisoryStatus.advisoryStatus": "Status",
@@ -76,6 +78,37 @@ function normalizePageFilterValues(filterValue) {
   }
 
   return [filterValue];
+}
+
+function replacePageFilters(
+  currentFilters,
+  regionFilterValue,
+  parkFilterValue,
+) {
+  const nonPageFilters = currentFilters.filter(
+    (currentFilter) => currentFilter.type !== "page",
+  );
+
+  return [
+    ...nonPageFilters,
+    {
+      type: "page",
+      filterName: REGION_FILTER_NAME,
+      filterValue: regionFilterValue,
+    },
+    {
+      type: "page",
+      filterName: PARK_FILTER_NAME,
+      filterValue: parkFilterValue,
+    },
+  ];
+}
+
+function removeTableFilter(currentFilters, field) {
+  return currentFilters.filter(
+    (currentFilter) =>
+      !(currentFilter.type === "table" && currentFilter.fieldName === field),
+  );
 }
 
 export default function AdvisoryDashboard() {
@@ -191,6 +224,124 @@ export default function AdvisoryDashboard() {
         {label}
       </Badge>
     );
+  }
+
+  function resetToFirstPage() {
+    setCurrentPage(1);
+  }
+
+  function updateRegionAndParkFilters(regionFilterValue, parkFilterValue) {
+    setStoredFilters((currentFilters) =>
+      replacePageFilters(currentFilters, regionFilterValue, parkFilterValue),
+    );
+  }
+
+  function handlePageMultiSelectChange(
+    selectedOptions,
+    filterName,
+    setSelectedOptions,
+    setSelectedIds,
+  ) {
+    const nextSelectedOptions = selectedOptions || [];
+    const nextSelectedIds = nextSelectedOptions.map((option) => option.value);
+
+    setSelectedOptions(nextSelectedOptions);
+    setSelectedIds(nextSelectedIds);
+    resetToFirstPage();
+
+    setStoredFilters((currentFilters) => {
+      const nonTargetPageFilters = currentFilters.filter(
+        (currentFilter) =>
+          !(
+            currentFilter.type === "page" &&
+            currentFilter.filterName === filterName
+          ),
+      );
+
+      return [
+        ...nonTargetPageFilters,
+        {
+          type: "page",
+          filterName,
+          filterValue: nextSelectedIds,
+        },
+      ];
+    });
+  }
+
+  function handleDistrictChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "district",
+      setSelectedDistrict,
+      setSelectedDistrictId,
+    );
+  }
+
+  function handleRegionChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "region",
+      setSelectedRegion,
+      setSelectedRegionId,
+    );
+  }
+
+  function handleParkChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "park",
+      setSelectedPark,
+      setSelectedParkId,
+    );
+  }
+
+  function clearRegionFilter() {
+    setSelectedRegion(null);
+    setSelectedRegionId(0);
+    setSelectedPark(null);
+    setSelectedParkId(0);
+    resetToFirstPage();
+    updateRegionAndParkFilters(0, 0);
+  }
+
+  function clearParkFilter() {
+    setSelectedPark(null);
+    setSelectedParkId(0);
+    resetToFirstPage();
+    setStoredFilters((currentFilters) => {
+      const currentRegionId = getPageFilterValue(
+        currentFilters,
+        REGION_FILTER_NAME,
+        0,
+      );
+
+      return replacePageFilters(currentFilters, currentRegionId, 0);
+    });
+  }
+
+  function clearTableFilter(field) {
+    setTableFilterValues((prev) => ({ ...prev, [field]: "" }));
+    resetToFirstPage();
+    setStoredFilters((currentFilters) =>
+      removeTableFilter(currentFilters, field),
+    );
+  }
+
+  function clearShowArchivedFilter() {
+    setShowArchived(false);
+    resetToFirstPage();
+  }
+
+  function clearAllFilters() {
+    setSelectedRegion(null);
+    setSelectedRegionId(0);
+    setSelectedPark(null);
+    setSelectedParkId(0);
+    setShowArchived(false);
+    setTableFilterValues({});
+    resetToFirstPage();
+    setStoredFilters(defaultPageFilters);
   }
 
   // Load management areas, advisory statuses, urgencies, and published advisories once on mount.
@@ -804,31 +955,7 @@ export default function AdvisoryDashboard() {
               placeholder="Search or select a district"
               value={selectedDistrict}
               options={districtOptions}
-              onChange={(e) => {
-                const selectedDistricts = e || [];
-                const selectedDistrictIds = selectedDistricts.map(
-                  (district) => district.value,
-                );
-
-                setSelectedDistrict(selectedDistricts);
-                setSelectedDistrictId(selectedDistrictIds);
-                setCurrentPage(1);
-
-                setStoredFilters((currentFilters) => {
-                  const nonDistrictPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "district"),
-                  );
-
-                  return [
-                    ...nonDistrictPageFilters,
-                    {
-                      type: "page",
-                      filterName: "district",
-                      filterValue: selectedDistrictIds,
-                    },
-                  ];
-                });
-              }}
+              onChange={handleDistrictChange}
             />
           </div>
           <div className="col-xl-3 col-md-6 col-sm-12">
@@ -838,31 +965,7 @@ export default function AdvisoryDashboard() {
               placeholder="Search or select a region"
               value={selectedRegion}
               options={regionOptions}
-              onChange={(e) => {
-                const selectedRegions = e || [];
-                const selectedRegionIds = selectedRegions.map(
-                  (region) => region.value,
-                );
-
-                setSelectedRegion(selectedRegions);
-                setSelectedRegionId(selectedRegionIds);
-                setCurrentPage(1);
-
-                setStoredFilters((currentFilters) => {
-                  const nonRegionPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "region"),
-                  );
-
-                  return [
-                    ...nonRegionPageFilters,
-                    {
-                      type: "page",
-                      filterName: "region",
-                      filterValue: selectedRegionIds,
-                    },
-                  ];
-                });
-              }}
+              onChange={handleRegionChange}
             />
           </div>
           <div className="col-xl-3 col-md-6 col-sm-12">
@@ -872,29 +975,7 @@ export default function AdvisoryDashboard() {
               placeholder="Search or select a park"
               value={selectedPark}
               options={parkOptions}
-              onChange={(e) => {
-                const selectedParks = e || [];
-                const selectedParkIds = selectedParks.map((park) => park.value);
-
-                setSelectedPark(selectedParks);
-                setSelectedParkId(selectedParkIds);
-                setCurrentPage(1);
-
-                setStoredFilters((currentFilters) => {
-                  const nonParkPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "park"),
-                  );
-
-                  return [
-                    ...nonParkPageFilters,
-                    {
-                      type: "page",
-                      filterName: "park",
-                      filterValue: selectedParkIds,
-                    },
-                  ];
-                });
-              }}
+              onChange={handleParkChange}
             />
           </div>
         </div>
@@ -907,7 +988,7 @@ export default function AdvisoryDashboard() {
               checked={showArchived}
               onChange={(e) => {
                 setShowArchived(e.target.checked);
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               label={
                 <span>
@@ -930,91 +1011,20 @@ export default function AdvisoryDashboard() {
           <FilterStatus
             totalResults={totalPublicAdvisories}
             selectedRegion={selectedRegion}
-            onClearRegion={() => {
-              setSelectedRegion(null);
-              setSelectedRegionId(0);
-              setSelectedPark(null);
-              setSelectedParkId(0);
-              setCurrentPage(1);
-              setStoredFilters((currentFilters) => {
-                const nonPageFilters = currentFilters.filter(
-                  (currentFilter) => currentFilter.type !== "page",
-                );
-
-                return [
-                  ...nonPageFilters,
-                  {
-                    type: "page",
-                    filterName: "region",
-                    filterValue: 0,
-                  },
-                  {
-                    type: "page",
-                    filterName: "park",
-                    filterValue: 0,
-                  },
-                ];
-              });
-            }}
+            onClearRegion={clearRegionFilter}
             selectedPark={selectedPark}
-            onClearPark={() => {
-              setSelectedPark(null);
-              setSelectedParkId(0);
-              setCurrentPage(1);
-              setStoredFilters((currentFilters) => {
-                const nonParkPageFilters = currentFilters.filter(
-                  (currentFilter) =>
-                    !(
-                      currentFilter.type === "page" &&
-                      currentFilter.filterName === "park"
-                    ),
-                );
-
-                return [
-                  ...nonParkPageFilters,
-                  {
-                    type: "page",
-                    filterName: "park",
-                    filterValue: 0,
-                  },
-                ];
-              });
-            }}
+            onClearPark={clearParkFilter}
             selectedTableFilters={activeTableFilters}
-            onClearTableFilter={(field) => {
-              setTableFilterValues((prev) => ({ ...prev, [field]: "" }));
-              setCurrentPage(1);
-              setStoredFilters((currentFilters) =>
-                currentFilters.filter(
-                  (currentFilter) =>
-                    !(
-                      currentFilter.type === "table" &&
-                      currentFilter.fieldName === field
-                    ),
-                ),
-              );
-            }}
+            onClearTableFilter={clearTableFilter}
             showArchived={showArchived}
-            onClearShowArchived={() => {
-              setShowArchived(false);
-              setCurrentPage(1);
-            }}
+            onClearShowArchived={clearShowArchivedFilter}
             hasAnyFilters={
               Boolean(selectedRegion) ||
               Boolean(selectedPark) ||
               showArchived ||
               activeTableFilters.length > 0
             }
-            onClearAll={() => {
-              setSelectedRegion(null);
-              setSelectedRegionId(0);
-              setSelectedPark(null);
-              setSelectedParkId(0);
-              setShowArchived(false);
-              setTableFilterValues({});
-              setCurrentPage(1);
-              setStoredFilters(defaultPageFilters);
-            }}
+            onClearAll={clearAllFilters}
           />
         </div>
       </div>
@@ -1033,15 +1043,15 @@ export default function AdvisoryDashboard() {
               onPageChange={setCurrentPage}
               onPageSizeChange={(nextPageSize) => {
                 setPageSize(nextPageSize);
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               onFilterChange={({ field, value }) => {
                 setTableFilterValues((prev) => ({ ...prev, [field]: value }));
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               onSortChange={(next) => {
                 setSortConfig(next);
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               initialFilterValues={initialTableFilterValues}
               filterValues={tableFilterValues}
