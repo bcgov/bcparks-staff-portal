@@ -12,10 +12,7 @@ import {
 } from "@/lib/advisories/utils/AdvisoryUtil";
 import AdvisoryForm from "@/components/advisories/composite/advisoryForm/AdvisoryForm";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
-import {
-  labelCompare,
-  camelCaseToSentenceCase,
-} from "@/lib/advisories/utils/AppUtil";
+import { labelCompare } from "@/lib/advisories/utils/AppUtil";
 import getEnv from "@/config/getEnv";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fa-kit/icons/classic/solid";
@@ -562,14 +559,14 @@ export default function Advisory({ mode }) {
             if (restrictedAdvisoryStatusCodes.has(s.code) && approver) {
               return {
                 code: s.code,
-                label: camelCaseToSentenceCase(s.advisoryStatus),
+                label: s.advisoryStatus,
                 value: s.documentId,
               };
             }
             if (!restrictedAdvisoryStatusCodes.has(s.code)) {
               return {
                 code: s.code,
-                label: camelCaseToSentenceCase(s.advisoryStatus),
+                label: s.advisoryStatus,
                 value: s.documentId,
               };
             }

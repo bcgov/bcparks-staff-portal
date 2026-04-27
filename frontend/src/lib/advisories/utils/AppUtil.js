@@ -28,10 +28,3 @@ export function dateCompare(a, b) {
   }
   return 0;
 }
-
-export function camelCaseToSentenceCase(input) {
-  if (!input) {
-    return "";
-  }
-  return input[0].toUpperCase() + input.slice(1).toLowerCase();
-}
