@@ -549,12 +549,9 @@ export default function AdvisoryDashboard() {
         render(rowData) {
           const statusClassMap = {
             DFT: "status-draft",
-            // to be UNP "status-unpublished"
-            INA: "status-inactive",
-            // to be HQR "status-hq-review"
-            APR: "status-approved",
-            // to be SCH "status-scheduled"
-            ARQ: "status-requested",
+            UNP: "status-unpublished",
+            HQR: "status-scheduled",
+            SCH: "status-hq-review",
             PUB: "status-published",
             ARCHIVED: "status-archived",
           };
