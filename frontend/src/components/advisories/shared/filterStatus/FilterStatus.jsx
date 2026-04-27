@@ -9,12 +9,16 @@ export default function FilterStatus({
   onClearRegion,
   selectedPark,
   onClearPark,
+  selectedTableFilters,
+  onClearTableFilter,
+  showArchived,
+  onClearShowArchived,
   hasAnyFilters,
   onClearAll,
 }) {
   return (
     <div className="filter-status mt-3">
-      {totalResults > 0 && (
+      {hasAnyFilters && (
         <div className="num-results mb-2">
           {totalResults} result{totalResults === 1 ? "" : "s"}
         </div>
@@ -33,6 +37,18 @@ export default function FilterStatus({
             label={`BC Parks park: ${selectedPark.label}`}
             onRemove={onClearPark}
           />
+        )}
+
+        {selectedTableFilters.map((filter) => (
+          <FilterBadge
+            key={filter.field}
+            label={filter.label}
+            onRemove={() => onClearTableFilter(filter.field)}
+          />
+        ))}
+
+        {showArchived && (
+          <FilterBadge label="Show archived" onRemove={onClearShowArchived} />
         )}
 
         {hasAnyFilters && (
@@ -61,6 +77,15 @@ FilterStatus.propTypes = {
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }),
   onClearPark: PropTypes.func.isRequired,
+  selectedTableFilters: PropTypes.arrayOf(
+    PropTypes.shape({
+      field: PropTypes.string.isRequired,
+      label: PropTypes.string.isRequired,
+    }),
+  ).isRequired,
+  onClearTableFilter: PropTypes.func.isRequired,
+  showArchived: PropTypes.bool.isRequired,
+  onClearShowArchived: PropTypes.func.isRequired,
   hasAnyFilters: PropTypes.bool.isRequired,
   onClearAll: PropTypes.func.isRequired,
 };
@@ -68,4 +93,5 @@ FilterStatus.propTypes = {
 FilterStatus.defaultProps = {
   selectedRegion: null,
   selectedPark: null,
+  selectedTableFilters: [],
 };
