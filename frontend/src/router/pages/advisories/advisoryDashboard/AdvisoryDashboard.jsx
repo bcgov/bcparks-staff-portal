@@ -780,7 +780,7 @@ export default function AdvisoryDashboard() {
             <MultiSelect
               label="RST Recreation district"
               countLabel="RST Recreation district"
-              placeholder="Select a district"
+              placeholder="Search or select a district"
               value={selectedDistrict}
               options={districtOptions}
               onChange={(e) => {
@@ -814,7 +814,7 @@ export default function AdvisoryDashboard() {
             <MultiSelect
               label="BC Parks region"
               countLabel="BC Parks region"
-              placeholder="Select a region"
+              placeholder="Search or select a region"
               value={selectedRegion}
               options={regionOptions}
               onChange={(e) => {
@@ -848,7 +848,7 @@ export default function AdvisoryDashboard() {
             <MultiSelect
               label="BC Parks park"
               countLabel="BC Parks park"
-              placeholder="Select a park"
+              placeholder="Search or select a park"
               value={selectedPark}
               options={parkOptions}
               onChange={(e) => {
