@@ -55,16 +55,16 @@ const COLUMN_FILTERS = [
 /**
  * Builds an array of filters
  * @param {Object} tableFilterValues Column filter values keyed by column field name
- * @param {number} selectedRegionId Selected region id (0 = none)
- * @param {string|number} selectedParkId Selected park documentId (0 = none)
- * @param {Array} protectedAreas Full list of protected areas (used to resolve orcs from documentId)
+ * @param {string[]} selectedRegionIds Selected region documentIds ([] = none)
+ * @param {string[]} selectedDistrictIds Selected district documentIds ([] = none)
+ * @param {string[]} selectedParkIds Selected park documentIds ([] = none)
  * @returns {Array} Array of Strapi filters
  */
 export function buildFilter(
   tableFilterValues,
-  selectedRegionId,
-  selectedParkId,
-  protectedAreas,
+  selectedRegionIds,
+  selectedDistrictIds,
+  selectedParkIds,
 ) {
   const filters = [];
 
@@ -74,22 +74,24 @@ export function buildFilter(
     }
   }
 
-  if (selectedRegionId) {
+  if (selectedRegionIds.length > 0) {
     filters.push({
-      regions: { id: { $eq: selectedRegionId } },
+      regions: { documentId: { $in: selectedRegionIds } },
     });
   }
 
-  if (selectedParkId && selectedParkId !== -1) {
-    const park = protectedAreas.find(
-      (protectedArea) => protectedArea.documentId === selectedParkId,
-    );
+  if (selectedDistrictIds.length > 0) {
+    filters.push({
+      recreationResources: {
+        recreationDistrict: { documentId: { $in: selectedDistrictIds } },
+      },
+    });
+  }
 
-    if (park) {
-      filters.push({
-        protectedAreas: { orcs: { $eq: park.orcs } },
-      });
-    }
+  if (selectedParkIds.length > 0) {
+    filters.push({
+      protectedAreas: { documentId: { $in: selectedParkIds } },
+    });
   }
 
   return filters;
