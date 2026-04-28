@@ -46,7 +46,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
     let unchangedCount = 0;
 
     for (const strapiFeatureType of strapiFeatureTypes) {
-      const { parkFeatureType, featureTypeId } = strapiFeatureType;
+      const { parkFeatureType, featureTypeId, rank } = strapiFeatureType;
 
       if (!featureTypeId) {
         console.warn(
@@ -62,6 +62,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
       const featureTypeToSave = {
         name: parkFeatureType,
         strapiFeatureTypeId: featureTypeId,
+        rank: rank || 1000000,
       };
 
       if (matchedFeatureType) {

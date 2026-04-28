@@ -23,11 +23,17 @@ const MODEL_CONFIG = {
       protectedArea: { fields: ["orcs"] },
     },
   },
+  "park-area-type": {
+    endpoint: "/park-area-types",
+  },
   "park-area": {
     endpoint: "/park-areas",
     populate: {
       protectedArea: {
         fields: ["orcs"],
+      },
+      parkAreaType: {
+        fields: ["areaTypeId"],
       },
     },
   },

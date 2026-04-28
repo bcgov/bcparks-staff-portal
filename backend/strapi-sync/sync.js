@@ -2,6 +2,7 @@ import "../env.js";
 import { getItemByAttributes, createModel } from "./utils.js";
 import { Park, Section, ManagementArea } from "../models/index.js";
 import { getStrapiModelData } from "./strapi-data-service.js";
+import importStrapiParkAreaTypes from "../tasks/import-park-area-types/import-park-area-types.js";
 import importStrapiParkAreas from "../tasks/import-park-areas/import-park-areas.js";
 import importStrapiFeatureTypes from "../tasks/import-feature-types/import-feature-types.js";
 import importStrapiFeatures from "../tasks/import-features/import-features.js";
@@ -89,7 +90,7 @@ export async function syncManagementAreas(managementAreaData) {
 
 /**
  * Syncs data from Strapi to our database
- * Focuses on parks, featureTypes, and features
+ * Focuses on parks, parkAreaTypes, parkAreas, featureTypes, and features
  * @returns {Promise[Object]} resolves when all data has been synced
  */
 export async function syncData() {
@@ -103,6 +104,7 @@ export async function syncData() {
 
   await importStrapiDateTypes(transaction);
   await importStrapiProtectedAreas(transaction);
+  await importStrapiParkAreaTypes(transaction);
   await importStrapiParkAreas(transaction);
   await importStrapiFeatureTypes(transaction);
   await importStrapiFeatures(transaction);
