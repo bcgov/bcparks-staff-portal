@@ -82,7 +82,7 @@ FilterStatus.propTypes = {
       field: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
     }),
-  ).isRequired,
+  ),
   onClearTableFilter: PropTypes.func.isRequired,
   showArchived: PropTypes.bool.isRequired,
   onClearShowArchived: PropTypes.func.isRequired,

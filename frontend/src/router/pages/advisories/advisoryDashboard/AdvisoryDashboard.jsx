@@ -1008,25 +1008,25 @@ export default function AdvisoryDashboard() {
               }
             />
           </div>
-          <FilterStatus
-            totalResults={totalPublicAdvisories}
-            selectedRegion={selectedRegion}
-            onClearRegion={clearRegionFilter}
-            selectedPark={selectedPark}
-            onClearPark={clearParkFilter}
-            selectedTableFilters={activeTableFilters}
-            onClearTableFilter={clearTableFilter}
-            showArchived={showArchived}
-            onClearShowArchived={clearShowArchivedFilter}
-            hasAnyFilters={
-              Boolean(selectedRegion) ||
-              Boolean(selectedPark) ||
-              showArchived ||
-              activeTableFilters.length > 0
-            }
-            onClearAll={clearAllFilters}
-          />
         </div>
+        <FilterStatus
+          totalResults={totalPublicAdvisories}
+          selectedRegion={selectedRegion}
+          onClearRegion={clearRegionFilter}
+          selectedPark={selectedPark}
+          onClearPark={clearParkFilter}
+          selectedTableFilters={activeTableFilters}
+          onClearTableFilter={clearTableFilter}
+          showArchived={showArchived}
+          onClearShowArchived={clearShowArchivedFilter}
+          hasAnyFilters={
+            Boolean(selectedRegion) ||
+            Boolean(selectedPark) ||
+            showArchived ||
+            activeTableFilters.length > 0
+          }
+          onClearAll={clearAllFilters}
+        />
       </div>
       {
         <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
