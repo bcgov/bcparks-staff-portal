@@ -876,9 +876,11 @@ export default function AdvisoryDashboard() {
               }}
             />
           </div>
+        </div>
+        <div className="row ad-row">
           <div className="col-12">
             <Form.Check
-              className="mt-4 mb-0 advisory-archived-toggle"
+              className="advisory-archived-toggle mt-3"
               type="checkbox"
               id="show-archived"
               checked={showArchived}
