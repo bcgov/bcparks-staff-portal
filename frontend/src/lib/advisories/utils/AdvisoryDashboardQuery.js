@@ -26,10 +26,6 @@ const COLUMN_FILTERS = [
     }),
   },
   {
-    key: "endDate",
-    build: (value) => ({ endDate: { $containsi: toIsoDateFilter(value) } }),
-  },
-  {
     key: "expiryDate",
     build: (value) => ({ expiryDate: { $containsi: toIsoDateFilter(value) } }),
   },
@@ -42,11 +38,12 @@ const COLUMN_FILTERS = [
     build: (value) => ({ eventType: { eventType: { $containsi: value } } }),
   },
   {
-    key: "associatedParks",
+    key: "associatedResources",
     build: (value) => ({
       $or: [
         { protectedAreas: { protectedAreaName: { $containsi: value } } },
         { recreationResources: { resourceName: { $containsi: value } } },
+        { recreationResources: { recResourceId: { $containsi: value } } },
       ],
     }),
   },
@@ -104,7 +101,7 @@ export function buildFilter(
  */
 const SORT_FIELD_MAP = {
   "urgency.urgency": "urgency.sequence",
-  associatedParks: [
+  associatedResources: [
     "protectedAreas.protectedAreaName",
     "recreationResources.resourceName",
   ],

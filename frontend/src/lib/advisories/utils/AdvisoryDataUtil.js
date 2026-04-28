@@ -18,10 +18,11 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
   return publicAdvisories.map((publicAdvisory) => {
     publicAdvisory.expired = publicAdvisory.expiryDate < today ? "Y" : "N";
     // Display associated parks/regions, or rec resource name if no parks/regions
-    publicAdvisory.associatedParks =
+    publicAdvisory.associatedResources =
       publicAdvisory.protectedAreas.map((p) => p.protectedAreaName).join(", ") +
         publicAdvisory.regions.map((r) => r.regionName).join(", ") ||
-      publicAdvisory.recreationResources.map((r) => r.resourceName).join(", ");
+      publicAdvisory.recreationResources.map((r) => r.resourceName).join(", ") +
+        publicAdvisory.recreationResources.map((r) => r.district).join(", ");
 
     let regionsWithParkCount = [];
 
