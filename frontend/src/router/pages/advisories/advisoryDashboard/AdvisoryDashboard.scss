@@ -94,8 +94,10 @@
   }
 
   .urgency-column {
-    padding-left: 10px;
-    width: 2px;
+    position: absolute;
+    inset: 0;
+    // same width as the urgency border
+    left: -8px;
   }
 
   .page-loader {
@@ -125,5 +127,12 @@
 
   .advisory-dashboard-padding {
     padding: 16px;
+  }
+
+  .ad-row {
+    h1.title {
+      color: var(--typography-color-primary) !important;
+      font-weight: 400;
+    }
   }
 }

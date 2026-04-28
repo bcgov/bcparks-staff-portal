@@ -4,4 +4,25 @@
     background-color: var(--surface-color-primary-disabled);
     color: var(--typography-color-primary) !important;
   }
+
+  &.advisory-status-badge {
+    font-size: 15px;
+    color: var(--typography-color-primary) !important;
+    &.status-draft {
+      background-color: var(--theme-gold-50) !important;
+    }
+    &.status-hq-review {
+      background-color: rgba(199, 199, 199, 0.8) !important;
+    }
+    &.status-scheduled {
+      background-color: var(--bc-standard-03100, #e0ebdb) !important;
+    }
+    &.status-published {
+      background-color: var(--primary-light-blue, #c7e3fd) !important;
+    }
+    &.status-unpublished,
+    &.status-archived {
+      background-color: var(--secondary-light-brown-01, #f2f0eb) !important;
+    }
+  }
 }

@@ -13,6 +13,7 @@ import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
+import StatusBadge from "@/components/StatusBadge";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Badge from "react-bootstrap/Badge";
@@ -21,15 +22,9 @@ import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowUpToLine } from "@fa-kit/icons/classic/regular";
 import {
-  faCircleInfo,
   faTriangleExclamation,
-  faClock,
   faCircleQuestion,
-  faFolderArrowDown,
-  faPencil,
-  faThumbsUp,
 } from "@fa-kit/icons/classic/solid";
 import { updatePublicAdvisories } from "@/lib/advisories/utils/AdvisoryDataUtil";
 import {
@@ -93,7 +88,6 @@ export default function AdvisoryDashboard() {
   const [selectedDistrict, setSelectedDistrict] = useState([]);
   const [selectedParkId, setSelectedParkId] = useState([]);
   const [selectedPark, setSelectedPark] = useState([]);
-  const [publishedAdvisories, setPublishedAdvisories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
   const [publicAdvisories, setPublicAdvisories] = useState([]);
@@ -210,29 +204,6 @@ export default function AdvisoryDashboard() {
         // Fetch advisory statuses and urgencies for filter options and table icons
         setAdvisoryStatuses(fetchedAdvisoryStatuses);
         setUrgencies(fetchedUrgencies);
-
-        // Fetch the list of advisory numbers that currently have a live PUB version
-        if (fetchedAdvisoryStatuses.length > 0) {
-          const publishedStatus = fetchedAdvisoryStatuses.filter(
-            (status) => status.code === "PUB",
-          );
-
-          if (publishedStatus?.length > 0) {
-            try {
-              const result = await cmsGet(
-                `/public-advisories?filters[advisoryStatus][code]=PUB&fields[0]=advisoryNumber&pagination[limit]=-1&sort=createdAt:DESC`,
-              );
-
-              if (isMounted) {
-                setPublishedAdvisories(
-                  result.map((advisory) => advisory.advisoryNumber),
-                );
-              }
-            } catch (error) {
-              console.error("Error fetching published advisories:", error);
-            }
-          }
-        }
 
         if (isMounted) {
           // Preserve filters
@@ -519,31 +490,38 @@ export default function AdvisoryDashboard() {
           width: 10,
         },
         cellStyle(e, rowData) {
+          const baseStyle = {
+            position: "relative",
+          };
+
           if (rowData.urgency !== null) {
             switch (rowData.urgency?.urgency?.toLowerCase()) {
               case "low":
                 return {
-                  borderLeft: "8px solid #2454a4",
+                  ...baseStyle,
+                  borderLeft: "8px solid #053662",
                 };
               case "medium":
                 return {
-                  borderLeft: "8px solid #f5d20e",
+                  ...baseStyle,
+                  borderLeft: "8px solid #F8BB47",
                 };
               case "high":
                 return {
-                  borderLeft: "8px solid #f30505",
+                  ...baseStyle,
+                  borderLeft: "8px solid #CE3E39",
                 };
               default:
-                return {};
+                return baseStyle;
             }
           }
 
-          return {};
+          return baseStyle;
         },
         render(rowData) {
           return (
             <OverlayTrigger
-              placement="top"
+              placement="left"
               overlay={
                 <Tooltip id={`urgency-${rowData.documentId || rowData.id}`}>
                   {rowData.urgency
@@ -566,80 +544,34 @@ export default function AdvisoryDashboard() {
           return lookup;
         }, {}),
         cellStyle: {
-          textAlign: "center",
+          textAlign: "left",
         },
         render(rowData) {
-          const statusIconMap = {
-            DFT: { icon: faPencil, className: "draftIcon" },
-            UNP: { icon: faClock, className: "inactiveIcon" },
-            SCH: { icon: faThumbsUp, className: "approvedIcon" },
-            HQR: { icon: faCircleInfo, className: "approvalRequestedIcon" },
-            PUB: { icon: faArrowUpToLine, className: "publishedIcon" },
+          const statusClassMap = {
+            DFT: "status-draft",
+            UNP: "status-unpublished",
+            HQR: "status-hq-review",
+            SCH: "status-scheduled",
+            PUB: "status-published",
+            ARCHIVED: "status-archived",
           };
-          const code = rowData.advisoryStatus?.code;
-          const statusEntry = statusIconMap[code];
-          const isPublished = publishedAdvisories.includes(
-            rowData.advisoryNumber,
-          );
 
-          // Two icons when the advisory already has a live published version
-          // but is currently in a different status (A = published indicator, B = current status)
-          const showDual = isPublished && code !== "PUB" && statusEntry;
+          const statusText = rowData.archived
+            ? "Archived"
+            : rowData.advisoryStatus?.advisoryStatus;
+
+          const statusCode = rowData.archived
+            ? "ARCHIVED"
+            : rowData.advisoryStatus?.code;
+
+          const badgeClassName = statusClassMap[statusCode];
 
           return (
-            <div className="advisory-status">
-              {rowData.advisoryStatus && !rowData.archived && (
-                <OverlayTrigger
-                  placement="bottom"
-                  overlay={
-                    <Tooltip id={`status-${rowData.documentId || rowData.id}`}>
-                      {rowData.advisoryStatus.advisoryStatus}
-                    </Tooltip>
-                  }
-                >
-                  <span>
-                    {showDual ? (
-                      <span className="dual-icon">
-                        <FontAwesomeIcon
-                          icon={faArrowUpToLine}
-                          className="icon-a publishedIcon"
-                        />
-                        <FontAwesomeIcon
-                          icon={statusEntry.icon}
-                          className={`icon-b ${statusEntry.className}`}
-                        />
-                      </span>
-                    ) : (
-                      statusEntry && (
-                        <FontAwesomeIcon
-                          icon={statusEntry.icon}
-                          className={statusEntry.className}
-                        />
-                      )
-                    )}
-                  </span>
-                </OverlayTrigger>
-              )}
-              {rowData.archived && (
-                <OverlayTrigger
-                  placement="top"
-                  overlay={
-                    <Tooltip
-                      id={`archived-${rowData.documentId || rowData.id}`}
-                    >
-                      Archived
-                    </Tooltip>
-                  }
-                >
-                  <span>
-                    <FontAwesomeIcon
-                      icon={faFolderArrowDown}
-                      className="archivedIcon"
-                    />
-                  </span>
-                </OverlayTrigger>
-              )}
-            </div>
+            <StatusBadge
+              status={statusCode}
+              label={statusText}
+              className={`advisory-status-badge ${badgeClassName}`}
+            />
           );
         },
       },
@@ -814,7 +746,7 @@ export default function AdvisoryDashboard() {
         ),
       },
     ],
-    [urgencies, advisoryStatuses, publishedAdvisories],
+    [urgencies, advisoryStatuses],
   );
 
   if (toCreate) {
@@ -828,13 +760,15 @@ export default function AdvisoryDashboard() {
     <div className="advisory-dashboard-page-wrap advisories-styles">
       <div className="container-fluid">
         <div className="row ad-row">
-          <div className="col-lg-6 col-md-4 col-sm-12">
-            <h4 className="float-left">Public Advisories</h4>
+          <div className="col-12">
+            <h1 className="title">Advisories and closures</h1>
           </div>
-          <div className="col-lg-6 col-md-4 col-sm-12 text-end">
+        </div>
+        <div className="row ad-row">
+          <div className="col-12 text-end">
             <Button
-              label="Create a new Advisory"
-              styling="bcgov-normal-yellow btn"
+              label="+ Create advisory / closure"
+              styling="bcgov-normal-blue btn"
               onClick={() => {
                 setToCreate(true);
               }}
@@ -846,7 +780,7 @@ export default function AdvisoryDashboard() {
             <MultiSelect
               label="RST Recreation district"
               countLabel="RST Recreation district"
-              placeholder="Select a district"
+              placeholder="Search or select a district"
               value={selectedDistrict}
               options={districtOptions}
               onChange={(e) => {
@@ -880,7 +814,7 @@ export default function AdvisoryDashboard() {
             <MultiSelect
               label="BC Parks region"
               countLabel="BC Parks region"
-              placeholder="Select a region"
+              placeholder="Search or select a region"
               value={selectedRegion}
               options={regionOptions}
               onChange={(e) => {
@@ -914,7 +848,7 @@ export default function AdvisoryDashboard() {
             <MultiSelect
               label="BC Parks park"
               countLabel="BC Parks park"
-              placeholder="Select a park"
+              placeholder="Search or select a park"
               value={selectedPark}
               options={parkOptions}
               onChange={(e) => {
@@ -942,9 +876,11 @@ export default function AdvisoryDashboard() {
               }}
             />
           </div>
+        </div>
+        <div className="row ad-row">
           <div className="col-12">
             <Form.Check
-              className="mt-4 mb-0 advisory-archived-toggle"
+              className="advisory-archived-toggle mt-3"
               type="checkbox"
               id="show-archived"
               checked={showArchived}

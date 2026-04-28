@@ -198,7 +198,7 @@ export default function AdvisorySummary() {
       <Navigate
         push
         to={{
-          pathname: `/advisories`,
+          pathname: `/advisories-and-closures`,
           index: index >= 0 ? index : 0,
         }}
       />
@@ -234,7 +234,7 @@ export default function AdvisorySummary() {
                     }}
                   >
                     <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
-                    Back to public advisories
+                    Back to advisories and closures
                   </button>
                 </div>
                 {!showOriginalAdvisory && (

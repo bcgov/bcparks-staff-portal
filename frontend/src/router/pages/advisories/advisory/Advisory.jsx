@@ -1098,7 +1098,7 @@ export default function Advisory({ mode }) {
       <Navigate
         push
         to={{
-          pathname: `/advisories`,
+          pathname: `/advisories-and-closures`,
           index: 0,
         }}
       />
@@ -1139,7 +1139,9 @@ export default function Advisory({ mode }) {
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                   Back to{" "}
-                  {mode === "create" ? "public advisories" : "advisory preview"}
+                  {mode === "create"
+                    ? "advisories and closures"
+                    : "advisory / closure preview"}
                 </button>
                 <h4 className="mt-5 mb-0">
                   {mode === "create" ? "Create a new" : "Edit"} advisory

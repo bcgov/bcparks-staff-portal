@@ -13,7 +13,7 @@
   "dependencies": {
     "@awesome.me/kit-c1c3245051": "^1.0.4",
     "@bcgov/bc-sans": "^2.1.0",
-    "@bcgov/design-tokens": "^3.2.0",
+    "@bcgov/design-tokens": "^4.0.0",
     "@ckeditor/ckeditor5-react": "^11.1.0",
     "@digitalspace/bcparks-bootstrap-theme": "^1.4.6",
     "@fortawesome/fontawesome-svg-core": "^6.6.0",

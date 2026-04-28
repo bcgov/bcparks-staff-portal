@@ -6,7 +6,8 @@
   --top-nav-height: 4.5rem;
 
   & > header {
-    height: var(--top-nav-height);
+    min-height: var(--top-nav-height);
+    flex-wrap: nowrap;
     border-bottom: 2px solid var(--theme-primary-gold);
 
     .logo-link {
@@ -14,10 +15,11 @@
     }
 
     .app-title {
-      white-space: nowrap;
+      font-size: 1.125rem;
 
       // Align the title text with the logo
       @include from-md {
+        font-size: 1.5rem;
         margin-bottom: 6px;
       }
     }
