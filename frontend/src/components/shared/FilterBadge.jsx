@@ -14,7 +14,11 @@ export default function FilterBadge({ label, onRemove }) {
         className="px-2 py-1 d-flex align-items-center fw-normal"
       >
         <span>{label}</span>
-        <CloseButton className="ms-2" onClick={onRemove} />
+        <CloseButton
+          className="ms-2"
+          onClick={onRemove}
+          aria-label={`Remove filter: ${label}`}
+        />
       </Badge>
     </div>
   );
