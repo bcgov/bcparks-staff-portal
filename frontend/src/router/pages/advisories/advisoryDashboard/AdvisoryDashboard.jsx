@@ -32,21 +32,14 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
+import {
+  REGION_FILTER_NAME,
+  PARK_FILTER_NAME,
+  TABLE_FILTER_LABELS,
+} from "@/constants/advisoryDashboardFilter";
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
-const REGION_FILTER_NAME = "region";
-const PARK_FILTER_NAME = "park";
-const TABLE_FILTER_LABELS = {
-  "urgency.urgency": "Urgency",
-  "advisoryStatus.advisoryStatus": "Status",
-  advisoryDate: "Posting date",
-  endDate: "End date",
-  expiryDate: "Expiry date",
-  title: "Headline",
-  "eventType.eventType": "Event type",
-  associatedParks: "Associated Resource(s)",
-};
 
 /**
  * Returns the value of a page-level filter from the stored filters array, or a default if not found.
@@ -296,27 +289,137 @@ export default function AdvisoryDashboard() {
     );
   }
 
-  function clearRegionFilter() {
-    setSelectedRegion(null);
-    setSelectedRegionId(0);
-    setSelectedPark(null);
-    setSelectedParkId(0);
-    resetToFirstPage();
-    updateRegionAndParkFilters(0, 0);
-  }
-
-  function clearParkFilter() {
-    setSelectedPark(null);
-    setSelectedParkId(0);
-    resetToFirstPage();
-    setStoredFilters((currentFilters) => {
-      const currentRegionId = getPageFilterValue(
-        currentFilters,
-        REGION_FILTER_NAME,
-        0,
+  function clearDistrictFilter(districtValue) {
+    if (typeof districtValue !== "undefined") {
+      const nextSelectedDistricts = selectedDistrict.filter(
+        (district) => district.value !== districtValue,
+      );
+      const nextSelectedDistrictIds = nextSelectedDistricts.map(
+        (district) => district.value,
       );
 
-      return replacePageFilters(currentFilters, currentRegionId, 0);
+      setSelectedDistrict(nextSelectedDistricts);
+      setSelectedDistrictId(nextSelectedDistrictIds);
+      resetToFirstPage();
+
+      setStoredFilters((currentFilters) => {
+        const nonDistrictPageFilters = currentFilters.filter(
+          (currentFilter) =>
+            !(
+              currentFilter.type === "page" &&
+              currentFilter.filterName === "district"
+            ),
+        );
+
+        return [
+          ...nonDistrictPageFilters,
+          {
+            type: "page",
+            filterName: "district",
+            filterValue: nextSelectedDistrictIds,
+          },
+        ];
+      });
+
+      return;
+    }
+
+    setSelectedDistrict([]);
+    setSelectedDistrictId([]);
+    resetToFirstPage();
+    setStoredFilters((currentFilters) => {
+      const nonDistrictPageFilters = currentFilters.filter(
+        (currentFilter) =>
+          !(
+            currentFilter.type === "page" &&
+            currentFilter.filterName === "district"
+          ),
+      );
+
+      return [
+        ...nonDistrictPageFilters,
+        { type: "page", filterName: "district", filterValue: [] },
+      ];
+    });
+  }
+
+  function clearRegionFilter(regionValue) {
+    if (typeof regionValue !== "undefined") {
+      const nextSelectedRegions = selectedRegion.filter(
+        (region) => region.value !== regionValue,
+      );
+      const nextSelectedRegionIds = nextSelectedRegions.map(
+        (region) => region.value,
+      );
+
+      setSelectedRegion(nextSelectedRegions);
+      setSelectedRegionId(nextSelectedRegionIds);
+      resetToFirstPage();
+
+      setStoredFilters((currentFilters) => {
+        const currentParkIds = getPageFilterValue(
+          currentFilters,
+          PARK_FILTER_NAME,
+          [],
+        );
+
+        return replacePageFilters(
+          currentFilters,
+          nextSelectedRegionIds,
+          currentParkIds,
+        );
+      });
+
+      return;
+    }
+
+    setSelectedRegion([]);
+    setSelectedRegionId([]);
+    setSelectedPark([]);
+    setSelectedParkId([]);
+    resetToFirstPage();
+    updateRegionAndParkFilters([], []);
+  }
+
+  function clearParkFilter(parkValue) {
+    if (typeof parkValue !== "undefined") {
+      const nextSelectedParks = selectedPark.filter(
+        (park) => park.value !== parkValue,
+      );
+      const nextSelectedParkIds = nextSelectedParks.map((park) => park.value);
+
+      setSelectedPark(nextSelectedParks);
+      setSelectedParkId(nextSelectedParkIds);
+      resetToFirstPage();
+
+      setStoredFilters((currentFilters) => {
+        const currentRegionIds = getPageFilterValue(
+          currentFilters,
+          REGION_FILTER_NAME,
+          [],
+        );
+
+        return replacePageFilters(
+          currentFilters,
+          currentRegionIds,
+          nextSelectedParkIds,
+        );
+      });
+
+      return;
+    }
+
+    setSelectedPark([]);
+    setSelectedParkId([]);
+    resetToFirstPage();
+    setStoredFilters((currentFilters) => {
+      const currentRegionIds = getPageFilterValue(
+        currentFilters,
+        REGION_FILTER_NAME,
+        [],
+      );
+
+      return replacePageFilters(currentFilters, currentRegionIds, []);
     });
   }
 
@@ -334,10 +437,12 @@ export default function AdvisoryDashboard() {
   }
 
   function clearAllFilters() {
-    setSelectedRegion(null);
-    setSelectedRegionId(0);
-    setSelectedPark(null);
-    setSelectedParkId(0);
+    setSelectedDistrict([]);
+    setSelectedDistrictId([]);
+    setSelectedRegion([]);
+    setSelectedRegionId([]);
+    setSelectedPark([]);
+    setSelectedParkId([]);
     setShowArchived(false);
     setTableFilterValues({});
     resetToFirstPage();
@@ -1011,6 +1116,8 @@ export default function AdvisoryDashboard() {
         </div>
         <FilterStatus
           totalResults={totalPublicAdvisories}
+          selectedDistrict={selectedDistrict}
+          onClearDistrict={clearDistrictFilter}
           selectedRegion={selectedRegion}
           onClearRegion={clearRegionFilter}
           selectedPark={selectedPark}
@@ -1020,8 +1127,9 @@ export default function AdvisoryDashboard() {
           showArchived={showArchived}
           onClearShowArchived={clearShowArchivedFilter}
           hasAnyFilters={
-            Boolean(selectedRegion) ||
-            Boolean(selectedPark) ||
+            selectedDistrict.length > 0 ||
+            selectedRegion.length > 0 ||
+            selectedPark.length > 0 ||
             showArchived ||
             activeTableFilters.length > 0
           }

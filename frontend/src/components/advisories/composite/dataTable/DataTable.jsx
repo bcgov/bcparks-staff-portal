@@ -221,8 +221,10 @@ export default function DataTable(props) {
   // - onFilterValuesChange: callback to notify parent of changes
   // - If parent does not pass these, DataTable manages its own filter state (uncontrolled)
   const [filterValues, setFilterValues] = useState(initialFilterValues || {});
+  // Determine if filter values are controlled by checking for the presence of filterValuesProp
   const isFilterValuesControlled =
     filterValuesProp !== null && typeof filterValuesProp === "object";
+  // Use parent-provided filter values when present, otherwise use local state.
   const effectiveFilterValues = filterValuesProp ?? filterValues;
   const [sortConfig, setSortConfig] = useState(null);
   const [page, setPage] = useState(1);
