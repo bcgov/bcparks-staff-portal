@@ -472,6 +472,9 @@ export default function AdvisoryForm({
         <Form.Group className="form-group">
           <Form.Label htmlFor={headlineInput.id}>
             <span className="append-required">Headline</span>
+            <LightTooltip arrow title="Headline">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
           </Form.Label>
           <Form.Control
             value={headline}
@@ -579,6 +582,9 @@ export default function AdvisoryForm({
         <Form.Group className="form-group" controlId="custom-message">
           <Form.Label>
             Custom message
+            <LightTooltip arrow title="Custom message">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
             <br />
             <span className="field-description">
               Appears before any selected standard message(s)
@@ -616,6 +622,12 @@ export default function AdvisoryForm({
         <Form.Group className="form-group">
           <Form.Label>
             Attach item(s) below the advisory/closure message
+            <LightTooltip
+              arrow
+              title="Attach item(s) below the advisory/closure message"
+            >
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
           </Form.Label>
         </Form.Group>
 
