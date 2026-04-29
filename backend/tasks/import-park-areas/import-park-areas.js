@@ -78,7 +78,7 @@ export default async function importStrapiParkAreas(transaction = null) {
     });
     const parkAreaTypeLookup = new Map(
       dootParkAreaTypes.map((parkAreaType) => [
-        String(parkAreaType.parkAreaTypeNumber), // Key: e.g. "10"
+        parkAreaType.parkAreaTypeNumber, // Key: e.g. "10"
         parkAreaType, // Value: ParkAreaType record
       ]),
     );
@@ -115,9 +115,8 @@ export default async function importStrapiParkAreas(transaction = null) {
         strapiParkArea.parkAreaType?.areaTypeId ?? null;
 
       if (parkAreaTypeNumber) {
-        const parkAreaTypeNumberString = String(parkAreaTypeNumber);
         const matchedParkAreaType =
-          parkAreaTypeLookup.get(parkAreaTypeNumberString) ?? null;
+          parkAreaTypeLookup.get(parkAreaTypeNumber) ?? null;
 
         parkAreaTypeId = matchedParkAreaType?.id ?? null;
       }
