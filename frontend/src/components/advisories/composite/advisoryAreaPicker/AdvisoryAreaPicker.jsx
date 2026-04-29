@@ -1,6 +1,6 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import "./AdvisoryAreaPicker.css";
+import "./AdvisoryAreaPicker.scss";
 import Select from "react-select";
 import Form from "react-bootstrap/Form";
 import classNames from "classnames";
@@ -274,7 +274,11 @@ export default function AdvisoryAreaPicker({
           </Form.Group>
 
           <Form.Group className="form-group" controlId="fire-centres">
-            <Form.Label>Fire centre(s)</Form.Label>
+            <Form.Label>
+              Fire centre(s)
+              <br />
+              <span className="bc-parks-only">BC Parks Only</span>
+            </Form.Label>
             <Select
               id="fire-centres"
               options={fireCentres}
@@ -290,7 +294,11 @@ export default function AdvisoryAreaPicker({
           </Form.Group>
 
           <Form.Group className="form-group" controlId="fire-zones">
-            <Form.Label>Fire zone(s)</Form.Label>
+            <Form.Label>
+              Fire zone(s)
+              <br />
+              <span className="bc-parks-only">BC Parks Only</span>
+            </Form.Label>
             <Select
               id="fire-zones"
               options={fireZones}
@@ -309,7 +317,11 @@ export default function AdvisoryAreaPicker({
             className="form-group"
             controlId="natural-resource-districts"
           >
-            <Form.Label>Natural resource district(s)</Form.Label>
+            <Form.Label>
+              Natural resource district(s)
+              <br />
+              <span className="bc-parks-only">BC Parks Only</span>
+            </Form.Label>
             <Select
               id="natural-resource-districts"
               options={naturalResourceDistricts}
