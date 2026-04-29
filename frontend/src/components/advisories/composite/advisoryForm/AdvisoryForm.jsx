@@ -442,7 +442,7 @@ export default function AdvisoryForm({
             <span className="append-required">Event type</span>
             <LightTooltip
               arrow
-              title="Please select the most appropriate event type that your advisory falls under, this does impact the front-end.
+              title="Select the most appropriate event type that your advisory falls under, this does impact the front-end.
                 For example, freshet and wildfire event types load conditional content to their respective flood and wildfire pages."
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
@@ -652,7 +652,7 @@ export default function AdvisoryForm({
                     }}
                   />
                   {renderHelperText(
-                    linkTypeErrors[idx] && "Please provide a link type",
+                    linkTypeErrors[idx] && "Provide a link type",
                     linkTypeErrors[idx],
                   )}
                 </div>
@@ -695,7 +695,7 @@ export default function AdvisoryForm({
                 onBlur={() => validateLink(l, idx, "title", setLinkTitleErrors)}
               />
               {renderHelperText(
-                linkTitleErrors[idx] && "Please provide a link title",
+                linkTitleErrors[idx] && "Provide a link title",
                 linkTitleErrors[idx],
               )}
             </Form.Group>
@@ -736,7 +736,7 @@ export default function AdvisoryForm({
                   </button>
                 </InputGroup>
                 {renderHelperText(
-                  linkUrlErrors[idx] && "Please provide a URL",
+                  linkUrlErrors[idx] && "Provide a URL",
                   linkUrlErrors[idx],
                 )}
               </Form.Group>
@@ -786,7 +786,7 @@ export default function AdvisoryForm({
                     </Btn>
                     {linkFileErrors[idx] && (
                       <span className="d-block text-danger ad-helper-text">
-                        Please upload file too
+                        Upload file too
                       </span>
                     )}
                   </>
@@ -963,7 +963,7 @@ export default function AdvisoryForm({
             />
             {renderHelperText("month dd, yyyy")}
             {advisoryDateError !== "" &&
-              renderHelperText("Please enter valid date", true)}
+              renderHelperText("Enter valid date", true)}
           </Form.Group>
 
           <Form.Group className="form-group">
@@ -1134,7 +1134,7 @@ export default function AdvisoryForm({
               required={submitterInput.required}
             />
             {renderHelperText(
-              submittedByError && "Please enter a name",
+              submittedByError && "Enter a name",
               submittedByError !== "",
             )}
           </Form.Group>

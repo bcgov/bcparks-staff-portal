@@ -4,7 +4,7 @@ import { isEmpty } from "@/lib/advisories/utils/AppUtil";
 export function validateOptionalNumber(field) {
   field.setError("");
   if (field.value === "" || !/^0$|^[1-9]\d{0,3}$/.test(field.value)) {
-    field.setError("Please enter a valid number");
+    field.setError("Enter a valid number");
     return false;
   }
   return true;
@@ -13,7 +13,7 @@ export function validateOptionalNumber(field) {
 export function validateRequiredText(field) {
   field.setError("");
   if (field.value !== 0 && !field.value) {
-    field.setError(`Please enter ${field.text}`);
+    field.setError(`Enter ${field.text}`);
     return false;
   }
   return true;
@@ -22,7 +22,7 @@ export function validateRequiredText(field) {
 export function validateRequiredSelect(field) {
   field.setError("");
   if (!field.value) {
-    field.setError(`Please select ${field.text}`);
+    field.setError(`Select ${field.text}`);
     return false;
   }
   return true;
@@ -31,7 +31,7 @@ export function validateRequiredSelect(field) {
 export function validateRequiredMultiSelect(field) {
   field.setError("");
   if (isEmpty(field.value)) {
-    field.setError(`Please select ${field.text}`);
+    field.setError(`Select ${field.text}`);
     return false;
   }
   return true;
@@ -49,7 +49,7 @@ export function validateRequiredAffectedArea(field) {
     });
   }
   if (!valueExists) {
-    field.setError(`Please select ${field.text}`);
+    field.setError(`Select ${field.text}`);
   }
   return valueExists;
 }
@@ -71,7 +71,7 @@ export function validateDate(field) {
   const date = moment(field.value);
 
   if (!date.isValid()) {
-    field.setError("Please enter valid date");
+    field.setError("Enter valid date");
     return false;
   }
   return true;
@@ -140,19 +140,19 @@ export function validateDisplayedDate(field) {
     (obj.displayedDateOption === "" || obj.displayedDateOption === "posting") &&
     !obj.advisoryDate
   ) {
-    field.setError("Please choose a date to display");
+    field.setError("Choose a date to display");
     return false;
   }
   if (obj.displayedDateOption === "start" && !obj.startDate) {
-    field.setError("Please enter a date for 'Start date'");
+    field.setError("Enter a date for 'Start date'");
     return false;
   }
   if (obj.displayedDateOption === "updated" && !obj.updatedDate) {
-    field.setError("Please enter a date for 'Updated date'");
+    field.setError("Enter a date for 'Updated date'");
     return false;
   }
   if (obj.displayedDateOption === "event" && (!obj.startDate || !obj.endDate)) {
-    field.setError("Please enter dates for 'Start date' and 'End date'");
+    field.setError("Enter dates for 'Start date' and 'End date'");
     return false;
   }
   field.setError("");
@@ -200,7 +200,7 @@ export function validAdvisoryData(
     validData = validData && validUpdatedDate;
   }
   if (!validData) {
-    advisoryData.formError("Please complete required fields");
+    advisoryData.formError("Complete the required fields");
   }
   return validData;
 }

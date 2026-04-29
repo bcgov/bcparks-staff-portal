@@ -1073,7 +1073,7 @@ export default function Advisory({ mode }) {
         setSelectedSites([]);
         setIsSubmitting(false);
         setIsSavingDraft(false);
-        setFormError("Please select at least one Location!!");
+        setFormError("Select at least one location");
       } else {
         Promise.resolve(saveLinks()).then((savedLinks) => {
           const updatedLinks =
