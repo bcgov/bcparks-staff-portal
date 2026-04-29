@@ -592,7 +592,7 @@ export default function AdvisoryForm({
         </div>
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-            Custom message{" "}
+            Custom message
             <LightTooltip arrow title="Custom message">
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
