@@ -2,6 +2,8 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryAreaPicker.css";
 import Select from "react-select";
+import Form from "react-bootstrap/Form";
+import classNames from "classnames";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
@@ -187,230 +189,197 @@ export default function AdvisoryAreaPicker({
   };
 
   return (
-    <>
-      <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 ad-label"></div>
-        <div className="col-lg-7 col-md-8 col-sm-12">
-          <span>
-            Select at least one park <b>or</b> search for groups of parks by
-            other area{"("}s{")"}
-          </span>
-          <LightTooltip
-            arrow
-            title="Please select the park that your advisory is affecting.
+    <div className="advisory-area-picker">
+      <p>
+        Select at least one park <b>or</b> search for groups of parks by other
+        area(s){" "}
+        <LightTooltip
+          arrow
+          title="Please select the park that your advisory is affecting.
                 There is no need to select additional sites, regions, or sections if your advisory is just for a specific park.
                 Selecting a region (or any other category) will apply your advisory to every park page within that region or other category.
                 For example, an advisory for Goldstream Park would only need Goldstream selected from the list of parks,
                 you would not need to include West Coast in the regions as this would trigger an alert for all parks in the West Coast."
-          >
-            <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
-          </LightTooltip>
-          {!isShow && (
-            <button
-              type="button"
-              className="btn btn-link btn-boolean"
-              onClick={() => setIsShow(true)}
-            >
-              Show other areas
-            </button>
-          )}
-        </div>
-      </div>
+        >
+          <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+        </LightTooltip>
+      </p>
+
+      {!isShow && (
+        <button
+          type="button"
+          className="btn btn-link btn-boolean"
+          onClick={() => setIsShow(true)}
+        >
+          Show other areas
+        </button>
+      )}
+
       {isShow && (
         <>
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              Fire Centre(s)
-            </div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <div className="bcgov-select-form">
-                <Select
-                  options={fireCentres}
-                  value={selectedFireCentres}
-                  onChange={(e) => {
-                    setSelectedFireCentres(e);
-                    handleChangeRelations({ updatedFireCentres: e });
-                  }}
-                  placeholder="Select Fire Centre(s)"
-                  isMulti="true"
-                  className="bcgov-select"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              Fire Zone(s)
-            </div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <div className="bcgov-select-form">
-                <Select
-                  options={fireZones}
-                  value={selectedFireZones}
-                  onChange={(e) => {
-                    setSelectedFireZones(e);
-                    handleChangeRelations({ updatedFireZones: e });
-                  }}
-                  placeholder="Select Fire Zone(s)"
-                  isMulti="true"
-                  className="bcgov-select"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              Natural Resource District(s)
-            </div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <div className="bcgov-select-form">
-                <Select
-                  options={naturalResourceDistricts}
-                  value={selectedNaturalResourceDistricts}
-                  onChange={(e) => {
-                    setSelectedNaturalResourceDistricts(e);
-                    handleChangeRelations({
-                      updatedNaturalResourceDistricts: e,
-                    });
-                  }}
-                  placeholder="Select Natural Resource District(s)"
-                  isMulti="true"
-                  className="bcgov-select"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              Region(s)
-            </div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <div className="bcgov-select-form">
-                <Select
-                  options={regions}
-                  value={selectedRegions}
-                  onChange={(e) => {
-                    setSelectedRegions(e);
-                    handleChangeRelations({ updatedRegions: e });
-                  }}
-                  placeholder="Select Region(s)"
-                  isMulti="true"
-                  className="bcgov-select"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              Section(s)
-            </div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <div className="bcgov-select-form">
-                <Select
-                  options={sections}
-                  value={selectedSections}
-                  onChange={(e) => {
-                    setSelectedSections(e);
-                    handleChangeRelations({ updatedSections: e });
-                  }}
-                  placeholder="Select Section(s)"
-                  isMulti="true"
-                  className="bcgov-select"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-              Management Area(s)
-            </div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <div className="bcgov-select-form">
-                <Select
-                  options={managementAreas}
-                  value={selectedManagementAreas}
-                  onChange={(e) => {
-                    setSelectedManagementAreas(e);
-                    handleChangeRelations({ updatedManagementAreas: e });
-                  }}
-                  placeholder="Select Management Area(s)"
-                  isMulti="true"
-                  className="bcgov-select"
-                />
-              </div>
-            </div>
-          </div>
-          <div className="row">
-            <div className="col-lg-3 col-md-4 col-sm-12"></div>
-            <div className="col-lg-7 col-md-8 col-sm-12">
-              <button
-                type="button"
-                className="btn btn-link btn-boolean"
-                onClick={() => setIsShow(false)}
-              >
-                Hide other areas
-              </button>
-            </div>
-          </div>
+          <Form.Group className="form-group" controlId="fire-centres">
+            <Form.Label>Fire Centre(s)</Form.Label>
+            <Select
+              id="fire-centres"
+              options={fireCentres}
+              value={selectedFireCentres}
+              onChange={(e) => {
+                setSelectedFireCentres(e);
+                handleChangeRelations({ updatedFireCentres: e });
+              }}
+              placeholder="Search or select fire centre(s)"
+              isMulti
+              className="bcgov-select"
+            />{" "}
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="fire-zones">
+            <Form.Label>Fire Zone(s)</Form.Label>
+            <Select
+              id="fire-zones"
+              options={fireZones}
+              value={selectedFireZones}
+              onChange={(e) => {
+                setSelectedFireZones(e);
+                handleChangeRelations({ updatedFireZones: e });
+              }}
+              placeholder="Search or select fire zone(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group
+            className="form-group"
+            controlId="natural-resource-districts"
+          >
+            <Form.Label>Natural Resource District(s)</Form.Label>
+            <Select
+              id="natural-resource-districts"
+              options={naturalResourceDistricts}
+              value={selectedNaturalResourceDistricts}
+              onChange={(e) => {
+                setSelectedNaturalResourceDistricts(e);
+                handleChangeRelations({
+                  updatedNaturalResourceDistricts: e,
+                });
+              }}
+              placeholder="Search or select natural resource district(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="regions">
+            <Form.Label>Region(s)</Form.Label>
+            <Select
+              id="regions"
+              options={regions}
+              value={selectedRegions}
+              onChange={(e) => {
+                setSelectedRegions(e);
+                handleChangeRelations({ updatedRegions: e });
+              }}
+              placeholder="Search or select region(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="sections">
+            <Form.Label>Section(s)</Form.Label>
+            <Select
+              id="sections"
+              options={sections}
+              value={selectedSections}
+              onChange={(e) => {
+                setSelectedSections(e);
+                handleChangeRelations({ updatedSections: e });
+              }}
+              placeholder="Search or select section(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="management-areas">
+            <Form.Label>Management Area(s)</Form.Label>
+            <Select
+              id="management-areas"
+              options={managementAreas}
+              value={selectedManagementAreas}
+              onChange={(e) => {
+                setSelectedManagementAreas(e);
+                handleChangeRelations({ updatedManagementAreas: e });
+              }}
+              placeholder="Search or select management area(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <button
+            type="button"
+            className="btn btn-link btn-boolean"
+            onClick={() => setIsShow(false)}
+          >
+            Hide other areas
+          </button>
         </>
       )}
-      <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+
+      <Form.Group className="form-group" controlId="parks">
+        <Form.Label>
           <span className="append-required">Park(s)</span>
+        </Form.Label>
+        <div
+          className={classNames({
+            "bcgov-select-error": protectedAreaError !== "",
+          })}
+        >
+          <Select
+            id="parks"
+            options={protectedAreas}
+            maxHeight={200}
+            value={selectedProtectedAreas}
+            onChange={(e, action) => {
+              setSelectedProtectedAreas(e);
+              if (action.action === "clear") {
+                handleClearProtectedAreas();
+              } else {
+                handleRemoveProtectedArea(e);
+              }
+            }}
+            placeholder="Search or select park(s)"
+            isMulti
+            className="bcgov-select"
+            onBlur={() => {
+              validateRequiredAffectedArea(advisoryData.protectedArea);
+            }}
+            styles={customSelectStyles}
+          />
         </div>
-        <div className="col-lg-7 col-md-8 col-sm-12">
-          <div
-            className={`bcgov-select-form ${
-              protectedAreaError !== "" ? "bcgov-select-error" : ""
-            }`}
-          >
-            <Select
-              options={protectedAreas}
-              maxHeight={200}
-              value={selectedProtectedAreas}
-              onChange={(e, action) => {
-                setSelectedProtectedAreas(e);
-                if (action.action === "clear") {
-                  handleClearProtectedAreas();
-                } else {
-                  handleRemoveProtectedArea(e);
-                }
-              }}
-              placeholder="Select Park(s)"
-              isMulti="true"
-              className="bcgov-select"
-              onBlur={() => {
-                validateRequiredAffectedArea(advisoryData.protectedArea);
-              }}
-              styles={customSelectStyles}
-            />
-            {protectedAreaError && (
-              <div className="invalid-feedback d-block">
-                {protectedAreaError}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-      <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">Site(s)</div>
-        <div className="col-lg-7 col-md-8 col-sm-12">
-          <div className="bcgov-select-form">
-            <Select
-              options={sites}
-              value={selectedSites}
-              onChange={(e) => {
-                setSelectedSites(e);
-                handleChangeRelations({ updatedSites: e });
-              }}
-              placeholder="Select Site(s)"
-              isMulti="true"
-              className="bcgov-select"
-            />
-          </div>
-        </div>
-      </div>
-    </>
+        {protectedAreaError && (
+          <div className="invalid-feedback d-block">{protectedAreaError}</div>
+        )}
+      </Form.Group>
+
+      <Form.Group className="form-group" controlId="sites">
+        <Form.Label>Site(s)</Form.Label>
+        <Select
+          id="sites"
+          options={sites}
+          value={selectedSites}
+          onChange={(e) => {
+            setSelectedSites(e);
+            handleChangeRelations({ updatedSites: e });
+          }}
+          placeholder="Search or select site(s)"
+          isMulti
+          className="bcgov-select"
+        />
+      </Form.Group>
+    </div>
   );
 }
 
