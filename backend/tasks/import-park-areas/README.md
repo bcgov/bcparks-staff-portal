@@ -23,7 +23,7 @@ Imports and updates `ParkArea` records from Strapi's `park-area` collection by m
 | `inReservationSystem`     | `inReservationSystem`  | Defaults to `false` if not provided            |
 | `orcsAreaNumber`          | `strapiOrcsAreaNumber` | Used for matching existing records             |
 | `protectedArea.orcs`      | `parkId`               | DOOT Park ID, matched by ORCS value            |
-| `parkAreaType.areaTypeId` | `parkAreaTypeNumber`   | DOOT Park Area Type, matched by well-known key |
+| `parkAreaType.areaTypeId` | `parkAreaTypeId`       | DOOT Park Area Type, matched by well-known key |
 
 ## Transaction Safety
 

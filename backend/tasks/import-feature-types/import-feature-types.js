@@ -118,13 +118,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await FeatureType.sequelize.transaction();
 
   try {
-    const result = await importStrapiFeatureTypes(transaction);
-
+    await importStrapiFeatureTypes(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Unchanged: ${result.unchanged}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);
