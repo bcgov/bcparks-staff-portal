@@ -479,6 +479,9 @@ export default function AdvisoryForm({
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
             <span className="append-required">Headline</span>
+            <LightTooltip arrow title="Headline">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
             <Form.Control
@@ -590,6 +593,9 @@ export default function AdvisoryForm({
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
             Custom message
+            <LightTooltip arrow title="Custom message">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
             <br />
             <span className="field-description">
               Appears before any selected standard message(s)
@@ -625,6 +631,9 @@ export default function AdvisoryForm({
         <div className="row">
           <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
             Attach item(s) below the advisory/closure message
+            <LightTooltip arrow title="Attach items">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
           </div>
           <div className="col-lg-7 col-md-8 col-sm-12">
             {linksRef.current.map((l, idx) => (
