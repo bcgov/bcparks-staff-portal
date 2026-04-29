@@ -129,7 +129,7 @@ export default function AdvisoryForm({
 }) {
   const { hasAnyRole } = useAccess();
 
-  const [protectedAreaError, setProtectedAreaError] = useState("");
+  const [affectedResourceError, setAffectedResourceError] = useState("");
   const [eventTypeError, setEventTypeError] = useState("");
   const [urgencyError, setUrgencyError] = useState("");
   const [advisoryStatusError, setAdvisoryStatusError] = useState("");
@@ -172,10 +172,11 @@ export default function AdvisoryForm({
       setError: setEventTypeError,
       text: "event type",
     },
-    protectedArea: {
-      value: [
+    affectedResources: {
+      // BC Parks Protected area and Recreation resource fields share a validation state:
+      // One field or the other must have a value
+      protectedAreaFields: [
         selectedProtectedAreas,
-        selectedRecreationResources,
         selectedRegions,
         selectedSections,
         selectedManagementAreas,
@@ -184,8 +185,11 @@ export default function AdvisoryForm({
         selectedNaturalResourceDistricts,
         selectedSites,
       ],
-      setError: setProtectedAreaError,
-      text: "at least one park",
+
+      recreationResourcesFields: [selectedRecreationResources],
+
+      setError: setAffectedResourceError,
+      text: "Select at least one Recreation Sites and Trails recreation resource or BC Parks park",
     },
     urgency: { value: urgency, setError: setUrgencyError, text: "urgency" },
     advisoryDate: { value: advisoryDate, setError: setAdvisoryDateError },
@@ -380,7 +384,7 @@ export default function AdvisoryForm({
   return (
     <form className="advisory-form">
       <section>
-        <h3>Affected area</h3>
+        <h3>Affected resources</h3>
         <AdvisoryAreaPicker
           data={{
             recreationResources,
@@ -411,7 +415,7 @@ export default function AdvisoryForm({
             selectedNaturalResourceDistricts,
             setSelectedNaturalResourceDistricts,
             advisoryData,
-            protectedAreaError,
+            affectedResourceError,
           }}
         />
       </section>
@@ -449,7 +453,7 @@ export default function AdvisoryForm({
             <span className="append-required">Event type</span>
             <LightTooltip
               arrow
-              title="Please select the most appropriate event type that your advisory falls under, this does impact the front-end.
+              title="Select the most appropriate event type that your advisory falls under, this does impact the front-end.
                 For example, freshet and wildfire event types load conditional content to their respective flood and wildfire pages."
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
@@ -669,7 +673,7 @@ export default function AdvisoryForm({
                     }}
                   />
                   {renderHelperText(
-                    linkTypeErrors[idx] && "Please provide a link type",
+                    linkTypeErrors[idx] && "Provide a link type",
                     linkTypeErrors[idx],
                   )}
                 </div>
@@ -712,7 +716,7 @@ export default function AdvisoryForm({
                 onBlur={() => validateLink(l, idx, "title", setLinkTitleErrors)}
               />
               {renderHelperText(
-                linkTitleErrors[idx] && "Please provide a link title",
+                linkTitleErrors[idx] && "Provide a link title",
                 linkTitleErrors[idx],
               )}
             </Form.Group>
@@ -753,7 +757,7 @@ export default function AdvisoryForm({
                   </button>
                 </InputGroup>
                 {renderHelperText(
-                  linkUrlErrors[idx] && "Please provide a URL",
+                  linkUrlErrors[idx] && "Provide a URL",
                   linkUrlErrors[idx],
                 )}
               </Form.Group>
@@ -803,7 +807,7 @@ export default function AdvisoryForm({
                     </Btn>
                     {linkFileErrors[idx] && (
                       <span className="d-block text-danger ad-helper-text">
-                        Please upload file too
+                        Select a file
                       </span>
                     )}
                   </>
@@ -980,7 +984,7 @@ export default function AdvisoryForm({
             />
             {renderHelperText("month dd, yyyy")}
             {advisoryDateError !== "" &&
-              renderHelperText("Please enter valid date", true)}
+              renderHelperText("Enter a valid date", true)}
           </Form.Group>
 
           <Form.Group className="form-group">
@@ -1151,7 +1155,7 @@ export default function AdvisoryForm({
               required={submitterInput.required}
             />
             {renderHelperText(
-              submittedByError && "Please enter a name",
+              submittedByError && "Enter a name",
               submittedByError !== "",
             )}
           </Form.Group>
@@ -1320,7 +1324,7 @@ export default function AdvisoryForm({
         )}
 
       <section className="action-buttons">
-        <p>{renderHelperText(formError, formError !== "")}</p>
+        {renderHelperText(formError, formError !== "", "mb-3")}
 
         <div className="d-flex justify-content-start gap-2">
           {!hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (

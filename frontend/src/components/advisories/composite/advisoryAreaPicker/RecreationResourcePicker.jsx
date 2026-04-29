@@ -90,7 +90,12 @@ RecreationResourceOption.propTypes = {
   }),
 };
 
-export default function RecreationResourcePicker({ options, value, onChange }) {
+export default function RecreationResourcePicker({
+  options,
+  value,
+  onChange,
+  ...otherProps
+}) {
   return (
     <Select
       inputId="resources"
@@ -103,6 +108,8 @@ export default function RecreationResourcePicker({ options, value, onChange }) {
       className="bcgov-select"
       classNamePrefix="recreation-resource-picker"
       components={{ Option: RecreationResourceOption }}
+      // Pass through other props (event handlers like onBlur for validation, etc.)
+      {...otherProps}
     />
   );
 }

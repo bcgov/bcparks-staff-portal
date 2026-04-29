@@ -1,14 +1,18 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import "./AdvisoryAreaPicker.css";
+import "./AdvisoryAreaPicker.scss";
 import Select from "react-select";
 import Form from "react-bootstrap/Form";
 import classNames from "classnames";
 import RecreationResourcePicker from "./RecreationResourcePicker";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
-import { validateRequiredAffectedArea } from "@/lib/advisories/validators/AdvisoryValidator";
+import {
+  faCircleQuestion,
+  faChevronDown,
+  faChevronUp,
+} from "@fa-kit/icons/classic/solid";
+import { validateRequiredAffectedResources } from "@/lib/advisories/validators/AdvisoryValidator";
 import { generateProtectedAreasListForSelectedRelations } from "@/lib/advisories/utils/AdvisoryUtil";
 import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
 
@@ -42,7 +46,7 @@ export default function AdvisoryAreaPicker({
     selectedNaturalResourceDistricts,
     setSelectedNaturalResourceDistricts,
     advisoryData,
-    protectedAreaError,
+    affectedResourceError,
   },
 }) {
   const [isShow, setIsShow] = useState(false);
@@ -195,164 +199,27 @@ export default function AdvisoryAreaPicker({
   return (
     <div className="advisory-area-picker">
       <p>
-        Select at least one park <b>or</b> search for groups of parks by other
-        area(s){" "}
+        <span className="append-required">
+          Select at least one resource <b>or</b> search for groups of resources
+          by other area(s)
+        </span>
         <LightTooltip
           arrow
-          title="Please select the park that your advisory is affecting.
-                There is no need to select additional sites, regions, or sections if your advisory is just for a specific park.
-                Selecting a region (or any other category) will apply your advisory to every park page within that region or other category.
-                For example, an advisory for Goldstream Park would only need Goldstream selected from the list of parks,
-                you would not need to include West Coast in the regions as this would trigger an alert for all parks in the West Coast."
+          title="Please select the resource that your advisory is affecting.
+                There is no need to select additional sites, regions, or sections if your advisory is just for a specific resource.
+                Selecting a region (or any other category) will apply your advisory to every resource page within that region or other category.
+                For example, an advisory for Goldstream Park would only need Goldstream selected from the list of resources,
+                you would not need to include West Coast in the regions as this would trigger an alert for all resources in the West Coast."
         >
           <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
         </LightTooltip>
       </p>
 
-      {!isShow && (
-        <button
-          type="button"
-          className="btn btn-link btn-boolean"
-          onClick={() => setIsShow(true)}
-        >
-          Show other areas
-        </button>
-      )}
-
-      {isShow && (
-        <>
-          <Form.Group className="form-group" controlId="fire-centres">
-            <Form.Label>Fire Centre(s)</Form.Label>
-            <Select
-              id="fire-centres"
-              options={fireCentres}
-              value={selectedFireCentres}
-              onChange={(e) => {
-                setSelectedFireCentres(e);
-                handleChangeRelations({ updatedFireCentres: e });
-              }}
-              placeholder="Search or select fire centre(s)"
-              isMulti
-              className="bcgov-select"
-            />{" "}
-          </Form.Group>
-
-          <Form.Group className="form-group" controlId="fire-zones">
-            <Form.Label>Fire Zone(s)</Form.Label>
-            <Select
-              id="fire-zones"
-              options={fireZones}
-              value={selectedFireZones}
-              onChange={(e) => {
-                setSelectedFireZones(e);
-                handleChangeRelations({ updatedFireZones: e });
-              }}
-              placeholder="Search or select fire zone(s)"
-              isMulti
-              className="bcgov-select"
-            />
-          </Form.Group>
-
-          <Form.Group
-            className="form-group"
-            controlId="natural-resource-districts"
-          >
-            <Form.Label>Natural Resource District(s)</Form.Label>
-            <Select
-              id="natural-resource-districts"
-              options={naturalResourceDistricts}
-              value={selectedNaturalResourceDistricts}
-              onChange={(e) => {
-                setSelectedNaturalResourceDistricts(e);
-                handleChangeRelations({
-                  updatedNaturalResourceDistricts: e,
-                });
-              }}
-              placeholder="Search or select natural resource district(s)"
-              isMulti
-              className="bcgov-select"
-            />
-          </Form.Group>
-
-          <Form.Group className="form-group" controlId="regions">
-            <Form.Label>Region(s)</Form.Label>
-            <Select
-              id="regions"
-              options={regions}
-              value={selectedRegions}
-              onChange={(e) => {
-                setSelectedRegions(e);
-                handleChangeRelations({ updatedRegions: e });
-              }}
-              placeholder="Search or select region(s)"
-              isMulti
-              className="bcgov-select"
-            />
-          </Form.Group>
-
-          <Form.Group className="form-group" controlId="sections">
-            <Form.Label>Section(s)</Form.Label>
-            <Select
-              id="sections"
-              options={sections}
-              value={selectedSections}
-              onChange={(e) => {
-                setSelectedSections(e);
-                handleChangeRelations({ updatedSections: e });
-              }}
-              placeholder="Search or select section(s)"
-              isMulti
-              className="bcgov-select"
-            />
-          </Form.Group>
-
-          <Form.Group className="form-group" controlId="management-areas">
-            <Form.Label>Management Area(s)</Form.Label>
-            <Select
-              id="management-areas"
-              options={managementAreas}
-              value={selectedManagementAreas}
-              onChange={(e) => {
-                setSelectedManagementAreas(e);
-                handleChangeRelations({ updatedManagementAreas: e });
-              }}
-              placeholder="Search or select management area(s)"
-              isMulti
-              className="bcgov-select"
-            />
-          </Form.Group>
-
-          <button
-            type="button"
-            className="btn btn-link btn-boolean"
-            onClick={() => setIsShow(false)}
-          >
-            Hide other areas
-          </button>
-        </>
-      )}
-
-      <Form.Group className="form-group" controlId="resources">
-        <Form.Label>
-          Recreation Sites and Trails recreation resource(s)
-        </Form.Label>
-        {/* TODO: Add validation and error state */}
-        <div>
-          <RecreationResourcePicker
-            options={recreationResources}
-            value={selectedRecreationResources}
-            onChange={setSelectedRecreationResources}
-          />
-        </div>
-      </Form.Group>
-
       <Form.Group className="form-group" controlId="parks">
-        <Form.Label>
-          <span className="append-required">Park(s)</span>
-        </Form.Label>
+        <Form.Label>BC Parks park(s)</Form.Label>
         <div
           className={classNames({
-            "bcgov-select-error": protectedAreaError !== "",
+            "bcgov-select-error": affectedResourceError !== "",
           })}
         >
           <Select
@@ -368,35 +235,231 @@ export default function AdvisoryAreaPicker({
                 handleRemoveProtectedArea(e);
               }
             }}
-            placeholder="Search or select park(s)"
+            placeholder="Search or select BC Parks park(s)"
             isMulti
             className="bcgov-select"
             onBlur={() => {
-              validateRequiredAffectedArea(advisoryData.protectedArea);
+              validateRequiredAffectedResources(advisoryData.affectedResources);
             }}
             styles={customSelectStyles}
           />
         </div>
-        {protectedAreaError && (
-          <div className="invalid-feedback d-block">{protectedAreaError}</div>
-        )}
       </Form.Group>
 
-      <Form.Group className="form-group" controlId="sites">
-        <Form.Label>Site(s)</Form.Label>
-        <Select
-          id="sites"
-          options={sites}
-          value={selectedSites}
-          onChange={(e) => {
-            setSelectedSites(e);
-            handleChangeRelations({ updatedSites: e });
-          }}
-          placeholder="Search or select site(s)"
-          isMulti
-          className="bcgov-select"
-        />
+      <Form.Group className="form-group" controlId="resources">
+        <Form.Label>
+          Recreation Sites and Trails recreation resource(s)
+        </Form.Label>
+        <div
+          className={classNames({
+            "bcgov-select-error": affectedResourceError !== "",
+          })}
+        >
+          <RecreationResourcePicker
+            options={recreationResources}
+            value={selectedRecreationResources}
+            onChange={setSelectedRecreationResources}
+            onBlur={() => {
+              validateRequiredAffectedResources(advisoryData.affectedResources);
+            }}
+          />
+        </div>
       </Form.Group>
+
+      {/* Show errors for both "Park(s)" and "Recreation resources(s)" fields */}
+      {affectedResourceError && (
+        <div className="invalid-feedback d-block mb-2">
+          {affectedResourceError}
+        </div>
+      )}
+
+      {!isShow && (
+        <button
+          type="button"
+          className="btn mt-2 btn-link btn-boolean with-icon"
+          onClick={() => setIsShow(true)}
+        >
+          Show other areas
+          <FontAwesomeIcon icon={faChevronDown} />
+        </button>
+      )}
+
+      {isShow && (
+        <>
+          <Form.Group className="form-group" controlId="sites">
+            <Form.Label>BC Parks site(s)</Form.Label>
+            <Select
+              id="sites"
+              options={sites}
+              value={selectedSites}
+              onChange={(e) => {
+                setSelectedSites(e);
+                handleChangeRelations({ updatedSites: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks site(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="fire-centres">
+            <Form.Label>
+              Fire centre(s)
+              <br />
+              <span className="bc-parks-only">BC Parks Only</span>
+            </Form.Label>
+            <Select
+              id="fire-centres"
+              options={fireCentres}
+              value={selectedFireCentres}
+              onChange={(e) => {
+                setSelectedFireCentres(e);
+                handleChangeRelations({ updatedFireCentres: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select fire centre(s)"
+              isMulti
+              className="bcgov-select"
+            />{" "}
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="fire-zones">
+            <Form.Label>
+              Fire zone(s)
+              <br />
+              <span className="bc-parks-only">BC Parks Only</span>
+            </Form.Label>
+            <Select
+              id="fire-zones"
+              options={fireZones}
+              value={selectedFireZones}
+              onChange={(e) => {
+                setSelectedFireZones(e);
+                handleChangeRelations({ updatedFireZones: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select fire zone(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group
+            className="form-group"
+            controlId="natural-resource-districts"
+          >
+            <Form.Label>
+              Natural resource district(s)
+              <br />
+              <span className="bc-parks-only">BC Parks Only</span>
+            </Form.Label>
+            <Select
+              id="natural-resource-districts"
+              options={naturalResourceDistricts}
+              value={selectedNaturalResourceDistricts}
+              onChange={(e) => {
+                setSelectedNaturalResourceDistricts(e);
+                handleChangeRelations({
+                  updatedNaturalResourceDistricts: e,
+                });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select natural resource district(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="regions">
+            <Form.Label>BC Parks region(s)</Form.Label>
+            <Select
+              id="regions"
+              options={regions}
+              value={selectedRegions}
+              onChange={(e) => {
+                setSelectedRegions(e);
+                handleChangeRelations({ updatedRegions: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks region(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="sections">
+            <Form.Label>BC Parks section(s)</Form.Label>
+            <Select
+              id="sections"
+              options={sections}
+              value={selectedSections}
+              onChange={(e) => {
+                setSelectedSections(e);
+                handleChangeRelations({ updatedSections: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks section(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="management-areas">
+            <Form.Label>BC Parks management area(s)</Form.Label>
+            <Select
+              id="management-areas"
+              options={managementAreas}
+              value={selectedManagementAreas}
+              onChange={(e) => {
+                setSelectedManagementAreas(e);
+                handleChangeRelations({ updatedManagementAreas: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks management area(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <button
+            type="button"
+            className="btn mt-2 btn-link btn-boolean with-icon"
+            onClick={() => setIsShow(false)}
+          >
+            Hide other areas
+            <FontAwesomeIcon icon={faChevronUp} />
+          </button>
+        </>
+      )}
     </div>
   );
 }
@@ -431,6 +494,6 @@ AdvisoryAreaPicker.propTypes = {
     selectedNaturalResourceDistricts: PropTypes.array,
     setSelectedNaturalResourceDistricts: PropTypes.func.isRequired,
     advisoryData: PropTypes.object,
-    protectedAreaError: PropTypes.string,
+    affectedResourceError: PropTypes.string,
   }).isRequired,
 };
