@@ -12,7 +12,6 @@
   }
 
   section {
-    padding: 1rem;
     max-width: 40em;
 
     &:not(:last-of-type) {
@@ -23,6 +22,7 @@
     border-radius: var(--layout-border-radius-large);
 
     &.shown-on-public-site {
+      padding: 1rem;
       border: var(--layout-border-width-small) solid
         var(--surface-color-border-default);
     }
