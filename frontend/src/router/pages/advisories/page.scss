@@ -119,7 +119,7 @@
   }
 
   .bcgov-input.form-control::placeholder {
-    color: var(--typography-color-primary) !important;
+    color: var(--typography-color-placeholder) !important;
   }
 
   .bcgov-datepicker-wrapper input:hover,
@@ -135,7 +135,7 @@
   }
 
   .bcgov-select [class*="-placeholder"] {
-    color: var(--typography-color-secondary) !important;
+    color: var(--typography-color-placeholder) !important;
   }
 
   .form-check-input,

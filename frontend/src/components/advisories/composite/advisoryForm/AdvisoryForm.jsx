@@ -485,6 +485,7 @@ export default function AdvisoryForm({
             maxLength={255}
             id={headlineInput.id}
             required={headlineInput.required}
+            placeholder="e.g. Temporary closures due to trail cleanup"
             onBlur={() => {
               validateRequiredText(advisoryData.headline);
             }}
