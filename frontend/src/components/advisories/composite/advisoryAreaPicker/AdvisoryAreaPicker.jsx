@@ -191,8 +191,10 @@ export default function AdvisoryAreaPicker({
   return (
     <div className="advisory-area-picker">
       <p>
-        Select at least one resource <b>or</b> search for groups of resources by
-        other area(s){" "}
+        <span className="append-required">
+          Select at least one resource <b>or</b> search for groups of resources
+          by other area(s)
+        </span>
         <LightTooltip
           arrow
           title="Please select the resource that your advisory is affecting.
@@ -329,9 +331,7 @@ export default function AdvisoryAreaPicker({
       )}
 
       <Form.Group className="form-group" controlId="parks">
-        <Form.Label>
-          <span className="append-required">Park(s)</span>
-        </Form.Label>
+        <Form.Label>Park(s)</Form.Label>
         <div
           className={classNames({
             "bcgov-select-error": protectedAreaError !== "",
