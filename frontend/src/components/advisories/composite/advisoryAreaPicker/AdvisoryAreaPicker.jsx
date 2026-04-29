@@ -191,15 +191,15 @@ export default function AdvisoryAreaPicker({
   return (
     <div className="advisory-area-picker">
       <p>
-        Select at least one park <b>or</b> search for groups of parks by other
-        area(s){" "}
+        Select at least one resource <b>or</b> search for groups of resources by
+        other area(s){" "}
         <LightTooltip
           arrow
-          title="Please select the park that your advisory is affecting.
-                There is no need to select additional sites, regions, or sections if your advisory is just for a specific park.
-                Selecting a region (or any other category) will apply your advisory to every park page within that region or other category.
-                For example, an advisory for Goldstream Park would only need Goldstream selected from the list of parks,
-                you would not need to include West Coast in the regions as this would trigger an alert for all parks in the West Coast."
+          title="Please select the resource that your advisory is affecting.
+                There is no need to select additional sites, regions, or sections if your advisory is just for a specific resource.
+                Selecting a region (or any other category) will apply your advisory to every resource page within that region or other category.
+                For example, an advisory for Goldstream Park would only need Goldstream selected from the list of resources,
+                you would not need to include West Coast in the regions as this would trigger an alert for all resources in the West Coast."
         >
           <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
         </LightTooltip>
