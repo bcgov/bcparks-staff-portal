@@ -415,7 +415,7 @@ export default function AdvisoryForm({
 
         <Form.Group className="form-group" controlId="resource-status">
           <Form.Label>
-            Resource status{" "}
+            <span className="append-required">Resource status</span>
             <LightTooltip
               arrow
               title="This status describes how the advisory event affects access to the park.
