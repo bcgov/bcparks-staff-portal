@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import Select, { components } from "react-select";
 import Badge from "react-bootstrap/Badge";
+import { RESOURCE_TYPE_ICONS } from "@/constants/resourceTypeIcon";
 import "./RecreationResourcePicker.scss";
 
 function getRecreationResourceMeta(option) {
@@ -8,24 +9,33 @@ function getRecreationResourceMeta(option) {
   const name = resource.resourceName || "";
   const recId = resource.recResourceId || "";
   const community = resource.closestCommunity || "";
-  const resourceType = resource.recreationResourceType?.resourceType || "";
+  const recreationResourceType = resource?.recreationResourceType || {};
+  const resourceType = recreationResourceType.resourceType || "";
+  const resourceTypeCode = recreationResourceType.resourceTypeCode || "";
+  const icon =
+    RESOURCE_TYPE_ICONS[resourceTypeCode] || RESOURCE_TYPE_ICONS.NO_TYPE;
 
   return {
     name,
     recId,
+    icon,
     subtitle: [resourceType, community].filter(Boolean).join(" • "),
   };
 }
 
 function RecreationResourceOption(props) {
-  const { name, recId, subtitle } = getRecreationResourceMeta(props.data);
+  const { name, recId, subtitle, icon, resourceType } =
+    getRecreationResourceMeta(props.data);
 
   return (
     <components.Option {...props}>
       <div className="recreation-resource">
         <div className="recreation-resource__left">
-          {/* TODO: replace with icon */}
-          <span className="recreation-resource__icon" aria-hidden="true"></span>
+          <img
+            src={icon}
+            alt={resourceType}
+            className="recreation-resource__icon"
+          />
           <div className="recreation-resource__text">
             <div className="recreation-resource__name">{name}</div>
             {subtitle && (
@@ -52,6 +62,7 @@ RecreationResourceOption.propTypes = {
       closestCommunity: PropTypes.string,
       recreationResourceType: PropTypes.shape({
         resourceType: PropTypes.string,
+        resourceTypeCode: PropTypes.string,
       }),
     }),
   }),
