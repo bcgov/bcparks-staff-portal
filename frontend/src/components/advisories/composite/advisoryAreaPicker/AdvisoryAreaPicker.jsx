@@ -4,6 +4,7 @@ import "./AdvisoryAreaPicker.css";
 import Select from "react-select";
 import Form from "react-bootstrap/Form";
 import classNames from "classnames";
+import RecreationResourcePicker from "./RecreationResourcePicker";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
@@ -13,6 +14,9 @@ import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
 
 export default function AdvisoryAreaPicker({
   data: {
+    recreationResources,
+    selectedRecreationResources,
+    setSelectedRecreationResources,
     protectedAreas,
     selectedProtectedAreas,
     setSelectedProtectedAreas,
@@ -328,6 +332,21 @@ export default function AdvisoryAreaPicker({
         </>
       )}
 
+      <div className="row">
+        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
+          Recreation Sites and Trails recreation resource(s)
+        </div>
+        <div className="col-lg-7 col-md-8 col-sm-12">
+          <div className="bcgov-select-form">
+            <RecreationResourcePicker
+              options={recreationResources}
+              value={selectedRecreationResources}
+              onChange={setSelectedRecreationResources}
+            />
+          </div>
+        </div>
+      </div>
+
       <Form.Group className="form-group" controlId="parks">
         <Form.Label>
           <span className="append-required">Park(s)</span>
@@ -385,6 +404,9 @@ export default function AdvisoryAreaPicker({
 
 AdvisoryAreaPicker.propTypes = {
   data: PropTypes.shape({
+    recreationResources: PropTypes.array.isRequired,
+    selectedRecreationResources: PropTypes.array,
+    setSelectedRecreationResources: PropTypes.func.isRequired,
     protectedAreas: PropTypes.array.isRequired,
     selectedProtectedAreas: PropTypes.array,
     setSelectedProtectedAreas: PropTypes.func.isRequired,

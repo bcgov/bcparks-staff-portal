@@ -222,6 +222,15 @@ export default function useCms() {
     [fetchCached],
   );
 
+  const getRecreationResources = useCallback(
+    () =>
+      fetchCached(
+        "recreationResources",
+        `/recreation-resources?${querySort("resourceName")}&populate=*`,
+      ),
+    [fetchCached],
+  );
+
   const getEventTypes = useCallback(
     () => fetchCached("eventTypes", `/event-types?${querySort("eventType")}`),
     [fetchCached],
@@ -300,6 +309,7 @@ export default function useCms() {
     getFireZones,
     getNaturalResourceDistricts,
     getRecreationDistricts,
+    getRecreationResources,
     getEventTypes,
     getAccessStatuses,
     getUrgencies,

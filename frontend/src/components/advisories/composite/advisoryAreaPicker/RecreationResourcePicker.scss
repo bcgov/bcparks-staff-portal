@@ -1,0 +1,48 @@
+.recreation-resource-select__option {
+  &--is-focused {
+    background-color: var(--surface-color-secondary-hover) !important;
+  }
+}
+
+.recreation-resource {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
+.recreation-resource__left {
+  align-items: center;
+  display: flex;
+  gap: 0.5rem;
+}
+
+// TODO: replace with icon
+.recreation-resource__icon {
+  background: #4d8f48;
+  border-radius: 999px;
+  height: 40px;
+  width: 40px;
+}
+
+.recreation-resource__name {
+  color: var(--theme-primary-blue);
+}
+
+.recreation-resource__subtitle {
+  color: var(--color-med-grey);
+  font-size: 0.95rem;
+  line-height: 1.35;
+  margin-top: 0.2rem;
+}
+
+.recreation-resource__id {
+  // override bootstrap badge style
+  &.bg-info {
+    background: var(--surface-color-background-light-blue);
+    color: var(--theme-primary-blue);
+    font-size: 1rem;
+    font-weight: 400;
+    padding: 0.25rem 0.6rem;
+  }
+}
