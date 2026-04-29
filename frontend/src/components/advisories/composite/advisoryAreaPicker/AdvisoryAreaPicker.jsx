@@ -220,7 +220,7 @@ export default function AdvisoryAreaPicker({
       {isShow && (
         <>
           <Form.Group className="form-group" controlId="fire-centres">
-            <Form.Label>Fire Centre(s)</Form.Label>
+            <Form.Label>Fire centre(s)</Form.Label>
             <Select
               id="fire-centres"
               options={fireCentres}
@@ -236,7 +236,7 @@ export default function AdvisoryAreaPicker({
           </Form.Group>
 
           <Form.Group className="form-group" controlId="fire-zones">
-            <Form.Label>Fire Zone(s)</Form.Label>
+            <Form.Label>Fire zone(s)</Form.Label>
             <Select
               id="fire-zones"
               options={fireZones}
@@ -255,7 +255,7 @@ export default function AdvisoryAreaPicker({
             className="form-group"
             controlId="natural-resource-districts"
           >
-            <Form.Label>Natural Resource District(s)</Form.Label>
+            <Form.Label>Natural resource district(s)</Form.Label>
             <Select
               id="natural-resource-districts"
               options={naturalResourceDistricts}
@@ -273,7 +273,7 @@ export default function AdvisoryAreaPicker({
           </Form.Group>
 
           <Form.Group className="form-group" controlId="regions">
-            <Form.Label>Region(s)</Form.Label>
+            <Form.Label>BC Parks region(s)</Form.Label>
             <Select
               id="regions"
               options={regions}
@@ -282,14 +282,14 @@ export default function AdvisoryAreaPicker({
                 setSelectedRegions(e);
                 handleChangeRelations({ updatedRegions: e });
               }}
-              placeholder="Search or select region(s)"
+              placeholder="Search or select BC Parks region(s)"
               isMulti
               className="bcgov-select"
             />
           </Form.Group>
 
           <Form.Group className="form-group" controlId="sections">
-            <Form.Label>Section(s)</Form.Label>
+            <Form.Label>BC Parks section(s)</Form.Label>
             <Select
               id="sections"
               options={sections}
@@ -298,14 +298,14 @@ export default function AdvisoryAreaPicker({
                 setSelectedSections(e);
                 handleChangeRelations({ updatedSections: e });
               }}
-              placeholder="Search or select section(s)"
+              placeholder="Search or select BC Parks section(s)"
               isMulti
               className="bcgov-select"
             />
           </Form.Group>
 
           <Form.Group className="form-group" controlId="management-areas">
-            <Form.Label>Management Area(s)</Form.Label>
+            <Form.Label>BC Parks management area(s)</Form.Label>
             <Select
               id="management-areas"
               options={managementAreas}
@@ -314,7 +314,7 @@ export default function AdvisoryAreaPicker({
                 setSelectedManagementAreas(e);
                 handleChangeRelations({ updatedManagementAreas: e });
               }}
-              placeholder="Search or select management area(s)"
+              placeholder="Search or select BC Parks management area(s)"
               isMulti
               className="bcgov-select"
             />
@@ -331,7 +331,7 @@ export default function AdvisoryAreaPicker({
       )}
 
       <Form.Group className="form-group" controlId="parks">
-        <Form.Label>Park(s)</Form.Label>
+        <Form.Label>BC Parks park(s)</Form.Label>
         <div
           className={classNames({
             "bcgov-select-error": protectedAreaError !== "",
@@ -350,7 +350,7 @@ export default function AdvisoryAreaPicker({
                 handleRemoveProtectedArea(e);
               }
             }}
-            placeholder="Search or select park(s)"
+            placeholder="Search or select BC Parks park(s)"
             isMulti
             className="bcgov-select"
             onBlur={() => {
@@ -365,7 +365,7 @@ export default function AdvisoryAreaPicker({
       </Form.Group>
 
       <Form.Group className="form-group" controlId="sites">
-        <Form.Label>Site(s)</Form.Label>
+        <Form.Label>BC Parks site(s)</Form.Label>
         <Select
           id="sites"
           options={sites}
@@ -374,7 +374,7 @@ export default function AdvisoryAreaPicker({
             setSelectedSites(e);
             handleChangeRelations({ updatedSites: e });
           }}
-          placeholder="Search or select site(s)"
+          placeholder="Search or select BC Parks site(s)"
           isMulti
           className="bcgov-select"
         />
