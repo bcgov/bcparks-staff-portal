@@ -3,8 +3,26 @@ import FilterBadge from "@/components/shared/FilterBadge";
 
 import "@/components/FilterStatus.scss";
 
+function normalizeSelections(selection) {
+  if (!selection) {
+    return [];
+  }
+
+  if (Array.isArray(selection)) {
+    return selection.filter((item) => item?.label && item?.value);
+  }
+
+  if (selection.label && selection.value) {
+    return [selection];
+  }
+
+  return [];
+}
+
 export default function FilterStatus({
   totalResults,
+  selectedDistrict,
+  onClearDistrict,
   selectedRegion,
   onClearRegion,
   selectedPark,
@@ -16,6 +34,10 @@ export default function FilterStatus({
   hasAnyFilters,
   onClearAll,
 }) {
+  const selectedDistricts = normalizeSelections(selectedDistrict);
+  const selectedRegions = normalizeSelections(selectedRegion);
+  const selectedParks = normalizeSelections(selectedPark);
+
   return (
     <div className="filter-status mt-3">
       {hasAnyFilters && (
@@ -25,19 +47,29 @@ export default function FilterStatus({
       )}
 
       <div className="active-filters d-flex flex-row flex-wrap gap-2 align-items-center">
-        {selectedRegion && (
+        {selectedDistricts.map((district) => (
           <FilterBadge
-            label={`BC Parks region: ${selectedRegion.label}`}
-            onRemove={onClearRegion}
+            key={`district-${district.value}`}
+            label={`RST Recreation district: ${district.label}`}
+            onRemove={() => onClearDistrict(district.value)}
           />
-        )}
+        ))}
 
-        {selectedPark && (
+        {selectedRegions.map((region) => (
           <FilterBadge
-            label={`BC Parks park: ${selectedPark.label}`}
-            onRemove={onClearPark}
+            key={`region-${region.value}`}
+            label={`BC Parks region: ${region.label}`}
+            onRemove={() => onClearRegion(region.value)}
           />
-        )}
+        ))}
+
+        {selectedParks.map((park) => (
+          <FilterBadge
+            key={`park-${park.value}`}
+            label={`BC Parks park: ${park.label}`}
+            onRemove={() => onClearPark(park.value)}
+          />
+        ))}
 
         {selectedTableFilters.map((filter) => (
           <FilterBadge
@@ -67,15 +99,44 @@ export default function FilterStatus({
 
 FilterStatus.propTypes = {
   totalResults: PropTypes.number.isRequired,
-  selectedRegion: PropTypes.shape({
-    label: PropTypes.string,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  }),
+  selectedDistrict: PropTypes.oneOfType([
+    PropTypes.shape({
+      label: PropTypes.string,
+      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        label: PropTypes.string,
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      }),
+    ),
+  ]),
+  onClearDistrict: PropTypes.func.isRequired,
+  selectedRegion: PropTypes.oneOfType([
+    PropTypes.shape({
+      label: PropTypes.string,
+      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        label: PropTypes.string,
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      }),
+    ),
+  ]),
   onClearRegion: PropTypes.func.isRequired,
-  selectedPark: PropTypes.shape({
-    label: PropTypes.string,
-    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  }),
+  selectedPark: PropTypes.oneOfType([
+    PropTypes.shape({
+      label: PropTypes.string,
+      value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
+    PropTypes.arrayOf(
+      PropTypes.shape({
+        label: PropTypes.string,
+        value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+      }),
+    ),
+  ]),
   onClearPark: PropTypes.func.isRequired,
   selectedTableFilters: PropTypes.arrayOf(
     PropTypes.shape({
@@ -91,7 +152,8 @@ FilterStatus.propTypes = {
 };
 
 FilterStatus.defaultProps = {
-  selectedRegion: null,
-  selectedPark: null,
+  selectedDistrict: [],
+  selectedRegion: [],
+  selectedPark: [],
   selectedTableFilters: [],
 };
