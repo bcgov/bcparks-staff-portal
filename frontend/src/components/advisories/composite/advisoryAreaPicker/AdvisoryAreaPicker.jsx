@@ -332,20 +332,21 @@ export default function AdvisoryAreaPicker({
         </>
       )}
 
-      <div className="row">
-        <div className="col-lg-3 col-md-4 col-sm-12 ad-label">
-          Recreation Sites and Trails recreation resource(s)
+      <Form.Group className="form-group" controlId="resources">
+        <Form.Label>
+          <span className="append-required">
+            Recreation Sites and Trails recreation resource(s)
+          </span>
+        </Form.Label>
+        {/* TODO: Add validation and error state */}
+        <div>
+          <RecreationResourcePicker
+            options={recreationResources}
+            value={selectedRecreationResources}
+            onChange={setSelectedRecreationResources}
+          />
         </div>
-        <div className="col-lg-7 col-md-8 col-sm-12">
-          <div className="bcgov-select-form">
-            <RecreationResourcePicker
-              options={recreationResources}
-              value={selectedRecreationResources}
-              onChange={setSelectedRecreationResources}
-            />
-          </div>
-        </div>
-      </div>
+      </Form.Group>
 
       <Form.Group className="form-group" controlId="parks">
         <Form.Label>

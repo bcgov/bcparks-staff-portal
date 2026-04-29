@@ -23,9 +23,25 @@ function getRecreationResourceMeta(option) {
   };
 }
 
+function highlightMatch(text, query) {
+  if (!query) return text;
+  const index = text.toLowerCase().indexOf(query.toLowerCase());
+
+  if (index === -1) return text;
+  return (
+    <>
+      {text.slice(0, index)}
+      <strong>{text.slice(index, index + query.length)}</strong>
+      {text.slice(index + query.length)}
+    </>
+  );
+}
+
 function RecreationResourceOption(props) {
   const { name, recId, subtitle, icon, resourceType } =
     getRecreationResourceMeta(props.data);
+
+  const inputValue = props.selectProps?.inputValue || "";
 
   return (
     <components.Option {...props}>
@@ -37,7 +53,9 @@ function RecreationResourceOption(props) {
             className="recreation-resource__icon"
           />
           <div className="recreation-resource__text">
-            <div className="recreation-resource__name">{name}</div>
+            <div className="recreation-resource__name">
+              {highlightMatch(name, inputValue)}
+            </div>
             {subtitle && (
               <div className="recreation-resource__subtitle">{subtitle}</div>
             )}
@@ -45,7 +63,7 @@ function RecreationResourceOption(props) {
         </div>
         {recId && (
           <Badge pill bg="info" className="recreation-resource__id">
-            {recId}
+            {highlightMatch(recId, inputValue)}
           </Badge>
         )}
       </div>
@@ -66,20 +84,24 @@ RecreationResourceOption.propTypes = {
       }),
     }),
   }),
+  selectProps: PropTypes.shape({
+    inputValue: PropTypes.string,
+  }),
 };
 
 export default function RecreationResourcePicker({ options, value, onChange }) {
   return (
     <Select
+      inputId="resources"
       options={options}
+      maxHeight={200}
       value={value}
       onChange={(e) => onChange(e || [])}
-      placeholder="Select Recreation Sites and Trails recreation resource(s)"
+      placeholder="Search by name or number"
       isMulti
       className="bcgov-select"
-      classNamePrefix="recreation-resource-select"
+      classNamePrefix="recreation-resource-picker"
       components={{ Option: RecreationResourceOption }}
-      menuIsOpen
     />
   );
 }
