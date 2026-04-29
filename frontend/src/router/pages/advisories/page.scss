@@ -63,6 +63,12 @@
   .btn-link {
     color: var(--color-med-blue) !important;
     border-radius: 1px !important;
+
+    &.with-icon {
+      svg.svg-inline--fa {
+        margin-left: 5px !important;
+      }
+    }
   }
 
   .btn-link:hover {

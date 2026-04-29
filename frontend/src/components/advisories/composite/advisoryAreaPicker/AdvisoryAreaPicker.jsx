@@ -6,7 +6,11 @@ import Form from "react-bootstrap/Form";
 import classNames from "classnames";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
+import {
+  faCircleQuestion,
+  faChevronDown,
+  faChevronUp,
+} from "@fa-kit/icons/classic/solid";
 import { validateRequiredAffectedArea } from "@/lib/advisories/validators/AdvisoryValidator";
 import { generateProtectedAreasListForSelectedRelations } from "@/lib/advisories/utils/AdvisoryUtil";
 import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
@@ -207,18 +211,68 @@ export default function AdvisoryAreaPicker({
         </LightTooltip>
       </p>
 
+      <Form.Group className="form-group" controlId="parks">
+        <Form.Label>BC Parks park(s)</Form.Label>
+        <div
+          className={classNames({
+            "bcgov-select-error": protectedAreaError !== "",
+          })}
+        >
+          <Select
+            id="parks"
+            options={protectedAreas}
+            maxHeight={200}
+            value={selectedProtectedAreas}
+            onChange={(e, action) => {
+              setSelectedProtectedAreas(e);
+              if (action.action === "clear") {
+                handleClearProtectedAreas();
+              } else {
+                handleRemoveProtectedArea(e);
+              }
+            }}
+            placeholder="Search or select BC Parks park(s)"
+            isMulti
+            className="bcgov-select"
+            onBlur={() => {
+              validateRequiredAffectedArea(advisoryData.protectedArea);
+            }}
+            styles={customSelectStyles}
+          />
+        </div>
+        {protectedAreaError && (
+          <div className="invalid-feedback d-block">{protectedAreaError}</div>
+        )}
+      </Form.Group>
+
       {!isShow && (
         <button
           type="button"
-          className="btn btn-link btn-boolean"
+          className="btn mt-2 btn-link btn-boolean with-icon"
           onClick={() => setIsShow(true)}
         >
-          Show other areas
+          Show other areas <FontAwesomeIcon icon={faChevronDown} />
         </button>
       )}
 
       {isShow && (
         <>
+          <Form.Group className="form-group" controlId="sites">
+            <Form.Label>BC Parks site(s)</Form.Label>
+            <Select
+              id="sites"
+              options={sites}
+              value={selectedSites}
+              onChange={(e) => {
+                setSelectedSites(e);
+                handleChangeRelations({ updatedSites: e });
+              }}
+              placeholder="Search or select BC Parks site(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
           <Form.Group className="form-group" controlId="fire-centres">
             <Form.Label>Fire centre(s)</Form.Label>
             <Select
@@ -322,63 +376,13 @@ export default function AdvisoryAreaPicker({
 
           <button
             type="button"
-            className="btn btn-link btn-boolean"
+            className="btn mt-2 btn-link btn-boolean with-icon"
             onClick={() => setIsShow(false)}
           >
-            Hide other areas
+            Hide other areas <FontAwesomeIcon icon={faChevronUp} />
           </button>
         </>
       )}
-
-      <Form.Group className="form-group" controlId="parks">
-        <Form.Label>BC Parks park(s)</Form.Label>
-        <div
-          className={classNames({
-            "bcgov-select-error": protectedAreaError !== "",
-          })}
-        >
-          <Select
-            id="parks"
-            options={protectedAreas}
-            maxHeight={200}
-            value={selectedProtectedAreas}
-            onChange={(e, action) => {
-              setSelectedProtectedAreas(e);
-              if (action.action === "clear") {
-                handleClearProtectedAreas();
-              } else {
-                handleRemoveProtectedArea(e);
-              }
-            }}
-            placeholder="Search or select BC Parks park(s)"
-            isMulti
-            className="bcgov-select"
-            onBlur={() => {
-              validateRequiredAffectedArea(advisoryData.protectedArea);
-            }}
-            styles={customSelectStyles}
-          />
-        </div>
-        {protectedAreaError && (
-          <div className="invalid-feedback d-block">{protectedAreaError}</div>
-        )}
-      </Form.Group>
-
-      <Form.Group className="form-group" controlId="sites">
-        <Form.Label>BC Parks site(s)</Form.Label>
-        <Select
-          id="sites"
-          options={sites}
-          value={selectedSites}
-          onChange={(e) => {
-            setSelectedSites(e);
-            handleChangeRelations({ updatedSites: e });
-          }}
-          placeholder="Search or select BC Parks site(s)"
-          isMulti
-          className="bcgov-select"
-        />
-      </Form.Group>
     </div>
   );
 }
