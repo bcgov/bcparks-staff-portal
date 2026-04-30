@@ -5,6 +5,7 @@ import {
   Park,
   Season,
   FeatureType,
+  ParkAreaType,
   DateRange,
   DateType,
   Feature,
@@ -265,6 +266,7 @@ function buildParkAreaOutput(parkArea) {
       buildFeatureOutput(feature, parkArea.seasons, false),
     ),
     featureTypes,
+    parkAreaType: parkArea.parkAreaType,
     seasons: parkArea.seasons,
     currentSeason,
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
@@ -317,6 +319,13 @@ router.get(
             },
             // Publishable Seasons for the ParkArea
             seasonModel(currentYear),
+            // ParkAreaType for the ParkArea
+            {
+              model: ParkAreaType,
+              as: "parkAreaType",
+              attributes: ["id", "parkAreaTypeNumber", "name"],
+              required: false,
+            },
           ],
         },
 
@@ -356,6 +365,13 @@ router.get(
         ["name", "ASC"],
         [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
         // For Features that ARE part of a ParkArea
+        [
+          { model: ParkArea, as: "parkAreas" },
+          { model: Feature, as: "features" },
+          { model: FeatureType, as: "featureType" },
+          "rank",
+          "ASC",
+        ],
         [
           { model: ParkArea, as: "parkAreas" },
           { model: Feature, as: "features" },
