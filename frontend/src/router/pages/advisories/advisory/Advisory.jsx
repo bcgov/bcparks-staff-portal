@@ -373,18 +373,15 @@ export default function Advisory({ mode }) {
               ]);
             }
             if (recreationResourceInfo) {
-              const selRecreationResources = [];
-
-              recreationResourceInfo.forEach((resource) => {
-                selRecreationResources.push(
+              const selRecreationResources = recreationResourceInfo
+                .map((resource) =>
                   recreationResources.find(
                     (option) => option.value === resource.documentId,
                   ),
-                );
-              });
-              setSelectedRecreationResources([
-                ...selRecreationResources,
-              ]);
+                )
+                .filter(Boolean);
+
+              setSelectedRecreationResources([...selRecreationResources]);
             }
             const advisoryLinks = advisoryData.links;
 
@@ -548,13 +545,14 @@ export default function Advisory({ mode }) {
 
           setNaturalResourceDistricts([...newNaturalResourceDistricts]);
           const recreationResourceData = res[8];
-          const newRecreationResources = recreationResourceData
-            .map((resource) => ({
+          const newRecreationResources = recreationResourceData.map(
+            (resource) => ({
               label: `${resource.resourceName} (${resource.recResourceId})`,
               value: resource.documentId,
               type: "recreationResource",
               obj: resource,
-            }))
+            }),
+          );
 
           setRecreationResources(newRecreationResources);
           const eventTypeData = res[9];
