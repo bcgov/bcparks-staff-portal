@@ -1,0 +1,34 @@
+.action-button {
+  &__dropdown-button {
+    .btn.dropdown-toggle {
+      background-color: var(--surface-color-background-white);
+      border: 1px solid var(--color-blue);
+      color: var(--color-blue);
+
+      &::after {
+        margin-left: 0.5rem;
+      }
+    }
+
+    .dropdown-menu {
+      .dropdown-item {
+        color: var(--color-blue);
+        font-size: 0.875rem;
+
+        &:hover {
+          text-decoration: none;
+        }
+
+        &:active {
+          background-color: var(--surface-color-secondary-hover);
+        }
+
+        svg {
+          margin-right: 0.5rem;
+          width: 1rem;
+          height: 1rem;
+        }
+      }
+    }
+  }
+}

@@ -12,6 +12,7 @@ import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
+import { ActionButton } from "@/components/advisories/shared/actionButton/ActionButton";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
 import StatusBadge from "@/components/StatusBadge";
 import moment from "moment";
@@ -725,28 +726,24 @@ export default function AdvisoryDashboard() {
         field: "id",
         filtering: false,
         headerStyle: {
-          width: 30,
-          maxWidth: 30,
-          minWidth: 30,
+          minWidth: 100,
         },
         cellStyle: {
-          width: 30,
-          maxWidth: 30,
-          minWidth: 30,
+          minWidth: 100,
           textAlign: "left",
         },
-        render: () => (
-          <button
-            type="button"
-            className="table-row-action"
-            aria-label="row actions"
-          >
-            ...
-          </button>
+        render: (rowData) => (
+          <ActionButton
+            onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
+            onEdit={() => navigate(`/update-advisory/${rowData.documentId}`)}
+            onUnpublish={() =>
+              navigate(`/update-advisory/${rowData.documentId}`)
+            }
+          />
         ),
       },
     ],
-    [urgencies, advisoryStatuses],
+    [urgencies, advisoryStatuses, navigate],
   );
 
   if (toCreate) {
