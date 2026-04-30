@@ -19,6 +19,7 @@ function getRecreationResourceMeta(option) {
     name,
     recId,
     icon,
+    resourceType,
     subtitle: [resourceType, community].filter(Boolean).join(" • "),
   };
 }

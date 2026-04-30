@@ -226,7 +226,21 @@ export default function useCms() {
     () =>
       fetchCached(
         "recreationResources",
-        `/recreation-resources?${querySort("resourceName")}&populate=*`,
+        `/recreation-resources?${qs.stringify(
+          {
+            sort: ["resourceName"],
+            pagination: {
+              limit: 8000,
+            },
+            fields: ["resourceName", "recResourceId", "closestCommunity"],
+            populate: {
+              recreationResourceType: {
+                fields: ["resourceType", "resourceTypeCode"],
+              },
+            },
+          },
+          { encodeValuesOnly: true },
+        )}`,
       ),
     [fetchCached],
   );

@@ -334,9 +334,7 @@ export default function AdvisoryAreaPicker({
 
       <Form.Group className="form-group" controlId="resources">
         <Form.Label>
-          <span className="append-required">
-            Recreation Sites and Trails recreation resource(s)
-          </span>
+          Recreation Sites and Trails recreation resource(s)
         </Form.Label>
         {/* TODO: Add validation and error state */}
         <div>
