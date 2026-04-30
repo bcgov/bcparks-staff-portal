@@ -20,6 +20,14 @@ const COLUMN_FILTERS = [
     build: (value) => ({ advisoryStatus: { advisoryStatus: { $eq: value } } }),
   },
   {
+    key: "accessStatus.accessStatus",
+    build: (value) => ({
+      $or: [
+        { accessStatus: { accessStatus: { $containsi: value } } },
+      ],
+    }),
+  },
+  {
     key: "advisoryDate",
     build: (value) => ({
       advisoryDate: { $containsi: toIsoDateFilter(value) },

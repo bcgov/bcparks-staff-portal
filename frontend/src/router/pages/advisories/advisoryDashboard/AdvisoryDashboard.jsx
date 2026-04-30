@@ -373,6 +373,7 @@ export default function AdvisoryDashboard() {
               recreationResources: {
                 fields: ["recResourceId", "resourceName"],
               },
+              accessStatus: { fields: ["accessStatus"] },
               advisoryStatus: { fields: ["advisoryStatus", "code"] },
               eventType: { fields: ["eventType"] },
               urgency: { fields: ["urgency"] },
@@ -537,7 +538,13 @@ export default function AdvisoryDashboard() {
       },
       {
         field: "advisoryStatus.advisoryStatus",
-        title: "Status",
+        title: (
+          <>
+            Advisory /
+            <br />
+            Closure status
+          </>
+        ),
         filterOnItemSelect: true,
         lookup: advisoryStatuses.reduce((lookup, status) => {
           lookup[status.advisoryStatus] = status.advisoryStatus;
@@ -684,6 +691,21 @@ export default function AdvisoryDashboard() {
               )}
             </div>
           );
+        },
+      },
+      {
+        field: "accessStatus.accessStatus",
+        title: (
+          <>
+            Resource
+            <br />
+            status
+          </>
+        ),
+        headerStyle: { minWidth: 100 },
+        cellStyle: { minWidth: 100 },
+        render(rowData) {
+          return rowData.accessStatus?.accessStatus || "";
         },
       },
       { field: "eventType.eventType", title: "Event type" },
