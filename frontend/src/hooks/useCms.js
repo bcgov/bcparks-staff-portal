@@ -222,6 +222,29 @@ export default function useCms() {
     [fetchCached],
   );
 
+  const getRecreationResources = useCallback(
+    () =>
+      fetchCached(
+        "recreationResources",
+        `/recreation-resources?${qs.stringify(
+          {
+            sort: ["resourceName"],
+            pagination: {
+              limit: 8000,
+            },
+            fields: ["resourceName", "recResourceId", "closestCommunity"],
+            populate: {
+              recreationResourceType: {
+                fields: ["resourceType", "resourceTypeCode"],
+              },
+            },
+          },
+          { encodeValuesOnly: true },
+        )}`,
+      ),
+    [fetchCached],
+  );
+
   const getEventTypes = useCallback(
     () => fetchCached("eventTypes", `/event-types?${querySort("eventType")}`),
     [fetchCached],
@@ -300,6 +323,7 @@ export default function useCms() {
     getFireZones,
     getNaturalResourceDistricts,
     getRecreationDistricts,
+    getRecreationResources,
     getEventTypes,
     getAccessStatuses,
     getUrgencies,

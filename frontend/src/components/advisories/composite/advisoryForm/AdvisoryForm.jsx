@@ -52,6 +52,9 @@ export default function AdvisoryForm({
     standardMessages,
     selectedStandardMessages,
     setSelectedStandardMessages,
+    recreationResources,
+    selectedRecreationResources,
+    setSelectedRecreationResources,
     protectedAreas,
     selectedProtectedAreas,
     setSelectedProtectedAreas,
@@ -172,6 +175,7 @@ export default function AdvisoryForm({
     protectedArea: {
       value: [
         selectedProtectedAreas,
+        selectedRecreationResources,
         selectedRegions,
         selectedSections,
         selectedManagementAreas,
@@ -379,6 +383,9 @@ export default function AdvisoryForm({
         <h3>Affected area</h3>
         <AdvisoryAreaPicker
           data={{
+            recreationResources,
+            selectedRecreationResources,
+            setSelectedRecreationResources,
             protectedAreas,
             selectedProtectedAreas,
             setSelectedProtectedAreas,
@@ -1470,6 +1477,9 @@ AdvisoryForm.propTypes = {
     standardMessages: PropTypes.array.isRequired,
     selectedStandardMessages: PropTypes.array,
     setSelectedStandardMessages: PropTypes.func.isRequired,
+    recreationResources: PropTypes.array.isRequired,
+    selectedRecreationResources: PropTypes.array,
+    setSelectedRecreationResources: PropTypes.func.isRequired,
     protectedAreas: PropTypes.array.isRequired,
     selectedProtectedAreas: PropTypes.array,
     setSelectedProtectedAreas: PropTypes.func.isRequired,

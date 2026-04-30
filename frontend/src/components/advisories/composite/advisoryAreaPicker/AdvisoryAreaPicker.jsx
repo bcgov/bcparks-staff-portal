@@ -4,6 +4,7 @@ import "./AdvisoryAreaPicker.css";
 import Select from "react-select";
 import Form from "react-bootstrap/Form";
 import classNames from "classnames";
+import RecreationResourcePicker from "./RecreationResourcePicker";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleQuestion } from "@fa-kit/icons/classic/solid";
@@ -13,6 +14,9 @@ import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
 
 export default function AdvisoryAreaPicker({
   data: {
+    recreationResources,
+    selectedRecreationResources,
+    setSelectedRecreationResources,
     protectedAreas,
     selectedProtectedAreas,
     setSelectedProtectedAreas,
@@ -328,6 +332,20 @@ export default function AdvisoryAreaPicker({
         </>
       )}
 
+      <Form.Group className="form-group" controlId="resources">
+        <Form.Label>
+          Recreation Sites and Trails recreation resource(s)
+        </Form.Label>
+        {/* TODO: Add validation and error state */}
+        <div>
+          <RecreationResourcePicker
+            options={recreationResources}
+            value={selectedRecreationResources}
+            onChange={setSelectedRecreationResources}
+          />
+        </div>
+      </Form.Group>
+
       <Form.Group className="form-group" controlId="parks">
         <Form.Label>
           <span className="append-required">Park(s)</span>
@@ -385,6 +403,9 @@ export default function AdvisoryAreaPicker({
 
 AdvisoryAreaPicker.propTypes = {
   data: PropTypes.shape({
+    recreationResources: PropTypes.array.isRequired,
+    selectedRecreationResources: PropTypes.array,
+    setSelectedRecreationResources: PropTypes.func.isRequired,
     protectedAreas: PropTypes.array.isRequired,
     selectedProtectedAreas: PropTypes.array,
     setSelectedProtectedAreas: PropTypes.func.isRequired,
