@@ -28,6 +28,9 @@ export default function Advisory({ mode }) {
   const [revisionNumber, setRevisionNumber] = useState();
   const [standardMessages, setStandardMessages] = useState([]);
   const [selectedStandardMessages, setSelectedStandardMessages] = useState([]);
+  const [recreationResources, setRecreationResources] = useState([]);
+  const [selectedRecreationResources, setSelectedRecreationResources] =
+    useState([]);
   const [protectedAreas, setProtectedAreas] = useState([]);
   const [selectedProtectedAreas, setSelectedProtectedAreas] = useState([]);
   const [regions, setRegions] = useState([]);
@@ -106,6 +109,7 @@ export default function Advisory({ mode }) {
     getFireCentres,
     getFireZones,
     getNaturalResourceDistricts,
+    getRecreationResources,
     getEventTypes,
     getAccessStatuses,
     getUrgencies,
@@ -134,6 +138,7 @@ export default function Advisory({ mode }) {
         fireCentres: { fields: ["id"] },
         fireZones: { fields: ["id"] },
         naturalResourceDistricts: { fields: ["id"] },
+        recreationResources: { fields: ["id"] },
         links: {
           populate: { type: { populate: "*" }, file: { populate: "*" } },
         },
@@ -274,6 +279,7 @@ export default function Advisory({ mode }) {
             const fireZoneInfo = advisoryData.fireZones;
             const naturalResourceDistrictInfo =
               advisoryData.naturalResourceDistricts;
+            const recreationResourceInfo = advisoryData.recreationResources;
 
             if (standardMessageInfo) {
               const selStandardMessages = [];
@@ -366,6 +372,20 @@ export default function Advisory({ mode }) {
                 ...selNaturalResourceDistricts,
               ]);
             }
+            if (recreationResourceInfo) {
+              const selRecreationResources = [];
+
+              recreationResourceInfo.forEach((resource) => {
+                selRecreationResources.push(
+                  recreationResources.find(
+                    (option) => option.value === resource.documentId,
+                  ),
+                );
+              });
+              setSelectedRecreationResources([
+                ...selRecreationResources,
+              ]);
+            }
             const advisoryLinks = advisoryData.links;
 
             if (advisoryLinks.length > 0) {
@@ -425,6 +445,7 @@ export default function Advisory({ mode }) {
     fireCentres,
     fireZones,
     naturalResourceDistricts,
+    recreationResources,
     cmsGet,
   ]);
 
@@ -442,6 +463,7 @@ export default function Advisory({ mode }) {
         getFireCentres(),
         getFireZones(),
         getNaturalResourceDistricts(),
+        getRecreationResources(),
         getEventTypes(),
         getAccessStatuses(),
         getUrgencies(),
@@ -525,14 +547,24 @@ export default function Advisory({ mode }) {
           );
 
           setNaturalResourceDistricts([...newNaturalResourceDistricts]);
-          const eventTypeData = res[8];
+          const recreationResourceData = res[8];
+          const newRecreationResources = recreationResourceData
+            .map((resource) => ({
+              label: `${resource.resourceName} (${resource.recResourceId})`,
+              value: resource.documentId,
+              type: "recreationResource",
+              obj: resource,
+            }))
+
+          setRecreationResources(newRecreationResources);
+          const eventTypeData = res[9];
           const newEventTypes = eventTypeData.map((et) => ({
             label: et.eventType,
             value: et.documentId,
           }));
 
           setEventTypes([...newEventTypes]);
-          const accessStatusData = res[9];
+          const accessStatusData = res[10];
 
           const newAccessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
@@ -545,7 +577,7 @@ export default function Advisory({ mode }) {
           );
 
           setAccessStatus(openAccessStatus.value);
-          const urgencyData = res[10];
+          const urgencyData = res[11];
           const newUrgencies = urgencyData.map((u) => ({
             label: u.urgency,
             value: u.documentId,
@@ -553,7 +585,7 @@ export default function Advisory({ mode }) {
           }));
 
           setUrgencies([...newUrgencies]);
-          const advisoryStatusData = res[11];
+          const advisoryStatusData = res[12];
           const restrictedAdvisoryStatusCodes = new Set(["UNP", "SCH"]);
           const desiredOrder = ["PUB", "UNP", "DFT", "SCH", "HQR"];
           const tempAdvisoryStatuses = advisoryStatusData.map((s) => {
@@ -582,14 +614,14 @@ export default function Advisory({ mode }) {
           );
 
           setAdvisoryStatuses([...sortedStatus]);
-          const linkTypeData = res[12];
+          const linkTypeData = res[13];
           const newLinkTypes = linkTypeData.map((lt) => ({
             label: lt.type,
             value: lt.documentId,
           }));
 
           setLinkTypes([...newLinkTypes]);
-          const standardMessageData = res[13];
+          const standardMessageData = res[14];
           const newStandardMessages = standardMessageData.map((m) => ({
             label: m.title,
             value: m.documentId,
@@ -640,6 +672,7 @@ export default function Advisory({ mode }) {
     getFireCentres,
     getFireZones,
     getNaturalResourceDistricts,
+    getRecreationResources,
     getEventTypes,
     getAccessStatuses,
     getUrgencies,
@@ -953,6 +986,9 @@ export default function Advisory({ mode }) {
       const selNaturalResourceDistricts = selectedNaturalResourceDistricts.map(
         (x) => x.value,
       );
+      const selRecreationResources = selectedRecreationResources.map(
+        (x) => x.value,
+      );
 
       Promise.resolve(saveLinks()).then((savedLinks) => {
         const newAdvisory = {
@@ -982,6 +1018,7 @@ export default function Advisory({ mode }) {
           fireCentres: selFireCentres,
           fireZones: selFireZones,
           naturalResourceDistricts: selNaturalResourceDistricts,
+          recreationResources: selRecreationResources,
           isAdvisoryDateDisplayed: displayAdvisoryDate,
           isEffectiveDateDisplayed: displayStartDate,
           isEndDateDisplayed: displayEndDate,
@@ -1064,6 +1101,9 @@ export default function Advisory({ mode }) {
       const selNaturalResourceDistricts = selectedNaturalResourceDistricts.map(
         (x) => x.value,
       );
+      const selRecreationResources = selectedRecreationResources.map(
+        (x) => x.value,
+      );
 
       if (
         (!selProtectedAreas || selProtectedAreas.length === 0) &&
@@ -1108,6 +1148,7 @@ export default function Advisory({ mode }) {
             fireCentres: selFireCentres,
             fireZones: selFireZones,
             naturalResourceDistricts: selNaturalResourceDistricts,
+            recreationResources: selRecreationResources,
             isAdvisoryDateDisplayed: displayAdvisoryDate,
             isEffectiveDateDisplayed: displayStartDate,
             isEndDateDisplayed: displayEndDate,
@@ -1240,6 +1281,9 @@ export default function Advisory({ mode }) {
                   standardMessages,
                   selectedStandardMessages,
                   setSelectedStandardMessages,
+                  recreationResources,
+                  selectedRecreationResources,
+                  setSelectedRecreationResources,
                   protectedAreas,
                   selectedProtectedAreas,
                   setSelectedProtectedAreas,
