@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryAreaPicker.scss";
 import Select from "react-select";
@@ -17,6 +17,7 @@ import { generateProtectedAreasListForSelectedRelations } from "@/lib/advisories
 import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
 
 export default function AdvisoryAreaPicker({
+  mode,
   data: {
     recreationResources,
     selectedRecreationResources,
@@ -49,7 +50,37 @@ export default function AdvisoryAreaPicker({
     affectedResourceError,
   },
 }) {
-  const [isShow, setIsShow] = useState(false);
+  const [showOtherAreas, setShowOtherAreas] = useState(false);
+  const autoExpandedOtherAreas = useRef(false);
+
+  // Reveal other areas in update mode if there are any
+  useEffect(() => {
+    if (
+      mode === "update" &&
+      autoExpandedOtherAreas.current === false &&
+      showOtherAreas === false &&
+      (selectedSites?.length ||
+        selectedFireCentres?.length ||
+        selectedFireZones?.length ||
+        selectedNaturalResourceDistricts?.length ||
+        selectedRegions?.length ||
+        selectedSections?.length ||
+        selectedManagementAreas?.length)
+    ) {
+      setShowOtherAreas(true);
+      autoExpandedOtherAreas.current = true;
+    }
+  }, [
+    mode,
+    showOtherAreas,
+    selectedSites,
+    selectedFireCentres,
+    selectedFireZones,
+    selectedNaturalResourceDistricts,
+    selectedRegions,
+    selectedSections,
+    selectedManagementAreas,
+  ]);
 
   async function handleRemoveProtectedArea(updatedParksList) {
     const deletedParks = selectedProtectedAreas.filter(
@@ -273,18 +304,18 @@ export default function AdvisoryAreaPicker({
         </div>
       )}
 
-      {!isShow && (
+      {!showOtherAreas && (
         <button
           type="button"
           className="btn mt-2 btn-link btn-boolean with-icon"
-          onClick={() => setIsShow(true)}
+          onClick={() => setShowOtherAreas(true)}
         >
           Show other areas
           <FontAwesomeIcon icon={faChevronDown} />
         </button>
       )}
 
-      {isShow && (
+      {showOtherAreas && (
         <>
           <Form.Group className="form-group" controlId="sites">
             <Form.Label>BC Parks site(s)</Form.Label>
@@ -453,7 +484,7 @@ export default function AdvisoryAreaPicker({
           <button
             type="button"
             className="btn mt-2 btn-link btn-boolean with-icon"
-            onClick={() => setIsShow(false)}
+            onClick={() => setShowOtherAreas(false)}
           >
             Hide other areas
             <FontAwesomeIcon icon={faChevronUp} />
@@ -465,6 +496,7 @@ export default function AdvisoryAreaPicker({
 }
 
 AdvisoryAreaPicker.propTypes = {
+  mode: PropTypes.string,
   data: PropTypes.shape({
     recreationResources: PropTypes.array.isRequired,
     selectedRecreationResources: PropTypes.array,

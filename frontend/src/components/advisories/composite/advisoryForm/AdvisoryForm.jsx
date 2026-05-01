@@ -407,6 +407,7 @@ export default function AdvisoryForm({
       <section>
         <h3>Affected resources</h3>
         <AdvisoryAreaPicker
+          mode={mode}
           data={{
             recreationResources,
             selectedRecreationResources,
