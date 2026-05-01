@@ -373,7 +373,7 @@ export default function AdvisoryDashboard() {
               recreationResources: {
                 fields: ["recResourceId", "resourceName"],
               },
-              accessStatus: { fields: ["accessStatus"] },
+              accessStatus: { fields: ["accessStatus", "groupLabel"] },
               advisoryStatus: { fields: ["advisoryStatus", "code"] },
               eventType: { fields: ["eventType"] },
               urgency: { fields: ["urgency"] },
@@ -702,10 +702,17 @@ export default function AdvisoryDashboard() {
             status
           </>
         ),
-        headerStyle: { minWidth: 100 },
-        cellStyle: { minWidth: 100 },
+        headerStyle: { minWidth: 120 },
+        cellStyle: { minWidth: 120 },
         render(rowData) {
-          return rowData.accessStatus?.accessStatus || "";
+          const accessStatus = rowData.accessStatus?.accessStatus || "";
+          const groupLabel = rowData.accessStatus?.groupLabel || "";
+
+          if (!accessStatus) return "";
+
+          return groupLabel !== accessStatus
+            ? `${groupLabel} - ${accessStatus}`
+            : accessStatus;
         },
       },
       { field: "eventType.eventType", title: "Event type" },
