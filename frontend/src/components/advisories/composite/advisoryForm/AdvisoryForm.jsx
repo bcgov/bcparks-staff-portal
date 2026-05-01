@@ -147,7 +147,6 @@ export default function AdvisoryForm({
   const [endDateError, setEndDateError] = useState("");
   const [expiryDateError, setExpiryDateError] = useState("");
   const [updatedDateError, setUpdatedDateError] = useState("");
-  const [submittedByError] = useState("");
   const [listingRankError, setListingRankError] = useState("");
   const [linkTypeErrors, setLinkTypeErrors] = useState(
     new Array(linksRef.current.length).fill(false),
@@ -1358,14 +1357,10 @@ export default function AdvisoryForm({
               onChange={(event) => {
                 setSubmittedBy(event.target.value);
               }}
-              className={getControlClassName(submittedByError !== "")}
+              className={getControlClassName(false)}
               maxLength={255}
               required={submitterInput.required}
             />
-            {renderHelperText(
-              submittedByError && "Enter a name",
-              submittedByError !== "",
-            )}
           </Form.Group>
         )}
 
