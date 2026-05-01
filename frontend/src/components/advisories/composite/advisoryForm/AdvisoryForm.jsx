@@ -900,6 +900,12 @@ export default function AdvisoryForm({
               <Form.Group className="form-group">
                 <Form.Label htmlFor="post-start-date">
                   <span className="append-required">Posting date</span>
+                  <LightTooltip arrow title="Posting date">
+                    <FontAwesomeIcon
+                      icon={faCircleQuestion}
+                      className="helpIcon"
+                    />
+                  </LightTooltip>
                 </Form.Label>
 
                 <div className="input-with-append">
@@ -1112,7 +1118,15 @@ export default function AdvisoryForm({
                     className="form-group"
                     controlId="event-start-date"
                   >
-                    <Form.Label>Start date</Form.Label>
+                    <Form.Label>
+                      Start date
+                      <LightTooltip arrow title="Start date">
+                        <FontAwesomeIcon
+                          icon={faCircleQuestion}
+                          className="helpIcon"
+                        />
+                      </LightTooltip>
+                    </Form.Label>
                     <div className="input-with-append">
                       <DatePicker
                         id="start-date"
@@ -1267,7 +1281,12 @@ export default function AdvisoryForm({
         )}
 
         <Form.Group className="form-group">
-          <Form.Label htmlFor="displayed-date">Displayed date</Form.Label>
+          <Form.Label htmlFor="displayed-date">
+            Displayed date
+            <LightTooltip arrow title="Displayed date">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </Form.Label>
 
           <div
             className={classNames("bcgov-select-form", {
