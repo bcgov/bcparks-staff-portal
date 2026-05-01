@@ -7,7 +7,13 @@ import { faPen, faEyeSlash } from "@fa-kit/icons/classic/regular";
 
 import "./ActionButton.scss";
 
-export function ActionButton({ canUnpublish, onView, onEdit, onUnpublish }) {
+export function ActionButton({
+  rowId,
+  canUnpublish,
+  onView,
+  onEdit,
+  onUnpublish,
+}) {
   function action(event, callback) {
     // Prevent triggering row click handler
     event.stopPropagation();
@@ -17,11 +23,14 @@ export function ActionButton({ canUnpublish, onView, onEdit, onUnpublish }) {
   return (
     <div className="action-button" onClick={(event) => event.stopPropagation()}>
       <DropdownButton
-        id="action-button"
+        id={`action-button-${rowId}`}
         title={
           <>
             <span>Actions</span>
-            <FontAwesomeIcon icon={faChevronUp} className="action-button__icon" />
+            <FontAwesomeIcon
+              icon={faChevronUp}
+              className="action-button__icon"
+            />
           </>
         }
         className="action-button__dropdown-button"
@@ -48,6 +57,7 @@ export function ActionButton({ canUnpublish, onView, onEdit, onUnpublish }) {
 }
 
 ActionButton.propTypes = {
+  rowId: PropTypes.string.isRequired,
   canUnpublish: PropTypes.bool,
   onView: PropTypes.func,
   onEdit: PropTypes.func,

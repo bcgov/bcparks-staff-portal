@@ -30,7 +30,7 @@ export default function useAdvisoryFlashMessage() {
   const openUnpublishError = useCallback(
     (message) => {
       openUnpublishFlashMessage(
-        "Unpublished Advisory / Closure failed",
+        "Failed to unpublish Advisory / Closure",
         message,
         "error",
       );
@@ -41,7 +41,7 @@ export default function useAdvisoryFlashMessage() {
   const openUnpublishSuccess = useCallback(
     (message) => {
       openUnpublishFlashMessage(
-        "Unpublished Advisory / Closure ",
+        "Unpublished Advisory / Closure",
         message,
         "success",
       );

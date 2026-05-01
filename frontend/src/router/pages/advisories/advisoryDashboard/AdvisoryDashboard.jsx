@@ -14,7 +14,9 @@ import {
 } from "usehooks-ts";
 import qs from "qs";
 import { Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "react-oidc-context";
 import ErrorContext from "@/contexts/ErrorContext";
+import useAccess from "@/hooks/useAccess";
 import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
@@ -82,7 +84,12 @@ function mapDocumentIds(items) {
   return (items || []).map((item) => item.documentId);
 }
 
-function buildUnpublishPayload(advisoryData, unpublishedStatusId) {
+function buildUnpublishPayload(
+  advisoryData,
+  unpublishedStatusId,
+  modifiedBy,
+  modifiedByRole,
+) {
   return {
     title: advisoryData.title,
     description: advisoryData.description,
@@ -93,8 +100,8 @@ function buildUnpublishPayload(advisoryData, unpublishedStatusId) {
     submittedBy: advisoryData.submittedBy,
     updatedDate: advisoryData.updatedDate,
     modifiedDate: moment().toISOString(),
-    modifiedBy: advisoryData.modifiedBy,
-    modifiedByRole: advisoryData.modifiedByRole,
+    modifiedBy,
+    modifiedByRole,
     advisoryDate: advisoryData.advisoryDate,
     effectiveDate: advisoryData.effectiveDate,
     endDate: advisoryData.endDate,
@@ -127,6 +134,8 @@ function buildUnpublishPayload(advisoryData, unpublishedStatusId) {
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
+  const auth = useAuth();
+  const { hasAnyRole } = useAccess();
   const navigate = useNavigate();
   const {
     getRegions,
@@ -191,6 +200,8 @@ export default function AdvisoryDashboard() {
           data: buildUnpublishPayload(
             advisoryData,
             unpublishedStatus.documentId,
+            auth.user?.profile?.name,
+            hasAnyRole(["approver"]) ? "approver" : "submitter",
           ),
         });
 
@@ -205,8 +216,10 @@ export default function AdvisoryDashboard() {
     },
     [
       advisoryStatuses,
+      auth.user?.profile?.name,
       cmsGet,
       cmsPut,
+      hasAnyRole,
       openUnpublishError,
       openUnpublishSuccess,
     ],
@@ -841,6 +854,7 @@ export default function AdvisoryDashboard() {
         },
         render: (rowData) => (
           <ActionButton
+            rowId={rowData.documentId}
             canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
             onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
             onEdit={() => navigate(`/update-advisory/${rowData.documentId}`)}
