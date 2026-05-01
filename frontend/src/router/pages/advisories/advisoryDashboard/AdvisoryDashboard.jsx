@@ -710,7 +710,7 @@ export default function AdvisoryDashboard() {
 
           if (!accessStatus) return "";
 
-          return groupLabel !== accessStatus
+          return groupLabel && groupLabel !== accessStatus
             ? `${groupLabel} - ${accessStatus}`
             : accessStatus;
         },
