@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import "./AdvisoryForm.scss";
@@ -136,6 +136,7 @@ export default function AdvisoryForm({
   const { hasAnyRole } = useAccess();
 
   const [showEventDates, setShowEventDates] = useState(false);
+  const autoExpandedEventDates = useRef(false);
   const [affectedResourceError, setAffectedResourceError] = useState("");
   const [eventTypeError, setEventTypeError] = useState("");
   const [urgencyError, setUrgencyError] = useState("");
@@ -146,7 +147,7 @@ export default function AdvisoryForm({
   const [endDateError, setEndDateError] = useState("");
   const [expiryDateError, setExpiryDateError] = useState("");
   const [updatedDateError, setUpdatedDateError] = useState("");
-  const [submittedByError, setSubmittedByError] = useState("");
+  const [submittedByError] = useState("");
   const [listingRankError, setListingRankError] = useState("");
   const [linkTypeErrors, setLinkTypeErrors] = useState(
     new Array(linksRef.current.length).fill(false),
@@ -166,6 +167,19 @@ export default function AdvisoryForm({
   const [displayedDateError, setDisplayedDateError] = useState("");
   const [selectedDisplayedDateOption, setSelectedDisplayedDateOption] =
     useState("");
+
+  // Reveal event dates in update mode if there are any
+  useEffect(() => {
+    if (
+      mode === "update" &&
+      autoExpandedEventDates.current === false &&
+      showEventDates === false &&
+      (startDate || endDate)
+    ) {
+      setShowEventDates(true);
+      autoExpandedEventDates.current = true;
+    }
+  }, [mode, showEventDates, startDate, endDate]);
 
   const advisoryData = {
     listingRank: {
