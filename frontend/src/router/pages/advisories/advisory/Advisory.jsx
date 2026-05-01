@@ -636,7 +636,6 @@ export default function Advisory({ mode }) {
             if (defaultUrgency.length > 0) {
               setUrgency(defaultUrgency[0].value);
             }
-            setStartDate(moment().tz("America/Vancouver").toDate());
             setIsLoadingPage(false);
           }
 
