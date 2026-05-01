@@ -136,6 +136,7 @@ export default function AdvisoryForm({
   const { hasAnyRole } = useAccess();
 
   const [showEventDates, setShowEventDates] = useState(false);
+  // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
   const autoExpandedEventDates = useRef(false);
   const [affectedResourceError, setAffectedResourceError] = useState("");
   const [eventTypeError, setEventTypeError] = useState("");
@@ -176,6 +177,9 @@ export default function AdvisoryForm({
       (startDate || endDate)
     ) {
       setShowEventDates(true);
+      autoExpandedEventDates.current = true;
+    } else if (showEventDates && !autoExpandedEventDates.current) {
+      // Don't auto-expand the section after the initial load: set the flag to true to skip future checks
       autoExpandedEventDates.current = true;
     }
   }, [mode, showEventDates, startDate, endDate]);

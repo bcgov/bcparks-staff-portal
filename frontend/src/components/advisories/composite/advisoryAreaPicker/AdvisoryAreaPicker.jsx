@@ -51,6 +51,7 @@ export default function AdvisoryAreaPicker({
   },
 }) {
   const [showOtherAreas, setShowOtherAreas] = useState(false);
+  // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
   const autoExpandedOtherAreas = useRef(false);
 
   // Reveal other areas in update mode if there are any
@@ -68,6 +69,9 @@ export default function AdvisoryAreaPicker({
         selectedManagementAreas?.length)
     ) {
       setShowOtherAreas(true);
+      autoExpandedOtherAreas.current = true;
+    } else if (showOtherAreas && !autoExpandedOtherAreas.current) {
+      // Don't auto-expand the section after the initial load: set the flag to true to skip future checks
       autoExpandedOtherAreas.current = true;
     }
   }, [
