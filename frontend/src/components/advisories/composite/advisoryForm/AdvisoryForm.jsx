@@ -15,6 +15,8 @@ import {
 } from "@fa-kit/icons/classic/regular";
 import {
   faCheck,
+  faChevronDown,
+  faChevronUp,
   faCircleQuestion,
   faTriangleExclamation,
 } from "@fa-kit/icons/classic/solid";
@@ -133,6 +135,7 @@ export default function AdvisoryForm({
 }) {
   const { hasAnyRole } = useAccess();
 
+  const [showEventDates, setShowEventDates] = useState(false);
   const [affectedResourceError, setAffectedResourceError] = useState("");
   const [eventTypeError, setEventTypeError] = useState("");
   const [urgencyError, setUrgencyError] = useState("");
@@ -875,154 +878,7 @@ export default function AdvisoryForm({
         <h3>Advisory / Closure dates</h3>
 
         <div className="sub-section">
-          <h5>Event dates</h5>
-
-          <div className="row mb-3 date-time-row">
-            <div className="col-12 col-sm-6 col-md-5">
-              <Form.Group className="form-group" controlId="event-start-date">
-                <Form.Label>Start date</Form.Label>
-                <div className="input-with-append">
-                  <DatePicker
-                    id="start-date"
-                    selected={startDate}
-                    onChange={(date) => {
-                      setStartDate(date);
-                    }}
-                    dateFormat="MMMM d, yyyy"
-                    maxDate={endDate}
-                    className={`${startDateError !== "" ? "error" : ""}`}
-                    onBlur={() => {
-                      validateOptionalDate(advisoryData.startDate);
-                      validateDisplayedDate(advisoryData.displayedDate);
-                    }}
-                  />
-
-                  <FontAwesomeIcon
-                    className="append-content"
-                    icon={faCalendarCheck}
-                  />
-                </div>
-
-                {renderHelperText("month dd, yyyy")}
-              </Form.Group>
-            </div>
-
-            <div className="col-12 col-sm-6 col-md-5">
-              <Form.Group className="form-group">
-                <Form.Label htmlFor="event-start-time">Time</Form.Label>
-
-                <div className="d-flex align-items-center gap-2">
-                  <div className="input-with-append flex-grow-1">
-                    <DatePicker
-                      id="event-start-time"
-                      selected={startDate}
-                      onChange={(date) => setStartDate(date)}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      timeCaption="Time"
-                      dateFormat="h:mm aa"
-                      className={`${startDateError !== "" ? "error" : ""}`}
-                    />
-
-                    <FontAwesomeIcon
-                      className="append-content"
-                      icon={faClock}
-                    />
-                  </div>
-
-                  <span className="time-zone">PT</span>
-                </div>
-
-                {renderHelperText("hh:mm aa")}
-              </Form.Group>
-            </div>
-          </div>
-
-          <div className="row date-time-row">
-            <div className="col-12 col-sm-6 col-md-5">
-              <Form.Group className="form-group" controlId="event-end-date">
-                <Form.Label>
-                  End date
-                  <LightTooltip
-                    arrow
-                    title="Enter the event's end date.
-                      If end date is unknown, enter a date when the advisory should be reviewed for relevance."
-                  >
-                    <FontAwesomeIcon
-                      icon={faCircleQuestion}
-                      className="helpIcon"
-                    />
-                  </LightTooltip>
-                </Form.Label>
-
-                <div className="input-with-append">
-                  <DatePicker
-                    id="event-end-date"
-                    selected={endDate}
-                    onChange={(date) => {
-                      setEndDate(date);
-                    }}
-                    dateFormat="MMMM d, yyyy"
-                    minDate={startDate}
-                    className={`${endDateError !== "" ? "error" : ""}`}
-                    onBlur={() => {
-                      validateOptionalDate(advisoryData.endDate);
-                      validateDisplayedDate(advisoryData.displayedDate);
-                    }}
-                  />
-
-                  <FontAwesomeIcon
-                    className="append-content"
-                    icon={faCalendarCheck}
-                  />
-                </div>
-
-                {renderHelperText("month dd, yyyy")}
-
-                {endDateError !== "" &&
-                  renderHelperText(
-                    "End date should not be before Posting date",
-                    true,
-                  )}
-              </Form.Group>
-            </div>
-
-            <div className="col-12 col-sm-6 col-md-5">
-              <Form.Group className="form-group">
-                <Form.Label htmlFor="event-end-time">Time</Form.Label>
-
-                <div className="d-flex align-items-center gap-2">
-                  <div className="input-with-append flex-grow-1">
-                    <DatePicker
-                      id="event-end-time"
-                      selected={endDate}
-                      onChange={(date) => setEndDate(date)}
-                      showTimeSelect
-                      showTimeSelectOnly
-                      timeIntervals={15}
-                      timeCaption="Time"
-                      dateFormat="h:mm aa"
-                      className={`${endDateError !== "" ? "error" : ""}`}
-                    />
-
-                    <FontAwesomeIcon
-                      className="append-content"
-                      icon={faClock}
-                    />
-                  </div>
-
-                  <span className="time-zone">PT</span>
-                </div>
-
-                {renderHelperText("hh:mm aa")}
-              </Form.Group>
-            </div>
-          </div>
-        </div>
-
-        <div className="sub-section">
-          <h5>Post dates</h5>
+          <h5>Post date(s)</h5>
 
           <div className="row mb-3 date-time-row">
             <div className="col-12 col-sm-6 col-md-5">
@@ -1216,6 +1072,184 @@ export default function AdvisoryForm({
             </>
           )}
         </div>
+
+        {!showEventDates && (
+          <p>
+            <button
+              type="button"
+              className="btn mt-2 btn-link btn-boolean with-icon"
+              onClick={() => setShowEventDates(true)}
+            >
+              Add event dates
+              <FontAwesomeIcon icon={faChevronDown} />
+            </button>
+          </p>
+        )}
+
+        {showEventDates && (
+          <>
+            <div className="sub-section">
+              <h5>Event date(s)</h5>
+
+              <div className="row mb-3 date-time-row">
+                <div className="col-12 col-sm-6 col-md-5">
+                  <Form.Group
+                    className="form-group"
+                    controlId="event-start-date"
+                  >
+                    <Form.Label>Start date</Form.Label>
+                    <div className="input-with-append">
+                      <DatePicker
+                        id="start-date"
+                        selected={startDate}
+                        onChange={(date) => {
+                          setStartDate(date);
+                        }}
+                        dateFormat="MMMM d, yyyy"
+                        maxDate={endDate}
+                        className={`${startDateError !== "" ? "error" : ""}`}
+                        onBlur={() => {
+                          validateOptionalDate(advisoryData.startDate);
+                          validateDisplayedDate(advisoryData.displayedDate);
+                        }}
+                      />
+
+                      <FontAwesomeIcon
+                        className="append-content"
+                        icon={faCalendarCheck}
+                      />
+                    </div>
+
+                    {renderHelperText("month dd, yyyy")}
+                  </Form.Group>
+                </div>
+
+                <div className="col-12 col-sm-6 col-md-5">
+                  <Form.Group className="form-group">
+                    <Form.Label htmlFor="event-start-time">Time</Form.Label>
+
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="input-with-append flex-grow-1">
+                        <DatePicker
+                          id="event-start-time"
+                          selected={startDate}
+                          onChange={(date) => setStartDate(date)}
+                          showTimeSelect
+                          showTimeSelectOnly
+                          timeIntervals={15}
+                          timeCaption="Time"
+                          dateFormat="h:mm aa"
+                          className={`${startDateError !== "" ? "error" : ""}`}
+                        />
+
+                        <FontAwesomeIcon
+                          className="append-content"
+                          icon={faClock}
+                        />
+                      </div>
+
+                      <span className="time-zone">PT</span>
+                    </div>
+
+                    {renderHelperText("hh:mm aa")}
+                  </Form.Group>
+                </div>
+              </div>
+
+              <div className="row date-time-row">
+                <div className="col-12 col-sm-6 col-md-5">
+                  <Form.Group className="form-group" controlId="event-end-date">
+                    <Form.Label>
+                      End date
+                      <LightTooltip
+                        arrow
+                        title="Enter the event's end date.
+                      If end date is unknown, enter a date when the advisory should be reviewed for relevance."
+                      >
+                        <FontAwesomeIcon
+                          icon={faCircleQuestion}
+                          className="helpIcon"
+                        />
+                      </LightTooltip>
+                    </Form.Label>
+
+                    <div className="input-with-append">
+                      <DatePicker
+                        id="event-end-date"
+                        selected={endDate}
+                        onChange={(date) => {
+                          setEndDate(date);
+                        }}
+                        dateFormat="MMMM d, yyyy"
+                        minDate={startDate}
+                        className={`${endDateError !== "" ? "error" : ""}`}
+                        onBlur={() => {
+                          validateOptionalDate(advisoryData.endDate);
+                          validateDisplayedDate(advisoryData.displayedDate);
+                        }}
+                      />
+
+                      <FontAwesomeIcon
+                        className="append-content"
+                        icon={faCalendarCheck}
+                      />
+                    </div>
+
+                    {renderHelperText("month dd, yyyy")}
+
+                    {endDateError !== "" &&
+                      renderHelperText(
+                        "End date should not be before Posting date",
+                        true,
+                      )}
+                  </Form.Group>
+                </div>
+
+                <div className="col-12 col-sm-6 col-md-5">
+                  <Form.Group className="form-group">
+                    <Form.Label htmlFor="event-end-time">Time</Form.Label>
+
+                    <div className="d-flex align-items-center gap-2">
+                      <div className="input-with-append flex-grow-1">
+                        <DatePicker
+                          id="event-end-time"
+                          selected={endDate}
+                          onChange={(date) => setEndDate(date)}
+                          showTimeSelect
+                          showTimeSelectOnly
+                          timeIntervals={15}
+                          timeCaption="Time"
+                          dateFormat="h:mm aa"
+                          className={`${endDateError !== "" ? "error" : ""}`}
+                        />
+
+                        <FontAwesomeIcon
+                          className="append-content"
+                          icon={faClock}
+                        />
+                      </div>
+
+                      <span className="time-zone">PT</span>
+                    </div>
+
+                    {renderHelperText("hh:mm aa")}
+                  </Form.Group>
+                </div>
+              </div>
+            </div>
+
+            <p>
+              <button
+                type="button"
+                className="btn mt-2 btn-link btn-boolean with-icon"
+                onClick={() => setShowEventDates(false)}
+              >
+                Hide event dates
+                <FontAwesomeIcon icon={faChevronUp} />
+              </button>
+            </p>
+          </>
+        )}
 
         <Form.Group className="form-group">
           <Form.Label htmlFor="displayed-date">Displayed date</Form.Label>
