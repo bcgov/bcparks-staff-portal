@@ -215,6 +215,26 @@ export default function AdvisoryAreaPicker({
         </LightTooltip>
       </p>
 
+      <Form.Group className="form-group" controlId="resources">
+        <Form.Label>
+          Recreation Sites and Trails recreation resource(s)
+        </Form.Label>
+        <div
+          className={classNames({
+            "bcgov-select-error": affectedResourceError !== "",
+          })}
+        >
+          <RecreationResourcePicker
+            options={recreationResources}
+            value={selectedRecreationResources}
+            onChange={setSelectedRecreationResources}
+            onBlur={() => {
+              validateRequiredAffectedResources(advisoryData.affectedResources);
+            }}
+          />
+        </div>
+      </Form.Group>
+
       <Form.Group className="form-group" controlId="parks">
         <Form.Label>BC Parks park(s)</Form.Label>
         <div
@@ -242,26 +262,6 @@ export default function AdvisoryAreaPicker({
               validateRequiredAffectedResources(advisoryData.affectedResources);
             }}
             styles={customSelectStyles}
-          />
-        </div>
-      </Form.Group>
-
-      <Form.Group className="form-group" controlId="resources">
-        <Form.Label>
-          Recreation Sites and Trails recreation resource(s)
-        </Form.Label>
-        <div
-          className={classNames({
-            "bcgov-select-error": affectedResourceError !== "",
-          })}
-        >
-          <RecreationResourcePicker
-            options={recreationResources}
-            value={selectedRecreationResources}
-            onChange={setSelectedRecreationResources}
-            onBlur={() => {
-              validateRequiredAffectedResources(advisoryData.affectedResources);
-            }}
           />
         </div>
       </Form.Group>
