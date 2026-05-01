@@ -5,6 +5,7 @@ import {
   FeatureType,
   ManagementArea,
   Section,
+  ParkAreaType,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 import * as DATE_TYPE from "../../constants/dateType.js";
@@ -15,7 +16,7 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     // Run all queries concurrently
-    const [sections, managementAreas, dateTypes, featureTypes, accessGroups] =
+    const [sections, managementAreas, dateTypes, featureTypes, accessGroups, parkAreaTypes] =
       await Promise.all([
         Section.findAll({
           attributes: ["id", "sectionNumber", "name"],
@@ -30,11 +31,15 @@ router.get(
           order: [["strapiDateTypeId", "ASC"]],
         }),
         FeatureType.findAll({
-          attributes: ["id", "name"],
+          attributes: ["id", "strapiFeatureTypeId", "rank", "name"],
           order: [["name", "ASC"]],
         }),
         AccessGroup.findAll({
           attributes: ["id", "name"],
+          order: [["name", "ASC"]],
+        }),
+        ParkAreaType.findAll({
+          attributes: ["id", "parkAreaTypeNumber", "rank", "name"],
           order: [["name", "ASC"]],
         }),
       ]);
@@ -70,6 +75,7 @@ router.get(
       dateTypes: groupedDateTypes,
       featureTypes,
       accessGroups,
+      parkAreaTypes,
     };
 
     if (!filterOptions) {

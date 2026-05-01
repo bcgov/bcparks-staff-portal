@@ -297,26 +297,14 @@ StatusTableRow.propTypes = {
   color: PropTypes.string,
 };
 
-function FeaturesByFeatureTypeWithAreas({
-  featureTypeId,
-  park,
-  parkAreas,
-  formPanelHandler,
-  featureTypeFilter,
-}) {
+function FeaturesByFeatureTypeWithAreas({ park, parkAreas, formPanelHandler }) {
   return (
     <>
       {/* 2 - park area level */}
       {parkAreas.map((parkArea) => {
         const regularSeason = parkArea.currentSeason.regular;
 
-        const featuresInCurrentGroup = parkArea.features.filter((feature) =>
-          featureTypeFilter(
-            feature.featureType.strapiFeatureTypeId,
-            featureTypeId,
-          ),
-        );
-        const featureTypeGroup = featuresInCurrentGroup[0]?.featureType;
+        const featuresInCurrentGroup = parkArea.features;
 
         return (
           featuresInCurrentGroup.length > 0 && (
@@ -325,7 +313,7 @@ function FeaturesByFeatureTypeWithAreas({
                 id={parkArea.id}
                 level="park-area"
                 name={`${park.name} - ${parkArea.name}`}
-                typeName={featureTypeGroup?.name || ""}
+                typeName={parkArea?.parkAreaType?.name || ""}
                 season={regularSeason}
                 formPanelHandler={() =>
                   formPanelHandler({ ...parkArea, level: "park-area" })
@@ -359,11 +347,9 @@ function FeaturesByFeatureTypeWithAreas({
 }
 
 FeaturesByFeatureTypeWithAreas.propTypes = {
-  featureTypeId: PropTypes.number.isRequired,
   park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
-  featureTypeFilter: PropTypes.func.isRequired,
 };
 
 function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
@@ -406,19 +392,14 @@ FeaturesByFeatureTypeNoAreas.propTypes = {
   formPanelHandler: PropTypes.func.isRequired,
 };
 
-function Table({ park, formPanelHandler }) {
+function Table({ park, formPanelHandler, sortOrder }) {
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
   const regularSeason = park.currentSeason.regular;
   const winterSeason = park?.currentSeason.winter || {};
 
-  // Filter function to determine if feature matches current feature type group
-  function matchesFeatureTypeGroup(featureTypeId, groupFeatureType) {
-    return groupFeatureType === FEATURE_TYPE.UNKNOWN
-      ? !FEATURE_TYPE.SORT_ORDER.includes(featureTypeId)
-      : featureTypeId === groupFeatureType;
-  }
+  if (!sortOrder?.length) return <></>;
 
   return (
     <table key={park.id} className="table has-header-row mb-0">
@@ -496,25 +477,32 @@ function Table({ park, formPanelHandler }) {
           </>
         )}
 
-        {FEATURE_TYPE.SORT_ORDER.map((featureTypeId) => (
-          <React.Fragment key={`feature-type-${featureTypeId}`}>
-            <FeaturesByFeatureTypeWithAreas
-              featureTypeId={featureTypeId}
-              park={park}
-              parkAreas={parkAreas}
-              formPanelHandler={formPanelHandler}
-              featureTypeFilter={matchesFeatureTypeGroup}
-            />
-            <FeaturesByFeatureTypeNoAreas
-              park={park}
-              features={features.filter((f) =>
-                matchesFeatureTypeGroup(
-                  f.featureType.strapiFeatureTypeId,
-                  featureTypeId,
-                ),
-              )}
-              formPanelHandler={formPanelHandler}
-            />
+        {sortOrder.map((groupingType) => (
+          <React.Fragment
+            key={`${groupingType.type}-${groupingType.parkAreaTypeNumber || groupingType.strapiFeatureTypeId}`}
+          >
+            {groupingType.type === "ParkAreaType" && (
+              <FeaturesByFeatureTypeWithAreas
+                park={park}
+                parkAreas={parkAreas.filter(
+                  (pa) =>
+                    pa.parkAreaType?.parkAreaTypeNumber ===
+                    groupingType.parkAreaTypeNumber,
+                )}
+                formPanelHandler={formPanelHandler}
+              />
+            )}
+            {groupingType.type === "FeatureType" && (
+              <FeaturesByFeatureTypeNoAreas
+                park={park}
+                features={features.filter(
+                  (f) =>
+                    f.featureType.strapiFeatureTypeId ===
+                    groupingType.strapiFeatureTypeId,
+                )}
+                formPanelHandler={formPanelHandler}
+              />
+            )}
           </React.Fragment>
         ))}
       </tbody>
@@ -577,17 +565,24 @@ Table.propTypes = {
   }),
   formPanelHandler: PropTypes.func.isRequired,
   inReservationSystemFilter: PropTypes.bool,
+  sortOrder: PropTypes.arrayOf(PropTypes.object),
 };
 
 export default function EditAndReviewTable({
   data,
   onResetFilters,
   formPanelHandler,
+  sortOrder,
 }) {
   return (
     <div className="table-responsive">
       {data.map((park) => (
-        <Table key={park.id} park={park} formPanelHandler={formPanelHandler} />
+        <Table
+          key={park.id}
+          park={park}
+          formPanelHandler={formPanelHandler}
+          sortOrder={sortOrder}
+        />
       ))}
 
       {data.length === 0 && (
@@ -615,4 +610,5 @@ EditAndReviewTable.propTypes = {
   ),
   onResetFilters: PropTypes.func,
   formPanelHandler: PropTypes.func,
+  sortOrder: PropTypes.arrayOf(PropTypes.object),
 };
