@@ -1050,47 +1050,70 @@ export default function AdvisoryForm({
           </div>
 
           {mode === "update" && (
-            <>
-              <Form.Group className="form-group">
-                <Form.Label htmlFor="updated-date">Updated date</Form.Label>
+            <div className="row mb-3 date-time-row">
+              <div className="col-12 col-sm-6 col-md-5">
+                <Form.Group className="form-group">
+                  <Form.Label htmlFor="updated-date">Updated date</Form.Label>
 
-                <DatePicker
-                  id="updated-date"
-                  selected={updatedDate}
-                  onChange={(date) => {
-                    setUpdatedDate(date);
-                  }}
-                  dateFormat="MMMM d, yyyy"
-                  minDate={advisoryDate}
-                  className={`${updatedDateError !== "" ? "error" : ""}`}
-                  onBlur={() => {
-                    validateOptionalDate(advisoryData.updatedDate);
-                    validateDisplayedDate(advisoryData.displayedDate);
-                  }}
-                />
+                  <div className="input-with-append">
+                    <DatePicker
+                      id="updated-date"
+                      selected={updatedDate}
+                      onChange={(date) => {
+                        setUpdatedDate(date);
+                      }}
+                      dateFormat="MMMM d, yyyy"
+                      minDate={advisoryDate}
+                      className={`${updatedDateError !== "" ? "error" : ""}`}
+                      onBlur={() => {
+                        validateOptionalDate(advisoryData.updatedDate);
+                        validateDisplayedDate(advisoryData.displayedDate);
+                      }}
+                    />
 
-                {renderHelperText("month dd, yyyy")}
-              </Form.Group>
+                    <FontAwesomeIcon
+                      className="append-content"
+                      icon={faCalendarCheck}
+                    />
+                  </div>
 
-              <Form.Group className="form-group">
-                <Form.Label htmlFor="updated-time">Time</Form.Label>
+                  {renderHelperText("month dd, yyyy")}
+                </Form.Group>
+              </div>
 
-                <DatePicker
-                  id="updated-time"
-                  selected={updatedDate}
-                  onChange={(date) => {
-                    setUpdatedDate(date);
-                  }}
-                  showTimeSelect
-                  showTimeSelectOnly
-                  timeIntervals={15}
-                  timeCaption="Time"
-                  dateFormat="h:mm aa"
-                  className={`${updatedDateError !== "" ? "error" : ""}`}
-                />
-                {renderHelperText("hh:mm aa")}
-              </Form.Group>
-            </>
+              <div className="col-12 col-sm-6 col-md-5">
+                <Form.Group className="form-group">
+                  <Form.Label htmlFor="updated-time">Time</Form.Label>
+
+                  <div className="d-flex align-items-center gap-2">
+                    <div className="input-with-append flex-grow-1">
+                      <DatePicker
+                        id="updated-time"
+                        selected={updatedDate}
+                        onChange={(date) => {
+                          setUpdatedDate(date);
+                        }}
+                        showTimeSelect
+                        showTimeSelectOnly
+                        timeIntervals={15}
+                        timeCaption="Time"
+                        dateFormat="h:mm aa"
+                        className={`${updatedDateError !== "" ? "error" : ""}`}
+                      />
+
+                      <FontAwesomeIcon
+                        className="append-content"
+                        icon={faClock}
+                      />
+                    </div>
+
+                    <span className="time-zone">PT</span>
+                  </div>
+
+                  {renderHelperText("hh:mm aa")}
+                </Form.Group>
+              </div>
+            </div>
           )}
         </div>
 
