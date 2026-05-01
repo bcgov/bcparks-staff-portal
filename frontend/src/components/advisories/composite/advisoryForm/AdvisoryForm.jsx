@@ -890,7 +890,7 @@ export default function AdvisoryForm({
       </section>
 
       <section>
-        <h3>Advisory / Closure dates</h3>
+        <h3>Advisory / closure dates</h3>
 
         <div className="sub-section">
           <h5>Post date(s)</h5>
