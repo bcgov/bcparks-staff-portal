@@ -1,4 +1,11 @@
-import { useState, useEffect, useMemo, useContext, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -32,6 +39,9 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
+import { ADVISORY_UNPUBLISH_QUERY } from "@/constants/advisoryQuery";
+import AdvisoryFlashMessage from "../AdvisoryFlashMessage/AdvisoryFlashMessage";
+import useAdvisoryFlashMessage from "../AdvisoryFlashMessage/useAdvisoryFlashMessage";
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
@@ -68,6 +78,53 @@ function normalizePageFilterValues(filterValue) {
   return [filterValue];
 }
 
+function mapDocumentIds(items) {
+  return (items || []).map((item) => item.documentId);
+}
+
+function buildUnpublishPayload(advisoryData, unpublishedStatusId) {
+  return {
+    title: advisoryData.title,
+    description: advisoryData.description,
+    revisionNumber: advisoryData.revisionNumber,
+    isSafetyRelated: advisoryData.isSafetyRelated,
+    listingRank: advisoryData.listingRank,
+    note: advisoryData.note,
+    submittedBy: advisoryData.submittedBy,
+    updatedDate: advisoryData.updatedDate,
+    modifiedDate: moment().toISOString(),
+    modifiedBy: advisoryData.modifiedBy,
+    modifiedByRole: advisoryData.modifiedByRole,
+    advisoryDate: advisoryData.advisoryDate,
+    effectiveDate: advisoryData.effectiveDate,
+    endDate: advisoryData.endDate,
+    expiryDate: advisoryData.expiryDate,
+    accessStatus: advisoryData.accessStatus?.documentId || null,
+    eventType: advisoryData.eventType?.documentId || null,
+    urgency: advisoryData.urgency?.documentId || null,
+    standardMessages: mapDocumentIds(advisoryData.standardMessages),
+    protectedAreas: mapDocumentIds(advisoryData.protectedAreas),
+    advisoryStatus: unpublishedStatusId,
+    links: mapDocumentIds(advisoryData.links),
+    regions: mapDocumentIds(advisoryData.regions),
+    sections: mapDocumentIds(advisoryData.sections),
+    managementAreas: mapDocumentIds(advisoryData.managementAreas),
+    sites: mapDocumentIds(advisoryData.sites),
+    fireCentres: mapDocumentIds(advisoryData.fireCentres),
+    fireZones: mapDocumentIds(advisoryData.fireZones),
+    naturalResourceDistricts: mapDocumentIds(
+      advisoryData.naturalResourceDistricts,
+    ),
+    recreationResources: mapDocumentIds(advisoryData.recreationResources),
+    isAdvisoryDateDisplayed: advisoryData.isAdvisoryDateDisplayed,
+    isEffectiveDateDisplayed: advisoryData.isEffectiveDateDisplayed,
+    isEndDateDisplayed: advisoryData.isEndDateDisplayed,
+    isUpdatedDateDisplayed: advisoryData.isUpdatedDateDisplayed,
+    publishedAt: advisoryData.publishedAt,
+    isLatestRevision: advisoryData.isLatestRevision,
+  };
+}
+
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
   const navigate = useNavigate();
@@ -79,6 +136,7 @@ export default function AdvisoryDashboard() {
     getAdvisoryStatuses,
     getUrgencies,
     cmsGet,
+    cmsPut,
   } = useCms();
 
   const [toError, setToError] = useState(false);
@@ -105,6 +163,54 @@ export default function AdvisoryDashboard() {
   const totalPublicAdvisoriesRef = useRef(0);
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const {
+    unpublishFlashMessage,
+    closeUnpublishFlashMessage,
+    openUnpublishError,
+    openUnpublishSuccess,
+  } = useAdvisoryFlashMessage();
+
+  const handleUnpublish = useCallback(
+    async (rowData) => {
+      const unpublishedStatus = advisoryStatuses.find(
+        (status) => status.code === "UNP",
+      );
+
+      if (!unpublishedStatus?.documentId) {
+        openUnpublishError("Could not resolve unpublished advisory status.");
+        return;
+      }
+
+      try {
+        const advisoryData = await cmsGet(
+          `public-advisory-audits/${rowData.documentId}?${ADVISORY_UNPUBLISH_QUERY}`,
+        );
+
+        await cmsPut(`public-advisory-audits/${rowData.documentId}`, {
+          data: buildUnpublishPayload(
+            advisoryData,
+            unpublishedStatus.documentId,
+          ),
+        });
+
+        openUnpublishSuccess(`${rowData.title} is no longer publicly posted.`);
+        setRefreshKey((current) => current + 1);
+      } catch (error) {
+        console.error("Error unpublishing advisory:", error);
+        openUnpublishError(
+          `Could not unpublish ${rowData.title}. Please try again.`,
+        );
+      }
+    },
+    [
+      advisoryStatuses,
+      cmsGet,
+      cmsPut,
+      openUnpublishError,
+      openUnpublishSuccess,
+    ],
+  );
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
@@ -438,6 +544,7 @@ export default function AdvisoryDashboard() {
     showArchived,
     sortConfig,
     debouncedTableFilterValues,
+    refreshKey,
   ]);
 
   const regionOptions = useMemo(
@@ -734,16 +841,15 @@ export default function AdvisoryDashboard() {
         },
         render: (rowData) => (
           <ActionButton
+            canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
             onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
             onEdit={() => navigate(`/update-advisory/${rowData.documentId}`)}
-            onUnpublish={() =>
-              navigate(`/update-advisory/${rowData.documentId}`)
-            }
+            onUnpublish={() => handleUnpublish(rowData)}
           />
         ),
       },
     ],
-    [urgencies, advisoryStatuses, navigate],
+    [urgencies, advisoryStatuses, navigate, handleUnpublish],
   );
 
   if (toCreate) {
@@ -945,6 +1051,10 @@ export default function AdvisoryDashboard() {
           </div>
         </div>
       }
+      <AdvisoryFlashMessage
+        unpublishFlashMessage={unpublishFlashMessage}
+        closeUnpublishFlashMessage={closeUnpublishFlashMessage}
+      />
       {isLoading && (
         <div className="page-loader">
           <Loader page />

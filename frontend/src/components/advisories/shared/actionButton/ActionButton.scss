@@ -6,7 +6,20 @@
       color: var(--color-blue);
 
       &::after {
+        display: none;
+      }
+
+      .action-button__icon {
+        height: 0.75rem;
         margin-left: 0.5rem;
+        transition: transform 0.5s ease;
+        width: 0.75rem;
+      }
+
+      &.show {
+        .action-button__icon{
+          transform: rotate(180deg);
+        }
       }
     }
 
@@ -21,6 +34,11 @@
 
         &:active {
           background-color: var(--surface-color-secondary-hover);
+        }
+
+        &.disabled {
+          color: var(--color-light-grey);
+          pointer-events: none;
         }
 
         svg {
