@@ -40,6 +40,11 @@ export default (sequelize) => {
         sourceKey: "publishableId",
         as: "gateDetails",
       });
+
+      ParkArea.belongsTo(models.ParkAreaType, {
+        foreignKey: "parkAreaTypeId",
+        as: "parkAreaType",
+      });
     }
   }
   ParkArea.init(
@@ -60,6 +65,11 @@ export default (sequelize) => {
         allowNull: true,
         defaultValue: null,
         unique: true,
+      },
+
+      parkAreaTypeId: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
     },
     {

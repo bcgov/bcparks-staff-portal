@@ -20,6 +20,7 @@ Imports and updates `FeatureType` records from Strapi's `park-feature-type` coll
 | `parkFeatureType` | `name`                | Feature type name                                            |
 | `featureTypeId`   | `strapiFeatureTypeId` | Used for matching existing records                           |
 | (none)            | `icon`                | Default to `information` (?) on insert / no change on update |
+| `rank`            | `rank`                | Used for display sorting                                     |
 
 ## Transaction Safety
 

@@ -4,6 +4,7 @@ import DateableModel from "./dateable.js";
 import PublishableModel from "./publishable.js";
 import ParkModel from "./park.js";
 import UserModel from "./user.js";
+import ParkAreaTypeModel from "./parkareatype.js";
 import ParkAreaModel from "./parkarea.js";
 import FeatureTypeModel from "./featuretype.js";
 import FeatureModel from "./feature.js";
@@ -28,6 +29,7 @@ const Park = ParkModel(sequelize);
 
 const User = UserModel(sequelize);
 
+const ParkAreaType = ParkAreaTypeModel(sequelize);
 const ParkArea = ParkAreaModel(sequelize);
 const FeatureType = FeatureTypeModel(sequelize);
 const Feature = FeatureModel(sequelize);
@@ -50,6 +52,7 @@ const models = {
   Publishable,
   Park,
   User,
+  ParkAreaType,
   ParkArea,
   FeatureType,
   Feature,
@@ -78,6 +81,7 @@ export {
   Publishable,
   Park,
   User,
+  ParkAreaType,
   ParkArea,
   FeatureType,
   Feature,

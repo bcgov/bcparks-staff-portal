@@ -1,7 +1,7 @@
 import "../../env.js";
 
 import { Op } from "sequelize";
-import { Park, ParkArea } from "../../models/index.js";
+import { Park, ParkArea, ParkAreaType } from "../../models/index.js";
 import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
 import {
   validateDootParkAreas,
@@ -71,6 +71,18 @@ export default async function importStrapiParkAreas(transaction = null) {
       ]),
     );
 
+    // Get all DOOT ParkAreaTypes for parkAreaTypeNumber lookup
+    const dootParkAreaTypes = await ParkAreaType.findAll({
+      where: { parkAreaTypeNumber: { [Op.ne]: null } },
+      transaction,
+    });
+    const parkAreaTypeLookup = new Map(
+      dootParkAreaTypes.map((parkAreaType) => [
+        parkAreaType.parkAreaTypeNumber, // Key: e.g. "10"
+        parkAreaType, // Value: ParkAreaType record
+      ]),
+    );
+
     let createdCount = 0;
     let updatedCount = 0;
     let skippedCount = 0;
@@ -97,6 +109,18 @@ export default async function importStrapiParkAreas(transaction = null) {
         parkId = matchedPark?.id ?? null;
       }
 
+      // Get the parkAreaTypeId from the related parkAreaType
+      let parkAreaTypeId = null;
+      const parkAreaTypeNumber =
+        strapiParkArea.parkAreaType?.areaTypeId ?? null;
+
+      if (parkAreaTypeNumber) {
+        const matchedParkAreaType =
+          parkAreaTypeLookup.get(parkAreaTypeNumber) ?? null;
+
+        parkAreaTypeId = matchedParkAreaType?.id ?? null;
+      }
+
       if (!parkId) {
         console.warn(
           `Skipping ParkArea: "${parkAreaName}" - no matching Park found for related Protected Area orcs: ${protectedAreaOrcs}`,
@@ -113,6 +137,14 @@ export default async function importStrapiParkAreas(transaction = null) {
         continue;
       }
 
+      if (!parkAreaTypeId) {
+        console.warn(
+          `Skipping ParkArea: "${parkAreaName}" - no matching ParkAreaType found for related areaTypeId: ${parkAreaTypeNumber}`,
+        );
+        skippedCount++;
+        continue;
+      }
+
       // Find matched ParkArea by strapiOrcsAreaNumber
       const matchedDootParkArea = parkAreaLookup.get(orcsAreaNumber);
 
@@ -122,6 +154,7 @@ export default async function importStrapiParkAreas(transaction = null) {
         active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         parkId,
+        parkAreaTypeId,
       };
 
       if (matchedDootParkArea) {

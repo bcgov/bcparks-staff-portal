@@ -16,13 +16,14 @@ Imports and updates `ParkArea` records from Strapi's `park-area` collection by m
 
 **Data mapping:**
 
-| Strapi Field          | DOOT Field             | Notes                               |
-| --------------------- | ---------------------- | ----------------------------------- |
-| `parkAreaName`        | `name`                 | Park area name                      |
-| `isActive`            | `active`               | Defaults to `true` if not provided  |
-| `inReservationSystem` | `inReservationSystem`  | Defaults to `false` if not provided |
-| `orcsAreaNumber`      | `strapiOrcsAreaNumber` | Used for matching existing records  |
-| `protectedArea.orcs`  | `parkId`               | DOOT Park ID, matched by ORCS value |
+| Strapi Field              | DOOT Field             | Notes                                          |
+| ------------------------- | ---------------------- | ---------------------------------------------- |
+| `parkAreaName`            | `name`                 | Park area name                                 |
+| `isActive`                | `active`               | Defaults to `false` if not provided            |
+| `inReservationSystem`     | `inReservationSystem`  | Defaults to `false` if not provided            |
+| `orcsAreaNumber`          | `strapiOrcsAreaNumber` | Used for matching existing records             |
+| `protectedArea.orcs`      | `parkId`               | DOOT Park ID, matched by ORCS value            |
+| `parkAreaType.areaTypeId` | `parkAreaTypeId`       | DOOT Park Area Type, matched by well-known key |
 
 ## Transaction Safety
 
