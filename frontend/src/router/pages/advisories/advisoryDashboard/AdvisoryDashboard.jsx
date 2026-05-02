@@ -1,11 +1,4 @@
-import {
-  useState,
-  useEffect,
-  useMemo,
-  useContext,
-  useRef,
-  useCallback,
-} from "react";
+import { useState, useEffect, useMemo, useContext, useRef } from "react";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -41,7 +34,7 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
-import { ADVISORY_UNPUBLISH_QUERY } from "@/constants/advisoryQuery";
+import useAdvisoryUnpublish from "./useAdvisoryUnpublish";
 import AdvisoryFlashMessage from "../AdvisoryFlashMessage/AdvisoryFlashMessage";
 import useAdvisoryFlashMessage from "../AdvisoryFlashMessage/useAdvisoryFlashMessage";
 
@@ -78,58 +71,6 @@ function normalizePageFilterValues(filterValue) {
   }
 
   return [filterValue];
-}
-
-function mapDocumentIds(items) {
-  return (items || []).map((item) => item.documentId);
-}
-
-function buildUnpublishPayload(
-  advisoryData,
-  unpublishedStatusId,
-  modifiedBy,
-  modifiedByRole,
-) {
-  return {
-    title: advisoryData.title,
-    description: advisoryData.description,
-    revisionNumber: advisoryData.revisionNumber,
-    isSafetyRelated: advisoryData.isSafetyRelated,
-    listingRank: advisoryData.listingRank,
-    note: advisoryData.note,
-    submittedBy: advisoryData.submittedBy,
-    updatedDate: advisoryData.updatedDate,
-    modifiedDate: moment().toISOString(),
-    modifiedBy,
-    modifiedByRole,
-    advisoryDate: advisoryData.advisoryDate,
-    effectiveDate: advisoryData.effectiveDate,
-    endDate: advisoryData.endDate,
-    expiryDate: advisoryData.expiryDate,
-    accessStatus: advisoryData.accessStatus?.documentId || null,
-    eventType: advisoryData.eventType?.documentId || null,
-    urgency: advisoryData.urgency?.documentId || null,
-    standardMessages: mapDocumentIds(advisoryData.standardMessages),
-    protectedAreas: mapDocumentIds(advisoryData.protectedAreas),
-    advisoryStatus: unpublishedStatusId,
-    links: mapDocumentIds(advisoryData.links),
-    regions: mapDocumentIds(advisoryData.regions),
-    sections: mapDocumentIds(advisoryData.sections),
-    managementAreas: mapDocumentIds(advisoryData.managementAreas),
-    sites: mapDocumentIds(advisoryData.sites),
-    fireCentres: mapDocumentIds(advisoryData.fireCentres),
-    fireZones: mapDocumentIds(advisoryData.fireZones),
-    naturalResourceDistricts: mapDocumentIds(
-      advisoryData.naturalResourceDistricts,
-    ),
-    recreationResources: mapDocumentIds(advisoryData.recreationResources),
-    isAdvisoryDateDisplayed: advisoryData.isAdvisoryDateDisplayed,
-    isEffectiveDateDisplayed: advisoryData.isEffectiveDateDisplayed,
-    isEndDateDisplayed: advisoryData.isEndDateDisplayed,
-    isUpdatedDateDisplayed: advisoryData.isUpdatedDateDisplayed,
-    publishedAt: advisoryData.publishedAt,
-    isLatestRevision: advisoryData.isLatestRevision,
-  };
 }
 
 export default function AdvisoryDashboard() {
@@ -180,50 +121,19 @@ export default function AdvisoryDashboard() {
     openUnpublishSuccess,
   } = useAdvisoryFlashMessage();
 
-  const handleUnpublish = useCallback(
-    async (rowData) => {
-      const unpublishedStatus = advisoryStatuses.find(
-        (status) => status.code === "UNP",
-      );
-
-      if (!unpublishedStatus?.documentId) {
-        openUnpublishError("Could not resolve unpublished advisory status.");
-        return;
-      }
-
-      try {
-        const advisoryData = await cmsGet(
-          `public-advisory-audits/${rowData.documentId}?${ADVISORY_UNPUBLISH_QUERY}`,
-        );
-
-        await cmsPut(`public-advisory-audits/${rowData.documentId}`, {
-          data: buildUnpublishPayload(
-            advisoryData,
-            unpublishedStatus.documentId,
-            auth.user?.profile?.name,
-            hasAnyRole(["approver"]) ? "approver" : "submitter",
-          ),
-        });
-
-        openUnpublishSuccess(`${rowData.title} is no longer publicly posted.`);
-        setRefreshKey((current) => current + 1);
-      } catch (error) {
-        console.error("Error unpublishing advisory:", error);
-        openUnpublishError(
-          `Could not unpublish ${rowData.title}. Please try again.`,
-        );
-      }
+  const handleUnpublish = useAdvisoryUnpublish({
+    advisoryStatuses,
+    cmsGet,
+    cmsPut,
+    modifiedBy: auth.user?.profile?.name,
+    isApprover: hasAnyRole(["approver"]),
+    openUnpublishError,
+    openUnpublishSuccess,
+    onSuccess() {
+      // Refresh the advisory dashboard to reflect the unpublished change
+      setRefreshKey((current) => current + 1);
     },
-    [
-      advisoryStatuses,
-      auth.user?.profile?.name,
-      cmsGet,
-      cmsPut,
-      hasAnyRole,
-      openUnpublishError,
-      openUnpublishSuccess,
-    ],
-  );
+  });
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
