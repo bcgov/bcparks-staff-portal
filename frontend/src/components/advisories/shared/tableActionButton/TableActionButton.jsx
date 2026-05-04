@@ -5,11 +5,11 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faChevronUp } from "@fa-kit/icons/classic/solid";
 import { faPen, faEyeSlash } from "@fa-kit/icons/classic/regular";
 
-import "./ActionButton.scss";
+import "./TableActionButton.scss";
 
-export function ActionButton({
+export function TableActionButton({
   rowId,
-  canUnpublish,
+  canUnpublish = false,
   onView,
   onEdit,
   onUnpublish,
@@ -56,17 +56,10 @@ export function ActionButton({
   );
 }
 
-ActionButton.propTypes = {
+TableActionButton.propTypes = {
   rowId: PropTypes.string.isRequired,
   canUnpublish: PropTypes.bool,
-  onView: PropTypes.func,
-  onEdit: PropTypes.func,
-  onUnpublish: PropTypes.func,
-};
-
-ActionButton.defaultProps = {
-  canUnpublish: false,
-  onView() {},
-  onEdit() {},
-  onUnpublish() {},
+  onView: PropTypes.func.isRequired,
+  onEdit: PropTypes.func.isRequired,
+  onUnpublish: PropTypes.func.isRequired,
 };

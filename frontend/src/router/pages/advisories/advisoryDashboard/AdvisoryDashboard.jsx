@@ -14,8 +14,9 @@ import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
-import { ActionButton } from "@/components/advisories/shared/actionButton/ActionButton";
+import { TableActionButton } from "@/components/advisories/shared/tableActionButton/TableActionButton";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
+import FlashMessage from "@/components/FlashMessage";
 import StatusBadge from "@/components/StatusBadge";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
@@ -35,7 +36,6 @@ import {
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 import useAdvisoryUnpublish from "./useAdvisoryUnpublish";
-import AdvisoryFlashMessage from "../AdvisoryFlashMessage/AdvisoryFlashMessage";
 import useAdvisoryFlashMessage from "../AdvisoryFlashMessage/useAdvisoryFlashMessage";
 
 const ALL_PAGE_SIZE = -1;
@@ -763,7 +763,7 @@ export default function AdvisoryDashboard() {
           textAlign: "left",
         },
         render: (rowData) => (
-          <ActionButton
+          <TableActionButton
             rowId={rowData.documentId}
             canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
             onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
@@ -975,9 +975,12 @@ export default function AdvisoryDashboard() {
           </div>
         </div>
       }
-      <AdvisoryFlashMessage
-        unpublishFlashMessage={unpublishFlashMessage}
-        closeUnpublishFlashMessage={closeUnpublishFlashMessage}
+      <FlashMessage
+        title={unpublishFlashMessage.title}
+        message={unpublishFlashMessage.message}
+        isVisible={unpublishFlashMessage.isVisible}
+        onClose={closeUnpublishFlashMessage}
+        variant={unpublishFlashMessage.variant}
       />
       {isLoading && (
         <div className="page-loader">
