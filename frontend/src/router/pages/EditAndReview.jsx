@@ -31,7 +31,11 @@ function EditAndReview() {
     error: filterOptionsError,
   } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
-  const filterOptions = filterOptionsData ?? {};
+
+  const filterOptions = useMemo(
+    () => filterOptionsData ?? {},
+    [filterOptionsData],
+  );
 
   const statusOptions = [
     { value: STATUS.REQUESTED.value, label: STATUS.REQUESTED.label },
@@ -39,6 +43,23 @@ function EditAndReview() {
     { value: STATUS.APPROVED.value, label: STATUS.APPROVED.label },
     { value: STATUS.PUBLISHED.value, label: STATUS.PUBLISHED.label },
   ];
+
+  const tableSortOrder = useMemo(
+    () =>
+      [
+        ...(filterOptions?.parkAreaTypes ?? []).map((p) => ({
+          rank: p.rank,
+          parkAreaTypeNumber: p.parkAreaTypeNumber,
+          type: "ParkAreaType",
+        })),
+        ...(filterOptions?.featureTypes ?? []).map((f) => ({
+          rank: f.rank,
+          strapiFeatureTypeId: f.strapiFeatureTypeId,
+          type: "FeatureType",
+        })),
+      ].sort((a, b) => a.rank - b.rank),
+    [filterOptions],
+  );
 
   // table pagination
   const [page, setPage] = useState(1);
@@ -325,6 +346,7 @@ function EditAndReview() {
               data={pageData}
               onResetFilters={resetFilters}
               formPanelHandler={formPanelHandler}
+              sortOrder={tableSortOrder}
             />
           </RefreshTableContext.Provider>
         </div>
