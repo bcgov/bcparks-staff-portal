@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import logo from "@/assets/min-env-and-parks-logo.svg";
-import logoVertical from "@/assets/bc-parks-logo-vertical.svg";
+import logoVertical from "@/assets/min-env-and-parks-logo-vertical.svg";
 
 export default function HeaderTitle() {
   return (
@@ -12,7 +12,7 @@ export default function HeaderTitle() {
         className="d-block d-md-none"
         src={logoVertical}
         height="60"
-        alt="BC Parks logo"
+        alt="Ministry of Environment and Parks logo"
       />
       {/* swap logo images on larger screens */}
       <img
