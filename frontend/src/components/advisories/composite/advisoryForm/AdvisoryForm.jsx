@@ -1363,7 +1363,7 @@ export default function AdvisoryForm({
           />
         </Form.Group>
 
-        {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
+        {hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]) && (
           <Form.Group className="form-group" controlId={submitterInput.id}>
             <Form.Label>
               Requested by
@@ -1495,9 +1495,9 @@ export default function AdvisoryForm({
         )}
       </section>
 
-      {!hasAnyRole([ROLES.ADVISORY_SUBMITTER]) &&
+      {!hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]) &&
         (isStatHoliday || isAfterHours) && (
-          <div className="ad-af-hour-box d-flex field-bg-blue">
+          <section className="ad-af-hour-box d-flex field-bg-blue">
             <FontAwesomeIcon
               icon={faTriangleExclamation}
               className="warningIcon"
@@ -1550,7 +1550,7 @@ export default function AdvisoryForm({
                 </Form.Check>
               </div>
             </div>
-          </div>
+          </section>
         )}
 
       <section className="action-buttons">
