@@ -95,13 +95,24 @@ Don't run `uninstall crunchy` unless you really want to lose all your data!
 ### Dev
 
 ```sh
+# dev:
 helm -n a7dd13-dev uninstall crunchy
+
+# alpha-dev:
+helm -n a7dd13-dev uninstall crunchy-alpha
 ```
 
 ### Test
 
 ```sh
+# test:
 helm -n a7dd13-test uninstall crunchy
+
+# alpha-test:
+helm -n a7dd13-test uninstall crunchy-alpha
+
+# training: (a third test environment, for RSOs and POs)
+helm -n a7dd13-test uninstall crunchy-training
 ```
 
 ### Prod
