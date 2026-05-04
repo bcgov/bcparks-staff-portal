@@ -636,7 +636,6 @@ export default function Advisory({ mode }) {
             if (defaultUrgency.length > 0) {
               setUrgency(defaultUrgency[0].value);
             }
-            setStartDate(moment().tz("America/Vancouver").toDate());
             setIsLoadingPage(false);
           }
 
@@ -1103,85 +1102,74 @@ export default function Advisory({ mode }) {
         (x) => x.value,
       );
 
-      if (
-        (!selProtectedAreas || selProtectedAreas.length === 0) &&
-        (!selSites || selSites.length === 0)
-      ) {
-        setSelectedProtectedAreas([]);
-        setSelectedSites([]);
-        setIsSubmitting(false);
-        setIsSavingDraft(false);
-        setFormError("Select at least one location");
-      } else {
-        Promise.resolve(saveLinks()).then((savedLinks) => {
-          const updatedLinks =
-            savedLinks.length > 0 ? [...links, ...savedLinks] : links;
-          const updatedAdvisory = {
-            title: headline,
-            description,
-            revisionNumber,
-            isSafetyRelated,
-            listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
-            note: notes,
-            submittedBy,
-            updatedDate,
-            modifiedDate: moment().toISOString(),
-            modifiedBy: auth.user?.profile?.name,
-            modifiedByRole: isApprover ? "approver" : "submitter",
-            advisoryDate,
-            effectiveDate: startDate,
-            endDate,
-            expiryDate,
-            accessStatus,
-            eventType,
-            urgency,
-            standardMessages: selectedStandardMessages.map((s) => s.value),
-            protectedAreas: selProtectedAreas,
-            advisoryStatus: status,
-            links: updatedLinks,
-            regions: selRegions,
-            sections: selSections,
-            managementAreas: selManagementAreas,
-            sites: selSites,
-            fireCentres: selFireCentres,
-            fireZones: selFireZones,
-            naturalResourceDistricts: selNaturalResourceDistricts,
-            recreationResources: selRecreationResources,
-            isAdvisoryDateDisplayed: displayAdvisoryDate,
-            isEffectiveDateDisplayed: displayStartDate,
-            isEndDateDisplayed: displayEndDate,
-            isUpdatedDateDisplayed: displayUpdatedDate,
-            publishedAt: new Date(),
-            isLatestRevision: true,
-          };
+      Promise.resolve(saveLinks()).then((savedLinks) => {
+        const updatedLinks =
+          savedLinks.length > 0 ? [...links, ...savedLinks] : links;
+        const updatedAdvisory = {
+          title: headline,
+          description,
+          revisionNumber,
+          isSafetyRelated,
+          listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
+          note: notes,
+          submittedBy,
+          updatedDate,
+          modifiedDate: moment().toISOString(),
+          modifiedBy: auth.user?.profile?.name,
+          modifiedByRole: isApprover ? "approver" : "submitter",
+          advisoryDate,
+          effectiveDate: startDate,
+          endDate,
+          expiryDate,
+          accessStatus,
+          eventType,
+          urgency,
+          standardMessages: selectedStandardMessages.map((s) => s.value),
+          protectedAreas: selProtectedAreas,
+          advisoryStatus: status,
+          links: updatedLinks,
+          regions: selRegions,
+          sections: selSections,
+          managementAreas: selManagementAreas,
+          sites: selSites,
+          fireCentres: selFireCentres,
+          fireZones: selFireZones,
+          naturalResourceDistricts: selNaturalResourceDistricts,
+          recreationResources: selRecreationResources,
+          isAdvisoryDateDisplayed: displayAdvisoryDate,
+          isEffectiveDateDisplayed: displayStartDate,
+          isEndDateDisplayed: displayEndDate,
+          isUpdatedDateDisplayed: displayUpdatedDate,
+          publishedAt: new Date(),
+          isLatestRevision: true,
+        };
 
-          if (
-            !isApprover &&
-            (isAfterHours || isStatHoliday) &&
-            isAfterHourPublish
-          ) {
-            updatedAdvisory.isUrgentAfterHours = true;
-          }
+        if (
+          !isApprover &&
+          (isAfterHours || isStatHoliday) &&
+          isAfterHourPublish
+        ) {
+          updatedAdvisory.isUrgentAfterHours = true;
+        }
 
-          cmsPut(`public-advisory-audits/${documentId}`, {
-            data: updatedAdvisory,
+        cmsPut(`public-advisory-audits/${documentId}`, {
+          data: updatedAdvisory,
+        })
+          .then((advisory) => {
+            setAdvisoryId(advisory.documentId);
+            setIsSubmitting(false);
+            setIsSavingDraft(false);
+            setIsConfirmation(true);
           })
-            .then((advisory) => {
-              setAdvisoryId(advisory.documentId);
-              setIsSubmitting(false);
-              setIsSavingDraft(false);
-              setIsConfirmation(true);
-            })
-            .catch((error) => {
-              console.error("error occurred", error);
-              setToError(true);
-              setError({
-                status: 500,
-                message: "Could not process advisory update",
-              });
+          .catch((error) => {
+            console.error("error occurred", error);
+            setToError(true);
+            setError({
+              status: 500,
+              message: "Could not process advisory update",
             });
-        });
-      }
+          });
+      });
     } catch (error) {
       console.error("error occurred", error);
       setToError(true);
