@@ -39,77 +39,22 @@ import {
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 import useAdvisoryUnpublish from "@/router/pages/advisories/advisoryDashboard/useAdvisoryUnpublish";
 import useAdvisoryFlashMessage from "@/router/pages/advisories/AdvisoryFlashMessage/useAdvisoryFlashMessage";
+import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
 import {
-  REGION_FILTER_NAME,
-  PARK_FILTER_NAME,
-  TABLE_FILTER_LABELS,
-} from "@/constants/advisoryDashboardFilter";
+  clearAllFilters as clearAllFiltersHandler,
+  clearDistrictFilter as clearDistrictFilterHandler,
+  clearParkFilter as clearParkFilterHandler,
+  clearRegionFilter as clearRegionFilterHandler,
+  clearShowArchivedFilter as clearShowArchivedFilterHandler,
+  clearTableFilter as clearTableFilterHandler,
+  getPageFilterValue,
+  handlePageMultiSelectChange as handlePageMultiSelectChangeHandler,
+  normalizePageFilterValues,
+  updateRegionAndParkFilters as updateRegionAndParkFiltersHandler,
+} from "./advisoryDashboardFilterHandlers";
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
-
-/**
- * Returns the value of a page-level filter from the stored filters array, or a default if not found.
- * @param {Array} storedFilters Stored filters, each with { type, filterName/fieldName, filterValue/fieldValue }
- * @param {string} filterName The name of the filter to retrieve (e.g. "region" or "park")
- * @param {any} [defaultValue=0] Default value to return if the filter isn't found in storage
- * @returns {any} The filter value, or default if not found
- */
-function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
-  return (
-    storedFilters.find(
-      (obj) => obj.type === "page" && obj.filterName === filterName,
-    )?.filterValue ?? defaultValue
-  );
-}
-
-function normalizePageFilterValues(filterValue) {
-  if (Array.isArray(filterValue)) {
-    return filterValue;
-  }
-
-  if (
-    filterValue === "" ||
-    filterValue === 0 ||
-    filterValue === null ||
-    typeof filterValue === "undefined"
-  ) {
-    return [];
-  }
-
-  return [filterValue];
-}
-
-function replacePageFilters(
-  currentFilters,
-  regionFilterValue,
-  parkFilterValue,
-) {
-  const nonPageFilters = currentFilters.filter(
-    (currentFilter) => currentFilter.type !== "page",
-  );
-
-  return [
-    ...nonPageFilters,
-    {
-      type: "page",
-      filterName: REGION_FILTER_NAME,
-      filterValue: regionFilterValue,
-    },
-    {
-      type: "page",
-      filterName: PARK_FILTER_NAME,
-      filterValue: parkFilterValue,
-    },
-  ];
-}
-
-function removeTableFilter(currentFilters, field) {
-  return currentFilters.filter(
-    (currentFilter) =>
-      !(currentFilter.type === "table" && currentFilter.fieldName === field),
-  );
-}
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
@@ -202,6 +147,7 @@ export default function AdvisoryDashboard() {
   const [tableFilterValues, setTableFilterValues] = useState(
     initialTableFilterValues,
   );
+  // Active table filters for rendering filter badges and building Strapi queries
   const activeTableFilters = useMemo(
     () =>
       Object.entries(tableFilterValues || {})
@@ -255,9 +201,11 @@ export default function AdvisoryDashboard() {
   }
 
   function updateRegionAndParkFilters(regionFilterValue, parkFilterValue) {
-    setStoredFilters((currentFilters) =>
-      replacePageFilters(currentFilters, regionFilterValue, parkFilterValue),
-    );
+    updateRegionAndParkFiltersHandler({
+      setStoredFilters,
+      regionFilterValue,
+      parkFilterValue,
+    });
   }
 
   function handlePageMultiSelectChange(
@@ -266,30 +214,13 @@ export default function AdvisoryDashboard() {
     setSelectedOptions,
     setSelectedIds,
   ) {
-    const nextSelectedOptions = selectedOptions || [];
-    const nextSelectedIds = nextSelectedOptions.map((option) => option.value);
-
-    setSelectedOptions(nextSelectedOptions);
-    setSelectedIds(nextSelectedIds);
-    resetToFirstPage();
-
-    setStoredFilters((currentFilters) => {
-      const nonTargetPageFilters = currentFilters.filter(
-        (currentFilter) =>
-          !(
-            currentFilter.type === "page" &&
-            currentFilter.filterName === filterName
-          ),
-      );
-
-      return [
-        ...nonTargetPageFilters,
-        {
-          type: "page",
-          filterName,
-          filterValue: nextSelectedIds,
-        },
-      ];
+    handlePageMultiSelectChangeHandler({
+      selectedOptions,
+      filterName,
+      setSelectedOptions,
+      setSelectedIds,
+      resetToFirstPage,
+      setStoredFilters,
     });
   }
 
@@ -321,163 +252,71 @@ export default function AdvisoryDashboard() {
   }
 
   function clearDistrictFilter(districtValue) {
-    if (typeof districtValue !== "undefined") {
-      const nextSelectedDistricts = selectedDistrict.filter(
-        (district) => district.value !== districtValue,
-      );
-      const nextSelectedDistrictIds = nextSelectedDistricts.map(
-        (district) => district.value,
-      );
-
-      setSelectedDistrict(nextSelectedDistricts);
-      setSelectedDistrictId(nextSelectedDistrictIds);
-      resetToFirstPage();
-
-      setStoredFilters((currentFilters) => {
-        const nonDistrictPageFilters = currentFilters.filter(
-          (currentFilter) =>
-            !(
-              currentFilter.type === "page" &&
-              currentFilter.filterName === "district"
-            ),
-        );
-
-        return [
-          ...nonDistrictPageFilters,
-          {
-            type: "page",
-            filterName: "district",
-            filterValue: nextSelectedDistrictIds,
-          },
-        ];
-      });
-
-      return;
-    }
-
-    setSelectedDistrict([]);
-    setSelectedDistrictId([]);
-    resetToFirstPage();
-    setStoredFilters((currentFilters) => {
-      const nonDistrictPageFilters = currentFilters.filter(
-        (currentFilter) =>
-          !(
-            currentFilter.type === "page" &&
-            currentFilter.filterName === "district"
-          ),
-      );
-
-      return [
-        ...nonDistrictPageFilters,
-        { type: "page", filterName: "district", filterValue: [] },
-      ];
+    clearDistrictFilterHandler({
+      districtValue,
+      selectedDistrict,
+      setSelectedDistrict,
+      setSelectedDistrictId,
+      resetToFirstPage,
+      setStoredFilters,
     });
   }
 
   function clearRegionFilter(regionValue) {
-    if (typeof regionValue !== "undefined") {
-      const nextSelectedRegions = selectedRegion.filter(
-        (region) => region.value !== regionValue,
-      );
-      const nextSelectedRegionIds = nextSelectedRegions.map(
-        (region) => region.value,
-      );
-
-      setSelectedRegion(nextSelectedRegions);
-      setSelectedRegionId(nextSelectedRegionIds);
-      resetToFirstPage();
-
-      setStoredFilters((currentFilters) => {
-        const currentParkIds = getPageFilterValue(
-          currentFilters,
-          PARK_FILTER_NAME,
-          [],
-        );
-
-        return replacePageFilters(
-          currentFilters,
-          nextSelectedRegionIds,
-          currentParkIds,
-        );
-      });
-
-      return;
-    }
-
-    setSelectedRegion([]);
-    setSelectedRegionId([]);
-    setSelectedPark([]);
-    setSelectedParkId([]);
-    resetToFirstPage();
-    updateRegionAndParkFilters([], []);
+    clearRegionFilterHandler({
+      regionValue,
+      selectedRegion,
+      setSelectedRegion,
+      setSelectedRegionId,
+      setSelectedPark,
+      setSelectedParkId,
+      resetToFirstPage,
+      setStoredFilters,
+      updateRegionAndParkFiltersFn: updateRegionAndParkFilters,
+    });
   }
 
   function clearParkFilter(parkValue) {
-    if (typeof parkValue !== "undefined") {
-      const nextSelectedParks = selectedPark.filter(
-        (park) => park.value !== parkValue,
-      );
-      const nextSelectedParkIds = nextSelectedParks.map((park) => park.value);
-
-      setSelectedPark(nextSelectedParks);
-      setSelectedParkId(nextSelectedParkIds);
-      resetToFirstPage();
-
-      setStoredFilters((currentFilters) => {
-        const currentRegionIds = getPageFilterValue(
-          currentFilters,
-          REGION_FILTER_NAME,
-          [],
-        );
-
-        return replacePageFilters(
-          currentFilters,
-          currentRegionIds,
-          nextSelectedParkIds,
-        );
-      });
-
-      return;
-    }
-
-    setSelectedPark([]);
-    setSelectedParkId([]);
-    resetToFirstPage();
-    setStoredFilters((currentFilters) => {
-      const currentRegionIds = getPageFilterValue(
-        currentFilters,
-        REGION_FILTER_NAME,
-        [],
-      );
-
-      return replacePageFilters(currentFilters, currentRegionIds, []);
+    clearParkFilterHandler({
+      parkValue,
+      selectedPark,
+      setSelectedPark,
+      setSelectedParkId,
+      resetToFirstPage,
+      setStoredFilters,
     });
   }
 
   function clearTableFilter(field) {
-    setTableFilterValues((prev) => ({ ...prev, [field]: "" }));
-    resetToFirstPage();
-    setStoredFilters((currentFilters) =>
-      removeTableFilter(currentFilters, field),
-    );
+    clearTableFilterHandler({
+      field,
+      setTableFilterValues,
+      resetToFirstPage,
+      setStoredFilters,
+    });
   }
 
   function clearShowArchivedFilter() {
-    setShowArchived(false);
-    resetToFirstPage();
+    clearShowArchivedFilterHandler({
+      setShowArchived,
+      resetToFirstPage,
+    });
   }
 
   function clearAllFilters() {
-    setSelectedDistrict([]);
-    setSelectedDistrictId([]);
-    setSelectedRegion([]);
-    setSelectedRegionId([]);
-    setSelectedPark([]);
-    setSelectedParkId([]);
-    setShowArchived(false);
-    setTableFilterValues({});
-    resetToFirstPage();
-    setStoredFilters(defaultPageFilters);
+    clearAllFiltersHandler({
+      setSelectedDistrict,
+      setSelectedDistrictId,
+      setSelectedRegion,
+      setSelectedRegionId,
+      setSelectedPark,
+      setSelectedParkId,
+      setShowArchived,
+      setTableFilterValues,
+      resetToFirstPage,
+      setStoredFilters,
+      defaultPageFilters,
+    });
   }
 
   // Load management areas, advisory statuses, urgencies, and published advisories once on mount.

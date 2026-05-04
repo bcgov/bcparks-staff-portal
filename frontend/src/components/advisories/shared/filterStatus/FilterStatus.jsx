@@ -3,6 +3,11 @@ import FilterBadge from "@/components/shared/FilterBadge";
 
 import "@/components/FilterStatus.scss";
 
+/**
+ * Normalizes selection input to an array of valid option objects
+ * @param {Object|Object[]|null|undefined} selection The incoming selection value(s)
+ * @returns {Array<{label: string, value: string|number}>} Sanitized option array containing only entries with both label and value
+ */
 function normalizeSelections(selection) {
   if (!selection) {
     return [];
