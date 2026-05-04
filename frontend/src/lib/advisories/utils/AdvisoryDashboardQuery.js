@@ -24,6 +24,7 @@ const COLUMN_FILTERS = [
     build: (value) => ({
       $or: [
         { accessStatus: { accessStatus: { $containsi: value } } },
+        { accessStatus: { groupLabel: { $containsi: value } } },
       ],
     }),
   },
