@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import "./AdvisoryForm.scss";
-import { Button } from "@/components/advisories/shared/button/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Btn from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -39,6 +38,8 @@ import { ROLES } from "@/config/permissions";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import AdvisoryAreaPicker from "@/components/advisories/composite/advisoryAreaPicker/AdvisoryAreaPicker";
 import CKEditor from "@/components/advisories/composite/ckeditor/CKEditor";
+import PrimaryActions from "@/components/advisories/composite/advisoryForm/PrimaryActions";
+import DraftButton from "@/components/advisories/composite/advisoryForm/DraftButton";
 
 export default function AdvisoryForm({
   mode,
@@ -1556,136 +1557,15 @@ export default function AdvisoryForm({
         {renderHelperText(formError, formError !== "", "mb-3")}
 
         <div className="d-flex justify-content-start gap-2">
-          {!hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
-            <>
-              {mode === "create" && (
-                <>
-                  <Button
-                    label={
-                      isStatHoliday || isAfterHours
-                        ? "Submit"
-                        : "Submit for approval"
-                    }
-                    styling="bcgov-normal-blue btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        saveAdvisory("submit");
-                      }
-                    }}
-                    hasLoader={isSubmitting}
-                  />
-                  <Button
-                    label="Save draft"
-                    styling="bcgov-normal-white btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        saveAdvisory("draft");
-                      }
-                    }}
-                    hasLoader={isSavingDraft}
-                  />
-                </>
-              )}
-              {mode === "update" && (
-                <>
-                  <Button
-                    label={
-                      isStatHoliday || isAfterHours
-                        ? "Submit"
-                        : "Submit for approval"
-                    }
-                    styling="bcgov-normal-blue btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        updateAdvisory("submit");
-                      }
-                    }}
-                    hasLoader={isSubmitting}
-                  />
-                  <Button
-                    label="Save draft"
-                    styling="bcgov-normal-white btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        updateAdvisory("draft");
-                      }
-                    }}
-                    hasLoader={isSavingDraft}
-                  />
-                </>
-              )}
-            </>
-          )}
-          {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
-            <>
-              {mode === "create" && (
-                <Button
-                  label="Create advisory"
-                  styling="bcgov-normal-blue btn"
-                  onClick={() => {
-                    if (
-                      validAdvisoryData(
-                        advisoryData,
-                        linksRef,
-                        mode,
-                        linkErrorsStatus,
-                      )
-                    ) {
-                      saveAdvisory();
-                    }
-                  }}
-                  hasLoader={isSubmitting}
-                />
-              )}
-              {mode === "update" && (
-                <Button
-                  label="Update advisory"
-                  styling="bcgov-normal-blue btn"
-                  onClick={() => {
-                    if (
-                      validAdvisoryData(
-                        advisoryData,
-                        linksRef,
-                        mode,
-                        linkErrorsStatus,
-                      )
-                    ) {
-                      updateAdvisory();
-                    }
-                  }}
-                  hasLoader={isSubmitting}
-                />
-              )}
-            </>
-          )}
+          <DraftButton onClick={handleSaveDraft} hasLoader={isSavingDraft} />
+
+          <PrimaryActions
+            mode={mode}
+            isUrgent={isAfterHourPublish}
+            onPublish={handlePublish}
+            onSubmit={handleSubmitForReview}
+            isSubmitting={isSubmitting}
+          />
         </div>
       </section>
     </form>
