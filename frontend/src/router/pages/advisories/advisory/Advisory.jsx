@@ -5,11 +5,7 @@ import "./Advisory.css";
 import moment from "moment";
 import "moment-timezone";
 import { useAuth } from "react-oidc-context";
-import {
-  calculateAfterHours,
-  getApproverAdvisoryFields,
-  getSubmitterAdvisoryFields,
-} from "@/lib/advisories/utils/AdvisoryUtil";
+import { calculateAfterHours } from "@/lib/advisories/utils/AdvisoryUtil";
 import AdvisoryForm from "@/components/advisories/composite/advisoryForm/AdvisoryForm";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import { labelCompare } from "@/lib/advisories/utils/AppUtil";
@@ -448,7 +444,7 @@ export default function Advisory({ mode }) {
 
   useEffect(() => {
     if (initialized && isAuthenticated) {
-      const approver = hasAnyRole(["approver"]);
+      const approver = hasAnyRole([ROLES.ADVISORY_APPROVER]);
 
       setIsApprover(approver);
       Promise.all([
@@ -911,67 +907,36 @@ export default function Advisory({ mode }) {
     return savedLinks;
   }
 
-  function getAdvisoryFields(type) {
-    if (isApprover) {
-      setIsSubmitting(true);
-      const status = advisoryStatuses.find((s) => s.value === advisoryStatus);
+  // @TODO: allow overriding the status from the dropdown for superusers
 
-      return {
-        published: getApproverAdvisoryFields(status.code, setConfirmationText),
-        status: advisoryStatus,
-      };
-    }
-
-    let submitType = type;
-
-    if (submitType === "draft") {
-      setIsSavingDraft(true);
-    } else if (submitType === "submit") {
-      setIsSubmitting(true);
-      if (isAfterHourPublish) {
-        submitType = "publish";
-      }
-    }
-
-    return getSubmitterAdvisoryFields(
-      submitType,
-      advisoryStatuses,
-      setConfirmationText,
-    );
-  }
-
-  function saveAdvisory(type) {
+  /**
+   * Creates a new advisory in the CMS with the given status
+   * @param {Object} status advisory-status document from the CMS
+   * @param {string} status.code the code of the advisory-status to check
+   * @param {string} status.value the documentId of the advisory-status to set for the advisory
+   * @returns {void}
+   */
+  function createAdvisory(status) {
     try {
-      // TEMPORARY WORKAROUND: Find a status from the older dataset until the DB is updated
-      // @TODO: Update the Advisory-status collection in CMS-1701
-      // @TODO: Update advisory status logic in CMS-1671
+      // Set loading status based on status code
+      if (status.code === "DFT") setIsSavingDraft(true);
 
-      let status;
+      // @TODO: move this stuff to the caller function (or abstract to a helper)
+      // let status;
 
-      if (hasAnyRole([ROLES.ADVISORY_SUBMITTER])) {
-        status = advisoryStatus
-          ? advisoryStatus
-          : advisoryStatuses.find((s) => s.code === "PUB")?.value;
-      } else {
-        let statusCode = "HQR"; // Default: Approval requested
+      // if (hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL])) {
+      //   status = advisoryStatus
+      //     ? advisoryStatus
+      //     : advisoryStatuses.find((s) => s.code === "PUB")?.value;
+      // } else {
+      //   let statusCode = "HQR"; // Default: Approval requested
 
-        if (type === "draft") {
-          statusCode = "DFT";
-        }
+      //   if (type === "draft") {
+      //     statusCode = "DFT";
+      //   }
 
-        status = advisoryStatuses.find((s) => s.code === statusCode)?.value;
-      }
-
-      if (!status) {
-        setIsSubmitting(false);
-        setIsSavingDraft(false);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not resolve advisory status",
-        });
-        return;
-      }
+      //   status = advisoryStatuses.find((s) => s.code === statusCode)?.value;
+      // }
 
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);
@@ -991,7 +956,7 @@ export default function Advisory({ mode }) {
         const newAdvisory = {
           title: headline,
           description,
-          revisionNumber,
+          revisionNumber: null, // Create a new record with no revision number
           isSafetyRelated,
           listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
           note: notes,
@@ -1006,7 +971,7 @@ export default function Advisory({ mode }) {
           urgency,
           standardMessages: selectedStandardMessages.map((s) => s.value),
           protectedAreas: selProtectedAreas,
-          advisoryStatus: status,
+          advisoryStatus: status.value,
           links: savedLinks,
           regions: selRegions,
           sections: selSections,
@@ -1055,38 +1020,17 @@ export default function Advisory({ mode }) {
     }
   }
 
-  function updateAdvisory(type) {
+  /**
+   * Updates advisory details in the CMS, and sets the status to the given status value
+   * @param {Object} status advisory-status document from the CMS
+   * @param {string} status.code the code of the advisory-status to check
+   * @param {string} status.value the documentId of the advisory-status to set for the advisory
+   * @returns {void}
+   */
+  function updateAdvisory(status) {
     try {
-      // TEMPORARY WORKAROUND: Find a status from the older dataset until the DB is updated
-      // @TODO: Update the Advisory-status collection in CMS-1701
-      // @TODO: Update advisory status logic in CMS-1671
-
-      let status;
-
-      if (hasAnyRole([ROLES.ADVISORY_SUBMITTER])) {
-        status = advisoryStatus
-          ? advisoryStatus
-          : advisoryStatuses.find((s) => s.code === "PUB")?.value;
-      } else {
-        let statusCode = "HQR"; // Default: Approval requested
-
-        if (type === "draft") {
-          statusCode = "DFT";
-        }
-
-        status = advisoryStatuses.find((s) => s.code === statusCode)?.value;
-      }
-
-      if (!status) {
-        setIsSubmitting(false);
-        setIsSavingDraft(false);
-        setToError(true);
-        setError({
-          status: 500,
-          message: "Could not resolve advisory status",
-        });
-        return;
-      }
+      // Set loading status based on status code
+      if (status.code === "DFT") setIsSavingDraft(true);
 
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);
@@ -1126,7 +1070,7 @@ export default function Advisory({ mode }) {
           urgency,
           standardMessages: selectedStandardMessages.map((s) => s.value),
           protectedAreas: selProtectedAreas,
-          advisoryStatus: status,
+          advisoryStatus: status.value,
           links: updatedLinks,
           regions: selRegions,
           sections: selSections,
@@ -1251,6 +1195,7 @@ export default function Advisory({ mode }) {
               </div>
               <AdvisoryForm
                 mode={mode}
+                setConfirmationText={setConfirmationText}
                 data={{
                   listingRank,
                   setListingRank,
@@ -1334,7 +1279,7 @@ export default function Advisory({ mode }) {
                   isAfterHours,
                   isAfterHourPublish,
                   setIsAfterHourPublish,
-                  saveAdvisory,
+                  createAdvisory,
                   isSubmitting,
                   isSavingDraft,
                   updateAdvisory,

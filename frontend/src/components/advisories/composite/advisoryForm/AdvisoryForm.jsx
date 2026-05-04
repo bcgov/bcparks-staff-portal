@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { keyBy } from "lodash-es";
 import "./AdvisoryForm.scss";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Btn from "react-bootstrap/Button";
@@ -43,6 +44,7 @@ import DraftButton from "@/components/advisories/composite/advisoryForm/DraftBut
 
 export default function AdvisoryForm({
   mode,
+  setConfirmationText,
   data: {
     listingRank,
     setListingRank,
@@ -126,7 +128,7 @@ export default function AdvisoryForm({
     isAfterHours,
     isAfterHourPublish,
     setIsAfterHourPublish,
-    saveAdvisory,
+    createAdvisory,
     isSubmitting,
     isSavingDraft,
     updateAdvisory,
@@ -406,70 +408,81 @@ export default function AdvisoryForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- The displayed-date flags are derived exclusively from the selected option.
   }, [selectedDisplayedDateOption]);
 
+  /**
+   * Saves the advisory as a draft in the CMS (with "Draft" status).
+   * Creates a copy of the advisory with "Draft" status if the advisory is already published,
+   * instead of updating a published advisory.
+   * @returns {void}
+   */
   async function handleSaveDraft() {
-    console.log("@TODO: handleSaveDraft implementation");
+    // Don't submit if validation fails
+    if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
+      return;
 
-    // if (
-    //   validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)
-    // ) {
-    //   // Get the Strapi ID for the "Draft" status
-    //   const draftStatus = advisoryStatuses.find((s) => s.code === "DFT").value;
-    //   const publishedStatus = advisoryStatuses.find(
-    //     (s) => s.code === "PUB",
-    //   ).value;
+    // Don't submit again if a request is in progress
+    if (isSavingDraft) return;
 
-    //   if (mode === "update") {
-    //     if (advisoryStatus === publishedStatus) {
-    //       // If the advisory is already published, save a new copy with "Draft" status instead of updating the existing advisory
-    //       await saveAdvisory(draftStatus);
-    //     } else {
-    //       // Update advisory with "Draft" status
-    //       await updateAdvisory(draftStatus);
-    //     }
-    //   } else {
-    //     // Create advisory with "Draft" status
-    //     await saveAdvisory(draftStatus);
-    //   }
+    // Get the Strapi data for the advisory statuses to check
+    const statusIds = keyBy(advisoryStatuses, "code");
 
-    //   // Update confirmation text in the parent Advisory page component
-    //   setConfirmationText("Your advisory has been saved successfully!");
-    // }
+    const draftStatus = statusIds.DFT;
+    const publishedStatus = statusIds.PUB;
+
+    if (mode === "update") {
+      if (advisoryStatus === publishedStatus.value) {
+        // If the advisory is already published, save a new copy with "Draft" status
+        // and don't modify the existing published advisory
+        await createAdvisory(draftStatus);
+      } else {
+        // Update advisory with "Draft" status
+        await updateAdvisory(draftStatus);
+      }
+    } else {
+      // Create advisory with "Draft" status
+      await createAdvisory(draftStatus);
+    }
+
+    // Update confirmation text in the parent Advisory page component
+    setConfirmationText("Your advisory has been saved successfully!");
   }
 
   // For users who can publish directly:
   // Creates or updates the advisory without submitting for review.
   async function handlePublish() {
+    // Don't submit if validation fails
+    if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
+      return false;
+
     console.log("@TODO: handlePublish implementation");
-    // if (
-    //   validAdvisoryData(advisoryData, linksRef, true, mode, linkErrorsStatus)
-    // ) {
-    //   const publishingStatus = getStatusIdFromPostingDate(
-    //     advisoryDate,
-    //     advisoryStatuses,
-    //   );
 
-    //   if (mode === "update") {
-    //     // Update advisory
-    //     await updateAdvisory(publishingStatus);
-    //   } else {
-    //     // Create advisory
-    //     await saveAdvisory(publishingStatus);
-    //   }
+    // const publishingStatus = getStatusIdFromPostingDate(
+    //   advisoryDate,
+    //   advisoryStatuses,
+    // );
 
-    //   // Update confirmation text in the parent Advisory page component
-    //   setConfirmationText("Your advisory has been published successfully!");
+    // if (mode === "update") {
+    //   // Update advisory
+    //   await updateAdvisory(publishingStatus);
+    // } else {
+    //   // Create advisory
+    //   await createAdvisory(publishingStatus);
     // }
+
+    // // Update confirmation text in the parent Advisory page component
+    // setConfirmationText("Your advisory has been published successfully!");
   }
 
   function handleSubmitForReview() {
-    console.log("@TODO: handleSubmitForReview implementation");
-    // if (
-    //   validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)
-    // ) {
-    //   if (mode === "update") updateAdvisory(/* "submit" */);
-    //   // @TODO: implement for non-approvers
-    //   else saveAdvisory(/* "submit" */);
-    // }
+    // Don't submit if validation fails
+    if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
+      return;
+
+    // Get the Strapi data for the "Submitted for HQ review" advisory status
+    const statusIds = keyBy(advisoryStatuses, "code");
+    const submittedStatus = statusIds.HQR;
+
+    if (mode === "update") updateAdvisory(submittedStatus);
+    else createAdvisory(submittedStatus);
   }
 
   return (
@@ -1640,6 +1653,7 @@ export default function AdvisoryForm({
 
 AdvisoryForm.propTypes = {
   mode: PropTypes.string.isRequired,
+  setConfirmationText: PropTypes.func.isRequired,
   data: PropTypes.shape({
     listingRank: PropTypes.number,
     setListingRank: PropTypes.func.isRequired,
@@ -1723,7 +1737,7 @@ AdvisoryForm.propTypes = {
     isAfterHours: PropTypes.bool,
     isAfterHourPublish: PropTypes.bool,
     setIsAfterHourPublish: PropTypes.func.isRequired,
-    saveAdvisory: PropTypes.func.isRequired,
+    createAdvisory: PropTypes.func.isRequired,
     isSubmitting: PropTypes.bool,
     isSavingDraft: PropTypes.bool,
     updateAdvisory: PropTypes.func.isRequired,
