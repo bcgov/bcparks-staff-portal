@@ -406,6 +406,72 @@ export default function AdvisoryForm({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- The displayed-date flags are derived exclusively from the selected option.
   }, [selectedDisplayedDateOption]);
 
+  async function handleSaveDraft() {
+    console.log("@TODO: handleSaveDraft implementation");
+
+    // if (
+    //   validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)
+    // ) {
+    //   // Get the Strapi ID for the "Draft" status
+    //   const draftStatus = advisoryStatuses.find((s) => s.code === "DFT").value;
+    //   const publishedStatus = advisoryStatuses.find(
+    //     (s) => s.code === "PUB",
+    //   ).value;
+
+    //   if (mode === "update") {
+    //     if (advisoryStatus === publishedStatus) {
+    //       // If the advisory is already published, save a new copy with "Draft" status instead of updating the existing advisory
+    //       await saveAdvisory(draftStatus);
+    //     } else {
+    //       // Update advisory with "Draft" status
+    //       await updateAdvisory(draftStatus);
+    //     }
+    //   } else {
+    //     // Create advisory with "Draft" status
+    //     await saveAdvisory(draftStatus);
+    //   }
+
+    //   // Update confirmation text in the parent Advisory page component
+    //   setConfirmationText("Your advisory has been saved successfully!");
+    // }
+  }
+
+  // For users who can publish directly:
+  // Creates or updates the advisory without submitting for review.
+  async function handlePublish() {
+    console.log("@TODO: handlePublish implementation");
+    // if (
+    //   validAdvisoryData(advisoryData, linksRef, true, mode, linkErrorsStatus)
+    // ) {
+    //   const publishingStatus = getStatusIdFromPostingDate(
+    //     advisoryDate,
+    //     advisoryStatuses,
+    //   );
+
+    //   if (mode === "update") {
+    //     // Update advisory
+    //     await updateAdvisory(publishingStatus);
+    //   } else {
+    //     // Create advisory
+    //     await saveAdvisory(publishingStatus);
+    //   }
+
+    //   // Update confirmation text in the parent Advisory page component
+    //   setConfirmationText("Your advisory has been published successfully!");
+    // }
+  }
+
+  function handleSubmitForReview() {
+    console.log("@TODO: handleSubmitForReview implementation");
+    // if (
+    //   validAdvisoryData(advisoryData, linksRef, false, mode, linkErrorsStatus)
+    // ) {
+    //   if (mode === "update") updateAdvisory(/* "submit" */);
+    //   // @TODO: implement for non-approvers
+    //   else saveAdvisory(/* "submit" */);
+    // }
+  }
+
   return (
     <form className="advisory-form">
       <section>
