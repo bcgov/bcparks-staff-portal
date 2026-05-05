@@ -925,8 +925,6 @@ export default function Advisory({ mode }) {
     }
   }
 
-  // @TODO: allow overriding the status from the dropdown for superusers
-
   /**
    * Creates a new advisory in the CMS with the given status
    * @param {Object} status advisory-status document from the CMS

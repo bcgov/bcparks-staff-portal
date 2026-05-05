@@ -423,7 +423,6 @@ export default function AdvisoryForm({
 
     // Get the Strapi data for the advisory statuses to check
     const statusIds = keyBy(advisoryStatuses, "code");
-
     const draftStatus = statusIds.DFT;
     const publishedStatus = statusIds.PUB;
 
@@ -451,9 +450,20 @@ export default function AdvisoryForm({
     if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
       return;
 
-    // Get the Strapi data for the "Published" advisory status
-    const statusIds = keyBy(advisoryStatuses, "code");
-    const publishedStatus = statusIds.PUB;
+    let publishedStatus;
+
+    // Super admins can specify the publishing status with an extra `advisoryStatus` field on the form
+    if (hasAnyRole([ROLES.SUPER_ADMIN])) {
+      // Get the Strapi data for the advisry status from the selected value
+      publishedStatus = advisoryStatuses.find(
+        (status) => status.value === advisoryStatus,
+      );
+    } else {
+      // Get the Strapi data for the "Published" advisory status from its code
+      publishedStatus = advisoryStatuses.find(
+        (status) => status.code === "PUB",
+      );
+    }
 
     if (mode === "update") {
       // Update advisory
@@ -469,9 +479,10 @@ export default function AdvisoryForm({
     if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
       return;
 
-    // Get the Strapi data for the "Submitted for HQ review" advisory status
-    const statusIds = keyBy(advisoryStatuses, "code");
-    const submittedStatus = statusIds.HQR;
+    // Get the Strapi data for the "Submitted for HQ review" advisory status from its code
+    const submittedStatus = advisoryStatuses.find(
+      (status) => status.code === "HQR",
+    );
 
     if (mode === "update") {
       await updateAdvisory(submittedStatus);
