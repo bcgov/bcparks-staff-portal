@@ -138,7 +138,7 @@
     .ad-col {
       @include from-xxl {
         flex: 0 0 auto;
-        // RST column won't be wrapped with this width
+        // Keep select fields wide enough to avoid wrapping
         width: 320px;
       }
     }

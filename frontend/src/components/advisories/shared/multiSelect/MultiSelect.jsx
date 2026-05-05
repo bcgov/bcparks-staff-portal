@@ -1,4 +1,5 @@
 import { useId } from "react";
+import classNames from "classnames";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 import Select, { components } from "react-select";
@@ -38,9 +39,11 @@ export function MultiSelect({
   placeholder,
 }) {
   const generatedId = useId();
-  const hasSelection = value.length > 0;
-  const displayPlaceholder =
-  hasSelection ? `${countLabel} (${value.length})` : placeholder;
+  const selectedCount = value.length;
+  const hasSelection = selectedCount > 0;
+  const displayPlaceholder = hasSelection
+    ? `${countLabel} (${selectedCount})`
+    : placeholder;
 
   return (
     <>
@@ -57,7 +60,9 @@ export function MultiSelect({
         components={{ Option: CheckboxOption }}
         onChange={onChange}
         placeholder={displayPlaceholder}
-        className={`bcgov-select ${hasSelection ? "bcgov-select--has-selection" : ""}`}
+        className={classNames("bcgov-select", {
+          "bcgov-select--has-selection": hasSelection,
+        })}
         isMulti
         isClearable
         hideSelectedOptions={false}
