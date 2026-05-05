@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { sortBy } from "lodash-es";
@@ -29,15 +29,18 @@ function DateRange({
   const { elements } = useValidationContext();
 
   // Call the update method from the parent
-  function onSelect(dateField, dateObj) {
-    // Existing ranges have an ID
-    if (dateRange.id) {
-      return updateDateRange(dateRange.id, dateField, dateObj);
-    }
+  const onSelect = useCallback(
+    (dateField, dateObj) => {
+      // Existing ranges have an ID
+      if (dateRange.id) {
+        return updateDateRange(dateRange.id, dateField, dateObj);
+      }
 
-    // New ranges have a tempId
-    return updateDateRange(dateRange.tempId, dateField, dateObj, true);
-  }
+      // New ranges have a tempId
+      return updateDateRange(dateRange.tempId, dateField, dateObj, true);
+    },
+    [dateRange.id, dateRange.tempId, updateDateRange],
+  );
 
   return (
     <div className="mb-2">

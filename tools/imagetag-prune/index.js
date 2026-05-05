@@ -8,9 +8,9 @@ const OPENSHIFT_API_URL =
   "https://api.silver.devops.gov.bc.ca:6443/apis/image.openshift.io/v1";
 const TOOLS_NAMESPACE = process.env.TOOLS_NAMESPACE || "a7dd13-tools";
 
-// Regex pattern used to match git sha hash abcd345
+// Regex pattern used to match git sha hash abcd3456
 const GIT_SHA_HASH_REGEX =
-  process.env.GIT_SHA_HASH_REGEX || "\\b[0-9a-f]{7}\\b";
+  process.env.GIT_SHA_HASH_REGEX || "\\b[0-9a-f]{8}\\b";
 
 // Regex pattern used to match release tags, e.g., v1.12.3
 const RELEASE_TAG_REGEX =

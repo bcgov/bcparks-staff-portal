@@ -6,7 +6,7 @@ import {
   get as lodashGet,
   cloneDeep,
 } from "lodash-es";
-import { useMemo, useContext } from "react";
+import { useMemo, useContext, useCallback } from "react";
 import PropTypes from "prop-types";
 import { isEqual } from "date-fns";
 
@@ -154,47 +154,62 @@ export default function ParkSeasonForm({
   );
 
   // Updates the date range in the parent component
-  function updateDateRange(id, dateField, dateObj, tempId = false) {
-    const { dateRanges } = season.park.dateable;
-    // Find the dateRanges array index from the dateRange id or tempId
-    const dateRangeIndex = dateRanges.findIndex((range) => {
-      if (tempId) {
-        return range.tempId === id;
-      }
+  const updateDateRange = useCallback(
+    (id, dateField, dateObj, tempId = false) => {
+      setData((prevData) => {
+        const dateRanges = lodashGet(
+          prevData,
+          ["current", "park", "dateable", "dateRanges"],
+          [],
+        );
 
-      return range.id === id;
-    });
+        // Find the dateRanges array index from the dateRange id or tempId
+        const dateRangeIndex = dateRanges.findIndex((range) => {
+          if (tempId) {
+            return range.tempId === id;
+          }
 
-    // Path to access the date range in the season data object
-    const dateRangePath = ["park", "dateable", "dateRanges", dateRangeIndex];
+          return range.id === id;
+        });
 
-    // The DateRange input component fires onSelect even if the date didn't change,
-    // so check if the value actually changed to avoid unnecessary updates.
-    // Get the original value of the date field (startDate or endDate) in the season data object
-    const existingDate = lodashGet(season, [...dateRangePath, dateField], null);
+        // If the date range was removed, don't attempt to update
+        if (dateRangeIndex === -1) return prevData;
 
-    // If the value in the form hasn't changed since it loaded from the API, don't call setData
-    if (isEqual(existingDate, dateObj)) return;
+        // Path to access the date range in the season data object
+        const dateRangePath = [
+          "current",
+          "park",
+          "dateable",
+          "dateRanges",
+          dateRangeIndex,
+        ];
 
-    // Update the local state (in the FormPanel component)
-    setData((prevData) => {
-      let updatedData = cloneDeep(prevData);
+        // The DateRange input component fires onSelect even if the date didn't change,
+        // so check if the value actually changed to avoid unnecessary updates.
+        const existingDate = lodashGet(
+          prevData,
+          [...dateRangePath, dateField],
+          null,
+        );
 
-      // Update the start or end date field in the current season data object
-      updatedData = lodashSet(
-        updatedData,
-        ["current", ...dateRangePath, dateField],
-        dateObj,
-      );
+        // If the value in the form hasn't changed, keep the previous state.
+        if (isEqual(existingDate, dateObj)) return prevData;
 
-      // Set the changed flag for the date range in the current season data object
-      return lodashSet(
-        updatedData,
-        ["current", ...dateRangePath, "changed"],
-        true,
-      );
-    });
-  }
+        let updatedData = cloneDeep(prevData);
+
+        // Update the start or end date field in the current season data object
+        updatedData = lodashSet(
+          updatedData,
+          [...dateRangePath, dateField],
+          dateObj,
+        );
+
+        // Set the changed flag for the date range in the current season data object
+        return lodashSet(updatedData, [...dateRangePath, "changed"], true);
+      });
+    },
+    [setData],
+  );
 
   // Adds a new date range to the Park's dateable.dateRanges
   function addDateRange(dateType) {

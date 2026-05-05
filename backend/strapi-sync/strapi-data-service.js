@@ -64,6 +64,7 @@ const MODEL_CONFIG = {
             "hasWinterFeeDates",
             "hasTier1Dates",
             "hasTier2Dates",
+            "hasDates",
           ],
         },
         managementAreas: {
