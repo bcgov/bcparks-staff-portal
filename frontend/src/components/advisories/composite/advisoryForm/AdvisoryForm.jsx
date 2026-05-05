@@ -442,27 +442,26 @@ export default function AdvisoryForm({
     }
   }
 
-  // For users who can publish directly:
-  // Creates or updates the advisory without submitting for review.
+  /**
+   * Creates or updates the advisory without submitting for review. For users who can publish directly.
+   * @returns {void}
+   */
   async function handlePublish() {
     // Don't submit if validation fails
     if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
       return;
 
-    console.log("@TODO: handlePublish implementation");
+    // Get the Strapi data for the "Published" advisory status
+    const statusIds = keyBy(advisoryStatuses, "code");
+    const publishedStatus = statusIds.PUB;
 
-    // const publishingStatus = getStatusIdFromPostingDate(
-    //   advisoryDate,
-    //   advisoryStatuses,
-    // );
-
-    // if (mode === "update") {
-    //   // Update advisory
-    //   await updateAdvisory(publishingStatus);
-    // } else {
-    //   // Create advisory
-    //   await createAdvisory(publishingStatus);
-    // }
+    if (mode === "update") {
+      // Update advisory
+      await updateAdvisory(publishedStatus);
+    } else {
+      // Create advisory
+      await createAdvisory(publishedStatus);
+    }
   }
 
   async function handleSubmitForReview() {
