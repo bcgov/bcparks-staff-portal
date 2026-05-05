@@ -44,7 +44,6 @@ import DraftButton from "@/components/advisories/composite/advisoryForm/DraftBut
 
 export default function AdvisoryForm({
   mode,
-  setConfirmationText,
   data: {
     listingRank,
     setListingRank,
@@ -441,9 +440,6 @@ export default function AdvisoryForm({
       // Create advisory with "Draft" status
       await createAdvisory(draftStatus);
     }
-
-    // Update confirmation text in the parent Advisory page component
-    setConfirmationText("Your advisory has been saved successfully!");
   }
 
   // For users who can publish directly:
@@ -451,7 +447,7 @@ export default function AdvisoryForm({
   async function handlePublish() {
     // Don't submit if validation fails
     if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
-      return false;
+      return;
 
     console.log("@TODO: handlePublish implementation");
 
@@ -467,12 +463,9 @@ export default function AdvisoryForm({
     //   // Create advisory
     //   await createAdvisory(publishingStatus);
     // }
-
-    // // Update confirmation text in the parent Advisory page component
-    // setConfirmationText("Your advisory has been published successfully!");
   }
 
-  function handleSubmitForReview() {
+  async function handleSubmitForReview() {
     // Don't submit if validation fails
     if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
       return;
@@ -481,8 +474,11 @@ export default function AdvisoryForm({
     const statusIds = keyBy(advisoryStatuses, "code");
     const submittedStatus = statusIds.HQR;
 
-    if (mode === "update") updateAdvisory(submittedStatus);
-    else createAdvisory(submittedStatus);
+    if (mode === "update") {
+      await updateAdvisory(submittedStatus);
+    } else {
+      await createAdvisory(submittedStatus);
+    }
   }
 
   return (
@@ -1653,7 +1649,6 @@ export default function AdvisoryForm({
 
 AdvisoryForm.propTypes = {
   mode: PropTypes.string.isRequired,
-  setConfirmationText: PropTypes.func.isRequired,
   data: PropTypes.shape({
     listingRank: PropTypes.number,
     setListingRank: PropTypes.func.isRequired,

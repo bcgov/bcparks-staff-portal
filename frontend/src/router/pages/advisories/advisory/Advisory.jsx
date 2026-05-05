@@ -907,6 +907,24 @@ export default function Advisory({ mode }) {
     return savedLinks;
   }
 
+  /**
+   * Sets the confirmation text to display on the Advisory summary page after form submission.
+   * @param {string} statusCode the advisory-status code of the form submission
+   * @returns {void}
+   */
+  function setConfirmationTextForStatus(statusCode) {
+    switch (statusCode) {
+      case "DFT":
+        setConfirmationText("Your advisory has been saved successfully!");
+        break;
+      case "PUB":
+        setConfirmationText("Your advisory has been published successfully!");
+        break;
+      default:
+        setConfirmationText("Your advisory has been saved successfully!");
+    }
+  }
+
   // @TODO: allow overriding the status from the dropdown for superusers
 
   /**
@@ -919,24 +937,11 @@ export default function Advisory({ mode }) {
   function createAdvisory(status) {
     try {
       // Set loading status based on status code
-      if (status.code === "DFT") setIsSavingDraft(true);
-
-      // @TODO: move this stuff to the caller function (or abstract to a helper)
-      // let status;
-
-      // if (hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL])) {
-      //   status = advisoryStatus
-      //     ? advisoryStatus
-      //     : advisoryStatuses.find((s) => s.code === "PUB")?.value;
-      // } else {
-      //   let statusCode = "HQR"; // Default: Approval requested
-
-      //   if (type === "draft") {
-      //     statusCode = "DFT";
-      //   }
-
-      //   status = advisoryStatuses.find((s) => s.code === statusCode)?.value;
-      // }
+      if (status.code === "DFT") {
+        setIsSavingDraft(true);
+      } else {
+        setIsSubmitting(true);
+      }
 
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);
@@ -999,6 +1004,7 @@ export default function Advisory({ mode }) {
             setAdvisoryId(advisory.documentId);
             setIsSubmitting(false);
             setIsSavingDraft(false);
+            setConfirmationTextForStatus(status.code);
             setIsConfirmation(true);
           })
           .catch((error) => {
@@ -1030,7 +1036,11 @@ export default function Advisory({ mode }) {
   function updateAdvisory(status) {
     try {
       // Set loading status based on status code
-      if (status.code === "DFT") setIsSavingDraft(true);
+      if (status.code === "DFT") {
+        setIsSavingDraft(true);
+      } else {
+        setIsSubmitting(true);
+      }
 
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);
@@ -1103,6 +1113,7 @@ export default function Advisory({ mode }) {
             setAdvisoryId(advisory.documentId);
             setIsSubmitting(false);
             setIsSavingDraft(false);
+            setConfirmationTextForStatus(status.code);
             setIsConfirmation(true);
           })
           .catch((error) => {
@@ -1195,7 +1206,6 @@ export default function Advisory({ mode }) {
               </div>
               <AdvisoryForm
                 mode={mode}
-                setConfirmationText={setConfirmationText}
                 data={{
                   listingRank,
                   setListingRank,
