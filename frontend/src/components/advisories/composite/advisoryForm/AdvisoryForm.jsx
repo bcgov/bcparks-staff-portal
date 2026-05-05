@@ -453,7 +453,7 @@ export default function AdvisoryForm({
     let publishedStatus;
 
     // Super admins can specify the publishing status with an extra `advisoryStatus` field on the form
-    if (hasAnyRole([ROLES.SUPER_ADMIN])) {
+    if (hasAnyRole([ROLES.SUPER_ADMIN]) && advisoryStatus) {
       // Get the Strapi data for the advisory status from the selected value
       publishedStatus = advisoryStatuses.find(
         (status) => status.value === advisoryStatus,
