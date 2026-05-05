@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryHistory.css";
-import moment from "moment";
+import { format } from "date-fns";
 import { useAuth } from "react-oidc-context";
 import useCms from "@/hooks/useCms";
 import { dateCompare } from "@/lib/advisories/utils/AppUtil";
@@ -24,21 +24,23 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
                 advisoriesHistory.push({
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.reviewedByName,
-                  submittedTime: moment(ad.reviewedAt).format(
-                    "MMMM DD, yyyy hh:mm A",
+                  submittedTime: format(
+                    ad.reviewedAt,
+                    "MMMM dd, yyyy h:mm aaa",
                   ),
                   displayText: "Reviewed by",
-                  dateToCompare: moment(ad.reviewedAt).valueOf(),
+                  dateToCompare: new Date(ad.reviewedAt).valueOf(),
                 });
               } else if (ad.modifiedBy && ad.modifiedBy === "system") {
                 const record = {
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.modifiedBy,
-                  submittedTime: moment(ad.modifiedDate).format(
-                    "MMMM DD, yyyy hh:mm A",
+                  submittedTime: format(
+                    ad.modifiedDate,
+                    "MMMM dd, yyyy h:mm aaa",
                   ),
                   displayText: "Published by",
-                  dateToCompare: moment(ad.modifiedDate).valueOf(),
+                  dateToCompare: new Date(ad.modifiedDate).valueOf(),
                 };
 
                 if (ad.removalDate) {
@@ -49,11 +51,12 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
                 const record = {
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.submittedBy,
-                  submittedTime: moment(ad.createdDate).format(
-                    "MMMM DD, yyyy hh:mm A",
+                  submittedTime: format(
+                    ad.createdDate,
+                    "MMMM dd, yyyy h:mm aaa",
                   ),
                   displayText: "Requested by",
-                  dateToCompare: moment(ad.createdDate).valueOf(),
+                  dateToCompare: new Date(ad.createdDate).valueOf(),
                 };
 
                 advisoriesHistory.push(record);
@@ -61,11 +64,12 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
                 const record = {
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.modifiedBy,
-                  submittedTime: moment(ad.modifiedDate).format(
-                    "MMMM DD, yyyy hh:mm A",
+                  submittedTime: format(
+                    ad.modifiedDate,
+                    "MMMM dd, yyyy h:mm aaa",
                   ),
                   displayText: "Updated by",
-                  dateToCompare: moment(ad.modifiedDate).valueOf(),
+                  dateToCompare: new Date(ad.modifiedDate).valueOf(),
                 };
 
                 advisoriesHistory.push(record);
