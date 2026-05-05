@@ -1,6 +1,6 @@
 # Crunchy Postgres Installation
 
-## Prerequesites
+## Prerequisites
 
 - Install `helm` CLI from https://helm.sh/docs/intro/install/
 
@@ -133,7 +133,7 @@ A chart to provision a [Crunchy Postgres](https://www.crunchydata.com/) cluster.
 | ------------------ | ---------------------- | ------------------ |
 | `fullnameOverride` | Override release name  | `crunchy-postgres` |
 | `crunchyImage`     | Crunchy Postgres image |                    |
-| `postgresVersion`  | Postgres version       | `14`               |
+| `postgresVersion`  | Postgres version       | `15`               |
 
 ---
 
