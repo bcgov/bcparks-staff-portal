@@ -38,8 +38,9 @@ export function MultiSelect({
   placeholder,
 }) {
   const generatedId = useId();
+  const hasSelection = value.length > 0;
   const displayPlaceholder =
-    value.length > 0 ? `${countLabel} (${value.length})` : placeholder;
+  hasSelection ? `${countLabel} (${value.length})` : placeholder;
 
   return (
     <>
@@ -56,7 +57,7 @@ export function MultiSelect({
         components={{ Option: CheckboxOption }}
         onChange={onChange}
         placeholder={displayPlaceholder}
-        className="bcgov-select"
+        className={`bcgov-select ${hasSelection ? "bcgov-select--has-selection" : ""}`}
         isMulti
         isClearable
         hideSelectedOptions={false}

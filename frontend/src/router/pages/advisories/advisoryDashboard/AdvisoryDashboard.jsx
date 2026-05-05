@@ -805,10 +805,10 @@ export default function AdvisoryDashboard() {
           </div>
         </div>
         <div className="row ad-row">
-          <div className="col-xl-3 col-md-6 col-sm-12">
+          <div className="ad-col col-md-6 col-12">
             <MultiSelect
-              label="RST Recreation district"
-              countLabel="RST Recreation district"
+              label="RST recreation district"
+              countLabel="RST recreation district"
               placeholder="Search or select a district"
               value={selectedDistrict}
               options={districtOptions}
@@ -839,7 +839,7 @@ export default function AdvisoryDashboard() {
               }}
             />
           </div>
-          <div className="col-xl-3 col-md-6 col-sm-12">
+          <div className="ad-col col-md-6 col-12">
             <MultiSelect
               label="BC Parks region"
               countLabel="BC Parks region"
@@ -873,7 +873,7 @@ export default function AdvisoryDashboard() {
               }}
             />
           </div>
-          <div className="col-xl-3 col-md-6 col-sm-12">
+          <div className="ad-col col-md-6 col-12">
             <MultiSelect
               label="BC Parks park"
               countLabel="BC Parks park"

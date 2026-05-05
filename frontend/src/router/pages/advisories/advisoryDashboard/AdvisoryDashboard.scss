@@ -134,5 +134,13 @@
       color: var(--typography-color-primary) !important;
       font-weight: 400;
     }
+
+    .ad-col {
+      @include from-xxl {
+        flex: 0 0 auto;
+        // RST column won't be wrapped with this width
+        width: 320px;
+      }
+    }
   }
 }
