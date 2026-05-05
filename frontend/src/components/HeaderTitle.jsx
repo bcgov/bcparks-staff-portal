@@ -11,14 +11,14 @@ export default function HeaderTitle() {
       <img
         className="d-block d-md-none"
         src={logoVertical}
-        height="60"
+        height="80"
         alt="Ministry of Environment and Parks logo"
       />
       {/* swap logo images on larger screens */}
       <img
         className="d-none d-md-block"
         src={logo}
-        height="68"
+        height="80"
         alt="Ministry of Environment and Parks logo"
       />
 
