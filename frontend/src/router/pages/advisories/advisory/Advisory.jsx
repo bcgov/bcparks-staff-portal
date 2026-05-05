@@ -926,13 +926,13 @@ export default function Advisory({ mode }) {
   }
 
   /**
-   * Creates a new advisory in the CMS with the given status
+   * Creates a new advisory in the CMS with the given status.
    * @param {Object} status advisory-status document from the CMS
    * @param {string} status.code the code of the advisory-status to check
    * @param {string} status.value the documentId of the advisory-status to set for the advisory
-   * @returns {void}
+   * @returns {Promise<Object|null>} the saved advisory document, or null if the save fails
    */
-  function createAdvisory(status) {
+  async function createAdvisory(status) {
     try {
       // Set loading status based on status code
       if (status.code === "DFT") {
@@ -955,65 +955,56 @@ export default function Advisory({ mode }) {
         (x) => x.value,
       );
 
-      Promise.resolve(saveLinks()).then((savedLinks) => {
-        const newAdvisory = {
-          title: headline,
-          description,
-          revisionNumber: null, // Create a new record with no revision number
-          isSafetyRelated,
-          listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
-          note: notes,
-          submittedBy: submittedBy ? submittedBy : submitter,
-          createdDate: moment().toISOString(),
-          advisoryDate,
-          effectiveDate: startDate,
-          endDate,
-          expiryDate,
-          accessStatus: accessStatus ? accessStatus : null,
-          eventType,
-          urgency,
-          standardMessages: selectedStandardMessages.map((s) => s.value),
-          protectedAreas: selProtectedAreas,
-          advisoryStatus: status.value,
-          links: savedLinks,
-          regions: selRegions,
-          sections: selSections,
-          managementAreas: selManagementAreas,
-          sites: selSites,
-          fireCentres: selFireCentres,
-          fireZones: selFireZones,
-          naturalResourceDistricts: selNaturalResourceDistricts,
-          recreationResources: selRecreationResources,
-          isAdvisoryDateDisplayed: displayAdvisoryDate,
-          isEffectiveDateDisplayed: displayStartDate,
-          isEndDateDisplayed: displayEndDate,
-          publishedAt: new Date(),
-          isLatestRevision: true,
-          createdByName: auth.user?.profile?.name,
-          createdByRole: isApprover ? "approver" : "submitter",
-          isUrgentAfterHours:
-            !isApprover &&
-            (isAfterHours || isStatHoliday) &&
-            isAfterHourPublish,
-        };
+      const savedLinks = await saveLinks();
+      const newAdvisory = {
+        title: headline,
+        description,
+        revisionNumber: null, // Create a new record with no revision number
+        isSafetyRelated,
+        listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
+        note: notes,
+        submittedBy: submittedBy ? submittedBy : submitter,
+        createdDate: moment().toISOString(),
+        advisoryDate,
+        effectiveDate: startDate,
+        endDate,
+        expiryDate,
+        accessStatus: accessStatus ? accessStatus : null,
+        eventType,
+        urgency,
+        standardMessages: selectedStandardMessages.map((s) => s.value),
+        protectedAreas: selProtectedAreas,
+        advisoryStatus: status.value,
+        links: savedLinks,
+        regions: selRegions,
+        sections: selSections,
+        managementAreas: selManagementAreas,
+        sites: selSites,
+        fireCentres: selFireCentres,
+        fireZones: selFireZones,
+        naturalResourceDistricts: selNaturalResourceDistricts,
+        recreationResources: selRecreationResources,
+        isAdvisoryDateDisplayed: displayAdvisoryDate,
+        isEffectiveDateDisplayed: displayStartDate,
+        isEndDateDisplayed: displayEndDate,
+        publishedAt: new Date(),
+        isLatestRevision: true,
+        createdByName: auth.user?.profile?.name,
+        createdByRole: isApprover ? "approver" : "submitter",
+        isUrgentAfterHours:
+          !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish,
+      };
 
-        cmsPost(`public-advisory-audits`, { data: newAdvisory })
-          .then((advisory) => {
-            setAdvisoryId(advisory.documentId);
-            setIsSubmitting(false);
-            setIsSavingDraft(false);
-            setConfirmationTextForStatus(status.code);
-            setIsConfirmation(true);
-          })
-          .catch((error) => {
-            console.error("error occurred", error);
-            setToError(true);
-            setError({
-              status: 500,
-              message: "Could not process advisory update",
-            });
-          });
+      const advisory = await cmsPost(`public-advisory-audits`, {
+        data: newAdvisory,
       });
+
+      setAdvisoryId(advisory.documentId);
+      setIsSubmitting(false);
+      setIsSavingDraft(false);
+      setConfirmationTextForStatus(status.code);
+      setIsConfirmation(true);
+      return advisory;
     } catch (error) {
       console.error("error occurred", error);
       setToError(true);
@@ -1021,17 +1012,18 @@ export default function Advisory({ mode }) {
         status: 500,
         message: "Could not process advisory update",
       });
+      return null;
     }
   }
 
   /**
-   * Updates advisory details in the CMS, and sets the status to the given status value
+   * Updates advisory details in the CMS, and sets the status to the given status value.
    * @param {Object} status advisory-status document from the CMS
    * @param {string} status.code the code of the advisory-status to check
    * @param {string} status.value the documentId of the advisory-status to set for the advisory
-   * @returns {void}
+   * @returns {Promise<Object|null>} the updated advisory document, or null if the save fails
    */
-  function updateAdvisory(status) {
+  async function updateAdvisory(status) {
     try {
       // Set loading status based on status code
       if (status.code === "DFT") {
@@ -1054,75 +1046,66 @@ export default function Advisory({ mode }) {
         (x) => x.value,
       );
 
-      Promise.resolve(saveLinks()).then((savedLinks) => {
-        const updatedLinks =
-          savedLinks.length > 0 ? [...links, ...savedLinks] : links;
-        const updatedAdvisory = {
-          title: headline,
-          description,
-          revisionNumber,
-          isSafetyRelated,
-          listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
-          note: notes,
-          submittedBy,
-          updatedDate,
-          modifiedDate: moment().toISOString(),
-          modifiedBy: auth.user?.profile?.name,
-          modifiedByRole: isApprover ? "approver" : "submitter",
-          advisoryDate,
-          effectiveDate: startDate,
-          endDate,
-          expiryDate,
-          accessStatus,
-          eventType,
-          urgency,
-          standardMessages: selectedStandardMessages.map((s) => s.value),
-          protectedAreas: selProtectedAreas,
-          advisoryStatus: status.value,
-          links: updatedLinks,
-          regions: selRegions,
-          sections: selSections,
-          managementAreas: selManagementAreas,
-          sites: selSites,
-          fireCentres: selFireCentres,
-          fireZones: selFireZones,
-          naturalResourceDistricts: selNaturalResourceDistricts,
-          recreationResources: selRecreationResources,
-          isAdvisoryDateDisplayed: displayAdvisoryDate,
-          isEffectiveDateDisplayed: displayStartDate,
-          isEndDateDisplayed: displayEndDate,
-          isUpdatedDateDisplayed: displayUpdatedDate,
-          publishedAt: new Date(),
-          isLatestRevision: true,
-        };
+      const savedLinks = await saveLinks();
+      const updatedLinks =
+        savedLinks.length > 0 ? [...links, ...savedLinks] : links;
+      const updatedAdvisory = {
+        title: headline,
+        description,
+        revisionNumber,
+        isSafetyRelated,
+        listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
+        note: notes,
+        submittedBy,
+        updatedDate,
+        modifiedDate: moment().toISOString(),
+        modifiedBy: auth.user?.profile?.name,
+        modifiedByRole: isApprover ? "approver" : "submitter",
+        advisoryDate,
+        effectiveDate: startDate,
+        endDate,
+        expiryDate,
+        accessStatus,
+        eventType,
+        urgency,
+        standardMessages: selectedStandardMessages.map((s) => s.value),
+        protectedAreas: selProtectedAreas,
+        advisoryStatus: status.value,
+        links: updatedLinks,
+        regions: selRegions,
+        sections: selSections,
+        managementAreas: selManagementAreas,
+        sites: selSites,
+        fireCentres: selFireCentres,
+        fireZones: selFireZones,
+        naturalResourceDistricts: selNaturalResourceDistricts,
+        recreationResources: selRecreationResources,
+        isAdvisoryDateDisplayed: displayAdvisoryDate,
+        isEffectiveDateDisplayed: displayStartDate,
+        isEndDateDisplayed: displayEndDate,
+        isUpdatedDateDisplayed: displayUpdatedDate,
+        publishedAt: new Date(),
+        isLatestRevision: true,
+      };
 
-        if (
-          !isApprover &&
-          (isAfterHours || isStatHoliday) &&
-          isAfterHourPublish
-        ) {
-          updatedAdvisory.isUrgentAfterHours = true;
-        }
+      if (
+        !isApprover &&
+        (isAfterHours || isStatHoliday) &&
+        isAfterHourPublish
+      ) {
+        updatedAdvisory.isUrgentAfterHours = true;
+      }
 
-        cmsPut(`public-advisory-audits/${documentId}`, {
-          data: updatedAdvisory,
-        })
-          .then((advisory) => {
-            setAdvisoryId(advisory.documentId);
-            setIsSubmitting(false);
-            setIsSavingDraft(false);
-            setConfirmationTextForStatus(status.code);
-            setIsConfirmation(true);
-          })
-          .catch((error) => {
-            console.error("error occurred", error);
-            setToError(true);
-            setError({
-              status: 500,
-              message: "Could not process advisory update",
-            });
-          });
+      const advisory = await cmsPut(`public-advisory-audits/${documentId}`, {
+        data: updatedAdvisory,
       });
+
+      setAdvisoryId(advisory.documentId);
+      setIsSubmitting(false);
+      setIsSavingDraft(false);
+      setConfirmationTextForStatus(status.code);
+      setIsConfirmation(true);
+      return advisory;
     } catch (error) {
       console.error("error occurred", error);
       setToError(true);
@@ -1130,6 +1113,7 @@ export default function Advisory({ mode }) {
         status: 500,
         message: "Could not process advisory update",
       });
+      return null;
     }
   }
 
