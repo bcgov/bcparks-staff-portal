@@ -799,7 +799,7 @@ export default function AdvisoryDashboard() {
             <Button
               label={
                 <>
-                  <FontAwesomeIcon icon={faPlus} className="plus-icon me-1"/>
+                  <FontAwesomeIcon icon={faPlus} className="plus-icon me-2"/>
                   Create advisory / closure
                 </>
               }

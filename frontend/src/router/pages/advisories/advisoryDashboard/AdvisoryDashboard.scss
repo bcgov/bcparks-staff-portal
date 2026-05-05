@@ -27,11 +27,6 @@
     font-weight: bold;
   }
 
-  svg {
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-
   .revisionIcon {
     color: gray;
     font-size: 14px;
@@ -133,13 +128,6 @@
     h1.title {
       color: var(--typography-color-primary) !important;
       font-weight: 400;
-    }
-
-    button.bcgov-button {
-      .plus-icon {
-        width: 1rem;
-        height: 1rem;
-      }
     }
   }
 }
