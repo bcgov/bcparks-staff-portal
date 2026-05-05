@@ -346,7 +346,7 @@ export default function AdvisoryAreaPicker({
             <Form.Label>
               Fire centre(s)
               <br />
-              <span className="bc-parks-only">BC Parks Only</span>
+              <span className="bc-parks-only">BC Parks only</span>
             </Form.Label>
             <Select
               id="fire-centres"
@@ -371,7 +371,7 @@ export default function AdvisoryAreaPicker({
             <Form.Label>
               Fire zone(s)
               <br />
-              <span className="bc-parks-only">BC Parks Only</span>
+              <span className="bc-parks-only">BC Parks only</span>
             </Form.Label>
             <Select
               id="fire-zones"
@@ -399,7 +399,7 @@ export default function AdvisoryAreaPicker({
             <Form.Label>
               Natural resource district(s)
               <br />
-              <span className="bc-parks-only">BC Parks Only</span>
+              <span className="bc-parks-only">BC Parks only</span>
             </Form.Label>
             <Select
               id="natural-resource-districts"
