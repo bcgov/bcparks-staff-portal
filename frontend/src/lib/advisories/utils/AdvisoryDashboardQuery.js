@@ -82,15 +82,29 @@ export function buildFilter(
 
   if (selectedRegionIds.length > 0) {
     filters.push({
-      regions: { documentId: { $in: selectedRegionIds } },
+      $or: [
+        { regions: { documentId: { $in: selectedRegionIds } } },
+        {
+          protectedAreas: {
+            managementAreas: {
+              region: { documentId: { $in: selectedRegionIds } },
+            },
+          },
+        },
+      ],
     });
   }
 
   if (selectedDistrictIds.length > 0) {
     filters.push({
-      recreationResources: {
-        recreationDistrict: { documentId: { $in: selectedDistrictIds } },
-      },
+      $or: [
+        { recreationDistricts: { documentId: { $in: selectedDistrictIds } } },
+        {
+          recreationResources: {
+            recreationDistrict: { documentId: { $in: selectedDistrictIds } },
+          },
+        },
+      ],
     });
   }
 
