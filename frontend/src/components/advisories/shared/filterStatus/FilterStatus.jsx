@@ -55,7 +55,7 @@ export default function FilterStatus({
         {selectedDistricts.map((district) => (
           <FilterBadge
             key={`district-${district.value}`}
-            label={`RST Recreation district: ${district.label}`}
+            label={`RST recreation district: ${district.label}`}
             onRemove={() => onClearDistrict(district.value)}
           />
         ))}
