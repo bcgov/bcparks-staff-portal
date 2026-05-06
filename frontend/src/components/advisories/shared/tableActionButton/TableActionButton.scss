@@ -1,0 +1,53 @@
+.action-button {
+  &__dropdown-button {
+    .btn.dropdown-toggle {
+      background-color: var(--surface-color-background-white);
+      border: 1px solid var(--color-blue);
+      color: var(--color-blue);
+
+      // Hide Bootstrap's default dropdown icon
+      &::after {
+        display: none;
+      }
+
+      .action-button__icon {
+        height: 0.75rem;
+        margin-left: 0.5rem;
+        transition: transform 0.5s ease;
+        width: 0.75rem;
+      }
+
+      &.show {
+        .action-button__icon{
+          transform: rotate(180deg);
+        }
+      }
+    }
+
+    .dropdown-menu {
+      .dropdown-item {
+        color: var(--color-blue);
+        font-size: 0.875rem;
+
+        &:hover {
+          text-decoration: none;
+        }
+
+        &:active {
+          background-color: var(--surface-color-secondary-hover);
+        }
+
+        &.disabled {
+          color: var(--color-light-grey);
+          pointer-events: none;
+        }
+
+        svg {
+          margin-right: 0.5rem;
+          width: 1rem;
+          height: 1rem;
+        }
+      }
+    }
+  }
+}

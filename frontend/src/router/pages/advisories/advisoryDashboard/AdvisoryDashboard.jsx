@@ -7,12 +7,16 @@ import {
 } from "usehooks-ts";
 import qs from "qs";
 import { Navigate, useNavigate } from "react-router-dom";
+import { useAuth } from "react-oidc-context";
 import ErrorContext from "@/contexts/ErrorContext";
+import useAccess from "@/hooks/useAccess";
 import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
+import { TableActionButton } from "@/components/advisories/shared/tableActionButton/TableActionButton";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
+import FlashMessage from "@/components/FlashMessage";
 import StatusBadge from "@/components/StatusBadge";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
@@ -32,6 +36,8 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
+import useAdvisoryUnpublish from "@/router/pages/advisories/advisoryDashboard/useAdvisoryUnpublish";
+import useAdvisoryFlashMessage from "@/router/pages/advisories/AdvisoryFlashMessage/useAdvisoryFlashMessage";
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
@@ -70,6 +76,8 @@ function normalizePageFilterValues(filterValue) {
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
+  const auth = useAuth();
+  const { hasAnyRole } = useAccess();
   const navigate = useNavigate();
   const {
     getRegions,
@@ -79,6 +87,7 @@ export default function AdvisoryDashboard() {
     getAdvisoryStatuses,
     getUrgencies,
     cmsGet,
+    cmsPut,
   } = useCms();
 
   const [toError, setToError] = useState(false);
@@ -105,6 +114,27 @@ export default function AdvisoryDashboard() {
   const totalPublicAdvisoriesRef = useRef(0);
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const {
+    unpublishFlashMessage,
+    closeUnpublishFlashMessage,
+    openUnpublishError,
+    openUnpublishSuccess,
+  } = useAdvisoryFlashMessage();
+
+  const handleUnpublish = useAdvisoryUnpublish({
+    advisoryStatuses,
+    cmsGet,
+    cmsPut,
+    modifiedBy: auth.user?.profile?.name,
+    isApprover: hasAnyRole(["approver"]),
+    openUnpublishError,
+    openUnpublishSuccess,
+    onSuccess() {
+      // Refresh the advisory dashboard to reflect the unpublished change
+      setRefreshKey((current) => current + 1);
+    },
+  });
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
@@ -439,6 +469,7 @@ export default function AdvisoryDashboard() {
     showArchived,
     sortConfig,
     debouncedTableFilterValues,
+    refreshKey,
   ]);
 
   const regionOptions = useMemo(
@@ -755,28 +786,24 @@ export default function AdvisoryDashboard() {
         field: "id",
         filtering: false,
         headerStyle: {
-          width: 30,
-          maxWidth: 30,
-          minWidth: 30,
+          minWidth: 100,
         },
         cellStyle: {
-          width: 30,
-          maxWidth: 30,
-          minWidth: 30,
+          minWidth: 100,
           textAlign: "left",
         },
-        render: () => (
-          <button
-            type="button"
-            className="table-row-action"
-            aria-label="row actions"
-          >
-            ...
-          </button>
+        render: (rowData) => (
+          <TableActionButton
+            rowId={rowData.documentId}
+            canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
+            onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
+            onEdit={() => navigate(`/update-advisory/${rowData.documentId}`)}
+            onUnpublish={() => handleUnpublish(rowData)}
+          />
         ),
       },
     ],
-    [urgencies, advisoryStatuses],
+    [urgencies, advisoryStatuses, navigate, handleUnpublish],
   );
 
   if (toCreate) {
@@ -983,6 +1010,13 @@ export default function AdvisoryDashboard() {
           </div>
         </div>
       }
+      <FlashMessage
+        title={unpublishFlashMessage.title}
+        message={unpublishFlashMessage.message}
+        isVisible={unpublishFlashMessage.isVisible}
+        onClose={closeUnpublishFlashMessage}
+        variant={unpublishFlashMessage.variant}
+      />
       {isLoading && (
         <div className="page-loader">
           <Loader page />
