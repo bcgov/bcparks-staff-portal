@@ -25,6 +25,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faTriangleExclamation,
   faCircleQuestion,
+  faPlus,
 } from "@fa-kit/icons/classic/solid";
 import { updatePublicAdvisories } from "@/lib/advisories/utils/AdvisoryDataUtil";
 import {
@@ -796,7 +797,12 @@ export default function AdvisoryDashboard() {
         <div className="row ad-row">
           <div className="col-12 text-end">
             <Button
-              label="+ Create advisory / closure"
+              label={
+                <>
+                  <FontAwesomeIcon icon={faPlus} className="plus-icon me-2"/>
+                  Create advisory / closure
+                </>
+              }
               styling="bcgov-normal-blue btn"
               onClick={() => {
                 setToCreate(true);
