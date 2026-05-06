@@ -134,5 +134,13 @@
       color: var(--typography-color-primary) !important;
       font-weight: 400;
     }
+
+    .ad-col {
+      @include from-xxl {
+        flex: 0 0 auto;
+        // Keep select fields wide enough to avoid wrapping
+        width: 320px;
+      }
+    }
   }
 }
