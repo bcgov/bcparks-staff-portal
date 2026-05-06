@@ -2,7 +2,7 @@ import moment from "moment";
 
 /**
  * Maps an array of CMS relation objects to an array of their documentIds.
- * @param {Array} items Array of CMS objects with a documentId property
+ * @param {Array|null} items Array of CMS objects with a documentId property, or null
  * @returns {Array<string>} Array of documentId strings
  */
 function mapDocumentIds(items) {

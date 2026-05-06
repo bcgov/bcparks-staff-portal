@@ -2,17 +2,18 @@ import { useCallback } from "react";
 
 import { ADVISORY_UNPUBLISH_QUERY } from "@/constants/advisoryQuery";
 import { buildUnpublishPayload } from "@/lib/advisories/utils/AdvisoryUnpublishPayload";
+import useCms from "@/hooks/useCms";
 
 export default function useAdvisoryUnpublish({
   advisoryStatuses,
-  cmsGet,
-  cmsPut,
   modifiedBy,
   isApprover,
   openUnpublishError,
   openUnpublishSuccess,
   onSuccess,
 }) {
+  const { cmsGet, cmsPut } = useCms();
+
   return useCallback(
     async (rowData) => {
       const unpublishedStatus = advisoryStatuses.find(

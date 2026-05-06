@@ -35,8 +35,8 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
-import useAdvisoryUnpublish from "./useAdvisoryUnpublish";
-import useAdvisoryFlashMessage from "../AdvisoryFlashMessage/useAdvisoryFlashMessage";
+import useAdvisoryUnpublish from "@/router/pages/advisories/advisoryDashboard/useAdvisoryUnpublish";
+import useAdvisoryFlashMessage from "@/router/pages/advisories/AdvisoryFlashMessage/useAdvisoryFlashMessage";
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
