@@ -51,10 +51,10 @@ const park = await Park.create(
       },
     ],
 
+    hasDates: true,
     inReservationSystem: true,
     hasTier1Dates: true,
     hasTier2Dates: true,
-
     hasWinterFeeDates: true,
   },
   { transaction },
