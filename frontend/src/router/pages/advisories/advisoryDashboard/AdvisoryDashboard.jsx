@@ -9,6 +9,7 @@ import qs from "qs";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import ErrorContext from "@/contexts/ErrorContext";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useAccess from "@/hooks/useAccess";
 import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
@@ -16,7 +17,6 @@ import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
 import { TableActionButton } from "@/components/advisories/shared/tableActionButton/TableActionButton";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
-import FlashMessage from "@/components/FlashMessage";
 import StatusBadge from "@/components/StatusBadge";
 import FilterStatus from "@/components/advisories/shared/filterStatus/FilterStatus";
 import moment from "moment";
@@ -58,6 +58,7 @@ const DEFAULT_PAGE_SIZE = 50;
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
+  const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
   const { hasAnyRole } = useAccess();
   const navigate = useNavigate();
@@ -69,7 +70,6 @@ export default function AdvisoryDashboard() {
     getAdvisoryStatuses,
     getUrgencies,
     cmsGet,
-    cmsPut,
   } = useCms();
 
   const [toError, setToError] = useState(false);
@@ -97,17 +97,18 @@ export default function AdvisoryDashboard() {
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const {
-    unpublishFlashMessage,
-    closeUnpublishFlashMessage,
-    openUnpublishError,
-    openUnpublishSuccess,
-  } = useAdvisoryFlashMessage();
+
+  // Flash message functions for unpublish actions
+  function openUnpublishError(message) {
+    globalFlashMessage.open("Failed to unpublish Advisory / Closure", message);
+  }
+
+  function openUnpublishSuccess(message) {
+    globalFlashMessage.open("Unpublished Advisory / Closure", message);
+  }
 
   const handleUnpublish = useAdvisoryUnpublish({
     advisoryStatuses,
-    cmsGet,
-    cmsPut,
     modifiedBy: auth.user?.profile?.name,
     isApprover: hasAnyRole(["approver"]),
     openUnpublishError,
@@ -1081,13 +1082,6 @@ export default function AdvisoryDashboard() {
           </div>
         </div>
       }
-      <FlashMessage
-        title={unpublishFlashMessage.title}
-        message={unpublishFlashMessage.message}
-        isVisible={unpublishFlashMessage.isVisible}
-        onClose={closeUnpublishFlashMessage}
-        variant={unpublishFlashMessage.variant}
-      />
       {isLoading && (
         <div className="page-loader">
           <Loader page />
