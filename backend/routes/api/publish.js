@@ -535,7 +535,7 @@ async function formatParkAreaData(parkArea, season) {
   const features = await parkArea.getFeatures({
     attributes: FEATURE_ATTRIBUTES,
 
-    where: { active: true },
+    where: { active: true, hasDates: true },
   });
 
   // Fetch and format data for each Feature in the ParkArea
