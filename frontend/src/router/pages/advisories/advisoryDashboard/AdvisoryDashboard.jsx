@@ -18,6 +18,7 @@ import { TableActionButton } from "@/components/advisories/shared/tableActionBut
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
 import FlashMessage from "@/components/FlashMessage";
 import StatusBadge from "@/components/StatusBadge";
+import FilterStatus from "@/components/advisories/shared/filterStatus/FilterStatus";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Badge from "react-bootstrap/Badge";
@@ -38,41 +39,22 @@ import {
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 import useAdvisoryUnpublish from "@/router/pages/advisories/advisoryDashboard/useAdvisoryUnpublish";
 import useAdvisoryFlashMessage from "@/router/pages/advisories/AdvisoryFlashMessage/useAdvisoryFlashMessage";
+import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
+import {
+  clearAllFilters as clearAllFiltersHandler,
+  clearDistrictFilter as clearDistrictFilterHandler,
+  clearParkFilter as clearParkFilterHandler,
+  clearRegionFilter as clearRegionFilterHandler,
+  clearShowArchivedFilter as clearShowArchivedFilterHandler,
+  clearTableFilter as clearTableFilterHandler,
+  getPageFilterValue,
+  handlePageMultiSelectChange as handlePageMultiSelectChangeHandler,
+  normalizePageFilterValues,
+  updateRegionAndParkFilters as updateRegionAndParkFiltersHandler,
+} from "./advisoryDashboardFilterHandlers";
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
-
-/**
- * Returns the value of a page-level filter from the stored filters array, or a default if not found.
- * @param {Array} storedFilters Stored filters, each with { type, filterName/fieldName, filterValue/fieldValue }
- * @param {string} filterName The name of the filter to retrieve (e.g. "region" or "park")
- * @param {any} [defaultValue=0] Default value to return if the filter isn't found in storage
- * @returns {any} The filter value, or default if not found
- */
-function getPageFilterValue(storedFilters, filterName, defaultValue = 0) {
-  return (
-    storedFilters.find(
-      (obj) => obj.type === "page" && obj.filterName === filterName,
-    )?.filterValue ?? defaultValue
-  );
-}
-
-function normalizePageFilterValues(filterValue) {
-  if (Array.isArray(filterValue)) {
-    return filterValue;
-  }
-
-  if (
-    filterValue === "" ||
-    filterValue === 0 ||
-    filterValue === null ||
-    typeof filterValue === "undefined"
-  ) {
-    return [];
-  }
-
-  return [filterValue];
-}
 
 export default function AdvisoryDashboard() {
   const { setError } = useContext(ErrorContext);
@@ -165,6 +147,17 @@ export default function AdvisoryDashboard() {
   const [tableFilterValues, setTableFilterValues] = useState(
     initialTableFilterValues,
   );
+  // Active table filters for rendering filter badges and building Strapi queries
+  const activeTableFilters = useMemo(
+    () =>
+      Object.entries(tableFilterValues || {})
+        .filter(([, value]) => value !== "" && value !== null)
+        .map(([field, value]) => ({
+          field,
+          label: `${TABLE_FILTER_LABELS[field] || field}: ${value}`,
+        })),
+    [tableFilterValues],
+  );
   // Debounced copy used as the fetchAdvisories dependency
   // Prevents Strapi request on every keystroke while keeping filter inputs responsive
   const [debouncedTableFilterValues] = useDebounceValue(tableFilterValues, 300);
@@ -201,6 +194,129 @@ export default function AdvisoryDashboard() {
         {label}
       </Badge>
     );
+  }
+
+  function resetToFirstPage() {
+    setCurrentPage(1);
+  }
+
+  function updateRegionAndParkFilters(regionFilterValue, parkFilterValue) {
+    updateRegionAndParkFiltersHandler({
+      setStoredFilters,
+      regionFilterValue,
+      parkFilterValue,
+    });
+  }
+
+  function handlePageMultiSelectChange(
+    selectedOptions,
+    filterName,
+    setSelectedOptions,
+    setSelectedIds,
+  ) {
+    handlePageMultiSelectChangeHandler({
+      selectedOptions,
+      filterName,
+      setSelectedOptions,
+      setSelectedIds,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function handleDistrictChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "district",
+      setSelectedDistrict,
+      setSelectedDistrictId,
+    );
+  }
+
+  function handleRegionChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "region",
+      setSelectedRegion,
+      setSelectedRegionId,
+    );
+  }
+
+  function handleParkChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "park",
+      setSelectedPark,
+      setSelectedParkId,
+    );
+  }
+
+  function clearDistrictFilter(districtValue) {
+    clearDistrictFilterHandler({
+      districtValue,
+      selectedDistrict,
+      setSelectedDistrict,
+      setSelectedDistrictId,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function clearRegionFilter(regionValue) {
+    clearRegionFilterHandler({
+      regionValue,
+      selectedRegion,
+      setSelectedRegion,
+      setSelectedRegionId,
+      setSelectedPark,
+      setSelectedParkId,
+      resetToFirstPage,
+      setStoredFilters,
+      updateRegionAndParkFiltersFn: updateRegionAndParkFilters,
+    });
+  }
+
+  function clearParkFilter(parkValue) {
+    clearParkFilterHandler({
+      parkValue,
+      selectedPark,
+      setSelectedPark,
+      setSelectedParkId,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function clearTableFilter(field) {
+    clearTableFilterHandler({
+      field,
+      setTableFilterValues,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function clearShowArchivedFilter() {
+    clearShowArchivedFilterHandler({
+      setShowArchived,
+      resetToFirstPage,
+    });
+  }
+
+  function clearAllFilters() {
+    clearAllFiltersHandler({
+      setSelectedDistrict,
+      setSelectedDistrictId,
+      setSelectedRegion,
+      setSelectedRegionId,
+      setSelectedPark,
+      setSelectedParkId,
+      setShowArchived,
+      setTableFilterValues,
+      resetToFirstPage,
+      setStoredFilters,
+      defaultPageFilters,
+    });
   }
 
   // Load management areas, advisory statuses, urgencies, and published advisories once on mount.
@@ -845,31 +961,7 @@ export default function AdvisoryDashboard() {
               placeholder="Search or select a district"
               value={selectedDistrict}
               options={districtOptions}
-              onChange={(e) => {
-                const selectedDistricts = e || [];
-                const selectedDistrictIds = selectedDistricts.map(
-                  (district) => district.value,
-                );
-
-                setSelectedDistrict(selectedDistricts);
-                setSelectedDistrictId(selectedDistrictIds);
-                setCurrentPage(1);
-
-                setStoredFilters((currentFilters) => {
-                  const nonDistrictPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "district"),
-                  );
-
-                  return [
-                    ...nonDistrictPageFilters,
-                    {
-                      type: "page",
-                      filterName: "district",
-                      filterValue: selectedDistrictIds,
-                    },
-                  ];
-                });
-              }}
+              onChange={handleDistrictChange}
             />
           </div>
           <div className="ad-col col-md-6 col-12">
@@ -879,31 +971,7 @@ export default function AdvisoryDashboard() {
               placeholder="Search or select a region"
               value={selectedRegion}
               options={regionOptions}
-              onChange={(e) => {
-                const selectedRegions = e || [];
-                const selectedRegionIds = selectedRegions.map(
-                  (region) => region.value,
-                );
-
-                setSelectedRegion(selectedRegions);
-                setSelectedRegionId(selectedRegionIds);
-                setCurrentPage(1);
-
-                setStoredFilters((currentFilters) => {
-                  const nonRegionPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "region"),
-                  );
-
-                  return [
-                    ...nonRegionPageFilters,
-                    {
-                      type: "page",
-                      filterName: "region",
-                      filterValue: selectedRegionIds,
-                    },
-                  ];
-                });
-              }}
+              onChange={handleRegionChange}
             />
           </div>
           <div className="ad-col col-md-6 col-12">
@@ -913,29 +981,7 @@ export default function AdvisoryDashboard() {
               placeholder="Search or select a park"
               value={selectedPark}
               options={parkOptions}
-              onChange={(e) => {
-                const selectedParks = e || [];
-                const selectedParkIds = selectedParks.map((park) => park.value);
-
-                setSelectedPark(selectedParks);
-                setSelectedParkId(selectedParkIds);
-                setCurrentPage(1);
-
-                setStoredFilters((currentFilters) => {
-                  const nonParkPageFilters = currentFilters.filter(
-                    (o) => !(o.type === "page" && o.filterName === "park"),
-                  );
-
-                  return [
-                    ...nonParkPageFilters,
-                    {
-                      type: "page",
-                      filterName: "park",
-                      filterValue: selectedParkIds,
-                    },
-                  ];
-                });
-              }}
+              onChange={handleParkChange}
             />
           </div>
         </div>
@@ -948,7 +994,7 @@ export default function AdvisoryDashboard() {
               checked={showArchived}
               onChange={(e) => {
                 setShowArchived(e.target.checked);
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               label={
                 <span>
@@ -969,6 +1015,27 @@ export default function AdvisoryDashboard() {
             />
           </div>
         </div>
+        <FilterStatus
+          totalResults={totalPublicAdvisories}
+          selectedDistrict={selectedDistrict}
+          onClearDistrict={clearDistrictFilter}
+          selectedRegion={selectedRegion}
+          onClearRegion={clearRegionFilter}
+          selectedPark={selectedPark}
+          onClearPark={clearParkFilter}
+          selectedTableFilters={activeTableFilters}
+          onClearTableFilter={clearTableFilter}
+          showArchived={showArchived}
+          onClearShowArchived={clearShowArchivedFilter}
+          hasAnyFilters={
+            selectedDistrict.length > 0 ||
+            selectedRegion.length > 0 ||
+            selectedPark.length > 0 ||
+            showArchived ||
+            activeTableFilters.length > 0
+          }
+          onClearAll={clearAllFilters}
+        />
       </div>
       {
         <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
@@ -985,17 +1052,18 @@ export default function AdvisoryDashboard() {
               onPageChange={setCurrentPage}
               onPageSizeChange={(nextPageSize) => {
                 setPageSize(nextPageSize);
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               onFilterChange={({ field, value }) => {
                 setTableFilterValues((prev) => ({ ...prev, [field]: value }));
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               onSortChange={(next) => {
                 setSortConfig(next);
-                setCurrentPage(1);
+                resetToFirstPage();
               }}
               initialFilterValues={initialTableFilterValues}
+              filterValues={tableFilterValues}
               onFilterValuesChange={persistTableFilterValues}
               columns={tableColumns}
               data={publicAdvisories}

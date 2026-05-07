@@ -1,35 +1,10 @@
 import { useMemo } from "react";
 import { reject, without } from "lodash-es";
-import Badge from "react-bootstrap/Badge";
-import CloseButton from "react-bootstrap/CloseButton";
 import PropTypes from "prop-types";
 import { labelByValue } from "@/constants/seasonStatus";
+import FilterBadge from "@/components/shared/FilterBadge";
 
 import "./FilterStatus.scss";
-
-function FilterBadge({ label, onRemove }) {
-  return (
-    <div
-      data-bs-theme="dark"
-      className="filter-badge fs-5 d-flex align-items-center"
-    >
-      <Badge
-        pill
-        bg="primary"
-        className="px-2 py-1 d-flex align-items-center fw-normal"
-      >
-        <span>{label}</span>
-
-        <CloseButton className="ms-2" onClick={onRemove} />
-      </Badge>
-    </div>
-  );
-}
-
-FilterBadge.propTypes = {
-  label: PropTypes.string.isRequired,
-  onRemove: PropTypes.func.isRequired,
-};
 
 export default function FilterStatus({
   activeFilters,
