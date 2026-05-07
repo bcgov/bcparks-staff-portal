@@ -1,6 +1,6 @@
 # Crunchy Postgres Installation
 
-## Prerequesites
+## Prerequisites
 
 - Install `helm` CLI from https://helm.sh/docs/intro/install/
 
@@ -95,13 +95,24 @@ Don't run `uninstall crunchy` unless you really want to lose all your data!
 ### Dev
 
 ```sh
+# dev:
 helm -n a7dd13-dev uninstall crunchy
+
+# alpha-dev:
+helm -n a7dd13-dev uninstall crunchy-alpha
 ```
 
 ### Test
 
 ```sh
+# test:
 helm -n a7dd13-test uninstall crunchy
+
+# alpha-test:
+helm -n a7dd13-test uninstall crunchy-alpha
+
+# training: (a third test environment, for RSOs and POs)
+helm -n a7dd13-test uninstall crunchy-training
 ```
 
 ### Prod
@@ -122,7 +133,7 @@ A chart to provision a [Crunchy Postgres](https://www.crunchydata.com/) cluster.
 | ------------------ | ---------------------- | ------------------ |
 | `fullnameOverride` | Override release name  | `crunchy-postgres` |
 | `crunchyImage`     | Crunchy Postgres image |                    |
-| `postgresVersion`  | Postgres version       | `14`               |
+| `postgresVersion`  | Postgres version       | `15`               |
 
 ---
 
