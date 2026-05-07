@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import { keyBy } from "lodash-es";
 import "./AdvisoryForm.scss";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Btn from "react-bootstrap/Button";
@@ -409,8 +408,8 @@ export default function AdvisoryForm({
 
   /**
    * Saves the advisory as a draft in the CMS (with "Draft" status).
-   * Creates a copy of the advisory with "Draft" status if the advisory is already published,
-   * instead of updating a published advisory.
+   * The backend middleware determines whether this is an in-place update
+   * or a new revision when the current advisory is published.
    * @returns {void}
    */
   async function handleSaveDraft() {
@@ -421,20 +420,12 @@ export default function AdvisoryForm({
     // Don't submit again if a request is in progress
     if (isSavingDraft) return;
 
-    // Get the Strapi data for the advisory statuses to check
-    const statusIds = keyBy(advisoryStatuses, "code");
-    const draftStatus = statusIds.DFT;
-    const publishedStatus = statusIds.PUB;
+    // Get the Strapi data for the "Draft" advisory status from its code
+    const draftStatus = advisoryStatuses.find((status) => status.code === "DFT");
 
     if (mode === "update") {
-      if (advisoryStatus === publishedStatus.value) {
-        // If the advisory is already published, save a new copy with "Draft" status
-        // and don't modify the existing published advisory
-        await createAdvisory(draftStatus);
-      } else {
-        // Update advisory with "Draft" status
-        await updateAdvisory(draftStatus);
-      }
+      // Update advisory with "Draft" status
+      await updateAdvisory(draftStatus);
     } else {
       // Create advisory with "Draft" status
       await createAdvisory(draftStatus);
