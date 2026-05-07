@@ -378,9 +378,7 @@ router.get(
                     "hasReservations",
                   ],
                   required: false,
-                  where: {
-                    active: true,
-                  },
+                  where: { active: true, hasDates: true },
 
                   include: [
                     {
@@ -407,9 +405,7 @@ router.get(
               ],
               required: false,
 
-              where: {
-                active: true,
-              },
+              where: { active: true, hasDates: true },
 
               include: [
                 {

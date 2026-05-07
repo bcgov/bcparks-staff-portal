@@ -82,19 +82,6 @@ helm -n a7dd13-test install alpha . -f values-alpha-test.yaml
 helm -n a7dd13-test install training . -f values-training.yaml
 ```
 
-### Create the Postgres user and db
-
-If this is the first time deploying the app then you will also need to create a Postgres user and an empty database.
-
-1. Go into the terminal on one of the `crunchy-postgres-ha-*` pods. _(choose the one using the most memory)_
-2. Run `patronictl list` at the command prompt to make sure you are in the leader. Switch to the leader pod if you aren't on the leader.
-3. Get the password from `main-postgres-secret` or `alpha-postgres-secret`
-4. Run the `psql` command and enter the following commands in the sql console. Replace `<password>` with the password from step 3, and replace `main` with `alpha` for alpha deployments.
-   ```sql
-   CREATE USER "bcparks-main" WITH PASSWORD '<password>';
-   CREATE DATABASE "staff-portal-main" OWNER "bcparks-main";
-   ```
-
 #### Create additional Routes
 
 Some additional Openshift routes must also be manually created. Use the bcparks.ca wildcard certificate for these routes. DNS updates may also be needed.
@@ -151,9 +138,9 @@ helm -n a7dd13-test upgrade training . -f values-training.yaml
 
 ## Teardown
 
-The `uninstall` command ca be used to remove all resources defined by the Helm chart. Please note that secrets and PVCs created by the Helm chart are not automatically removed.
+The `uninstall` command can be used to remove all resources defined by the Helm chart. Please note that secrets and PVCs created by the Helm chart are not automatically removed.
 
-Run the following commands from the `infrastructure/helm/bcparks` directory.
+Run the following commands from the `helm/deployment` directory.
 
 NOTE: This wil not remove the secrets.
 
