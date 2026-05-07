@@ -801,9 +801,7 @@ router.get(
               model: Feature,
               as: "features",
 
-              where: {
-                active: true,
-              },
+              where: { active: true, hasDates: true },
 
               include: [
                 featureTypeQueryPart(),
@@ -941,9 +939,7 @@ router.get(
                   model: Feature,
                   as: "features",
 
-                  where: {
-                    active: true,
-                  },
+                  where: { active: true, hasDates: true },
 
                   include: [
                     featureTypeQueryPart(),
@@ -962,6 +958,7 @@ router.get(
               where: {
                 parkAreaId: null, // Only get Features not in a Park Area
                 active: true,
+                hasDates: true,
               },
               required: false,
               include: [

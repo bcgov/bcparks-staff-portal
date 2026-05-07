@@ -67,7 +67,7 @@ function featureModel(minYear, where = {}) {
   return {
     model: Feature,
     as: "features",
-    where: { ...where, active: true },
+    where: { ...where, active: true, hasDates: true },
     required: false,
     attributes: [
       "id",
@@ -295,6 +295,7 @@ router.get(
         "managementAreas",
         "inReservationSystem",
       ],
+      where: { hasDates: true },
       include: [
         // Publishable Seasons for the Park
         seasonModel(currentYear),
