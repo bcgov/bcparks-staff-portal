@@ -164,6 +164,7 @@ export default function MainLayout() {
           message={globalFlashMessage.message}
           isVisible={globalFlashMessage.isOpen}
           onClose={globalFlashMessage.close}
+          variant={globalFlashMessage.variant}
         />
       </UserContext.Provider>
     </FlashMessageContext.Provider>

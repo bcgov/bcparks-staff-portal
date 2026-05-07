@@ -1,4 +1,11 @@
-import { useState, useEffect, useMemo, useContext, useRef } from "react";
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -99,13 +106,27 @@ export default function AdvisoryDashboard() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Flash message functions for unpublish actions
-  function openUnpublishError(message) {
-    globalFlashMessage.open("Failed to unpublish Advisory / Closure", message);
-  }
+  const openUnpublishError = useCallback(
+    (message) => {
+      globalFlashMessage.open(
+        "Failed to unpublish Advisory / Closure",
+        message,
+        {
+          variant: "error",
+        },
+      );
+    },
+    [globalFlashMessage],
+  );
 
-  function openUnpublishSuccess(message) {
-    globalFlashMessage.open("Unpublished Advisory / Closure", message);
-  }
+  const openUnpublishSuccess = useCallback(
+    (message) => {
+      globalFlashMessage.open("Unpublished Advisory / Closure", message, {
+        variant: "success",
+      });
+    },
+    [globalFlashMessage],
+  );
 
   const handleUnpublish = useAdvisoryUnpublish({
     advisoryStatuses,
