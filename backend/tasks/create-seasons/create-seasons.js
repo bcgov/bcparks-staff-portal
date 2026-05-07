@@ -195,9 +195,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
         model: Feature,
         as: "features",
         required: true,
-        where: {
-          active: true,
-        },
+        where: { active: true, hasDates: true },
       },
     ],
     transaction,
@@ -252,9 +250,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
   seasonsAdded = 0;
 
   const parkAreaFeatures = await Feature.findAll({
-    where: {
-      active: true,
-    },
+    where: { active: true, hasDates: true },
 
     include: [
       {
@@ -299,6 +295,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
         where: {
           parkAreaId: parkArea.id,
           active: true,
+          hasDates: true,
         },
         transaction,
       });
@@ -325,6 +322,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
   const featuresWithoutParkArea = await Feature.findAll({
     where: {
       active: true,
+      hasDates: true,
       // Find Features with null parkAreaId
       parkAreaId: null,
     },
@@ -377,6 +375,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
     // Only active features in the BC Parks reservation system
     where: {
       active: true,
+      hasDates: true,
       inReservationSystem: true,
     },
 
