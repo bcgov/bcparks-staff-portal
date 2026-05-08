@@ -6,6 +6,7 @@ import { ROLES } from "@/config/permissions";
 export default function PrimaryActions({
   mode,
   isUrgent = false,
+  isApprover = false,
   onPublish,
   onSubmit,
   isSubmitting,
@@ -13,9 +14,11 @@ export default function PrimaryActions({
   const { hasAnyRole } = useAccess();
 
   // Allow users to publish/update directly if it's "urgent" (weekend/after hours),
-  // or if they have permission to publish without approval.
+  // or if they are an approver, or if they have permission to publish without approval.
   const canPublish =
-    isUrgent || hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]);
+    isUrgent ||
+    isApprover ||
+    hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]);
 
   if (mode === "create") {
     return canPublish ? (
@@ -66,4 +69,5 @@ PrimaryActions.propTypes = {
   onSubmit: PropTypes.func.isRequired,
   isSubmitting: PropTypes.bool,
   isUrgent: PropTypes.bool,
+  isApprover: PropTypes.bool,
 };

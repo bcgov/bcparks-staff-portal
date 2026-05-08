@@ -115,6 +115,7 @@ export default function AdvisoryForm({
     updateLink,
     addLink,
     handleFileCapture,
+    isApprover,
     notes,
     setNotes,
     submittedBy,
@@ -421,7 +422,9 @@ export default function AdvisoryForm({
     if (isSavingDraft) return;
 
     // Get the Strapi data for the "Draft" advisory status from its code
-    const draftStatus = advisoryStatuses.find((status) => status.code === "DFT");
+    const draftStatus = advisoryStatuses.find(
+      (status) => status.code === "DFT",
+    );
 
     if (mode === "update") {
       // Update advisory with "Draft" status
@@ -1638,6 +1641,7 @@ export default function AdvisoryForm({
           <PrimaryActions
             mode={mode}
             isUrgent={isAfterHourPublish}
+            isApprover={isApprover}
             onPublish={handlePublish}
             onSubmit={handleSubmitForReview}
             isSubmitting={isSubmitting}

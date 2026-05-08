@@ -990,10 +990,18 @@ export default function Advisory({ mode }) {
         publishedAt: new Date(),
         isLatestRevision: true,
         createdByName: auth.user?.profile?.name,
+        reviewedByName: null,
+        reviewedAt: null,
         createdByRole: isApprover ? "approver" : "submitter",
         isUrgentAfterHours:
           !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish,
       };
+
+      // Add the reviewer name and review date if the user is approving an advisory
+      if (isApprover && (status.code === "PUB" || status.code === "SCH")) {
+        newAdvisory.reviewedByName = auth.user?.profile?.name;
+        newAdvisory.reviewedAt = moment().toISOString();
+      }
 
       const advisory = await cmsPost(`public-advisory-audits`, {
         data: newAdvisory,
@@ -1086,7 +1094,15 @@ export default function Advisory({ mode }) {
         isUpdatedDateDisplayed: displayUpdatedDate,
         publishedAt: new Date(),
         isLatestRevision: true,
+        reviewedByName: null,
+        reviewedAt: null,
       };
+
+      // Add the reviewer name and review date if the user is approving an advisory
+      if (isApprover && (status.code === "PUB" || status.code === "SCH")) {
+        updatedAdvisory.reviewedByName = auth.user?.profile?.name;
+        updatedAdvisory.reviewedAt = moment().toISOString();
+      }
 
       if (
         !isApprover &&
@@ -1260,6 +1276,7 @@ export default function Advisory({ mode }) {
                   updateLink,
                   addLink,
                   handleFileCapture,
+                  isApprover,
                   notes,
                   setNotes,
                   submittedBy,
