@@ -468,7 +468,7 @@ export default function AdvisoryForm({
             options={accessStatuses}
             value={accessStatuses.filter((e) => e.value === accessStatus)}
             onChange={(e) => setAccessStatus(e ? e.value : 0)}
-            placeholder="Select resource status"
+            placeholder="Search or select resource status"
             className="bcgov-select"
           />
         </Form.Group>
@@ -494,7 +494,7 @@ export default function AdvisoryForm({
               options={eventTypes}
               value={eventTypes.filter((e) => e.value === eventType)}
               onChange={(e) => setEventType(e ? e.value : 0)}
-              placeholder="Select an event type"
+              placeholder="Search or select an event type"
               className="bcgov-select"
               onBlur={() => {
                 validateRequiredSelect(advisoryData.eventType);
@@ -609,7 +609,7 @@ export default function AdvisoryForm({
             onChange={(e) => {
               setSelectedStandardMessages(e);
             }}
-            placeholder="Add standard message(s)"
+            placeholder="Search or select standard message(s)"
             className="bcgov-select"
             isMulti
             isClearable
@@ -689,7 +689,7 @@ export default function AdvisoryForm({
                     }}
                     value={linkTypes.filter((o) => o.value === l.type)}
                     className="bcgov-select"
-                    placeholder="Link or document type"
+                    placeholder="Search or select link or document type"
                     onBlur={() =>
                       validateLink(l, idx, "type", setLinkTypeErrors)
                     }
@@ -896,7 +896,7 @@ export default function AdvisoryForm({
         <h3>Advisory / closure dates</h3>
 
         <div className="sub-section">
-          <h5>Post date(s)</h5>
+          <h4>Post date(s)</h4>
 
           <div className="row mb-3 date-time-row">
             <div className="col-12 col-sm-6 col-md-5">
@@ -918,6 +918,7 @@ export default function AdvisoryForm({
                     onChange={(date) => {
                       handleAdvisoryDateChange(date);
                     }}
+                    fixedHeight
                     dateFormat="MMMM d, yyyy"
                     maxDate={expiryDate}
                     className={`${advisoryDateError !== "" ? "error" : ""}`}
@@ -995,6 +996,7 @@ export default function AdvisoryForm({
                     onChange={(date) => {
                       setExpiryDate(date);
                     }}
+                    fixedHeight
                     dateFormat="MMMM d, yyyy"
                     minDate={advisoryDate}
                     className={`${expiryDateError !== "" ? "error" : ""}`}
@@ -1065,6 +1067,7 @@ export default function AdvisoryForm({
                       onChange={(date) => {
                         setUpdatedDate(date);
                       }}
+                      fixedHeight
                       dateFormat="MMMM d, yyyy"
                       minDate={advisoryDate}
                       className={`${updatedDateError !== "" ? "error" : ""}`}
@@ -1136,7 +1139,7 @@ export default function AdvisoryForm({
         {showEventDates && (
           <>
             <div className="sub-section">
-              <h5>Event date(s)</h5>
+              <h4>Event date(s)</h4>
 
               <div className="row mb-3 date-time-row">
                 <div className="col-12 col-sm-6 col-md-5">
@@ -1160,6 +1163,7 @@ export default function AdvisoryForm({
                         onChange={(date) => {
                           setStartDate(date);
                         }}
+                        fixedHeight
                         dateFormat="MMMM d, yyyy"
                         maxDate={endDate}
                         className={`${startDateError !== "" ? "error" : ""}`}
@@ -1235,6 +1239,7 @@ export default function AdvisoryForm({
                         onChange={(date) => {
                           setEndDate(date);
                         }}
+                        fixedHeight
                         dateFormat="MMMM d, yyyy"
                         minDate={startDate}
                         className={`${endDateError !== "" ? "error" : ""}`}
@@ -1340,7 +1345,12 @@ export default function AdvisoryForm({
         <h3>Internal details</h3>
 
         <Form.Group className="form-group" controlId={notesInput.id}>
-          <Form.Label>Internal notes</Form.Label>
+          <Form.Label>
+            Internal notes
+            <LightTooltip arrow title="Internal notes">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </Form.Label>
 
           <Form.Control
             value={notes}
@@ -1354,7 +1364,12 @@ export default function AdvisoryForm({
 
         {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
           <Form.Group className="form-group" controlId={submitterInput.id}>
-            <Form.Label>Requested by</Form.Label>
+            <Form.Label>
+              Requested by
+              <LightTooltip arrow title="Requested by">
+                <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+              </LightTooltip>
+            </Form.Label>
 
             <Form.Control
               value={submittedBy}
@@ -1408,7 +1423,12 @@ export default function AdvisoryForm({
         </Form.Group>
 
         <Form.Group className="form-group" controlId="public-safety-related">
-          <Form.Label>Public safety related</Form.Label>
+          <Form.Label>
+            Public safety related
+            <LightTooltip arrow title="Public safety related">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </Form.Label>
 
           <div>
             <ButtonGroup
@@ -1445,7 +1465,9 @@ export default function AdvisoryForm({
 
         {hasAnyRole([ROLES.SUPER_ADMIN]) && (
           <Form.Group className="form-group">
-            <Form.Label htmlFor="advisory-status">Advisory status</Form.Label>
+            <Form.Label htmlFor="advisory-status">
+              <span className="append-required">Advisory status</span>
+            </Form.Label>
 
             <div
               className={classNames("bcgov-select-form", {
@@ -1459,7 +1481,7 @@ export default function AdvisoryForm({
                   (a) => a.value === advisoryStatus,
                 )}
                 onChange={(e) => setAdvisoryStatus(e ? e.value : 0)}
-                placeholder="Select an advisory status"
+                placeholder="Search or select an advisory status"
                 className="bcgov-select"
                 isClearable
               />
