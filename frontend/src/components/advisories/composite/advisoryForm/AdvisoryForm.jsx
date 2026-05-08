@@ -918,7 +918,6 @@ export default function AdvisoryForm({
                     onChange={(date) => {
                       handleAdvisoryDateChange(date);
                     }}
-                    showMonthYearDropdown
                     fixedHeight
                     dateFormat="MMMM d, yyyy"
                     maxDate={expiryDate}
@@ -997,7 +996,6 @@ export default function AdvisoryForm({
                     onChange={(date) => {
                       setExpiryDate(date);
                     }}
-                    showMonthYearDropdown
                     fixedHeight
                     dateFormat="MMMM d, yyyy"
                     minDate={advisoryDate}
@@ -1069,7 +1067,6 @@ export default function AdvisoryForm({
                       onChange={(date) => {
                         setUpdatedDate(date);
                       }}
-                      showMonthYearDropdown
                       fixedHeight
                       dateFormat="MMMM d, yyyy"
                       minDate={advisoryDate}
@@ -1166,7 +1163,6 @@ export default function AdvisoryForm({
                         onChange={(date) => {
                           setStartDate(date);
                         }}
-                        showMonthYearDropdown
                         fixedHeight
                         dateFormat="MMMM d, yyyy"
                         maxDate={endDate}
@@ -1243,7 +1239,6 @@ export default function AdvisoryForm({
                         onChange={(date) => {
                           setEndDate(date);
                         }}
-                        showMonthYearDropdown
                         fixedHeight
                         dateFormat="MMMM d, yyyy"
                         minDate={startDate}
