@@ -1460,7 +1460,9 @@ export default function AdvisoryForm({
 
         {hasAnyRole([ROLES.SUPER_ADMIN]) && (
           <Form.Group className="form-group">
-            <Form.Label htmlFor="advisory-status">Advisory status</Form.Label>
+            <Form.Label htmlFor="advisory-status">
+              <span className="append-required">Advisory status</span>
+            </Form.Label>
 
             <div
               className={classNames("bcgov-select-form", {
