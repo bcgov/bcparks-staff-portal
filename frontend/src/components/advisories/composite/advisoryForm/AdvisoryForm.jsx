@@ -1340,7 +1340,12 @@ export default function AdvisoryForm({
         <h3>Internal details</h3>
 
         <Form.Group className="form-group" controlId={notesInput.id}>
-          <Form.Label>Internal notes</Form.Label>
+          <Form.Label>
+            Internal notes
+            <LightTooltip arrow title="Internal notes">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </Form.Label>
 
           <Form.Control
             value={notes}
@@ -1354,7 +1359,12 @@ export default function AdvisoryForm({
 
         {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
           <Form.Group className="form-group" controlId={submitterInput.id}>
-            <Form.Label>Requested by</Form.Label>
+            <Form.Label>
+              Requested by
+              <LightTooltip arrow title="Requested by">
+                <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+              </LightTooltip>
+            </Form.Label>
 
             <Form.Control
               value={submittedBy}
@@ -1408,7 +1418,12 @@ export default function AdvisoryForm({
         </Form.Group>
 
         <Form.Group className="form-group" controlId="public-safety-related">
-          <Form.Label>Public safety related</Form.Label>
+          <Form.Label>
+            Public safety related
+            <LightTooltip arrow title="Public safety related">
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+          </Form.Label>
 
           <div>
             <ButtonGroup
