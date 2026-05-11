@@ -1,11 +1,14 @@
+import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faChevronUp } from "@fa-kit/icons/classic/solid";
+import { faMagnifyingGlass, faChevronDown } from "@fa-kit/icons/classic/solid";
 import { faPen, faEyeSlash } from "@fa-kit/icons/classic/regular";
 
 import "./TableActionButton.scss";
+
+const ACTION_DROPDOWN_OPEN_EVENT = "table-action-dropdown-open";
 
 export function TableActionButton({
   rowId,
@@ -14,21 +17,62 @@ export function TableActionButton({
   onEdit,
   onUnpublish,
 }) {
+  const [isOpen, setIsOpen] = useState(false);
+
   function action(event, callback) {
     // Prevent triggering row click handler
     event.stopPropagation();
+    setIsOpen(false);
     callback();
   }
+
+  // Don't allow root-close to reopen the dropdown immediately after it's closed
+  function handleToggle(nextIsOpen, _event, metadata) {
+    if (!nextIsOpen && !isOpen && metadata?.source === "rootClose") {
+      return;
+    }
+
+    setIsOpen(nextIsOpen);
+
+    if (nextIsOpen) {
+      window.dispatchEvent(
+        new CustomEvent(ACTION_DROPDOWN_OPEN_EVENT, { detail: { rowId } }),
+      );
+    }
+  }
+
+  // Close this dropdown when another dropdown is opened
+  useEffect(() => {
+    function handleOtherDropdownOpen(event) {
+      if (event.detail?.rowId !== rowId) {
+        setIsOpen(false);
+      }
+    }
+
+    window.addEventListener(
+      ACTION_DROPDOWN_OPEN_EVENT,
+      handleOtherDropdownOpen,
+    );
+
+    return () => {
+      window.removeEventListener(
+        ACTION_DROPDOWN_OPEN_EVENT,
+        handleOtherDropdownOpen,
+      );
+    };
+  }, [rowId]);
 
   return (
     <div className="action-button" onClick={(event) => event.stopPropagation()}>
       <DropdownButton
         id={`action-button-${rowId}`}
+        show={isOpen}
+        onToggle={handleToggle}
         title={
           <>
             <span>Actions</span>
             <FontAwesomeIcon
-              icon={faChevronUp}
+              icon={faChevronDown}
               className="action-button__icon"
             />
           </>

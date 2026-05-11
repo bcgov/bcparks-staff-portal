@@ -96,6 +96,7 @@ export default function MainLayoutPublic() {
         message={globalFlashMessage.message}
         isVisible={globalFlashMessage.isOpen}
         onClose={globalFlashMessage.close}
+        variant={globalFlashMessage.variant}
       />
     </FlashMessageContext.Provider>
   );

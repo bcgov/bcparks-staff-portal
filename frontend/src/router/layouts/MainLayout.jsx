@@ -54,12 +54,13 @@ export default function MainLayout() {
       const isButton = e.target.closest("button");
       const isFormButton = e.target.closest(".form-btn");
       const isInput = e.target.closest("input");
+      const isSelectControl = e.target.closest(".bcgov-select");
 
       // Don't close if clicking form action buttons (Save/Approve/Submit)
       if (isFormButton) return;
 
-      // Close if clicking any other button, link, or input
-      if (isButton || isLink || isInput) {
+      // Close if clicking any other button, link, input, or select control
+      if (isButton || isLink || isInput || isSelectControl) {
         globalFlashMessage.close();
       }
     }
@@ -163,6 +164,7 @@ export default function MainLayout() {
           message={globalFlashMessage.message}
           isVisible={globalFlashMessage.isOpen}
           onClose={globalFlashMessage.close}
+          variant={globalFlashMessage.variant}
         />
       </UserContext.Provider>
     </FlashMessageContext.Provider>
