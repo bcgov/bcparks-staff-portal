@@ -449,19 +449,22 @@ export default function AdvisoryDashboard() {
           .subtract(18, "months")
           .format("YYYY-MM-DD");
 
-        const advisoryFilter = showArchived
-          ? {
-              $or: [
-                { advisoryStatus: { code: { $ne: "UNP" } } },
-                { updatedAt: { $gt: extendedCutoffDate } },
+        const unpublishedCutoffDate = showArchived
+          ? extendedCutoffDate
+          : standardCutoffDate;
+
+        const advisoryFilter = {
+          $or: [
+            // Always include all non-unpublished advisories
+            { advisoryStatus: { code: { $ne: "UNP" } } },
+            {
+              $and: [
+                { advisoryStatus: { code: { $eq: "UNP" } } },
+                { updatedAt: { $gt: unpublishedCutoffDate } },
               ],
-            }
-          : {
-              $or: [
-                { advisoryStatus: { code: { $ne: "UNP" } } },
-                { updatedAt: { $gt: standardCutoffDate } },
-              ],
-            };
+            },
+          ],
+        };
 
         // Build server-side filter params from column filter values and region/park dropdowns
         const columnFilterClauses = buildFilter(
@@ -942,7 +945,7 @@ export default function AdvisoryDashboard() {
             <Button
               label={
                 <>
-                  <FontAwesomeIcon icon={faPlus} className="plus-icon me-2"/>
+                  <FontAwesomeIcon icon={faPlus} className="plus-icon me-2" />
                   Create advisory / closure
                 </>
               }
