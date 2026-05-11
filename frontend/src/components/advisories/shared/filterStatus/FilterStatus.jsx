@@ -91,10 +91,10 @@ export default function FilterStatus({
         {hasAnyFilters && (
           <button
             type="button"
-            className="btn btn-sm btn-outline-secondary"
+            className="btn btn-link"
             onClick={onClearAll}
           >
-            Clear All Filters
+            Clear filters
           </button>
         )}
       </div>

@@ -82,7 +82,16 @@ export function buildFilter(
 
   if (selectedRegionIds.length > 0) {
     filters.push({
-      regions: { documentId: { $in: selectedRegionIds } },
+      $or: [
+        { regions: { documentId: { $in: selectedRegionIds } } },
+        {
+          protectedAreas: {
+            managementAreas: {
+              region: { documentId: { $in: selectedRegionIds } },
+            },
+          },
+        },
+      ],
     });
   }
 
