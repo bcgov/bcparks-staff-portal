@@ -37,40 +37,6 @@ function isLatestStatutoryHolidayList(statData) {
   return true;
 }
 
-export function getSubmitterAdvisoryFields(
-  type,
-  advisoryStatuses,
-  setConfirmationText,
-) {
-  let status = {};
-  let published = null;
-
-  if (type === "draft") {
-    status = advisoryStatuses.filter((s) => s.code === "DFT");
-    setConfirmationText("Your advisory has been saved successfully!");
-  } else if (type === "publish") {
-    status = advisoryStatuses.filter((s) => s.code === "PUB");
-    setConfirmationText("Your advisory has been published successfully!");
-    published = moment().tz("America/Vancouver");
-  } else {
-    status = advisoryStatuses.filter((s) => s.code === "HQR");
-    setConfirmationText("Your advisory has been sent for review successfully!");
-  }
-  return { status: status[0].value, published };
-}
-
-export function getApproverAdvisoryFields(code, setConfirmationText) {
-  let published = null;
-
-  if (code === "PUB") {
-    setConfirmationText("Your advisory has been published successfully!");
-    published = moment().tz("America/Vancouver");
-  } else {
-    setConfirmationText("Your advisory has been saved successfully!");
-  }
-  return published;
-}
-
 export function generateProtectedAreasListForSelectedRelations(
   selectedRegions,
   selectedSections,

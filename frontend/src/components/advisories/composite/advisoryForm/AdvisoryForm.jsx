@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import "./AdvisoryForm.scss";
-import { Button } from "@/components/advisories/shared/button/Button";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Btn from "react-bootstrap/Button";
 import Form from "react-bootstrap/Form";
@@ -39,6 +38,8 @@ import { ROLES } from "@/config/permissions";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import AdvisoryAreaPicker from "@/components/advisories/composite/advisoryAreaPicker/AdvisoryAreaPicker";
 import CKEditor from "@/components/advisories/composite/ckeditor/CKEditor";
+import PrimaryActions from "@/components/advisories/composite/advisoryForm/PrimaryActions";
+import DraftButton from "@/components/advisories/composite/advisoryForm/DraftButton";
 
 export default function AdvisoryForm({
   mode,
@@ -114,6 +115,7 @@ export default function AdvisoryForm({
     updateLink,
     addLink,
     handleFileCapture,
+    isApprover,
     notes,
     setNotes,
     submittedBy,
@@ -125,7 +127,7 @@ export default function AdvisoryForm({
     isAfterHours,
     isAfterHourPublish,
     setIsAfterHourPublish,
-    saveAdvisory,
+    createAdvisory,
     isSubmitting,
     isSavingDraft,
     updateAdvisory,
@@ -404,6 +406,84 @@ export default function AdvisoryForm({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- The displayed-date flags are derived exclusively from the selected option.
   }, [selectedDisplayedDateOption]);
+
+  /**
+   * Saves the advisory as a draft in the CMS (with "Draft" status).
+   * The backend middleware determines whether this is an in-place update
+   * or a new revision when the current advisory is published.
+   * @returns {void}
+   */
+  async function handleSaveDraft() {
+    // Don't submit if validation fails
+    if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
+      return;
+
+    // Don't submit again if a request is in progress
+    if (isSavingDraft) return;
+
+    // Get the Strapi data for the "Draft" advisory status from its code
+    const draftStatus = advisoryStatuses.find(
+      (status) => status.code === "DFT",
+    );
+
+    if (mode === "update") {
+      // Update advisory with "Draft" status
+      await updateAdvisory(draftStatus);
+    } else {
+      // Create advisory with "Draft" status
+      await createAdvisory(draftStatus);
+    }
+  }
+
+  /**
+   * Creates or updates the advisory without submitting for review. For users who can publish directly.
+   * @returns {void}
+   */
+  async function handlePublish() {
+    // Don't submit if validation fails
+    if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
+      return;
+
+    let publishedStatus;
+
+    // Super admins can specify the publishing status with an extra `advisoryStatus` field on the form
+    if (hasAnyRole([ROLES.SUPER_ADMIN]) && advisoryStatus) {
+      // Get the Strapi data for the advisory status from the selected value
+      publishedStatus = advisoryStatuses.find(
+        (status) => status.value === advisoryStatus,
+      );
+    } else {
+      // Get the Strapi data for the "Published" advisory status from its code
+      publishedStatus = advisoryStatuses.find(
+        (status) => status.code === "PUB",
+      );
+    }
+
+    if (mode === "update") {
+      // Update advisory
+      await updateAdvisory(publishedStatus);
+    } else {
+      // Create advisory
+      await createAdvisory(publishedStatus);
+    }
+  }
+
+  async function handleSubmitForReview() {
+    // Don't submit if validation fails
+    if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
+      return;
+
+    // Get the Strapi data for the "Submitted for HQ review" advisory status from its code
+    const submittedStatus = advisoryStatuses.find(
+      (status) => status.code === "HQR",
+    );
+
+    if (mode === "update") {
+      await updateAdvisory(submittedStatus);
+    } else {
+      await createAdvisory(submittedStatus);
+    }
+  }
 
   return (
     <form className="advisory-form">
@@ -1362,7 +1442,7 @@ export default function AdvisoryForm({
           />
         </Form.Group>
 
-        {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
+        {hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]) && (
           <Form.Group className="form-group" controlId={submitterInput.id}>
             <Form.Label>
               Requested by
@@ -1494,9 +1574,9 @@ export default function AdvisoryForm({
         )}
       </section>
 
-      {!hasAnyRole([ROLES.ADVISORY_SUBMITTER]) &&
+      {!hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]) &&
         (isStatHoliday || isAfterHours) && (
-          <div className="ad-af-hour-box d-flex field-bg-blue">
+          <section className="ad-af-hour-box d-flex field-bg-blue">
             <FontAwesomeIcon
               icon={faTriangleExclamation}
               className="warningIcon"
@@ -1549,143 +1629,23 @@ export default function AdvisoryForm({
                 </Form.Check>
               </div>
             </div>
-          </div>
+          </section>
         )}
 
       <section className="action-buttons">
         {renderHelperText(formError, formError !== "", "mb-3")}
 
         <div className="d-flex justify-content-start gap-2">
-          {!hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
-            <>
-              {mode === "create" && (
-                <>
-                  <Button
-                    label={
-                      isStatHoliday || isAfterHours
-                        ? "Submit"
-                        : "Submit for approval"
-                    }
-                    styling="bcgov-normal-blue btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        saveAdvisory("submit");
-                      }
-                    }}
-                    hasLoader={isSubmitting}
-                  />
-                  <Button
-                    label="Save draft"
-                    styling="bcgov-normal-white btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        saveAdvisory("draft");
-                      }
-                    }}
-                    hasLoader={isSavingDraft}
-                  />
-                </>
-              )}
-              {mode === "update" && (
-                <>
-                  <Button
-                    label={
-                      isStatHoliday || isAfterHours
-                        ? "Submit"
-                        : "Submit for approval"
-                    }
-                    styling="bcgov-normal-blue btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        updateAdvisory("submit");
-                      }
-                    }}
-                    hasLoader={isSubmitting}
-                  />
-                  <Button
-                    label="Save draft"
-                    styling="bcgov-normal-white btn"
-                    onClick={() => {
-                      if (
-                        validAdvisoryData(
-                          advisoryData,
-                          linksRef,
-                          mode,
-                          linkErrorsStatus,
-                        )
-                      ) {
-                        updateAdvisory("draft");
-                      }
-                    }}
-                    hasLoader={isSavingDraft}
-                  />
-                </>
-              )}
-            </>
-          )}
-          {hasAnyRole([ROLES.ADVISORY_SUBMITTER]) && (
-            <>
-              {mode === "create" && (
-                <Button
-                  label="Create advisory"
-                  styling="bcgov-normal-blue btn"
-                  onClick={() => {
-                    if (
-                      validAdvisoryData(
-                        advisoryData,
-                        linksRef,
-                        mode,
-                        linkErrorsStatus,
-                      )
-                    ) {
-                      saveAdvisory();
-                    }
-                  }}
-                  hasLoader={isSubmitting}
-                />
-              )}
-              {mode === "update" && (
-                <Button
-                  label="Update advisory"
-                  styling="bcgov-normal-blue btn"
-                  onClick={() => {
-                    if (
-                      validAdvisoryData(
-                        advisoryData,
-                        linksRef,
-                        mode,
-                        linkErrorsStatus,
-                      )
-                    ) {
-                      updateAdvisory();
-                    }
-                  }}
-                  hasLoader={isSubmitting}
-                />
-              )}
-            </>
-          )}
+          <DraftButton onClick={handleSaveDraft} hasLoader={isSavingDraft} />
+
+          <PrimaryActions
+            mode={mode}
+            isUrgent={isAfterHourPublish}
+            isApprover={isApprover}
+            onPublish={handlePublish}
+            onSubmit={handleSubmitForReview}
+            isSubmitting={isSubmitting}
+          />
         </div>
       </section>
     </form>
@@ -1777,7 +1737,7 @@ AdvisoryForm.propTypes = {
     isAfterHours: PropTypes.bool,
     isAfterHourPublish: PropTypes.bool,
     setIsAfterHourPublish: PropTypes.func.isRequired,
-    saveAdvisory: PropTypes.func.isRequired,
+    createAdvisory: PropTypes.func.isRequired,
     isSubmitting: PropTypes.bool,
     isSavingDraft: PropTypes.bool,
     updateAdvisory: PropTypes.func.isRequired,
