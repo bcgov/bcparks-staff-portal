@@ -97,14 +97,9 @@ export function buildFilter(
 
   if (selectedDistrictIds.length > 0) {
     filters.push({
-      $or: [
-        { recreationDistricts: { documentId: { $in: selectedDistrictIds } } },
-        {
-          recreationResources: {
-            recreationDistrict: { documentId: { $in: selectedDistrictIds } },
-          },
-        },
-      ],
+      recreationResources: {
+        recreationDistrict: { documentId: { $in: selectedDistrictIds } },
+      },
     });
   }
 
