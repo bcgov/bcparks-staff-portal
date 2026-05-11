@@ -1,8 +1,4 @@
-# Strapi Data Import Scripts
-
-This directory contains scripts for importing data from Strapi CMS into the DOOT database.
-
-## import-date-types.js
+# import-date-types.js
 
 Imports and updates `DateType` records from Strapi's `park-date-type` collection by matching the `dateTypeId` with the `strapiDateTypeId` on existing date types in the DOOT database.
 
@@ -30,7 +26,7 @@ All operations are performed inside a transaction. If any error occurs, all chan
 
 ```sh
 # Import park date types from Strapi
-node tasks/import-date-types/import-date-types.js
+node strapi-sync/import-date-types/import-date-types.js
 ```
 
 ## Output

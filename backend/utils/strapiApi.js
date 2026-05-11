@@ -18,14 +18,7 @@ const strapiApi = axios.create({ baseURL, headers, timeout: 30000 });
 
 // Add request interceptor for logging
 strapiApi.interceptors.request.use(
-  (config) => {
-    console.log(
-      `Strapi API Request: ${config.method?.toUpperCase()} ${config.url}`,
-    );
-
-    return config;
-  },
-
+  (config) => config,
   (error) => {
     console.error("Strapi API Request Error:", error);
     return Promise.reject(error);
@@ -34,14 +27,7 @@ strapiApi.interceptors.request.use(
 
 // Add response interceptor for error handling and logging
 strapiApi.interceptors.response.use(
-  (response) => {
-    console.log(
-      `Strapi API Response: ${response.status} ${response.config.url}`,
-    );
-
-    return response;
-  },
-
+  (response) => response,
   (error) => {
     console.error("Strapi API Error:", {
       status: error.response?.status,
@@ -95,7 +81,7 @@ export async function getAllPages(endpoint, params = {}, delay = 1000) {
       hasMore = page < pageCount;
       currentPage++;
 
-      console.log(`Fetched page ${page}/${pageCount} from ${endpoint}`);
+      // console.log(`Fetched page ${page}/${pageCount} from ${endpoint}`);
 
       // Wait for the specified delay before the next request
       // to prevent overloading the API server

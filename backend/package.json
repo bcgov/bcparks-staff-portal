@@ -10,11 +10,10 @@
     "lint": "eslint .",
     "migrate": "sequelize-cli db:migrate",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "sync-data": "node strapi-sync/re-sync-data.js",
     "import-data": "node strapi-sync/import-data.js",
     "create-seasons": "node tasks/create-seasons/create-seasons.js",
     "create-winter-seasons": "node tasks/create-winter-seasons/create-winter-seasons.js",
-    "cron-task": "node strapi-sync/re-sync-data.js"
+    "cron-task": "node strapi-sync/index.js"
   },
   "author": "",
   "license": "ISC",

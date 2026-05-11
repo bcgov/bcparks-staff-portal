@@ -3,7 +3,7 @@ import "../../env.js";
 import _ from "lodash";
 import { Op } from "sequelize";
 import { Park, ManagementArea, Section } from "../../models/index.js";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../strapi-data-service.js";
 
 /**
  * Retrieves and creates a lookup Map of management areas from DOOT ManagementArea
@@ -54,6 +54,7 @@ async function createManagementAreaLookup(transaction) {
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiProtectedAreas(transaction = null) {
+  console.log("STARTING IMPORT OF PARKS FROM STRAPI\n");
   try {
     // Get protected-area data from Strapi
     const protectedAreaData = await getStrapiModelData("protected-area");
@@ -63,10 +64,6 @@ export default async function importStrapiProtectedAreas(transaction = null) {
       console.log("No protectedArea data found in Strapi");
       return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
-
-    console.log(
-      `Found ${strapiProtectedAreas.length} Active protectedAreas with parkOperations in Strapi`,
-    );
 
     // Create management area lookup
     const managementAreaLookup = await createManagementAreaLookup(transaction);
@@ -180,7 +177,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
     console.log(`- Created: ${createdCount} Parks`);
     console.log(`- Updated: ${updatedCount} Parks`);
     console.log(`- Unchanged: ${unchangedCount} Parks`);
-    console.log(`- Skipped (invalid): ${skippedCount} Parks`);
+    console.log(`- Skipped (invalid): ${skippedCount} Parks\n\n`);
 
     return {
       created: createdCount,
@@ -199,13 +196,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await Park.sequelize.transaction();
 
   try {
-    const result = await importStrapiProtectedAreas(transaction);
-
+    await importStrapiProtectedAreas(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Unchanged: ${result.unchanged}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

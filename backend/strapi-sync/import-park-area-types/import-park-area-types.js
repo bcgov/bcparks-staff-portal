@@ -2,7 +2,7 @@ import "../../env.js";
 
 import { Op } from "sequelize";
 import { ParkAreaType } from "../../models/index.js";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../strapi-data-service.js";
 
 /**
  * Imports/updates ParkAreaType records from Strapi park-area-type data by matching areaTypeId
@@ -10,6 +10,7 @@ import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiParkAreaTypes(transaction = null) {
+  console.log("STARTING IMPORT OF PARK AREA TYPES FROM STRAPI\n");
   try {
     // Get park-area-type data from Strapi
     const parkAreaTypeData = await getStrapiModelData("park-area-type");
@@ -19,10 +20,6 @@ export default async function importStrapiParkAreaTypes(transaction = null) {
       console.log("No park-area-type data found in Strapi");
       return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
-
-    console.log(
-      `Found ${strapiParkAreaTypes.length} park area types in Strapi`,
-    );
 
     // Get all DOOT ParkAreaTypes for parkAreaTypeNumber lookup
     const dootParkAreaTypes = await ParkAreaType.findAll({
@@ -96,7 +93,7 @@ export default async function importStrapiParkAreaTypes(transaction = null) {
     console.log(`- Created: ${createdCount} park area types`);
     console.log(`- Updated: ${updatedCount} park area types`);
     console.log(`- Unchanged: ${unchangedCount} park area types`);
-    console.log(`- Skipped (invalid): ${skippedCount} park area types`);
+    console.log(`- Skipped (invalid): ${skippedCount} park area types\n\n`);
 
     return {
       created: createdCount,

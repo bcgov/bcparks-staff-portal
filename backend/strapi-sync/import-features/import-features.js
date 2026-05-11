@@ -2,7 +2,7 @@ import "../../env.js";
 
 import { Op } from "sequelize";
 import { Park, Feature, ParkArea, FeatureType } from "../../models/index.js";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../strapi-data-service.js";
 import { validateDootFeatures, validateStrapiFeatures } from "./validation.js";
 
 /**
@@ -11,6 +11,7 @@ import { validateDootFeatures, validateStrapiFeatures } from "./validation.js";
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiFeatures(transaction = null) {
+  console.log("STARTING IMPORT OF FEATURES FROM STRAPI\n");
   try {
     // Get park-feature data from Strapi
     const parkFeatureData = await getStrapiModelData("park-feature");
@@ -26,8 +27,6 @@ export default async function importStrapiFeatures(transaction = null) {
         unchanged: 0,
       };
     }
-
-    console.log(`Found ${strapiParkFeatures.length} Features in Strapi`);
 
     // Validate Features in DOOT and Strapi
     const dootValid = await validateDootFeatures(transaction);
@@ -190,7 +189,7 @@ export default async function importStrapiFeatures(transaction = null) {
                 `To reactivate, either activate it manually via AdminJS or assign a new ` +
                 `orcsFeatureNumber in Strapi. This is a safety measure to avoid orcsFeatureNumber ` +
                 `reuse, which could result in linking new features to previously deactivated data. ` +
-                `NOTE: If the feature names match, then this check is bypassed.\n`,
+                `NOTE: If the feature names match, then this check is bypassed.`,
             );
             skippedCount++;
             continue;
@@ -264,9 +263,9 @@ export default async function importStrapiFeatures(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} Features`);
     console.log(`- Updated: ${updatedCount} Features`);
-    console.log(`- Unchanged: ${unchangedCount} Features`);
     console.log(`- Deactivated: ${deactivatedCount} Features`);
-    console.log(`- Skipped (invalid): ${skippedCount} Features`);
+    console.log(`- Unchanged: ${unchangedCount} Features`);
+    console.log(`- Skipped (invalid): ${skippedCount} Features\n\n`);
 
     return {
       created: createdCount,
@@ -286,13 +285,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await Feature.sequelize.transaction();
 
   try {
-    const result = await importStrapiFeatures(transaction);
-
+    await importStrapiFeatures(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Deactivated: ${result.deactivated}, Unchanged: ${result.unchanged}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

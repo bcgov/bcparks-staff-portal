@@ -1,8 +1,4 @@
-# Strapi Data Import Scripts
-
-This directory contains scripts for importing data from Strapi CMS into the DOOT database.
-
-## import-feature-types.js
+# import-feature-types.js
 
 Imports and updates `FeatureType` records from Strapi's `park-feature-type` collection by matching the `featureTypeId` with the `strapiFeatureTypeId` on existing feature types in the DOOT database.
 
@@ -30,7 +26,7 @@ All operations are performed inside a transaction. If any error occurs, all chan
 
 ```sh
 # Import park feature types from Strapi
-node tasks/import-feature-types/import-feature-types.js
+node strapi-sync/import-feature-types/import-feature-types.js
 ```
 
 ## Output
