@@ -16,10 +16,10 @@ import {
   ParkArea,
   Season,
 } from "../../models/index.js";
-import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import { populateAnnualDateRangesForYear } from "../populate-date-ranges/populate-annual-date-ranges.js";
 import { populateBlankDateRangesForYear } from "../populate-date-ranges/populate-blank-date-ranges.js";
+import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
 import {
   createPublishableId,
   createDateableId,
@@ -82,11 +82,18 @@ export default async function createSeasons(operatingYear, transaction = null) {
 
     if (season) return season.id;
 
+    // Determine the status of the new season based on annual dates
+    const status = await resolveNewSeasonStatus(
+      publishableId,
+      SEASON_TYPE.REGULAR,
+      transaction,
+    );
+
     const newSeason = await Season.create(
       {
         publishableId,
         operatingYear: year,
-        status: STATUS.REQUESTED,
+        status,
         readyToPublish: true,
         seasonType: SEASON_TYPE.REGULAR,
       },

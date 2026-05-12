@@ -4,8 +4,8 @@
 import "../../env.js";
 
 import { DateRange, DateType, Park, Season } from "../../models/index.js";
-import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
 import {
   createPublishableId,
   createDateableId,
@@ -79,12 +79,19 @@ export default async function createWinterSeasons(
       return existingSeason.id;
     }
 
+    // Determine the status of the new season based on annual dates
+    const status = await resolveNewSeasonStatus(
+      publishableId,
+      SEASON_TYPE.WINTER,
+      transaction,
+    );
+
     const newSeason = await Season.create(
       {
         publishableId,
         operatingYear: year,
         seasonType: SEASON_TYPE.WINTER,
-        status: STATUS.REQUESTED,
+        status,
         readyToPublish: true,
       },
       { transaction },
