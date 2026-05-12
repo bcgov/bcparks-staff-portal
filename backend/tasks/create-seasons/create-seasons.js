@@ -31,6 +31,8 @@ export default async function createSeasons(operatingYear, transaction = null) {
     throw new Error("Missing operating year");
   }
 
+  console.log(`STARTING CREATE-SEASONS FOR OPERATING YEAR ${operatingYear}\n`);
+
   // Track the number of rows inserted
   let publishablesAdded = 0;
   let dateablesAdded = 0;
@@ -127,10 +129,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
     });
 
     if (existingRanges.length > 0) {
-      console.log(
-        `Found ${existingRanges.length} existing Date Ranges for Season ${seasonId}: ` +
-          `Skipping creation of new Tier 2 dates for ${park.name}.`,
-      );
+      // Found existing Date Ranges for Season: Skipping creation of new Tier 2 dates
       return [];
     }
 
@@ -241,7 +240,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
 
   console.log(`Added ${publishablesAdded} missing Park Publishables`);
   console.log(`Added ${dateablesAdded} missing Park Dateables`);
-  console.log(`Added ${seasonsAdded} new Park Seasons`);
+  console.log(`Added ${seasonsAdded} new Park Seasons\n`);
 
   // Step 2: Create new regular seasons for every ParkArea with Features in it
 
@@ -311,7 +310,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
 
   console.log(`Added ${publishablesAdded} missing ParkArea Publishables`);
   console.log(`Added ${dateablesAdded} missing ParkArea Dateables`);
-  console.log(`Added ${seasonsAdded} new ParkArea Seasons`);
+  console.log(`Added ${seasonsAdded} new ParkArea Seasons\n`);
 
   // Step 3: Create new regular seasons for every Feature that doesn't belong to a ParkArea
 
@@ -357,7 +356,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
 
   console.log(`Added ${publishablesAdded} missing Feature Publishables`);
   console.log(`Added ${dateablesAdded} missing Feature Dateables`);
-  console.log(`Added ${seasonsAdded} new Feature Seasons`);
+  console.log(`Added ${seasonsAdded} new Feature Seasons\n`);
 
   // Step 4: Create new regular seasons for the following year for every Group Camping or Picnic Shelter Feature
   const nextYear = operatingYear + 1;
@@ -429,7 +428,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
     `Added ${dateablesAdded} missing Group Camping/Picnic Shelter Feature Dateables`,
   );
   console.log(
-    `Added ${seasonsAdded} new Group Camping/Picnic Shelter Feature Seasons`,
+    `Added ${seasonsAdded} new Group Camping/Picnic Shelter Feature Seasons\n`,
   );
 
   // Populate DateRanges for the new seasons based on previous year if isDateRangeAnnual is TRUE
@@ -441,7 +440,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
   // Populate blank DateRanges for the next year (which was just created for Group Camping)
   await populateBlankDateRangesForYear(nextYear, transaction);
 
-  console.log(`Done creating seasons for ${operatingYear}.`);
+  console.log(`Done creating seasons for ${operatingYear}\n`);
 }
 
 // Run directly:
@@ -454,9 +453,8 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
 
   try {
     await createSeasons(operatingYear, transaction);
-
-    console.log("Committing transaction...");
     await transaction.commit();
+    console.log("\nTransaction committed successfully");
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

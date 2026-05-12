@@ -217,7 +217,7 @@ export async function populateBlankDateRangesForYear(
     });
 
     console.log(
-      `${existingDateRanges.length} applicable DateRanges already exist.`,
+      `${existingDateRanges.length} applicable DateRanges already exist`,
     );
 
     // Create a Set of existing DateRange keys to avoid creating duplicates

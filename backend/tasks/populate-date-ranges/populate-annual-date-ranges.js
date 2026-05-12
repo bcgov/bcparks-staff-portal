@@ -128,9 +128,7 @@ export async function populateAnnualDateRangesForYear(
       );
 
       if (completeTargetRanges.length >= prevDateRanges.length) {
-        console.log(
-          `Target season ${targetSeason.operatingYear} already has ${completeTargetRanges.length} complete date ranges for dateType ${annual.dateTypeId}, skipping`,
-        );
+        // Target season already has complete date ranges for this dateType
         continue;
       }
 
@@ -139,9 +137,6 @@ export async function populateAnnualDateRangesForYear(
         prevDateRanges.length - completeTargetRanges.length;
 
       if (numRangesToCopy <= 0) {
-        console.log(
-          `Target season ${targetSeason.operatingYear} already has enough date ranges for dateType ${annual.dateTypeId}, skipping`,
-        );
         continue;
       }
 
