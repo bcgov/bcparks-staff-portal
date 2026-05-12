@@ -81,8 +81,6 @@ export async function getAllPages(endpoint, params = {}, delay = 1000) {
       hasMore = page < pageCount;
       currentPage++;
 
-      // console.log(`Fetched page ${page}/${pageCount} from ${endpoint}`);
-
       // Wait for the specified delay before the next request
       // to prevent overloading the API server
       if (hasMore && delay > 0) {
