@@ -14,6 +14,7 @@ import {
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiParkAreas(transaction = null) {
+  console.log("STARTING IMPORT OF PARK AREAS FROM STRAPI\n");
   try {
     // Get park-area data from Strapi
     const parkAreaData = await getStrapiModelData("park-area");
@@ -29,8 +30,6 @@ export default async function importStrapiParkAreas(transaction = null) {
         unchanged: 0,
       };
     }
-
-    console.log(`Found ${strapiParkAreas.length} ParkAreas in Strapi`);
 
     // Validate Park Areas in DOOT and Strapi
     const strapiValid = await validateStrapiParkAreas(strapiParkAreas);
@@ -171,7 +170,7 @@ export default async function importStrapiParkAreas(transaction = null) {
                 `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
                 `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
                 `result in linking new park areas to previously deactivated data. ` +
-                `NOTE: If the park area names match, this check is bypassed.\n`,
+                `NOTE: If the park area names match, this check is bypassed.`,
             );
             skippedCount++;
             continue;
@@ -243,9 +242,9 @@ export default async function importStrapiParkAreas(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} ParkAreas`);
     console.log(`- Updated: ${updatedCount} ParkAreas`);
-    console.log(`- Unchanged: ${unchangedCount} ParkAreas`);
     console.log(`- Deactivated: ${deactivatedCount} ParkAreas`);
-    console.log(`- Skipped (invalid): ${skippedCount} ParkAreas`);
+    console.log(`- Unchanged: ${unchangedCount} ParkAreas`);
+    console.log(`- Skipped (invalid): ${skippedCount} ParkAreas\n\n`);
 
     return {
       created: createdCount,
@@ -265,13 +264,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await ParkArea.sequelize.transaction();
 
   try {
-    const result = await importStrapiParkAreas(transaction);
-
+    await importStrapiParkAreas(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Deactivated: ${result.deactivated}, Skipped: ${result.skipped}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

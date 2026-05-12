@@ -2,7 +2,7 @@ import "../../env.js";
 
 import { Op } from "sequelize";
 import { DateType } from "../../models/index.js";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../strapi-data-service.js";
 
 /**
  * Imports/updates DateType records from Strapi park-date-type data by matching dateTypeId
@@ -10,6 +10,7 @@ import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiDateTypes(transaction = null) {
+  console.log("STARTING IMPORT OF DATE TYPES FROM STRAPI");
   try {
     // Get park-date-type data from Strapi
     const dateTypeData = await getStrapiModelData("park-date-type");
@@ -19,8 +20,6 @@ export default async function importStrapiDateTypes(transaction = null) {
       console.log("No park-date-type data found in Strapi");
       return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
-
-    console.log(`Found ${strapiDateTypes.length} park date types in Strapi`);
 
     // Get all DOOT DateTypes for strapiDateTypeId lookup
     const dootDateTypes = await DateType.findAll({
@@ -92,7 +91,7 @@ export default async function importStrapiDateTypes(transaction = null) {
     console.log(`- Created: ${createdCount} date types`);
     console.log(`- Updated: ${updatedCount} date types`);
     console.log(`- Unchanged: ${unchangedCount} date types`);
-    console.log(`- Skipped (invalid): ${skippedCount} date types`);
+    console.log(`- Skipped (invalid): ${skippedCount} date types\n\n`);
 
     return {
       created: createdCount,
@@ -111,13 +110,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await DateType.sequelize.transaction();
 
   try {
-    const result = await importStrapiDateTypes(transaction);
-
+    await importStrapiDateTypes(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Unchanged: ${result.unchanged}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

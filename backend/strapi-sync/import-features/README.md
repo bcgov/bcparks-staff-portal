@@ -1,8 +1,4 @@
-# Strapi Data Import Scripts
-
-This directory contains scripts for importing data from Strapi CMS into the DOOT database.
-
-## import-features.js
+# import-features.js
 
 Imports and updates `Feature` records from Strapi's `park-feature` collection by matching the `orcsFeatureNumber` with existing features in the DOOT database.
 
@@ -39,7 +35,7 @@ All operations are performed inside a transaction. If any error occurs, all chan
 
 ```sh
 # Import park features from Strapi
-node tasks/import-features/import-features.js
+node strapi-sync/import-features/import-features.js
 ```
 
 ## Output

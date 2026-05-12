@@ -66,8 +66,8 @@ cron:
 
   enabled: true
 
-  # Run the cron job every day at 6:00 AM GMT (10:00 PM PST or 11:00 PM PDT)
-  schedule: "0 6 * * *"
+  # Run the cron job every day at 9:00 AM GMT (2:00 AM PT)
+  schedule: "0 9 * * *"
 
   successfulJobsHistoryLimit: 5
   failedJobsHistoryLimit: 2

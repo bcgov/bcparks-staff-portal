@@ -1,8 +1,4 @@
-# Strapi Data Import Scripts
-
-This directory contains scripts for importing data from Strapi CMS into the DOOT database.
-
-## import-park-area-types.js
+# import-park-area-types.js
 
 Imports and updates `ParkAreaType` records from Strapi's `park-area-type` collection by matching the `areaTypeId` with the `parkAreaTypeNumber` on existing park area types in the DOOT database.
 
@@ -15,11 +11,11 @@ Imports and updates `ParkAreaType` records from Strapi's `park-area-type` collec
 
 **Data mapping:**
 
-| Strapi Field   | DOOT Field            | Notes                              |
-| -------------- | --------------------- | ---------------------------------- |
-| `parkAreaType` | `name`                | Park Area type name                |
-| `areaTypeId`   | `parkAreaTypeNumber`  | Used for matching existing records |
-| `rank`         | `rank`                | Used for display sorting           |
+| Strapi Field   | DOOT Field           | Notes                              |
+| -------------- | -------------------- | ---------------------------------- |
+| `parkAreaType` | `name`               | Park Area type name                |
+| `areaTypeId`   | `parkAreaTypeNumber` | Used for matching existing records |
+| `rank`         | `rank`               | Used for display sorting           |
 
 ## Transaction Safety
 
@@ -29,7 +25,7 @@ All operations are performed inside a transaction. If any error occurs, all chan
 
 ```sh
 # Import park area types from Strapi
-node tasks/import-park-area-types/import-park-area-types.js
+node strapi-sync/import-park-area-types/import-park-area-types.js
 ```
 
 ## Output
