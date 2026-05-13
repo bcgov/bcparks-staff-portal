@@ -43,12 +43,8 @@ node tasks/create-winter-seasons/create-winter-seasons.js 2027
 Creating Winter Seasons for 2027
 Found Winter fee DateType: 5
 Found 12 Parks with Winter Fee Dates
-Processing park: Cypress Provincial Park
 Created winter season for Cypress Provincial Park (Publishable 123) - 2027
 Created winter fee date range for Cypress Provincial Park (Season 456)
-Processing park: Mount Seymour Provincial Park
-Winter season already exists for Mount Seymour Provincial Park (Publishable 124) - 2027
-Winter fee date range already exists for Mount Seymour Provincial Park (Season 457)
 ...
 
 Summary:
