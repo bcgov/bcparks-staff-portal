@@ -136,7 +136,6 @@
     width: 1.25rem;
     height: 1.25rem;
   }
-
 }
 
 .data-table-header-button:focus,
@@ -150,16 +149,23 @@
   display: inline-flex;
   flex-direction: column;
 
-  svg {
+  .sort-up-icon,
+  .sort-down-icon {
     width: 1.125rem;
     height: 1.125rem;
 
     &.is-active {
       color: var(--icons-color-primary);
     }
+  }
 
-    &.sort-up {
-      margin-bottom: -1rem;
+  .sort-up-icon {
+    margin-bottom: -1rem;
+  }
+
+  &.single-icon {
+    .sort-up-icon {
+      margin-bottom: 0;
     }
   }
 }

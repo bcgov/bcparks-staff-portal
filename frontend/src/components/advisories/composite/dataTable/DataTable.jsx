@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
@@ -116,20 +117,28 @@ function renderCell(column, row) {
 }
 
 function renderSortIndicator(isActive, direction) {
+  const indicatorClassName = classNames("data-table-sort-indicator", {
+    "single-icon": isActive,
+  });
+
   return (
-    <span className="data-table-sort-indicator" aria-hidden="true">
-      <FontAwesomeIcon
-        icon={faSortUp}
-        className={`sort-up${
-          isActive && direction === "asc" ? " is-active" : ""
-        }`}
-      />
-      <FontAwesomeIcon
-        icon={faSortDown}
-        className={`sort-down${
-          isActive && direction === "desc" ? " is-active" : ""
-        }`}
-      />
+    <span className={indicatorClassName} aria-hidden="true">
+      {(!isActive || direction === "asc") && (
+        <FontAwesomeIcon
+          icon={faSortUp}
+          className={classNames("sort-up-icon", {
+            "is-active": isActive && direction === "asc",
+          })}
+        />
+      )}
+      {(!isActive || direction === "desc") && (
+        <FontAwesomeIcon
+          icon={faSortDown}
+          className={classNames("sort-down-icon", {
+            "is-active": isActive && direction === "desc",
+          })}
+        />
+      )}
     </span>
   );
 }
