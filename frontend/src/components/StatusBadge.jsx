@@ -14,6 +14,7 @@ export default function StatusBadge({ status, label, className }) {
 
   // Map status code to color class and display label
   const statusMap = new Map([
+    // Dates of Operation Tool season statuses
     [
       STATUS.PUBLISHED.value,
       { cssClass: "text-bg-primary", displayText: STATUS.PUBLISHED.label },
@@ -34,6 +35,14 @@ export default function StatusBadge({ status, label, className }) {
       STATUS.NOT_PROVIDED.value,
       { cssClass: "text-bg-disabled", displayText: STATUS.NOT_PROVIDED.label },
     ],
+
+    // Advisories and Closures Tool advisory/closure statuses
+    ["DFT", { cssClass: "status-draft", displayText: "Draft" }],
+    ["UNP", { cssClass: "status-unpublished", displayText: "Unpublished" }],
+    ["HQR", { cssClass: "status-hq-review", displayText: "HQ review" }],
+    ["SCH", { cssClass: "status-scheduled", displayText: "Scheduled" }],
+    ["PUB", { cssClass: "status-published", displayText: "Published" }],
+    ["ARCHIVED", { cssClass: "status-archived", displayText: "Archived" }],
   ]);
 
   if (statusMap.has(status)) {

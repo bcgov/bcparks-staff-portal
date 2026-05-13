@@ -1,25 +1,39 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo, useCallback } from "react";
 import { Navigate, useLocation, useParams } from "react-router-dom";
+import { format } from "date-fns";
 import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
-import { cmsAxios } from "@/lib/advisories/axios_config";
+import useCms from "@/hooks/useCms";
 import { useAuth } from "react-oidc-context";
 import "./AdvisorySummary.css";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Alert from "react-bootstrap/Alert";
 import Toast from "react-bootstrap/Toast";
 import ToastContainer from "react-bootstrap/ToastContainer";
+import FlashMessage from "@/components/FlashMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { getLinkTypes } from "@/lib/advisories/utils/CmsDataUtil";
+import { getAdvisoryStatuses } from "@/lib/advisories/utils/CmsDataUtil";
 import AdvisorySummaryView from "@/components/advisories/composite/advisorySummaryView/AdvisorySummaryView";
+import StatusBadge from "@/components/StatusBadge";
+import useAccess from "@/hooks/useAccess";
+import useAdvisoryFlashMessage from "@/hooks/advisories/useAdvisoryFlashMessage";
+import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
 
 export default function AdvisorySummary() {
   const { setError } = useContext(ErrorContext);
   const { cmsData, setCmsData } = useContext(CmsDataContext);
   const auth = useAuth();
-  const keycloakToken = auth.user?.access_token;
+  const { hasAnyRole } = useAccess();
+  const { cmsGet } = useCms();
+  const {
+    unpublishFlashMessage,
+    closeUnpublishFlashMessage,
+    openUnpublishError: openUnpublishFlashError,
+    openUnpublishSuccess: openUnpublishFlashSuccess,
+  } = useAdvisoryFlashMessage();
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
   const [toError, setToError] = useState(false);
@@ -33,25 +47,28 @@ export default function AdvisorySummary() {
   const [snackMessageInfo, setSnackMessageInfo] = useState(null);
   const { documentId } = useParams();
   const location = useLocation();
-  const confirmationText = location.state?.confirmationText;
+  const [confirmationText, setConfirmationText] = useState(
+    location.state?.confirmationText || "",
+  );
   const index = location.state?.index;
   const [isCurrentlyPublished, setIsCurrentlyPublished] = useState(false);
   const [showOriginalAdvisory, setShowOriginalAdvisory] = useState(false);
+  const [originalIsLoaded, setOriginalIsLoaded] = useState(false);
   const [currentAdvisory, setCurrentAdvisory] = useState({});
   const [currentParkUrls, setCurrentParkUrls] = useState("");
   const [currentSiteUrls, setCurrentSiteUrls] = useState("");
+  const [isUnpublishing, setIsUnpublishing] = useState(false);
 
   useEffect(() => {
     if (!isLoadingPage) {
       if (showOriginalAdvisory) {
+        setOriginalIsLoaded(false);
         Promise.all([
-          cmsAxios.get(
-            `/public-advisories/${advisory.advisoryNumber}?populate=*`,
-          ),
+          cmsGet(`/public-advisories/${advisory.advisoryNumber}?populate=*`),
           getLinkTypes(cmsData, setCmsData),
         ])
           .then((res) => {
-            const advisoryData = res[0].data;
+            const advisoryData = res[0];
 
             advisoryData.linkTypes = res[1];
             setIsCurrentlyPublished(advisoryData.advisoryStatus.code === "PUB");
@@ -77,6 +94,7 @@ export default function AdvisorySummary() {
             const siteUrlText = siteUrlInfo.join("\n");
 
             setCurrentSiteUrls(siteUrlText);
+            setOriginalIsLoaded(true);
           })
           .catch(() => {
             // Do nothing
@@ -92,19 +110,20 @@ export default function AdvisorySummary() {
     setIsCurrentlyPublished,
     setCurrentParkUrls,
     setCurrentSiteUrls,
+    setOriginalIsLoaded,
     showOriginalAdvisory,
+    cmsGet,
   ]);
 
   useEffect(() => {
     if (documentId) {
       Promise.all([
-        cmsAxios.get(`public-advisory-audits/${documentId}?populate=*`, {
-          headers: { Authorization: `Bearer ${keycloakToken}` },
-        }),
+        cmsGet(`public-advisory-audits/${documentId}?populate=*`),
         getLinkTypes(cmsData, setCmsData),
+        getAdvisoryStatuses(cmsData, setCmsData),
       ])
         .then((res) => {
-          const advisoryData = res[0].data.data;
+          const advisoryData = res[0];
 
           advisoryData.linkTypes = res[1];
           setAdvisory(advisoryData);
@@ -174,12 +193,115 @@ export default function AdvisorySummary() {
     snackMessageInfo,
     cmsData,
     setCmsData,
-    keycloakToken,
+    cmsGet,
     showOriginalAdvisory,
   ]);
 
   function handleOpenSnackBar(message) {
     setSnackPack((prev) => [...prev, { message, key: new Date().getTime() }]);
+  }
+
+  // Shows an error flash message if unpublishing fails.
+  const openUnpublishError = useCallback(
+    (message) => {
+      setIsUnpublishing(false);
+      openUnpublishFlashError(message);
+    },
+    [openUnpublishFlashError],
+  );
+
+  // Sets confirmation text to show a success message when unpublishing succeeds.
+  const openUnpublishSuccess = useCallback(
+    (message) => {
+      setIsUnpublishing(false);
+      setConfirmationText(message);
+      openUnpublishFlashSuccess(message);
+    },
+    [openUnpublishFlashSuccess],
+  );
+
+  // Re-fetches the advisory data to update the page after unpublishing.
+  const handleUnpublishSuccess = useCallback(async () => {
+    if (documentId) {
+      try {
+        const [advisoryData, linkTypes] = await Promise.all([
+          cmsGet(`public-advisory-audits/${documentId}?populate=*`),
+          getLinkTypes(cmsData, setCmsData),
+        ]);
+
+        advisoryData.linkTypes = linkTypes;
+        setAdvisory(advisoryData);
+      } catch (error) {
+        console.error("Error refreshing advisory after unpublish:", error);
+      }
+    }
+  }, [documentId, cmsGet, cmsData, setCmsData]);
+
+  // Extract advisory statuses from cmsData
+  const advisoryStatuses = cmsData?.advisoryStatuses || [];
+
+  const unpublishAdvisory = useAdvisoryUnpublish({
+    advisoryStatuses,
+    modifiedBy: auth.user?.profile?.name,
+    isApprover: hasAnyRole(["approver"]),
+    openUnpublishError,
+    openUnpublishSuccess,
+    onSuccess: handleUnpublishSuccess,
+  });
+
+  // Undefined, or a 3-letter code
+  const advisoryStatusCode = useMemo(
+    () => advisory?.advisoryStatus?.code,
+    [advisory?.advisoryStatus?.code],
+  );
+
+  // Formatted string for "Last updated..." timestamp
+  const lastUpdatedString = useMemo(() => {
+    if (!advisory.modifiedDate) return null;
+
+    const modifiedDate = format(
+      advisory.modifiedDate,
+      "EEE, MMMM dd, yyyy h:mm aaa",
+    );
+    const modifiedBy = advisory.modifiedBy ? ` by ${advisory.modifiedBy}` : "";
+
+    return `Last updated ${modifiedDate}${modifiedBy}`;
+  }, [advisory.modifiedDate, advisory.modifiedBy]);
+
+  // Formatted string for "Posted..." timestamp, if any
+  const postingDateString = useMemo(() => {
+    if (!advisory.advisoryDate) return null;
+
+    // Only display for published or scheduled advisories
+    if (advisoryStatusCode !== "SCH" && advisoryStatusCode !== "PUB") return "";
+
+    const prefix = advisoryStatusCode === "PUB" ? "Posted" : "Posting";
+
+    return `${prefix} ${format(advisory.advisoryDate, "EEE, MMMM dd, yyyy h:mm aaa")}`;
+  }, [advisory.advisoryDate, advisoryStatusCode]);
+
+  // Determine if the advisory can be unpublished
+  const canUnpublish = useMemo(() => {
+    // Status must be "Scheduled" or "Published"
+    if (advisoryStatusCode !== "SCH" && advisoryStatusCode !== "PUB")
+      return false;
+
+    return true;
+  }, [advisoryStatusCode]);
+
+  /**
+   * Handles the "unpublish" action. Sends a request to the CMS to unpublish the
+   * advisory via the useUnpublishAdvisory hook.
+   * @returns {void}
+   */
+  function handleUnpublish() {
+    if (!canUnpublish) return;
+
+    setIsUnpublishing(true);
+    unpublishAdvisory({
+      documentId: advisory.documentId,
+      title: advisory.title,
+    });
   }
 
   function handleCloseSnackBar(_, reason) {
@@ -215,7 +337,7 @@ export default function AdvisorySummary() {
 
   return (
     <main className="advisories-styles">
-      <div className="AdvisorySummary" data-testid="AdvisorySummary">
+      <div className="advisory-summary" data-testid="AdvisorySummary">
         <div className="container">
           {isLoadingPage && (
             <div className="page-loader">
@@ -225,7 +347,7 @@ export default function AdvisorySummary() {
           {!isLoadingPage && (
             <div>
               <div>
-                <div className="container-fluid">
+                <div>
                   <button
                     type="button"
                     className="btn btn-link btn-back mt-4"
@@ -238,16 +360,17 @@ export default function AdvisorySummary() {
                   </button>
                 </div>
                 {!showOriginalAdvisory && (
-                  <div className="container-fluid ad-summary mt-4">
+                  <div className="ad-summary mt-4">
                     {confirmationText && (
                       <Alert variant="success">{confirmationText}</Alert>
                     )}
                     {isCurrentlyPublished && (
-                      <div className="container-fluid ad-right mt-4">
+                      <div className="ad-right mt-4">
                         <button
                           type="button"
                           className="btn btn-link p-0"
                           onClick={() => {
+                            setOriginalIsLoaded(false);
                             setShowOriginalAdvisory(true);
                           }}
                         >
@@ -255,16 +378,37 @@ export default function AdvisorySummary() {
                         </button>
                       </div>
                     )}
-                    <div className="mt-5 container-fluid ad-form">
-                      <div className="row title">
+                    <div className="mt-5 container-fluid g-0 ad-form">
+                      <div className="row g-0 title">
                         <div className="col-md-8 col-12">
-                          <p>Advisory #{advisory.advisoryNumber}</p>
-                          <h4>{advisory.title}</h4>
+                          <p className="mb-1">
+                            Advisory #{advisory.advisoryNumber}
+                            <StatusBadge
+                              status={advisoryStatusCode}
+                              className="ms-2 advisory-status-badge"
+                            ></StatusBadge>
+                          </p>
+                          <h2>{advisory.title}</h2>
+
+                          {postingDateString && (
+                            <p className="mb-2">{postingDateString}</p>
+                          )}
+
+                          {lastUpdatedString && <p>{lastUpdatedString}</p>}
                         </div>
-                        <div className="col-md-4 col-12 d-flex align-items-center justify-content-end">
+                        <div className="col-md-4 col-12 d-flex gap-2 align-items-center justify-content-end">
                           <Button
-                            label="Edit advisory"
-                            styling="bcgov-normal-blue btn mt10"
+                            label="Unpublish"
+                            styling="bcgov-normal-white btn"
+                            disabled={isUnpublishing || !canUnpublish}
+                            onClick={handleUnpublish}
+                            hasLoader={isUnpublishing}
+                          />
+
+                          <Button
+                            label="Edit"
+                            styling="bcgov-normal-blue btn"
+                            disabled={isUnpublishing}
                             onClick={() => {
                               setToUpdate(true);
                             }}
@@ -284,7 +428,7 @@ export default function AdvisorySummary() {
                     </div>
                   </div>
                 )}
-                {showOriginalAdvisory && (
+                {showOriginalAdvisory && originalIsLoaded && (
                   <div className="container-fluid ad-summary col-lg-9 col-md-12 col-12">
                     <div className="row">
                       <div className="col-lg-12 col-md-12 col-12 ad-right">
@@ -292,6 +436,7 @@ export default function AdvisorySummary() {
                           type="button"
                           className="btn btn-link p-0"
                           onClick={() => {
+                            setOriginalIsLoaded(false);
                             setShowOriginalAdvisory(false);
                           }}
                         >
@@ -329,6 +474,14 @@ export default function AdvisorySummary() {
                   </Toast.Body>
                 </Toast>
               </ToastContainer>
+
+              <FlashMessage
+                title={unpublishFlashMessage.title}
+                message={unpublishFlashMessage.message}
+                isVisible={unpublishFlashMessage.isVisible}
+                onClose={closeUnpublishFlashMessage}
+                variant={unpublishFlashMessage.variant}
+              />
             </div>
           )}
         </div>

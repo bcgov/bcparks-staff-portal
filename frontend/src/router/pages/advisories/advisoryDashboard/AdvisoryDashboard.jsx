@@ -44,8 +44,8 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
-import useAdvisoryUnpublish from "@/router/pages/advisories/advisoryDashboard/useAdvisoryUnpublish";
-import useAdvisoryFlashMessage from "@/router/pages/advisories/AdvisoryFlashMessage/useAdvisoryFlashMessage";
+import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
+import useAdvisoryFlashMessage from "@/hooks/advisories/useAdvisoryFlashMessage";
 import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
 import {
   clearAllFilters as clearAllFiltersHandler,
@@ -727,30 +727,14 @@ export default function AdvisoryDashboard() {
           textAlign: "left",
         },
         render(rowData) {
-          const statusClassMap = {
-            DFT: "status-draft",
-            UNP: "status-unpublished",
-            HQR: "status-hq-review",
-            SCH: "status-scheduled",
-            PUB: "status-published",
-            ARCHIVED: "status-archived",
-          };
-
-          const statusText = rowData.archived
-            ? "Archived"
-            : rowData.advisoryStatus?.advisoryStatus;
-
           const statusCode = rowData.archived
             ? "ARCHIVED"
             : rowData.advisoryStatus?.code;
 
-          const badgeClassName = statusClassMap[statusCode];
-
           return (
             <StatusBadge
               status={statusCode}
-              label={statusText}
-              className={`advisory-status-badge ${badgeClassName}`}
+              className={"advisory-status-badge"}
             />
           );
         },

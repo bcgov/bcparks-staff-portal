@@ -488,7 +488,7 @@ export default function AdvisoryForm({
   return (
     <form className="advisory-form">
       <section>
-        <h3>Affected resources</h3>
+        <h3>Affected resource(s)</h3>
         <AdvisoryAreaPicker
           mode={mode}
           data={{
