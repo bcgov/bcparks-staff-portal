@@ -318,7 +318,7 @@ export function shouldShowTiersAndGateSection(park, filters) {
     // "Park gate open" date type always shows the "Tiers and gate" section
     if (
       filters.dateTypes.some(
-        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.PARK_GATE_OPEN,
+        (dateType) => dateType.dateTypeNumber === DATE_TYPES.PARK_GATE_OPEN,
       )
     ) {
       return true;
@@ -328,7 +328,7 @@ export function shouldShowTiersAndGateSection(park, filters) {
     if (
       park.hasTier1Dates &&
       filters.dateTypes.some(
-        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.TIER_1,
+        (dateType) => dateType.dateTypeNumber === DATE_TYPES.TIER_1,
       )
     ) {
       return true;
@@ -336,7 +336,7 @@ export function shouldShowTiersAndGateSection(park, filters) {
     if (
       park.hasTier2Dates &&
       filters.dateTypes.some(
-        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.TIER_2,
+        (dateType) => dateType.dateTypeNumber === DATE_TYPES.TIER_2,
       )
     ) {
       return true;
@@ -407,7 +407,7 @@ export function shouldShowWinterFeeSection(park, filters) {
     // If "Winter fee" date type is selected, show the section
     if (
       filters.dateTypes.some(
-        (dateType) => dateType.strapiDateTypeId === DATE_TYPES.WINTER_FEE,
+        (dateType) => dateType.dateTypeNumber === DATE_TYPES.WINTER_FEE,
       )
     ) {
       return true;

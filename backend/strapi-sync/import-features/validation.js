@@ -2,20 +2,20 @@ import { Op } from "sequelize";
 import { Feature } from "../../models/index.js";
 
 /**
- * Validates DOOT Features for invalid strapiOrcsFeatureNumber values
+ * Validates DOOT Features for invalid orcsFeatureNumber values
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
 export async function validateDootFeatures(transaction = null) {
   let isValid = true;
 
-  // Validate DOOT Features to make sure all records have a strapiOrcsFeatureNumber in the
+  // Validate DOOT Features to make sure all records have a orcsFeatureNumber in the
   // format #-# (e.g. "1234-1")
   const invalidFeatures = await Feature.findAll({
     where: {
       [Op.or]: [
-        { strapiOrcsFeatureNumber: null },
-        { strapiOrcsFeatureNumber: { [Op.notRegexp]: "^[0-9]+-[0-9]+$" } },
+        { orcsFeatureNumber: null },
+        { orcsFeatureNumber: { [Op.notRegexp]: "^[0-9]+-[0-9]+$" } },
       ],
     },
     transaction,
@@ -24,11 +24,11 @@ export async function validateDootFeatures(transaction = null) {
   if (invalidFeatures.length > 0) {
     for (const feature of invalidFeatures) {
       console.warn(
-        `Invalid DOOT Feature: ${feature.name} (${feature.id}) - strapiOrcsFeatureNumber: "${feature.strapiOrcsFeatureNumber}"`,
+        `Invalid DOOT Feature: ${feature.name} (${feature.id}) - orcsFeatureNumber: "${feature.orcsFeatureNumber}"`,
       );
     }
     console.error(
-      `Found ${invalidFeatures.length} DOOT Features with missing or incorrectly formatted strapiOrcsFeatureNumber.`,
+      `Found ${invalidFeatures.length} DOOT Features with missing or incorrectly formatted orcsFeatureNumber.`,
     );
     isValid = false;
   }

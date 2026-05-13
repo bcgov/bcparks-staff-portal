@@ -1,6 +1,6 @@
 // Database values for feature types
 // Stored as the `featureTypeId` field in Strapi,
-// and `strapiFeatureTypeId` in the DOOT FeatureTypes table.
+// and `featureTypeNumber` in the DOOT FeatureTypes table.
 
 export const ANCHORAGE = 1;
 export const BACKCOUNTRY = 2;

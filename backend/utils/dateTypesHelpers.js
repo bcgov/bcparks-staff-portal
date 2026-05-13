@@ -13,7 +13,7 @@ export async function getAllDateTypes(where = {}, transaction = null) {
     attributes: [
       "id",
       "name",
-      "strapiDateTypeId",
+      "dateTypeNumber",
       "description",
       "parkLevel",
       "featureLevel",
@@ -28,7 +28,7 @@ export async function getAllDateTypes(where = {}, transaction = null) {
 /**
  * Returns the DateTypes applicable to a Park or Feature in a specific order.
  * @param {Object} park Park object
- * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects
+ * @param {Object} dateTypesByDateTypeId Object mapping date type dateTypeNumber to objects
  * @param {string} [seasonType] Season type ("winter" or "regular") to filter applicable date types
  * @returns {Array} Applicable DateType objects for the Park, in order
  */
@@ -66,7 +66,7 @@ export function getDateTypesForPark(
  * Returns the DateTypes applicable to a Feature in the order they should appear in the app.
  * For Features, it includes Operation, Reservation, and Backcountry registration dates if applicable.
  * @param {Object} feature Feature object
- * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects
+ * @param {Object} dateTypesByDateTypeId Object mapping date type dateTypeNumber to objects
  * @returns {Array} An array of DateType objects in the specified order.
  */
 export function getDateTypesForFeature(feature, dateTypesByDateTypeId) {

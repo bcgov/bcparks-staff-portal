@@ -16,33 +16,39 @@ router.get(
   "/",
   asyncHandler(async (req, res) => {
     // Run all queries concurrently
-    const [sections, managementAreas, dateTypes, featureTypes, accessGroups, parkAreaTypes] =
-      await Promise.all([
-        Section.findAll({
-          attributes: ["id", "sectionNumber", "name"],
-          order: [["name", "ASC"]],
-        }),
-        ManagementArea.findAll({
-          attributes: ["id", "managementAreaNumber", "name"],
-          order: [["name", "ASC"]],
-        }),
-        DateType.findAll({
-          attributes: ["id", "strapiDateTypeId", "name"],
-          order: [["strapiDateTypeId", "ASC"]],
-        }),
-        FeatureType.findAll({
-          attributes: ["id", "strapiFeatureTypeId", "rank", "name"],
-          order: [["name", "ASC"]],
-        }),
-        AccessGroup.findAll({
-          attributes: ["id", "name"],
-          order: [["name", "ASC"]],
-        }),
-        ParkAreaType.findAll({
-          attributes: ["id", "parkAreaTypeNumber", "rank", "name"],
-          order: [["name", "ASC"]],
-        }),
-      ]);
+    const [
+      sections,
+      managementAreas,
+      dateTypes,
+      featureTypes,
+      accessGroups,
+      parkAreaTypes,
+    ] = await Promise.all([
+      Section.findAll({
+        attributes: ["id", "sectionNumber", "name"],
+        order: [["name", "ASC"]],
+      }),
+      ManagementArea.findAll({
+        attributes: ["id", "managementAreaNumber", "name"],
+        order: [["name", "ASC"]],
+      }),
+      DateType.findAll({
+        attributes: ["id", "dateTypeNumber", "name"],
+        order: [["dateTypeNumber", "ASC"]],
+      }),
+      FeatureType.findAll({
+        attributes: ["id", "featureTypeNumber", "rank", "name"],
+        order: [["name", "ASC"]],
+      }),
+      AccessGroup.findAll({
+        attributes: ["id", "name"],
+        order: [["name", "ASC"]],
+      }),
+      ParkAreaType.findAll({
+        attributes: ["id", "parkAreaTypeNumber", "rank", "name"],
+        order: [["name", "ASC"]],
+      }),
+    ]);
 
     const groupedDateTypes = [
       {
@@ -53,7 +59,7 @@ router.get(
             DATE_TYPE.TIER_1,
             DATE_TYPE.TIER_2,
             DATE_TYPE.WINTER_FEE,
-          ].includes(dt.strapiDateTypeId),
+          ].includes(dt.dateTypeNumber),
         ),
       },
       {
@@ -63,7 +69,7 @@ router.get(
             DATE_TYPE.OPERATION,
             DATE_TYPE.RESERVATION,
             DATE_TYPE.BACKCOUNTRY_REGISTRATION,
-          ].includes(dt.strapiDateTypeId),
+          ].includes(dt.dateTypeNumber),
         ),
       },
     ];

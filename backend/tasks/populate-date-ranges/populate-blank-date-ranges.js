@@ -112,7 +112,7 @@ export async function populateBlankDateRangesForYear(
         parkDateTypes.push({
           id: dateType.id,
           name: dateType.name,
-          strapiDateTypeId: dateType.strapiDateTypeId,
+          dateTypeNumber: dateType.dateTypeNumber,
         });
       }
 
@@ -121,18 +121,15 @@ export async function populateBlankDateRangesForYear(
         featureDateTypes.push({
           id: dateType.id,
           name: dateType.name,
-          strapiDateTypeId: dateType.strapiDateTypeId,
+          dateTypeNumber: dateType.dateTypeNumber,
         });
       }
     });
 
-    const parkDateTypesByDateTypeId = _.keyBy(
-      parkDateTypes,
-      "strapiDateTypeId",
-    );
+    const parkDateTypesByDateTypeId = _.keyBy(parkDateTypes, "dateTypeNumber");
     const featureDateTypesByDateTypeId = _.keyBy(
       featureDateTypes,
-      "strapiDateTypeId",
+      "dateTypeNumber",
     );
 
     // Create a list of seasonId+dateableId+dateTypeId combinations
@@ -148,7 +145,7 @@ export async function populateBlankDateRangesForYear(
           (dateType) =>
             // Exclude the Park gate open date type,
             // handled by `populateBlankGateOperatingDates` in ./populate-blank-gate-dates.js
-            dateType.strapiDateTypeId !== DATE_TYPE.PARK_GATE_OPEN,
+            dateType.dateTypeNumber !== DATE_TYPE.PARK_GATE_OPEN,
         );
 
         return dateTypes.map((dateType) => ({

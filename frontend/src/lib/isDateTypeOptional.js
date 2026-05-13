@@ -8,10 +8,10 @@ export const optionalTypes = {
 
 /**
  * Returns true if the date type is optional for the given level.
- * @param {number} strapiDateTypeId the strapi date type ID to check
+ * @param {number} dateTypeNumber the human-assigned identifier from Strapi to check
  * @param {string} level the level to check against ("park", "parkArea", "feature")
  * @returns {boolean} true if the date type is optional for the level, false otherwise
  */
-export default function isDateTypeOptional(strapiDateTypeId, level) {
-  return optionalTypes[level]?.includes(strapiDateTypeId) ?? false;
+export default function isDateTypeOptional(dateTypeNumber, level) {
+  return optionalTypes[level]?.includes(dateTypeNumber) ?? false;
 }

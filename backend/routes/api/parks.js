@@ -55,7 +55,7 @@ function seasonModel(minYear, required = true) {
           {
             model: DateType,
             as: "dateType",
-            attributes: ["id", "strapiDateTypeId", "name"],
+            attributes: ["id", "dateTypeNumber", "name"],
           },
         ],
       },
@@ -84,7 +84,7 @@ function featureModel(minYear, where = {}) {
         model: FeatureType,
         as: "featureType",
         required: true,
-        attributes: ["id", "strapiFeatureTypeId", "name"],
+        attributes: ["id", "featureTypeNumber", "name"],
       },
       // Publishable Seasons for the Feature
       seasonModel(minYear, false),
@@ -102,7 +102,7 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   if (hasGate === false) {
     validRanges = validRanges.filter(
       (dateRange) =>
-        dateRange.dateType.strapiDateTypeId !== DATE_TYPE.PARK_GATE_OPEN,
+        dateRange.dateType.dateTypeNumber !== DATE_TYPE.PARK_GATE_OPEN,
     );
   }
 
@@ -127,7 +127,7 @@ function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
     dateType: dateRange.dateType
       ? {
           id: dateRange.dateType.id,
-          strapiDateTypeId: dateRange.dateType.strapiDateTypeId,
+          dateTypeNumber: dateRange.dateType.dateTypeNumber,
           name: dateRange.dateType.name,
         }
       : null,
@@ -226,7 +226,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     featureType: {
       id: feature.featureType.id,
       name: feature.featureType.name,
-      strapiFeatureTypeId: feature.featureType.strapiFeatureTypeId,
+      featureTypeNumber: feature.featureType.featureTypeNumber,
     },
     seasons: filteredSeasons,
     groupedDateRanges: groupDateRangesByTypeAndYear(featureDateRanges),
@@ -411,12 +411,12 @@ router.get(
       // For regular seasons, exclude Winter fee dates
       const parkDateRanges = getAllDateRanges(regularSeasons).filter(
         (dateRange) =>
-          dateRange.dateType?.strapiDateTypeId !== DATE_TYPE.WINTER_FEE,
+          dateRange.dateType?.dateTypeNumber !== DATE_TYPE.WINTER_FEE,
       );
       // For winter seasons, only include Winter fee dates
       const parkWinterDateRanges = getAllDateRanges(winterSeasons).filter(
         (dateRange) =>
-          dateRange.dateType?.strapiDateTypeId === DATE_TYPE.WINTER_FEE,
+          dateRange.dateType?.dateTypeNumber === DATE_TYPE.WINTER_FEE,
       );
       // get hasGate for park
       const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;

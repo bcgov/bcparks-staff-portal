@@ -24,7 +24,7 @@ export default function reservationSameAsTier1And2(seasonData, context) {
   const frontcountryReservationDates = dateRanges.filter(
     (dateRange) =>
       dateRange.dateType.name === "Reservation" &&
-      dateRange.strapiFeatureTypeId === FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND &&
+      dateRange.featureTypeNumber === FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND &&
       dateRange.startDate &&
       dateRange.endDate,
   );

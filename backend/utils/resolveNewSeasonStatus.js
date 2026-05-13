@@ -18,27 +18,27 @@ let cachedDateTypeMapsPromise = null;
 
 /**
  * Fetches all date types and constructs lookup maps for Park- and Feature-level date types,
- * keyed by strapiDateTypeId. Caches the results to prevent extra DB queries.
+ * keyed by dateTypeNumber. Caches the results to prevent extra DB queries.
  * @param {Transaction|null} [transaction=null] Sequelize transaction
- * @returns {Promise<{parkDateTypesByDateTypeId: Object, featureDateTypesByDateTypeId: Object}>} An object containing two maps of date types keyed by strapiDateTypeId
+ * @returns {Promise<{parkDateTypesByDateTypeId: Object, featureDateTypesByDateTypeId: Object}>} An object containing two maps of date types keyed by dateTypeNumber
  */
 async function getCachedDateTypeMaps(transaction = null) {
   if (!cachedDateTypeMapsPromise) {
     // Build lookup maps and populate the cache promise
     cachedDateTypeMapsPromise = getAllDateTypes({}, transaction).then(
       (allDateTypes) => ({
-        // Object map of all Park-level date types by strapiDateTypeId
+        // Object map of all Park-level date types by dateTypeNumber
         parkDateTypesByDateTypeId: Object.fromEntries(
           allDateTypes
             .filter((dateType) => dateType.parkLevel)
-            .map((dateType) => [dateType.strapiDateTypeId, dateType]),
+            .map((dateType) => [dateType.dateTypeNumber, dateType]),
         ),
 
-        // Object map of all Feature-level date types by strapiDateTypeId
+        // Object map of all Feature-level date types by dateTypeNumber
         featureDateTypesByDateTypeId: Object.fromEntries(
           allDateTypes
             .filter((dateType) => dateType.featureLevel)
-            .map((dateType) => [dateType.strapiDateTypeId, dateType]),
+            .map((dateType) => [dateType.dateTypeNumber, dateType]),
         ),
       }),
     );
@@ -102,7 +102,7 @@ export default async function resolveNewSeasonStatus(
     throw new Error(`Publishable with ID ${publishableId} not found.`);
   }
 
-  // Get cached date type lookup maps, keyed by strapiDateTypeId
+  // Get cached date type lookup maps, keyed by dateTypeNumber
   const { parkDateTypesByDateTypeId, featureDateTypesByDateTypeId } =
     await getCachedDateTypeMaps(transaction);
 
@@ -123,8 +123,8 @@ export default async function resolveNewSeasonStatus(
       // Return REQUESTED if the Park has Tier dates
       dateTypes.some(
         (dateType) =>
-          dateType.strapiDateTypeId === DATE_TYPE.TIER_1 ||
-          dateType.strapiDateTypeId === DATE_TYPE.TIER_2,
+          dateType.dateTypeNumber === DATE_TYPE.TIER_1 ||
+          dateType.dateTypeNumber === DATE_TYPE.TIER_2,
       )
     ) {
       return STATUS.REQUESTED;

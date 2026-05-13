@@ -77,7 +77,7 @@ export default (sequelize) => {
         defaultValue: false,
       },
 
-      strapiOrcsFeatureNumber: {
+      orcsFeatureNumber: {
         type: DataTypes.STRING,
         allowNull: true,
         defaultValue: null,

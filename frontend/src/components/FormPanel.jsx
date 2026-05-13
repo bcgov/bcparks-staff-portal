@@ -178,7 +178,7 @@ function SeasonForm({
   }, [level, season, seasonMetadata]);
 
   const dateTypesByStrapiId = useMemo(
-    () => keyBy(seasonMetadata?.dateTypes || [], "strapiDateTypeId"),
+    () => keyBy(seasonMetadata?.dateTypes || [], "dateTypeNumber"),
     [seasonMetadata],
   );
   // Find the "Park gate open" date type id

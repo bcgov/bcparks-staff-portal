@@ -44,14 +44,14 @@ export default async function importStrapiParkAreas(transaction = null) {
       );
     }
 
-    // Get all DOOT ParkAreas for strapiOrcsAreaNumber lookup
+    // Get all DOOT ParkAreas for orcsAreaNumber lookup
     const dootParkAreas = await ParkArea.findAll({
-      where: { strapiOrcsAreaNumber: { [Op.ne]: null } },
+      where: { orcsAreaNumber: { [Op.ne]: null } },
       transaction,
     });
     const parkAreaLookup = new Map(
       dootParkAreas.map((parkArea) => [
-        parkArea.strapiOrcsAreaNumber, // Key: e.g. "1234-1"
+        parkArea.orcsAreaNumber, // Key: e.g. "1234-1"
         parkArea, // Value: ParkArea record
       ]),
     );
@@ -144,12 +144,12 @@ export default async function importStrapiParkAreas(transaction = null) {
         continue;
       }
 
-      // Find matched ParkArea by strapiOrcsAreaNumber
+      // Find matched ParkArea by orcsAreaNumber
       const matchedDootParkArea = parkAreaLookup.get(orcsAreaNumber);
 
       const dootParkAreaToSave = {
         name: parkAreaName,
-        strapiOrcsAreaNumber: orcsAreaNumber,
+        orcsAreaNumber: orcsAreaNumber,
         active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         parkId,
@@ -192,7 +192,7 @@ export default async function importStrapiParkAreas(transaction = null) {
           // Update matched park area
           await matchedDootParkArea.update(dootParkAreaToSave, { transaction });
           console.log(
-            `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+            `Updated ParkArea: ${parkAreaName} (orcsAreaNumber: ${orcsAreaNumber})`,
           );
         } else {
           unchangedCount++;
@@ -201,7 +201,7 @@ export default async function importStrapiParkAreas(transaction = null) {
         // Create new park area
         await ParkArea.create(dootParkAreaToSave, { transaction });
         console.log(
-          `Created ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+          `Created ParkArea: ${parkAreaName} (orcsAreaNumber: ${orcsAreaNumber})`,
         );
         createdCount++;
       } else {
@@ -213,26 +213,26 @@ export default async function importStrapiParkAreas(transaction = null) {
     }
 
     // Create a Set of Strapi orcsAreaNumbers for efficient lookup
-    const strapiOrcsAreaNumbers = new Set(
+    const orcsAreaNumbers = new Set(
       strapiParkAreas.map((pa) => pa.orcsAreaNumber),
     );
 
     // loop through DOOT ParkAreas to find any that are missing from Strapi data
     for (const dootParkArea of dootParkAreas) {
-      if (!strapiOrcsAreaNumbers.has(dootParkArea.strapiOrcsAreaNumber)) {
+      if (!orcsAreaNumbers.has(dootParkArea.orcsAreaNumber)) {
         if (!useSafeMode) {
           // Deactivate the DOOT ParkArea
           if (dootParkArea.active) {
             dootParkArea.active = false;
             await dootParkArea.save({ transaction });
             console.log(
-              `Deactivated ParkArea: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber}) due to removal from Strapi.`,
+              `Deactivated ParkArea: ${dootParkArea.name} (orcsAreaNumber: ${dootParkArea.orcsAreaNumber}) due to removal from Strapi.`,
             );
             deactivatedCount++;
           }
         } else {
           console.warn(
-            `Skipped deactivating ParkArea due to safe mode: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,
+            `Skipped deactivating ParkArea due to safe mode: ${dootParkArea.name} (orcsAreaNumber: ${dootParkArea.orcsAreaNumber})`,
           );
           skippedCount++;
         }

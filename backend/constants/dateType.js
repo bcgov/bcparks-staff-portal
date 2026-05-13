@@ -1,6 +1,6 @@
 // Database values for date types
 // Stored as the `dateTypeId` field in Strapi,
-// and `strapiDateTypeId` in the DOOT DateTypes table.
+// and `dateTypeNumber` in the DOOT DateTypes table.
 
 export const BACKCOUNTRY_REGISTRATION = 8;
 export const FIRST_COME_FIRST_SERVED = 9;
