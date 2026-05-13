@@ -5,9 +5,10 @@ import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsFilter } from "@fa-kit/icons/classic/regular";
+import { faSortUp, faSortDown } from "@fa-kit/icons/classic/solid";
 import PaginationControls from "@/components/PaginationControls";
 
-import "./DataTable.css";
+import "./DataTable.scss";
 
 function getColumnId(column, index) {
   return column.field || `column-${index}`;
@@ -115,13 +116,20 @@ function renderCell(column, row) {
 }
 
 function renderSortIndicator(isActive, direction) {
-  if (!isActive) {
-    return null;
-  }
-
   return (
-    <span className="data-table-sort-indicator is-active">
-      {direction === "asc" ? "↑" : "↓"}
+    <span className="data-table-sort-indicator" aria-hidden="true">
+      <FontAwesomeIcon
+        icon={faSortUp}
+        className={`sort-up${
+          isActive && direction === "asc" ? " is-active" : ""
+        }`}
+      />
+      <FontAwesomeIcon
+        icon={faSortDown}
+        className={`sort-down${
+          isActive && direction === "desc" ? " is-active" : ""
+        }`}
+      />
     </span>
   );
 }

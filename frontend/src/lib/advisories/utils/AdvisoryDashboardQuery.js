@@ -120,8 +120,11 @@ export function buildFilter(
 const SORT_FIELD_MAP = {
   "urgency.urgency": "urgency.sequence",
   associatedResources: [
-    "protectedAreas.protectedAreaName",
     "recreationResources.resourceName",
+    "regions.regionName",
+    "sections.sectionName",
+    "managementAreas.managementAreaName",
+    "protectedAreas.protectedAreaName",
   ],
 };
 
