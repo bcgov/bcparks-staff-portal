@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import Dropdown from "react-bootstrap/Dropdown";
-import DropdownButton from "react-bootstrap/DropdownButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fa-kit/icons/classic/solid";
 import { faEyeSlash, faMemo, faPen } from "@fa-kit/icons/classic/regular";
@@ -9,6 +8,18 @@ import { faEyeSlash, faMemo, faPen } from "@fa-kit/icons/classic/regular";
 import "./TableActionButton.scss";
 
 const ACTION_DROPDOWN_OPEN_EVENT = "table-action-dropdown-open";
+const ACTION_MENU_POPPER_CONFIG = {
+  strategy: "fixed",
+  modifiers: [
+    {
+      name: "preventOverflow",
+      options: {
+        altAxis: true,
+        tether: false,
+      },
+    },
+  ],
+};
 
 export function TableActionButton({
   rowId,
@@ -64,39 +75,38 @@ export function TableActionButton({
 
   return (
     <div className="action-button" onClick={(event) => event.stopPropagation()}>
-      <DropdownButton
-        id={`action-button-${rowId}`}
+      <Dropdown
         show={isOpen}
         onToggle={handleToggle}
-        title={
-          <>
-            <span className="visually-hidden">Actions</span>
-            <FontAwesomeIcon
-              icon={faChevronDown}
-              className="action-button__icon"
-              aria-label="Actions"
-            />
-          </>
-        }
         className="action-button__dropdown-button"
-        size="sm"
       >
-        <Dropdown.Item onClick={(event) => action(event, onView)}>
-          <FontAwesomeIcon icon={faMemo} />
-          View
-        </Dropdown.Item>
-        <Dropdown.Item onClick={(event) => action(event, onEdit)}>
-          <FontAwesomeIcon icon={faPen} />
-          Edit
-        </Dropdown.Item>
-        <Dropdown.Item
-          disabled={!canUnpublish}
-          onClick={(event) => action(event, onUnpublish)}
-        >
-          <FontAwesomeIcon icon={faEyeSlash} />
-          Unpublish
-        </Dropdown.Item>
-      </DropdownButton>
+        <Dropdown.Toggle id={`action-button-${rowId}`} size="sm">
+          <span className="visually-hidden">Actions</span>
+          <FontAwesomeIcon
+            icon={faChevronDown}
+            className="action-button__icon"
+            aria-label="Actions"
+          />
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu renderOnMount popperConfig={ACTION_MENU_POPPER_CONFIG}>
+          <Dropdown.Item onClick={(event) => action(event, onView)}>
+            <FontAwesomeIcon icon={faMemo} />
+            View
+          </Dropdown.Item>
+          <Dropdown.Item onClick={(event) => action(event, onEdit)}>
+            <FontAwesomeIcon icon={faPen} />
+            Edit
+          </Dropdown.Item>
+          <Dropdown.Item
+            disabled={!canUnpublish}
+            onClick={(event) => action(event, onUnpublish)}
+          >
+            <FontAwesomeIcon icon={faEyeSlash} />
+            Unpublish
+          </Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
     </div>
   );
 }
