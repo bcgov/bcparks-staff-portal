@@ -491,12 +491,25 @@ export default function DataTable(props) {
                   (!serverSide || hasSort) &&
                   (column.field || column.customSort) &&
                   column.sorting !== false;
+                let ariaSort = null;
+
+                if (isSortable) {
+                  ariaSort = "none";
+
+                  if (isSorted) {
+                    ariaSort =
+                      sortConfig?.direction === "asc"
+                        ? "ascending"
+                        : "descending";
+                  }
+                }
 
                 return (
                   <th
                     key={columnId}
                     style={column.headerStyle}
                     className="data-table-header-cell"
+                    aria-sort={ariaSort}
                   >
                     <button
                       type="button"
@@ -507,6 +520,13 @@ export default function DataTable(props) {
                       disabled={!isSortable}
                     >
                       <span>{column.title}</span>
+                      {isSortable && isSorted && (
+                        <span className="visually-hidden">
+                          {sortConfig?.direction === "asc"
+                            ? "Sorted ascending"
+                            : "Sorted descending"}
+                        </span>
+                      )}
                       {isSortable &&
                         renderSortIndicator(isSorted, sortConfig?.direction)}
                     </button>
