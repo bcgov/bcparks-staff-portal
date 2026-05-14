@@ -3,8 +3,8 @@ import PropTypes from "prop-types";
 import Dropdown from "react-bootstrap/Dropdown";
 import DropdownButton from "react-bootstrap/DropdownButton";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faChevronDown } from "@fa-kit/icons/classic/solid";
-import { faPen, faEyeSlash } from "@fa-kit/icons/classic/regular";
+import { faChevronDown } from "@fa-kit/icons/classic/solid";
+import { faEyeSlash, faMemo, faPen } from "@fa-kit/icons/classic/regular";
 
 import "./TableActionButton.scss";
 
@@ -82,7 +82,7 @@ export function TableActionButton({
         size="sm"
       >
         <Dropdown.Item onClick={(event) => action(event, onView)}>
-          <FontAwesomeIcon icon={faMagnifyingGlass} />
+          <FontAwesomeIcon icon={faMemo} />
           View
         </Dropdown.Item>
         <Dropdown.Item onClick={(event) => action(event, onEdit)}>
