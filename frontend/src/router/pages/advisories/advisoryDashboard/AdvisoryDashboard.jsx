@@ -7,6 +7,7 @@ import {
   useCallback,
 } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -968,35 +969,73 @@ export default function AdvisoryDashboard({
   }
 
   return (
-    <div className="advisory-dashboard-page-wrap advisories-styles">
+    <div className="advisory-dashboard-page-wrap advisories-styles layout landing-page-tabs">
+      <header className="section-tabs d-flex flex-column">
+        <div className="container">
+          <h1 className="title m-3 mb-4">Advisories and closures</h1>
+          <ul className="nav nav-tabs px-2">
+            <li className="nav-item">
+              <NavLink className="nav-link" to="/advisories-and-closures" end>
+                All
+              </NavLink>
+            </li>
+            <li className="nav-item">
+              <NavLink
+                className="nav-link"
+                to="/advisories-and-closures/review"
+              >
+                Review
+              </NavLink>
+            </li>
+          </ul>
+        </div>
+      </header>
+
       <div className="container-fluid">
-        <div className="row ad-row">
-          <div className="col-12">
-            <h1 className="title">Advisories and closures</h1>
+        <div className="row">
+          <div
+            className={classNames(
+              "col-12 order-xl-0 order-1 d-flex flex-wrap",
+              {
+                "col-xl-9": !isReviewDashboard,
+              },
+            )}
+          >
+            <div className="row filter-row ">
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="RST recreation district"
+                  countLabel="RST recreation district"
+                  placeholder="Search or select a district"
+                  value={selectedDistrict}
+                  options={districtOptions}
+                  onChange={handleDistrictChange}
+                />
+              </div>
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="BC Parks region"
+                  countLabel="BC Parks region"
+                  placeholder="Search or select a region"
+                  value={selectedRegion}
+                  options={regionOptions}
+                  onChange={handleRegionChange}
+                />
+              </div>
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="BC Parks park"
+                  countLabel="BC Parks park"
+                  placeholder="Search or select a park"
+                  value={selectedPark}
+                  options={parkOptions}
+                  onChange={handleParkChange}
+                />
+              </div>
+            </div>
           </div>
-        </div>
-        <div className="row ad-row">
-          <div className="col-12">
-            <ul className="nav nav-tabs px-2">
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/advisories-and-closures" end>
-                  All
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink
-                  className="nav-link"
-                  to="/advisories-and-closures/review"
-                >
-                  Review
-                </NavLink>
-              </li>
-            </ul>
-          </div>
-        </div>
-        {!isReviewDashboard && (
-          <div className="row ad-row">
-            <div className="col-12 text-end">
+          {!isReviewDashboard && (
+            <div className="col-xl-3 col-12 order-xl-1 order-0 d-flex align-items-start justify-content-end">
               <Button
                 label={
                   <>
@@ -1004,48 +1043,16 @@ export default function AdvisoryDashboard({
                     Create advisory / closure
                   </>
                 }
-                styling="bcgov-normal-blue btn"
+                styling="bcgov-normal-blue btn mt-3"
                 onClick={() => {
                   setToCreate(true);
                 }}
               />
             </div>
-          </div>
-        )}
-        <div className="row ad-row">
-          <div className="ad-col col-md-6 col-12">
-            <MultiSelect
-              label="RST recreation district"
-              countLabel="RST recreation district"
-              placeholder="Search or select a district"
-              value={selectedDistrict}
-              options={districtOptions}
-              onChange={handleDistrictChange}
-            />
-          </div>
-          <div className="ad-col col-md-6 col-12">
-            <MultiSelect
-              label="BC Parks region"
-              countLabel="BC Parks region"
-              placeholder="Search or select a region"
-              value={selectedRegion}
-              options={regionOptions}
-              onChange={handleRegionChange}
-            />
-          </div>
-          <div className="ad-col col-md-6 col-12">
-            <MultiSelect
-              label="BC Parks park"
-              countLabel="BC Parks park"
-              placeholder="Search or select a park"
-              value={selectedPark}
-              options={parkOptions}
-              onChange={handleParkChange}
-            />
-          </div>
+          )}
         </div>
         {!isReviewDashboard && (
-          <div className="row ad-row">
+          <div className="row">
             <div className="col-12">
               <Form.Check
                 className="advisory-archived-toggle mt-3"
@@ -1097,11 +1104,12 @@ export default function AdvisoryDashboard({
           }
           onClearAll={clearAllFilters}
         />
-      </div>
-      {
-        <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
+        <div
+          className="advisory-dashboard"
+          data-testid="AdvisoryDashboard"
+        >
           <br />
-          <div className="container-fluid">
+          <div className="advisory-dashboard-table-wrap">
             <DataTable
               filtering
               search={false}
@@ -1138,7 +1146,7 @@ export default function AdvisoryDashboard({
             />
           </div>
         </div>
-      }
+      </div>
       {isLoading && (
         <div className="page-loader">
           <Loader page />

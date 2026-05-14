@@ -128,15 +128,20 @@ const SORT_FIELD_MAP = {
 /**
  * Builds an array of sorts
  * @param {{ field: string, direction: "asc"|"desc" } | null} sortConfig Current sort state (null = default)
+ * @param {boolean} isReviewDashboard Whether this is for the review dashboard, which has a different default sort
  * @returns {string[]} Array of Strapi sorts
  */
-export function buildSort(sortConfig) {
+export function buildSort(sortConfig, isReviewDashboard = false) {
   if (sortConfig) {
     const mapped = SORT_FIELD_MAP[sortConfig.field] ?? sortConfig.field;
     const fields = Array.isArray(mapped) ? mapped : [mapped];
     const direction = sortConfig.direction.toUpperCase();
 
     return fields.map((field) => `${field}:${direction}`);
+  }
+
+  if (isReviewDashboard) {
+    return ["updatedDate:ASC"];
   }
 
   return ["advisoryDate:DESC"];

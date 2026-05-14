@@ -39,13 +39,22 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                 $lte: now,
               },
             },
-            // Explicitly moved to unpublished
+            // Explicitly moved to unpublished by clicking "Unpublish"
             {
-              advisoryStatus: {
-                code: {
-                  $eq: "UNP",
+              $and: [
+                {
+                  advisoryStatus: {
+                    code: {
+                      $eq: "UNP",
+                    },
+                  },
                 },
-              },
+                {
+                  reviewedAt: {
+                    $notNull: true,
+                  },
+                },
+              ],
             },
             // Submitted for review
             {
