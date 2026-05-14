@@ -23,6 +23,8 @@ export function buildUnpublishPayload(
   modifiedBy,
   modifiedByRole,
 ) {
+  const unpublishedAt = moment().toISOString();
+
   return {
     title: advisoryData.title,
     description: advisoryData.description,
@@ -32,7 +34,7 @@ export function buildUnpublishPayload(
     note: advisoryData.note,
     submittedBy: advisoryData.submittedBy,
     updatedDate: advisoryData.updatedDate,
-    modifiedDate: moment().toISOString(),
+    modifiedDate: unpublishedAt,
     modifiedBy,
     modifiedByRole,
     advisoryDate: advisoryData.advisoryDate,
@@ -60,6 +62,8 @@ export function buildUnpublishPayload(
     isEffectiveDateDisplayed: advisoryData.isEffectiveDateDisplayed,
     isEndDateDisplayed: advisoryData.isEndDateDisplayed,
     isUpdatedDateDisplayed: advisoryData.isUpdatedDateDisplayed,
+    unpublishedByName: modifiedBy,
+    unpublishedAt,
     publishedAt: advisoryData.publishedAt,
     isLatestRevision: advisoryData.isLatestRevision,
   };

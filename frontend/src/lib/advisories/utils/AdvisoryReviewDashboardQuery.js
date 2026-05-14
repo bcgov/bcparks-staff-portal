@@ -50,7 +50,12 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                   },
                 },
                 {
-                  reviewedAt: {
+                  unpublishedByName: {
+                    $notNull: true,
+                  },
+                },
+                {
+                  unpublishedAt: {
                     $notNull: true,
                   },
                 },
