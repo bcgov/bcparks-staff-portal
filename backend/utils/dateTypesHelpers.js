@@ -63,7 +63,7 @@ export function getDateTypesForPark(
 }
 
 /**
- * Returns the DateTypes applicable to a Feature in a specific order.
+ * Returns the DateTypes applicable to a Feature in the order they should appear in the app.
  * For Features, it includes Operation, Reservation, and Backcountry registration dates if applicable.
  * @param {Object} feature Feature object
  * @param {Object} dateTypesByDateTypeId Object mapping date type strapiDateTypeId to objects

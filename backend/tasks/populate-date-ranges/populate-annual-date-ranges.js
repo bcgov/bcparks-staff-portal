@@ -10,9 +10,9 @@ import {
   DateType,
 } from "../../models/index.js";
 import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
-import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
 
 // Functions
 
@@ -85,11 +85,18 @@ export async function populateAnnualDateRangesForYear(
       // create season if no target season found
       // @TODO: Update criteria to create seasons in create-seasons/create-winter-seasons instead
       if (!targetSeason) {
+        // Determine the status of the new season based on annual dates
+        const status = await resolveNewSeasonStatus(
+          annual.publishableId,
+          prevSeason.seasonType,
+          transaction,
+        );
+
         targetSeason = await Season.create(
           {
             publishableId: annual.publishableId,
             operatingYear: targetYear,
-            status: STATUS.PENDING_REVIEW,
+            status,
             readyToPublish: true,
             seasonType: prevSeason.seasonType,
           },
