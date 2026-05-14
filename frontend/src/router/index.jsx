@@ -20,6 +20,7 @@ import ParkInfo from "./pages/advisories/parkInfo/ParkInfo";
 import Advisory from "./pages/advisories/advisory/Advisory";
 import AdvisorySummary from "./pages/advisories/advisorySummary/AdvisorySummary";
 import AdvisoryLink from "./pages/advisories/advisoryLink/AdvisoryLink";
+import AdvisoryReviewDashboard from "./pages/advisories/advisoryReviewDashboard/AdvisoryReviewDashboard";
 import ProtectedRoute from "./ProtectedRoute";
 
 import { ROLES } from "@/config/permissions";
@@ -62,7 +63,7 @@ const RouterConfig = createBrowserRouter([
         element: <ErrorPage />,
       },
 
-      // Advisories and closures
+      // Advisories and closures - All
       {
         path: "advisories-and-closures",
         element: (
@@ -70,6 +71,17 @@ const RouterConfig = createBrowserRouter([
             allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}
           >
             <AdvisoryDashboard />
+          </AccessControlledRoute>
+        ),
+      },
+      // Advisories and closures - Review
+      {
+        path: "advisories-and-closures/review",
+        element: (
+          <AccessControlledRoute
+            allowedRoles={[ROLES.ADVISORY_APPROVER]}
+          >
+            <AdvisoryReviewDashboard />
           </AccessControlledRoute>
         ),
       },
