@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import Dropdown from "react-bootstrap/Dropdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fa-kit/icons/classic/solid";
@@ -27,6 +28,7 @@ export function TableActionButton({
   onView,
   onEdit,
   onUnpublish,
+  className = "",
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -74,7 +76,10 @@ export function TableActionButton({
   }, [rowId]);
 
   return (
-    <div className="action-button" onClick={(event) => event.stopPropagation()}>
+    <div
+      className={classNames("action-button", className)}
+      onClick={(event) => event.stopPropagation()}
+    >
       <Dropdown
         show={isOpen}
         onToggle={handleToggle}
@@ -117,4 +122,5 @@ TableActionButton.propTypes = {
   onView: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
   onUnpublish: PropTypes.func.isRequired,
+  className: PropTypes.string,
 };
