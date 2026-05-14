@@ -70,10 +70,11 @@ export function TableActionButton({
         onToggle={handleToggle}
         title={
           <>
-            <span>Actions</span>
+            <span className="visually-hidden">Actions</span>
             <FontAwesomeIcon
               icon={faChevronDown}
               className="action-button__icon"
+              aria-label="Actions"
             />
           </>
         }
