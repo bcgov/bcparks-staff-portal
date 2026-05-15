@@ -1,0 +1,7 @@
+.bcgov-select {
+  &.bcgov-select--has-selection {
+    [class*="-placeholder"] {
+      color: var(--typography-color-primary) !important;
+    }
+  }
+}
