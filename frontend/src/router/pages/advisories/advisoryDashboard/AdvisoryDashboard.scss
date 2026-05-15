@@ -25,6 +25,14 @@
     border: 1px solid var(--color-light-grey);
   }
 
+  .advisory-headline-link {
+    display: block;
+    width: 250px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .advisory-archived-toggle input {
     width: 1.25rem;
     height: 1.25rem;

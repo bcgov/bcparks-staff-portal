@@ -155,10 +155,6 @@
   opacity: 1;
 }
 
-.data-table-clickable-row {
-  cursor: pointer;
-}
-
 .data-table-toolbar .dropdown-toggle {
   min-height: 2.4rem;
 }

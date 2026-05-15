@@ -15,7 +15,7 @@ import {
   useDebounceValue,
 } from "usehooks-ts";
 import qs from "qs";
-import { Navigate, NavLink, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
@@ -219,11 +219,16 @@ export default function AdvisoryDashboard({
     false,
   );
 
-  function renderCountBadge(label) {
+  function renderCountBadge(label, documentId, title) {
     return (
-      <Badge pill bg="light" text="dark" className="park-count-badge">
-        {label}
-      </Badge>
+      <Link
+        to={`/advisory-summary/${documentId}`}
+        aria-label={`Open advisory summary for ${title}`}
+      >
+        <Badge pill bg="light" text="dark" className="park-count-badge">
+          {label}
+        </Badge>
+      </Link>
     );
   }
 
@@ -765,7 +770,11 @@ export default function AdvisoryDashboard({
                 {displayedRegions?.map((p, i) => (
                   <span key={i}>
                     {p.regionName} region
-                    {renderCountBadge(`${p.count} parks`)}
+                    {renderCountBadge(
+                      `+${p.count}`,
+                      rowData.documentId,
+                      rowData.title,
+                    )}
                   </span>
                 ))}
                 {regionsCount > displayCount && (
@@ -780,7 +789,11 @@ export default function AdvisoryDashboard({
                     }
                   >
                     <span>
-                      {renderCountBadge(`+${regionsCount - displayCount}`)}
+                      {renderCountBadge(
+                        `+${regionsCount - displayCount}`,
+                        rowData.documentId,
+                        rowData.title,
+                      )}
                     </span>
                   </OverlayTrigger>
                 )}
@@ -816,7 +829,11 @@ export default function AdvisoryDashboard({
                     }
                   >
                     <span>
-                      {renderCountBadge(`+${parksCount - displayCount}`)}
+                      {renderCountBadge(
+                        `+${parksCount - displayCount}`,
+                        rowData.documentId,
+                        rowData.title,
+                      )}
                     </span>
                   </OverlayTrigger>
                 )}
@@ -851,7 +868,11 @@ export default function AdvisoryDashboard({
                   }
                 >
                   <span>
-                    {renderCountBadge(`+${resourcesCount - displayCount}`)}
+                    {renderCountBadge(
+                      `+${resourcesCount - displayCount}`,
+                      rowData.documentId,
+                      rowData.title,
+                    )}
                   </span>
                 </OverlayTrigger>
               )}
@@ -885,11 +906,26 @@ export default function AdvisoryDashboard({
       {
         field: "title",
         title: "Headline",
-        headerStyle: { width: 400 },
-        cellStyle: { width: 400 },
+        headerStyle: { width: 250 },
+        cellStyle: { width: 250 },
         render(rowData) {
           return (
-            <div dangerouslySetInnerHTML={{ __html: rowData.title }}></div>
+            <OverlayTrigger
+              placement="top"
+              overlay={
+                <Tooltip id={`headline-tooltip-${rowData.documentId}`}>
+                  {rowData.title}
+                </Tooltip>
+              }
+            >
+              <Link
+                to={`/advisory-summary/${rowData.documentId}`}
+                className="advisory-headline-link"
+                aria-label={rowData.title}
+              >
+                {rowData.title}
+              </Link>
+            </OverlayTrigger>
           );
         },
       },
@@ -1143,9 +1179,6 @@ export default function AdvisoryDashboard({
               columns={tableColumns}
               data={publicAdvisories}
               title=""
-              onRowClick={(event, rowData) => {
-                navigate(`/advisory-summary/${rowData.documentId}`);
-              }}
               components={{
                 Toolbar: () => <div></div>,
               }}
