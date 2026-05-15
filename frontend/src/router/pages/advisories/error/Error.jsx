@@ -93,7 +93,7 @@ export default function Error({ error }) {
           <div className="buttons">
             <Button
               label="Home"
-              styling="bcgov-normal-blue btn"
+              styling="btn-primary btn"
               onClick={() => {
                 setToHome(true);
               }}
