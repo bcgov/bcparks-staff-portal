@@ -210,8 +210,12 @@ export default function AdvisoryDashboard({
   }, 75);
 
   // Persist showArchived in sessionStorage
+  // Use separate keys for All vs Review tabs so each maintains independent state
+  const showArchivedStorageKey = isReviewDashboard
+    ? "showArchivedReview"
+    : "showArchived";
   const [showArchived, setShowArchived] = useSessionStorage(
-    "showArchived",
+    showArchivedStorageKey,
     false,
   );
 
@@ -979,14 +983,16 @@ export default function AdvisoryDashboard({
                 All
               </NavLink>
             </li>
-            <li className="nav-item">
-              <NavLink
-                className="nav-link"
-                to="/advisories-and-closures/review"
-              >
-                Review
-              </NavLink>
-            </li>
+            {hasAnyRole(["approver"]) && (
+              <li className="nav-item">
+                <NavLink
+                  className="nav-link"
+                  to="/advisories-and-closures/review"
+                >
+                  Review
+                </NavLink>
+              </li>
+            )}
           </ul>
         </div>
       </header>

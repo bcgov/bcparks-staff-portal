@@ -7,9 +7,10 @@ export default function buildReviewFilter({ isReviewDashboard }) {
 
   const now = moment().toISOString();
   const oneWeekFromNow = moment().add(7, "days").toISOString();
+
   // Temporary condition to exclude stale advisories that haven't been updated recently and aren't relevant to the review dashboard.
-  // This can be removed after we have confidence that all active advisories have been reviewed by migration.
-  const updatedSinceMay2026 = "2026-05-01T00:00:00.000Z";
+  // TODO - Remove this cutoff after migration verification is complete.
+  const updatedSinceOneMonthAgo = moment().subtract(1, "month").toISOString();
 
   return [
     {
@@ -89,9 +90,18 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                 },
                 // Temporary condition
                 {
-                  updatedAt: {
-                    $gte: updatedSinceMay2026,
-                  },
+                  $and: [
+                    {
+                      updatedAt: {
+                        $gte: updatedSinceOneMonthAgo,
+                      },
+                    },
+                    {
+                      updatedDate: {
+                        $gte: updatedSinceOneMonthAgo,
+                      },
+                    },
+                  ],
                 },
               ],
             },
