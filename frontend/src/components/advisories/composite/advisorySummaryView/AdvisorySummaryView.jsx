@@ -16,7 +16,7 @@ import getEnv from "@/config/getEnv";
 function Field({ label, children }) {
   return (
     <div className="mb-3">
-      <h5 className="h6 mb-1 field-label">{label}</h5>
+      <div className="mb-1 fw-bold">{label}</div>
       <div>{children}</div>
     </div>
   );
