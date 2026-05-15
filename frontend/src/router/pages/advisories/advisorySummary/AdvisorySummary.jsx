@@ -5,7 +5,7 @@ import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
 import useCms from "@/hooks/useCms";
 import { useAuth } from "react-oidc-context";
-import "./AdvisorySummary.css";
+import "./AdvisorySummary.scss";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Alert from "react-bootstrap/Alert";
 import Toast from "react-bootstrap/Toast";
