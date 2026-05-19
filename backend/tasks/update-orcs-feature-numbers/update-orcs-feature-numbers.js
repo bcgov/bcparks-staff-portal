@@ -32,34 +32,34 @@ export default async function updateOrcsFeatureNumbers(transaction = null) {
   try {
     // Fetch all Feature records in the DOOT db
     const dootFeatures = await Feature.findAll({
-      attributes: ["id", "strapiFeatureId", "strapiOrcsFeatureNumber"],
+      attributes: ["id", "strapiFeatureId", "orcsFeatureNumber"],
 
       transaction,
     });
 
     for (const feature of dootFeatures) {
-      // Match on featureId to populate the strapiOrcsFeatureNumber
+      // Match on featureId to populate the orcsFeatureNumber
       const orcsFeatureNumber = featureIdMap.get(feature.strapiFeatureId);
 
       // Skip updating if there's no orcsFeatureNumber from Strapi
       if (!orcsFeatureNumber) continue;
 
       // Skip updating if the orcsFeatureNumber hasn't changed
-      if (feature.strapiOrcsFeatureNumber === orcsFeatureNumber) continue;
+      if (feature.orcsFeatureNumber === orcsFeatureNumber) continue;
 
       // Update and save the feature record
-      feature.strapiOrcsFeatureNumber = orcsFeatureNumber;
+      feature.orcsFeatureNumber = orcsFeatureNumber;
       await feature.save({ transaction });
 
       updateCount += 1;
     }
   } catch (error) {
-    console.error("Failed to update strapiOrcsFeatureNumber:", error);
+    console.error("Failed to update orcsFeatureNumber:", error);
     if (transaction) await transaction.rollback();
     throw error;
   }
 
-  console.log(`Updated ${updateCount} features with strapiOrcsFeatureNumber.`);
+  console.log(`Updated ${updateCount} features with orcsFeatureNumber.`);
 }
 
 // Run directly
@@ -71,7 +71,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     await transaction.commit();
   } catch (err) {
     await transaction.rollback();
-    console.error("Failed to update strapiOrcsFeatureNumber:", err);
+    console.error("Failed to update orcsFeatureNumber:", err);
     throw err;
   }
 }

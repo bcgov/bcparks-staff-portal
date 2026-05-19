@@ -2,7 +2,7 @@ import "../../env.js";
 
 import { Op } from "sequelize";
 import { DateType } from "../../models/index.js";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../strapi-data-service.js";
 
 /**
  * Imports/updates DateType records from Strapi park-date-type data by matching dateTypeId
@@ -10,6 +10,7 @@ import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiDateTypes(transaction = null) {
+  console.log("STARTING IMPORT OF DATE TYPES FROM STRAPI");
   try {
     // Get park-date-type data from Strapi
     const dateTypeData = await getStrapiModelData("park-date-type");
@@ -20,16 +21,14 @@ export default async function importStrapiDateTypes(transaction = null) {
       return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
 
-    console.log(`Found ${strapiDateTypes.length} park date types in Strapi`);
-
-    // Get all DOOT DateTypes for strapiDateTypeId lookup
+    // Get all DOOT DateTypes for dateTypeNumber lookup
     const dootDateTypes = await DateType.findAll({
-      where: { strapiDateTypeId: { [Op.ne]: null } },
+      where: { dateTypeNumber: { [Op.ne]: null } },
       transaction,
     });
     const dateTypeLookup = new Map(
       dootDateTypes.map((dateType) => [
-        dateType.strapiDateTypeId, // Key: e.g. "10"
+        dateType.dateTypeNumber, // Key: e.g. "10"
         dateType, // Value: DateType record
       ]),
     );
@@ -55,7 +54,7 @@ export default async function importStrapiDateTypes(transaction = null) {
 
       const dateTypeToSave = {
         name: dateType,
-        strapiDateTypeId: dateTypeId,
+        dateTypeNumber: dateTypeId,
         description: strapiDateType.description,
         featureLevel: strapiDateType.featureLevel || false,
         parkLevel: strapiDateType.parkLevel || false,
@@ -75,14 +74,14 @@ export default async function importStrapiDateTypes(transaction = null) {
         // Update matched date type
         await matchedDateType.update(dateTypeToSave, { transaction });
         console.log(
-          `Updated date type: ${dateType} (strapiDateTypeId: ${dateTypeId})`,
+          `Updated date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
         );
         updatedCount++;
       } else {
         // Create new date type
         await DateType.create(dateTypeToSave, { transaction });
         console.log(
-          `Created date type: ${dateType} (strapiDateTypeId: ${dateTypeId})`,
+          `Created date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
         );
         createdCount++;
       }
@@ -92,7 +91,7 @@ export default async function importStrapiDateTypes(transaction = null) {
     console.log(`- Created: ${createdCount} date types`);
     console.log(`- Updated: ${updatedCount} date types`);
     console.log(`- Unchanged: ${unchangedCount} date types`);
-    console.log(`- Skipped (invalid): ${skippedCount} date types`);
+    console.log(`- Skipped (invalid): ${skippedCount} date types\n\n`);
 
     return {
       created: createdCount,
@@ -111,13 +110,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await DateType.sequelize.transaction();
 
   try {
-    const result = await importStrapiDateTypes(transaction);
-
+    await importStrapiDateTypes(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Unchanged: ${result.unchanged}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

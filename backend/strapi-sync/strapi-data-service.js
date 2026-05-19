@@ -99,7 +99,7 @@ const MODEL_CONFIG = {
   "management-area": {
     endpoint: "/management-areas",
     populate: {
-      section: { fields: ["id"] },
+      section: { fields: ["id", "sectionNumber"] },
     },
   },
   "park-feature-type": {

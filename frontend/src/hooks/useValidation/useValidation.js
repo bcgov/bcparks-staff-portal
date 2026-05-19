@@ -43,13 +43,13 @@ const elements = {
 };
 
 /**
- * Adds the Strapi Feature Type ID to a date range object as `strapiFeatureTypeId`
- * @param {number} strapiFeatureTypeId The Strapi Feature Type ID to add to the date range
+ * Adds the Strapi Feature Type number to a date range object as `featureTypeNumber`
+ * @param {number} featureTypeNumber The Strapi Feature Type number to add to the date range
  * @param {Object} dateRange The date range object
- * @returns {Object} The date range object with the added `strapiFeatureTypeId` property
+ * @returns {Object} The date range object with the added `featureTypeNumber` property
  */
-function addFeatureTypeToDateRange(strapiFeatureTypeId, dateRange) {
-  return { ...dateRange, strapiFeatureTypeId };
+function addFeatureTypeToDateRange(featureTypeNumber, dateRange) {
+  return { ...dateRange, featureTypeNumber };
 }
 
 /**
@@ -106,7 +106,7 @@ function validate(seasonData, seasonContext) {
       feature.dateable.dateRanges.map((dateRange) =>
         // Add feature type for validation rules that need it (Winter fee/Tier 1 and 2 rules)
         addFeatureTypeToDateRange(
-          feature.featureType.strapiFeatureTypeId,
+          feature.featureType.featureTypeNumber,
           dateRange,
         ),
       ),
@@ -120,7 +120,7 @@ function validate(seasonData, seasonContext) {
     const dateRangesWithFeatureType = feature.dateable.dateRanges.map(
       (dateRange) =>
         addFeatureTypeToDateRange(
-          feature.featureType.strapiFeatureTypeId,
+          feature.featureType.featureTypeNumber,
           dateRange,
         ),
     );

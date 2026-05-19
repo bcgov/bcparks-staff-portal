@@ -4,8 +4,8 @@
 import "../../env.js";
 
 import { DateRange, DateType, Park, Season } from "../../models/index.js";
-import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
 import {
   createPublishableId,
   createDateableId,
@@ -19,6 +19,10 @@ export default async function createWinterSeasons(
     console.info("Usage example: npm run create-winter-seasons 2027");
     throw new Error("Missing operating year");
   }
+
+  console.log(
+    `\nSTARTING CREATE-WINTER-SEASONS FOR OPERATING YEAR ${operatingYear}\n`,
+  );
 
   // Track the number of rows inserted
   let publishablesAdded = 0;
@@ -71,18 +75,23 @@ export default async function createWinterSeasons(
     });
 
     if (existingSeason) {
-      console.log(
-        `Winter season already exists for ${parkName} (Publishable ${publishableId}) - ${year}`,
-      );
+      // Winter season already exists for this publishable and operating year
       return existingSeason.id;
     }
+
+    // Determine the status of the new season based on annual dates
+    const status = await resolveNewSeasonStatus(
+      publishableId,
+      SEASON_TYPE.WINTER,
+      transaction,
+    );
 
     const newSeason = await Season.create(
       {
         publishableId,
         operatingYear: year,
         seasonType: SEASON_TYPE.WINTER,
-        status: STATUS.REQUESTED,
+        status,
         readyToPublish: true,
       },
       { transaction },
@@ -120,9 +129,7 @@ export default async function createWinterSeasons(
     });
 
     if (existingDateRange) {
-      console.log(
-        `Winter fee date range already exists for ${parkName} (Season ${seasonId})`,
-      );
+      // Winter fee date range already exists for this season
       return existingDateRange.id;
     }
 
@@ -146,8 +153,6 @@ export default async function createWinterSeasons(
     return newDateRange.id;
   }
 
-  console.log(`Creating Winter Seasons for ${operatingYear}`);
-
   // Get the Winter fee DateType
   const winterFeeDateType = await DateType.findOne({
     where: {
@@ -158,11 +163,8 @@ export default async function createWinterSeasons(
 
   if (!winterFeeDateType) {
     console.error(`Winter fee DateType not found. Exiting.`);
-    await transaction.rollback();
     throw new Error("Winter fee DateType not found.");
   }
-
-  console.log(`Found Winter fee DateType: ${winterFeeDateType.id}`);
 
   // Get all Parks that have winter fee dates
   const parksWithWinterFees = await Park.findAll({
@@ -185,14 +187,11 @@ export default async function createWinterSeasons(
 
   if (parksWithWinterFees.length === 0) {
     console.log("No parks with winter fee dates found. Exiting.");
-    await transaction.commit();
-    throw new Error("No parks with winter fee dates found.");
+    return;
   }
 
   // Process each park
   const parkQueries = parksWithWinterFees.map(async (park) => {
-    console.log(`Processing park: ${park.name}`);
-
     // Ensure the park has a publishableId
     const publishableId = await createPublishable(park);
 
@@ -225,7 +224,7 @@ export default async function createWinterSeasons(
   console.log(`Added ${winterSeasonsAdded} new Winter Seasons`);
   console.log(`Added ${winterDateRangesAdded} new Winter Fee DateRanges`);
 
-  console.log(`Done creating winter seasons for ${operatingYear}.`);
+  console.log(`Done creating winter seasons for ${operatingYear}\n`);
 }
 
 // Run directly:
@@ -238,9 +237,8 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
 
   try {
     await createWinterSeasons(operatingYear, transaction);
-
-    console.log("Committing transaction...");
     await transaction.commit();
+    console.log("\nTransaction committed successfully");
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

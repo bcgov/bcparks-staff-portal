@@ -1,6 +1,6 @@
 # update-orcs-area-numbers.js
 
-This script synchronizes ORCS area numbers from Strapi to the local DOOT database by updating the `strapiOrcsAreaNumber` field in the `ParkAreas` table.
+This script synchronizes ORCS area numbers from Strapi to the local DOOT database by updating the `orcsAreaNumber` field in the `ParkAreas` table.
 
 ## This script is temporary
 
@@ -9,7 +9,7 @@ When DOOT's Strapi sync scripts are updated, these values will be fetched during
 ## What does the script do?
 
 1. **Fetches all park areas from Strapi** using `/api/park-areas` endpoint
-2. **Updates local ParkArea records** by matching `Park.orcs` and `ParkAreas.name` and updating `strapiOrcsAreaNumber`
+2. **Updates local ParkArea records** by matching `Park.orcs` and `ParkAreas.name` and updating `orcsAreaNumber`
 3. **Transaction Safety** - all operations in a transaction, rolled back on error
 
 ## How to run
@@ -26,7 +26,7 @@ node tasks/update-orcs-area-numbers/update-orcs-area-numbers.js
 ## Output
 
 - Logs progress for each page fetched
-- Reports: `"Updated X parkAreas with strapiOrcsAreaNumber"`
+- Reports: `"Updated X parkAreas with orcsAreaNumber"`
 - Errors cause transaction rollback with error message
 
 ## Notes

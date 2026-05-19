@@ -2,7 +2,7 @@ import "../../env.js";
 
 import { Op } from "sequelize";
 import { FeatureType } from "../../models/index.js";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../strapi-data-service.js";
 
 /**
  * Imports/updates FeatureType records from Strapi park-feature-type data by matching featureTypeId
@@ -10,6 +10,7 @@ import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiFeatureTypes(transaction = null) {
+  console.log("STARTING IMPORT OF FEATURE TYPES FROM STRAPI\n");
   try {
     // Get park-feature-type data from Strapi
     const featureTypeData = await getStrapiModelData("park-feature-type");
@@ -20,18 +21,14 @@ export default async function importStrapiFeatureTypes(transaction = null) {
       return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
 
-    console.log(
-      `Found ${strapiFeatureTypes.length} park feature types in Strapi`,
-    );
-
-    // Get all DOOT FeatureTypes for strapiFeatureTypeId lookup
+    // Get all DOOT FeatureTypes for featureTypeNumber lookup
     const dootFeatureTypes = await FeatureType.findAll({
-      where: { strapiFeatureTypeId: { [Op.ne]: null } },
+      where: { featureTypeNumber: { [Op.ne]: null } },
       transaction,
     });
     const featureTypeLookup = new Map(
       dootFeatureTypes.map((featureType) => [
-        featureType.strapiFeatureTypeId, // Key: e.g. "10"
+        featureType.featureTypeNumber, // Key: e.g. "10"
         featureType, // Value: FeatureType record
       ]),
     );
@@ -61,7 +58,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
 
       const featureTypeToSave = {
         name: parkFeatureType,
-        strapiFeatureTypeId: featureTypeId,
+        featureTypeNumber: featureTypeId,
         rank: rank || 1000000,
       };
 
@@ -79,7 +76,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
         // Update matched feature type
         await matchedFeatureType.update(featureTypeToSave, { transaction });
         console.log(
-          `Updated feature type: ${parkFeatureType} (strapiFeatureTypeId: ${featureTypeId})`,
+          `Updated feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
         );
         updatedCount++;
       } else {
@@ -89,7 +86,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
         // Create new feature type
         await FeatureType.create(featureTypeToSave, { transaction });
         console.log(
-          `Created feature type: ${parkFeatureType} (strapiFeatureTypeId: ${featureTypeId})`,
+          `Created feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
         );
         createdCount++;
       }
@@ -99,7 +96,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
     console.log(`- Created: ${createdCount} feature types`);
     console.log(`- Updated: ${updatedCount} feature types`);
     console.log(`- Unchanged: ${unchangedCount} feature types`);
-    console.log(`- Skipped (invalid): ${skippedCount} feature types`);
+    console.log(`- Skipped (invalid): ${skippedCount} feature types\n\n`);
 
     return {
       created: createdCount,

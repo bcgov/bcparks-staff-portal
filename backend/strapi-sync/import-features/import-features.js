@@ -2,7 +2,7 @@ import "../../env.js";
 
 import { Op } from "sequelize";
 import { Park, Feature, ParkArea, FeatureType } from "../../models/index.js";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../strapi-data-service.js";
 import { validateDootFeatures, validateStrapiFeatures } from "./validation.js";
 
 /**
@@ -11,6 +11,7 @@ import { validateDootFeatures, validateStrapiFeatures } from "./validation.js";
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiFeatures(transaction = null) {
+  console.log("STARTING IMPORT OF FEATURES FROM STRAPI\n");
   try {
     // Get park-feature data from Strapi
     const parkFeatureData = await getStrapiModelData("park-feature");
@@ -27,8 +28,6 @@ export default async function importStrapiFeatures(transaction = null) {
       };
     }
 
-    console.log(`Found ${strapiParkFeatures.length} Features in Strapi`);
-
     // Validate Features in DOOT and Strapi
     const dootValid = await validateDootFeatures(transaction);
     const strapiValid = validateStrapiFeatures(strapiParkFeatures);
@@ -42,14 +41,14 @@ export default async function importStrapiFeatures(transaction = null) {
       );
     }
 
-    // Get all DOOT Features for strapiOrcsFeatureNumber lookup
+    // Get all DOOT Features for orcsFeatureNumber lookup
     const dootFeatures = await Feature.findAll({
-      where: { strapiOrcsFeatureNumber: { [Op.ne]: null } },
+      where: { orcsFeatureNumber: { [Op.ne]: null } },
       transaction,
     });
     const featureLookup = new Map(
       dootFeatures.map((feature) => [
-        feature.strapiOrcsFeatureNumber, // Key: e.g. "1234-1"
+        feature.orcsFeatureNumber, // Key: e.g. "1234-1"
         feature, // Value: Feature record
       ]),
     );
@@ -70,24 +69,24 @@ export default async function importStrapiFeatures(transaction = null) {
 
     // Get all DOOT Park areas for orcsAreaNumber lookup
     const dootParkAreas = await ParkArea.findAll({
-      where: { strapiOrcsAreaNumber: { [Op.ne]: null } },
+      where: { orcsAreaNumber: { [Op.ne]: null } },
       transaction,
     });
     const parkAreaLookup = new Map(
       dootParkAreas.map((parkArea) => [
-        parkArea.strapiOrcsAreaNumber, // Key: e.g. "1234-1"
+        parkArea.orcsAreaNumber, // Key: e.g. "1234-1"
         parkArea, // Value: ParkArea record
       ]),
     );
 
-    // Get all DOOT FeatureTypes for strapiFeatureTypeId lookup
+    // Get all DOOT FeatureTypes for featureTypeNumber lookup
     const dootFeatureTypes = await FeatureType.findAll({
-      where: { strapiFeatureTypeId: { [Op.ne]: null } },
+      where: { featureTypeNumber: { [Op.ne]: null } },
       transaction,
     });
     const featureTypeLookup = new Map(
       dootFeatureTypes.map((featureType) => [
-        featureType.strapiFeatureTypeId, // Key: e.g. "10"
+        featureType.featureTypeNumber, // Key: e.g. "10"
         featureType, // Value: FeatureType record
       ]),
     );
@@ -143,11 +142,11 @@ export default async function importStrapiFeatures(transaction = null) {
 
       // Get the featureTypeId from the related parkFeatureType
       let featureTypeId = null;
-      const strapiFeatureTypeId = parkFeatureType?.featureTypeId;
+      const featureTypeNumber = parkFeatureType?.featureTypeId;
 
-      if (strapiFeatureTypeId) {
+      if (featureTypeNumber) {
         const matchedFeatureType =
-          featureTypeLookup.get(strapiFeatureTypeId) ?? null;
+          featureTypeLookup.get(featureTypeNumber) ?? null;
 
         featureTypeId = matchedFeatureType?.id ?? null;
       }
@@ -160,12 +159,12 @@ export default async function importStrapiFeatures(transaction = null) {
         continue;
       }
 
-      // Find matched ParkFeature by strapiOrcsFeatureNumber
+      // Find matched ParkFeature by orcsFeatureNumber
       const matchedDootFeature = featureLookup.get(orcsFeatureNumber);
 
       const dootFeatureToSave = {
         name: parkFeatureName,
-        strapiOrcsFeatureNumber: orcsFeatureNumber,
+        orcsFeatureNumber: orcsFeatureNumber,
         active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         hasReservations: hasReservations ?? false,
@@ -190,7 +189,7 @@ export default async function importStrapiFeatures(transaction = null) {
                 `To reactivate, either activate it manually via AdminJS or assign a new ` +
                 `orcsFeatureNumber in Strapi. This is a safety measure to avoid orcsFeatureNumber ` +
                 `reuse, which could result in linking new features to previously deactivated data. ` +
-                `NOTE: If the feature names match, then this check is bypassed.\n`,
+                `NOTE: If the feature names match, then this check is bypassed.`,
             );
             skippedCount++;
             continue;
@@ -212,7 +211,7 @@ export default async function importStrapiFeatures(transaction = null) {
           // Update matched feature
           await matchedDootFeature.update(dootFeatureToSave, { transaction });
           console.log(
-            `Updated Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
+            `Updated Feature: ${parkFeatureName} (orcsFeatureNumber: ${orcsFeatureNumber})`,
           );
         } else {
           unchangedCount++;
@@ -221,7 +220,7 @@ export default async function importStrapiFeatures(transaction = null) {
         // Create new feature
         await Feature.create(dootFeatureToSave, { transaction });
         console.log(
-          `Created Feature: ${parkFeatureName} (strapiOrcsFeatureNumber: ${orcsFeatureNumber})`,
+          `Created Feature: ${parkFeatureName} (orcsFeatureNumber: ${orcsFeatureNumber})`,
         );
         createdCount++;
       } else {
@@ -233,28 +232,26 @@ export default async function importStrapiFeatures(transaction = null) {
     }
 
     // Create a Set of Strapi orcsFeatureNumbers for efficient lookup
-    const strapiOrcsFeatureNumbers = new Set(
+    const orcsFeatureNumbers = new Set(
       strapiParkFeatures.map((pf) => pf.orcsFeatureNumber),
     );
 
     // loop through DOOT ParkFeatures to find any that are missing from Strapi data
     for (const dootParkFeature of dootFeatures) {
-      if (
-        !strapiOrcsFeatureNumbers.has(dootParkFeature.strapiOrcsFeatureNumber)
-      ) {
+      if (!orcsFeatureNumbers.has(dootParkFeature.orcsFeatureNumber)) {
         if (!useSafeMode) {
           // Deactivate the DOOT ParkFeature
           if (dootParkFeature.active) {
             dootParkFeature.active = false;
             await dootParkFeature.save({ transaction });
             console.log(
-              `Deactivated Feature: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber}) due to removal from Strapi.`,
+              `Deactivated Feature: ${dootParkFeature.name} (orcsFeatureNumber: ${dootParkFeature.orcsFeatureNumber}) due to removal from Strapi.`,
             );
             deactivatedCount++;
           }
         } else {
           console.warn(
-            `Skipped deactivating Feature due to safe mode: ${dootParkFeature.name} (strapiOrcsFeatureNumber: ${dootParkFeature.strapiOrcsFeatureNumber})`,
+            `Skipped deactivating Feature due to safe mode: ${dootParkFeature.name} (orcsFeatureNumber: ${dootParkFeature.orcsFeatureNumber})`,
           );
           skippedCount++;
         }
@@ -264,9 +261,9 @@ export default async function importStrapiFeatures(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} Features`);
     console.log(`- Updated: ${updatedCount} Features`);
-    console.log(`- Unchanged: ${unchangedCount} Features`);
     console.log(`- Deactivated: ${deactivatedCount} Features`);
-    console.log(`- Skipped (invalid): ${skippedCount} Features`);
+    console.log(`- Unchanged: ${unchangedCount} Features`);
+    console.log(`- Skipped (invalid): ${skippedCount} Features\n\n`);
 
     return {
       created: createdCount,
@@ -286,13 +283,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await Feature.sequelize.transaction();
 
   try {
-    const result = await importStrapiFeatures(transaction);
-
+    await importStrapiFeatures(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Skipped: ${result.skipped}, Deactivated: ${result.deactivated}, Unchanged: ${result.unchanged}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

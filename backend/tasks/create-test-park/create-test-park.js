@@ -88,7 +88,7 @@ for (const featureType of featureTypes) {
       strapiId: null,
       inReservationSystem: true,
       hasBackcountryPermits: true,
-      strapiOrcsFeatureNumber: null,
+      orcsFeatureNumber: null,
     },
     { transaction },
   );
@@ -106,7 +106,7 @@ for (const featureType of featureTypes) {
       publishableId: parkAreaPublishable.id,
       active: true,
       inReservationSystem: true,
-      strapiOrcsAreaNumber: null,
+      orcsAreaNumber: null,
     },
     {
       transaction,
@@ -133,7 +133,7 @@ for (const featureType of featureTypes) {
         strapiId: null,
         inReservationSystem: true,
         hasBackcountryPermits: true,
-        strapiOrcsFeatureNumber: null,
+        orcsFeatureNumber: null,
       },
       {
         name: `Test Area Feature 2/2 - ${featureType.name}`,
@@ -149,7 +149,7 @@ for (const featureType of featureTypes) {
         strapiId: null,
         inReservationSystem: true,
         hasBackcountryPermits: true,
-        strapiOrcsFeatureNumber: null,
+        orcsFeatureNumber: null,
       },
     ],
     { transaction },

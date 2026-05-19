@@ -14,6 +14,7 @@ import {
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
 export default async function importStrapiParkAreas(transaction = null) {
+  console.log("STARTING IMPORT OF PARK AREAS FROM STRAPI\n");
   try {
     // Get park-area data from Strapi
     const parkAreaData = await getStrapiModelData("park-area");
@@ -30,8 +31,6 @@ export default async function importStrapiParkAreas(transaction = null) {
       };
     }
 
-    console.log(`Found ${strapiParkAreas.length} ParkAreas in Strapi`);
-
     // Validate Park Areas in DOOT and Strapi
     const strapiValid = await validateStrapiParkAreas(strapiParkAreas);
     const dootValid = await validateDootParkAreas(transaction);
@@ -45,14 +44,14 @@ export default async function importStrapiParkAreas(transaction = null) {
       );
     }
 
-    // Get all DOOT ParkAreas for strapiOrcsAreaNumber lookup
+    // Get all DOOT ParkAreas for orcsAreaNumber lookup
     const dootParkAreas = await ParkArea.findAll({
-      where: { strapiOrcsAreaNumber: { [Op.ne]: null } },
+      where: { orcsAreaNumber: { [Op.ne]: null } },
       transaction,
     });
     const parkAreaLookup = new Map(
       dootParkAreas.map((parkArea) => [
-        parkArea.strapiOrcsAreaNumber, // Key: e.g. "1234-1"
+        parkArea.orcsAreaNumber, // Key: e.g. "1234-1"
         parkArea, // Value: ParkArea record
       ]),
     );
@@ -145,12 +144,12 @@ export default async function importStrapiParkAreas(transaction = null) {
         continue;
       }
 
-      // Find matched ParkArea by strapiOrcsAreaNumber
+      // Find matched ParkArea by orcsAreaNumber
       const matchedDootParkArea = parkAreaLookup.get(orcsAreaNumber);
 
       const dootParkAreaToSave = {
         name: parkAreaName,
-        strapiOrcsAreaNumber: orcsAreaNumber,
+        orcsAreaNumber: orcsAreaNumber,
         active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         parkId,
@@ -171,7 +170,7 @@ export default async function importStrapiParkAreas(transaction = null) {
                 `either activate it manually via AdminJS or assign a new orcsAreaNumber in ` +
                 `Strapi. This is a safety measure to avoid orcsAreaNumber reuse, which could ` +
                 `result in linking new park areas to previously deactivated data. ` +
-                `NOTE: If the park area names match, this check is bypassed.\n`,
+                `NOTE: If the park area names match, this check is bypassed.`,
             );
             skippedCount++;
             continue;
@@ -193,7 +192,7 @@ export default async function importStrapiParkAreas(transaction = null) {
           // Update matched park area
           await matchedDootParkArea.update(dootParkAreaToSave, { transaction });
           console.log(
-            `Updated ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+            `Updated ParkArea: ${parkAreaName} (orcsAreaNumber: ${orcsAreaNumber})`,
           );
         } else {
           unchangedCount++;
@@ -202,7 +201,7 @@ export default async function importStrapiParkAreas(transaction = null) {
         // Create new park area
         await ParkArea.create(dootParkAreaToSave, { transaction });
         console.log(
-          `Created ParkArea: ${parkAreaName} (strapiOrcsAreaNumber: ${orcsAreaNumber})`,
+          `Created ParkArea: ${parkAreaName} (orcsAreaNumber: ${orcsAreaNumber})`,
         );
         createdCount++;
       } else {
@@ -214,26 +213,26 @@ export default async function importStrapiParkAreas(transaction = null) {
     }
 
     // Create a Set of Strapi orcsAreaNumbers for efficient lookup
-    const strapiOrcsAreaNumbers = new Set(
+    const orcsAreaNumbers = new Set(
       strapiParkAreas.map((pa) => pa.orcsAreaNumber),
     );
 
     // loop through DOOT ParkAreas to find any that are missing from Strapi data
     for (const dootParkArea of dootParkAreas) {
-      if (!strapiOrcsAreaNumbers.has(dootParkArea.strapiOrcsAreaNumber)) {
+      if (!orcsAreaNumbers.has(dootParkArea.orcsAreaNumber)) {
         if (!useSafeMode) {
           // Deactivate the DOOT ParkArea
           if (dootParkArea.active) {
             dootParkArea.active = false;
             await dootParkArea.save({ transaction });
             console.log(
-              `Deactivated ParkArea: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber}) due to removal from Strapi.`,
+              `Deactivated ParkArea: ${dootParkArea.name} (orcsAreaNumber: ${dootParkArea.orcsAreaNumber}) due to removal from Strapi.`,
             );
             deactivatedCount++;
           }
         } else {
           console.warn(
-            `Skipped deactivating ParkArea due to safe mode: ${dootParkArea.name} (strapiOrcsAreaNumber: ${dootParkArea.strapiOrcsAreaNumber})`,
+            `Skipped deactivating ParkArea due to safe mode: ${dootParkArea.name} (orcsAreaNumber: ${dootParkArea.orcsAreaNumber})`,
           );
           skippedCount++;
         }
@@ -243,9 +242,9 @@ export default async function importStrapiParkAreas(transaction = null) {
     console.log(`\nImport complete:`);
     console.log(`- Created: ${createdCount} ParkAreas`);
     console.log(`- Updated: ${updatedCount} ParkAreas`);
-    console.log(`- Unchanged: ${unchangedCount} ParkAreas`);
     console.log(`- Deactivated: ${deactivatedCount} ParkAreas`);
-    console.log(`- Skipped (invalid): ${skippedCount} ParkAreas`);
+    console.log(`- Unchanged: ${unchangedCount} ParkAreas`);
+    console.log(`- Skipped (invalid): ${skippedCount} ParkAreas\n\n`);
 
     return {
       created: createdCount,
@@ -265,13 +264,9 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await ParkArea.sequelize.transaction();
 
   try {
-    const result = await importStrapiParkAreas(transaction);
-
+    await importStrapiParkAreas(transaction);
     await transaction.commit();
     console.log("\nTransaction committed successfully");
-    console.log(
-      `Final counts - Created: ${result.created}, Updated: ${result.updated}, Deactivated: ${result.deactivated}, Skipped: ${result.skipped}`,
-    );
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);

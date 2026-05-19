@@ -2,19 +2,19 @@ import { Op } from "sequelize";
 import { ParkArea } from "../../models/index.js";
 
 /**
- * Validates DOOT Park Areas for invalid strapiOrcsAreaNumber values
+ * Validates DOOT Park Areas for invalid orcsAreaNumber values
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} Returns true if validation passes, false if validation fails
  */
 export async function validateDootParkAreas(transaction = null) {
   let isValid = true;
 
-  // Make sure all records DOOT have a strapiOrcsAreaNumber in the format #-# (e.g. "1234-1")
+  // Make sure all records DOOT have a orcsAreaNumber in the format #-# (e.g. "1234-1")
   const invalidParkAreas = await ParkArea.findAll({
     where: {
       [Op.or]: [
-        { strapiOrcsAreaNumber: null },
-        { strapiOrcsAreaNumber: { [Op.notRegexp]: "^[0-9]+-[0-9]+$" } },
+        { orcsAreaNumber: null },
+        { orcsAreaNumber: { [Op.notRegexp]: "^[0-9]+-[0-9]+$" } },
       ],
     },
     transaction,
@@ -23,11 +23,11 @@ export async function validateDootParkAreas(transaction = null) {
   if (invalidParkAreas.length > 0) {
     for (const parkArea of invalidParkAreas) {
       console.warn(
-        `Invalid DOOT ParkArea: ${parkArea.name} (${parkArea.id}) - strapiOrcsAreaNumber: "${parkArea.strapiOrcsAreaNumber}"`,
+        `Invalid DOOT ParkArea: ${parkArea.name} (${parkArea.id}) - orcsAreaNumber: "${parkArea.orcsAreaNumber}"`,
       );
     }
     console.error(
-      `Found ${invalidParkAreas.length} DOOT ParkAreas with missing or incorrectly formatted strapiOrcsAreaNumber.`,
+      `Found ${invalidParkAreas.length} DOOT ParkAreas with missing or incorrectly formatted orcsAreaNumber.`,
     );
     isValid = false;
   }

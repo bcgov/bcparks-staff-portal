@@ -54,7 +54,7 @@ function EditAndReview() {
         })),
         ...(filterOptions?.featureTypes ?? []).map((f) => ({
           rank: f.rank,
-          strapiFeatureTypeId: f.strapiFeatureTypeId,
+          featureTypeNumber: f.featureTypeNumber,
           type: "FeatureType",
         })),
       ].sort((a, b) => a.rank - b.rank),

@@ -116,7 +116,7 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
               model: DateType,
               as: "dateType",
               required: false,
-              attributes: ["id", "strapiDateTypeId", "name"],
+              attributes: ["id", "dateTypeNumber", "name"],
 
               // Filter DateTypes by level
               where: dateTypeWhere,
@@ -150,7 +150,7 @@ async function getDateRangeAnnuals(publishableId) {
       {
         model: DateType,
         as: "dateType",
-        attributes: ["id", "strapiDateTypeId", "name"],
+        attributes: ["id", "dateTypeNumber", "name"],
       },
     ],
   });
@@ -222,7 +222,7 @@ function dateRangesQueryPart(seasonId) {
       {
         model: DateType,
         as: "dateType",
-        attributes: ["id", "strapiDateTypeId", "name"],
+        attributes: ["id", "dateTypeNumber", "name"],
       },
     ],
   };
@@ -249,7 +249,7 @@ function featureTypeQueryPart() {
   return {
     model: FeatureType,
     as: "featureType",
-    attributes: ["id", "name", "icon", "strapiFeatureTypeId"],
+    attributes: ["id", "name", "icon", "featureTypeNumber"],
   };
 }
 
@@ -326,7 +326,7 @@ async function getFrontcountryFeatureReservationDates(park, operatingYear) {
         as: "dateType",
         attributes: ["id"],
         where: {
-          strapiDateTypeId: DATE_TYPE.RESERVATION,
+          dateTypeNumber: DATE_TYPE.RESERVATION,
         },
         required: true,
       },
@@ -349,7 +349,7 @@ async function getFrontcountryFeatureReservationDates(park, operatingYear) {
                 as: "featureType",
                 attributes: ["id"],
                 where: {
-                  strapiFeatureTypeId: FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND,
+                  featureTypeNumber: FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND,
                 },
                 required: true,
               },
@@ -387,7 +387,7 @@ async function getParkDates(park, operatingYear) {
           {
             model: DateType,
             as: "dateType",
-            attributes: ["id", "strapiDateTypeId", "name"],
+            attributes: ["id", "dateTypeNumber", "name"],
           },
         ],
       },
@@ -401,10 +401,10 @@ async function getParkDates(park, operatingYear) {
     ),
   );
 
-  // Group by strapiDateTypeId
+  // Group by dateTypeNumber
   const datesByStrapiId = _.groupBy(
     allRanges,
-    (range) => range.dateType?.strapiDateTypeId,
+    (range) => range.dateType?.dateTypeNumber,
   );
 
   // Use constants for Tier 1, Tier 2, and Winter fee
@@ -515,7 +515,7 @@ async function saveSeasonData({
   const winterFeeDateType = await DateType.findOne({
     attributes: ["id"],
     where: {
-      strapiDateTypeId: DATE_TYPE.WINTER_FEE,
+      dateTypeNumber: DATE_TYPE.WINTER_FEE,
     },
     transaction,
   });
@@ -721,7 +721,7 @@ router.get(
       featureLevel: true,
     });
 
-    const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "strapiDateTypeId");
+    const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "dateTypeNumber");
 
     const { feature } = seasonModel;
 
@@ -831,7 +831,7 @@ router.get(
 
     const featureDateTypesByDateTypeId = _.keyBy(
       featureDateTypesArray,
-      "strapiDateTypeId",
+      "dateTypeNumber",
     );
 
     // Add some Park-level dates to the payload
@@ -1012,7 +1012,7 @@ router.get(
       parkLevel: true,
     });
 
-    const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "strapiDateTypeId");
+    const dateTypesByDateTypeId = _.keyBy(dateTypesArray, "dateTypeNumber");
 
     // Return the DateTypes in a specific order
     const orderedDateTypes = getDateTypesForPark(

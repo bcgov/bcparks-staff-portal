@@ -48,18 +48,18 @@ function FormSection({
             </TooltipWrapper>
           </h6>
 
-          {isDateTypeOptional(dateType.strapiDateTypeId, "park") && (
+          {isDateTypeOptional(dateType.dateTypeNumber, "park") && (
             <div className="my-2 text-secondary-grey">(Optional)</div>
           )}
 
           <PreviousDates
-            dateRanges={previousDatesByType?.[dateType.strapiDateTypeId]}
+            dateRanges={previousDatesByType?.[dateType.dateTypeNumber]}
           />
 
           <DateRangeFields
             dateableId={park.dateableId}
             dateType={dateType}
-            dateRanges={datesByType[dateType.strapiDateTypeId] ?? []}
+            dateRanges={datesByType[dateType.dateTypeNumber] ?? []}
             operatingYear={season.operatingYear}
             isWinterSeason={isWinterSeason}
             updateDateRange={updateDateRange}
@@ -67,7 +67,7 @@ function FormSection({
             removeDateRange={removeDateRange}
             dateRangeAnnuals={dateRangeAnnuals}
             updateDateRangeAnnual={updateDateRangeAnnual}
-            optional={isDateTypeOptional(dateType.strapiDateTypeId, "park")}
+            optional={isDateTypeOptional(dateType.dateTypeNumber, "park")}
           />
         </div>
       ))}
@@ -107,8 +107,8 @@ export default function ParkSeasonForm({
   // so split "Park gate open" and "Winter fee" out of the dateTypes array.
   const [gateDateType, winterDateType, regularDateTypes] = useMemo(() => {
     const grouped = groupBy(allDateTypes, (dateType) => {
-      if (dateType.strapiDateTypeId === DATE_TYPE.PARK_GATE_OPEN) return "gate";
-      if (dateType.strapiDateTypeId === DATE_TYPE.WINTER_FEE) return "winter";
+      if (dateType.dateTypeNumber === DATE_TYPE.PARK_GATE_OPEN) return "gate";
+      if (dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE) return "winter";
       return "regular";
     });
 
@@ -144,12 +144,12 @@ export default function ParkSeasonForm({
   }, [park.inReservationSystem, park.hasTier1Dates, park.hasTier2Dates]);
 
   const datesByType = useMemo(
-    () => groupBy(park.dateable.dateRanges, "dateType.strapiDateTypeId"),
+    () => groupBy(park.dateable.dateRanges, "dateType.dateTypeNumber"),
     [park.dateable.dateRanges],
   );
 
   const previousDatesByType = useMemo(
-    () => groupBy(previousSeasonDates, "dateType.strapiDateTypeId"),
+    () => groupBy(previousSeasonDates, "dateType.dateTypeNumber"),
     [previousSeasonDates],
   );
 
@@ -401,7 +401,7 @@ ParkSeasonForm.propTypes = {
       dateType: PropTypes.shape({
         name: PropTypes.string.isRequired,
         id: PropTypes.number.isRequired,
-        strapiDateTypeId: PropTypes.number.isRequired,
+        dateTypeNumber: PropTypes.number.isRequired,
       }),
     }),
   ).isRequired,
@@ -429,7 +429,7 @@ ParkSeasonForm.propTypes = {
     PropTypes.shape({
       name: PropTypes.string.isRequired,
       id: PropTypes.number.isRequired,
-      strapiDateTypeId: PropTypes.number.isRequired,
+      dateTypeNumber: PropTypes.number.isRequired,
       description: PropTypes.string,
     }),
   ).isRequired,

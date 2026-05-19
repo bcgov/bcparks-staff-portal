@@ -1,8 +1,4 @@
-# Strapi Data Import Scripts
-
-This directory contains scripts for importing data from Strapi CMS into the DOOT database.
-
-## import-parks.js
+# import-parks.js
 
 Imports and updates `Park` records from Strapi's `protected-area` collection by matching the `orcs` field with existing parks in the DOOT database.
 
@@ -34,7 +30,7 @@ All operations are performed inside a transaction. If any error occurs, all chan
 
 ```sh
 # Import parks from Strapi
-node tasks/import-parks/import-parks.js
+node strapi-sync/import-parks/import-parks.js
 ```
 
 ## Output

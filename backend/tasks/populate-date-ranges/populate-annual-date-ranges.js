@@ -10,9 +10,9 @@ import {
   DateType,
 } from "../../models/index.js";
 import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
-import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
 
 // Functions
 
@@ -27,7 +27,7 @@ export async function populateAnnualDateRangesForYear(
         {
           model: DateType,
           as: "dateType",
-          attributes: ["strapiDateTypeId"],
+          attributes: ["dateTypeNumber"],
         },
       ],
 
@@ -46,7 +46,7 @@ export async function populateAnnualDateRangesForYear(
 
       // Season type based on the date type of the DateRangeAnnual
       const seasonType =
-        annual.dateType.strapiDateTypeId === DATE_TYPE.WINTER_FEE
+        annual.dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE
           ? SEASON_TYPE.WINTER
           : SEASON_TYPE.REGULAR;
 
@@ -85,11 +85,18 @@ export async function populateAnnualDateRangesForYear(
       // create season if no target season found
       // @TODO: Update criteria to create seasons in create-seasons/create-winter-seasons instead
       if (!targetSeason) {
+        // Determine the status of the new season based on annual dates
+        const status = await resolveNewSeasonStatus(
+          annual.publishableId,
+          prevSeason.seasonType,
+          transaction,
+        );
+
         targetSeason = await Season.create(
           {
             publishableId: annual.publishableId,
             operatingYear: targetYear,
-            status: STATUS.PENDING_REVIEW,
+            status,
             readyToPublish: true,
             seasonType: prevSeason.seasonType,
           },
@@ -99,7 +106,7 @@ export async function populateAnnualDateRangesForYear(
 
       // For winter seasons, only copy Winter fee date types
       if (targetSeason.seasonType === SEASON_TYPE.WINTER) {
-        if (annual.dateType.strapiDateTypeId !== DATE_TYPE.WINTER_FEE) {
+        if (annual.dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE) {
           console.log(
             `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${annual.publishableId})`,
           );
@@ -128,9 +135,7 @@ export async function populateAnnualDateRangesForYear(
       );
 
       if (completeTargetRanges.length >= prevDateRanges.length) {
-        console.log(
-          `Target season ${targetSeason.operatingYear} already has ${completeTargetRanges.length} complete date ranges for dateType ${annual.dateTypeId}, skipping`,
-        );
+        // Target season already has complete date ranges for this dateType
         continue;
       }
 
@@ -139,9 +144,6 @@ export async function populateAnnualDateRangesForYear(
         prevDateRanges.length - completeTargetRanges.length;
 
       if (numRangesToCopy <= 0) {
-        console.log(
-          `Target season ${targetSeason.operatingYear} already has enough date ranges for dateType ${annual.dateTypeId}, skipping`,
-        );
         continue;
       }
 
