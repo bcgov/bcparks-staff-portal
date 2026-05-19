@@ -475,10 +475,11 @@ export default function AdvisoryDashboard() {
           selectedParkId,
         );
 
+        // Build "base filters" array that applies to the count query and the main query
         const baseFilters = [{ isLatestRevision: true }];
 
+        // When not showing archived advisories, filter out unpublished advisories older than 30 days
         if (!showArchived) {
-          // When not showing archived advisories, filter out unpublished advisories older than 30 days
           baseFilters.push({
             $or: [
               // Always include all non-unpublished advisories
@@ -493,6 +494,7 @@ export default function AdvisoryDashboard() {
           });
         }
 
+        // Apply filters from table columns and dropdowns
         baseFilters.push(...columnFilterClauses);
 
         // When "All" is selected, first fetch the current total with
