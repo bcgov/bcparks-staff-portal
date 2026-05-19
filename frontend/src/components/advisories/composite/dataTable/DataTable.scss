@@ -133,8 +133,7 @@
   text-align: left;
 
   .warning-icon {
-    width: 1.25rem;
-    height: 1.25rem;
+    font-size: 1.25rem;
   }
 }
 
@@ -151,8 +150,7 @@
 
   .sort-up-icon,
   .sort-down-icon {
-    width: 1.125rem;
-    height: 1.125rem;
+    font-size: 1.125rem;
 
     &.is-active {
       color: var(--icons-color-primary);
