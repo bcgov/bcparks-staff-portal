@@ -1002,8 +1002,8 @@ export default function AdvisoryDashboard() {
                   days
                   <LightTooltip
                     arrow
-                    title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this
-                   box to include inactive advisories."
+                    title="By default, inactive advisories and closures that have not been modified in the past 30 days are hidden. Check this
+                   box to include inactive advisories and closures."
                   >
                     <FontAwesomeIcon
                       icon={faCircleQuestion}
