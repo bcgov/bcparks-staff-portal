@@ -45,7 +45,6 @@ import {
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
-import useAdvisoryFlashMessage from "@/hooks/advisories/useAdvisoryFlashMessage";
 import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
 import {
   clearAllFilters as clearAllFiltersHandler,
@@ -464,29 +463,26 @@ export default function AdvisoryDashboard() {
       setPublicAdvisories([]);
 
       try {
-        const standardCutoffDate = moment()
+        const unpublishedCutoffDate = moment()
           .subtract(30, "days")
           .format("YYYY-MM-DD");
-        const extendedCutoffDate = moment()
-          .subtract(18, "months")
-          .format("YYYY-MM-DD");
 
-        const unpublishedCutoffDate = showArchived
-          ? extendedCutoffDate
-          : standardCutoffDate;
-
-        const advisoryFilter = {
-          $or: [
-            // Always include all non-unpublished advisories
-            { advisoryStatus: { code: { $ne: "UNP" } } },
+        const advisoryFilter = showArchived
+          ? // When showing archived advisories, don't filter by date
+            {}
+          : // When not showing archived advisories, filter out unpublished advisories older than 30 days
             {
-              $and: [
-                { advisoryStatus: { code: { $eq: "UNP" } } },
-                { updatedAt: { $gt: unpublishedCutoffDate } },
+              $or: [
+                // Always include all non-unpublished advisories
+                { advisoryStatus: { code: { $ne: "UNP" } } },
+                {
+                  $and: [
+                    { advisoryStatus: { code: { $eq: "UNP" } } },
+                    { updatedAt: { $gt: unpublishedCutoffDate } },
+                  ],
+                },
               ],
-            },
-          ],
-        };
+            };
 
         // Build server-side filter params from column filter values and region/park dropdowns
         const columnFilterClauses = buildFilter(
@@ -1007,7 +1003,7 @@ export default function AdvisoryDashboard() {
                   <LightTooltip
                     arrow
                     title="By default, inactive advisories that have not been modified in the past 30 days are hidden. Check this
-                   box to include inactive advisories modified in the past 18 months. Older advisories are available in Strapi."
+                   box to include inactive advisories."
                   >
                     <FontAwesomeIcon
                       icon={faCircleQuestion}
