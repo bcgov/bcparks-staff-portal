@@ -467,23 +467,6 @@ export default function AdvisoryDashboard() {
           .subtract(30, "days")
           .format("YYYY-MM-DD");
 
-        const advisoryFilter = showArchived
-          ? // When showing archived advisories, don't filter by date
-            {}
-          : // When not showing archived advisories, filter out unpublished advisories older than 30 days
-            {
-              $or: [
-                // Always include all non-unpublished advisories
-                { advisoryStatus: { code: { $ne: "UNP" } } },
-                {
-                  $and: [
-                    { advisoryStatus: { code: { $eq: "UNP" } } },
-                    { updatedAt: { $gt: unpublishedCutoffDate } },
-                  ],
-                },
-              ],
-            };
-
         // Build server-side filter params from column filter values and region/park dropdowns
         const columnFilterClauses = buildFilter(
           debouncedTableFilterValues,
@@ -491,6 +474,26 @@ export default function AdvisoryDashboard() {
           selectedDistrictId,
           selectedParkId,
         );
+
+        const baseFilters = [{ isLatestRevision: true }];
+
+        if (!showArchived) {
+          // When not showing archived advisories, filter out unpublished advisories older than 30 days
+          baseFilters.push({
+            $or: [
+              // Always include all non-unpublished advisories
+              { advisoryStatus: { code: { $ne: "UNP" } } },
+              {
+                $and: [
+                  { advisoryStatus: { code: { $eq: "UNP" } } },
+                  { updatedAt: { $gt: unpublishedCutoffDate } },
+                ],
+              },
+            ],
+          });
+        }
+
+        baseFilters.push(...columnFilterClauses);
 
         // When "All" is selected, first fetch the current total with
         // the active filters applied, then request exactly that many rows
@@ -501,11 +504,7 @@ export default function AdvisoryDashboard() {
             {
               fields: ["id"],
               filters: {
-                $and: [
-                  { isLatestRevision: true },
-                  advisoryFilter,
-                  ...columnFilterClauses,
-                ],
+                $and: baseFilters,
               },
               pagination: { page: 1, pageSize: 1 },
             },
@@ -549,11 +548,7 @@ export default function AdvisoryDashboard() {
               recreationDistricts: { fields: ["district"] },
             },
             filters: {
-              $and: [
-                { isLatestRevision: true },
-                advisoryFilter,
-                ...columnFilterClauses,
-              ],
+              $and: baseFilters,
             },
             pagination,
             sort,
