@@ -17,7 +17,7 @@ export default (sequelize) => {
   FeatureType.init(
     {
       name: DataTypes.STRING,
-      strapiFeatureTypeId: DataTypes.INTEGER,
+      featureTypeNumber: DataTypes.INTEGER,
       icon: DataTypes.STRING,
       rank: DataTypes.INTEGER,
     },

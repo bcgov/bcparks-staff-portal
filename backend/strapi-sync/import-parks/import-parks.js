@@ -143,7 +143,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
         managementAreas: managementAreaArray,
       };
 
-      // Find matched ProtectedArea by strapiOrcsAreaNumber
+      // Find matched ProtectedArea by orcsAreaNumber
 
       if (matchedDootPark) {
         // Check if any values are different

@@ -1,6 +1,6 @@
 # update-orcs-feature-numbers.js
 
-This script synchronizes ORCS feature numbers from Strapi to the local DOOT database by updating the `strapiOrcsFeatureNumber` field in the `Features` table.
+This script synchronizes ORCS feature numbers from Strapi to the local DOOT database by updating the `orcsFeatureNumber` field in the `Features` table.
 
 ## This script is temporary
 
@@ -10,7 +10,7 @@ When DOOT's Strapi sync scripts are updated, these values will be fetched during
 
 1. **Fetches all park features from Strapi** using `/api/park-features` endpoint
 2. **Handles duplicate featureIds** - skips any `featureId` values that occur more than once to avoid data conflicts
-3. **Updates local Feature records** by matching `strapiFeatureId` and updating `strapiOrcsFeatureNumber`
+3. **Updates local Feature records** by matching `strapiFeatureId` and updating `orcsFeatureNumber`
 4. **Transaction Safety** - all operations in a transaction, rolled back on error
 
 ## How to run
@@ -27,7 +27,7 @@ node tasks/update-orcs-feature-numbers/update-orcs-feature-numbers.js
 ## Output
 
 - Logs progress for each page fetched
-- Reports: `"Updated X features with strapiOrcsFeatureNumber"`
+- Reports: `"Updated X features with orcsFeatureNumber"`
 - Errors cause transaction rollback with error message
 
 ## Notes

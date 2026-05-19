@@ -35,7 +35,7 @@ export default async function updateOrcsAreaNumbers(transaction = null) {
   try {
     // Fetch all parkArea records in the DOOT db
     const dootAreas = await ParkArea.findAll({
-      attributes: ["id", "name", "strapiOrcsAreaNumber"],
+      attributes: ["id", "name", "orcsAreaNumber"],
       include: [
         {
           model: Park,
@@ -49,28 +49,28 @@ export default async function updateOrcsAreaNumbers(transaction = null) {
     for (const area of dootAreas) {
       const key = `${area.park.orcs}|${standardizeName(area.name)}`;
 
-      // Match on key to populate the strapiOrcsAreaNumber
+      // Match on key to populate the orcsAreaNumber
       const orcsAreaNumber = strapiEntities.get(key);
 
       // Skip updating if there's no orcsAreaNumber from Strapi
       if (!orcsAreaNumber) continue;
 
       // Skip updating if the orcsAreaNumber hasn't changed
-      if (area.strapiOrcsAreaNumber === orcsAreaNumber) continue;
+      if (area.orcsAreaNumber === orcsAreaNumber) continue;
 
       // Update and save the area record
-      area.strapiOrcsAreaNumber = orcsAreaNumber;
+      area.orcsAreaNumber = orcsAreaNumber;
       await area.save({ transaction });
 
       updateCount += 1;
     }
   } catch (error) {
-    console.error("Failed to update strapiOrcsAreaNumber:", error);
+    console.error("Failed to update orcsAreaNumber:", error);
     // Transaction rollback is handled by the caller.
     throw error;
   }
 
-  console.log(`Updated ${updateCount} parkAreas with strapiOrcsAreaNumber.`);
+  console.log(`Updated ${updateCount} parkAreas with orcsAreaNumber.`);
 }
 
 // Run directly
@@ -82,7 +82,7 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
     await transaction.commit();
   } catch (err) {
     await transaction.rollback();
-    console.error("Failed to update strapiOrcsAreaNumber:", err);
+    console.error("Failed to update orcsAreaNumber:", err);
     throw err;
   }
 }

@@ -27,7 +27,7 @@ export default async function populateBlankGateOperatingDates(
     attributes: ["id"],
 
     where: {
-      strapiDateTypeId: DATE_TYPE.PARK_GATE_OPEN,
+      dateTypeNumber: DATE_TYPE.PARK_GATE_OPEN,
     },
 
     transaction,

@@ -27,7 +27,7 @@ export async function populateAnnualDateRangesForYear(
         {
           model: DateType,
           as: "dateType",
-          attributes: ["strapiDateTypeId"],
+          attributes: ["dateTypeNumber"],
         },
       ],
 
@@ -46,7 +46,7 @@ export async function populateAnnualDateRangesForYear(
 
       // Season type based on the date type of the DateRangeAnnual
       const seasonType =
-        annual.dateType.strapiDateTypeId === DATE_TYPE.WINTER_FEE
+        annual.dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE
           ? SEASON_TYPE.WINTER
           : SEASON_TYPE.REGULAR;
 
@@ -106,7 +106,7 @@ export async function populateAnnualDateRangesForYear(
 
       // For winter seasons, only copy Winter fee date types
       if (targetSeason.seasonType === SEASON_TYPE.WINTER) {
-        if (annual.dateType.strapiDateTypeId !== DATE_TYPE.WINTER_FEE) {
+        if (annual.dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE) {
           console.log(
             `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${annual.publishableId})`,
           );

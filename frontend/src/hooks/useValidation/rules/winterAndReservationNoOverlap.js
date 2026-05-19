@@ -23,7 +23,7 @@ export default function winterAndReservationNoOverlap(seasonData, context) {
   // Get a list of Park-level winter dates
   const winterDates = dateRanges.filter(
     (dateRange) =>
-      dateRange.dateType.strapiDateTypeId === DATE_TYPE.WINTER_FEE &&
+      dateRange.dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE &&
       dateRange.startDate &&
       dateRange.endDate,
   );

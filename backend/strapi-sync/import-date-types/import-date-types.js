@@ -21,14 +21,14 @@ export default async function importStrapiDateTypes(transaction = null) {
       return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
 
-    // Get all DOOT DateTypes for strapiDateTypeId lookup
+    // Get all DOOT DateTypes for dateTypeNumber lookup
     const dootDateTypes = await DateType.findAll({
-      where: { strapiDateTypeId: { [Op.ne]: null } },
+      where: { dateTypeNumber: { [Op.ne]: null } },
       transaction,
     });
     const dateTypeLookup = new Map(
       dootDateTypes.map((dateType) => [
-        dateType.strapiDateTypeId, // Key: e.g. "10"
+        dateType.dateTypeNumber, // Key: e.g. "10"
         dateType, // Value: DateType record
       ]),
     );
@@ -54,7 +54,7 @@ export default async function importStrapiDateTypes(transaction = null) {
 
       const dateTypeToSave = {
         name: dateType,
-        strapiDateTypeId: dateTypeId,
+        dateTypeNumber: dateTypeId,
         description: strapiDateType.description,
         featureLevel: strapiDateType.featureLevel || false,
         parkLevel: strapiDateType.parkLevel || false,
@@ -74,14 +74,14 @@ export default async function importStrapiDateTypes(transaction = null) {
         // Update matched date type
         await matchedDateType.update(dateTypeToSave, { transaction });
         console.log(
-          `Updated date type: ${dateType} (strapiDateTypeId: ${dateTypeId})`,
+          `Updated date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
         );
         updatedCount++;
       } else {
         // Create new date type
         await DateType.create(dateTypeToSave, { transaction });
         console.log(
-          `Created date type: ${dateType} (strapiDateTypeId: ${dateTypeId})`,
+          `Created date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
         );
         createdCount++;
       }

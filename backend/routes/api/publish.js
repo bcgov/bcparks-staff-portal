@@ -33,7 +33,7 @@ const FEATURE_ATTRIBUTES = [
   "id",
   "publishableId",
   "dateableId",
-  "strapiOrcsFeatureNumber",
+  "orcsFeatureNumber",
 ];
 
 // ensures non-feature rows appear before features
@@ -41,11 +41,11 @@ const NON_FEATURE_SORT_INDEX = -1;
 
 /**
  * Returns the sort index for the given feature type ID.
- * @param {number} strapiFeatureTypeId the strapi feature type ID
+ * @param {number} featureTypeNumber the human-assigned identifier from Strapi for the feature type
  * @returns {number} the sort index
  */
-function getSortIndex(strapiFeatureTypeId) {
-  const index = FEATURE_TYPE.SORT_ORDER.indexOf(strapiFeatureTypeId);
+function getSortIndex(featureTypeNumber) {
+  const index = FEATURE_TYPE.SORT_ORDER.indexOf(featureTypeNumber);
 
   return index === -1 ? Number.MAX_SAFE_INTEGER : index;
 }
@@ -74,7 +74,7 @@ function flattenSeasons(seasons) {
           ...baseRow,
           featureName: season.publishable.name,
           sortIndex: getSortIndex(
-            season.publishable.featureType.strapiFeatureTypeId,
+            season.publishable.featureType.featureTypeNumber,
           ),
         },
       ];
@@ -88,7 +88,7 @@ function flattenSeasons(seasons) {
       return season.publishable.features.map((feature) => ({
         ...baseRow,
         featureName: feature.name,
-        sortIndex: getSortIndex(feature.featureType.strapiFeatureTypeId),
+        sortIndex: getSortIndex(feature.featureType.featureTypeNumber),
       }));
     }
 
@@ -207,7 +207,7 @@ router.get(
               {
                 model: FeatureType,
                 as: "featureType",
-                attributes: ["strapiFeatureTypeId"],
+                attributes: ["featureTypeNumber"],
               },
             ],
           },
@@ -222,7 +222,7 @@ router.get(
           {
             model: FeatureType,
             as: "featureType",
-            attributes: ["strapiFeatureTypeId"],
+            attributes: ["featureTypeNumber"],
           },
         ],
       }),
@@ -363,11 +363,11 @@ async function formatDateRanges(entity, season) {
       {
         model: DateType,
         as: "dateType",
-        attributes: ["id", "strapiDateTypeId"],
+        attributes: ["id", "dateTypeNumber"],
 
         where: {
           // @TEMP: Filter out FCFS dates while they're being hidden in the UI
-          strapiDateTypeId: {
+          dateTypeNumber: {
             [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
           },
         },
@@ -426,7 +426,7 @@ async function formatDateRanges(entity, season) {
       isDateAnnual,
       startDate: formatDate(dateRange.startDate),
       endDate: formatDate(dateRange.endDate),
-      dateTypeId: dateRange.dateType.strapiDateTypeId,
+      dateTypeId: dateRange.dateType.dateTypeNumber,
     };
   });
 }
@@ -487,14 +487,14 @@ async function formatParkData(park, season) {
 async function formatFeatureData(feature, season, includeGateInfo = false) {
   // Return null to skip publishing if the ORCS Feature Number is missing
   // We can't connect to anything in Strapi without this key
-  if (!feature.strapiOrcsFeatureNumber) return null;
+  if (!feature.orcsFeatureNumber) return null;
 
   try {
     const dateRanges = await formatDateRanges(feature, season);
 
     // Return formatted Feature data
     const featureData = {
-      orcsFeatureNumber: feature.strapiOrcsFeatureNumber,
+      orcsFeatureNumber: feature.orcsFeatureNumber,
       operatingYear: season.operatingYear,
       dateRanges,
     };
@@ -520,13 +520,13 @@ async function formatFeatureData(feature, season, includeGateInfo = false) {
 async function formatParkAreaData(parkArea, season) {
   // Return null to skip publishing if the ORCS Area Number is missing
   // We can't connect to anything in Strapi without this key
-  if (!parkArea.strapiOrcsAreaNumber) return null;
+  if (!parkArea.orcsAreaNumber) return null;
 
   const gateInfo = formatGateInfo(parkArea.gateDetails);
 
   // Format ParkArea data
   const formattedParkArea = {
-    orcsAreaNumber: parkArea.strapiOrcsAreaNumber,
+    orcsAreaNumber: parkArea.orcsAreaNumber,
     operatingYear: season.operatingYear,
     gateInfo,
   };
@@ -591,7 +591,7 @@ router.post(
           model: ParkArea,
           as: "parkArea",
 
-          attributes: ["id", "publishableId", "strapiOrcsAreaNumber"],
+          attributes: ["id", "publishableId", "orcsAreaNumber"],
 
           include: [
             {

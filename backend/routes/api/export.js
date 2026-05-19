@@ -263,7 +263,7 @@ function getFeatureForDateRange(dateRange) {
  */
 function getGateDisplayValues(dateRange, gateDetail, annualData) {
   const isGateType =
-    dateRange.dateType.strapiDateTypeId === DATE_TYPE.PARK_GATE_OPEN;
+    dateRange.dateType.dateTypeNumber === DATE_TYPE.PARK_GATE_OPEN;
   const hasGate = gateDetail?.hasGate === true;
 
   let gateStartTime = "";
@@ -461,7 +461,7 @@ router.get(
         {
           model: DateType,
           as: "dateType",
-          attributes: ["id", "strapiDateTypeId", "name"],
+          attributes: ["id", "dateTypeNumber", "name"],
           required: true,
         },
       ],
@@ -540,7 +540,7 @@ router.get(
         // Skip non-winter fee dates for winter seasons
         if (
           season.seasonType === SEASON_TYPE.WINTER &&
-          dateRange.dateType.strapiDateTypeId !== DATE_TYPE.WINTER_FEE
+          dateRange.dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE
         ) {
           return null;
         }

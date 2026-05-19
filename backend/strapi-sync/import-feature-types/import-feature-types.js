@@ -21,14 +21,14 @@ export default async function importStrapiFeatureTypes(transaction = null) {
       return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
     }
 
-    // Get all DOOT FeatureTypes for strapiFeatureTypeId lookup
+    // Get all DOOT FeatureTypes for featureTypeNumber lookup
     const dootFeatureTypes = await FeatureType.findAll({
-      where: { strapiFeatureTypeId: { [Op.ne]: null } },
+      where: { featureTypeNumber: { [Op.ne]: null } },
       transaction,
     });
     const featureTypeLookup = new Map(
       dootFeatureTypes.map((featureType) => [
-        featureType.strapiFeatureTypeId, // Key: e.g. "10"
+        featureType.featureTypeNumber, // Key: e.g. "10"
         featureType, // Value: FeatureType record
       ]),
     );
@@ -58,7 +58,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
 
       const featureTypeToSave = {
         name: parkFeatureType,
-        strapiFeatureTypeId: featureTypeId,
+        featureTypeNumber: featureTypeId,
         rank: rank || 1000000,
       };
 
@@ -76,7 +76,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
         // Update matched feature type
         await matchedFeatureType.update(featureTypeToSave, { transaction });
         console.log(
-          `Updated feature type: ${parkFeatureType} (strapiFeatureTypeId: ${featureTypeId})`,
+          `Updated feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
         );
         updatedCount++;
       } else {
@@ -86,7 +86,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
         // Create new feature type
         await FeatureType.create(featureTypeToSave, { transaction });
         console.log(
-          `Created feature type: ${parkFeatureType} (strapiFeatureTypeId: ${featureTypeId})`,
+          `Created feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
         );
         createdCount++;
       }

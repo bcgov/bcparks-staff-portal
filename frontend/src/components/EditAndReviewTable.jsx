@@ -125,18 +125,18 @@ DateTypeTableRow.propTypes = {
 function DateTableRow({ groupedDateRanges, currentYear }) {
   if (!currentYear || !groupedDateRanges) return null;
 
-  // Helper to get the strapiDateTypeId from the first item in a groupedDateRange
-  function getStrapiDateTypeId(datesObj) {
+  // Helper to get the dateTypeNumber from the first item in a groupedDateRange
+  function getDateTypeNumber(datesObj) {
     const firstRange = Object.values(datesObj)[0]?.[0];
 
-    return firstRange?.dateType?.strapiDateTypeId ?? Number.MAX_SAFE_INTEGER;
+    return firstRange?.dateType?.dateTypeNumber ?? Number.MAX_SAFE_INTEGER;
   }
 
   // Sort date types based on DATE_TYPE.SORT_ORDER
   const sortedDateTypes = Object.entries(groupedDateRanges).sort(
     ([, datesA], [, datesB]) =>
-      DATE_TYPE.SORT_ORDER.indexOf(getStrapiDateTypeId(datesA)) -
-      DATE_TYPE.SORT_ORDER.indexOf(getStrapiDateTypeId(datesB)),
+      DATE_TYPE.SORT_ORDER.indexOf(getDateTypeNumber(datesA)) -
+      DATE_TYPE.SORT_ORDER.indexOf(getDateTypeNumber(datesB)),
   );
 
   return sortedDateTypes.map(([dateTypeName, yearsObj]) => (
@@ -479,7 +479,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
 
         {sortOrder.map((groupingType) => (
           <React.Fragment
-            key={`${groupingType.type}-${groupingType.parkAreaTypeNumber || groupingType.strapiFeatureTypeId}`}
+            key={`${groupingType.type}-${groupingType.parkAreaTypeNumber || groupingType.featureTypeNumber}`}
           >
             {groupingType.type === "ParkAreaType" && (
               <FeaturesByFeatureTypeWithAreas
@@ -497,8 +497,8 @@ function Table({ park, formPanelHandler, sortOrder }) {
                 park={park}
                 features={features.filter(
                   (f) =>
-                    f.featureType.strapiFeatureTypeId ===
-                    groupingType.strapiFeatureTypeId,
+                    f.featureType.featureTypeNumber ===
+                    groupingType.featureTypeNumber,
                 )}
                 formPanelHandler={formPanelHandler}
               />
