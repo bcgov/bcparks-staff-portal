@@ -51,6 +51,7 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
+import useAdvisoryMarkReviewed from "@/hooks/advisories/useAdvisoryMarkReviewed";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
 import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
 import { REVIEW_STATUS } from "@/constants/reviewStatus";
@@ -164,6 +165,28 @@ export default function AdvisoryDashboard({
     [globalFlashMessage],
   );
 
+  const openMarkReviewedError = useCallback(
+    (message) => {
+      globalFlashMessage.open(
+        "Failed to mark Advisory / Closure reviewed",
+        message,
+        {
+          variant: "error",
+        },
+      );
+    },
+    [globalFlashMessage],
+  );
+
+  const openMarkReviewedSuccess = useCallback(
+    (message) => {
+      globalFlashMessage.open("Marked Advisory / Closure reviewed", message, {
+        variant: "success",
+      });
+    },
+    [globalFlashMessage],
+  );
+
   const handleUnpublish = useAdvisoryUnpublish({
     advisoryStatuses,
     modifiedBy: auth.user?.profile?.name,
@@ -172,6 +195,18 @@ export default function AdvisoryDashboard({
     openUnpublishSuccess,
     onSuccess() {
       // Refresh the advisory dashboard to reflect the unpublished change
+      setRefreshKey((current) => current + 1);
+    },
+  });
+
+  const handleMarkReviewed = useAdvisoryMarkReviewed({
+    advisoryStatuses,
+    reviewedByName: auth.user?.profile?.name,
+    isApprover: hasAnyRole(["approver"]),
+    openMarkReviewedError,
+    openMarkReviewedSuccess,
+    onSuccess() {
+      // Refresh the advisory dashboard to reflect the reviewed change
       setRefreshKey((current) => current + 1);
     },
   });
@@ -1179,12 +1214,20 @@ export default function AdvisoryDashboard({
             canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
             onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
             onEdit={() => navigate(`/update-advisory/${rowData.documentId}`)}
+            onMarkReviewed={() => handleMarkReviewed(rowData)}
             onUnpublish={() => handleUnpublish(rowData)}
           />
         ),
       },
     ],
-    [urgencies, advisoryStatuses, navigate, handleUnpublish, isReviewDashboard],
+    [
+      urgencies,
+      advisoryStatuses,
+      navigate,
+      handleMarkReviewed,
+      handleUnpublish,
+      isReviewDashboard,
+    ],
   );
 
   if (toCreate) {

@@ -4,7 +4,12 @@ import classNames from "classnames";
 import Dropdown from "react-bootstrap/Dropdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fa-kit/icons/classic/solid";
-import { faEyeSlash, faMemo, faPen } from "@fa-kit/icons/classic/regular";
+import {
+  faCircleCheck,
+  faEyeSlash,
+  faMemo,
+  faPen,
+} from "@fa-kit/icons/classic/regular";
 
 import "./TableActionButton.scss";
 
@@ -27,6 +32,7 @@ export function TableActionButton({
   canUnpublish = false,
   onView,
   onEdit,
+  onMarkReviewed,
   onUnpublish,
   className = "",
 }) {
@@ -107,6 +113,12 @@ export function TableActionButton({
             <FontAwesomeIcon icon={faEyeSlash} />
             Unpublish
           </Dropdown.Item>
+          {onMarkReviewed && (
+            <Dropdown.Item onClick={(event) => action(event, onMarkReviewed)}>
+              <FontAwesomeIcon icon={faCircleCheck} />
+              Mark reviewed
+            </Dropdown.Item>
+          )}
         </Dropdown.Menu>
       </Dropdown>
     </div>
@@ -118,6 +130,7 @@ TableActionButton.propTypes = {
   canUnpublish: PropTypes.bool,
   onView: PropTypes.func.isRequired,
   onEdit: PropTypes.func.isRequired,
+  onMarkReviewed: PropTypes.func,
   onUnpublish: PropTypes.func.isRequired,
   className: PropTypes.string,
 };
