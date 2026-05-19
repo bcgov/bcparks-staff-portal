@@ -896,11 +896,11 @@ export default function AdvisoryDashboard({
       ...(isReviewDashboard
         ? [
             {
-              field: "updatedDate",
+              field: "modifiedDate",
               title: "Last updated",
               render(rowData) {
-                if (rowData.updatedDate) {
-                  return moment(rowData.updatedDate).format("YYYY/MM/DD");
+                if (rowData.modifiedDate) {
+                  return moment(rowData.modifiedDate).format("YYYY/MM/DD");
                 }
 
                 return null;

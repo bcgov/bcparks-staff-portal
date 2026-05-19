@@ -141,7 +141,7 @@ export function buildSort(sortConfig, isReviewDashboard = false) {
   }
 
   if (isReviewDashboard) {
-    return ["updatedDate:ASC"];
+    return ["modifiedDate:ASC"];
   }
 
   return ["advisoryDate:DESC"];

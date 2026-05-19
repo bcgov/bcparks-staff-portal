@@ -8,7 +8,7 @@ export default function buildReviewFilter({ isReviewDashboard }) {
   const now = moment().toISOString();
   const oneWeekFromNow = moment().add(7, "days").toISOString();
 
-  // Temporary condition to exclude stale advisories that haven't been updated recently and aren't relevant to the review dashboard.
+  // Temporary condition to exclude stale advisories that haven't been modified recently and aren't relevant to the review dashboard.
   // TODO - Remove this cutoff after migration verification is complete.
   const oneMonthAgo = moment().subtract(1, "month").toISOString();
 
@@ -90,18 +90,9 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                 },
                 // Temporary condition
                 {
-                  $or: [
-                    {
-                      updatedAt: {
-                        $between: [oneMonthAgo, now],
-                      },
-                    },
-                    {
-                      updatedDate: {
-                        $between: [oneMonthAgo, now],
-                      },
-                    },
-                  ],
+                  modifiedDate: {
+                    $between: [oneMonthAgo, now],
+                  },
                 },
               ],
             },
