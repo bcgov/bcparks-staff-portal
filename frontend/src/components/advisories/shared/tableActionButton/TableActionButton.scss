@@ -12,13 +12,12 @@
 
       .action-button__icon {
         height: 0.75rem;
-        margin-left: 0.5rem;
         transition: transform 0.5s ease;
         width: 0.75rem;
       }
 
       &.show {
-        .action-button__icon{
+        .action-button__icon {
           transform: rotate(180deg);
         }
       }

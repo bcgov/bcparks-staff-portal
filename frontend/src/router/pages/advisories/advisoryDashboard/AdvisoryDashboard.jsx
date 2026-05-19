@@ -910,15 +910,10 @@ export default function AdvisoryDashboard() {
         title: "",
         field: "id",
         filtering: false,
-        headerStyle: {
-          minWidth: 100,
-        },
-        cellStyle: {
-          minWidth: 100,
-          textAlign: "left",
-        },
+
         render: (rowData) => (
           <TableActionButton
+            className="ms-1 me-3"
             rowId={rowData.documentId}
             canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
             onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
