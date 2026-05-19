@@ -6,6 +6,8 @@ import {
   useRef,
   useCallback,
 } from "react";
+import PropTypes from "prop-types";
+import classNames from "classnames";
 import {
   useLocalStorage,
   useSessionStorage,
@@ -13,7 +15,7 @@ import {
   useDebounceValue,
 } from "usehooks-ts";
 import qs from "qs";
-import { Navigate, useNavigate } from "react-router-dom";
+import { Navigate, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
@@ -46,6 +48,7 @@ import {
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
 import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
+import buildReviewFilter from "@/lib/advisories/utils/AdvisoryReviewDashboardQuery";
 import {
   clearAllFilters as clearAllFiltersHandler,
   clearDistrictFilter as clearDistrictFilterHandler,
@@ -62,7 +65,10 @@ import {
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
 
-export default function AdvisoryDashboard() {
+export default function AdvisoryDashboard({
+  filterStorageKey = "advisoryFilters",
+  isReviewDashboard = false,
+}) {
   const { setError } = useContext(ErrorContext);
   const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
@@ -148,7 +154,7 @@ export default function AdvisoryDashboard() {
   // Persisted filter state for the dashboard (region, district, park, and table filters)
   // Saved to localStorage as an array of { type: "page"|"table", filterName/fieldName, filterValue/fieldValue }
   const [storedFilters, setStoredFilters] = useLocalStorage(
-    "advisoryFilters",
+    filterStorageKey,
     defaultPageFilters,
   );
   const [initialStoredFilters] = useState(() => storedFilters || []);
@@ -204,8 +210,12 @@ export default function AdvisoryDashboard() {
   }, 75);
 
   // Persist showArchived in sessionStorage
+  // Use separate keys for All vs Review tabs so each maintains independent state
+  const showArchivedStorageKey = isReviewDashboard
+    ? "showArchivedReview"
+    : "showArchived";
   const [showArchived, setShowArchived] = useSessionStorage(
-    "showArchived",
+    showArchivedStorageKey,
     false,
   );
 
@@ -475,6 +485,8 @@ export default function AdvisoryDashboard() {
           selectedParkId,
         );
 
+        const reviewFilterClauses = buildReviewFilter({ isReviewDashboard });
+
         // Build "base filters" array that applies to the count query and the main query
         const baseFilters = [{ isLatestRevision: true }];
 
@@ -494,8 +506,8 @@ export default function AdvisoryDashboard() {
           });
         }
 
-        // Apply filters from table columns and dropdowns
-        baseFilters.push(...columnFilterClauses);
+        // Apply filters from table columns, dropdowns, and review tab logic
+        baseFilters.push(...columnFilterClauses, ...reviewFilterClauses);
 
         // When "All" is selected, first fetch the current total with
         // the active filters applied, then request exactly that many rows
@@ -525,7 +537,7 @@ export default function AdvisoryDashboard() {
           pagination = { page: currentPage, pageSize };
         }
 
-        const sort = buildSort(sortConfig);
+        const sort = buildSort(sortConfig, isReviewDashboard);
 
         const query = qs.stringify(
           {
@@ -534,8 +546,11 @@ export default function AdvisoryDashboard() {
               "advisoryDate",
               "title",
               "effectiveDate",
+              "endDate",
               "expiryDate",
+              "updatedDate",
               "updatedAt",
+              "reviewedAt",
             ],
             populate: {
               protectedAreas: { fields: ["orcs", "protectedAreaName"] },
@@ -602,6 +617,7 @@ export default function AdvisoryDashboard() {
     setError,
     showArchived,
     sortConfig,
+    isReviewDashboard,
     debouncedTableFilterValues,
     refreshKey,
   ]);
@@ -877,6 +893,21 @@ export default function AdvisoryDashboard() {
           );
         },
       },
+      ...(isReviewDashboard
+        ? [
+            {
+              field: "modifiedDate",
+              title: "Last updated",
+              render(rowData) {
+                if (rowData.modifiedDate) {
+                  return moment(rowData.modifiedDate).format("YYYY/MM/DD");
+                }
+
+                return null;
+              },
+            },
+          ]
+        : []),
       {
         field: "advisoryDate",
         title: "Posting date",
@@ -888,6 +919,21 @@ export default function AdvisoryDashboard() {
           return null;
         },
       },
+      ...(isReviewDashboard
+        ? [
+            {
+              field: "endDate",
+              title: "End date",
+              render(rowData) {
+                if (rowData.endDate) {
+                  return moment(rowData.endDate).format("YYYY/MM/DD");
+                }
+
+                return null;
+              },
+            },
+          ]
+        : []),
       {
         field: "expiryDate",
         title: "Expiry date",
@@ -916,7 +962,7 @@ export default function AdvisoryDashboard() {
         ),
       },
     ],
-    [urgencies, advisoryStatuses, navigate, handleUnpublish],
+    [urgencies, advisoryStatuses, navigate, handleUnpublish, isReviewDashboard],
   );
 
   if (toCreate) {
@@ -927,91 +973,122 @@ export default function AdvisoryDashboard() {
   }
 
   return (
-    <div className="advisory-dashboard-page-wrap advisories-styles">
+    <div className="advisory-dashboard-page-wrap advisories-styles layout landing-page-tabs">
+      <header className="section-tabs d-flex flex-column">
+        <div className="container">
+          <h1 className="title m-3 mb-4">Advisories and closures</h1>
+          <ul className="nav nav-tabs px-2">
+            <li className="nav-item">
+              <NavLink className="nav-link" to="/advisories-and-closures" end>
+                All
+              </NavLink>
+            </li>
+            {hasAnyRole(["approver"]) && (
+              <li className="nav-item">
+                <NavLink
+                  className="nav-link"
+                  to="/advisories-and-closures/review"
+                >
+                  Review
+                </NavLink>
+              </li>
+            )}
+          </ul>
+        </div>
+      </header>
+
       <div className="container-fluid">
-        <div className="row ad-row">
-          <div className="col-12">
-            <h1 className="title">Advisories and closures</h1>
+        <div className="row">
+          <div
+            className={classNames(
+              "col-12 order-xl-0 order-1 d-flex flex-wrap",
+              {
+                "col-xl-9": !isReviewDashboard,
+              },
+            )}
+          >
+            <div className="row filter-row ">
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="RST recreation district"
+                  countLabel="RST recreation district"
+                  placeholder="Search or select a district"
+                  value={selectedDistrict}
+                  options={districtOptions}
+                  onChange={handleDistrictChange}
+                />
+              </div>
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="BC Parks region"
+                  countLabel="BC Parks region"
+                  placeholder="Search or select a region"
+                  value={selectedRegion}
+                  options={regionOptions}
+                  onChange={handleRegionChange}
+                />
+              </div>
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="BC Parks park"
+                  countLabel="BC Parks park"
+                  placeholder="Search or select a park"
+                  value={selectedPark}
+                  options={parkOptions}
+                  onChange={handleParkChange}
+                />
+              </div>
+            </div>
           </div>
+          {!isReviewDashboard && (
+            <div className="col-xl-3 col-12 order-xl-1 order-0 d-flex align-items-start justify-content-end">
+              <Button
+                label={
+                  <>
+                    <FontAwesomeIcon icon={faPlus} className="plus-icon me-2" />
+                    Create advisory / closure
+                  </>
+                }
+                styling="bcgov-normal-blue btn mt-3"
+                onClick={() => {
+                  setToCreate(true);
+                }}
+              />
+            </div>
+          )}
         </div>
-        <div className="row ad-row">
-          <div className="col-12 text-end">
-            <Button
-              label={
-                <>
-                  <FontAwesomeIcon icon={faPlus} className="plus-icon me-2" />
-                  Create advisory / closure
-                </>
-              }
-              styling="bcgov-normal-blue btn"
-              onClick={() => {
-                setToCreate(true);
-              }}
-            />
-          </div>
-        </div>
-        <div className="row ad-row">
-          <div className="ad-col col-md-6 col-12">
-            <MultiSelect
-              label="RST recreation district"
-              countLabel="RST recreation district"
-              placeholder="Search or select a district"
-              value={selectedDistrict}
-              options={districtOptions}
-              onChange={handleDistrictChange}
-            />
-          </div>
-          <div className="ad-col col-md-6 col-12">
-            <MultiSelect
-              label="BC Parks region"
-              countLabel="BC Parks region"
-              placeholder="Search or select a region"
-              value={selectedRegion}
-              options={regionOptions}
-              onChange={handleRegionChange}
-            />
-          </div>
-          <div className="ad-col col-md-6 col-12">
-            <MultiSelect
-              label="BC Parks park"
-              countLabel="BC Parks park"
-              placeholder="Search or select a park"
-              value={selectedPark}
-              options={parkOptions}
-              onChange={handleParkChange}
-            />
-          </div>
-        </div>
-        <div className="row ad-row">
-          <div className="col-12">
-            <Form.Check
-              className="advisory-archived-toggle mt-3"
-              type="checkbox"
-              id="show-archived"
-              checked={showArchived}
-              onChange={(e) => {
-                setShowArchived(e.target.checked);
-                resetToFirstPage();
-              }}
-              label={
-                <span>
-                  Show advisories and closures that have not been updated in 30
-                  days
-                  <LightTooltip
-                    arrow
-                    title="By default, inactive advisories and closures that have not been modified in the past 30 days are hidden. Check this
+        {!isReviewDashboard && (
+          <div className="row">
+            <div className="col-12">
+              <Form.Check
+                className="advisory-archived-toggle mt-3"
+                type="checkbox"
+                id="show-archived"
+                checked={showArchived}
+                onChange={(e) => {
+                  setShowArchived(e.target.checked);
+                  resetToFirstPage();
+                }}
+                label={
+                  <span>
+                    Show advisories and closures that have not been updated in
+                    30 days
+                    <LightTooltip
+                      arrow
+                      title="By default, inactive advisories and closures that have not been modified in the past 30 days are hidden. Check this
                    box to include inactive advisories and closures."
-                  >
-                    <FontAwesomeIcon
-                      icon={faCircleQuestion}
-                      className="helpIcon ms-1"
-                    />
-                  </LightTooltip>
-                </span>
-              }
-            />
+                    >
+                      <FontAwesomeIcon
+                        icon={faCircleQuestion}
+                        className="helpIcon ms-1"
+                      />
+                    </LightTooltip>
+                  </span>
+                }
+              />
+            </div>
           </div>
-        </div>
+        )}
         <FilterStatus
           totalResults={totalPublicAdvisories}
           selectedDistrict={selectedDistrict}
@@ -1033,11 +1110,12 @@ export default function AdvisoryDashboard() {
           }
           onClearAll={clearAllFilters}
         />
-      </div>
-      {
-        <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
+        <div
+          className="advisory-dashboard"
+          data-testid="AdvisoryDashboard"
+        >
           <br />
-          <div className="container-fluid">
+          <div className="advisory-dashboard-table-wrap">
             <DataTable
               filtering
               search={false}
@@ -1074,7 +1152,7 @@ export default function AdvisoryDashboard() {
             />
           </div>
         </div>
-      }
+      </div>
       {isLoading && (
         <div className="page-loader">
           <Loader page />
@@ -1083,3 +1161,8 @@ export default function AdvisoryDashboard() {
     </div>
   );
 }
+
+AdvisoryDashboard.propTypes = {
+  filterStorageKey: PropTypes.string,
+  isReviewDashboard: PropTypes.bool,
+};
