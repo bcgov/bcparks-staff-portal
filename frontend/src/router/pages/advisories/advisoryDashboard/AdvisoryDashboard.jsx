@@ -489,13 +489,6 @@ export default function AdvisoryDashboard({
           selectedDistrictId,
           selectedParkId,
         );
-        const baseFilters = {
-          $and: [
-            { isLatestRevision: true },
-            advisoryFilter,
-            ...columnFilterClauses,
-          ],
-        };
 
         const reviewFilterClauses = buildReviewFilter({ isReviewDashboard });
 

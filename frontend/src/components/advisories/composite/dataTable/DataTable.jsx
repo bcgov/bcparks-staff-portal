@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsFilter } from "@fa-kit/icons/classic/regular";
-import { faSortUp, faSortDown } from "@fa-kit/icons/classic/solid";
+import { faSort, faSortUp, faSortDown } from "@fa-kit/icons/classic/solid";
 import PaginationControls from "@/components/PaginationControls";
 
 import "./DataTable.scss";
@@ -117,28 +117,19 @@ function renderCell(column, row) {
 }
 
 function renderSortIndicator(isActive, direction) {
-  const indicatorClassName = classNames("data-table-sort-indicator", {
-    "single-icon": isActive,
+  let icon = faSort;
+
+  if (isActive) {
+    icon = direction === "asc" ? faSortUp : faSortDown;
+  }
+
+  const iconClassName = classNames("sort-icon", {
+    "is-active": isActive,
   });
 
   return (
-    <span className={indicatorClassName} aria-hidden="true">
-      {(!isActive || direction === "asc") && (
-        <FontAwesomeIcon
-          icon={faSortUp}
-          className={classNames("sort-up-icon", {
-            "is-active": isActive && direction === "asc",
-          })}
-        />
-      )}
-      {(!isActive || direction === "desc") && (
-        <FontAwesomeIcon
-          icon={faSortDown}
-          className={classNames("sort-down-icon", {
-            "is-active": isActive && direction === "desc",
-          })}
-        />
-      )}
+    <span className="data-table-sort-indicator" aria-hidden="true">
+      <FontAwesomeIcon icon={icon} className={iconClassName} />
     </span>
   );
 }

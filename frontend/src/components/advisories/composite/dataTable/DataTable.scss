@@ -146,24 +146,12 @@
 .data-table-sort-indicator {
   color: var(--icons-color-disabled);
   display: inline-flex;
-  flex-direction: column;
 
-  .sort-up-icon,
-  .sort-down-icon {
+  .sort-icon {
     font-size: 1.125rem;
 
     &.is-active {
       color: var(--icons-color-primary);
-    }
-  }
-
-  .sort-up-icon {
-    margin-bottom: -1.125rem;
-  }
-
-  &.single-icon {
-    .sort-up-icon {
-      margin-bottom: 0;
     }
   }
 }
