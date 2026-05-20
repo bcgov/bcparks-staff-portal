@@ -1,13 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import Dropdown from "react-bootstrap/Dropdown";
 import Form from "react-bootstrap/Form";
 import Table from "react-bootstrap/Table";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBarsFilter } from "@fa-kit/icons/classic/regular";
+import { faSort, faSortUp, faSortDown } from "@fa-kit/icons/classic/solid";
 import PaginationControls from "@/components/PaginationControls";
 
-import "./DataTable.css";
+import "./DataTable.scss";
 
 function getColumnId(column, index) {
   return column.field || `column-${index}`;
@@ -115,13 +117,19 @@ function renderCell(column, row) {
 }
 
 function renderSortIndicator(isActive, direction) {
-  if (!isActive) {
-    return null;
+  let icon = faSort;
+
+  if (isActive) {
+    icon = direction === "asc" ? faSortUp : faSortDown;
   }
 
+  const iconClassName = classNames("sort-icon", {
+    "is-active": isActive,
+  });
+
   return (
-    <span className="data-table-sort-indicator is-active">
-      {direction === "asc" ? "↑" : "↓"}
+    <span className="data-table-sort-indicator" aria-hidden="true">
+      <FontAwesomeIcon icon={icon} className={iconClassName} />
     </span>
   );
 }
@@ -474,12 +482,25 @@ export default function DataTable(props) {
                   (!serverSide || hasSort) &&
                   (column.field || column.customSort) &&
                   column.sorting !== false;
+                let ariaSort = null;
+
+                if (isSortable) {
+                  ariaSort = "none";
+
+                  if (isSorted) {
+                    ariaSort =
+                      sortConfig?.direction === "asc"
+                        ? "ascending"
+                        : "descending";
+                  }
+                }
 
                 return (
                   <th
                     key={columnId}
                     style={column.headerStyle}
                     className="data-table-header-cell"
+                    aria-sort={ariaSort}
                   >
                     <button
                       type="button"
@@ -490,6 +511,13 @@ export default function DataTable(props) {
                       disabled={!isSortable}
                     >
                       <span>{column.title}</span>
+                      {isSortable && isSorted && (
+                        <span className="visually-hidden">
+                          {sortConfig?.direction === "asc"
+                            ? "Sorted ascending"
+                            : "Sorted descending"}
+                        </span>
+                      )}
                       {isSortable &&
                         renderSortIndicator(isSorted, sortConfig?.direction)}
                     </button>

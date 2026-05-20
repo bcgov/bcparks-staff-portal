@@ -517,6 +517,7 @@ export default function AdvisoryDashboard({
         // When "All" is selected, first fetch the current total with
         // the active filters applied, then request exactly that many rows
         let pagination;
+        let allTotal = null;
 
         if (pageSize < 0) {
           const countQuery = qs.stringify(
@@ -534,8 +535,8 @@ export default function AdvisoryDashboard({
             {},
             "",
           );
-          const allTotal =
-            countResult.meta?.pagination?.total ?? DEFAULT_PAGE_SIZE;
+
+          allTotal = countResult.meta?.pagination?.total ?? DEFAULT_PAGE_SIZE;
 
           pagination = { page: 1, pageSize: Math.max(allTotal, 1) };
         } else {
@@ -580,7 +581,7 @@ export default function AdvisoryDashboard({
 
         const result = await cmsGet(`/public-advisory-audits?${query}`, {}, "");
         const rows = result.data ?? [];
-        const total = result.meta?.pagination?.total ?? 0;
+        const total = allTotal ?? result.meta?.pagination?.total ?? 0;
         const updatedPublicAdvisories = updatePublicAdvisories(
           rows,
           managementAreas,
@@ -665,7 +666,7 @@ export default function AdvisoryDashboard({
           >
             <FontAwesomeIcon
               icon={faTriangleExclamation}
-              className="warningRoundedIcon"
+              className="warning-icon"
             />
           </OverlayTrigger>
         ),
@@ -985,7 +986,7 @@ export default function AdvisoryDashboard({
         title: "",
         field: "id",
         filtering: false,
-
+        sorting: false,
         render: (rowData) => (
           <TableActionButton
             className="ms-1 me-3"

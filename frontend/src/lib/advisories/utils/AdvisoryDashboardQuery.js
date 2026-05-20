@@ -119,9 +119,13 @@ export function buildFilter(
  */
 const SORT_FIELD_MAP = {
   "urgency.urgency": "urgency.sequence",
+  "advisoryStatus.advisoryStatus": "advisoryStatus.sortOrder",
   associatedResources: [
-    "protectedAreas.protectedAreaName",
     "recreationResources.resourceName",
+    "regions.regionName",
+    "sections.sectionName",
+    "managementAreas.managementAreaName",
+    "protectedAreas.protectedAreaName",
   ],
 };
 
