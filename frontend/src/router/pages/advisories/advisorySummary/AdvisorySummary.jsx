@@ -360,12 +360,12 @@ export default function AdvisorySummary() {
                   </button>
                 </div>
                 {!showOriginalAdvisory && (
-                  <div className="ad-summary mt-4">
+                  <div className="adv-summary mt-4">
                     {confirmationText && (
                       <Alert variant="success">{confirmationText}</Alert>
                     )}
                     {isCurrentlyPublished && (
-                      <div className="ad-right mt-4">
+                      <div className="adv-right mt-4">
                         <button
                           type="button"
                           className="btn btn-link p-0"
@@ -378,7 +378,7 @@ export default function AdvisorySummary() {
                         </button>
                       </div>
                     )}
-                    <div className="mt-5 container-fluid g-0 ad-form">
+                    <div className="mt-5 container-fluid g-0 adv-form">
                       <div className="row g-0 title">
                         <div className="col-md-8 col-12">
                           <p className="mb-1">
@@ -429,9 +429,9 @@ export default function AdvisorySummary() {
                   </div>
                 )}
                 {showOriginalAdvisory && originalIsLoaded && (
-                  <div className="container-fluid ad-summary col-lg-9 col-md-12 col-12">
+                  <div className="container-fluid adv-summary col-lg-9 col-md-12 col-12">
                     <div className="row">
-                      <div className="col-lg-12 col-md-12 col-12 ad-right">
+                      <div className="col-lg-12 col-md-12 col-12 adv-right">
                         <button
                           type="button"
                           className="btn btn-link p-0"

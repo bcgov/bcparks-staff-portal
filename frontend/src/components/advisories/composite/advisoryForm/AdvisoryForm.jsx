@@ -362,7 +362,7 @@ export default function AdvisoryForm({
 
     return (
       <div
-        className={`ad-helper-text ${isError ? "text-danger" : ""} ${className}`.trim()}
+        className={`adv-helper-text ${isError ? "text-danger" : ""} ${className}`.trim()}
       >
         {text}
       </div>
@@ -911,7 +911,7 @@ export default function AdvisoryForm({
                       Browse
                     </Btn>
                     {linkFileErrors[idx] && (
-                      <span className="d-block text-danger ad-helper-text">
+                      <span className="d-block text-danger adv-helper-text">
                         Select a file
                       </span>
                     )}
@@ -1576,7 +1576,7 @@ export default function AdvisoryForm({
 
       {!hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]) &&
         (isStatHoliday || isAfterHours) && (
-          <section className="ad-af-hour-box d-flex field-bg-blue">
+          <section className="adv-af-hour-box d-flex field-bg-blue">
             <FontAwesomeIcon
               icon={faTriangleExclamation}
               className="warningIcon"
