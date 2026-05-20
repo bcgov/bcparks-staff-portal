@@ -15,7 +15,7 @@ import {
   useDebounceValue,
 } from "usehooks-ts";
 import qs from "qs";
-import { Link, Navigate, NavLink, useNavigate } from "react-router-dom";
+import { Link, Navigate, NavLink } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
@@ -103,7 +103,6 @@ export default function AdvisoryDashboard({
   const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
   const { hasAnyRole } = useAccess();
-  const navigate = useNavigate();
   const {
     getRegions,
     getManagementAreas,
@@ -1212,16 +1211,16 @@ export default function AdvisoryDashboard({
             className="ms-1 me-3"
             rowId={rowData.documentId}
             canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
-            onView={() => {
-              const url = `/advisory-summary/${rowData.documentId}`;
-
-              navigate(isReviewDashboard ? `${url}?tab=review` : url);
-            }}
-            onEdit={() => {
-              const url = `/update-advisory/${rowData.documentId}`;
-
-              navigate(isReviewDashboard ? `${url}?tab=review` : url);
-            }}
+            viewPath={
+              isReviewDashboard
+                ? `/advisory-summary/${rowData.documentId}?tab=review`
+                : `/advisory-summary/${rowData.documentId}`
+            }
+            editPath={
+              isReviewDashboard
+                ? `/update-advisory/${rowData.documentId}?tab=review`
+                : `/update-advisory/${rowData.documentId}`
+            }
             onMarkReviewed={() => handleMarkReviewed(rowData)}
             onUnpublish={() => handleUnpublish(rowData)}
           />
@@ -1231,7 +1230,6 @@ export default function AdvisoryDashboard({
     [
       urgencies,
       advisoryStatuses,
-      navigate,
       handleMarkReviewed,
       handleUnpublish,
       isReviewDashboard,

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import Dropdown from "react-bootstrap/Dropdown";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fa-kit/icons/classic/solid";
 import {
@@ -30,8 +31,8 @@ const ACTION_MENU_POPPER_CONFIG = {
 export function TableActionButton({
   rowId,
   canUnpublish = false,
-  onView,
-  onEdit,
+  viewPath,
+  editPath,
   onMarkReviewed,
   onUnpublish,
   className = "",
@@ -96,11 +97,19 @@ export function TableActionButton({
         </Dropdown.Toggle>
 
         <Dropdown.Menu renderOnMount popperConfig={ACTION_MENU_POPPER_CONFIG}>
-          <Dropdown.Item onClick={() => action(onView)}>
+          <Dropdown.Item
+            as={Link}
+            to={viewPath}
+            onClick={() => setIsOpen(false)}
+          >
             <FontAwesomeIcon icon={faMemo} />
             View
           </Dropdown.Item>
-          <Dropdown.Item onClick={() => action(onEdit)}>
+          <Dropdown.Item
+            as={Link}
+            to={editPath}
+            onClick={() => setIsOpen(false)}
+          >
             <FontAwesomeIcon icon={faPen} />
             Edit
           </Dropdown.Item>
@@ -126,8 +135,8 @@ export function TableActionButton({
 TableActionButton.propTypes = {
   rowId: PropTypes.string.isRequired,
   canUnpublish: PropTypes.bool,
-  onView: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
+  viewPath: PropTypes.string,
+  editPath: PropTypes.string,
   onMarkReviewed: PropTypes.func,
   onUnpublish: PropTypes.func.isRequired,
   className: PropTypes.string,
