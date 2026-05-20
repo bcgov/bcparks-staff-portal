@@ -1212,8 +1212,16 @@ export default function AdvisoryDashboard({
             className="ms-1 me-3"
             rowId={rowData.documentId}
             canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
-            onView={() => navigate(`/advisory-summary/${rowData.documentId}`)}
-            onEdit={() => navigate(`/update-advisory/${rowData.documentId}`)}
+            onView={() => {
+              const url = `/advisory-summary/${rowData.documentId}`;
+
+              navigate(isReviewDashboard ? `${url}?tab=review` : url);
+            }}
+            onEdit={() => {
+              const url = `/update-advisory/${rowData.documentId}`;
+
+              navigate(isReviewDashboard ? `${url}?tab=review` : url);
+            }}
             onMarkReviewed={() => handleMarkReviewed(rowData)}
             onUnpublish={() => handleUnpublish(rowData)}
           />

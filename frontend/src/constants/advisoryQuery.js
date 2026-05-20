@@ -1,6 +1,6 @@
 import qs from "qs";
 
-export const ADVISORY_UNPUBLISH_QUERY = qs.stringify(
+export const ADVISORY_QUERY = qs.stringify(
   {
     populate: {
       accessStatus: { populate: "*" },

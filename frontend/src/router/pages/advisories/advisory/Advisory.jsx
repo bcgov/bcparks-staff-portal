@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useContext, useMemo } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Advisory.css";
 import moment from "moment";
@@ -20,6 +20,8 @@ import { ROLES } from "@/config/permissions";
 
 export default function Advisory({ mode }) {
   const { setError } = useContext(ErrorContext);
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
 
   const [revisionNumber, setRevisionNumber] = useState();
   const [standardMessages, setStandardMessages] = useState([]);
@@ -1168,11 +1170,16 @@ export default function Advisory({ mode }) {
   }
 
   if (toDashboard) {
+    const dashboardPath =
+      tabParam === "review"
+        ? "/advisories-and-closures/review"
+        : "/advisories-and-closures";
+
     return (
       <Navigate
         push
         to={{
-          pathname: `/advisories-and-closures`,
+          pathname: dashboardPath,
           index: 0,
         }}
       />
@@ -1184,12 +1191,11 @@ export default function Advisory({ mode }) {
   }
 
   if (isConfirmation) {
-    return (
-      <Navigate
-        to={`/advisory-summary/${advisoryId}`}
-        state={{ confirmationText }}
-      />
-    );
+    const summaryUrl = `/advisory-summary/${advisoryId}`;
+    const finalUrl =
+      tabParam === "review" ? `${summaryUrl}?tab=review` : summaryUrl;
+
+    return <Navigate to={finalUrl} state={{ confirmationText }} />;
   }
 
   return (

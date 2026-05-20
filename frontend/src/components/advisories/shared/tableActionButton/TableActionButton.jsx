@@ -80,9 +80,7 @@ export function TableActionButton({
   }, [rowId]);
 
   return (
-    <div
-      className={classNames("action-button", className)}
-    >
+    <div className={classNames("action-button", className)}>
       <Dropdown
         show={isOpen}
         onToggle={handleToggle}
@@ -114,7 +112,7 @@ export function TableActionButton({
             Unpublish
           </Dropdown.Item>
           {onMarkReviewed && (
-            <Dropdown.Item onClick={(event) => action(event, onMarkReviewed)}>
+            <Dropdown.Item onClick={() => action(onMarkReviewed)}>
               <FontAwesomeIcon icon={faCircleCheck} />
               Mark reviewed
             </Dropdown.Item>

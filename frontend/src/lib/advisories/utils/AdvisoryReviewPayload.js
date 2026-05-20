@@ -1,9 +1,23 @@
 import moment from "moment";
 
+/**
+ * Maps an array of CMS relation objects to an array of their documentIds.
+ * @param {Array|null} items Array of CMS objects with a documentId property, or null
+ * @returns {Array<string>} Array of documentId strings
+ */
 function mapDocumentIds(items) {
   return (items || []).map((item) => item.documentId);
 }
 
+/**
+ * Build the review payload
+ * @param {Object} advisoryData The full advisory record fetched from CMS
+ * @param {string} reviewedStatusId The documentId of the reviewed status
+ * @param {string} reviewedStatusCode The code of the reviewed status
+ * @param {string} reviewedByName The current user's name (from auth.user?.profile?.name)
+ * @param {string} modifiedByRole The current user's role ("approver" or "submitter")
+ * @returns {Object} The normalized payload ready for cmsPut
+ */
 export function buildReviewPayload(
   advisoryData,
   reviewedStatusId,
@@ -50,11 +64,9 @@ export function buildReviewPayload(
     isEffectiveDateDisplayed: advisoryData.isEffectiveDateDisplayed,
     isEndDateDisplayed: advisoryData.isEndDateDisplayed,
     isUpdatedDateDisplayed: advisoryData.isUpdatedDateDisplayed,
-    publishedAt:
-      advisoryData.publishedAt ||
-      (["PUB", "SCH"].includes(reviewedStatusCode) ? reviewedAt : null),
-    isLatestRevision: advisoryData.isLatestRevision,
     reviewedByName,
     reviewedAt,
+    publishedAt: advisoryData.publishedAt,
+    isLatestRevision: advisoryData.isLatestRevision,
   };
 }

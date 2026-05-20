@@ -1,5 +1,10 @@
 import { useState, useEffect, useContext, useMemo, useCallback } from "react";
-import { Navigate, useLocation, useParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { format } from "date-fns";
 import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
@@ -47,6 +52,8 @@ export default function AdvisorySummary() {
   const [snackMessageInfo, setSnackMessageInfo] = useState(null);
   const { documentId } = useParams();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const [confirmationText, setConfirmationText] = useState(
     location.state?.confirmationText || "",
   );
@@ -316,11 +323,16 @@ export default function AdvisorySummary() {
   }
 
   if (toDashboard) {
+    const dashboardPath =
+      tabParam === "review"
+        ? "/advisories-and-closures/review"
+        : "/advisories-and-closures";
+        
     return (
       <Navigate
         push
         to={{
-          pathname: `/advisories-and-closures`,
+          pathname: dashboardPath,
           index: index >= 0 ? index : 0,
         }}
       />

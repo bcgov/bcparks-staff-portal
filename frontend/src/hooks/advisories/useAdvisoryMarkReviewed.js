@@ -1,9 +1,9 @@
 import { useCallback } from "react";
 import moment from "moment";
 
-import { ADVISORY_UNPUBLISH_QUERY } from "@/constants/advisoryQuery";
-import useCms from "@/hooks/useCms";
+import { ADVISORY_QUERY } from "@/constants/advisoryQuery";
 import { buildReviewPayload } from "@/lib/advisories/utils/AdvisoryReviewPayload";
+import useCms from "@/hooks/useCms";
 
 function resolveReviewedStatus(rowData, advisoryStatuses) {
   const publishedStatus = advisoryStatuses.find(
@@ -12,14 +12,36 @@ function resolveReviewedStatus(rowData, advisoryStatuses) {
   const scheduledStatus = advisoryStatuses.find(
     (status) => status.code === "SCH",
   );
+  const unpublishedStatus = advisoryStatuses.find(
+    (status) => status.code === "UNP",
+  );
 
-  if (rowData.advisoryStatus?.code === "PUB") {
+  const statusCode = rowData.advisoryStatus?.code;
+
+  // If the status is currently PUB, keep it PUB but just update the reviewedAt/reviewedBy fields
+  if (statusCode === "PUB") {
     return publishedStatus;
   }
 
-  return moment(rowData.advisoryDate).isAfter(moment())
-    ? scheduledStatus
-    : publishedStatus;
+  // If the status is currently SCH, keep it SCH but just update the reviewedAt/reviewedBy fields
+  if (statusCode === "SCH") {
+    return scheduledStatus;
+  }
+
+  // If the status is currently UNP, keep it UNP but just update the reviewedAt/reviewedBy fields
+  if (statusCode === "UNP") {
+    return unpublishedStatus;
+  }
+
+  // If the status is currently HQR, set to SCH if future posting date, else PUB
+  if (statusCode === "HQR") {
+    return moment(rowData.advisoryDate).isAfter(moment())
+      ? scheduledStatus
+      : publishedStatus;
+  }
+
+  // Default - keep the existing status unchanged
+  return advisoryStatuses.find((status) => status.code === statusCode);
 }
 
 export default function useAdvisoryMarkReviewed({
@@ -45,7 +67,7 @@ export default function useAdvisoryMarkReviewed({
 
       try {
         const advisoryData = await cmsGet(
-          `public-advisory-audits/${rowData.documentId}?${ADVISORY_UNPUBLISH_QUERY}`,
+          `public-advisory-audits/${rowData.documentId}?${ADVISORY_QUERY}`,
         );
 
         await cmsPut(`public-advisory-audits/${rowData.documentId}`, {
