@@ -32,9 +32,7 @@ export function TableActionButton({
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
-  function action(event, callback) {
-    // Prevent triggering row click handler
-    event.stopPropagation();
+  function action(callback) {
     setIsOpen(false);
     callback();
   }
@@ -78,7 +76,6 @@ export function TableActionButton({
   return (
     <div
       className={classNames("action-button", className)}
-      onClick={(event) => event.stopPropagation()}
     >
       <Dropdown
         show={isOpen}
@@ -95,17 +92,17 @@ export function TableActionButton({
         </Dropdown.Toggle>
 
         <Dropdown.Menu renderOnMount popperConfig={ACTION_MENU_POPPER_CONFIG}>
-          <Dropdown.Item onClick={(event) => action(event, onView)}>
+          <Dropdown.Item onClick={() => action(onView)}>
             <FontAwesomeIcon icon={faMemo} />
             View
           </Dropdown.Item>
-          <Dropdown.Item onClick={(event) => action(event, onEdit)}>
+          <Dropdown.Item onClick={() => action(onEdit)}>
             <FontAwesomeIcon icon={faPen} />
             Edit
           </Dropdown.Item>
           <Dropdown.Item
             disabled={!canUnpublish}
-            onClick={(event) => action(event, onUnpublish)}
+            onClick={() => action(onUnpublish)}
           >
             <FontAwesomeIcon icon={faEyeSlash} />
             Unpublish

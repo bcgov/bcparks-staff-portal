@@ -207,7 +207,6 @@ export default function DataTable(props) {
     onSortChange,
     onFilterChange,
     title,
-    onRowClick,
     initialFilterValues,
     filterValues: filterValuesProp,
     onFilterValuesChange,
@@ -525,17 +524,9 @@ export default function DataTable(props) {
             )}
             {displayedRows.map((row, rowIndex) => {
               const rowKey = row.documentId || row.id || rowIndex;
-              const rowProps = {};
-
-              if (onRowClick) {
-                rowProps.className = "data-table-clickable-row";
-                rowProps.onClick = (event) => {
-                  onRowClick(event, row);
-                };
-              }
 
               return (
-                <tr key={rowKey} {...rowProps}>
+                <tr key={rowKey}>
                   {visibleColumns.map((column, index) => {
                     const columnId = getColumnId(column, index);
 
@@ -589,7 +580,6 @@ DataTable.propTypes = {
   onSortChange: PropTypes.func,
   onFilterChange: PropTypes.func,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
-  onRowClick: PropTypes.func,
   initialFilterValues: PropTypes.objectOf(PropTypes.string),
   filterValues: PropTypes.objectOf(PropTypes.string),
   onFilterValuesChange: PropTypes.func,
@@ -613,7 +603,6 @@ DataTable.defaultProps = {
   onSortChange: null,
   onFilterChange: null,
   title: "",
-  onRowClick: null,
   initialFilterValues: null,
   filterValues: null,
   onFilterValuesChange: null,
