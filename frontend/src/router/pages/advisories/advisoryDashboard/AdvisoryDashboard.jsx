@@ -847,11 +847,10 @@ export default function AdvisoryDashboard({
                   <span key={i}>
                     {p.regionName} region
                     <CountBadge
-                      index={i}
                       label={`+${p.count}`}
                       documentId={rowData.documentId}
                       title={rowData.title}
-                      tooltipText={`plus ${p.count} more resource(s)`}
+                      tooltipText={`plus ${p.count} more park(s)`}
                     />
                     {displayedRegions.length - 1 > i && <br />}
                   </span>
