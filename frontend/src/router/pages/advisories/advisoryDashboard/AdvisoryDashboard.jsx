@@ -71,6 +71,10 @@ import {
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
+const PROGRAM_AREA_OPTIONS = [
+  { label: "BC Parks", value: "BCP" },
+  { label: "Recreation Sites and Trails", value: "RST" },
+];
 
 // Component to render when there are no advisories/closures to review in the Review tab
 function ReviewEmptyState() {
@@ -182,7 +186,7 @@ export default function AdvisoryDashboard({
     { filterName: "region", filterValue: [], type: "page" },
     { filterName: "district", filterValue: [], type: "page" },
     { filterName: "park", filterValue: [], type: "page" },
-    { filterName: "programArea", filterValue: null, type: "page" },
+    { filterName: "programArea", filterValue: "", type: "page" },
   ];
 
   // Persisted filter state for the dashboard (region, district, park, and table filters)
@@ -339,7 +343,7 @@ export default function AdvisoryDashboard({
         {
           type: "page",
           filterName: "programArea",
-          filterValue: option ?? null,
+          filterValue: option?.value ?? "",
         },
       ];
     });
@@ -359,7 +363,7 @@ export default function AdvisoryDashboard({
 
       return [
         ...nonProgramAreaPageFilters,
-        { type: "page", filterName: "programArea", filterValue: null },
+        { type: "page", filterName: "programArea", filterValue: "" },
       ];
     });
   }
@@ -525,11 +529,15 @@ export default function AdvisoryDashboard({
           const programAreaValue = getPageFilterValue(
             initialStoredFilters,
             "programArea",
-            null,
+            "",
           );
 
-          if (programAreaValue) {
-            setSelectedProgramArea(programAreaValue);
+          const selectedProgramAreaOption = PROGRAM_AREA_OPTIONS.find(
+            (option) => option.value === programAreaValue,
+          );
+
+          if (selectedProgramAreaOption) {
+            setSelectedProgramArea(selectedProgramAreaOption);
           }
 
           setIsCmsDataLoaded(true);
@@ -1340,13 +1348,7 @@ export default function AdvisoryDashboard({
                   label="Program area"
                   placeholder="Select a program area"
                   value={selectedProgramArea}
-                  options={[
-                    { label: "BC Parks", value: "BCP" },
-                    {
-                      label: "Recreation Sites and Trails",
-                      value: "RST",
-                    },
-                  ]}
+                  options={PROGRAM_AREA_OPTIONS}
                   onChange={handleProgramAreaChange}
                 />
               </div>

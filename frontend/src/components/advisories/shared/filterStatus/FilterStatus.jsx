@@ -168,5 +168,6 @@ FilterStatus.defaultProps = {
   selectedRegion: [],
   selectedPark: [],
   selectedProgramArea: "",
+  onClearProgramArea() {},
   selectedTableFilters: [],
 };

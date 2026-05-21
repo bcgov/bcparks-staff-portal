@@ -3,7 +3,6 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 import Select from "react-select";
-import "./SingleSelect.scss";
 
 export function SingleSelect({ label, value, options, onChange, placeholder }) {
   const generatedId = useId();

@@ -64,7 +64,7 @@ const COLUMN_FILTERS = [
  * @param {string[]} selectedRegionIds Selected region documentIds ([] = none)
  * @param {string[]} selectedDistrictIds Selected district documentIds ([] = none)
  * @param {string[]} selectedParkIds Selected park documentIds ([] = none)
- * @param {string} selectedProgramArea Selected program area ("" = none, "BC Parks" or "Recreation Sites and Trails")
+ * @param {string} selectedProgramArea Selected program area code ("" = none, "BCP" or "RST")
  * @returns {Array} Array of Strapi filters
  */
 export function buildFilter(
