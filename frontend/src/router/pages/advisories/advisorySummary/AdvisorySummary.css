@@ -1,11 +1,11 @@
-.ad-copy {
+.act-copy {
   border-radius: 5px !important;
   margin: 16px 0 !important;
   border: none;
 }
 
 .launchIcon,
-.ad-copy svg {
+.act-copy svg {
   width: 20px !important;
   height: 20px !important;
   margin-top: -2px !important;
@@ -15,14 +15,14 @@
   margin-left: 8px;
 }
 
-.ad-copy svg {
+.act-copy svg {
   color: var(--color-blue) !important;
 }
 
-.ad-summary .row {
+.act-summary .row {
   margin: 5px 0px !important;
 }
 
-.ad-right {
+.act-right {
   text-align: right !important;
 }
