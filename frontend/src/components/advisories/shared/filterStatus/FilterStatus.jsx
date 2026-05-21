@@ -149,7 +149,7 @@ FilterStatus.propTypes = {
   ]),
   onClearPark: PropTypes.func.isRequired,
   selectedProgramArea: PropTypes.string,
-  onClearProgramArea: PropTypes.func,
+  onClearProgramArea: PropTypes.func.isRequired,
   selectedTableFilters: PropTypes.arrayOf(
     PropTypes.shape({
       field: PropTypes.string.isRequired,
@@ -168,6 +168,5 @@ FilterStatus.defaultProps = {
   selectedRegion: [],
   selectedPark: [],
   selectedProgramArea: "",
-  onClearProgramArea() {},
   selectedTableFilters: [],
 };
