@@ -13,7 +13,6 @@ function mapDocumentIds(items) {
  * Build the review payload
  * @param {Object} advisoryData The full advisory record fetched from CMS
  * @param {string} reviewedStatusId The documentId of the reviewed status
- * @param {string} reviewedStatusCode The code of the reviewed status
  * @param {string} reviewedByName The current user's name (from auth.user?.profile?.name)
  * @param {string} modifiedByRole The current user's role ("approver" or "submitter")
  * @returns {Object} The normalized payload ready for cmsPut
@@ -21,7 +20,6 @@ function mapDocumentIds(items) {
 export function buildReviewPayload(
   advisoryData,
   reviewedStatusId,
-  reviewedStatusCode,
   reviewedByName,
   modifiedByRole,
 ) {

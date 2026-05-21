@@ -210,6 +210,8 @@ export default function AdvisoryDashboard({
     },
   });
 
+  const canMarkReviewed = isReviewDashboard && hasAnyRole(["approver"]);
+
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
     { filterName: "district", filterValue: [], type: "page" },
@@ -1221,8 +1223,11 @@ export default function AdvisoryDashboard({
                 ? `/update-advisory/${rowData.documentId}?tab=review`
                 : `/update-advisory/${rowData.documentId}`
             }
-            onMarkReviewed={() => handleMarkReviewed(rowData)}
             onUnpublish={() => handleUnpublish(rowData)}
+            // Only show "Mark reviewed" button on the review dashboard for approvers
+            {...(canMarkReviewed
+              ? { onMarkReviewed: () => handleMarkReviewed(rowData) }
+              : {})}
           />
         ),
       },
@@ -1230,8 +1235,9 @@ export default function AdvisoryDashboard({
     [
       urgencies,
       advisoryStatuses,
-      handleMarkReviewed,
       handleUnpublish,
+      handleMarkReviewed,
+      canMarkReviewed,
       isReviewDashboard,
     ],
   );

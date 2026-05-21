@@ -74,7 +74,6 @@ export default function useAdvisoryMarkReviewed({
           data: buildReviewPayload(
             advisoryData,
             reviewedStatus.documentId,
-            reviewedStatus.code,
             reviewedByName,
             isApprover ? "approver" : "submitter",
           ),

@@ -33,8 +33,8 @@ export function TableActionButton({
   canUnpublish = false,
   viewPath,
   editPath,
-  onMarkReviewed,
   onUnpublish,
+  onMarkReviewed,
   className = "",
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -135,8 +135,8 @@ export function TableActionButton({
 TableActionButton.propTypes = {
   rowId: PropTypes.string.isRequired,
   canUnpublish: PropTypes.bool,
-  viewPath: PropTypes.string,
-  editPath: PropTypes.string,
+  viewPath: PropTypes.string.isRequired,
+  editPath: PropTypes.string.isRequired,
   onMarkReviewed: PropTypes.func,
   onUnpublish: PropTypes.func.isRequired,
   className: PropTypes.string,

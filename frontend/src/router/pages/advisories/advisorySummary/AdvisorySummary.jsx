@@ -262,6 +262,15 @@ export default function AdvisorySummary() {
     [advisory?.advisoryStatus?.code],
   );
 
+  // The URL to the update page, including the "tab" search param if it exists
+  const updateAdvisoryUrl = useMemo(() => {
+    const baseUrl = `/update-advisory/${documentId}`;
+
+    return tabParam
+      ? `${baseUrl}?tab=${encodeURIComponent(tabParam)}`
+      : baseUrl;
+  }, [documentId, tabParam]);
+
   // Formatted string for "Last updated..." timestamp
   const lastUpdatedString = useMemo(() => {
     if (!advisory.modifiedDate) return null;
@@ -327,7 +336,7 @@ export default function AdvisorySummary() {
       tabParam === "review"
         ? "/advisories-and-closures/review"
         : "/advisories-and-closures";
-        
+
     return (
       <Navigate
         push
@@ -340,7 +349,7 @@ export default function AdvisorySummary() {
   }
 
   if (toUpdate) {
-    return <Navigate to={`/update-advisory/${documentId}`} />;
+    return <Navigate to={updateAdvisoryUrl} />;
   }
 
   if (toError) {
