@@ -13,13 +13,18 @@ export default function TooltipWrapper({
 
   return (
     <>
-      <span
+      <button
         ref={target}
+        type="button"
         onMouseEnter={() => setShow(true)}
         onMouseLeave={() => setShow(false)}
+        onFocus={() => setShow(true)}
+        onBlur={() => setShow(false)}
+        style={{ background: "none", border: "none", padding: 0 }}
+        aria-label="More information"
       >
         {children}
-      </span>
+      </button>
 
       <Overlay target={target.current} show={show} placement={placement}>
         {(props) => (

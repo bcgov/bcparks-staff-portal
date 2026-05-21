@@ -22,6 +22,7 @@ export default function LightTooltip({
     >
       <button
         type="button"
+        aria-label="More information"
         className="d-inline-flex align-items-center tooltip-trigger ms-2"
       >
         {children}
