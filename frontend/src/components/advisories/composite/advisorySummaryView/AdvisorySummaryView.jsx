@@ -147,7 +147,7 @@ export default function AdvisorySummaryView({
 
               <button
                 type="button"
-                className="adv-copy bcgov-button bcgov-normal-white"
+                className="act-copy bcgov-button bcgov-normal-white"
                 onClick={() => {
                   navigator.clipboard
                     .writeText(parkUrls)
@@ -209,7 +209,7 @@ export default function AdvisorySummaryView({
 
               <button
                 type="button"
-                className="adv-copy bcgov-button bcgov-normal-white"
+                className="act-copy bcgov-button bcgov-normal-white"
                 onClick={() => {
                   navigator.clipboard
                     .writeText(siteUrls)

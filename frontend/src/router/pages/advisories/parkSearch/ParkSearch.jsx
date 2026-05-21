@@ -250,9 +250,9 @@ export default function ParkSearch() {
           {!isLoading && (
             <>
               <form>
-                <div className="container-fluid adv-form">
+                <div className="container-fluid act-form">
                   <div className="row mt20">
-                    <div className="col-lg-6 col-md-8 col-sm-12 adv-auto-margin">
+                    <div className="col-lg-6 col-md-8 col-sm-12 act-auto-margin">
                       <Select
                         options={protectedAreas}
                         value={protectedAreas.filter(
@@ -268,7 +268,7 @@ export default function ParkSearch() {
                     </div>
                   </div>
                   <div className="row mt20">
-                    <div className="col-lg-6 col-md-8 col-sm-12 adv-auto-margin">
+                    <div className="col-lg-6 col-md-8 col-sm-12 act-auto-margin">
                       <Select
                         options={regions}
                         value={region}
@@ -284,7 +284,7 @@ export default function ParkSearch() {
                     </div>
                   </div>
                   <div className="row">
-                    <div className="col-lg-6 col-md-8 col-sm-12 adv-auto-margin">
+                    <div className="col-lg-6 col-md-8 col-sm-12 act-auto-margin">
                       <Select
                         options={filteredSections}
                         value={section}
@@ -300,7 +300,7 @@ export default function ParkSearch() {
                     </div>
                   </div>
                   <div className="row">
-                    <div className="col-lg-6 col-md-8 col-sm-12 adv-auto-margin">
+                    <div className="col-lg-6 col-md-8 col-sm-12 act-auto-margin">
                       <Select
                         options={filteredManagementAreas}
                         value={managementArea}
@@ -320,7 +320,7 @@ export default function ParkSearch() {
               {parkList.length > 0 && (
                 <div className="container">
                   <div className="row mt20">
-                    <div className="col-lg-10 col-md-12 col-sm-12 adv-auto-margin">
+                    <div className="col-lg-10 col-md-12 col-sm-12 act-auto-margin">
                       <ListGroup as="div">
                         <ListGroup.Item className="da-list-header" as="div">
                           Park name
