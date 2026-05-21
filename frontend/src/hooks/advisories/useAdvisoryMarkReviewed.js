@@ -47,7 +47,6 @@ function resolveReviewedStatus(rowData, advisoryStatuses) {
 export default function useAdvisoryMarkReviewed({
   advisoryStatuses,
   reviewedByName,
-  isApprover,
   openMarkReviewedError,
   openMarkReviewedSuccess,
   onSuccess,
@@ -75,7 +74,6 @@ export default function useAdvisoryMarkReviewed({
             advisoryData,
             reviewedStatus.documentId,
             reviewedByName,
-            isApprover ? "approver" : "submitter",
           ),
         });
 
@@ -92,7 +90,6 @@ export default function useAdvisoryMarkReviewed({
       advisoryStatuses,
       cmsGet,
       cmsPut,
-      isApprover,
       reviewedByName,
       onSuccess,
       openMarkReviewedError,

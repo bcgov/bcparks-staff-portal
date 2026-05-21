@@ -201,7 +201,6 @@ export default function AdvisoryDashboard({
   const handleMarkReviewed = useAdvisoryMarkReviewed({
     advisoryStatuses,
     reviewedByName: auth.user?.profile?.name,
-    isApprover: hasAnyRole(["approver"]),
     openMarkReviewedError,
     openMarkReviewedSuccess,
     onSuccess() {
