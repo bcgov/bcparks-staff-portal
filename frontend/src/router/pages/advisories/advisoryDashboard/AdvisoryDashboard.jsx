@@ -1117,7 +1117,7 @@ export default function AdvisoryDashboard({
                     >
                       <FontAwesomeIcon
                         icon={faCircleQuestion}
-                        className="helpIcon ms-1"
+                        className="helpIcon"
                       />
                     </LightTooltip>
                   </span>
