@@ -577,35 +577,6 @@ export default function AdvisoryDashboard({
           pagination = { page: currentPage, pageSize };
         }
 
-        // Run an additional query without user-selected filters to determine if filters are hiding items on the server
-        // Only applies to the Review dashboard when user-selected filters are active.
-        if (isReviewDashboard && userFilterClauses.length) {
-          const unfilteredCountQuery = qs.stringify(
-            {
-              fields: ["id"],
-              filters: {
-                $and: unfilteredBaseFilters,
-              },
-              pagination: { page: 1, pageSize: 1 },
-            },
-            { encodeValuesOnly: true },
-          );
-
-          const unfilteredCountResult = await cmsGet(
-            `/public-advisory-audits?${unfilteredCountQuery}`,
-            {},
-            "",
-          );
-
-          if (isMounted) {
-            setUnfilteredTotalItems(
-              unfilteredCountResult.meta?.pagination?.total ?? 0,
-            );
-          }
-        } else if (isMounted) {
-          setUnfilteredTotalItems(null);
-        }
-
         const sort = buildSort(sortConfig, isReviewDashboard);
 
         const query = qs.stringify(
@@ -649,6 +620,38 @@ export default function AdvisoryDashboard({
           rows,
           managementAreas,
         );
+
+        // Run an additional query without user-selected filters when we need
+        // to tell if the empty state is server-side or caused by user-selected filters.
+        // Only applies to the Review dashboard when user-selected filters are active
+        // and the main query returns zero results.
+        if (isReviewDashboard && userFilterClauses.length && total === 0) {
+          const unfilteredCountQuery = qs.stringify(
+            {
+              fields: ["id"],
+              filters: {
+                $and: unfilteredBaseFilters,
+              },
+              pagination: { page: 1, pageSize: 1 },
+            },
+            { encodeValuesOnly: true },
+          );
+
+          const unfilteredCountResult = await cmsGet(
+            `/public-advisory-audits?${unfilteredCountQuery}`,
+            {},
+            "",
+          );
+
+          if (isMounted) {
+            // Store the unfiltered total so we can know if the server-side review queue is empty.
+            setUnfilteredTotalItems(
+              unfilteredCountResult.meta?.pagination?.total ?? 0,
+            );
+          }
+        } else if (isMounted) {
+          setUnfilteredTotalItems(null);
+        }
 
         if (isMounted) {
           setPublicAdvisories(updatedPublicAdvisories);
