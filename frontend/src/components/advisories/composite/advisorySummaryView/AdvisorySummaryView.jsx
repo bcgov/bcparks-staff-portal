@@ -16,7 +16,7 @@ import getEnv from "@/config/getEnv";
 function Field({ label, children }) {
   return (
     <div className="mb-3">
-      <h5 className="h6 mb-1 field-label">{label}</h5>
+      <div className="mb-1 fw-bold">{label}</div>
       <div>{children}</div>
     </div>
   );
@@ -116,7 +116,7 @@ export default function AdvisorySummaryView({
                       href={p.url.replace("https://bcparks.ca", publicUrl)}
                       rel="noreferrer"
                       target="_blank"
-                      className="ad-anchor"
+                      className="act-anchor"
                     >
                       {p.protectedAreaName}
                       <FontAwesomeIcon
@@ -147,7 +147,7 @@ export default function AdvisorySummaryView({
 
               <button
                 type="button"
-                className="act-copy bcgov-button bcgov-normal-white"
+                className="btn-outline-primary btn"
                 onClick={() => {
                   navigator.clipboard
                     .writeText(parkUrls)
@@ -177,7 +177,7 @@ export default function AdvisorySummaryView({
                         href={s.url.replace("https://bcparks.ca", publicUrl)}
                         rel="noreferrer"
                         target="_blank"
-                        className="ad-anchor"
+                        className="act-anchor"
                       >
                         {s.siteName}
                         <FontAwesomeIcon
@@ -209,7 +209,7 @@ export default function AdvisorySummaryView({
 
               <button
                 type="button"
-                className="act-copy bcgov-button bcgov-normal-white"
+                className="btn-outline-primary btn"
                 onClick={() => {
                   navigator.clipboard
                     .writeText(siteUrls)
@@ -360,7 +360,7 @@ export default function AdvisorySummaryView({
                       href={l?.file?.url ? l.file.url : l.url}
                       rel="noreferrer"
                       target="_blank"
-                      className="d-block ad-anchor"
+                      className="d-block act-anchor"
                     >
                       {l.type &&
                         advisory.linkTypes.find((t) => t.id === l.type).type}

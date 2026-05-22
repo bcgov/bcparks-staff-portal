@@ -92,7 +92,7 @@ export default function AdvisoryHistory({ data: { advisoryNumber } }) {
     cmsGet,
   ]);
   return (
-    <div className="ad-history-container px-3">
+    <div className="act-history-container px-3">
       {advisoryHistory.length > 0 &&
         advisoryHistory.map((ah, index) => (
           <div key={index} className="row">

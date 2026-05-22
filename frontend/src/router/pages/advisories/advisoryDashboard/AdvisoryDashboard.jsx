@@ -1086,7 +1086,7 @@ export default function AdvisoryDashboard({
                     Create advisory / closure
                   </>
                 }
-                styling="bcgov-normal-blue btn mt-3"
+                styling="btn-primary btn mt-3"
                 onClick={() => {
                   setToCreate(true);
                 }}
@@ -1147,10 +1147,7 @@ export default function AdvisoryDashboard({
           }
           onClearAll={clearAllFilters}
         />
-        <div
-          className="advisory-dashboard"
-          data-testid="AdvisoryDashboard"
-        >
+        <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
           <br />
           <div className="advisory-dashboard-table-wrap">
             <DataTable

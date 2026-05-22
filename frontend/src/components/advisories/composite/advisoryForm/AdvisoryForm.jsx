@@ -906,7 +906,7 @@ export default function AdvisoryForm({
                     <Btn
                       variant="outline-secondary"
                       as="span"
-                      className="ad-add-link add-file ms-2"
+                      className="act-add-link add-file ms-2"
                     >
                       Browse
                     </Btn>
@@ -940,7 +940,7 @@ export default function AdvisoryForm({
               <Btn
                 variant="outline-secondary"
                 as="span"
-                className="ad-add-link add-file"
+                className="act-add-link add-file"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     addLink("file");
@@ -956,7 +956,7 @@ export default function AdvisoryForm({
             <span className="mx-2">OR</span>
             <Btn
               variant="outline-secondary"
-              className="ad-add-link add-url"
+              className="act-add-link add-url"
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   addLink("url");

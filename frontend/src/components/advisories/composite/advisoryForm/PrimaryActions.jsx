@@ -25,7 +25,7 @@ export default function PrimaryActions({
       // Show a button to publish directly if the user has permission
       <Button
         label="Create advisory / closure"
-        styling="bcgov-normal-blue btn"
+        styling="btn-primary btn"
         onClick={onPublish}
         hasLoader={isSubmitting}
       />
@@ -33,7 +33,7 @@ export default function PrimaryActions({
       // Show a button to submit for review if the user can't publish directly
       <Button
         label="Submit for review"
-        styling="bcgov-normal-blue btn"
+        styling="btn-primary btn"
         onClick={onSubmit}
         hasLoader={isSubmitting}
       />
@@ -45,7 +45,7 @@ export default function PrimaryActions({
       // Show a button to update directly if the user has permission
       <Button
         label="Update advisory / closure"
-        styling="bcgov-normal-blue btn"
+        styling="btn-primary btn"
         onClick={onPublish}
         hasLoader={isSubmitting}
       />
@@ -53,7 +53,7 @@ export default function PrimaryActions({
       // Show a button to submit for review if the user can't update directly
       <Button
         label="Submit for review"
-        styling="bcgov-normal-blue btn"
+        styling="btn-primary btn"
         onClick={onSubmit}
         hasLoader={isSubmitting}
       />

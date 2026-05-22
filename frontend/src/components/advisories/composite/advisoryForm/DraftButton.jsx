@@ -5,7 +5,7 @@ export default function DraftButton({ onClick, hasLoader }) {
   return (
     <Button
       label="Save draft"
-      styling="bcgov-normal-white btn"
+      styling="btn-outline-primary btn"
       onClick={onClick}
       hasLoader={hasLoader}
     />

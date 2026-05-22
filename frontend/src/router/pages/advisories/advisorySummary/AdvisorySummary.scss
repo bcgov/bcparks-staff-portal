@@ -1,0 +1,24 @@
+.advisory-summary {
+  // Use the same spacing as the sections in AdvisorySummaryView for the title section
+  .title {
+    margin-bottom: 2em;
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
+.launchIcon {
+  width: 20px !important;
+  height: 20px !important;
+  margin-top: -2px !important;
+}
+
+.launchIcon {
+  margin-left: 8px;
+}
+
+.act-right {
+  text-align: right !important;
+}

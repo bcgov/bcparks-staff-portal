@@ -650,7 +650,7 @@ export default function ParkInfo() {
               <div className="container-fluid">
                 <Button
                   label="Back"
-                  styling="bcgov-normal-white btn mt-4"
+                  styling="btn-outline-primary btn mt-4"
                   onClick={() => {
                     navigate("/activities-and-facilities");
                   }}
@@ -790,7 +790,7 @@ export default function ParkInfo() {
                                           ) && (
                                             <Button
                                               label="Edit"
-                                              styling="bcgov-normal-blue btn mt10"
+                                              styling="btn-primary btn mt10"
                                               onClick={() => {
                                                 editActivityDesc(a.id);
                                               }}
@@ -802,14 +802,14 @@ export default function ParkInfo() {
                                             <>
                                               <Button
                                                 label="Cancel"
-                                                styling="bcgov-normal-white btn mt10"
+                                                styling="btn-outline-primary btn mt10"
                                                 onClick={() => {
                                                   cancelEditActivityDesc(a.id);
                                                 }}
                                               />
                                               <Button
                                                 label="Save"
-                                                styling="bcgov-normal-blue btn mt10"
+                                                styling="btn-primary btn mt10"
                                                 onClick={() => {
                                                   handleActivitySubmitLoader(
                                                     a.id,
@@ -948,7 +948,7 @@ export default function ParkInfo() {
                                           ) && (
                                             <Button
                                               label="Edit"
-                                              styling="bcgov-normal-blue btn mt10"
+                                              styling="btn-primary btn mt10"
                                               onClick={() => {
                                                 editFacilityDesc(f.id);
                                               }}
@@ -960,14 +960,14 @@ export default function ParkInfo() {
                                             <>
                                               <Button
                                                 label="Cancel"
-                                                styling="bcgov-normal-white btn mt10"
+                                                styling="btn-outline-primary btn mt10"
                                                 onClick={() => {
                                                   cancelEditFacilityDesc(f.id);
                                                 }}
                                               />
                                               <Button
                                                 label="Save"
-                                                styling="bcgov-normal-blue btn mt10"
+                                                styling="btn-primary btn mt10"
                                                 onClick={() => {
                                                   handleFacilitySubmitLoader(
                                                     f.id,
@@ -1112,7 +1112,7 @@ export default function ParkInfo() {
                                           ) && (
                                             <Button
                                               label="Edit"
-                                              styling="bcgov-normal-blue btn mt10"
+                                              styling="btn-primary btn mt10"
                                               onClick={() => {
                                                 editCampingTypeDesc(f.id);
                                               }}
@@ -1124,7 +1124,7 @@ export default function ParkInfo() {
                                             <>
                                               <Button
                                                 label="Cancel"
-                                                styling="bcgov-normal-white btn mt10"
+                                                styling="btn-outline-primary btn mt10"
                                                 onClick={() => {
                                                   cancelEditCampingTypeDesc(
                                                     f.id,
@@ -1133,7 +1133,7 @@ export default function ParkInfo() {
                                               />
                                               <Button
                                                 label="Save"
-                                                styling="bcgov-normal-blue btn mt10"
+                                                styling="btn-primary btn mt10"
                                                 onClick={() => {
                                                   handleCampingTypeSubmitLoader(
                                                     f.id,

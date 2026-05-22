@@ -5,7 +5,7 @@ import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
 import useCms from "@/hooks/useCms";
 import { useAuth } from "react-oidc-context";
-import "./AdvisorySummary.css";
+import "./AdvisorySummary.scss";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Alert from "react-bootstrap/Alert";
 import Toast from "react-bootstrap/Toast";
@@ -399,7 +399,7 @@ export default function AdvisorySummary() {
                         <div className="col-md-4 col-12 d-flex gap-2 align-items-center justify-content-end">
                           <Button
                             label="Unpublish"
-                            styling="bcgov-normal-white btn"
+                            styling="btn-outline-primary btn"
                             disabled={isUnpublishing || !canUnpublish}
                             onClick={handleUnpublish}
                             hasLoader={isUnpublishing}
@@ -407,7 +407,7 @@ export default function AdvisorySummary() {
 
                           <Button
                             label="Edit"
-                            styling="bcgov-normal-blue btn"
+                            styling="btn-primary btn"
                             disabled={isUnpublishing}
                             onClick={() => {
                               setToUpdate(true);
