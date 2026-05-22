@@ -69,7 +69,7 @@ const DEFAULT_PAGE_SIZE = 50;
 // Component to render when there are no advisories/closures to review in the Review tab
 function ReviewEmptyState() {
   return (
-    <div className="review-empty-state">
+    <div className="review-empty-state" role="status" aria-atomic="true">
       <img
         src={emptyReviewQueueImage}
         alt="No items waiting for review"
@@ -78,7 +78,7 @@ function ReviewEmptyState() {
         className="empty-state-image mb-3"
       />
 
-      <h2 className="mb-2">You’re doing great!</h2>
+      <div className="h2 mb-2">You’re doing great!</div>
 
       <div>
         I’m obsessed with you.
