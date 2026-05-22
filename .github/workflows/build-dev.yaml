@@ -16,7 +16,7 @@ jobs:
       IMAGE_NAME: frontend-${{ github.ref_name }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set env
         run: |
@@ -61,7 +61,7 @@ jobs:
       IMAGE_NAME: backend-${{ github.ref_name }}
     steps:
       - name: Git Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set env
         run: |

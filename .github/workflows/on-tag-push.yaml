@@ -15,7 +15,7 @@ jobs:
     steps:
       # Check out the commit to access its SHA hash and tags
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-tags: true
           ref: ${{ github.ref }}
