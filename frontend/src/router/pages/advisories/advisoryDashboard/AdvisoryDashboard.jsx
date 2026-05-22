@@ -75,7 +75,7 @@ function ReviewEmptyState() {
         alt="No items waiting for review"
         width="335"
         height="500"
-        className="review-empty-state empty-state-image mb-3"
+        className="empty-state-image mb-3"
       />
 
       <h2 className="mb-2">You’re doing great!</h2>
