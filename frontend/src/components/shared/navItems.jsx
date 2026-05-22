@@ -9,19 +9,19 @@ const navItems = [
     allowedRoles: [ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER],
   },
   {
-    label: "Park Access Status",
+    label: "Park access status",
     Tag: NavLink,
     to: "/park-access-status",
-    allowedRoles: [ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER],
+    allowedRoles: [ROLES.BCPARKS_USER],
   },
   {
-    label: "Activities & Facilities",
+    label: "Activities and facilities",
     Tag: NavLink,
     to: "/activities-and-facilities",
     allowedRoles: [ROLES.ADVISORY_APPROVER],
   },
   {
-    label: "Dates of Operation",
+    label: "Dates management",
     Tag: NavLink,
     to: "/dates/",
     allowedRoles: [ROLES.DOOT_USER],
