@@ -3,6 +3,11 @@
   .message-no-data {
     font-size: 1.125rem;
     padding-block: 3.75rem !important;
+
+    .empty-state-image {
+      max-height: 10rem;
+      width: auto;
+    }
   }
 }
 

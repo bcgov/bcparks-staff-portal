@@ -220,6 +220,7 @@ export default function DataTable(props) {
     onFilterValuesChange,
     components,
     hover,
+    emptyState,
   } = props;
   const visibleColumns = useMemo(() => getVisibleColumns(columns), [columns]);
   const [searchText, setSearchText] = useState("");
@@ -544,9 +545,9 @@ export default function DataTable(props) {
               <tr>
                 <td
                   colSpan={visibleColumns.length}
-                  className="text-center py-4"
+                  className="text-center py-4 message-no-data"
                 >
-                  No records to display.
+                  {emptyState}
                 </td>
               </tr>
             )}
@@ -615,6 +616,7 @@ DataTable.propTypes = {
     Toolbar: PropTypes.elementType,
   }),
   hover: PropTypes.bool,
+  emptyState: PropTypes.node,
 };
 
 DataTable.defaultProps = {
@@ -636,4 +638,5 @@ DataTable.defaultProps = {
   onFilterValuesChange: null,
   components: null,
   hover: false,
+  emptyState: "No records to display.",
 };
