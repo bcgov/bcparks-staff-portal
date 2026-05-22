@@ -116,7 +116,7 @@ export default function AdvisorySummaryView({
                       href={p.url.replace("https://bcparks.ca", publicUrl)}
                       rel="noreferrer"
                       target="_blank"
-                      className="ad-anchor"
+                      className="act-anchor"
                     >
                       {p.protectedAreaName}
                       <FontAwesomeIcon
@@ -177,7 +177,7 @@ export default function AdvisorySummaryView({
                         href={s.url.replace("https://bcparks.ca", publicUrl)}
                         rel="noreferrer"
                         target="_blank"
-                        className="ad-anchor"
+                        className="act-anchor"
                       >
                         {s.siteName}
                         <FontAwesomeIcon
@@ -360,7 +360,7 @@ export default function AdvisorySummaryView({
                       href={l?.file?.url ? l.file.url : l.url}
                       rel="noreferrer"
                       target="_blank"
-                      className="d-block ad-anchor"
+                      className="d-block act-anchor"
                     >
                       {l.type &&
                         advisory.linkTypes.find((t) => t.id === l.type).type}

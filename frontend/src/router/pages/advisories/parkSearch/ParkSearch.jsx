@@ -332,7 +332,7 @@ export default function ParkSearch() {
                             as="div"
                           >
                             <div
-                              className="ad-anchor pointer"
+                              className="act-anchor pointer"
                               onClick={() => {
                                 setProtectedArea(p.orcs);
                               }}
