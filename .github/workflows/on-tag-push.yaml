@@ -15,7 +15,7 @@ jobs:
     steps:
       # Check out the commit to access its SHA hash and tags
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-tags: true
           ref: ${{ github.ref }}
@@ -28,7 +28,8 @@ jobs:
       - name: Install OpenShift CLI tools
         uses: redhat-actions/openshift-tools-installer@v1
         with:
-          oc: "4.14"
+          oc: "4.16"
+          skip_cache: true
 
       - name: Login OpenShift
         uses: redhat-actions/oc-login@v1
