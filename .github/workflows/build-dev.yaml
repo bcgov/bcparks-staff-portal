@@ -26,7 +26,8 @@ jobs:
       - name: Install OpenShift CLI tools
         uses: redhat-actions/openshift-tools-installer@v1
         with:
-          oc: "4.14"
+          oc: "4.16"
+          skip_cache: true
 
       - name: Login to OpenShift Container Repository
         uses: docker/login-action@v4
@@ -36,7 +37,7 @@ jobs:
           password: ${{secrets.OPENSHIFT_SA_PASSWORD}}
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: "18"
 
@@ -91,7 +92,8 @@ jobs:
       - name: Install OpenShift CLI tools
         uses: redhat-actions/openshift-tools-installer@v1
         with:
-          oc: "4.14"
+          oc: "4.16"
+          skip_cache: true
 
       - name: Login OpenShift
         uses: redhat-actions/oc-login@v1
