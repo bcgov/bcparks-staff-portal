@@ -15,12 +15,18 @@ export default function LightTooltip({
     <OverlayTrigger
       placement={placement}
       overlay={
-        <Tooltip id={id} className="light-tooltip">
+        <Tooltip id={id} className="light-tooltip" role="tooltip">
           {title}
         </Tooltip>
       }
     >
-      <span className="d-inline-flex align-items-center">{children}</span>
+      <button
+        type="button"
+        aria-label="More information"
+        className="d-inline-flex align-items-center tooltip-trigger ms-2"
+      >
+        {children}
+      </button>
     </OverlayTrigger>
   );
 }
