@@ -78,9 +78,7 @@ const RouterConfig = createBrowserRouter([
       {
         path: "advisories-and-closures/review",
         element: (
-          <AccessControlledRoute
-            allowedRoles={[ROLES.ADVISORY_APPROVER]}
-          >
+          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_APPROVER]}>
             <AdvisoryReviewDashboard />
           </AccessControlledRoute>
         ),
@@ -124,9 +122,7 @@ const RouterConfig = createBrowserRouter([
       {
         path: "park-access-status",
         element: (
-          <AccessControlledRoute
-            allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}
-          >
+          <AccessControlledRoute allowedRoles={[ROLES.BCPARKS_USER]}>
             <ParkAccessStatus />
           </AccessControlledRoute>
         ),
