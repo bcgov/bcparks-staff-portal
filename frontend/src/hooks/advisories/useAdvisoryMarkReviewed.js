@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import moment from "moment";
+import { isFuture, isValid, parseISO } from "date-fns";
 
 import { ADVISORY_QUERY } from "@/constants/advisoryQuery";
 import { buildReviewPayload } from "@/lib/advisories/utils/AdvisoryReviewPayload";
@@ -35,7 +35,9 @@ function resolveReviewedStatus(rowData, advisoryStatuses) {
 
   // If the status is currently HQR, set to SCH if future posting date, else PUB
   if (statusCode === "HQR") {
-    return moment(rowData.advisoryDate).isAfter(moment())
+    const advisoryDate = parseISO(rowData.advisoryDate);
+
+    return isValid(advisoryDate) && isFuture(advisoryDate)
       ? scheduledStatus
       : publishedStatus;
   }
