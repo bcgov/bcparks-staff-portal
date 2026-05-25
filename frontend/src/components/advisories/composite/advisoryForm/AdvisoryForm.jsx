@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import "./AdvisoryForm.scss";
@@ -169,6 +169,16 @@ export default function AdvisoryForm({
   const [displayedDateError, setDisplayedDateError] = useState("");
   const [selectedDisplayedDateOption, setSelectedDisplayedDateOption] =
     useState("");
+
+  // Get the advisory status code to determine the primary action button text
+  const currentAdvisoryStatusCode = useMemo(() => {
+    if (!advisoryStatus) return null;
+
+    return (
+      advisoryStatuses.find((status) => status.value === advisoryStatus)
+        ?.code ?? null
+    );
+  }, [advisoryStatus, advisoryStatuses]);
 
   // Reveal event dates in update mode if there are any
   useEffect(() => {
@@ -1639,7 +1649,7 @@ export default function AdvisoryForm({
           <DraftButton onClick={handleSaveDraft} hasLoader={isSavingDraft} />
 
           <PrimaryActions
-            mode={mode}
+            advisoryStatusCode={currentAdvisoryStatusCode}
             isUrgent={isAfterHourPublish}
             isApprover={isApprover}
             onPublish={handlePublish}
@@ -1726,6 +1736,7 @@ AdvisoryForm.propTypes = {
     updateLink: PropTypes.func.isRequired,
     addLink: PropTypes.func.isRequired,
     handleFileCapture: PropTypes.func.isRequired,
+    isApprover: PropTypes.bool,
     notes: PropTypes.string,
     setNotes: PropTypes.func.isRequired,
     submittedBy: PropTypes.string,

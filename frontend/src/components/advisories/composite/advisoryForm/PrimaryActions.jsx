@@ -1,10 +1,11 @@
+import { useMemo } from "react";
 import PropTypes from "prop-types";
 import { Button } from "@/components/advisories/shared/button/Button";
 import useAccess from "@/hooks/useAccess";
 import { ROLES } from "@/config/permissions";
 
 export default function PrimaryActions({
-  mode,
+  advisoryStatusCode,
   isUrgent = false,
   isApprover = false,
   onPublish,
@@ -20,17 +21,18 @@ export default function PrimaryActions({
     isApprover ||
     hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]);
 
-  if (mode === "create") {
-    return canPublish ? (
-      // Show a button to publish directly if the user has permission
-      <Button
-        label="Create advisory / closure"
-        styling="btn-primary btn"
-        onClick={onPublish}
-        hasLoader={isSubmitting}
-      />
-    ) : (
-      // Show a button to submit for review if the user can't publish directly
+  // Use the published/scheduled states to decide whether this action is creating or updating public content
+  const publishButtonLabel = useMemo(
+    () =>
+      advisoryStatusCode === "SCH" || advisoryStatusCode === "PUB"
+        ? "Update advisory / closure"
+        : "Create advisory / closure",
+    [advisoryStatusCode],
+  );
+
+  if (!canPublish) {
+    // Show a button to submit for review if the user can't publish directly
+    return (
       <Button
         label="Submit for review"
         styling="btn-primary btn"
@@ -40,31 +42,19 @@ export default function PrimaryActions({
     );
   }
 
-  if (mode === "update") {
-    return canPublish ? (
-      // Show a button to update directly if the user has permission
-      <Button
-        label="Update advisory / closure"
-        styling="btn-primary btn"
-        onClick={onPublish}
-        hasLoader={isSubmitting}
-      />
-    ) : (
-      // Show a button to submit for review if the user can't update directly
-      <Button
-        label="Submit for review"
-        styling="btn-primary btn"
-        onClick={onSubmit}
-        hasLoader={isSubmitting}
-      />
-    );
-  }
-
-  return null;
+  // Show a button to update directly if the user has permission
+  return (
+    <Button
+      label={publishButtonLabel}
+      styling="btn-primary btn"
+      onClick={onPublish}
+      hasLoader={isSubmitting}
+    />
+  );
 }
 
 PrimaryActions.propTypes = {
-  mode: PropTypes.string.isRequired,
+  advisoryStatusCode: PropTypes.string,
   onPublish: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   isSubmitting: PropTypes.bool,
