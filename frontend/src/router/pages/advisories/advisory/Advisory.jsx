@@ -697,7 +697,7 @@ export default function Advisory({ mode }) {
     }
 
     // advisoryStatus can sometimes be a documentId string
-    // Find the document ID in the advisoryStatuses list
+    // Find the document ID in the allAdvisoryStatuses list
     if (typeof advisoryStatus === "string") {
       return (
         allAdvisoryStatuses.find((status) => status.value === advisoryStatus)
