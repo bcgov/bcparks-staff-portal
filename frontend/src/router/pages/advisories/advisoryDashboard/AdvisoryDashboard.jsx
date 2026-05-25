@@ -24,6 +24,7 @@ import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
+import { ReviewIcon } from "@/components/advisories/shared/reviewIcon/ReviewIcon";
 import { TableActionButton } from "@/components/advisories/shared/tableActionButton/TableActionButton";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
 import StatusBadge from "@/components/StatusBadge";
@@ -37,9 +38,12 @@ import Tooltip from "react-bootstrap/Tooltip";
 import LightTooltip from "@/components/advisories/shared/tooltip/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faTriangleExclamation,
+  faCircleExclamation,
+  faCircleSmall,
   faCircleQuestion,
   faPlus,
+  faStar,
+  faTriangleExclamation,
 } from "@fa-kit/icons/classic/solid";
 import { updatePublicAdvisories } from "@/lib/advisories/utils/AdvisoryDataUtil";
 import {
@@ -48,6 +52,7 @@ import {
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
 import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
+import { REVIEW_STATUS } from "@/constants/reviewStatus";
 import buildReviewFilter from "@/lib/advisories/utils/AdvisoryReviewDashboardQuery";
 import {
   clearAllFilters as clearAllFiltersHandler,
@@ -549,14 +554,19 @@ export default function AdvisoryDashboard({
           {
             fields: [
               "advisoryNumber",
+              "createdAt",
               "advisoryDate",
               "title",
               "effectiveDate",
               "endDate",
               "expiryDate",
+              "modifiedDate",
               "updatedDate",
               "updatedAt",
               "reviewedAt",
+              "reviewedByName",
+              "unpublishedAt",
+              "unpublishedByName",
             ],
             populate: {
               protectedAreas: { fields: ["orcs", "protectedAreaName"] },
@@ -745,12 +755,24 @@ export default function AdvisoryDashboard({
           const statusCode = rowData.archived
             ? "ARCHIVED"
             : rowData.advisoryStatus?.code;
+          const hasUnpublishedStatus =
+            isReviewDashboard &&
+            rowData.reviewStatuses?.includes(REVIEW_STATUS.UNPUBLISHED);
 
           return (
-            <StatusBadge
-              status={statusCode}
-              className={"advisory-status-badge"}
-            />
+            <span className="d-inline-flex align-items-center gap-1">
+              {hasUnpublishedStatus && (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.UNPUBLISHED}
+                  rowId={rowData.documentId}
+                  icon={faCircleSmall}
+                />
+              )}
+              <StatusBadge
+                status={statusCode}
+                className={"advisory-status-badge"}
+              />
+            </span>
           );
         },
       },
@@ -910,23 +932,37 @@ export default function AdvisoryDashboard({
         headerStyle: { width: 250 },
         cellStyle: { width: 250 },
         render(rowData) {
+          const hasNewStatus =
+            isReviewDashboard &&
+            rowData.reviewStatuses?.includes(REVIEW_STATUS.NEW);
+
           return (
-            <OverlayTrigger
-              placement="top"
-              overlay={
-                <Tooltip id={`headline-tooltip-${rowData.documentId}`}>
-                  {rowData.title}
-                </Tooltip>
-              }
-            >
-              <Link
-                to={`/advisory-summary/${rowData.documentId}`}
-                className="advisory-headline-link"
-                aria-label={rowData.title}
+            <span className="d-inline-flex align-items-center gap-1">
+              {hasNewStatus && (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.NEW}
+                  rowId={rowData.documentId}
+                  icon={faStar}
+                  ariaLabel="New advisory"
+                />
+              )}
+              <OverlayTrigger
+                placement="top"
+                overlay={
+                  <Tooltip id={`headline-tooltip-${rowData.documentId}`}>
+                    {rowData.title}
+                  </Tooltip>
+                }
               >
-                {rowData.title}
-              </Link>
-            </OverlayTrigger>
+                <Link
+                  to={`/advisory-summary/${rowData.documentId}`}
+                  className="advisory-headline-link"
+                  aria-label={rowData.title}
+                >
+                  {rowData.title}
+                </Link>
+              </OverlayTrigger>
+            </span>
           );
         },
       },
@@ -937,7 +973,29 @@ export default function AdvisoryDashboard({
               title: "Last updated",
               render(rowData) {
                 if (rowData.modifiedDate) {
-                  return moment(rowData.modifiedDate).format("YYYY/MM/DD");
+                  const hasUpdatedStatus = rowData.reviewStatuses?.includes(
+                    REVIEW_STATUS.UPDATED,
+                  );
+
+                  return (
+                    <span className="d-inline-flex align-items-center gap-1">
+                      {hasUpdatedStatus && (
+                        <ReviewIcon
+                          reviewStatus={REVIEW_STATUS.UPDATED}
+                          rowId={rowData.documentId}
+                          icon={faCircleSmall}
+                        />
+                      )}
+                      <span
+                        className={classNames({
+                          [`review-status--${REVIEW_STATUS.UPDATED.toLowerCase()}`]:
+                            hasUpdatedStatus,
+                        })}
+                      >
+                        {moment(rowData.modifiedDate).format("YYYY/MM/DD")}
+                      </span>
+                    </span>
+                  );
                 }
 
                 return null;
@@ -963,7 +1021,29 @@ export default function AdvisoryDashboard({
               title: "End date",
               render(rowData) {
                 if (rowData.endDate) {
-                  return moment(rowData.endDate).format("YYYY/MM/DD");
+                  const hasEndedStatus = rowData.reviewStatuses?.includes(
+                    REVIEW_STATUS.ENDED,
+                  );
+
+                  return (
+                    <span className="d-inline-flex align-items-center gap-1">
+                      {hasEndedStatus && (
+                        <ReviewIcon
+                          reviewStatus={REVIEW_STATUS.ENDED}
+                          rowId={rowData.documentId}
+                          icon={faTriangleExclamation}
+                        />
+                      )}
+                      <span
+                        className={classNames({
+                          [`review-status--${REVIEW_STATUS.ENDED.toLowerCase()}`]:
+                            hasEndedStatus,
+                        })}
+                      >
+                        {moment(rowData.endDate).format("YYYY/MM/DD")}
+                      </span>
+                    </span>
+                  );
                 }
 
                 return null;
@@ -976,7 +1056,47 @@ export default function AdvisoryDashboard({
         title: "Expiry date",
         render(rowData) {
           if (rowData.expiryDate) {
-            return moment(rowData.expiryDate).format("YYYY/MM/DD");
+            const hasExpiringStatus =
+              isReviewDashboard &&
+              rowData.reviewStatuses?.includes(REVIEW_STATUS.EXPIRING);
+            const hasExpiredStatus =
+              isReviewDashboard &&
+              rowData.reviewStatuses?.includes(REVIEW_STATUS.EXPIRED);
+            let expiryIcon = null;
+
+            if (hasExpiredStatus) {
+              expiryIcon = (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.EXPIRED}
+                  rowId={rowData.documentId}
+                  icon={faCircleExclamation}
+                />
+              );
+            } else if (hasExpiringStatus) {
+              expiryIcon = (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.EXPIRING}
+                  rowId={rowData.documentId}
+                  icon={faTriangleExclamation}
+                />
+              );
+            }
+
+            return (
+              <span className="d-inline-flex align-items-center gap-1">
+                {expiryIcon}
+                <span
+                  className={classNames({
+                    [`review-status--${REVIEW_STATUS.EXPIRED.toLowerCase()}`]:
+                      hasExpiredStatus,
+                    [`review-status--${REVIEW_STATUS.EXPIRING.toLowerCase()}`]:
+                      hasExpiringStatus && !hasExpiredStatus,
+                  })}
+                >
+                  {moment(rowData.expiryDate).format("YYYY/MM/DD")}
+                </span>
+              </span>
+            );
           }
 
           return null;
@@ -1147,10 +1267,7 @@ export default function AdvisoryDashboard({
           }
           onClearAll={clearAllFilters}
         />
-        <div
-          className="advisory-dashboard"
-          data-testid="AdvisoryDashboard"
-        >
+        <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
           <br />
           <div className="advisory-dashboard-table-wrap">
             <DataTable

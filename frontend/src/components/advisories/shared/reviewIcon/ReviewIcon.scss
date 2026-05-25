@@ -1,0 +1,17 @@
+.review-status--new,
+.review-status--updated,
+.review-status--unpublished {
+  color: var(--typography-color-link);
+  font-weight: 700;
+}
+
+.review-status--ended,
+.review-status--expiring {
+  color: var(--additional-warning-bc-gold-80, #a5792b);
+  font-weight: 700;
+}
+
+.review-status--expired {
+  color: var(--typography-color-danger);
+  font-weight: 700;
+}
