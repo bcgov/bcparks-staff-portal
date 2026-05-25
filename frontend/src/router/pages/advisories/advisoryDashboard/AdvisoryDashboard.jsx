@@ -1266,7 +1266,10 @@ export default function AdvisoryDashboard({
           }
           onClearAll={clearAllFilters}
         />
-        <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
+        <div
+          className="advisory-dashboard"
+          data-testid="AdvisoryDashboard"
+        >
           <br />
           <div className="advisory-dashboard-table-wrap">
             <DataTable
