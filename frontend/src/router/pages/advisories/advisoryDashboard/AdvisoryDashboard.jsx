@@ -943,7 +943,6 @@ export default function AdvisoryDashboard({
                   reviewStatus={REVIEW_STATUS.NEW}
                   rowId={rowData.documentId}
                   icon={faStar}
-                  ariaLabel="New advisory"
                 />
               )}
               <OverlayTrigger

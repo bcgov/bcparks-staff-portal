@@ -21,7 +21,7 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
   const endDate = moment(publicAdvisory.endDate);
   const oneWeekFromNow = now.clone().add(oneWeekDays, "days");
 
-  // New advisory, posted and not posted within a week, and not yet reviewed
+  // New advisory, posted and not posted, and not yet reviewed
   const isNew =
     ["HQR", "SCH", "PUB"].includes(statusCode) &&
     createdAt.isValid() &&
