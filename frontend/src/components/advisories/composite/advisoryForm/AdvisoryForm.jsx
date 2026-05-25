@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import "./AdvisoryForm.scss";
@@ -121,6 +121,7 @@ export default function AdvisoryForm({
     submittedBy,
     setSubmittedBy,
     advisoryStatuses,
+    advisoryStatusCode,
     advisoryStatus,
     setAdvisoryStatus,
     isStatHoliday,
@@ -169,16 +170,6 @@ export default function AdvisoryForm({
   const [displayedDateError, setDisplayedDateError] = useState("");
   const [selectedDisplayedDateOption, setSelectedDisplayedDateOption] =
     useState("");
-
-  // Get the advisory status code to determine the primary action button text
-  const currentAdvisoryStatusCode = useMemo(() => {
-    if (!advisoryStatus) return null;
-
-    return (
-      advisoryStatuses.find((status) => status.value === advisoryStatus)
-        ?.code ?? null
-    );
-  }, [advisoryStatus, advisoryStatuses]);
 
   // Reveal event dates in update mode if there are any
   useEffect(() => {
@@ -1570,7 +1561,7 @@ export default function AdvisoryForm({
                 value={advisoryStatuses.filter(
                   (a) => a.value === advisoryStatus,
                 )}
-                onChange={(e) => setAdvisoryStatus(e ? e.value : 0)}
+                onChange={(e) => setAdvisoryStatus(e ? e.value : null)}
                 placeholder="Search or select an advisory status"
                 className="bcgov-select"
                 isClearable
@@ -1649,7 +1640,7 @@ export default function AdvisoryForm({
           <DraftButton onClick={handleSaveDraft} hasLoader={isSavingDraft} />
 
           <PrimaryActions
-            advisoryStatusCode={currentAdvisoryStatusCode}
+            advisoryStatusCode={advisoryStatusCode}
             isUrgent={isAfterHourPublish}
             isApprover={isApprover}
             onPublish={handlePublish}
@@ -1742,6 +1733,7 @@ AdvisoryForm.propTypes = {
     submittedBy: PropTypes.string,
     setSubmittedBy: PropTypes.func.isRequired,
     advisoryStatuses: PropTypes.array.isRequired,
+    advisoryStatusCode: PropTypes.string,
     advisoryStatus: PropTypes.string,
     setAdvisoryStatus: PropTypes.func.isRequired,
     isStatHoliday: PropTypes.bool,
