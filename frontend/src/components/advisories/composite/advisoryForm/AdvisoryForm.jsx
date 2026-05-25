@@ -1640,6 +1640,7 @@ export default function AdvisoryForm({
           <DraftButton onClick={handleSaveDraft} hasLoader={isSavingDraft} />
 
           <PrimaryActions
+            mode={mode}
             advisoryStatusCode={advisoryStatusCode}
             isUrgent={isAfterHourPublish}
             isApprover={isApprover}

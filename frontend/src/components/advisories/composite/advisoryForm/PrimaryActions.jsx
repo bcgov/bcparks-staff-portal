@@ -5,6 +5,7 @@ import useAccess from "@/hooks/useAccess";
 import { ROLES } from "@/config/permissions";
 
 export default function PrimaryActions({
+  mode,
   advisoryStatusCode,
   isUrgent = false,
   isApprover = false,
@@ -22,13 +23,16 @@ export default function PrimaryActions({
     hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]);
 
   // Use the published/scheduled states to decide whether this action is creating or updating public content
-  const publishButtonLabel = useMemo(
-    () =>
-      advisoryStatusCode === "SCH" || advisoryStatusCode === "PUB"
-        ? "Update advisory / closure"
-        : "Create advisory / closure",
-    [advisoryStatusCode],
-  );
+  const publishButtonLabel = useMemo(() => {
+    if (
+      (advisoryStatusCode === "SCH" || advisoryStatusCode === "PUB") &&
+      mode !== "create"
+    ) {
+      return "Update advisory / closure";
+    }
+
+    return "Create advisory / closure";
+  }, [mode, advisoryStatusCode]);
 
   if (!canPublish) {
     // Show a button to submit for review if the user can't publish directly
@@ -54,6 +58,7 @@ export default function PrimaryActions({
 }
 
 PrimaryActions.propTypes = {
+  mode: PropTypes.string.isRequired,
   advisoryStatusCode: PropTypes.string,
   onPublish: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
