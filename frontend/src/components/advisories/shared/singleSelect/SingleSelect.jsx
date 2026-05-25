@@ -4,7 +4,13 @@ import PropTypes from "prop-types";
 import Form from "react-bootstrap/Form";
 import Select from "react-select";
 
-export function SingleSelect({ label, value, options, onChange, placeholder }) {
+export function SingleSelect({
+  label = "",
+  value = null,
+  options = [],
+  onChange = () => {},
+  placeholder = "Select...",
+}) {
   const generatedId = useId();
   const hasSelection = Boolean(value);
 
@@ -40,12 +46,4 @@ SingleSelect.propTypes = {
   options: PropTypes.arrayOf(PropTypes.object),
   onChange: PropTypes.func,
   placeholder: PropTypes.string,
-};
-
-SingleSelect.defaultProps = {
-  label: "",
-  value: null,
-  options: [],
-  onChange() {},
-  placeholder: "Select...",
 };

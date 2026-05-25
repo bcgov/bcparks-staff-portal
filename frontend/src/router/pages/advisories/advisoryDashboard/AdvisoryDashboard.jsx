@@ -325,6 +325,8 @@ export default function AdvisoryDashboard({
     );
   }
 
+  // Updates the selected program area filter and persists it to stored page filters.
+  // Resets pagination so results refresh from the first page after the filter changes.
   function handleProgramAreaChange(option) {
     setSelectedProgramArea(option ?? null);
     resetToFirstPage();
