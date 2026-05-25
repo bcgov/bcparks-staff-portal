@@ -65,21 +65,13 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                 },
               ],
             },
-            // Submitted for review
-            {
-              advisoryStatus: {
-                code: {
-                  $eq: "HQR",
-                },
-              },
-            },
-            // Published/scheduled advisories that still require review
+            // Published/scheduled/submitted advisories that still require review
             {
               $and: [
                 {
                   advisoryStatus: {
                     code: {
-                      $in: ["PUB", "SCH"],
+                      $in: ["PUB", "SCH", "HQR"],
                     },
                   },
                 },
@@ -88,10 +80,37 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                     $null: true,
                   },
                 },
+                {
+                  reviewedByName: {
+                    $null: true,
+                  },
+                },
                 // Temporary condition
                 {
                   modifiedDate: {
                     $between: [oneMonthAgo, now],
+                  },
+                },
+              ],
+            },
+            // Scheduled/submitted advisories that are updated
+            {
+              $and: [
+                {
+                  advisoryStatus: {
+                    code: {
+                      $in: ["HQR", "SCH"],
+                    },
+                  },
+                },
+                {
+                  createdAt: {
+                    $notNull: true,
+                  },
+                },
+                {
+                  modifiedDate: {
+                    $notNull: true,
                   },
                 },
               ],
