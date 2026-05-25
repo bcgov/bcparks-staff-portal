@@ -5,9 +5,13 @@ import Badge from "react-bootstrap/Badge";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 
-export function CountBadge({ label, documentId, title, tooltipText }) {
-  const generatedId = useId();
-  const tooltipId = `count-badge-tooltip-${documentId}-${generatedId.replace(/[:]/gu, "")}`;
+export function CountBadge({
+  label,
+  documentId,
+  title = "",
+  tooltipText = "",
+}) {
+  const tooltipId = useId();
   const ariaLabelText = `Open advisory summary for ${title}`;
 
   return (
@@ -29,9 +33,4 @@ CountBadge.propTypes = {
   documentId: PropTypes.string.isRequired,
   title: PropTypes.string,
   tooltipText: PropTypes.string,
-};
-
-CountBadge.defaultProps = {
-  title: "",
-  tooltipText: "",
 };
