@@ -5,7 +5,7 @@ export default {
   dashboard: {
     showArchived: {
       tooltip:
-        "By default, advisories that have not been modified in the last 30 days are hidden. Check this box to show all older advisories.",
+        "By default, advisories and closures that have not been modified in the last 30 days are hidden. Check this box to show all older advisories and closures.",
     },
   },
 
