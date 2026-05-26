@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { useTranslation } from "react-i18next";
 import "./AdvisoryForm.scss";
 import ButtonGroup from "react-bootstrap/ButtonGroup";
 import Btn from "react-bootstrap/Button";
@@ -136,6 +137,7 @@ export default function AdvisoryForm({
     setFormError,
   },
 }) {
+  const { t } = useTranslation("act");
   const { hasAnyRole } = useAccess();
 
   const [showEventDates, setShowEventDates] = useState(false);
@@ -535,10 +537,7 @@ export default function AdvisoryForm({
             <span className="append-required">Resource status</span>
             <LightTooltip
               arrow
-              title="This status describes how the advisory event affects access to the park.
-              The default is 'Open'. This selection triggers information to be displayed in various areas,
-              such as on the BC Parks Map, closure/warning status icons in the various park lists,
-              and closure status on park pages."
+              title={t("advisoryForm.resourceStatus.tooltip")}
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
@@ -557,11 +556,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group" controlId="event-type">
           <Form.Label>
             <span className="append-required">Event type</span>
-            <LightTooltip
-              arrow
-              title="Select the most appropriate event type that your advisory falls under, this does impact the front-end.
-                For example, freshet and wildfire event types load conditional content to their respective flood and wildfire pages."
-            >
+            <LightTooltip arrow title={t("advisoryForm.eventType.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
@@ -589,7 +584,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group">
           <Form.Label htmlFor={headlineInput.id}>
             <span className="append-required">Headline</span>
-            <LightTooltip arrow title="Headline">
+            <LightTooltip arrow title={t("advisoryForm.headline.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
@@ -613,11 +608,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group" controlId="urgency-level">
           <Form.Label>
             <span className="append-required">Urgency level</span>
-            <LightTooltip
-              arrow
-              title="Dependant on your advisory, the urgency level can be used to prioritize your alert above existing alerts for the same park page.
-                Ie, assigning a high urgency re wildfire closure will place that advisory at the top."
-            >
+            <LightTooltip arrow title={t("advisoryForm.urgencyLevel.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
@@ -675,9 +666,7 @@ export default function AdvisoryForm({
             Standard message(s)
             <LightTooltip
               arrow
-              title="Standard messages are chosen from a list of generic, pre-defined and approved messages.
-                This content will be added below any text entered in the custom message on the park page.
-                There is no requirement to have both a custom message and standard messaging."
+              title={t("advisoryForm.standardMessages.tooltip")}
             >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
@@ -700,7 +689,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group" controlId="custom-message">
           <Form.Label>
             Custom message
-            <LightTooltip arrow title="Custom message">
+            <LightTooltip arrow title={t("advisoryForm.customMessage.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
             <br />
@@ -740,7 +729,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group">
           <Form.Label>
             Attach item(s) below the advisory/closure message
-            <LightTooltip arrow title="Attach files">
+            <LightTooltip arrow title={t("advisoryForm.attachFiles.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
@@ -984,7 +973,10 @@ export default function AdvisoryForm({
               <Form.Group className="form-group">
                 <Form.Label htmlFor="post-start-date">
                   <span className="append-required">Posting date</span>
-                  <LightTooltip arrow title="Posting date">
+                  <LightTooltip
+                    arrow
+                    title={t("advisoryForm.postingDate.tooltip")}
+                  >
                     <FontAwesomeIcon
                       icon={faCircleQuestion}
                       className="helpIcon"
@@ -1061,7 +1053,7 @@ export default function AdvisoryForm({
                   Expiry date
                   <LightTooltip
                     arrow
-                    title="The advisory will be automatically removed on this date."
+                    title={t("advisoryForm.expiryDate.tooltip")}
                   >
                     <FontAwesomeIcon
                       icon={faCircleQuestion}
@@ -1230,7 +1222,10 @@ export default function AdvisoryForm({
                   >
                     <Form.Label>
                       Start date
-                      <LightTooltip arrow title="Start date">
+                      <LightTooltip
+                        arrow
+                        title={t("advisoryForm.startDate.tooltip")}
+                      >
                         <FontAwesomeIcon
                           icon={faCircleQuestion}
                           className="helpIcon"
@@ -1303,8 +1298,7 @@ export default function AdvisoryForm({
                       End date
                       <LightTooltip
                         arrow
-                        title="Enter the event's end date.
-                      If end date is unknown, enter a date when the advisory should be reviewed for relevance."
+                        title={t("advisoryForm.endDate.tooltip")}
                       >
                         <FontAwesomeIcon
                           icon={faCircleQuestion}
@@ -1395,7 +1389,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group">
           <Form.Label htmlFor="displayed-date">
             Displayed date
-            <LightTooltip arrow title="Displayed date">
+            <LightTooltip arrow title={t("advisoryForm.displayedDate.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
@@ -1428,7 +1422,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group" controlId={notesInput.id}>
           <Form.Label>
             Internal notes
-            <LightTooltip arrow title="Internal notes">
+            <LightTooltip arrow title={t("advisoryForm.internalNotes.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
@@ -1447,7 +1441,7 @@ export default function AdvisoryForm({
           <Form.Group className="form-group" controlId={submitterInput.id}>
             <Form.Label>
               Requested by
-              <LightTooltip arrow title="Requested by">
+              <LightTooltip arrow title={t("advisoryForm.requestedBy.tooltip")}>
                 <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
               </LightTooltip>
             </Form.Label>
@@ -1467,13 +1461,7 @@ export default function AdvisoryForm({
         <Form.Group className="form-group" controlId={listingRankInput.id}>
           <Form.Label>
             Listing rank
-            <LightTooltip
-              arrow
-              title="To display an advisory at the top of the list, add a Listing rank number.
-              The advisory with the highest number will be displayed at the top.
-              If the Listing rank number is zero,
-              advisories are ordered by urgency level and date added."
-            >
+            <LightTooltip arrow title={t("advisoryForm.listingRank.tooltip")}>
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
@@ -1506,7 +1494,10 @@ export default function AdvisoryForm({
         <Form.Group className="form-group" controlId="public-safety-related">
           <Form.Label>
             Public safety related
-            <LightTooltip arrow title="Public safety related">
+            <LightTooltip
+              arrow
+              title={t("advisoryForm.publicSafetyRelated.tooltip")}
+            >
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>

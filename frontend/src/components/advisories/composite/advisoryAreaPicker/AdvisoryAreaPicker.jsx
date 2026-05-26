@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 import "./AdvisoryAreaPicker.scss";
 import Select from "react-select";
 import Form from "react-bootstrap/Form";
@@ -50,6 +51,7 @@ export default function AdvisoryAreaPicker({
     affectedResourceError,
   },
 }) {
+  const { t } = useTranslation("act");
   const [showOtherAreas, setShowOtherAreas] = useState(false);
   // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
   const autoExpandedOtherAreas = useRef(false);
@@ -240,11 +242,7 @@ export default function AdvisoryAreaPicker({
         </span>
         <LightTooltip
           arrow
-          title="Please select the resource that your advisory is affecting.
-                There is no need to select additional sites, regions, or sections if your advisory is just for a specific resource.
-                Selecting a region (or any other category) will apply your advisory to every resource page within that region or other category.
-                For example, an advisory for Goldstream Park would only need Goldstream selected from the list of resources,
-                you would not need to include West Coast in the regions as this would trigger an alert for all resources in the West Coast."
+          title={t("advisoryAreaPicker.affectedResources.tooltip")}
         >
           <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
         </LightTooltip>
