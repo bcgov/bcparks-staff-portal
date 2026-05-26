@@ -15,10 +15,6 @@ function querySort(key) {
   return qs.stringify(
     {
       sort: [key],
-      pagination: {
-        // Large number to return all items on a single page
-        limit: 2000,
-      },
     },
     { encodeValuesOnly: true },
   );
@@ -82,6 +78,68 @@ export default function useCms() {
     [withAuthorization],
   );
 
+  /**
+   * Fetches all pages of paginated data from a Strapi endpoint URL.
+   * @param {string} url CMS endpoint URL (may already include query string)
+   * @param {string|Array} [path="data"] lodash.get path inside the CMS response body
+   * @returns {Promise<any[]|any>} Aggregated array data for collections, or object/root payload for single endpoints
+   */
+  const cmsGetAllPages = useCallback(
+    async (url, path = "data") => {
+      function buildPaginatedUrl(baseUrl, page) {
+        let joiner = "?";
+
+        if (baseUrl.includes("?")) {
+          joiner = baseUrl.endsWith("?") || baseUrl.endsWith("&") ? "" : "&";
+        }
+
+        return `${baseUrl}${joiner}pagination[page]=${page}&pagination[pageSize]=2000`;
+      }
+
+      function extractPayload(body) {
+        return path.length === 0 ? body : get(body, path);
+      }
+
+      let allData = [];
+      let currentPage = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        try {
+          const { data: body } = await cmsAxios.get(
+            buildPaginatedUrl(url, currentPage),
+            withAuthorization(),
+          );
+
+          const pageData = extractPayload(body);
+
+          // Single collection/object payload: return as-is
+          if (!Array.isArray(pageData)) {
+            return currentPage === 1 ? pageData : allData;
+          }
+
+          allData = allData.concat(pageData);
+
+          const pagination = body?.meta?.pagination ?? {};
+          const page = Number(pagination.page ?? 1);
+          const pageCount = Number(pagination.pageCount ?? 1);
+
+          hasMore = page < pageCount;
+          currentPage += 1;
+        } catch (error) {
+          console.error(
+            `Error fetching page ${currentPage} from ${url}:`,
+            error,
+          );
+          throw error;
+        }
+      }
+
+      return allData;
+    },
+    [withAuthorization],
+  );
+
   const cmsPost = useCallback(
     async (url, data, config = {}) => {
       const response = await cmsAxios.post(
@@ -135,11 +193,11 @@ export default function useCms() {
         return cmsData[key];
       }
 
-      const payload = await cmsGet(url, {}, path);
+      const payload = await cmsGetAllPages(url, path);
 
       return storeResult(key, payload);
     },
-    [cmsData, cmsGet, storeResult],
+    [cmsData, cmsGetAllPages, storeResult],
   );
 
   // Metadata getters using fetchCached so each endpoint API is hit only once per session.
@@ -229,9 +287,6 @@ export default function useCms() {
         `/recreation-resources?${qs.stringify(
           {
             sort: ["resourceName"],
-            pagination: {
-              limit: 8000,
-            },
             fields: ["resourceName", "recResourceId", "closestCommunity"],
             populate: {
               recreationResourceType: {
