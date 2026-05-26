@@ -56,8 +56,9 @@ import {
 import useAdvisoryMarkReviewed from "@/hooks/advisories/useAdvisoryMarkReviewed";
 import {
   DATE_SORT_FIELDS,
+  sortByAssociatedResources,
   sortByDateFieldNullsLast,
-} from "@/lib/advisories/utils/dateSort";
+} from "@/lib/advisories/utils/advisorySort";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
 import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
 import { REVIEW_STATUS } from "@/constants/reviewStatus";
@@ -659,15 +660,20 @@ export default function AdvisoryDashboard({
           ...reviewFilterClauses,
         ];
 
-        // When "All" is selected, or when sorting by date fields
-        // (to enforce nulls-last ordering), first fetch the current total with
-        // the active filters applied, then request exactly that many rows
+        const isAssociatedResourcesSort =
+          sortConfig?.field === "associatedResources";
+
+        // When "All" is selected, or when sorting needs client-side handling,
+        // first fetch the current total with active filters applied, then
+        // request exactly that many rows.
         const isDateFieldSort = DATE_SORT_FIELDS.has(sortConfig?.field);
-        const shouldFetchAllForDateSort = isDateFieldSort && pageSize > 0;
+        const needsClientSideSort =
+          isDateFieldSort || isAssociatedResourcesSort;
+        const shouldFetchAllForClientSort = needsClientSideSort && pageSize > 0;
         let pagination;
         let allTotal = null;
 
-        if (pageSize < 0 || shouldFetchAllForDateSort) {
+        if (pageSize < 0 || shouldFetchAllForClientSort) {
           const countQuery = qs.stringify(
             {
               fields: ["id"],
@@ -774,17 +780,24 @@ export default function AdvisoryDashboard({
 
         // When sorting by date fields, do a client-side sort to enforce nulls-last,
         // then paginate the sorted array
-        const finalPublicAdvisories = isDateFieldSort
-          ? sortByDateFieldNullsLast(
-              updatedPublicAdvisories,
-              sortConfig.field,
-              sortConfig.direction,
-            )
-          : updatedPublicAdvisories;
+        let finalPublicAdvisories = updatedPublicAdvisories;
+
+        if (isDateFieldSort) {
+          finalPublicAdvisories = sortByDateFieldNullsLast(
+            updatedPublicAdvisories,
+            sortConfig.field,
+            sortConfig.direction,
+          );
+        } else if (isAssociatedResourcesSort) {
+          finalPublicAdvisories = sortByAssociatedResources(
+            updatedPublicAdvisories,
+            sortConfig.direction,
+          );
+        }
 
         let pagedPublicAdvisories = finalPublicAdvisories;
 
-        if (shouldFetchAllForDateSort) {
+        if (shouldFetchAllForClientSort) {
           const startIndex = (currentPage - 1) * pageSize;
           const endIndex = startIndex + pageSize;
 
