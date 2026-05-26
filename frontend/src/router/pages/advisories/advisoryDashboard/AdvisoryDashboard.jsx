@@ -46,6 +46,10 @@ import {
   buildFilter,
   buildSort,
 } from "@/lib/advisories/utils/AdvisoryDashboardQuery";
+import {
+  DATE_SORT_FIELDS,
+  sortByDateFieldNullsLast,
+} from "@/lib/advisories/utils/dateSort";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
 import { TABLE_FILTER_LABELS } from "@/constants/advisoryDashboardFilter";
 import buildReviewFilter from "@/lib/advisories/utils/AdvisoryReviewDashboardQuery";
@@ -514,12 +518,15 @@ export default function AdvisoryDashboard({
         // Apply filters from table columns, dropdowns, and review tab logic
         baseFilters.push(...columnFilterClauses, ...reviewFilterClauses);
 
-        // When "All" is selected, first fetch the current total with
+        // When "All" is selected, or when sorting by date fields
+        // (to enforce nulls-last ordering), first fetch the current total with
         // the active filters applied, then request exactly that many rows
+        const isDateFieldSort = DATE_SORT_FIELDS.has(sortConfig?.field);
+        const shouldFetchAllForDateSort = isDateFieldSort && pageSize > 0;
         let pagination;
         let allTotal = null;
 
-        if (pageSize < 0) {
+        if (pageSize < 0 || shouldFetchAllForDateSort) {
           const countQuery = qs.stringify(
             {
               fields: ["id"],
@@ -587,8 +594,30 @@ export default function AdvisoryDashboard({
           managementAreas,
         );
 
+        // When sorting by date fields, do a client-side sort to enforce nulls-last,
+        // then paginate the sorted array
+        const finalPublicAdvisories = isDateFieldSort
+          ? sortByDateFieldNullsLast(
+              updatedPublicAdvisories,
+              sortConfig.field,
+              sortConfig.direction,
+            )
+          : updatedPublicAdvisories;
+
+        let pagedPublicAdvisories = finalPublicAdvisories;
+
+        if (shouldFetchAllForDateSort) {
+          const startIndex = (currentPage - 1) * pageSize;
+          const endIndex = startIndex + pageSize;
+
+          pagedPublicAdvisories = finalPublicAdvisories.slice(
+            startIndex,
+            endIndex,
+          );
+        }
+
         if (isMounted) {
-          setPublicAdvisories(updatedPublicAdvisories);
+          setPublicAdvisories(pagedPublicAdvisories);
           totalPublicAdvisoriesRef.current = total;
           setTotalPublicAdvisories(total);
           setIsLoading(false);
