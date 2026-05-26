@@ -94,6 +94,15 @@ function ReviewEmptyState() {
   );
 }
 
+// Format the tooltip text for count badges that indicate additional associated resources
+function formatCountBadge(
+  count,
+  singularLabel,
+  pluralLabel = `${singularLabel}s`,
+) {
+  return `Plus ${count} more ${count === 1 ? singularLabel : pluralLabel}`;
+}
+
 export default function AdvisoryDashboard({
   filterStorageKey = "advisoryFilters",
   isReviewDashboard = false,
@@ -850,7 +859,7 @@ export default function AdvisoryDashboard({
                       label={`+${p.count}`}
                       documentId={rowData.documentId}
                       title={rowData.title}
-                      tooltipText={`plus ${p.count} more park(s)`}
+                      tooltipText={formatCountBadge(p.count, "resource")}
                     />
                     {displayedRegions.length - 1 > i && <br />}
                   </span>
@@ -860,7 +869,10 @@ export default function AdvisoryDashboard({
                     label={`+${regionsCount - displayCount}`}
                     documentId={rowData.documentId}
                     title={rowData.title}
-                    tooltipText={`plus ${regionsCount - displayCount} more region(s)`}
+                    tooltipText={formatCountBadge(
+                      regionsCount - displayCount,
+                      "region",
+                    )}
                   />
                 )}
               </div>
@@ -888,7 +900,10 @@ export default function AdvisoryDashboard({
                     label={`+${parksCount - displayCount}`}
                     documentId={rowData.documentId}
                     title={rowData.title}
-                    tooltipText={`plus ${parksCount - displayCount} more park(s)`}
+                    tooltipText={formatCountBadge(
+                      parksCount - displayCount,
+                      "resource",
+                    )}
                   />
                 )}
               </div>
@@ -915,7 +930,10 @@ export default function AdvisoryDashboard({
                   label={`+${resourcesCount - displayCount}`}
                   documentId={rowData.documentId}
                   title={rowData.title}
-                  tooltipText={`plus ${resourcesCount - displayCount} more resource(s)`}
+                  tooltipText={formatCountBadge(
+                    resourcesCount - displayCount,
+                    "resource",
+                  )}
                 />
               )}
             </div>
