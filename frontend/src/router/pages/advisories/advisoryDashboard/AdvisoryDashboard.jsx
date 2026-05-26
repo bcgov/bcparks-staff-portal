@@ -24,6 +24,7 @@ import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import emptyReviewQueueImage from "@/router/pages/advisories/advisoryDashboard/empty-review-queue.png";
 import { Button } from "@/components/advisories/shared/button/Button";
+import { CountBadge } from "@/components/advisories/shared/countBadge/CountBadge";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
 import { ReviewIcon } from "@/components/advisories/shared/reviewIcon/ReviewIcon";
 import { SingleSelect } from "@/components/advisories/shared/singleSelect/SingleSelect";
@@ -33,7 +34,6 @@ import StatusBadge from "@/components/StatusBadge";
 import FilterStatus from "@/components/advisories/shared/filterStatus/FilterStatus";
 import moment from "moment";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
-import Badge from "react-bootstrap/Badge";
 import Form from "react-bootstrap/Form";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
@@ -97,6 +97,15 @@ function ReviewEmptyState() {
       </div>
     </div>
   );
+}
+
+// Format the tooltip text for count badges that indicate additional associated resources
+function formatCountBadge(
+  count,
+  singularLabel,
+  pluralLabel = `${singularLabel}s`,
+) {
+  return `Plus ${count} more ${count === 1 ? singularLabel : pluralLabel}`;
 }
 
 export default function AdvisoryDashboard({
@@ -256,19 +265,6 @@ export default function AdvisoryDashboard({
     showArchivedStorageKey,
     false,
   );
-
-  function renderCountBadge(label, documentId, title) {
-    return (
-      <Link
-        to={`/advisory-summary/${documentId}`}
-        aria-label={`Open advisory summary for ${title}`}
-      >
-        <Badge pill bg="light" text="dark" className="park-count-badge">
-          {label}
-        </Badge>
-      </Link>
-    );
-  }
 
   function resetToFirstPage() {
     setCurrentPage(1);
@@ -929,32 +925,25 @@ export default function AdvisoryDashboard({
                 {displayedRegions?.map((p, i) => (
                   <span key={i}>
                     {p.regionName} region
-                    {renderCountBadge(
-                      `+${p.count}`,
-                      rowData.documentId,
-                      rowData.title,
-                    )}
+                    <CountBadge
+                      label={`+${p.count}`}
+                      documentId={rowData.documentId}
+                      title={rowData.title}
+                      tooltipText={formatCountBadge(p.count, "resource")}
+                    />
+                    {displayedRegions.length - 1 > i && <br />}
                   </span>
                 ))}
                 {regionsCount > displayCount && (
-                  <OverlayTrigger
-                    placement="top"
-                    overlay={
-                      <Tooltip
-                        id={`regions-more-${rowData.documentId || rowData.id}`}
-                      >
-                        {`plus ${regionsCount - displayCount} more region(s)`}
-                      </Tooltip>
-                    }
-                  >
-                    <span>
-                      {renderCountBadge(
-                        `+${regionsCount - displayCount}`,
-                        rowData.documentId,
-                        rowData.title,
-                      )}
-                    </span>
-                  </OverlayTrigger>
+                  <CountBadge
+                    label={`+${regionsCount - displayCount}`}
+                    documentId={rowData.documentId}
+                    title={rowData.title}
+                    tooltipText={formatCountBadge(
+                      regionsCount - displayCount,
+                      "region",
+                    )}
+                  />
                 )}
               </div>
             );
@@ -977,24 +966,15 @@ export default function AdvisoryDashboard({
                   </span>
                 ))}
                 {parksCount > displayCount && (
-                  <OverlayTrigger
-                    placement="top"
-                    overlay={
-                      <Tooltip
-                        id={`parks-more-${rowData.documentId || rowData.id}`}
-                      >
-                        {`plus ${parksCount - displayCount} more park(s)`}
-                      </Tooltip>
-                    }
-                  >
-                    <span>
-                      {renderCountBadge(
-                        `+${parksCount - displayCount}`,
-                        rowData.documentId,
-                        rowData.title,
-                      )}
-                    </span>
-                  </OverlayTrigger>
+                  <CountBadge
+                    label={`+${parksCount - displayCount}`}
+                    documentId={rowData.documentId}
+                    title={rowData.title}
+                    tooltipText={formatCountBadge(
+                      parksCount - displayCount,
+                      "resource",
+                    )}
+                  />
                 )}
               </div>
             );
@@ -1016,24 +996,15 @@ export default function AdvisoryDashboard({
                 </span>
               ))}
               {resourcesCount > displayCount && (
-                <OverlayTrigger
-                  placement="top"
-                  overlay={
-                    <Tooltip
-                      id={`resources-more-${rowData.documentId || rowData.id}`}
-                    >
-                      {`plus ${resourcesCount - displayCount} more resource(s)`}
-                    </Tooltip>
-                  }
-                >
-                  <span>
-                    {renderCountBadge(
-                      `+${resourcesCount - displayCount}`,
-                      rowData.documentId,
-                      rowData.title,
-                    )}
-                  </span>
-                </OverlayTrigger>
+                <CountBadge
+                  label={`+${resourcesCount - displayCount}`}
+                  documentId={rowData.documentId}
+                  title={rowData.title}
+                  tooltipText={formatCountBadge(
+                    resourcesCount - displayCount,
+                    "resource",
+                  )}
+                />
               )}
             </div>
           );
