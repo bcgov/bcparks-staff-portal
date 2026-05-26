@@ -121,6 +121,7 @@ export default function AdvisoryForm({
     submittedBy,
     setSubmittedBy,
     advisoryStatuses,
+    advisoryStatusCode,
     advisoryStatus,
     setAdvisoryStatus,
     isStatHoliday,
@@ -1560,7 +1561,7 @@ export default function AdvisoryForm({
                 value={advisoryStatuses.filter(
                   (a) => a.value === advisoryStatus,
                 )}
-                onChange={(e) => setAdvisoryStatus(e ? e.value : 0)}
+                onChange={(e) => setAdvisoryStatus(e ? e.value : null)}
                 placeholder="Search or select an advisory status"
                 className="bcgov-select"
                 isClearable
@@ -1640,6 +1641,7 @@ export default function AdvisoryForm({
 
           <PrimaryActions
             mode={mode}
+            advisoryStatusCode={advisoryStatusCode}
             isUrgent={isAfterHourPublish}
             isApprover={isApprover}
             onPublish={handlePublish}
@@ -1726,11 +1728,13 @@ AdvisoryForm.propTypes = {
     updateLink: PropTypes.func.isRequired,
     addLink: PropTypes.func.isRequired,
     handleFileCapture: PropTypes.func.isRequired,
+    isApprover: PropTypes.bool,
     notes: PropTypes.string,
     setNotes: PropTypes.func.isRequired,
     submittedBy: PropTypes.string,
     setSubmittedBy: PropTypes.func.isRequired,
     advisoryStatuses: PropTypes.array.isRequired,
+    advisoryStatusCode: PropTypes.string,
     advisoryStatus: PropTypes.string,
     setAdvisoryStatus: PropTypes.func.isRequired,
     isStatHoliday: PropTypes.bool,

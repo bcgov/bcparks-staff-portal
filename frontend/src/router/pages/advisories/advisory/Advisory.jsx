@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useContext } from "react";
+import { useState, useRef, useEffect, useContext, useMemo } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Advisory.css";
@@ -53,6 +53,8 @@ export default function Advisory({ mode }) {
   const [urgencies, setUrgencies] = useState([]);
   const [urgency, setUrgency] = useState();
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
+  // Unfiltered list of all advisory statuses from the CMS (for code lookup)
+  const [allAdvisoryStatuses, setAllAdvisoryStatuses] = useState([]);
   const [advisoryStatus, setAdvisoryStatus] = useState();
   const [linkTypes, setLinkTypes] = useState([]);
   const [links, setLinks] = useState([]);
@@ -580,6 +582,15 @@ export default function Advisory({ mode }) {
 
           setUrgencies([...newUrgencies]);
           const advisoryStatusData = res[12];
+          // Store the list of all advisory statuses before filtering
+          // so we can reference it later for status code lookup
+          const allStatuses = advisoryStatusData.map((s) => ({
+            code: s.code,
+            value: s.documentId,
+          }));
+
+          setAllAdvisoryStatuses(allStatuses);
+
           const restrictedAdvisoryStatusCodes = new Set(["UNP", "SCH"]);
           const desiredOrder = ["PUB", "UNP", "DFT", "SCH", "HQR"];
           const tempAdvisoryStatuses = advisoryStatusData.map((s) => {
@@ -673,6 +684,29 @@ export default function Advisory({ mode }) {
     getLinkTypes,
     getStandardMessages,
   ]);
+
+  // Get the advisory status code to determine the form action button text
+  const advisoryStatusCode = useMemo(() => {
+    // If advisoryStatus is not set, return null
+    if (!advisoryStatus) return null;
+
+    // advisoryStatus can sometimes be an object
+    // return the code property if it exists
+    if (typeof advisoryStatus === "object") {
+      return advisoryStatus.code ?? null;
+    }
+
+    // advisoryStatus can sometimes be a documentId string
+    // Find the document ID in the allAdvisoryStatuses list
+    if (typeof advisoryStatus === "string") {
+      return (
+        allAdvisoryStatuses.find((status) => status.value === advisoryStatus)
+          ?.code ?? null
+      );
+    }
+
+    return null;
+  }, [advisoryStatus, allAdvisoryStatuses]);
 
   function setToBack() {
     if (mode === "create") {
@@ -1282,6 +1316,7 @@ export default function Advisory({ mode }) {
                   submittedBy,
                   setSubmittedBy,
                   advisoryStatuses,
+                  advisoryStatusCode,
                   advisoryStatus,
                   setAdvisoryStatus,
                   isStatHoliday,
