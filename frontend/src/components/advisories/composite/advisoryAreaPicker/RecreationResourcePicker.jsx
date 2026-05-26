@@ -1,5 +1,6 @@
 import PropTypes from "prop-types";
-import Select, { components } from "react-select";
+import AsyncSelect from "react-select/async";
+import { components } from "react-select";
 import Badge from "react-bootstrap/Badge";
 import { RESOURCE_TYPE_ICONS } from "@/constants/resourceTypeIcon";
 import "./RecreationResourcePicker.scss";
@@ -90,16 +91,39 @@ RecreationResourceOption.propTypes = {
   }),
 };
 
+const INITIAL_LOAD_SIZE = 100;
+const FILTERED_RESULTS_LIMIT = 200;
+
 export default function RecreationResourcePicker({
   options,
   value,
   onChange,
   ...otherProps
 }) {
+  // Helper function to load a truncated list of options based on the input value
+  function loadOptions(inputValue, callback) {
+    if (!inputValue) {
+      callback(options.slice(0, INITIAL_LOAD_SIZE));
+      return;
+    }
+
+    const query = inputValue.toLowerCase();
+    const filtered = options.filter((option) => {
+      const resource = option.obj || {};
+      const name = (resource.resourceName || "").toLowerCase();
+      const recId = (resource.recResourceId || "").toLowerCase();
+
+      return name.includes(query) || recId.includes(query);
+    });
+
+    callback(filtered.slice(0, FILTERED_RESULTS_LIMIT));
+  }
+
   return (
-    <Select
+    <AsyncSelect
       inputId="resources"
-      options={options}
+      loadOptions={loadOptions}
+      defaultOptions={options.slice(0, INITIAL_LOAD_SIZE)}
       maxHeight={200}
       value={value}
       onChange={(e) => onChange(e || [])}
