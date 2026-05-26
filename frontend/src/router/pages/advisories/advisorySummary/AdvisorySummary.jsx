@@ -1,5 +1,10 @@
 import { useState, useEffect, useContext, useMemo, useCallback } from "react";
-import { Navigate, useLocation, useParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { format } from "date-fns";
 import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
@@ -47,6 +52,8 @@ export default function AdvisorySummary() {
   const [snackMessageInfo, setSnackMessageInfo] = useState(null);
   const { documentId } = useParams();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const tabParam = searchParams.get("tab");
   const [confirmationText, setConfirmationText] = useState(
     location.state?.confirmationText || "",
   );
@@ -255,6 +262,15 @@ export default function AdvisorySummary() {
     [advisory?.advisoryStatus?.code],
   );
 
+  // The URL to the update page, including the "tab" search param if it exists
+  const updateAdvisoryUrl = useMemo(() => {
+    const baseUrl = `/update-advisory/${documentId}`;
+
+    return tabParam
+      ? `${baseUrl}?tab=${encodeURIComponent(tabParam)}`
+      : baseUrl;
+  }, [documentId, tabParam]);
+
   // Formatted string for "Last updated..." timestamp
   const lastUpdatedString = useMemo(() => {
     if (!advisory.modifiedDate) return null;
@@ -316,11 +332,16 @@ export default function AdvisorySummary() {
   }
 
   if (toDashboard) {
+    const dashboardPath =
+      tabParam === "review"
+        ? "/advisories-and-closures/review"
+        : "/advisories-and-closures";
+
     return (
       <Navigate
         push
         to={{
-          pathname: `/advisories-and-closures`,
+          pathname: dashboardPath,
           index: index >= 0 ? index : 0,
         }}
       />
@@ -328,7 +349,7 @@ export default function AdvisorySummary() {
   }
 
   if (toUpdate) {
-    return <Navigate to={`/update-advisory/${documentId}`} />;
+    return <Navigate to={updateAdvisoryUrl} />;
   }
 
   if (toError) {

@@ -23,6 +23,21 @@ export default function buildReviewFilter({ isReviewDashboard }) {
             },
           },
         },
+        // Exclude advisories that are already marked as reviewed
+        {
+          $or: [
+            {
+              reviewedByName: {
+                $null: true,
+              },
+            },
+            {
+              reviewedAt: {
+                $null: true,
+              },
+            },
+          ],
+        },
         {
           $or: [
             // Expiry date approaching within 1 week

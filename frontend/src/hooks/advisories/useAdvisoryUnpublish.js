@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 
-import { ADVISORY_UNPUBLISH_QUERY } from "@/constants/advisoryQuery";
+import { ADVISORY_QUERY } from "@/constants/advisoryQuery";
 import { buildUnpublishPayload } from "@/lib/advisories/utils/AdvisoryUnpublishPayload";
 import useCms from "@/hooks/useCms";
 
@@ -27,7 +27,7 @@ export default function useAdvisoryUnpublish({
 
       try {
         const advisoryData = await cmsGet(
-          `public-advisory-audits/${rowData.documentId}?${ADVISORY_UNPUBLISH_QUERY}`,
+          `public-advisory-audits/${rowData.documentId}?${ADVISORY_QUERY}`,
         );
 
         await cmsPut(`public-advisory-audits/${rowData.documentId}`, {

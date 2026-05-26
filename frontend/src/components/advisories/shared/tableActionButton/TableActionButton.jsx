@@ -2,9 +2,15 @@ import { useEffect, useState } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import Dropdown from "react-bootstrap/Dropdown";
+import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fa-kit/icons/classic/solid";
-import { faEyeSlash, faMemo, faPen } from "@fa-kit/icons/classic/regular";
+import {
+  faCircleCheck,
+  faEyeSlash,
+  faMemo,
+  faPen,
+} from "@fa-kit/icons/classic/regular";
 
 import "./TableActionButton.scss";
 
@@ -25,9 +31,10 @@ const ACTION_MENU_POPPER_CONFIG = {
 export function TableActionButton({
   rowId,
   canUnpublish = false,
-  onView,
-  onEdit,
+  viewPath,
+  editPath,
   onUnpublish,
+  onMarkReviewed,
   className = "",
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -74,9 +81,7 @@ export function TableActionButton({
   }, [rowId]);
 
   return (
-    <div
-      className={classNames("action-button", className)}
-    >
+    <div className={classNames("action-button", className)}>
       <Dropdown
         show={isOpen}
         onToggle={handleToggle}
@@ -92,11 +97,19 @@ export function TableActionButton({
         </Dropdown.Toggle>
 
         <Dropdown.Menu renderOnMount popperConfig={ACTION_MENU_POPPER_CONFIG}>
-          <Dropdown.Item onClick={() => action(onView)}>
+          <Dropdown.Item
+            as={Link}
+            to={viewPath}
+            onClick={() => setIsOpen(false)}
+          >
             <FontAwesomeIcon icon={faMemo} />
             View
           </Dropdown.Item>
-          <Dropdown.Item onClick={() => action(onEdit)}>
+          <Dropdown.Item
+            as={Link}
+            to={editPath}
+            onClick={() => setIsOpen(false)}
+          >
             <FontAwesomeIcon icon={faPen} />
             Edit
           </Dropdown.Item>
@@ -107,6 +120,12 @@ export function TableActionButton({
             <FontAwesomeIcon icon={faEyeSlash} />
             Unpublish
           </Dropdown.Item>
+          {onMarkReviewed && (
+            <Dropdown.Item onClick={() => action(onMarkReviewed)}>
+              <FontAwesomeIcon icon={faCircleCheck} />
+              Mark reviewed
+            </Dropdown.Item>
+          )}
         </Dropdown.Menu>
       </Dropdown>
     </div>
@@ -116,8 +135,9 @@ export function TableActionButton({
 TableActionButton.propTypes = {
   rowId: PropTypes.string.isRequired,
   canUnpublish: PropTypes.bool,
-  onView: PropTypes.func.isRequired,
-  onEdit: PropTypes.func.isRequired,
+  viewPath: PropTypes.string.isRequired,
+  editPath: PropTypes.string.isRequired,
+  onMarkReviewed: PropTypes.func,
   onUnpublish: PropTypes.func.isRequired,
   className: PropTypes.string,
 };
