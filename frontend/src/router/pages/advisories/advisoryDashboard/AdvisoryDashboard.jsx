@@ -26,6 +26,7 @@ import emptyReviewQueueImage from "@/router/pages/advisories/advisoryDashboard/e
 import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
 import { ReviewIcon } from "@/components/advisories/shared/reviewIcon/ReviewIcon";
+import { SingleSelect } from "@/components/advisories/shared/singleSelect/SingleSelect";
 import { TableActionButton } from "@/components/advisories/shared/tableActionButton/TableActionButton";
 import DataTable from "@/components/advisories/composite/dataTable/DataTable";
 import StatusBadge from "@/components/StatusBadge";
@@ -70,6 +71,10 @@ import {
 
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
+const PROGRAM_AREA_OPTIONS = [
+  { label: "BC Parks", value: "BCP" },
+  { label: "Recreation Sites and Trails", value: "RST" },
+];
 
 // Component to render when there are no advisories/closures to review in the Review tab
 function ReviewEmptyState() {
@@ -121,6 +126,7 @@ export default function AdvisoryDashboard({
   const [selectedDistrict, setSelectedDistrict] = useState([]);
   const [selectedParkId, setSelectedParkId] = useState([]);
   const [selectedPark, setSelectedPark] = useState([]);
+  const [selectedProgramArea, setSelectedProgramArea] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [hasErrors, setHasErrors] = useState(false);
   const [publicAdvisories, setPublicAdvisories] = useState([]);
@@ -180,6 +186,7 @@ export default function AdvisoryDashboard({
     { filterName: "region", filterValue: [], type: "page" },
     { filterName: "district", filterValue: [], type: "page" },
     { filterName: "park", filterValue: [], type: "page" },
+    { filterName: "programArea", filterValue: "", type: "page" },
   ];
 
   // Persisted filter state for the dashboard (region, district, park, and table filters)
@@ -318,6 +325,51 @@ export default function AdvisoryDashboard({
     );
   }
 
+  // Updates the selected program area filter and persists it to stored page filters.
+  // Resets pagination so results refresh from the first page after the filter changes.
+  function handleProgramAreaChange(option) {
+    setSelectedProgramArea(option ?? null);
+    resetToFirstPage();
+
+    setStoredFilters((currentFilters) => {
+      const nonProgramAreaPageFilters = currentFilters.filter(
+        (currentFilter) =>
+          !(
+            currentFilter.type === "page" &&
+            currentFilter.filterName === "programArea"
+          ),
+      );
+
+      return [
+        ...nonProgramAreaPageFilters,
+        {
+          type: "page",
+          filterName: "programArea",
+          filterValue: option?.value ?? "",
+        },
+      ];
+    });
+  }
+
+  function clearProgramAreaFilter() {
+    setSelectedProgramArea(null);
+    resetToFirstPage();
+    setStoredFilters((currentFilters) => {
+      const nonProgramAreaPageFilters = currentFilters.filter(
+        (currentFilter) =>
+          !(
+            currentFilter.type === "page" &&
+            currentFilter.filterName === "programArea"
+          ),
+      );
+
+      return [
+        ...nonProgramAreaPageFilters,
+        { type: "page", filterName: "programArea", filterValue: "" },
+      ];
+    });
+  }
+
   function clearDistrictFilter(districtValue) {
     clearDistrictFilterHandler({
       districtValue,
@@ -371,6 +423,7 @@ export default function AdvisoryDashboard({
   }
 
   function clearAllFilters() {
+    setSelectedProgramArea(null);
     clearAllFiltersHandler({
       setSelectedDistrict,
       setSelectedDistrictId,
@@ -474,6 +527,21 @@ export default function AdvisoryDashboard({
               setSelectedPark(selectedParks);
             }
           }
+
+          const programAreaValue = getPageFilterValue(
+            initialStoredFilters,
+            "programArea",
+            "",
+          );
+
+          const selectedProgramAreaOption = PROGRAM_AREA_OPTIONS.find(
+            (option) => option.value === programAreaValue,
+          );
+
+          if (selectedProgramAreaOption) {
+            setSelectedProgramArea(selectedProgramAreaOption);
+          }
+
           setIsCmsDataLoaded(true);
         }
       } catch (error) {
@@ -519,6 +587,7 @@ export default function AdvisoryDashboard({
           selectedRegionId,
           selectedDistrictId,
           selectedParkId,
+          selectedProgramArea?.value ?? "",
         );
 
         const reviewFilterClauses = buildReviewFilter({ isReviewDashboard });
@@ -696,6 +765,7 @@ export default function AdvisoryDashboard({
     selectedDistrictId,
     selectedParkId,
     selectedRegionId,
+    selectedProgramArea,
     setError,
     showArchived,
     sortConfig,
@@ -1275,6 +1345,15 @@ export default function AdvisoryDashboard({
                   onChange={handleParkChange}
                 />
               </div>
+              <div className="filter-col col-md-6 col-12">
+                <SingleSelect
+                  label="Program area"
+                  placeholder="Select a program area"
+                  value={selectedProgramArea}
+                  options={PROGRAM_AREA_OPTIONS}
+                  onChange={handleProgramAreaChange}
+                />
+              </div>
             </div>
           </div>
           {!isReviewDashboard && (
@@ -1334,6 +1413,8 @@ export default function AdvisoryDashboard({
           onClearRegion={clearRegionFilter}
           selectedPark={selectedPark}
           onClearPark={clearParkFilter}
+          selectedProgramArea={selectedProgramArea?.label ?? ""}
+          onClearProgramArea={clearProgramAreaFilter}
           selectedTableFilters={activeTableFilters}
           onClearTableFilter={clearTableFilter}
           showArchived={showArchived}
@@ -1342,6 +1423,7 @@ export default function AdvisoryDashboard({
             selectedDistrict.length > 0 ||
             selectedRegion.length > 0 ||
             selectedPark.length > 0 ||
+            selectedProgramArea !== null ||
             showArchived ||
             activeTableFilters.length > 0
           }

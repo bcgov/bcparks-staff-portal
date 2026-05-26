@@ -144,6 +144,14 @@
     color: var(--typography-color-placeholder) !important;
   }
 
+  .bcgov-select {
+    &.bcgov-select--has-selection {
+      [class*="-placeholder"] {
+        color: var(--typography-color-primary) !important;
+      }
+    }
+  }
+
   .form-check-input,
   .clear-url-btn {
     color: inherit !important;

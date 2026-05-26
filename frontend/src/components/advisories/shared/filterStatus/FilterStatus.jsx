@@ -32,6 +32,8 @@ export default function FilterStatus({
   onClearRegion,
   selectedPark,
   onClearPark,
+  selectedProgramArea,
+  onClearProgramArea,
   selectedTableFilters,
   onClearTableFilter,
   showArchived,
@@ -76,6 +78,13 @@ export default function FilterStatus({
           />
         ))}
 
+        {selectedProgramArea && (
+          <FilterBadge
+            label={`Program area: ${selectedProgramArea}`}
+            onRemove={onClearProgramArea}
+          />
+        )}
+
         {selectedTableFilters.map((filter) => (
           <FilterBadge
             key={filter.field}
@@ -89,11 +98,7 @@ export default function FilterStatus({
         )}
 
         {hasAnyFilters && (
-          <button
-            type="button"
-            className="btn btn-link"
-            onClick={onClearAll}
-          >
+          <button type="button" className="btn btn-link" onClick={onClearAll}>
             Clear filters
           </button>
         )}
@@ -143,6 +148,8 @@ FilterStatus.propTypes = {
     ),
   ]),
   onClearPark: PropTypes.func.isRequired,
+  selectedProgramArea: PropTypes.string,
+  onClearProgramArea: PropTypes.func.isRequired,
   selectedTableFilters: PropTypes.arrayOf(
     PropTypes.shape({
       field: PropTypes.string.isRequired,
@@ -160,5 +167,6 @@ FilterStatus.defaultProps = {
   selectedDistrict: [],
   selectedRegion: [],
   selectedPark: [],
+  selectedProgramArea: "",
   selectedTableFilters: [],
 };
