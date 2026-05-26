@@ -22,6 +22,7 @@ import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useAccess from "@/hooks/useAccess";
 import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
+import emptyReviewQueueImage from "@/router/pages/advisories/advisoryDashboard/empty-review-queue.png";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { MultiSelect } from "@/components/advisories/shared/multiSelect/MultiSelect";
 import { TableActionButton } from "@/components/advisories/shared/tableActionButton/TableActionButton";
@@ -65,6 +66,29 @@ import {
 const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
 
+// Component to render when there are no advisories/closures to review in the Review tab
+function ReviewEmptyState() {
+  return (
+    <div className="review-empty-state" role="status" aria-atomic="true">
+      <img
+        src={emptyReviewQueueImage}
+        alt="No items waiting for review"
+        width="335"
+        height="500"
+        className="empty-state-image mb-3"
+      />
+
+      <div className="h2 mb-2">You’re doing great!</div>
+
+      <div>
+        I’m obsessed with you.
+        <br />
+        No items to review here.
+      </div>
+    </div>
+  );
+}
+
 export default function AdvisoryDashboard({
   filterStorageKey = "advisoryFilters",
   isReviewDashboard = false,
@@ -104,6 +128,8 @@ export default function AdvisoryDashboard({
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalPublicAdvisories, setTotalPublicAdvisories] = useState(0);
+  // Track the total number of items regardless of filters when we need to know if the filters are hiding items on the server
+  const [unfilteredTotalItems, setUnfilteredTotalItems] = useState(null);
   // Ref keeps the latest total accessible inside fetchAdvisories
   const totalPublicAdvisoriesRef = useRef(0);
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
@@ -483,7 +509,7 @@ export default function AdvisoryDashboard({
           .format("YYYY-MM-DD");
 
         // Build server-side filter params from column filter values and region/park dropdowns
-        const columnFilterClauses = buildFilter(
+        const userFilterClauses = buildFilter(
           debouncedTableFilterValues,
           selectedRegionId,
           selectedDistrictId,
@@ -492,12 +518,12 @@ export default function AdvisoryDashboard({
 
         const reviewFilterClauses = buildReviewFilter({ isReviewDashboard });
 
-        // Build "base filters" array that applies to the count query and the main query
-        const baseFilters = [{ isLatestRevision: true }];
+        // Filters applied to server queries, regardless of user-selected filters
+        const sharedBaseFilters = [{ isLatestRevision: true }];
 
         // When not showing archived advisories, filter out unpublished advisories older than 30 days
         if (!showArchived) {
-          baseFilters.push({
+          sharedBaseFilters.push({
             $or: [
               // Always include all non-unpublished advisories
               { advisoryStatus: { code: { $ne: "UNP" } } },
@@ -511,8 +537,16 @@ export default function AdvisoryDashboard({
           });
         }
 
-        // Apply filters from table columns, dropdowns, and review tab logic
-        baseFilters.push(...columnFilterClauses, ...reviewFilterClauses);
+        // Build filter sets for fetching data with and without user-selected filters
+        const filteredBaseFilters = [
+          ...sharedBaseFilters,
+          ...userFilterClauses,
+          ...reviewFilterClauses,
+        ];
+        const unfilteredBaseFilters = [
+          ...sharedBaseFilters,
+          ...reviewFilterClauses,
+        ];
 
         // When "All" is selected, first fetch the current total with
         // the active filters applied, then request exactly that many rows
@@ -524,7 +558,7 @@ export default function AdvisoryDashboard({
             {
               fields: ["id"],
               filters: {
-                $and: baseFilters,
+                $and: filteredBaseFilters,
               },
               pagination: { page: 1, pageSize: 1 },
             },
@@ -571,7 +605,7 @@ export default function AdvisoryDashboard({
               recreationDistricts: { fields: ["district"] },
             },
             filters: {
-              $and: baseFilters,
+              $and: filteredBaseFilters,
             },
             pagination,
             sort,
@@ -586,6 +620,38 @@ export default function AdvisoryDashboard({
           rows,
           managementAreas,
         );
+
+        // Run an additional query without user-selected filters when we need
+        // to tell if the empty state is server-side or caused by user-selected filters.
+        // Only applies to the Review dashboard when user-selected filters are active
+        // and the main query returns zero results.
+        if (isReviewDashboard && userFilterClauses.length && total === 0) {
+          const unfilteredCountQuery = qs.stringify(
+            {
+              fields: ["id"],
+              filters: {
+                $and: unfilteredBaseFilters,
+              },
+              pagination: { page: 1, pageSize: 1 },
+            },
+            { encodeValuesOnly: true },
+          );
+
+          const unfilteredCountResult = await cmsGet(
+            `/public-advisory-audits?${unfilteredCountQuery}`,
+            {},
+            "",
+          );
+
+          if (isMounted) {
+            // Store the unfiltered total so we can know if the server-side review queue is empty.
+            setUnfilteredTotalItems(
+              unfilteredCountResult.meta?.pagination?.total ?? 0,
+            );
+          }
+        } else if (isMounted) {
+          setUnfilteredTotalItems(null);
+        }
 
         if (isMounted) {
           setPublicAdvisories(updatedPublicAdvisories);
@@ -1009,6 +1075,21 @@ export default function AdvisoryDashboard({
     return <Navigate to="/error" />;
   }
 
+  // Use the unfiltered comparison total when available; otherwise fall back
+  // to the currently displayed query total
+  const comparisonTotalItems = unfilteredTotalItems ?? totalPublicAdvisories;
+
+  // Show the review-specific empty state when there are no items to review on the server,
+  // regardless of client-side filters.
+  const showNoItemsToReviewMessage =
+    isReviewDashboard && !isLoading && comparisonTotalItems === 0;
+
+  const emptyState = showNoItemsToReviewMessage ? (
+    <ReviewEmptyState />
+  ) : (
+    <div>No records to display.</div>
+  );
+
   return (
     <div className="advisory-dashboard-page-wrap advisories-styles layout landing-page-tabs">
       <header className="section-tabs d-flex flex-column">
@@ -1176,6 +1257,7 @@ export default function AdvisoryDashboard({
               onFilterValuesChange={persistTableFilterValues}
               columns={tableColumns}
               data={publicAdvisories}
+              emptyState={emptyState}
               title=""
               components={{
                 Toolbar: () => <div></div>,
