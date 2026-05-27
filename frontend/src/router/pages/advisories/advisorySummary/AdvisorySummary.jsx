@@ -249,7 +249,7 @@ export default function AdvisorySummary() {
 
   const unpublishAdvisory = useAdvisoryUnpublish({
     advisoryStatuses,
-    modifiedBy: auth.user?.profile?.name,
+    modifiedByName: auth.user?.profile?.name,
     isApprover: hasAnyRole(["approver"]),
     openUnpublishError,
     openUnpublishSuccess,
@@ -279,10 +279,12 @@ export default function AdvisorySummary() {
       advisory.modifiedDate,
       "EEE, MMMM dd, yyyy h:mm aaa",
     );
-    const modifiedBy = advisory.modifiedBy ? ` by ${advisory.modifiedBy}` : "";
+    const modifiedByName = advisory.modifiedByName
+      ? ` by ${advisory.modifiedByName}`
+      : "";
 
-    return `Last updated ${modifiedDate}${modifiedBy}`;
-  }, [advisory.modifiedDate, advisory.modifiedBy]);
+    return `Last updated ${modifiedDate}${modifiedByName}`;
+  }, [advisory.modifiedDate, advisory.modifiedByName]);
 
   // Formatted string for "Posted..." timestamp, if any
   const postingDateString = useMemo(() => {
