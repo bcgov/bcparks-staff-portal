@@ -17,6 +17,7 @@ import {
 import qs from "qs";
 import { Link, Navigate, NavLink } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
+import { useTranslation } from "react-i18next";
 import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useAccess from "@/hooks/useAccess";
@@ -113,6 +114,7 @@ export default function AdvisoryDashboard({
   filterStorageKey = "advisoryFilters",
   isReviewDashboard = false,
 }) {
+  const { t } = useTranslation("act");
   const { setError } = useContext(ErrorContext);
   const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
@@ -1416,8 +1418,7 @@ export default function AdvisoryDashboard({
                     30 days
                     <LightTooltip
                       arrow
-                      title="By default, inactive advisories and closures that have not been modified in the past 30 days are hidden. Check this
-                   box to include inactive advisories and closures."
+                      title={t("dashboard.showArchived.tooltip")}
                     >
                       <FontAwesomeIcon
                         icon={faCircleQuestion}

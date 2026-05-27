@@ -6,6 +6,9 @@ import router from "@/router";
 import { AuthProvider } from "react-oidc-context";
 import { oidcConfig, onSigninCallback } from "@/config/keycloak.js";
 
+// initialize i18n before rendering the app
+import "@/config/i18n.js";
+
 // include global styles
 import "@/styles/global.scss";
 
