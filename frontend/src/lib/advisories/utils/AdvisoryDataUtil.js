@@ -14,8 +14,8 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
   const unpublishedByName = publicAdvisory.unpublishedByName;
   const statusCode = publicAdvisory.advisoryStatus?.code;
   const createdAt = moment(publicAdvisory.createdAt);
-  const reviewedAt = moment(publicAdvisory.reviewedAt);
-  const unpublishedAt = moment(publicAdvisory.unpublishedAt);
+  const reviewedDate = moment(publicAdvisory.reviewedDate);
+  const unpublishedDate = moment(publicAdvisory.unpublishedDate);
   const modifiedDate = moment(publicAdvisory.modifiedDate);
   const expiryDate = moment(publicAdvisory.expiryDate);
   const endDate = moment(publicAdvisory.endDate);
@@ -25,7 +25,7 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
   const isNew =
     ["HQR", "SCH", "PUB"].includes(statusCode) &&
     createdAt.isValid() &&
-    !reviewedAt.isValid() &&
+    !reviewedDate.isValid() &&
     !reviewedByName;
 
   // Updated advisory, not posted
@@ -47,7 +47,7 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
 
   // Unpublished advisory (manually)
   const isUnpublished =
-    statusCode === "UNP" && unpublishedAt.isValid() && unpublishedByName;
+    statusCode === "UNP" && unpublishedDate.isValid() && unpublishedByName;
 
   if (isNew) reviewStatuses.push(REVIEW_STATUS.NEW);
   if (isUpdated) reviewStatuses.push(REVIEW_STATUS.UPDATED);

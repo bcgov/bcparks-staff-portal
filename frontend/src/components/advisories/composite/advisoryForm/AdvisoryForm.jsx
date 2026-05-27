@@ -119,8 +119,8 @@ export default function AdvisoryForm({
     isApprover,
     notes,
     setNotes,
-    submittedBy,
-    setSubmittedBy,
+    submittedByName,
+    setSubmittedByName,
     advisoryStatuses,
     advisoryStatusCode,
     advisoryStatus,
@@ -1447,9 +1447,9 @@ export default function AdvisoryForm({
             </Form.Label>
 
             <Form.Control
-              value={submittedBy}
+              value={submittedByName}
               onChange={(event) => {
-                setSubmittedBy(event.target.value);
+                setSubmittedByName(event.target.value);
               }}
               className={getControlClassName(false)}
               maxLength={255}
@@ -1722,8 +1722,8 @@ AdvisoryForm.propTypes = {
     isApprover: PropTypes.bool,
     notes: PropTypes.string,
     setNotes: PropTypes.func.isRequired,
-    submittedBy: PropTypes.string,
-    setSubmittedBy: PropTypes.func.isRequired,
+    submittedByName: PropTypes.string,
+    setSubmittedByName: PropTypes.func.isRequired,
     advisoryStatuses: PropTypes.array.isRequired,
     advisoryStatusCode: PropTypes.string,
     advisoryStatus: PropTypes.string,
