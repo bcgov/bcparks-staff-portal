@@ -507,7 +507,7 @@ export default function AdvisorySummary() {
                         <Button
                           label="Edit"
                           styling="btn-primary btn flex-shrink-0"
-                          disabled={isUnpublishing}
+                          disabled={isRequestingCms}
                           onClick={() => {
                             setToUpdate(true);
                           }}
