@@ -660,16 +660,17 @@ export default function AdvisoryDashboard({
           ...reviewFilterClauses,
         ];
 
+        // When "All" is selected, or when sorting needs client-side handling,
+        // first fetch the current total with active filters applied,
+        // then request exactly that many rows
+
         const isAssociatedResourcesSort =
           sortConfig?.field === "associatedResources";
-
-        // When "All" is selected, or when sorting needs client-side handling,
-        // first fetch the current total with active filters applied, then
-        // request exactly that many rows.
         const isDateFieldSort = DATE_SORT_FIELDS.has(sortConfig?.field);
         const needsClientSideSort =
           isDateFieldSort || isAssociatedResourcesSort;
         const shouldFetchAllForClientSort = needsClientSideSort && pageSize > 0;
+
         let pagination;
         let allTotal = null;
 
