@@ -13,17 +13,17 @@ function mapDocumentIds(items) {
  * Build the unpublish payload
  * @param {Object} advisoryData The full advisory record fetched from CMS
  * @param {string} unpublishedStatusId The documentId of the "Unpublished" status
- * @param {string} modifiedBy The current user's name (from auth.user?.profile?.name)
+ * @param {string} modifiedByName The current user's name (from auth.user?.profile?.name)
  * @param {string} modifiedByRole The current user's role ("approver" or "submitter")
  * @returns {Object} The normalized payload ready for cmsPut
  */
 export function buildUnpublishPayload(
   advisoryData,
   unpublishedStatusId,
-  modifiedBy,
+  modifiedByName,
   modifiedByRole,
 ) {
-  const unpublishedAt = moment().toISOString();
+  const unpublishedDate = moment().toISOString();
 
   return {
     title: advisoryData.title,
@@ -32,10 +32,10 @@ export function buildUnpublishPayload(
     isSafetyRelated: advisoryData.isSafetyRelated,
     listingRank: advisoryData.listingRank,
     note: advisoryData.note,
-    submittedBy: advisoryData.submittedBy,
+    submittedByName: advisoryData.submittedByName,
     updatedDate: advisoryData.updatedDate,
-    modifiedDate: unpublishedAt,
-    modifiedBy,
+    modifiedDate: unpublishedDate,
+    modifiedByName,
     modifiedByRole,
     advisoryDate: advisoryData.advisoryDate,
     effectiveDate: advisoryData.effectiveDate,
@@ -62,8 +62,8 @@ export function buildUnpublishPayload(
     isEffectiveDateDisplayed: advisoryData.isEffectiveDateDisplayed,
     isEndDateDisplayed: advisoryData.isEndDateDisplayed,
     isUpdatedDateDisplayed: advisoryData.isUpdatedDateDisplayed,
-    unpublishedByName: modifiedBy,
-    unpublishedAt,
+    unpublishedByName: modifiedByName,
+    unpublishedDate,
     publishedAt: advisoryData.publishedAt,
     isLatestRevision: advisoryData.isLatestRevision,
   };

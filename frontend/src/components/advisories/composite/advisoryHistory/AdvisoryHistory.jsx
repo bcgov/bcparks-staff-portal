@@ -23,21 +23,21 @@ export default function AdvisoryHistory({
           if (advisories && advisories.length > 0) {
             advisories.forEach((ad) => {
               // Add review events to the history if they exist, or continue to look for other events
-              if (ad.reviewedByName && ad.reviewedAt) {
+              if (ad.reviewedByName && ad.reviewedDate) {
                 advisoriesHistory.push({
                   revisionNumber: ad.revisionNumber,
                   submitter: ad.reviewedByName,
                   submittedTime: format(
-                    ad.reviewedAt,
+                    ad.reviewedDate,
                     "MMMM dd, yyyy h:mm aaa",
                   ),
                   displayText: "Reviewed by",
-                  dateToCompare: new Date(ad.reviewedAt).valueOf(),
+                  dateToCompare: new Date(ad.reviewedDate).valueOf(),
                 });
-              } else if (ad.modifiedBy && ad.modifiedBy === "system") {
+              } else if (ad.modifiedByName && ad.modifiedByName === "system") {
                 const record = {
                   revisionNumber: ad.revisionNumber,
-                  submitter: ad.modifiedBy,
+                  submitter: ad.modifiedByName,
                   submittedTime: format(
                     ad.modifiedDate,
                     "MMMM dd, yyyy h:mm aaa",
@@ -53,7 +53,7 @@ export default function AdvisoryHistory({
               } else if (!ad.modifiedDate && ad.createdDate) {
                 const record = {
                   revisionNumber: ad.revisionNumber,
-                  submitter: ad.submittedBy,
+                  submitter: ad.submittedByName,
                   submittedTime: format(
                     ad.createdDate,
                     "MMMM dd, yyyy h:mm aaa",
@@ -66,7 +66,7 @@ export default function AdvisoryHistory({
               } else if (ad.modifiedDate) {
                 const record = {
                   revisionNumber: ad.revisionNumber,
-                  submitter: ad.modifiedBy,
+                  submitter: ad.modifiedByName,
                   submittedTime: format(
                     ad.modifiedDate,
                     "MMMM dd, yyyy h:mm aaa",

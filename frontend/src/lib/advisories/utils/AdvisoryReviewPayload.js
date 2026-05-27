@@ -21,7 +21,7 @@ export function buildReviewPayload(
   reviewedStatusId,
   reviewedByName,
 ) {
-  const reviewedAt = moment().toISOString();
+  const reviewedDate = moment().toISOString();
 
   return {
     title: advisoryData.title,
@@ -30,10 +30,10 @@ export function buildReviewPayload(
     isSafetyRelated: advisoryData.isSafetyRelated,
     listingRank: advisoryData.listingRank,
     note: advisoryData.note,
-    submittedBy: advisoryData.submittedBy,
+    submittedByName: advisoryData.submittedByName,
     updatedDate: advisoryData.updatedDate,
-    modifiedDate: reviewedAt,
-    modifiedBy: reviewedByName,
+    modifiedDate: reviewedDate,
+    modifiedByName: reviewedByName,
     modifiedByRole: "approver",
     advisoryDate: advisoryData.advisoryDate,
     effectiveDate: advisoryData.effectiveDate,
@@ -61,7 +61,7 @@ export function buildReviewPayload(
     isEndDateDisplayed: advisoryData.isEndDateDisplayed,
     isUpdatedDateDisplayed: advisoryData.isUpdatedDateDisplayed,
     reviewedByName,
-    reviewedAt,
+    reviewedDate,
     publishedAt: advisoryData.publishedAt,
     isLatestRevision: advisoryData.isLatestRevision,
   };

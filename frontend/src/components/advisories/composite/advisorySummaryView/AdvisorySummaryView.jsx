@@ -430,7 +430,7 @@ export default function AdvisorySummaryView({
           </Field>
         )}
 
-        <Field label="Requested by">{advisory.submittedBy}</Field>
+        <Field label="Requested by">{advisory.submittedByName}</Field>
 
         <Field label="Public safety related">
           {advisory.isSafetyRelated ? "Yes" : "No"}

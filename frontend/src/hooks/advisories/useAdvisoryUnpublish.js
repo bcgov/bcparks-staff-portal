@@ -6,7 +6,7 @@ import useCms from "@/hooks/useCms";
 
 export default function useAdvisoryUnpublish({
   advisoryStatuses,
-  modifiedBy,
+  modifiedByName,
   isApprover,
   openUnpublishError,
   openUnpublishSuccess,
@@ -34,7 +34,7 @@ export default function useAdvisoryUnpublish({
           data: buildUnpublishPayload(
             advisoryData,
             unpublishedStatus.documentId,
-            modifiedBy,
+            modifiedByName,
             isApprover ? "approver" : "submitter",
           ),
         });
@@ -53,7 +53,7 @@ export default function useAdvisoryUnpublish({
       cmsGet,
       cmsPut,
       isApprover,
-      modifiedBy,
+      modifiedByName,
       onSuccess,
       openUnpublishError,
       openUnpublishSuccess,

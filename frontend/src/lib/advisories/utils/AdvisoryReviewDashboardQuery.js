@@ -32,7 +32,7 @@ export default function buildReviewFilter({ isReviewDashboard }) {
               },
             },
             {
-              reviewedAt: {
+              reviewedDate: {
                 $null: true,
               },
             },
@@ -74,7 +74,7 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                   },
                 },
                 {
-                  unpublishedAt: {
+                  unpublishedDate: {
                     $notNull: true,
                   },
                 },
@@ -91,7 +91,7 @@ export default function buildReviewFilter({ isReviewDashboard }) {
                   },
                 },
                 {
-                  reviewedAt: {
+                  reviewedDate: {
                     $null: true,
                   },
                 },

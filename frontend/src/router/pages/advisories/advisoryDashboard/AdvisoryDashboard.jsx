@@ -205,7 +205,7 @@ export default function AdvisoryDashboard({
 
   const handleUnpublish = useAdvisoryUnpublish({
     advisoryStatuses,
-    modifiedBy: auth.user?.profile?.name,
+    modifiedByName: auth.user?.profile?.name,
     isApprover: hasAnyRole([ROLES.ADVISORY_APPROVER]),
     openUnpublishError,
     openUnpublishSuccess,
@@ -700,9 +700,9 @@ export default function AdvisoryDashboard({
               "modifiedDate",
               "updatedDate",
               "updatedAt",
-              "reviewedAt",
+              "reviewedDate",
               "reviewedByName",
-              "unpublishedAt",
+              "unpublishedDate",
               "unpublishedByName",
             ],
             populate: {

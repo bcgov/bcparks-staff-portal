@@ -75,7 +75,7 @@ export default function Advisory({ mode }) {
   const [updatedDate, setUpdatedDate] = useState(null);
   const [displayUpdatedDate, setDisplayUpdatedDate] = useState(false);
   const [notes, setNotes] = useState("");
-  const [submittedBy, setSubmittedBy] = useState("");
+  const [submittedByName, setSubmittedByName] = useState("");
   const [submitter, setSubmitter] = useState("");
   const [listingRank, setListingRank] = useState(0);
   const [toError, setToError] = useState(false);
@@ -200,7 +200,7 @@ export default function Advisory({ mode }) {
               advisoryData.listingRank ? advisoryData.listingRank : 0,
             );
             setNotes(advisoryData.note || "");
-            setSubmittedBy(advisoryData.submittedBy || "");
+            setSubmittedByName(advisoryData.submittedByName || "");
             if (advisoryData.advisoryDate) {
               setAdvisoryDate(
                 moment(advisoryData.advisoryDate)
@@ -999,7 +999,7 @@ export default function Advisory({ mode }) {
         isSafetyRelated,
         listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
         note: notes,
-        submittedBy: submittedBy ? submittedBy : submitter,
+        submittedByName: submittedByName ? submittedByName : submitter,
         createdDate: moment().toISOString(),
         advisoryDate,
         effectiveDate: startDate,
@@ -1027,7 +1027,7 @@ export default function Advisory({ mode }) {
         isLatestRevision: true,
         createdByName: auth.user?.profile?.name,
         reviewedByName: null,
-        reviewedAt: null,
+        reviewedDate: null,
         createdByRole: isApprover ? "approver" : "submitter",
         isUrgentAfterHours:
           !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish,
@@ -1036,7 +1036,7 @@ export default function Advisory({ mode }) {
       // Add the reviewer name and review date if the user is approving an advisory
       if (isApprover && (status.code === "PUB" || status.code === "SCH")) {
         newAdvisory.reviewedByName = auth.user?.profile?.name;
-        newAdvisory.reviewedAt = moment().toISOString();
+        newAdvisory.reviewedDate = moment().toISOString();
       }
 
       const advisory = await cmsPost(`public-advisory-audits`, {
@@ -1100,10 +1100,10 @@ export default function Advisory({ mode }) {
         isSafetyRelated,
         listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
         note: notes,
-        submittedBy,
+        submittedByName,
         updatedDate,
         modifiedDate: moment().toISOString(),
-        modifiedBy: auth.user?.profile?.name,
+        modifiedByName: auth.user?.profile?.name,
         modifiedByRole: isApprover ? "approver" : "submitter",
         advisoryDate,
         effectiveDate: startDate,
@@ -1131,13 +1131,13 @@ export default function Advisory({ mode }) {
         publishedAt: new Date(),
         isLatestRevision: true,
         reviewedByName: null,
-        reviewedAt: null,
+        reviewedDate: null,
       };
 
       // Add the reviewer name and review date if the user is approving an advisory
       if (isApprover && (status.code === "PUB" || status.code === "SCH")) {
         updatedAdvisory.reviewedByName = auth.user?.profile?.name;
-        updatedAdvisory.reviewedAt = moment().toISOString();
+        updatedAdvisory.reviewedDate = moment().toISOString();
       }
 
       if (
@@ -1319,8 +1319,8 @@ export default function Advisory({ mode }) {
                   isApprover,
                   notes,
                   setNotes,
-                  submittedBy,
-                  setSubmittedBy,
+                  submittedByName,
+                  setSubmittedByName,
                   advisoryStatuses,
                   advisoryStatusCode,
                   advisoryStatus,
