@@ -45,7 +45,7 @@ export function sortByDateFieldNullsLast(rows, field, direction) {
 }
 
 /**
- * Sort advisories by associatedResources and region names
+ * Sort advisories by associatedResources
  * @param {Array<Object>} rows Advisory rows to sort
  * @param {"asc"|"desc"} direction Sort direction
  * @returns {Array<Object>} A new sorted array
@@ -55,17 +55,9 @@ export function sortByAssociatedResources(rows, direction) {
     return value.toString().trim().toLowerCase();
   }
 
-  function buildAssociatedResourcesSortValue(row) {
-    const regionNames = (row.regions || [])
-      .map((region) => region.regionName)
-      .join(", ");
-
-    return `${regionNames} ${row.associatedResources}`;
-  }
-
   return [...rows].sort((left, right) => {
-    const leftValue = normalize(buildAssociatedResourcesSortValue(left));
-    const rightValue = normalize(buildAssociatedResourcesSortValue(right));
+    const leftValue = normalize(left.associatedResources);
+    const rightValue = normalize(right.associatedResources);
 
     const result = leftValue.localeCompare(rightValue);
 

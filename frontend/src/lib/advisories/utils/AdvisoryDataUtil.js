@@ -79,10 +79,10 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
     );
     // Display associated parks/regions, or rec resource name if no parks/regions
     publicAdvisory.associatedResources =
-      publicAdvisory.protectedAreas.map((p) => p.protectedAreaName).join(", ") +
-        publicAdvisory.regions.map((r) => r.regionName).join(", ") ||
-      publicAdvisory.recreationResources.map((r) => r.resourceName).join(", ") +
-        publicAdvisory.recreationResources.map((r) => r.district).join(", ");
+      publicAdvisory.protectedAreas.map((p) => publicAdvisory.regions.map((r) => r.regionName).join(", ") +
+        p.protectedAreaName).join(", ") ||
+      publicAdvisory.recreationResources.map((r) => r.district).join(", ") +
+        publicAdvisory.recreationResources.map((r) => r.resourceName).join(", ");
 
     let regionsWithParkCount = [];
 
