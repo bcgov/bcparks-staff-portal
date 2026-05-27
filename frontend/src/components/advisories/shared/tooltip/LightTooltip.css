@@ -2,6 +2,7 @@
   font-size: 0.75rem;
   color: #000 !important;
   background-color: #fff !important;
+  text-align: left;
 }
 
 .tooltip.light-tooltip {
