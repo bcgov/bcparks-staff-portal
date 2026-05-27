@@ -18,17 +18,17 @@ function resolveReviewedStatus(rowData, advisoryStatuses) {
 
   const statusCode = rowData.advisoryStatus?.code;
 
-  // If the status is currently PUB, keep it PUB but just update the reviewedDate/reviewedBy fields
+  // If the status is currently PUB, keep it PUB but just update the reviewedDate/reviewedByName fields
   if (statusCode === "PUB") {
     return publishedStatus;
   }
 
-  // If the status is currently SCH, keep it SCH but just update the reviewedDate/reviewedBy fields
+  // If the status is currently SCH, keep it SCH but just update the reviewedDate/reviewedByName fields
   if (statusCode === "SCH") {
     return scheduledStatus;
   }
 
-  // If the status is currently UNP, keep it UNP but just update the reviewedDate/reviewedBy fields
+  // If the status is currently UNP, keep it UNP but just update the reviewedDate/reviewedByName fields
   if (statusCode === "UNP") {
     return unpublishedStatus;
   }
