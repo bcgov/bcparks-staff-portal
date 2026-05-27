@@ -47,9 +47,7 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
 
   // Unpublished advisory (manually)
   const isUnpublished =
-    statusCode === "UNP" &&
-    unpublishedAt.isValid() &&
-    unpublishedByName;
+    statusCode === "UNP" && unpublishedAt.isValid() && unpublishedByName;
 
   if (isNew) reviewStatuses.push(REVIEW_STATUS.NEW);
   if (isUpdated) reviewStatuses.push(REVIEW_STATUS.UPDATED);
@@ -77,12 +75,16 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
       publicAdvisory,
       now,
     );
-    // Display associated parks/regions, or rec resource name if no parks/regions
+    // Build associatedResources string by concatenating the relevant fields for sorting
     publicAdvisory.associatedResources =
-      publicAdvisory.protectedAreas.map((p) => publicAdvisory.regions.map((r) => r.regionName).join(", ") +
-        p.protectedAreaName).join(", ") ||
+      publicAdvisory.regions.map((r) => r.regionName).join(", ") +
+        publicAdvisory.protectedAreas
+          .map((p) => p.protectedAreaName)
+          .join(", ") ||
       publicAdvisory.recreationResources.map((r) => r.district).join(", ") +
-        publicAdvisory.recreationResources.map((r) => r.resourceName).join(", ");
+        publicAdvisory.recreationResources
+          .map((r) => r.resourceName)
+          .join(", ");
 
     let regionsWithParkCount = [];
 

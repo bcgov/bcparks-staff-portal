@@ -159,6 +159,8 @@ export default function AdvisoryDashboard({
   const [unfilteredTotalItems, setUnfilteredTotalItems] = useState(null);
   // Ref keeps the latest total accessible inside fetchAdvisories
   const totalPublicAdvisoriesRef = useRef(0);
+  // Cache full sorted rows for client-side sorting to avoid re-fetching on page changes.
+  const clientSortCacheRef = useRef(null);
   const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
   const [sortConfig, setSortConfig] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -610,10 +612,19 @@ export default function AdvisoryDashboard({
   useEffect(() => {
     let isMounted = true;
 
-    async function fetchAdvisories() {
-      setIsLoading(true);
-      setPublicAdvisories([]);
+    const cacheKey = JSON.stringify({
+      sortConfig,
+      debouncedTableFilterValues,
+      selectedRegionId,
+      selectedDistrictId,
+      selectedParkId,
+      selectedProgramArea: selectedProgramArea?.value ?? "",
+      showArchived,
+      isReviewDashboard,
+      refreshKey,
+    });
 
+    async function fetchAdvisories() {
       try {
         const unpublishedCutoffDate = moment()
           .subtract(30, "days")
@@ -670,6 +681,28 @@ export default function AdvisoryDashboard({
         const needsClientSideSort =
           isDateFieldSort || isAssociatedResourcesSort;
         const shouldFetchAllForClientSort = needsClientSideSort && pageSize > 0;
+
+        if (
+          shouldFetchAllForClientSort &&
+          clientSortCacheRef.current?.key === cacheKey
+        ) {
+          const cached = clientSortCacheRef.current;
+          const startIndex = (currentPage - 1) * pageSize;
+          const endIndex = startIndex + pageSize;
+
+          if (isMounted) {
+            setPublicAdvisories(cached.rows.slice(startIndex, endIndex));
+            totalPublicAdvisoriesRef.current = cached.total;
+            setTotalPublicAdvisories(cached.total);
+            setUnfilteredTotalItems(cached.unfilteredTotalItems);
+            setIsLoading(false);
+          }
+
+          return;
+        }
+
+        setIsLoading(true);
+        setPublicAdvisories([]);
 
         let pagination;
         let allTotal = null;
@@ -746,6 +779,7 @@ export default function AdvisoryDashboard({
           rows,
           managementAreas,
         );
+        let nextUnfilteredTotalItems = null;
 
         // Run an additional query without user-selected filters when we need
         // to tell if the empty state is server-side or caused by user-selected filters.
@@ -769,14 +803,8 @@ export default function AdvisoryDashboard({
             "",
           );
 
-          if (isMounted) {
-            // Store the unfiltered total so we can know if the server-side review queue is empty.
-            setUnfilteredTotalItems(
-              unfilteredCountResult.meta?.pagination?.total ?? 0,
-            );
-          }
-        } else if (isMounted) {
-          setUnfilteredTotalItems(null);
+          nextUnfilteredTotalItems =
+            unfilteredCountResult.meta?.pagination?.total ?? 0;
         }
 
         // When sorting by date fields, do a client-side sort to enforce nulls-last,
@@ -802,16 +830,26 @@ export default function AdvisoryDashboard({
           const startIndex = (currentPage - 1) * pageSize;
           const endIndex = startIndex + pageSize;
 
+          clientSortCacheRef.current = {
+            key: cacheKey,
+            rows: finalPublicAdvisories,
+            total,
+            unfilteredTotalItems: nextUnfilteredTotalItems,
+          };
+
           pagedPublicAdvisories = finalPublicAdvisories.slice(
             startIndex,
             endIndex,
           );
+        } else {
+          clientSortCacheRef.current = null;
         }
 
         if (isMounted) {
           setPublicAdvisories(pagedPublicAdvisories);
           totalPublicAdvisoriesRef.current = total;
           setTotalPublicAdvisories(total);
+          setUnfilteredTotalItems(nextUnfilteredTotalItems);
           setIsLoading(false);
         }
       } catch (error) {
