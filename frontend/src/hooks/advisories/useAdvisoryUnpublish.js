@@ -3,7 +3,7 @@ import { useCallback } from "react";
 import { ADVISORY_QUERY } from "@/constants/advisoryQuery";
 import { buildUnpublishPayload } from "@/lib/advisories/utils/AdvisoryUnpublishPayload";
 import useCms from "@/hooks/useCms";
-import useAccess from "@/hooks/useAccess";
+import useAdvisoryRole from "@/hooks/advisories/useAdvisoryRole";
 
 export default function useAdvisoryUnpublish({
   advisoryStatuses,
@@ -13,7 +13,7 @@ export default function useAdvisoryUnpublish({
   onSuccess,
 }) {
   const { cmsGet, cmsPut } = useCms();
-  const { getUserAdvisoryRole } = useAccess();
+  const { getUserAdvisoryRole } = useAdvisoryRole();
 
   return useCallback(
     async (rowData) => {

@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import qs from "qs";
 import useAccess from "@/hooks/useAccess";
+import useAdvisoryRole from "@/hooks/advisories/useAdvisoryRole";
 import useCms from "@/hooks/useCms";
 import ErrorContext from "@/contexts/ErrorContext";
 import { ROLES } from "@/config/permissions";
@@ -95,7 +96,8 @@ export default function Advisory({ mode }) {
   const [isApprover, setIsApprover] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { hasAnyRole, getUserAdvisoryRole } = useAccess();
+  const { hasAnyRole } = useAccess();
+  const { getUserAdvisoryRole } = useAdvisoryRole();
   const {
     calculateIsStatHoliday,
     cmsGet,
