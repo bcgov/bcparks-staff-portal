@@ -11,12 +11,5 @@ export default function useAccess() {
     [checkAccess],
   );
 
-  return {
-    roles,
-    checkAccess,
-    ROLES,
-    logOut,
-    isAuthenticated,
-    hasAnyRole,
-  };
+  return { roles, checkAccess, ROLES, logOut, isAuthenticated, hasAnyRole };
 }
