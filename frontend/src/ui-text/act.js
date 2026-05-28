@@ -43,7 +43,7 @@ For example:
     },
     customMessage: {
       tooltip:
-        "Provide more detailed information for visitors about what might affect them. For tips on how to write an effective description, visit the advisory writing guide.",
+        "Provide more detailed information for visitors about what might affect them. For tips on how to write an effective description, see the guide linked at the top of this page.",
     },
     attachFiles: {
       tooltip:
