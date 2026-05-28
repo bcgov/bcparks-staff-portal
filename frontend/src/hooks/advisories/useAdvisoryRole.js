@@ -10,7 +10,8 @@ export default function useAdvisoryRole() {
   const getUserAdvisoryRole = useCallback(() => {
     if (hasAnyRole([ROLES.ADVISORY_APPROVER])) return "approver";
     if (hasAnyRole([ROLES.ADVISORY_SUBMITTER])) return "submitter";
-    return "contributor";
+    if (hasAnyRole([ROLES.ADVISORY_CONTRIBUTOR])) return "contributor";
+    return null;
   }, [hasAnyRole]);
 
   return { getUserAdvisoryRole };
