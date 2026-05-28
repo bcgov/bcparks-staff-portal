@@ -3,16 +3,17 @@ import { useCallback } from "react";
 import { ADVISORY_QUERY } from "@/constants/advisoryQuery";
 import { buildUnpublishPayload } from "@/lib/advisories/utils/AdvisoryUnpublishPayload";
 import useCms from "@/hooks/useCms";
+import useAccess from "@/hooks/useAccess";
 
 export default function useAdvisoryUnpublish({
   advisoryStatuses,
   modifiedByName,
-  isApprover,
   openUnpublishError,
   openUnpublishSuccess,
   onSuccess,
 }) {
   const { cmsGet, cmsPut } = useCms();
+  const { getUserAdvisoryRole } = useAccess();
 
   return useCallback(
     async (rowData) => {
@@ -35,7 +36,7 @@ export default function useAdvisoryUnpublish({
             advisoryData,
             unpublishedStatus.documentId,
             modifiedByName,
-            isApprover ? "approver" : "submitter",
+            getUserAdvisoryRole(),
           ),
         });
 
@@ -52,7 +53,7 @@ export default function useAdvisoryUnpublish({
       advisoryStatuses,
       cmsGet,
       cmsPut,
-      isApprover,
+      getUserAdvisoryRole,
       modifiedByName,
       onSuccess,
       openUnpublishError,

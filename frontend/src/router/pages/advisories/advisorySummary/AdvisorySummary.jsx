@@ -287,7 +287,6 @@ export default function AdvisorySummary() {
   const unpublishAdvisory = useAdvisoryUnpublish({
     advisoryStatuses,
     modifiedByName: auth.user?.profile?.name,
-    isApprover: hasAnyRole([ROLES.ADVISORY_APPROVER]),
     openUnpublishError,
     openUnpublishSuccess,
     onSuccess: refreshAdvisorySummary,

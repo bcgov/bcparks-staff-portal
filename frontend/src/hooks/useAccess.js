@@ -11,5 +11,20 @@ export default function useAccess() {
     [checkAccess],
   );
 
-  return { roles, checkAccess, ROLES, logOut, isAuthenticated, hasAnyRole };
+  // Returns the createdByRole/modifiedByRole value for the user's highest advisory role.
+  const getUserAdvisoryRole = useCallback(() => {
+    if (hasAnyRole([ROLES.ADVISORY_APPROVER])) return "approver";
+    if (hasAnyRole([ROLES.ADVISORY_SUBMITTER])) return "submitter";
+    return "contributor";
+  }, [hasAnyRole]);
+
+  return {
+    roles,
+    checkAccess,
+    ROLES,
+    logOut,
+    isAuthenticated,
+    hasAnyRole,
+    getUserAdvisoryRole,
+  };
 }

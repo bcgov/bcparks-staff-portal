@@ -206,7 +206,6 @@ export default function AdvisoryDashboard({
   const handleUnpublish = useAdvisoryUnpublish({
     advisoryStatuses,
     modifiedByName: auth.user?.profile?.name,
-    isApprover: hasAnyRole([ROLES.ADVISORY_APPROVER]),
     openUnpublishError,
     openUnpublishSuccess,
     onSuccess() {

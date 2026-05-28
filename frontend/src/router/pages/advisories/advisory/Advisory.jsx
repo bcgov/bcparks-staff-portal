@@ -95,7 +95,7 @@ export default function Advisory({ mode }) {
   const [isApprover, setIsApprover] = useState(false);
   const [formError, setFormError] = useState("");
 
-  const { hasAnyRole } = useAccess();
+  const { hasAnyRole, getUserAdvisoryRole } = useAccess();
   const {
     calculateIsStatHoliday,
     cmsGet,
@@ -1026,9 +1026,10 @@ export default function Advisory({ mode }) {
         publishedAt: new Date(),
         isLatestRevision: true,
         createdByName: auth.user?.profile?.name,
+        createdByEmail: auth.user?.profile?.email,
         reviewedByName: null,
         reviewedDate: null,
-        createdByRole: isApprover ? "approver" : "submitter",
+        createdByRole: getUserAdvisoryRole(),
         isUrgentAfterHours:
           !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish,
       };
@@ -1104,7 +1105,7 @@ export default function Advisory({ mode }) {
         updatedDate,
         modifiedDate: moment().toISOString(),
         modifiedByName: auth.user?.profile?.name,
-        modifiedByRole: isApprover ? "approver" : "submitter",
+        modifiedByRole: getUserAdvisoryRole(),
         advisoryDate,
         effectiveDate: startDate,
         endDate,
