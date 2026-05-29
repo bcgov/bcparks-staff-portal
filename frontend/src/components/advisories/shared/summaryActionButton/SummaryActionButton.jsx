@@ -70,7 +70,7 @@ export default function SummaryActionButton({
           <FontAwesomeIcon
             icon={faChevronDown}
             className="action-button__icon ms-2"
-            aria-label="Actions"
+            aria-hidden="true"
           />
 
           {isRequestingCms && (
