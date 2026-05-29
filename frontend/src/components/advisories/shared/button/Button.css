@@ -3,6 +3,12 @@
   min-height: 48px;
 }
 
+/* Add space between `leftIcon` element and label */
+.bcgov-button > svg:first-child {
+  /* 0.5em, equivalent to me-2 in Bootstrap */
+  margin-right: 0.5em;
+}
+
 @media (max-width: 575.98px) {
   .bcgov-button {
     min-width: 0px;

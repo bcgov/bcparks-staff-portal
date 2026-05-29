@@ -118,7 +118,7 @@ export default function AdvisoryDashboard({
   const { setError } = useContext(ErrorContext);
   const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
-  const { hasAnyRole } = useAccess();
+  const { hasAnyRole, ROLES } = useAccess();
   const {
     getRegions,
     getManagementAreas,
@@ -206,7 +206,7 @@ export default function AdvisoryDashboard({
   const handleUnpublish = useAdvisoryUnpublish({
     advisoryStatuses,
     modifiedByName: auth.user?.profile?.name,
-    isApprover: hasAnyRole(["approver"]),
+    isApprover: hasAnyRole([ROLES.ADVISORY_APPROVER]),
     openUnpublishError,
     openUnpublishSuccess,
     onSuccess() {
@@ -226,7 +226,8 @@ export default function AdvisoryDashboard({
     },
   });
 
-  const canMarkReviewed = isReviewDashboard && hasAnyRole(["approver"]);
+  const canMarkReviewed =
+    isReviewDashboard && hasAnyRole([ROLES.ADVISORY_APPROVER]);
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
@@ -1317,7 +1318,7 @@ export default function AdvisoryDashboard({
                 All
               </NavLink>
             </li>
-            {hasAnyRole(["approver"]) && (
+            {hasAnyRole([ROLES.ADVISORY_APPROVER]) && (
               <li className="nav-item">
                 <NavLink
                   className="nav-link"

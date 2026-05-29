@@ -3,12 +3,13 @@ import { Loader } from "@/components/advisories/shared/loader/Loader";
 import "./Button.css";
 
 export function Button({
-  hasLoader,
-  onClick,
+  hasLoader = false,
+  onClick = () => {},
   label,
   styling,
-  disabled,
-  testId,
+  disabled = false,
+  testId = "",
+  leftIcon = null,
 }) {
   return (
     <button
@@ -18,6 +19,7 @@ export function Button({
       disabled={disabled}
       data-test-id={testId}
     >
+      {leftIcon}
       {label}
       {hasLoader && (
         <div className="bcgov-loader-show">
@@ -35,11 +37,5 @@ Button.propTypes = {
   disabled: PropTypes.bool,
   testId: PropTypes.string,
   hasLoader: PropTypes.bool,
-};
-
-Button.defaultProps = {
-  disabled: false,
-  testId: "",
-  hasLoader: false,
-  onClick() {},
+  leftIcon: PropTypes.node,
 };

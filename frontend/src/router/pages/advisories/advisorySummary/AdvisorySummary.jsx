@@ -8,6 +8,7 @@ import {
 import { format } from "date-fns";
 import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useCms from "@/hooks/useCms";
 import { useAuth } from "react-oidc-context";
 import "./AdvisorySummary.scss";
@@ -15,30 +16,29 @@ import { Loader } from "@/components/advisories/shared/loader/Loader";
 import Alert from "react-bootstrap/Alert";
 import Toast from "react-bootstrap/Toast";
 import ToastContainer from "react-bootstrap/ToastContainer";
-import FlashMessage from "@/components/FlashMessage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fa-kit/icons/classic/solid";
+import {
+  faCircleCheck,
+  faEyeSlash,
+  faPen,
+} from "@fa-kit/icons/classic/regular";
 import { Button } from "@/components/advisories/shared/button/Button";
 import { getLinkTypes } from "@/lib/advisories/utils/CmsDataUtil";
 import { getAdvisoryStatuses } from "@/lib/advisories/utils/CmsDataUtil";
 import AdvisorySummaryView from "@/components/advisories/composite/advisorySummaryView/AdvisorySummaryView";
 import StatusBadge from "@/components/StatusBadge";
 import useAccess from "@/hooks/useAccess";
-import useAdvisoryFlashMessage from "@/hooks/advisories/useAdvisoryFlashMessage";
+import useAdvisoryMarkReviewed from "@/hooks/advisories/useAdvisoryMarkReviewed";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
 
 export default function AdvisorySummary() {
   const { setError } = useContext(ErrorContext);
   const { cmsData, setCmsData } = useContext(CmsDataContext);
+  const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
-  const { hasAnyRole } = useAccess();
+  const { hasAnyRole, ROLES } = useAccess();
   const { cmsGet } = useCms();
-  const {
-    unpublishFlashMessage,
-    closeUnpublishFlashMessage,
-    openUnpublishError: openUnpublishFlashError,
-    openUnpublishSuccess: openUnpublishFlashSuccess,
-  } = useAdvisoryFlashMessage();
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
   const [toError, setToError] = useState(false);
@@ -54,9 +54,7 @@ export default function AdvisorySummary() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const [confirmationText, setConfirmationText] = useState(
-    location.state?.confirmationText || "",
-  );
+  const [confirmationText] = useState(location.state?.confirmationText || "");
   const index = location.state?.index;
   const [isCurrentlyPublished, setIsCurrentlyPublished] = useState(false);
   const [showOriginalAdvisory, setShowOriginalAdvisory] = useState(false);
@@ -65,6 +63,12 @@ export default function AdvisorySummary() {
   const [currentParkUrls, setCurrentParkUrls] = useState("");
   const [currentSiteUrls, setCurrentSiteUrls] = useState("");
   const [isUnpublishing, setIsUnpublishing] = useState(false);
+  const [isMarkingReviewed, setIsMarkingReviewed] = useState(false);
+
+  const isRequestingCms = useMemo(
+    () => isUnpublishing || isMarkingReviewed,
+    [isUnpublishing, isMarkingReviewed],
+  );
 
   useEffect(() => {
     if (!isLoadingPage) {
@@ -212,23 +216,56 @@ export default function AdvisorySummary() {
   const openUnpublishError = useCallback(
     (message) => {
       setIsUnpublishing(false);
-      openUnpublishFlashError(message);
+      globalFlashMessage.open(
+        "Failed to unpublish advisory / closure",
+        message,
+        {
+          variant: "error",
+        },
+      );
     },
-    [openUnpublishFlashError],
+    [globalFlashMessage],
   );
 
-  // Sets confirmation text to show a success message when unpublishing succeeds.
+  // Shows a success flash message when unpublishing succeeds.
   const openUnpublishSuccess = useCallback(
     (message) => {
       setIsUnpublishing(false);
-      setConfirmationText(message);
-      openUnpublishFlashSuccess(message);
+      globalFlashMessage.open("Unpublished advisory / closure", message, {
+        variant: "success",
+      });
     },
-    [openUnpublishFlashSuccess],
+    [globalFlashMessage],
   );
 
-  // Re-fetches the advisory data to update the page after unpublishing.
-  const handleUnpublishSuccess = useCallback(async () => {
+  // Shows an error flash message if marking reviewed fails.
+  const openMarkReviewedError = useCallback(
+    (message) => {
+      setIsMarkingReviewed(false);
+      globalFlashMessage.open(
+        "Failed to mark advisory / closure reviewed",
+        message,
+        {
+          variant: "error",
+        },
+      );
+    },
+    [globalFlashMessage],
+  );
+
+  // Shows a success flash message when marking reviewed succeeds.
+  const openMarkReviewedSuccess = useCallback(
+    (message) => {
+      setIsMarkingReviewed(false);
+      globalFlashMessage.open("Marked advisory / closure reviewed", message, {
+        variant: "success",
+      });
+    },
+    [globalFlashMessage],
+  );
+
+  // Re-fetches advisory data after status-changing actions.
+  const refreshAdvisorySummary = useCallback(async () => {
     if (documentId) {
       try {
         const [advisoryData, linkTypes] = await Promise.all([
@@ -250,10 +287,18 @@ export default function AdvisorySummary() {
   const unpublishAdvisory = useAdvisoryUnpublish({
     advisoryStatuses,
     modifiedByName: auth.user?.profile?.name,
-    isApprover: hasAnyRole(["approver"]),
+    isApprover: hasAnyRole([ROLES.ADVISORY_APPROVER]),
     openUnpublishError,
     openUnpublishSuccess,
-    onSuccess: handleUnpublishSuccess,
+    onSuccess: refreshAdvisorySummary,
+  });
+
+  const markReviewedAdvisory = useAdvisoryMarkReviewed({
+    advisoryStatuses,
+    reviewedByName: auth.user?.profile?.name,
+    openMarkReviewedError,
+    openMarkReviewedSuccess,
+    onSuccess: refreshAdvisorySummary,
   });
 
   // Undefined, or a 3-letter code
@@ -307,6 +352,9 @@ export default function AdvisorySummary() {
     return true;
   }, [advisoryStatusCode]);
 
+  // Only approvers can mark advisories/closures as reviewed
+  const canMarkReviewed = hasAnyRole([ROLES.ADVISORY_APPROVER]);
+
   /**
    * Handles the "unpublish" action. Sends a request to the CMS to unpublish the
    * advisory via the useUnpublishAdvisory hook.
@@ -320,6 +368,21 @@ export default function AdvisorySummary() {
       documentId: advisory.documentId,
       title: advisory.title,
     });
+  }
+
+  /**
+   * Handles the "mark reviewed" action. Sends a request to the CMS to mark the advisory
+   * as reviewed via the useAdvisoryMarkReviewed hook.
+   * @returns {void}
+   */
+  function handleMarkReviewed() {
+    if (!canMarkReviewed) return;
+
+    // Skip if the advisory isn't loaded yet
+    if (!advisory?.documentId) return;
+
+    setIsMarkingReviewed(true);
+    markReviewedAdvisory(advisory);
   }
 
   function handleCloseSnackBar(_, reason) {
@@ -369,11 +432,11 @@ export default function AdvisorySummary() {
           )}
           {!isLoadingPage && (
             <div>
-              <div>
+              <div className="position-relative">
                 <div>
                   <button
                     type="button"
-                    className="btn btn-link btn-back mt-4"
+                    className="btn btn-link btn-back my-4"
                     onClick={() => {
                       setToDashboard(true);
                     }}
@@ -401,9 +464,10 @@ export default function AdvisorySummary() {
                         </button>
                       </div>
                     )}
-                    <div className="mt-5 container-fluid g-0 act-form">
+
+                    <div className="container-fluid g-0 act-form">
                       <div className="row g-0 title">
-                        <div className="col-md-8 col-12">
+                        <div className="col-12">
                           <p className="mb-1">
                             Advisory #{advisory.advisoryNumber}
                             <StatusBadge
@@ -419,25 +483,40 @@ export default function AdvisorySummary() {
 
                           {lastUpdatedString && <p>{lastUpdatedString}</p>}
                         </div>
-                        <div className="col-md-4 col-12 d-flex gap-2 align-items-center justify-content-end">
-                          <Button
-                            label="Unpublish"
-                            styling="btn-outline-primary btn"
-                            disabled={isUnpublishing || !canUnpublish}
-                            onClick={handleUnpublish}
-                            hasLoader={isUnpublishing}
-                          />
-
-                          <Button
-                            label="Edit"
-                            styling="btn-primary btn"
-                            disabled={isUnpublishing}
-                            onClick={() => {
-                              setToUpdate(true);
-                            }}
-                          />
-                        </div>
                       </div>
+
+                      <div className="actions mb-4 d-flex gap-2 align-items-start justify-content-center justify-content-xl-end flex-wrap flex-xl-nowrap">
+                        {canMarkReviewed && (
+                          <Button
+                            label="Mark reviewed"
+                            styling="btn-outline-primary btn flex-shrink-0"
+                            disabled={isRequestingCms}
+                            onClick={handleMarkReviewed}
+                            hasLoader={isMarkingReviewed}
+                            leftIcon={<FontAwesomeIcon icon={faCircleCheck} />}
+                          />
+                        )}
+
+                        <Button
+                          label="Unpublish"
+                          styling="btn-outline-primary btn flex-shrink-0"
+                          disabled={isRequestingCms || !canUnpublish}
+                          onClick={handleUnpublish}
+                          hasLoader={isUnpublishing}
+                          leftIcon={<FontAwesomeIcon icon={faEyeSlash} />}
+                        />
+
+                        <Button
+                          label="Edit"
+                          styling="btn-primary btn flex-shrink-0"
+                          disabled={isRequestingCms}
+                          onClick={() => {
+                            setToUpdate(true);
+                          }}
+                          leftIcon={<FontAwesomeIcon icon={faPen} />}
+                        />
+                      </div>
+
                       <AdvisorySummaryView
                         data={{
                           advisory,
@@ -497,14 +576,6 @@ export default function AdvisorySummary() {
                   </Toast.Body>
                 </Toast>
               </ToastContainer>
-
-              <FlashMessage
-                title={unpublishFlashMessage.title}
-                message={unpublishFlashMessage.message}
-                isVisible={unpublishFlashMessage.isVisible}
-                onClose={closeUnpublishFlashMessage}
-                variant={unpublishFlashMessage.variant}
-              />
             </div>
           )}
         </div>
