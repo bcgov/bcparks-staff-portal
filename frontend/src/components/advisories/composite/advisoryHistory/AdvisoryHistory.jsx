@@ -6,10 +6,7 @@ import { useAuth } from "react-oidc-context";
 import useCms from "@/hooks/useCms";
 import { dateCompare } from "@/lib/advisories/utils/AppUtil";
 
-export default function AdvisoryHistory({
-  data: { advisoryNumber },
-  revisionNumber,
-}) {
+export default function AdvisoryHistory({ advisoryNumber, revisionNumber }) {
   const [advisoryHistory, setAdvisoryHistory] = useState([]);
   const auth = useAuth();
   const { cmsGet } = useCms();
@@ -110,8 +107,6 @@ export default function AdvisoryHistory({
 }
 
 AdvisoryHistory.propTypes = {
-  data: PropTypes.shape({
-    advisoryNumber: PropTypes.number,
-  }).isRequired,
+  advisoryNumber: PropTypes.number.isRequired,
   revisionNumber: PropTypes.number,
 };
