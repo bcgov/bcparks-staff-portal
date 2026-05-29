@@ -97,7 +97,7 @@ export default function SummaryActionButton({
 SummaryActionButton.propTypes = {
   canUnpublish: PropTypes.bool,
   canMarkReviewed: PropTypes.bool,
-  onMarkReviewed: PropTypes.func,
+  onMarkReviewed: PropTypes.func.isRequired,
   onUnpublish: PropTypes.func.isRequired,
   className: PropTypes.string,
 };
