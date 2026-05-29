@@ -108,5 +108,5 @@ export default function AdvisoryHistory({ advisoryNumber, revisionNumber }) {
 
 AdvisoryHistory.propTypes = {
   advisoryNumber: PropTypes.number.isRequired,
-  revisionNumber: PropTypes.number,
+  revisionNumber: PropTypes.number.isRequired,
 };

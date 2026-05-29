@@ -6,6 +6,7 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import { format } from "date-fns";
+import classNames from "classnames";
 import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
@@ -28,6 +29,7 @@ import { getLinkTypes } from "@/lib/advisories/utils/CmsDataUtil";
 import { getAdvisoryStatuses } from "@/lib/advisories/utils/CmsDataUtil";
 import AdvisorySummaryView from "@/components/advisories/composite/advisorySummaryView/AdvisorySummaryView";
 import StatusBadge from "@/components/StatusBadge";
+import SummaryActionButton from "@/components/advisories/shared/summaryActionButton/SummaryActionButton";
 import useAccess from "@/hooks/useAccess";
 import useAdvisoryMarkReviewed from "@/hooks/advisories/useAdvisoryMarkReviewed";
 import useAdvisoryUnpublish from "@/hooks/advisories/useAdvisoryUnpublish";
@@ -485,21 +487,43 @@ export default function AdvisorySummary() {
                         </div>
                       </div>
 
-                      <div className="actions mb-4 d-flex gap-2 align-items-start justify-content-center justify-content-xl-end flex-wrap flex-xl-nowrap">
+                      <div className="actions mb-4 d-flex gap-2 align-items-start justify-content-xl-end flex-wrap flex-xl-nowrap">
                         {isApprover && (
-                          <Button
-                            label="Mark reviewed"
-                            styling="btn-outline-primary btn flex-shrink-0"
-                            disabled={isRequestingCms}
-                            onClick={handleMarkReviewed}
-                            hasLoader={isMarkingReviewed}
-                            leftIcon={<FontAwesomeIcon icon={faCircleCheck} />}
-                          />
+                          <>
+                            {/* On smaller screens, show Unpublish and Mark reviewed together in an overflow menu */}
+                            <SummaryActionButton
+                              className="d-xl-none flex-grow-1"
+                              canUnpublish={canUnpublish}
+                              onUnpublish={handleUnpublish}
+                              canMarkReviewed={isApprover}
+                              onMarkReviewed={handleMarkReviewed}
+                            />
+
+                            {/* On larger screens, show Unpublish and Mark reviewed as separate buttons */}
+                            <Button
+                              label="Mark reviewed"
+                              styling="btn-outline-primary btn flex-grow-1 flex-xl-shrink-0 d-none d-xl-block"
+                              disabled={isRequestingCms}
+                              onClick={handleMarkReviewed}
+                              hasLoader={isMarkingReviewed}
+                              leftIcon={
+                                <FontAwesomeIcon icon={faCircleCheck} />
+                              }
+                            />
+                          </>
                         )}
 
                         <Button
                           label="Unpublish"
-                          styling="btn-outline-primary btn flex-shrink-0"
+                          styling={classNames(
+                            "btn-outline-primary",
+                            "btn",
+                            "flex-grow-1",
+                            "flex-xl-shrink-0",
+                            // If the user can mark reviewed, hide the unpublish button on smaller screens
+                            // and show an overflow menu instead,
+                            isApprover ? "d-none d-xl-block" : "",
+                          )}
                           disabled={isRequestingCms || !canUnpublish}
                           onClick={handleUnpublish}
                           hasLoader={isUnpublishing}
@@ -508,7 +532,7 @@ export default function AdvisorySummary() {
 
                         <Button
                           label="Edit"
-                          styling="btn-primary btn flex-shrink-0"
+                          styling="btn-primary btn flex-grow-1 flex-xl-shrink-0"
                           disabled={isRequestingCms}
                           onClick={() => {
                             setToUpdate(true);
