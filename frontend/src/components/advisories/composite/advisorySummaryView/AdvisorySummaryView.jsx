@@ -447,9 +447,7 @@ export default function AdvisorySummaryView({
         <h3>History</h3>
         <AdvisoryHistory
           revisionNumber={advisory.revisionNumber}
-          data={{
-            advisoryNumber: advisory.advisoryNumber,
-          }}
+          advisoryNumber={advisory.advisoryNumber}
         />
       </section>
     </>
