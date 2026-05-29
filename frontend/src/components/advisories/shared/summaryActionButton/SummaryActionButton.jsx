@@ -5,6 +5,7 @@ import Dropdown from "react-bootstrap/Dropdown";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown } from "@fa-kit/icons/classic/solid";
 import { faCircleCheck, faEyeSlash } from "@fa-kit/icons/classic/regular";
+import { Loader } from "@/components/advisories/shared/loader/Loader";
 
 import "./SummaryActionButton.scss";
 
@@ -30,6 +31,7 @@ export default function SummaryActionButton({
   canMarkReviewed = false,
   onMarkReviewed,
   className = "",
+  isRequestingCms = false,
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -70,11 +72,17 @@ export default function SummaryActionButton({
             className="action-button__icon ms-2"
             aria-label="Actions"
           />
+
+          {isRequestingCms && (
+            <div className="bcgov-loader-show">
+              <Loader />
+            </div>
+          )}
         </Dropdown.Toggle>
 
         <Dropdown.Menu renderOnMount popperConfig={ACTION_MENU_POPPER_CONFIG}>
           <Dropdown.Item
-            disabled={!canUnpublish}
+            disabled={!canUnpublish || isRequestingCms}
             onClick={() => action(onUnpublish)}
           >
             <FontAwesomeIcon icon={faEyeSlash} />
@@ -82,7 +90,7 @@ export default function SummaryActionButton({
           </Dropdown.Item>
 
           <Dropdown.Item
-            disabled={!canMarkReviewed}
+            disabled={!canMarkReviewed || isRequestingCms}
             onClick={() => action(onMarkReviewed)}
           >
             <FontAwesomeIcon icon={faCircleCheck} />
@@ -100,4 +108,5 @@ SummaryActionButton.propTypes = {
   onMarkReviewed: PropTypes.func.isRequired,
   onUnpublish: PropTypes.func.isRequired,
   className: PropTypes.string,
+  isRequestingCms: PropTypes.bool,
 };

@@ -497,6 +497,7 @@ export default function AdvisorySummary() {
                               onUnpublish={handleUnpublish}
                               canMarkReviewed={isApprover}
                               onMarkReviewed={handleMarkReviewed}
+                              isRequestingCms={isRequestingCms}
                             />
 
                             {/* On larger screens, show Unpublish and Mark reviewed as separate buttons */}
