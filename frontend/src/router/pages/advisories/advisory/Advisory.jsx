@@ -14,6 +14,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faArrowLeft } from "@fa-kit/icons/classic/solid";
 import qs from "qs";
 import useAccess from "@/hooks/useAccess";
+import useAdvisoryRole from "@/hooks/advisories/useAdvisoryRole";
 import useCms from "@/hooks/useCms";
 import ErrorContext from "@/contexts/ErrorContext";
 import { ROLES } from "@/config/permissions";
@@ -96,6 +97,7 @@ export default function Advisory({ mode }) {
   const [formError, setFormError] = useState("");
 
   const { hasAnyRole } = useAccess();
+  const { getUserAdvisoryRole } = useAdvisoryRole();
   const {
     calculateIsStatHoliday,
     cmsGet,
@@ -1026,9 +1028,10 @@ export default function Advisory({ mode }) {
         publishedAt: new Date(),
         isLatestRevision: true,
         createdByName: auth.user?.profile?.name,
+        createdByEmail: auth.user?.profile?.email,
         reviewedByName: null,
         reviewedDate: null,
-        createdByRole: isApprover ? "approver" : "submitter",
+        createdByRole: getUserAdvisoryRole(),
         isUrgentAfterHours:
           !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish,
       };
@@ -1104,7 +1107,7 @@ export default function Advisory({ mode }) {
         updatedDate,
         modifiedDate: moment().toISOString(),
         modifiedByName: auth.user?.profile?.name,
-        modifiedByRole: isApprover ? "approver" : "submitter",
+        modifiedByRole: getUserAdvisoryRole(),
         advisoryDate,
         effectiveDate: startDate,
         endDate,
