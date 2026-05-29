@@ -35,6 +35,18 @@ const COLUMN_FILTERS = [
     }),
   },
   {
+    key: "modifiedDate",
+    build: (value) => ({
+      modifiedDate: { $containsi: toIsoDateFilter(value) },
+    }),
+  },
+  {
+    key: "endDate",
+    build: (value) => ({
+      endDate: { $containsi: toIsoDateFilter(value) },
+    }),
+  },
+  {
     key: "expiryDate",
     build: (value) => ({ expiryDate: { $containsi: toIsoDateFilter(value) } }),
   },
@@ -134,10 +146,10 @@ const SORT_FIELD_MAP = {
   "advisoryStatus.advisoryStatus": "advisoryStatus.sortOrder",
   associatedResources: [
     "recreationResources.resourceName",
+    "protectedAreas.protectedAreaName",
     "regions.regionName",
     "sections.sectionName",
     "managementAreas.managementAreaName",
-    "protectedAreas.protectedAreaName",
   ],
 };
 
