@@ -471,6 +471,7 @@ export default function AdvisorySummary() {
                             Advisory #{advisory.advisoryNumber}
                             <StatusBadge
                               status={advisoryStatusCode}
+                              approver={canMarkReviewed}
                               className="ms-2 advisory-status-badge"
                             ></StatusBadge>
                           </p>

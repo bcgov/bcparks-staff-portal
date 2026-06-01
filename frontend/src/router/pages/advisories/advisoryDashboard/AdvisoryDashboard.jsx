@@ -939,6 +939,7 @@ export default function AdvisoryDashboard({
               )}
               <StatusBadge
                 status={statusCode}
+                approver={hasAnyRole([ROLES.ADVISORY_APPROVER])}
                 className={"advisory-status-badge"}
               />
             </span>
