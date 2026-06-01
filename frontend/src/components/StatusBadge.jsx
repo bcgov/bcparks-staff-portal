@@ -1,3 +1,4 @@
+import { useId } from "react";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
@@ -40,6 +41,7 @@ export default function StatusBadge({
   approver = false,
   className = "",
 }) {
+  const tooltipId = useId();
   let colorClass = "text-bg-dark";
   let badgeLabel = label ?? status;
 
@@ -65,7 +67,7 @@ export default function StatusBadge({
       <OverlayTrigger
         placement="bottom"
         overlay={
-          <Tooltip id={`status-tooltip-${status}`}>{badgeLabel}</Tooltip>
+          <Tooltip id={`status-tooltip-${tooltipId}`}>{badgeLabel}</Tooltip>
         }
       >
         <FontAwesomeIcon icon={statusConfig.icon} />
