@@ -28,11 +28,9 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
     !reviewedDate.isValid() &&
     !reviewedByName;
 
-  // Updated advisory, not posted
+  // Updated advisory, posted and not posted, and not yet reviewed, but modified after creation
   const isUpdated =
-    ["HQR", "SCH"].includes(statusCode) &&
-    modifiedDate.isValid() &&
-    modifiedDate.isAfter(createdAt);
+    isNew && modifiedDate.isValid() && modifiedDate.isAfter(createdAt);
 
   // Expiry date approaching within a week
   const isExpiring =
