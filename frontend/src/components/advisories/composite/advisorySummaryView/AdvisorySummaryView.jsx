@@ -446,8 +446,9 @@ export default function AdvisorySummaryView({
       <section>
         <h3>History</h3>
         <AdvisoryHistory
-          revisionNumber={advisory.revisionNumber}
+          latestRevisionNumber={advisory.revisionNumber}
           advisoryNumber={advisory.advisoryNumber}
+          reviewedDate={advisory.reviewedDate}
         />
       </section>
     </>

@@ -6,7 +6,18 @@ import { useAuth } from "react-oidc-context";
 import useCms from "@/hooks/useCms";
 import { dateCompare } from "@/lib/advisories/utils/AppUtil";
 
-export default function AdvisoryHistory({ advisoryNumber, revisionNumber }) {
+function formatTimestamp(date) {
+  const datePart = format(date, "MMMM dd, yyyy");
+  const timePart = format(date, "h:mm aaa");
+
+  return `${datePart} at ${timePart}`;
+}
+
+export default function AdvisoryHistory({
+  advisoryNumber,
+  latestRevisionNumber,
+  reviewedDate,
+}) {
   const [advisoryHistory, setAdvisoryHistory] = useState([]);
   const auth = useAuth();
   const { cmsGet } = useCms();
@@ -17,67 +28,130 @@ export default function AdvisoryHistory({ advisoryNumber, revisionNumber }) {
         (advisories) => {
           const advisoriesHistory = [];
 
+          function pushHistory({
+            revisionNumber,
+            actorName,
+            displayText,
+            date,
+          }) {
+            if (!date) return;
+            const ts = new Date(date).valueOf();
+
+            if (Number.isNaN(ts)) return;
+
+            advisoriesHistory.push({
+              revisionNumber,
+              actorName,
+              displayText,
+              displayDate: formatTimestamp(ts),
+              dateToCompare: ts,
+            });
+          }
+
           if (advisories && advisories.length > 0) {
             advisories.forEach((ad) => {
-              // Add review events to the history if they exist, or continue to look for other events
-              if (ad.reviewedByName && ad.reviewedDate) {
-                advisoriesHistory.push({
-                  revisionNumber: ad.revisionNumber,
-                  submitter: ad.reviewedByName,
-                  submittedTime: format(
-                    ad.reviewedDate,
-                    "MMMM dd, yyyy h:mm aaa",
-                  ),
-                  displayText: "Reviewed by",
-                  dateToCompare: new Date(ad.reviewedDate).valueOf(),
-                });
-              } else if (ad.modifiedByName && ad.modifiedByName === "system") {
-                const record = {
-                  revisionNumber: ad.revisionNumber,
-                  submitter: ad.modifiedByName,
-                  submittedTime: format(
-                    ad.modifiedDate,
-                    "MMMM dd, yyyy h:mm aaa",
-                  ),
-                  displayText: "Published by",
-                  dateToCompare: new Date(ad.modifiedDate).valueOf(),
-                };
+              const status = ad.advisoryStatus?.code || "";
+              let statusActorName = ad.modifiedByName;
 
-                if (ad.removalDate) {
-                  record.displayText = "Removed by";
+              if (status === "PUB") {
+                statusActorName = ad.publishedByName || ad.modifiedByName;
+              } else if (status === "UNP") {
+                statusActorName = ad.unpublishedByName || ad.modifiedByName;
+              }
+
+              if (ad.revisionNumber === 1) {
+                let actor = ad.createdByName || "";
+                let text = "drafted";
+                let includeRequestedBy = false;
+
+                if (status === "PUB") {
+                  actor = ad.publishedByName || "";
+                  text = "published";
                 }
-                advisoriesHistory.push(record);
-              } else if (!ad.modifiedDate && ad.createdDate) {
-                const record = {
-                  revisionNumber: ad.revisionNumber,
-                  submitter: ad.submittedByName,
-                  submittedTime: format(
-                    ad.createdDate,
-                    "MMMM dd, yyyy h:mm aaa",
-                  ),
-                  displayText: "Requested by",
-                  dateToCompare: new Date(ad.createdDate).valueOf(),
-                };
 
-                advisoriesHistory.push(record);
-              } else if (ad.modifiedDate) {
-                const record = {
-                  revisionNumber: ad.revisionNumber,
-                  submitter: ad.modifiedByName,
-                  submittedTime: format(
-                    ad.modifiedDate,
-                    "MMMM dd, yyyy h:mm aaa",
-                  ),
-                  displayText: "Updated by",
-                  dateToCompare: new Date(ad.modifiedDate).valueOf(),
-                };
+                if (status === "SCH") {
+                  actor = ad.modifiedByName || "";
+                  text = "scheduled";
+                }
 
-                advisoriesHistory.push(record);
+                let actorName = actor || "";
+
+                if (actor && actor !== ad.submittedByName) {
+                  includeRequestedBy = true;
+                  actorName = ad.submittedByName || "";
+                }
+
+                pushHistory({
+                  revisionNumber: ad.revisionNumber,
+                  displayText: includeRequestedBy
+                    ? `${text} by ${actor} requested`
+                    : text,
+                  actorName,
+                  date: ad.modifiedDate || ad.createdDate,
+                });
+              } else {
+                if (status === "SCH") {
+                  pushHistory({
+                    revisionNumber: ad.revisionNumber,
+                    displayText: "scheduled",
+                    actorName: ad.modifiedByName,
+                    date: ad.modifiedDate,
+                  });
+                }
+
+                if (status === "PUB") {
+                  pushHistory({
+                    revisionNumber: ad.revisionNumber,
+                    displayText: "published",
+                    actorName:
+                      ad.publishedByName === "system"
+                        ? "system based on posting date"
+                        : statusActorName,
+                    date: ad.publishedDate || ad.modifiedDate,
+                  });
+                }
+
+                if (status === "UNP") {
+                  pushHistory({
+                    revisionNumber: ad.revisionNumber,
+                    displayText: "unpublished",
+                    actorName:
+                      ad.unpublishedByName === "system"
+                        ? "system based on expiry date"
+                        : statusActorName,
+                    date: ad.unpublishedDate || ad.modifiedDate,
+                  });
+                }
+
+                if (status === "HQR") {
+                  pushHistory({
+                    revisionNumber: ad.revisionNumber,
+                    displayText: "updated",
+                    actorName: ad.modifiedByName,
+                    date: ad.modifiedDate,
+                  });
+                }
+
+                if (status === "DFT") {
+                  pushHistory({
+                    revisionNumber: ad.revisionNumber,
+                    displayText: "drafted",
+                    actorName: ad.modifiedByName,
+                    date: ad.modifiedDate,
+                  });
+                }
+              }
+
+              if (ad.reviewedByName && ad.reviewedByName !== statusActorName) {
+                pushHistory({
+                  revisionNumber: ad.revisionNumber,
+                  displayText: "reviewed",
+                  actorName: ad.reviewedByName,
+                  date: ad.reviewedDate,
+                });
               }
             });
 
-            // Keep the newest history item first regardless of whether it came from
-            // a review, publish, request, or update event
             advisoriesHistory.sort(dateCompare);
             setAdvisoryHistory([...advisoriesHistory]);
           }
@@ -87,19 +161,25 @@ export default function AdvisoryHistory({ advisoryNumber, revisionNumber }) {
   }, [
     advisoryNumber,
     // Re-fetch data if the revision number changes, which indicates new versions and history to display
-    revisionNumber,
+    latestRevisionNumber,
+    // Re-fetch when reviewed date changes without a revision bump
+    reviewedDate,
     auth.isAuthenticated,
     auth.isLoading,
     setAdvisoryHistory,
     cmsGet,
   ]);
   return (
-    <div className="act-history-container px-3">
+    <div className="act-history-container">
       {advisoryHistory.length > 0 &&
         advisoryHistory.map((ah, index) => (
-          <div key={index} className="row">
-            Revision number {ah.revisionNumber} {ah.displayText.toLowerCase()}{" "}
-            {ah.submitter} at {ah.submittedTime}
+          <div
+            key={`revision-${ah.revisionNumber}-idx-${index}`}
+            className="mb-2"
+          >
+            Revision number {ah.revisionNumber} {ah.displayText}{" "}
+            {ah.actorName ? <> by {ah.actorName} on </> : null}{" "}
+            <span className="text-nowrap">{ah.displayDate}</span>
           </div>
         ))}
     </div>
@@ -108,5 +188,6 @@ export default function AdvisoryHistory({ advisoryNumber, revisionNumber }) {
 
 AdvisoryHistory.propTypes = {
   advisoryNumber: PropTypes.number.isRequired,
-  revisionNumber: PropTypes.number.isRequired,
+  latestRevisionNumber: PropTypes.number.isRequired,
+  reviewedDate: PropTypes.string,
 };
