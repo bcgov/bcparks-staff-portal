@@ -352,7 +352,7 @@ export default function AdvisorySummary() {
   }, [advisoryStatusCode]);
 
   // Only approvers can mark advisories/closures as reviewed
-  const canMarkReviewed = hasAnyRole([ROLES.ADVISORY_APPROVER]);
+  const isApprover = hasAnyRole([ROLES.ADVISORY_APPROVER]);
 
   /**
    * Handles the "unpublish" action. Sends a request to the CMS to unpublish the
@@ -375,7 +375,7 @@ export default function AdvisorySummary() {
    * @returns {void}
    */
   function handleMarkReviewed() {
-    if (!canMarkReviewed) return;
+    if (!isApprover) return;
 
     // Skip if the advisory isn't loaded yet
     if (!advisory?.documentId) return;
@@ -471,6 +471,7 @@ export default function AdvisorySummary() {
                             Advisory #{advisory.advisoryNumber}
                             <StatusBadge
                               status={advisoryStatusCode}
+                              approver={isApprover}
                               className="ms-2 advisory-status-badge"
                             ></StatusBadge>
                           </p>
@@ -485,7 +486,7 @@ export default function AdvisorySummary() {
                       </div>
 
                       <div className="actions mb-4 d-flex gap-2 align-items-start justify-content-center justify-content-xl-end flex-wrap flex-xl-nowrap">
-                        {canMarkReviewed && (
+                        {isApprover && (
                           <Button
                             label="Mark reviewed"
                             styling="btn-outline-primary btn flex-shrink-0"

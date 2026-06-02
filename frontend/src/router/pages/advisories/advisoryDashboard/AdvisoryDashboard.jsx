@@ -225,8 +225,8 @@ export default function AdvisoryDashboard({
     },
   });
 
-  const canMarkReviewed =
-    isReviewDashboard && hasAnyRole([ROLES.ADVISORY_APPROVER]);
+  const isApprover = hasAnyRole([ROLES.ADVISORY_APPROVER]);
+  const canMarkReviewed = isReviewDashboard && isApprover;
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
@@ -939,6 +939,7 @@ export default function AdvisoryDashboard({
               )}
               <StatusBadge
                 status={statusCode}
+                approver={isApprover}
                 className={"advisory-status-badge"}
               />
             </span>
@@ -1280,6 +1281,7 @@ export default function AdvisoryDashboard({
       handleUnpublish,
       handleMarkReviewed,
       canMarkReviewed,
+      isApprover,
       isReviewDashboard,
     ],
   );
@@ -1317,7 +1319,7 @@ export default function AdvisoryDashboard({
                 All
               </NavLink>
             </li>
-            {hasAnyRole([ROLES.ADVISORY_APPROVER]) && (
+            {isApprover && (
               <li className="nav-item">
                 <NavLink
                   className="nav-link"
