@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { isFuture, isValid, parseISO } from "date-fns";
 
-import { ADVISORY_QUERY } from "@/constants/advisoryQuery";
 import { buildReviewPayload } from "@/lib/advisories/utils/AdvisoryReviewPayload";
 import useCms from "@/hooks/useCms";
 
@@ -53,29 +52,27 @@ export default function useAdvisoryMarkReviewed({
   openMarkReviewedSuccess,
   onSuccess,
 }) {
-  const { cmsGet, cmsPut } = useCms();
+  const { cmsPut } = useCms();
 
   return useCallback(
     async (rowData) => {
       const reviewedStatus = resolveReviewedStatus(rowData, advisoryStatuses);
+      const isApproving = rowData.advisoryStatus?.code === "HQR";
 
-      if (!reviewedStatus?.documentId) {
+      if (isApproving && !reviewedStatus?.documentId) {
         openMarkReviewedError(
-          "Could not resolve the status for the reviewed advisory.",
+          "Could not resolve the new status for the reviewed advisory.",
         );
         return;
       }
 
       try {
-        const advisoryData = await cmsGet(
-          `public-advisory-audits/${rowData.documentId}?${ADVISORY_QUERY}`,
-        );
-
         await cmsPut(`public-advisory-audits/${rowData.documentId}`, {
           data: buildReviewPayload(
-            advisoryData,
-            reviewedStatus.documentId,
+            reviewedStatus?.code,
+            reviewedStatus?.documentId,
             reviewedByName,
+            isApproving,
           ),
         });
 
@@ -90,7 +87,6 @@ export default function useAdvisoryMarkReviewed({
     },
     [
       advisoryStatuses,
-      cmsGet,
       cmsPut,
       reviewedByName,
       onSuccess,
