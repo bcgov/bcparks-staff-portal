@@ -126,11 +126,11 @@ function validate(seasonData, seasonContext) {
     const { feature } = current;
 
     // Add feature metadata for validation rules that need it
-    const dateRangesWithFeatureType = feature.dateable.dateRanges.map(
+    const dateRangesWithMetadata = feature.dateable.dateRanges.map(
       (dateRange) => addFeatureMetadataToDateRange(feature, dateRange),
     );
 
-    dateRanges.push(...dateRangesWithFeatureType);
+    dateRanges.push(...dateRangesWithMetadata);
   }
 
   validationContext.dateRanges = dateRanges;
