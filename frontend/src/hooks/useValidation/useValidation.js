@@ -43,13 +43,25 @@ const elements = {
 };
 
 /**
- * Adds the Strapi Feature Type number to a date range object as `featureTypeNumber`
- * @param {number} featureTypeNumber The Strapi Feature Type number to add to the date range
+ * Adds feature metadata to a date range object for validation purposes.
+ * - featureTypeNumber: The Strapi Feature Type number
+ * - datesCanSpan2Years: A flag for whether the feature's dates can span 2 years
+ * @param {Object} feature The feature object containing metadata
  * @param {Object} dateRange The date range object
- * @returns {Object} The date range object with the added `featureTypeNumber` property
+ * @returns {Object} The date range object with added feature metadata
  */
-function addFeatureTypeToDateRange(featureTypeNumber, dateRange) {
-  return { ...dateRange, featureTypeNumber };
+function addFeatureMetadataToDateRange(feature, dateRange) {
+  return {
+    ...dateRange,
+
+    // Add the Strapi Feature Type number to the date range for validation rules that need it
+    // (Winter fee/Tier 1 and 2 rules)
+    featureTypeNumber: feature.featureType.featureTypeNumber,
+
+    // Add a flag for whether the feature's dates can span 2 years, for validation rules that need it
+    // ("Date in operating year")
+    datesCanSpan2Years: feature.datesCanSpan2Years,
+  };
 }
 
 /**
@@ -104,11 +116,8 @@ function validate(seasonData, seasonContext) {
     // just include all feature-level dates within the parkArea.
     const featureDateRanges = current.parkArea.features.flatMap((feature) =>
       feature.dateable.dateRanges.map((dateRange) =>
-        // Add feature type for validation rules that need it (Winter fee/Tier 1 and 2 rules)
-        addFeatureTypeToDateRange(
-          feature.featureType.featureTypeNumber,
-          dateRange,
-        ),
+        // Add feature metadata for validation rules that need it
+        addFeatureMetadataToDateRange(feature, dateRange),
       ),
     );
 
@@ -116,13 +125,9 @@ function validate(seasonData, seasonContext) {
   } else if (level === "feature") {
     const { feature } = current;
 
-    // Add feature type for validation rules that need it (Winter fee/Tier 1 and 2 rules)
+    // Add feature metadata for validation rules that need it
     const dateRangesWithFeatureType = feature.dateable.dateRanges.map(
-      (dateRange) =>
-        addFeatureTypeToDateRange(
-          feature.featureType.featureTypeNumber,
-          dateRange,
-        ),
+      (dateRange) => addFeatureMetadataToDateRange(feature, dateRange),
     );
 
     dateRanges.push(...dateRangesWithFeatureType);

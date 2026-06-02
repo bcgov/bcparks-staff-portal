@@ -88,6 +88,7 @@ function FeatureFormSectionComponent({
             dateRangeAnnuals={dateRangeAnnuals}
             updateDateRangeAnnual={updateDateRangeAnnual}
             optional={isDateTypeOptional(dateType.dateTypeNumber, "feature")}
+            canSpan2Years={feature.datesCanSpan2Years}
           />
         </div>
       ))}
@@ -117,6 +118,7 @@ FeatureFormSectionComponent.propTypes = {
     dateable: PropTypes.shape({
       dateRanges: PropTypes.arrayOf(dateRangeShape),
     }),
+    datesCanSpan2Years: PropTypes.bool.isRequired,
   }).isRequired,
   featureDateTypes: PropTypes.arrayOf(
     PropTypes.shape({
