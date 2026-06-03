@@ -624,8 +624,8 @@ export default function AdvisoryDashboard({
         // Filters applied to server queries, regardless of user-selected filters
         const sharedBaseFilters = [{ isLatestRevision: true }];
 
-        // When not showing unpublished advisories, exclude all unpublished advisories
-        if (!showUnpublished) {
+        // On the "All" tab, optionally exclude unpublished advisories
+        if (!isReviewDashboard && !showUnpublished) {
           sharedBaseFilters.push({ advisoryStatus: { code: { $ne: "UNP" } } });
         }
 
@@ -1284,7 +1284,13 @@ export default function AdvisoryDashboard({
   const emptyState = showNoItemsToReviewMessage ? (
     <ReviewEmptyState />
   ) : (
-    <div>No records to display.</div>
+    <div>
+      <p>No records to display.</p>
+      <p className="fs-6">
+        Try adjusting your filters or check ‘Include unpublished advisories and
+        closures’ to see more results.
+      </p>
+    </div>
   );
 
   return (

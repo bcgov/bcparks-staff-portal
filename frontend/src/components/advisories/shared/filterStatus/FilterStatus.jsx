@@ -95,7 +95,7 @@ export default function FilterStatus({
 
         {showUnpublished && (
           <FilterBadge
-            label="Show unpublished"
+            label="Include unpublished"
             onRemove={onClearShowUnpublished}
           />
         )}
