@@ -90,7 +90,7 @@ function ReviewEmptyState() {
         className="empty-state-image mb-3"
       />
 
-      <div className="h2 mb-2">You’re doing great!</div>
+      <div className="h2 mb-2 fw-normal">You’re doing great!</div>
 
       <div>
         I’m obsessed with you.
