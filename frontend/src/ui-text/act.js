@@ -3,9 +3,9 @@ export default {
   // Structure: <Feature/area> -> <Component/section>
 
   dashboard: {
-    showArchived: {
+    showUnpublished: {
       tooltip:
-        "By default, advisories and closures that have not been modified in the last 30 days are hidden. Check this box to show all older advisories and closures.",
+        "By default, unpublished advisories and closures are hidden. Check this box to show all unpublished advisories and closures.",
     },
   },
 

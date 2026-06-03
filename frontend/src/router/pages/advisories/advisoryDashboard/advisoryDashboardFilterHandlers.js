@@ -377,19 +377,22 @@ export function clearTableFilter({
 }
 
 /**
- * Clears the show archived filter.
+ * Clears the show unpublished filter.
  * @param {Object} params Configuration object
- * @param {Function} params.setShowArchived State setter for show archived toggle
+ * @param {Function} params.setShowUnpublished State setter for show unpublished toggle
  * @param {Function} params.resetToFirstPage Function to reset pagination to first page
  * @returns {void}
  */
-export function clearShowArchivedFilter({ setShowArchived, resetToFirstPage }) {
-  setShowArchived(false);
+export function clearShowUnpublishedFilter({
+  setShowUnpublished,
+  resetToFirstPage,
+}) {
+  setShowUnpublished(false);
   resetToFirstPage();
 }
 
 /**
- * Clears all filters (page, table, and archived).
+ * Clears all filters (page, table, and unpublished).
  * @param {Object} params Configuration object
  * @param {Function} params.setSelectedDistrict State setter for selected districts
  * @param {Function} params.setSelectedDistrictId State setter for selected district IDs
@@ -397,7 +400,7 @@ export function clearShowArchivedFilter({ setShowArchived, resetToFirstPage }) {
  * @param {Function} params.setSelectedRegionId State setter for selected region IDs
  * @param {Function} params.setSelectedPark State setter for selected parks
  * @param {Function} params.setSelectedParkId State setter for selected park IDs
- * @param {Function} params.setShowArchived State setter for show archived toggle
+ * @param {Function} params.setShowUnpublished State setter for show unpublished toggle
  * @param {Function} params.setTableFilterValues State setter for table filter values
  * @param {Function} params.resetToFirstPage Function to reset pagination to first page
  * @param {Function} params.setStoredFilters State setter for stored filters
@@ -411,7 +414,7 @@ export function clearAllFilters({
   setSelectedRegionId,
   setSelectedPark,
   setSelectedParkId,
-  setShowArchived,
+  setShowUnpublished,
   setTableFilterValues,
   resetToFirstPage,
   setStoredFilters,
@@ -423,7 +426,7 @@ export function clearAllFilters({
   setSelectedRegionId([]);
   setSelectedPark([]);
   setSelectedParkId([]);
-  setShowArchived(false);
+  setShowUnpublished(false);
   setTableFilterValues({});
   resetToFirstPage();
   setStoredFilters(defaultPageFilters);
