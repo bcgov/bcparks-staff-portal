@@ -1,31 +1,32 @@
 /**
  * Build the review payload
- * @param {string} reviewedStatusCode The code of the reviewed status
- * @param {string} reviewedStatusDocumentId The documentId of the reviewed status
+ * @param {Object} newAdvisoryStatus The effective advisory status after review is complete
  * @param {string} reviewedByName The current user's name (from auth.user?.profile?.name)
  * @param {boolean} isApproving True when HQR transitions to PUB or SCH, false otherwise
  * @returns {Object} Minimal payload containing only fields updated by mark reviewed
  */
 export function buildReviewPayload(
-  reviewedStatusCode,
-  reviewedStatusDocumentId,
+  newAdvisoryStatus,
   reviewedByName,
   isApproving = false,
 ) {
   const reviewedDate = new Date().toISOString();
+
+  // always update reviewedByName and reviewedDate
   const payload = {
     reviewedByName,
     reviewedDate,
   };
 
+  // special cases for transitioning from HQR to PUB or SCH
   if (isApproving) {
-    payload.advisoryStatus = reviewedStatusDocumentId;
+    payload.advisoryStatus = newAdvisoryStatus.documentId;
 
-    if (reviewedStatusCode === "PUB") {
+    if (newAdvisoryStatus.code === "PUB") {
       payload.publishedByName = reviewedByName;
       payload.publishedDate = reviewedDate;
     }
-    if (reviewedStatusCode === "SCH") {
+    if (newAdvisoryStatus.code === "SCH") {
       payload.modifiedByName = reviewedByName;
       payload.modifiedDate = reviewedDate;
     }

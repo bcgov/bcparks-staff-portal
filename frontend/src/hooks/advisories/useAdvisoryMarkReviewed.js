@@ -59,7 +59,7 @@ export default function useAdvisoryMarkReviewed({
       const reviewedStatus = resolveReviewedStatus(rowData, advisoryStatuses);
       const isApproving = rowData.advisoryStatus?.code === "HQR";
 
-      if (isApproving && !reviewedStatus?.documentId) {
+      if (!reviewedStatus) {
         openMarkReviewedError(
           "Could not resolve the new status for the reviewed advisory.",
         );
@@ -68,12 +68,7 @@ export default function useAdvisoryMarkReviewed({
 
       try {
         await cmsPut(`public-advisory-audits/${rowData.documentId}`, {
-          data: buildReviewPayload(
-            reviewedStatus?.code,
-            reviewedStatus?.documentId,
-            reviewedByName,
-            isApproving,
-          ),
+          data: buildReviewPayload(reviewedStatus, reviewedByName, isApproving),
         });
 
         openMarkReviewedSuccess(`${rowData.title} was marked as reviewed.`);
