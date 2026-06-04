@@ -144,6 +144,7 @@ export function buildFilter(
 const SORT_FIELD_MAP = {
   "urgency.urgency": "urgency.sequence",
   "advisoryStatus.advisoryStatus": "advisoryStatus.sortOrder",
+  "accessStatus.accessStatus": "accessStatus.precedence",
   associatedResources: [
     "recreationResources.resourceName",
     "protectedAreas.protectedAreaName",
