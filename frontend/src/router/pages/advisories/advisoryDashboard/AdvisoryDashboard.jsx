@@ -970,65 +970,49 @@ export default function AdvisoryDashboard({
             );
           }
 
-          // park advisories
-          const parksCount = rowData.protectedAreas.length;
-          const displayedProtectedAreas = rowData.protectedAreas.slice(
-            0,
-            displayCount,
-          );
+          // Display parks and recreation resources
+          const resources = rowData.recreationResources ?? [];
+          const parks = rowData.protectedAreas ?? [];
+          const resourcesCount = resources.length;
+          const parksCount = parks.length;
+          const displayedResources = resources.slice(0, displayCount);
+          const displayedProtectedAreas = parks.slice(0, displayCount);
 
-          if (parksCount > 0) {
+          if (resourcesCount > 0 || parksCount > 0) {
+            const resourceLabels = [
+              ...displayedResources.map((r) =>
+                r.recResourceId
+                  ? `${r.resourceName} (${r.recResourceId})`
+                  : r.resourceName,
+              ),
+              ...displayedProtectedAreas.map((p) => p.protectedAreaName),
+            ];
+
+            const remainingCount =
+              Math.max(resourcesCount - displayedResources.length, 0) +
+              Math.max(parksCount - displayedProtectedAreas.length, 0);
+
             return (
               <div>
-                {displayedProtectedAreas.map((p, i) => (
-                  <span key={i}>
-                    {p.protectedAreaName}
-                    {displayedProtectedAreas.length - 1 > i && ", "}
+                {resourceLabels.map((label, index) => (
+                  <span key={`${label}-${index}`}>
+                    {label}
+                    {resourceLabels.length - 1 > index && ", "}
                   </span>
                 ))}
-                {parksCount > displayCount && (
+                {remainingCount > 0 && (
                   <CountBadge
-                    label={`+${parksCount - displayCount}`}
+                    label={`+${remainingCount}`}
                     documentId={rowData.documentId}
                     title={rowData.title}
-                    tooltipText={formatCountBadge(
-                      parksCount - displayCount,
-                      "resource",
-                    )}
+                    tooltipText={formatCountBadge(remainingCount, "resource")}
                   />
                 )}
               </div>
             );
           }
 
-          // RST closures
-          const resourcesCount = rowData.recreationResources.length;
-          const displayedResources = rowData.recreationResources.slice(
-            0,
-            displayCount,
-          );
-
-          return (
-            <div>
-              {displayedResources.map((r, i) => (
-                <span key={i}>
-                  {r.resourceName} {`(${r.recResourceId})`}
-                  {displayedResources.length - 1 > i && ", "}
-                </span>
-              ))}
-              {resourcesCount > displayCount && (
-                <CountBadge
-                  label={`+${resourcesCount - displayCount}`}
-                  documentId={rowData.documentId}
-                  title={rowData.title}
-                  tooltipText={formatCountBadge(
-                    resourcesCount - displayCount,
-                    "resource",
-                  )}
-                />
-              )}
-            </div>
-          );
+          return null;
         },
       },
       {
