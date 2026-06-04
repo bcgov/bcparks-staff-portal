@@ -4,6 +4,7 @@ import AccessControlledRoute from "./AccessControlledRoute";
 import EditAndReview from "./pages/EditAndReview";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
+import LogoutPage from "./pages/LogoutPage";
 import MainLayout from "./layouts/MainLayout";
 import MainLayoutPublic from "./layouts/MainLayoutPublic";
 import LandingPageTabs from "./layouts/LandingPageTabs";
@@ -61,6 +62,11 @@ const RouterConfig = createBrowserRouter([
       {
         path: "error",
         element: <ErrorPage />,
+      },
+
+      {
+        path: "logout",
+        element: <LogoutPage />,
       },
 
       // Advisories and closures - All

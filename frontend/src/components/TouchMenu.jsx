@@ -1,19 +1,11 @@
 import useAccess from "@/hooks/useAccess";
 import classNames from "classnames";
 import PropTypes from "prop-types";
+import { NavLink } from "react-router-dom";
 import "./TouchMenu.scss";
 import navItems from "./shared/navItems";
 
-export default function TouchMenu({
-  show = true,
-  closeMenu,
-  logOut,
-  userName,
-}) {
-  function onLogoutClick() {
-    closeMenu();
-    logOut();
-  }
+export default function TouchMenu({ show = true, closeMenu, userName }) {
 
   const { hasAnyRole } = useAccess();
 
@@ -37,16 +29,16 @@ export default function TouchMenu({
             </li>
           ))}
         <li className="nav-item">
-          {/* Full width logout button with the user's name */}
-          <button
-            type="button"
+          {/* Full width logout link with the user's name */}
+          <NavLink
+            to="/logout"
             className="btn btn-text w-100 text-start nav-link"
-            onClick={onLogoutClick}
+            onClick={closeMenu}
           >
             <span className="text-dark">{userName}</span>
             <br />
             Logout
-          </button>
+          </NavLink>
         </li>
       </ul>
     </div>
@@ -57,6 +49,5 @@ export default function TouchMenu({
 TouchMenu.propTypes = {
   show: PropTypes.bool,
   closeMenu: PropTypes.func.isRequired,
-  logOut: PropTypes.func.isRequired,
   userName: PropTypes.string,
 };
