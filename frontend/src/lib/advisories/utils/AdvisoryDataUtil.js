@@ -3,10 +3,6 @@ import "moment-timezone";
 import { REVIEW_STATUS } from "@/constants/reviewStatus";
 
 const oneWeekDays = 7;
-const standardInactiveAdvisoryWindowDays = 30;
-const standardInactiveAdvisoryCutoffDate = moment()
-  .subtract(standardInactiveAdvisoryWindowDays, "days")
-  .format("YYYY-MM-DD");
 
 function buildAdvisoryReviewStatuses(publicAdvisory, now) {
   const reviewStatuses = [];
@@ -89,10 +85,6 @@ export function updatePublicAdvisories(publicAdvisories, managementAreas) {
       });
       publicAdvisory.regions = regionsWithParkCount;
     }
-
-    publicAdvisory.archived =
-      publicAdvisory.advisoryStatus.code === "UNP" &&
-      publicAdvisory.updatedAt < standardInactiveAdvisoryCutoffDate;
 
     return publicAdvisory;
   });

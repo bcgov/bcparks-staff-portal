@@ -63,7 +63,7 @@ import {
   clearDistrictFilter as clearDistrictFilterHandler,
   clearParkFilter as clearParkFilterHandler,
   clearRegionFilter as clearRegionFilterHandler,
-  clearShowArchivedFilter as clearShowArchivedFilterHandler,
+  clearShowUnpublishedFilter as clearShowUnpublishedFilterHandler,
   clearTableFilter as clearTableFilterHandler,
   getPageFilterValue,
   handlePageMultiSelectChange as handlePageMultiSelectChangeHandler,
@@ -293,13 +293,13 @@ export default function AdvisoryDashboard({
     });
   }, 75);
 
-  // Persist showArchived in sessionStorage
+  // Persist showUnpublished in sessionStorage
   // Use separate keys for All vs Review tabs so each maintains independent state
-  const showArchivedStorageKey = isReviewDashboard
-    ? "showArchivedReview"
-    : "showArchived";
-  const [showArchived, setShowArchived] = useSessionStorage(
-    showArchivedStorageKey,
+  const showUnpublishedStorageKey = isReviewDashboard
+    ? "showUnpublishedReview"
+    : "showUnpublished";
+  const [showUnpublished, setShowUnpublished] = useSessionStorage(
+    showUnpublishedStorageKey,
     false,
   );
 
@@ -448,9 +448,9 @@ export default function AdvisoryDashboard({
     });
   }
 
-  function clearShowArchivedFilter() {
-    clearShowArchivedFilterHandler({
-      setShowArchived,
+  function clearShowUnpublishedFilter() {
+    clearShowUnpublishedFilterHandler({
+      setShowUnpublished,
       resetToFirstPage,
     });
   }
@@ -464,7 +464,7 @@ export default function AdvisoryDashboard({
       setSelectedRegionId,
       setSelectedPark,
       setSelectedParkId,
-      setShowArchived,
+      setShowUnpublished,
       setTableFilterValues,
       resetToFirstPage,
       setStoredFilters,
@@ -601,7 +601,7 @@ export default function AdvisoryDashboard({
     setError,
   ]);
 
-  // Fetch one page of advisories whenever page, pageSize, or showArchived changes.
+  // Fetch one page of advisories whenever page, pageSize, or showUnpublished changes.
   useEffect(() => {
     let isMounted = true;
 
@@ -610,10 +610,6 @@ export default function AdvisoryDashboard({
       setPublicAdvisories([]);
 
       try {
-        const unpublishedCutoffDate = moment()
-          .subtract(30, "days")
-          .format("YYYY-MM-DD");
-
         // Build server-side filter params from column filter values and region/park dropdowns
         const userFilterClauses = buildFilter(
           debouncedTableFilterValues,
@@ -628,20 +624,9 @@ export default function AdvisoryDashboard({
         // Filters applied to server queries, regardless of user-selected filters
         const sharedBaseFilters = [{ isLatestRevision: true }];
 
-        // When not showing archived advisories, filter out unpublished advisories older than 30 days
-        if (!showArchived) {
-          sharedBaseFilters.push({
-            $or: [
-              // Always include all non-unpublished advisories
-              { advisoryStatus: { code: { $ne: "UNP" } } },
-              {
-                $and: [
-                  { advisoryStatus: { code: { $eq: "UNP" } } },
-                  { updatedAt: { $gt: unpublishedCutoffDate } },
-                ],
-              },
-            ],
-          });
+        // On the "All" tab, optionally exclude unpublished advisories
+        if (!isReviewDashboard && !showUnpublished) {
+          sharedBaseFilters.push({ advisoryStatus: { code: { $ne: "UNP" } } });
         }
 
         // Build filter sets for fetching data with and without user-selected filters
@@ -800,7 +785,7 @@ export default function AdvisoryDashboard({
     selectedRegionId,
     selectedProgramArea,
     setError,
-    showArchived,
+    showUnpublished,
     sortConfig,
     isReviewDashboard,
     debouncedTableFilterValues,
@@ -921,9 +906,7 @@ export default function AdvisoryDashboard({
           textAlign: "left",
         },
         render(rowData) {
-          const statusCode = rowData.archived
-            ? "ARCHIVED"
-            : rowData.advisoryStatus?.code;
+          const statusCode = rowData.advisoryStatus?.code;
           const hasUnpublishedStatus =
             isReviewDashboard &&
             rowData.reviewStatuses?.includes(REVIEW_STATUS.UNPUBLISHED);
@@ -1110,43 +1093,39 @@ export default function AdvisoryDashboard({
           );
         },
       },
-      ...(isReviewDashboard
-        ? [
-            {
-              field: "modifiedDate",
-              title: "Last updated",
-              render(rowData) {
-                if (rowData.modifiedDate) {
-                  const hasUpdatedStatus = rowData.reviewStatuses?.includes(
-                    REVIEW_STATUS.UPDATED,
-                  );
+      {
+        field: "modifiedDate",
+        title: "Last updated",
+        render(rowData) {
+          if (rowData.modifiedDate) {
+            const hasUpdatedStatus =
+              isReviewDashboard &&
+              rowData.reviewStatuses?.includes(REVIEW_STATUS.UPDATED);
 
-                  return (
-                    <span className="d-inline-flex align-items-center gap-1">
-                      {hasUpdatedStatus && (
-                        <ReviewIcon
-                          reviewStatus={REVIEW_STATUS.UPDATED}
-                          rowId={rowData.documentId}
-                          icon={faCircleSmall}
-                        />
-                      )}
-                      <span
-                        className={classNames({
-                          [`review-status--${REVIEW_STATUS.UPDATED.toLowerCase()}`]:
-                            hasUpdatedStatus,
-                        })}
-                      >
-                        {moment(rowData.modifiedDate).format("YYYY/MM/DD")}
-                      </span>
-                    </span>
-                  );
-                }
+            return (
+              <span className="d-inline-flex align-items-center gap-1">
+                {hasUpdatedStatus && (
+                  <ReviewIcon
+                    reviewStatus={REVIEW_STATUS.UPDATED}
+                    rowId={rowData.documentId}
+                    icon={faCircleSmall}
+                  />
+                )}
+                <span
+                  className={classNames({
+                    [`review-status--${REVIEW_STATUS.UPDATED.toLowerCase()}`]:
+                      hasUpdatedStatus,
+                  })}
+                >
+                  {moment(rowData.modifiedDate).format("YYYY/MM/DD")}
+                </span>
+              </span>
+            );
+          }
 
-                return null;
-              },
-            },
-          ]
-        : []),
+          return null;
+        },
+      },
       {
         field: "advisoryDate",
         title: "Posting date",
@@ -1305,7 +1284,13 @@ export default function AdvisoryDashboard({
   const emptyState = showNoItemsToReviewMessage ? (
     <ReviewEmptyState />
   ) : (
-    <div>No records to display.</div>
+    <div>
+      <p>No records to display.</p>
+      <p className="fs-6">
+        Try adjusting your filters or check ‘Include unpublished advisories and
+        closures’ to see more results.
+      </p>
+    </div>
   );
 
   return (
@@ -1406,21 +1391,20 @@ export default function AdvisoryDashboard({
           <div className="row">
             <div className="col-12">
               <Form.Check
-                className="advisory-archived-toggle mt-3"
+                className="advisory-unpublished-toggle mt-3"
                 type="checkbox"
-                id="show-archived"
-                checked={showArchived}
+                id="show-unpublished"
+                checked={showUnpublished}
                 onChange={(e) => {
-                  setShowArchived(e.target.checked);
+                  setShowUnpublished(e.target.checked);
                   resetToFirstPage();
                 }}
                 label={
                   <span>
-                    Show advisories and closures that have not been updated in
-                    30 days
+                    Include unpublished advisories and closures
                     <LightTooltip
                       arrow
-                      title={t("dashboard.showArchived.tooltip")}
+                      title={t("dashboard.showUnpublished.tooltip")}
                     >
                       <FontAwesomeIcon
                         icon={faCircleQuestion}
@@ -1445,14 +1429,14 @@ export default function AdvisoryDashboard({
           onClearProgramArea={clearProgramAreaFilter}
           selectedTableFilters={activeTableFilters}
           onClearTableFilter={clearTableFilter}
-          showArchived={showArchived}
-          onClearShowArchived={clearShowArchivedFilter}
+          showUnpublished={showUnpublished}
+          onClearShowUnpublished={clearShowUnpublishedFilter}
           hasAnyFilters={
             selectedDistrict.length > 0 ||
             selectedRegion.length > 0 ||
             selectedPark.length > 0 ||
             selectedProgramArea !== null ||
-            showArchived ||
+            showUnpublished ||
             activeTableFilters.length > 0
           }
           onClearAll={clearAllFilters}

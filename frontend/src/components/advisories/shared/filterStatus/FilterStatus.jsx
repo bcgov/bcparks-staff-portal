@@ -36,8 +36,8 @@ export default function FilterStatus({
   onClearProgramArea,
   selectedTableFilters,
   onClearTableFilter,
-  showArchived,
-  onClearShowArchived,
+  showUnpublished,
+  onClearShowUnpublished,
   hasAnyFilters,
   onClearAll,
 }) {
@@ -93,8 +93,11 @@ export default function FilterStatus({
           />
         ))}
 
-        {showArchived && (
-          <FilterBadge label="Show archived" onRemove={onClearShowArchived} />
+        {showUnpublished && (
+          <FilterBadge
+            label="Include unpublished"
+            onRemove={onClearShowUnpublished}
+          />
         )}
 
         {hasAnyFilters && (
@@ -157,8 +160,8 @@ FilterStatus.propTypes = {
     }),
   ),
   onClearTableFilter: PropTypes.func.isRequired,
-  showArchived: PropTypes.bool.isRequired,
-  onClearShowArchived: PropTypes.func.isRequired,
+  showUnpublished: PropTypes.bool.isRequired,
+  onClearShowUnpublished: PropTypes.func.isRequired,
   hasAnyFilters: PropTypes.bool.isRequired,
   onClearAll: PropTypes.func.isRequired,
 };
