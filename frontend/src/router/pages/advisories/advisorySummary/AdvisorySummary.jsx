@@ -317,20 +317,25 @@ export default function AdvisorySummary() {
       : baseUrl;
   }, [documentId, tabParam]);
 
+  // Helper function to build a timestamp string with an actor name
+  const buildTimestampString = useCallback((prefix, actorName, timestamp) => {
+    if (!timestamp) return "";
+    const formattedDate = format(timestamp, "EEE, MMMM dd, yyyy h:mm aaa");
+    const actorSuffix = actorName ? ` by ${actorName}` : "";
+
+    return `${prefix} ${formattedDate}${actorSuffix}`;
+  }, []);
+
   // Formatted string for "Last updated..." timestamp
   const lastUpdatedString = useMemo(() => {
     if (!advisory.modifiedDate) return null;
 
-    const modifiedDate = format(
+    return buildTimestampString(
+      "Last updated",
+      advisory.modifiedByName,
       advisory.modifiedDate,
-      "EEE, MMMM dd, yyyy h:mm aaa",
     );
-    const modifiedByName = advisory.modifiedByName
-      ? ` by ${advisory.modifiedByName}`
-      : "";
-
-    return `Last updated ${modifiedDate}${modifiedByName}`;
-  }, [advisory.modifiedDate, advisory.modifiedByName]);
+  }, [advisory.modifiedDate, advisory.modifiedByName, buildTimestampString]);
 
   // Formatted string for "Posted..." timestamp, if any
   const postingDateString = useMemo(() => {
@@ -339,10 +344,27 @@ export default function AdvisorySummary() {
     // Only display for published or scheduled advisories
     if (advisoryStatusCode !== "SCH" && advisoryStatusCode !== "PUB") return "";
 
-    const prefix = advisoryStatusCode === "PUB" ? "Posted" : "Posting";
+    const prefix =
+      advisoryStatusCode === "PUB" ? "Posted" : "Scheduled posting";
 
-    return `${prefix} ${format(advisory.advisoryDate, "EEE, MMMM dd, yyyy h:mm aaa")}`;
-  }, [advisory.advisoryDate, advisoryStatusCode]);
+    return buildTimestampString(prefix, null, advisory.advisoryDate);
+  }, [advisory.advisoryDate, advisoryStatusCode, buildTimestampString]);
+
+  // Formatted string for "Reviewed..." timestamp, if any
+  const reviewedDateString = useMemo(() => {
+    if (!advisory.reviewedDate) return null;
+
+    // don't show reviewed info if it's the same as the modified info
+    if (advisory.reviewedByName === advisory.modifiedByName) {
+      return null;
+    }
+
+    return buildTimestampString(
+      "Reviewed",
+      advisory.reviewedByName,
+      advisory.reviewedDate,
+    );
+  }, [advisory.reviewedDate, advisory.reviewedByName, advisory.modifiedByName, buildTimestampString]);
 
   // Determine if the advisory can be unpublished
   const canUnpublish = useMemo(() => {
@@ -483,7 +505,11 @@ export default function AdvisorySummary() {
                             <p className="mb-2">{postingDateString}</p>
                           )}
 
-                          {lastUpdatedString && <p>{lastUpdatedString}</p>}
+                          {lastUpdatedString && (
+                            <p className="mb-2">{lastUpdatedString}</p>
+                          )}
+
+                          {reviewedDateString && <p>{reviewedDateString}</p>}
                         </div>
                       </div>
 
