@@ -1082,7 +1082,11 @@ export default function AdvisoryDashboard({
                 }
               >
                 <Link
-                  to={`/advisory-summary/${rowData.documentId}`}
+                  to={
+                    isReviewDashboard
+                      ? `/advisory-summary/${rowData.documentId}?tab=review`
+                      : `/advisory-summary/${rowData.documentId}`
+                  }
                   className="advisory-headline-link"
                   aria-label={rowData.title}
                 >
