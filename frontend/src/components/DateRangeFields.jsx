@@ -133,6 +133,7 @@ export default function DateRangeFields({
   dateRangeAnnuals,
   updateDateRangeAnnual,
   optional = false,
+  canSpan2Years = false,
 }) {
   const { elements } = useValidationContext();
   // Constants
@@ -197,7 +198,13 @@ export default function DateRangeFields({
   } else {
     // Regular seasons
     minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
-    maxDate = new Date(operatingYear, 11, 31); // Dec 31 of the season's operating year
+
+    // Some features can have dates that span 2 years, so adjust the max allowed date
+    if (canSpan2Years) {
+      maxDate = new Date(operatingYear + 1, 11, 31); // Dec 31 of the year after the operating year
+    } else {
+      maxDate = new Date(operatingYear, 11, 31); // Dec 31 of the season's operating year
+    }
   }
 
   return (
@@ -277,4 +284,5 @@ DateRangeFields.propTypes = {
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
   optional: PropTypes.bool,
+  canSpan2Years: PropTypes.bool,
 };

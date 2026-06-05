@@ -1,4 +1,4 @@
-import { getYear } from "date-fns";
+import { isWithinInterval } from "date-fns";
 
 /**
  * Validates that the date ranges are within the operating year.
@@ -16,19 +16,41 @@ export default function dateInOperatingYear(seasonData, context) {
     // Skip winter dates, since they all break this rule
     if (dateRange.dateType.name === "Winter fee") return;
 
-    if (dateRange.startDate && getYear(dateRange.startDate) !== operatingYear) {
+    // Create a date interval to check against the dates
+    const minAllowedDate = new Date(operatingYear, 0, 1);
+    let maxAllowedDate = new Date(operatingYear, 11, 31);
+    let yearErrorMessage = `Enter dates for ${operatingYear} only`;
+
+    // Some features can have dates that span 2 years, so adjust the max allowed date
+    if (dateRange.datesCanSpan2Years) {
+      maxAllowedDate = new Date(operatingYear + 1, 11, 31);
+      yearErrorMessage = `Enter dates for ${operatingYear}–${operatingYear + 1} only`;
+    }
+
+    const allowedDateInterval = {
+      start: minAllowedDate,
+      end: maxAllowedDate,
+    };
+
+    if (
+      dateRange.startDate &&
+      !isWithinInterval(dateRange.startDate, allowedDateInterval)
+    ) {
       context.addError(
-        // Show the error below the end date field
+        // Show the error below the start date field
         elements.dateField(dateRange.id || dateRange.tempId, "startDate"),
-        `Enter dates for ${operatingYear} only`,
+        yearErrorMessage,
       );
     }
 
-    if (dateRange.endDate && getYear(dateRange.endDate) !== operatingYear) {
+    if (
+      dateRange.endDate &&
+      !isWithinInterval(dateRange.endDate, allowedDateInterval)
+    ) {
       context.addError(
         // Show the error below the end date field
         elements.dateField(dateRange.id || dateRange.tempId, "endDate"),
-        `Enter dates for ${operatingYear} only`,
+        yearErrorMessage,
       );
     }
   });
