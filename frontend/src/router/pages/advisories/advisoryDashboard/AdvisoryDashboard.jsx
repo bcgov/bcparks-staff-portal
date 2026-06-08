@@ -970,17 +970,17 @@ export default function AdvisoryDashboard({
             );
           }
 
-          // Display parks and recreation resources
-          const resources = rowData.recreationResources ?? [];
+          // Display parks and rec resources
+          const recResources = rowData.recreationResources ?? [];
           const parks = rowData.protectedAreas ?? [];
-          const resourcesCount = resources.length;
+          const recResourcesCount = recResources.length;
           const parksCount = parks.length;
-          const displayedResources = resources.slice(0, displayCount);
+          const displayedRecResources = recResources.slice(0, displayCount);
           const displayedProtectedAreas = parks.slice(0, displayCount);
 
-          if (resourcesCount > 0 || parksCount > 0) {
+          if (recResourcesCount > 0 || parksCount > 0) {
             const resourceLabels = [
-              ...displayedResources.map((r) =>
+              ...displayedRecResources.map((r) =>
                 r.recResourceId
                   ? `${r.resourceName} (${r.recResourceId})`
                   : r.resourceName,
@@ -989,7 +989,7 @@ export default function AdvisoryDashboard({
             ];
 
             const remainingCount =
-              Math.max(resourcesCount - displayedResources.length, 0) +
+              Math.max(recResourcesCount - displayedRecResources.length, 0) +
               Math.max(parksCount - displayedProtectedAreas.length, 0);
 
             return (
