@@ -71,7 +71,6 @@ import {
   updateRegionAndParkFilters as updateRegionAndParkFiltersHandler,
 } from "./advisoryDashboardFilterHandlers";
 
-const ALL_PAGE_SIZE = -1;
 const DEFAULT_PAGE_SIZE = 50;
 const PROGRAM_AREA_OPTIONS = [
   { label: "BC Parks", value: "BCP" },
@@ -1452,7 +1451,7 @@ export default function AdvisoryDashboard({
               filtering
               search={false}
               pageSize={pageSize}
-              pageSizeOptions={[25, 50, ALL_PAGE_SIZE]}
+              pageSizeOptions={[25, 50, 1000]}
               serverSide
               totalItems={totalPublicAdvisories}
               currentPage={currentPage}
