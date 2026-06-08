@@ -6,16 +6,19 @@ const oneWeekDays = 7;
 
 function buildAdvisoryReviewStatuses(publicAdvisory, now) {
   const reviewStatuses = [];
-  const reviewedByName = publicAdvisory.reviewedByName;
-  const unpublishedByName = publicAdvisory.unpublishedByName;
-  const statusCode = publicAdvisory.advisoryStatus?.code;
-  const createdAt = moment(publicAdvisory.createdAt);
-  const reviewedDate = moment(publicAdvisory.reviewedDate);
-  const unpublishedDate = moment(publicAdvisory.unpublishedDate);
-  const modifiedDate = moment(publicAdvisory.modifiedDate);
-  const expiryDate = moment(publicAdvisory.expiryDate);
-  const endDate = moment(publicAdvisory.endDate);
   const oneWeekFromNow = now.clone().add(oneWeekDays, "days");
+
+  const createdAt = moment(publicAdvisory.createdAt);
+  const endDate = moment(publicAdvisory.endDate);
+  const expiryDate = moment(publicAdvisory.expiryDate);
+  const modifiedByName = publicAdvisory.modifiedByName;
+  const modifiedDate = moment(publicAdvisory.modifiedDate);
+  const reviewedByName = publicAdvisory.reviewedByName;
+  const reviewedDate = moment(publicAdvisory.reviewedDate);
+  const statusCode = publicAdvisory.advisoryStatus?.code;
+  const unpublishedByName = publicAdvisory.unpublishedByName;
+  const unpublishedDate = moment(publicAdvisory.unpublishedDate);
+  const wasModifiedBySystem = modifiedByName === "system";
 
   // New advisory, posted and not posted, and not yet reviewed
   const isNew =
@@ -34,14 +37,20 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
     expiryDate.isBetween(now, oneWeekFromNow, null, "[]");
 
   // Expired date reached
-  const isExpired = expiryDate.isValid() && expiryDate.isSameOrBefore(now);
+  const isExpired =
+    wasModifiedBySystem &&
+    expiryDate.isValid() &&
+    expiryDate.isSameOrBefore(now);
 
   // End date reached
   const isEnded = endDate.isValid() && endDate.isSameOrBefore(now);
 
-  // Unpublished advisory (manually)
+  // Unpublished advisory (manually by a user, not by system expiry process)
   const isUnpublished =
-    statusCode === "UNP" && unpublishedDate.isValid() && unpublishedByName;
+    !isExpired &&
+    statusCode === "UNP" &&
+    unpublishedDate.isValid() &&
+    unpublishedByName;
 
   if (isNew) reviewStatuses.push(REVIEW_STATUS.NEW);
   if (isUpdated) reviewStatuses.push(REVIEW_STATUS.UPDATED);
