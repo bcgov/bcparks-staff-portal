@@ -688,7 +688,6 @@ export default function AdvisoryDashboard({
               "reviewedByName",
               "unpublishedDate",
               "unpublishedByName",
-              "modifiedByName",
             ],
             populate: {
               protectedAreas: { fields: ["orcs", "protectedAreaName"] },

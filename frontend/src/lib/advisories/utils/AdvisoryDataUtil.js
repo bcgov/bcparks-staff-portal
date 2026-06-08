@@ -11,14 +11,12 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
   const createdAt = moment(publicAdvisory.createdAt);
   const endDate = moment(publicAdvisory.endDate);
   const expiryDate = moment(publicAdvisory.expiryDate);
-  const modifiedByName = publicAdvisory.modifiedByName;
   const modifiedDate = moment(publicAdvisory.modifiedDate);
   const reviewedByName = publicAdvisory.reviewedByName;
   const reviewedDate = moment(publicAdvisory.reviewedDate);
   const statusCode = publicAdvisory.advisoryStatus?.code;
   const unpublishedByName = publicAdvisory.unpublishedByName;
   const unpublishedDate = moment(publicAdvisory.unpublishedDate);
-  const wasModifiedBySystem = modifiedByName === "system";
 
   // New advisory, posted and not posted, and not yet reviewed
   const isNew =
@@ -38,7 +36,6 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
 
   // Expired date reached
   const isExpired =
-    wasModifiedBySystem &&
     expiryDate.isValid() &&
     expiryDate.isSameOrBefore(now);
 
