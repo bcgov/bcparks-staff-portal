@@ -16,6 +16,44 @@ const ACTION_MENU_POPPER_CONFIG = {
   strategy: "fixed",
   modifiers: [
     {
+      // Match the menu's width to the container width on smaller screens
+      name: "minWidthMatchReference",
+      enabled: true,
+      phase: "beforeWrite",
+      requires: ["computeStyles"],
+      // Sets the min-width of the menu to match the form's width
+      fn({ state }) {
+        if (window.innerWidth < 1200) {
+          // Get width of the .act-form container
+          const formContainer = document.querySelector(".act-form");
+
+          if (formContainer) {
+            state.styles.popper.minWidth = `${formContainer.offsetWidth}px`;
+          }
+        } else {
+          state.styles.popper.minWidth = "";
+        }
+      },
+      // Calculates the min-width for the menu before the first Popper update, and on resize
+      effect({ state }) {
+        if (window.innerWidth < 1200) {
+          const formContainer = document.querySelector(".act-form");
+
+          if (formContainer) {
+            state.elements.popper.style.minWidth = `${formContainer.offsetWidth}px`;
+          }
+        } else {
+          state.elements.popper.style.minWidth = "";
+        }
+
+        return () => {
+          state.elements.popper.style.minWidth = "";
+        };
+      },
+    },
+
+    {
+      // Keep the menu inside the viewport as it scrolls
       name: "preventOverflow",
       options: {
         altAxis: true,
