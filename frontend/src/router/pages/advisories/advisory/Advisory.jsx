@@ -667,7 +667,7 @@ export default function Advisory({ mode }) {
             scope: a.scope,
           }));
 
-          // Select "Open" access status as the default
+          // Default to "Open" access status for non-RST users
           setAccessStatuses([...newAccessStatuses]);
           const openAccessStatus = newAccessStatuses.find(
             (a) => a.label === "Open",

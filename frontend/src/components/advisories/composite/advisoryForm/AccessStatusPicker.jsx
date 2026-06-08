@@ -2,19 +2,22 @@ import { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import CategorySelect from "@/components/advisories/shared/categorySelect/CategorySelect";
 
+// Check if there are selected items in the array
 function hasSelectedItems(items) {
   return Array.isArray(items) && items.length > 0;
 }
 
 // Display category and label if they are different, otherwise just display the label
 function formatAccessStatusLabel(option) {
-  const isCategoryUnique = option.category === option.label;
+  const label = option?.label || "";
+  const category = option?.category || "";
+  const isCategoryUnique = category === label;
 
   if (isCategoryUnique) {
-    return option.label;
+    return label;
   }
 
-  return `${option.category} - ${option.label}`;
+  return `${category} - ${label}`;
 }
 
 export default function AccessStatusPicker({
@@ -56,6 +59,7 @@ export default function AccessStatusPicker({
     return accessStatuses;
   }, [accessStatuses, hasBcpResourcesSelected, hasRstResourcesSelected]);
 
+  // If the currently selected access status is not in the filtered list, select the first option by default (if available)
   const selectedAccessStatusOption = useMemo(
     () =>
       filteredAccessStatuses.find((option) => option.value === accessStatus) ||
@@ -73,10 +77,12 @@ export default function AccessStatusPicker({
       return;
     }
 
+    // If the selected access status is not in the filtered options, select the first option by default
     const hasSelectedAccessStatus = filteredAccessStatuses.some(
       (option) => option.value === accessStatus,
     );
 
+    // Only update access status if the current selected access status is not in the filtered list, to avoid unnecessary updates
     if (!hasSelectedAccessStatus) {
       setAccessStatus(filteredAccessStatuses[0].value);
     }
@@ -91,17 +97,12 @@ export default function AccessStatusPicker({
       placeholder="Search or select public access status"
       formatValueLabel={formatAccessStatusLabel}
       formatMenuLabel={(option) => option.label}
-      getSearchText={(option) => [
-        option.label,
-        option.category,
-        formatAccessStatusLabel(option),
-      ]}
     />
   );
 }
 
 AccessStatusPicker.propTypes = {
-  accessStatus: PropTypes.string,
+  accessStatus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   accessStatuses: PropTypes.arrayOf(PropTypes.object).isRequired,
   setAccessStatus: PropTypes.func.isRequired,
   selectedProtectedAreas: PropTypes.array,

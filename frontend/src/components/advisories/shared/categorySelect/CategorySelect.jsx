@@ -1,4 +1,4 @@
-import { useId, useMemo } from "react";
+import { useMemo } from "react";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import Select from "react-select";
@@ -21,12 +21,10 @@ export default function CategorySelect({
   categoryKey = "category",
   formatValueLabel = defaultFormatLabel,
   formatMenuLabel = defaultFormatLabel,
-  getSearchText,
 }) {
-  const generatedId = useId();
-  const selectId = id || generatedId;
   const hasSelection = Boolean(value);
 
+  // Group options by category if categoryKey is provided and options have the categoryKey
   const groupedOptions = useMemo(() => {
     const categorizedOptions = options.filter(
       (option) => option?.[categoryKey],
@@ -40,6 +38,7 @@ export default function CategorySelect({
       );
     }
 
+    // Group options by category
     const groups = options.reduce((accumulator, option) => {
       const category = option[categoryKey];
 
@@ -49,7 +48,7 @@ export default function CategorySelect({
 
       accumulator[category].push(option);
       return accumulator;
-    }, {});
+    }, Object.create(null));
 
     return Object.entries(groups).map(([label, categoryOptions]) => ({
       label,
@@ -63,8 +62,8 @@ export default function CategorySelect({
 
   return (
     <Select
-      inputId={selectId}
-      instanceId={selectId}
+      inputId={id}
+      instanceId={id}
       value={value}
       options={groupedOptions}
       onChange={onChange}
@@ -86,11 +85,7 @@ export default function CategorySelect({
           return true;
         }
 
-        const searchText = (
-          getSearchText
-            ? getSearchText(data)
-            : defaultGetSearchText(data, categoryKey)
-        )
+        const searchText = defaultGetSearchText(data, categoryKey)
           .filter(Boolean)
           .join(" ")
           .toLowerCase();
@@ -113,5 +108,4 @@ CategorySelect.propTypes = {
   categoryKey: PropTypes.string,
   formatValueLabel: PropTypes.func,
   formatMenuLabel: PropTypes.func,
-  getSearchText: PropTypes.func,
 };
