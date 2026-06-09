@@ -6,26 +6,27 @@ Imports and updates `Feature` records from Strapi's `park-feature` collection by
 
 - Fetches park feature data from Strapi using sync utilities
 - Matches existing DOOT features by comparing Strapi `orcsFeatureNumber` with DOOT `orcsFeatureNumber`
-- Sets the `parkId` field in DOOT Feature by matching Strapi `protectedArea.orcs` to DOOT `park.orcs`
-- Sets the `featureTypeId` relation by matching Strapi `parkFeature.featureTypeId` to DOOT `featureType.strapiId`.
+- Sets the `parkId` field in DOOT Feature by matching Strapi `protectedArea.orcs` to DOOT `Park.orcs`
+- Sets the `featureTypeId` relation by matching Strapi `parkFeatureType.featureTypeId` to DOOT `FeatureType.featureTypeNumber`.
 - Sets the `parkAreaId` relation by matching Strapi `parkArea.orcsAreaNumber` to DOOT `parkArea.orcsAreaNumber`.
 - Creates or updates feature records with name, active status, reservation system flags, and park relation
 - Uses efficient Map-based lookup for fast matching between systems
 
 **Data mapping:**
 
-| Strapi Field                    | DOOT Field              | Notes                                        |
-| ------------------------------- | ----------------------- | -------------------------------------------- |
-| `parkFeatureName`               | `name`                  | Feature name                                 |
-| `orcsFeatureNumber`             | `orcsFeatureNumber`     | Used for matching existing records           |
-| `isActive`                      | `active`                | Defaults to `true` if not provided           |
-| `inReservationSystem`           | `inReservationSystem`   | Defaults to `false` if not provided          |
-| `hasReservations`               | `hasReservations`       | Defaults to `false` if not provided          |
-| `hasBackcountryPermits`         | `hasBackcountryPermits` | Defaults to `false` if not provided          |
-| `hasDates`                      | `hasDates`              | Defaults to `false` if not provided          |
-| `parkFeatureType.featureTypeId` | `featureTypeId`         | DOOT Feature Type, matched by well-known key |
-| `protectedArea.orcs`            | `parkId`                | DOOT Park, matched by well-known key         |
-| `parkArea.orcsAreaNumber`       | `parkAreaId`            | DOOT Park Area, matched by well-known key    |
+| Strapi Field                    | DOOT Field              | Notes                                         |
+| ------------------------------- | ----------------------- | --------------------------------------------- |
+| `parkFeatureName`               | `name`                  | Feature name                                  |
+| `orcsFeatureNumber`             | `orcsFeatureNumber`     | Used for matching existing records            |
+| `isActive`                      | `active`                | Defaults to `false` if not provided           |
+| `inReservationSystem`           | `inReservationSystem`   | Defaults to `false` if not provided           |
+| `hasReservations`               | `hasReservations`       | Defaults to `false` if not provided           |
+| `hasBackcountryPermits`         | `hasBackcountryPermits` | Defaults to `false` if not provided           |
+| `hasDates`                      | `hasDates`              | Defaults to `false` if not provided           |
+| `datesCanSpan2Years`            | `datesCanSpan2Years`    | Required boolean from Strapi (`true`/`false`) |
+| `parkFeatureType.featureTypeId` | `featureTypeId`         | DOOT Feature Type, matched by well-known key  |
+| `protectedArea.orcs`            | `parkId`                | DOOT Park, matched by well-known key          |
+| `parkArea.orcsAreaNumber`       | `parkAreaId`            | DOOT Park Area, matched by well-known key     |
 
 ## Transaction Safety
 

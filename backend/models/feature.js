@@ -77,6 +77,12 @@ export default (sequelize) => {
         defaultValue: false,
       },
 
+      datesCanSpan2Years: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+
       orcsFeatureNumber: {
         type: DataTypes.STRING,
         allowNull: true,
