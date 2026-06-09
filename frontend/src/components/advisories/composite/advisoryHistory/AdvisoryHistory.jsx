@@ -7,7 +7,7 @@ import useCms from "@/hooks/useCms";
 import { dateCompare } from "@/lib/advisories/utils/AppUtil";
 
 function formatTimestamp(date) {
-  const datePart = format(date, "MMMM dd, yyyy");
+  const datePart = format(date, "MMM d, yyyy");
   const timePart = format(date, "h:mm aaa");
 
   return `${datePart} at ${timePart}`;
@@ -177,9 +177,8 @@ export default function AdvisoryHistory({
             key={`revision-${ah.revisionNumber}-idx-${index}`}
             className="mb-2"
           >
-            Revision number {ah.revisionNumber} {ah.displayText}{" "}
-            {ah.actorName ? <> by {ah.actorName} on </> : null}{" "}
-            <span className="text-nowrap">{ah.displayDate}</span>
+            {ah.displayDate} {"\u2013"} Revision {ah.revisionNumber}{" "}
+            {ah.displayText} {ah.actorName ? <> by {ah.actorName}</> : null}
           </div>
         ))}
     </div>
