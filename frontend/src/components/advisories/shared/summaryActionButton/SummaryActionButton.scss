@@ -1,6 +1,13 @@
 .summary-action-button {
+  // Override Bootstrap's default spacing and border colors
+  .dropdown-menu {
+    margin-top: 0.25rem;
+    border-color: var(--surface-color-border-medium);
+  }
+
   // Increase vertical padding to provide > ~44px tappable area
   .dropdown-item {
     padding-block: 0.75rem;
+    white-space: normal;
   }
 }
