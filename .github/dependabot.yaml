@@ -1,0 +1,50 @@
+# Dependabot configuration for npm dependencies.
+# Regular dependency version updates are opened against the `alpha` branch,
+# which is the active development branch and typically ahead of `main`.
+# Security-related updates (triggered by CVEs/GitHub advisories) will always
+# target the default branch (`main`), as this behavior cannot be overridden.
+#
+# Only the primary npm projects /frontend and /backend managed here; other
+# package.json files are intentionally excluded. Semver-major updates are
+# disabled to avoidbreaking changes and are handled manually.
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/frontend"
+      - "/backend"
+    target-branch: "alpha"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 1
+    commit-message:
+      prefix: "NOBUG"
+    allow:
+      - dependency-type: "direct"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      bcparks-minor-patch:
+        applies-to: version-updates
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+
+  - package-ecosystem: "npm"
+    directory: "/tools/imagetag-prune"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
+    ignore:
+      - dependency-name: "*"
+
+  # Explicitly cover root-level npm to prevent fallback PRs to main.
+  # Version updates are intentionally disabled; all active Dependabot
+  # usage happens on the alpha branch.
+  - package-ecosystem: "npm"
+    directory: "/"
+    target-branch: "main"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 0
