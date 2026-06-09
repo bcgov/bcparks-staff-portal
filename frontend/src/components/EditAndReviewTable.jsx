@@ -6,7 +6,7 @@ import { faPen } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
-import InternalNoteRow from "@/components/InternalNoteRow";
+import InternalNotesRow from "@/components/InternalNotesRow";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
@@ -23,8 +23,8 @@ function getInternalNotes(season) {
     .filter((log) => typeof log?.notes === "string" && log.notes.trim())
     .sort(
       (left, right) =>
-        new Date(right.createdAt).valueOf() -
-        new Date(left.createdAt).valueOf(),
+        new Date(left.createdAt).valueOf() -
+        new Date(right.createdAt).valueOf(),
     )
     .map((log) => ({
       id: log.id,
@@ -315,7 +315,12 @@ StatusTableRow.propTypes = {
   color: PropTypes.string,
 };
 
-function FeaturesByFeatureTypeWithAreas({ park, parkAreas, formPanelHandler }) {
+function FeaturesByFeatureTypeWithAreas({
+  park,
+  parkAreas,
+  formPanelHandler,
+  isApprover,
+}) {
   return (
     <>
       {/* 2 - park area level */}
@@ -357,7 +362,9 @@ function FeaturesByFeatureTypeWithAreas({ park, parkAreas, formPanelHandler }) {
                   />
                 </React.Fragment>
               ))}
-              <InternalNoteRow notes={regularSeasonInternalNotes} />
+              {isApprover && (
+                <InternalNotesRow notes={regularSeasonInternalNotes} />
+              )}
             </React.Fragment>
           )
         );
@@ -370,9 +377,15 @@ FeaturesByFeatureTypeWithAreas.propTypes = {
   park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
+  isApprover: PropTypes.bool.isRequired,
 };
 
-function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
+function FeaturesByFeatureTypeNoAreas({
+  park,
+  features,
+  formPanelHandler,
+  isApprover,
+}) {
   return (
     <>
       {/* features that don't belong to park area  */}
@@ -400,7 +413,9 @@ function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
               groupedDateRanges={feature.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
             />
-            <InternalNoteRow notes={regularSeasonInternalNotes} />
+            {isApprover && (
+              <InternalNotesRow notes={regularSeasonInternalNotes} />
+            )}
           </React.Fragment>
         );
       })}
@@ -412,9 +427,13 @@ FeaturesByFeatureTypeNoAreas.propTypes = {
   park: PropTypes.object.isRequired,
   features: PropTypes.array.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
+  isApprover: PropTypes.bool.isRequired,
 };
 
 function Table({ park, formPanelHandler, sortOrder }) {
+  const { hasAnyRole, ROLES } = useAccess();
+  const isApprover = hasAnyRole([ROLES.DOOT_APPROVER, ROLES.SUPER_ADMIN]);
+
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
@@ -469,7 +488,9 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.groupedDateRanges}
                   currentYear={regularSeason.operatingYear}
                 />
-                <InternalNoteRow notes={regularSeasonInternalNotes} />
+                {isApprover && (
+                  <InternalNotesRow notes={regularSeasonInternalNotes} />
+                )}
               </>
             )}
 
@@ -497,7 +518,9 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.winterGroupedDateRanges}
                   currentYear={winterSeason.operatingYear}
                 />
-                <InternalNoteRow notes={winterSeasonInternalNotes} />
+                {isApprover && (
+                  <InternalNotesRow notes={winterSeasonInternalNotes} />
+                )}
               </>
             )}
           </>
@@ -516,6 +539,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                     groupingType.parkAreaTypeNumber,
                 )}
                 formPanelHandler={formPanelHandler}
+                isApprover={isApprover}
               />
             )}
             {groupingType.type === "FeatureType" && (
@@ -527,6 +551,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                     groupingType.featureTypeNumber,
                 )}
                 formPanelHandler={formPanelHandler}
+                isApprover={isApprover}
               />
             )}
           </React.Fragment>
