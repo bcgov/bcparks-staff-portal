@@ -10,6 +10,7 @@ import {
   DateType,
   Feature,
   ParkArea,
+  SeasonChangeLog,
   AccessGroup,
   GateDetail,
   User,
@@ -56,6 +57,18 @@ function seasonModel(minYear, required = true) {
             model: DateType,
             as: "dateType",
             attributes: ["id", "dateTypeNumber", "name"],
+          },
+        ],
+      },
+      {
+        model: SeasonChangeLog,
+        as: "changeLogs",
+        attributes: ["id", "notes", "createdAt"],
+        include: [
+          {
+            model: User,
+            as: "user",
+            attributes: ["id", "name"],
           },
         ],
       },
