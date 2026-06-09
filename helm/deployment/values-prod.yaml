@@ -19,5 +19,4 @@ backend:
   postgresSecret: crunchy-postgres-pguser-postgres
 
 cron:
-  # this will be enabled in prod later once we have verified it works in other environments
-  enabled: false
+  enabled: true
