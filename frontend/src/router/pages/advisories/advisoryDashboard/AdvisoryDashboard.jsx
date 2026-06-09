@@ -975,29 +975,27 @@ export default function AdvisoryDashboard({
           const parks = rowData.protectedAreas ?? [];
           const recResourcesCount = recResources.length;
           const parksCount = parks.length;
-          const displayedRecResources = recResources.slice(0, displayCount);
-          const displayedProtectedAreas = parks.slice(0, displayCount);
+          const associatedResources = [
+            ...recResources.map((recResource) =>
+              recResource.recResourceId
+                ? `${recResource.resourceName} (${recResource.recResourceId})`
+                : recResource.resourceName,
+            ),
+            ...parks.map((park) => park.protectedAreaName),
+          ];
+          const displayedResources = associatedResources.slice(0, displayCount);
+          const remainingCount = Math.max(
+            associatedResources.length - displayCount,
+            0,
+          );
 
           if (recResourcesCount > 0 || parksCount > 0) {
-            const resourceLabels = [
-              ...displayedRecResources.map((r) =>
-                r.recResourceId
-                  ? `${r.resourceName} (${r.recResourceId})`
-                  : r.resourceName,
-              ),
-              ...displayedProtectedAreas.map((p) => p.protectedAreaName),
-            ];
-
-            const remainingCount =
-              Math.max(recResourcesCount - displayedRecResources.length, 0) +
-              Math.max(parksCount - displayedProtectedAreas.length, 0);
-
             return (
               <div>
-                {resourceLabels.map((label, index) => (
-                  <span key={`${label}-${index}`}>
-                    {label}
-                    {resourceLabels.length - 1 > index && ", "}
+                {displayedResources.map((resource, index) => (
+                  <span key={`${resource}-${index}`}>
+                    {resource}
+                    {displayedResources.length - 1 > index && ", "}
                   </span>
                 ))}
                 {remainingCount > 0 && (
