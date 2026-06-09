@@ -106,6 +106,7 @@ export default async function importStrapiFeatures(transaction = null) {
         hasReservations,
         hasBackcountryPermits,
         hasDates,
+        datesCanSpan2Years,
         protectedArea,
         parkArea,
         parkFeatureType,
@@ -164,12 +165,13 @@ export default async function importStrapiFeatures(transaction = null) {
 
       const dootFeatureToSave = {
         name: parkFeatureName,
-        orcsFeatureNumber: orcsFeatureNumber,
+        orcsFeatureNumber,
         active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
         hasReservations: hasReservations ?? false,
         hasBackcountryPermits: hasBackcountryPermits ?? false,
         hasDates: hasDates ?? false,
+        datesCanSpan2Years,
         parkId,
         parkAreaId,
         featureTypeId,
