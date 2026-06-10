@@ -67,6 +67,7 @@ export default function SummaryActionButton({
   canUnpublish = false,
   onUnpublish,
   canMarkReviewed = false,
+  disableMarkReviewed = false,
   onMarkReviewed,
   className = "",
   isRequestingCms = false,
@@ -128,7 +129,9 @@ export default function SummaryActionButton({
           </Dropdown.Item>
 
           <Dropdown.Item
-            disabled={!canMarkReviewed || isRequestingCms}
+            disabled={
+              !canMarkReviewed || disableMarkReviewed || isRequestingCms
+            }
             onClick={() => action(onMarkReviewed)}
           >
             <FontAwesomeIcon icon={faCircleCheck} />
@@ -143,6 +146,7 @@ export default function SummaryActionButton({
 SummaryActionButton.propTypes = {
   canUnpublish: PropTypes.bool,
   canMarkReviewed: PropTypes.bool,
+  disableMarkReviewed: PropTypes.bool,
   onMarkReviewed: PropTypes.func.isRequired,
   onUnpublish: PropTypes.func.isRequired,
   className: PropTypes.string,

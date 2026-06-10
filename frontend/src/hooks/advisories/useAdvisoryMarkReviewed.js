@@ -68,7 +68,13 @@ export default function useAdvisoryMarkReviewed({
 
       try {
         await cmsPut(`public-advisory-audits/${rowData.documentId}`, {
-          data: buildReviewPayload(reviewedStatus, reviewedByName, isApproving),
+          data: buildReviewPayload(
+            reviewedStatus,
+            reviewedByName,
+            rowData.advisoryNumber,
+            rowData.revisionNumber,
+            isApproving,
+          ),
         });
 
         openMarkReviewedSuccess(`${rowData.title} was marked as reviewed.`);

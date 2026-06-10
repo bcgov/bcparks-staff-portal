@@ -364,7 +364,12 @@ export default function AdvisorySummary() {
       advisory.reviewedByName,
       advisory.reviewedDate,
     );
-  }, [advisory.reviewedDate, advisory.reviewedByName, advisory.modifiedByName, buildTimestampString]);
+  }, [
+    advisory.reviewedDate,
+    advisory.reviewedByName,
+    advisory.modifiedByName,
+    buildTimestampString,
+  ]);
 
   // Determine if the advisory can be unpublished
   const canUnpublish = useMemo(() => {
@@ -522,6 +527,7 @@ export default function AdvisorySummary() {
                               canUnpublish={canUnpublish}
                               onUnpublish={handleUnpublish}
                               canMarkReviewed={isApprover}
+                              disableMarkReviewed={!!advisory.reviewedByName}
                               onMarkReviewed={handleMarkReviewed}
                               isRequestingCms={isRequestingCms}
                             />
@@ -530,7 +536,9 @@ export default function AdvisorySummary() {
                             <Button
                               label="Mark reviewed"
                               styling="btn-outline-primary btn flex-grow-1 flex-xl-shrink-0 d-none d-xl-block"
-                              disabled={isRequestingCms}
+                              disabled={
+                                isRequestingCms || !!advisory.reviewedByName
+                              }
                               onClick={handleMarkReviewed}
                               hasLoader={isMarkingReviewed}
                               leftIcon={

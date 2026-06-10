@@ -443,11 +443,12 @@ export default function AdvisorySummaryView({
         )}
       </section>
 
-      <section>
+      <section style={{ maxWidth: "inherit" }}>
         <h3>History</h3>
         <AdvisoryHistory
-          revisionNumber={advisory.revisionNumber}
+          latestRevisionNumber={advisory.revisionNumber}
           advisoryNumber={advisory.advisoryNumber}
+          reviewedDate={advisory.reviewedDate}
         />
       </section>
     </>
