@@ -508,6 +508,7 @@ export default function AdvisoryForm({
         <h3>Affected resource(s)</h3>
         <AdvisoryAreaPicker
           mode={mode}
+          markChanged={markChanged}
           data={{
             recreationResources,
             selectedRecreationResources,

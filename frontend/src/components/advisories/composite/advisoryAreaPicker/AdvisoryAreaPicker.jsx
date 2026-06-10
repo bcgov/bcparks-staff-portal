@@ -19,6 +19,7 @@ import { getParkRelations } from "@/lib/advisories/utils/CmsDataUtil";
 
 export default function AdvisoryAreaPicker({
   mode,
+  markChanged,
   data: {
     recreationResources,
     selectedRecreationResources,
@@ -219,6 +220,9 @@ export default function AdvisoryAreaPicker({
     const parks = protectedAreas.filter((p) => newList.has(p.value));
 
     setSelectedProtectedAreas(parks);
+
+    // Tell the page component that the form changed to enable the "Unsaved changes" prompt
+    markChanged();
   }
 
   const customSelectStyles = {
@@ -260,7 +264,11 @@ export default function AdvisoryAreaPicker({
           <RecreationResourcePicker
             options={recreationResources}
             value={selectedRecreationResources}
-            onChange={setSelectedRecreationResources}
+            onChange={() => {
+              setSelectedRecreationResources();
+              // Tell the page component that the form changed to enable the "Unsaved changes" prompt
+              markChanged();
+            }}
             onBlur={() => {
               validateRequiredAffectedResources(advisoryData.affectedResources);
             }}
@@ -287,6 +295,9 @@ export default function AdvisoryAreaPicker({
               } else {
                 handleRemoveProtectedArea(e);
               }
+
+              // Tell the page component that the form changed to enable the "Unsaved changes" prompt
+              markChanged();
             }}
             placeholder="Search or select BC Parks park(s)"
             isMulti
@@ -499,6 +510,7 @@ export default function AdvisoryAreaPicker({
 
 AdvisoryAreaPicker.propTypes = {
   mode: PropTypes.string,
+  markChanged: PropTypes.func.isRequired,
   data: PropTypes.shape({
     recreationResources: PropTypes.array.isRequired,
     selectedRecreationResources: PropTypes.array,
