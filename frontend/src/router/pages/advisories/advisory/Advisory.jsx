@@ -1036,6 +1036,12 @@ export default function Advisory({ mode }) {
           !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish,
       };
 
+      // Add the publishing info
+      if (status.code === "PUB") {
+        newAdvisory.publishedByName = auth.user?.profile?.name;
+        newAdvisory.publishedDate = moment().toISOString();
+      }
+
       // Add the reviewer name and review date if the user is approving an advisory
       if (isApprover && (status.code === "PUB" || status.code === "SCH")) {
         newAdvisory.reviewedByName = auth.user?.profile?.name;
@@ -1136,6 +1142,14 @@ export default function Advisory({ mode }) {
         reviewedByName: null,
         reviewedDate: null,
       };
+
+      // Record the publishing info and clear the unpublishing info
+      if (status.code === "PUB") {
+        updatedAdvisory.publishedByName = auth.user?.profile?.name;
+        updatedAdvisory.publishedDate = moment().toISOString();
+        updatedAdvisory.unpublishedDate = null;
+        updatedAdvisory.unpublishedByName = null;
+      }
 
       // Add the reviewer name and review date if the user is approving an advisory
       if (isApprover && (status.code === "PUB" || status.code === "SCH")) {
