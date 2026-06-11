@@ -142,7 +142,7 @@ export default function AdvisoryHistory({
                     actorName:
                       ad.publishedByName === "system"
                         ? "system based on posting date"
-                        : ad.publishedByName,
+                        : statusActorName,
                     date: ad.publishedDate || ad.modifiedDate,
                   });
                 }
