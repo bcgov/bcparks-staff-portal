@@ -19,12 +19,28 @@ export function labelCompare(a, b) {
   return 0;
 }
 
-export function dateCompare(a, b) {
-  if (a.dateToCompare > b.dateToCompare) {
+export function advisoryHistoryCompare(a, b) {
+  if (a.revisionNumber > b.revisionNumber) {
     return -1;
   }
-  if (a.dateToCompare < b.dateToCompare) {
+  if (a.revisionNumber < b.revisionNumber) {
     return 1;
   }
+
+  const displayTextPriority = {
+    reviewed: 1,
+    published: 2,
+  };
+
+  const aPriority = displayTextPriority[a.displayText] || 3;
+  const bPriority = displayTextPriority[b.displayText] || 3;
+
+  if (aPriority < bPriority) {
+    return -1;
+  }
+  if (aPriority > bPriority) {
+    return 1;
+  }
+
   return 0;
 }
