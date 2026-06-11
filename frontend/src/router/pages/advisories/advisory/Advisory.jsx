@@ -1,5 +1,10 @@
 import { useState, useRef, useEffect, useContext, useMemo } from "react";
-import { Navigate, useParams, useSearchParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import PropTypes from "prop-types";
 import "./Advisory.css";
 import moment from "moment";
@@ -22,7 +27,9 @@ import { ROLES } from "@/config/permissions";
 export default function Advisory({ mode }) {
   const { setError } = useContext(ErrorContext);
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const tabParam = searchParams.get("tab");
+  const fromSummary = location.state?.fromSummary === true;
 
   const [revisionNumber, setRevisionNumber] = useState();
   const [standardMessages, setStandardMessages] = useState([]);
@@ -713,10 +720,10 @@ export default function Advisory({ mode }) {
   }, [advisoryStatus, allAdvisoryStatuses]);
 
   function setToBack() {
-    if (mode === "create") {
-      setToDashboard(true);
-    } else {
+    if (mode === "update" && fromSummary) {
       setIsConfirmation(true);
+    } else {
+      setToDashboard(true);
     }
   }
 
@@ -1236,9 +1243,9 @@ export default function Advisory({ mode }) {
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                   Back to{" "}
-                  {mode === "create"
-                    ? "advisories and closures dashboard"
-                    : "advisory / closure preview"}
+                  {mode === "update" && fromSummary
+                    ? "advisory / closure preview"
+                    : "advisories and closures dashboard"}
                 </button>
                 <h2 className="mt-5 mb-0">
                   {mode === "create" ? "Create" : "Edit"} advisory / closure

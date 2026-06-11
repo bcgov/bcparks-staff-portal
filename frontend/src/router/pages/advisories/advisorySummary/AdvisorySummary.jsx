@@ -442,7 +442,7 @@ export default function AdvisorySummary() {
   }
 
   if (toUpdate) {
-    return <Navigate to={updateAdvisoryUrl} />;
+    return <Navigate to={updateAdvisoryUrl} state={{ fromSummary: true }} />;
   }
 
   if (toError) {
