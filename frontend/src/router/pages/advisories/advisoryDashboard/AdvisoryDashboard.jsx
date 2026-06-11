@@ -1267,14 +1267,23 @@ export default function AdvisoryDashboard({
     isReviewDashboard && !isLoading && comparisonTotalItems === 0;
 
   const emptyState = showNoItemsToReviewMessage ? (
+    // When there are no advisories to review, show an empty state message
     <ReviewEmptyState />
   ) : (
+    // When filters are causing an empty state, show a message
     <div>
       <p>No records to display.</p>
-      <p className="fs-6">
-        Try adjusting your filters or check ‘Include unpublished advisories and
-        closures’ to see more results.
-      </p>
+
+      {isReviewDashboard ? (
+        // The review dashboard has column filters only
+        <p className="fs-6">Try adjusting your filters to see more results.</p>
+      ) : (
+        // The main dashboard has both column filters and the "Include unpublished" toggle
+        <p className="fs-6">
+          Try adjusting your filters or check ‘Include unpublished advisories
+          and closures’ to see more results.
+        </p>
+      )}
     </div>
   );
 
