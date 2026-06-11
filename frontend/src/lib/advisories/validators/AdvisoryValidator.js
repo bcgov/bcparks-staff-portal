@@ -55,9 +55,9 @@ export function validateRequiredAffectedResources({
 }) {
   setError("");
 
-  // Check that at least one of the two fields has a value
+  // Check that at least one of the two fields has a selected value
   const hasValue = [...protectedAreaFields, ...recreationResourcesFields].some(
-    (values) => values.length > 0,
+    (values) => Array.isArray(values) && values.length > 0,
   );
 
   if (hasValue) return true;

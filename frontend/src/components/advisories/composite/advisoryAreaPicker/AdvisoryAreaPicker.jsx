@@ -264,8 +264,8 @@ export default function AdvisoryAreaPicker({
           <RecreationResourcePicker
             options={recreationResources}
             value={selectedRecreationResources}
-            onChange={() => {
-              setSelectedRecreationResources();
+            onChange={(selected) => {
+              setSelectedRecreationResources(selected);
               // Tell the page component that the form changed to enable the "Unsaved changes" prompt
               markChanged();
             }}
