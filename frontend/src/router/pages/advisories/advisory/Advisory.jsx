@@ -1254,6 +1254,11 @@ export default function Advisory({ mode }) {
       if (status.code === "PUB") {
         updatedAdvisory.publishedByName = auth.user?.profile?.name;
         updatedAdvisory.publishedDate = moment().toISOString();
+      }
+
+      // Clear the unpublished info if the advisory is being moved to any other
+      // status.  The unpublished info will be preserved on the previous revision.
+      if (status.code !== "UNP") {
         updatedAdvisory.unpublishedDate = null;
         updatedAdvisory.unpublishedByName = null;
       }
