@@ -8,26 +8,23 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
   const reviewStatuses = [];
   const oneWeekFromNow = now.clone().add(oneWeekDays, "days");
 
-  const createdAt = moment(publicAdvisory.createdAt);
   const endDate = moment(publicAdvisory.endDate);
   const expiryDate = moment(publicAdvisory.expiryDate);
-  const modifiedDate = moment(publicAdvisory.modifiedDate);
   const reviewedByName = publicAdvisory.reviewedByName;
   const reviewedDate = moment(publicAdvisory.reviewedDate);
+  const revisionNumber = publicAdvisory.revisionNumber;
   const statusCode = publicAdvisory.advisoryStatus?.code;
   const unpublishedByName = publicAdvisory.unpublishedByName;
   const unpublishedDate = moment(publicAdvisory.unpublishedDate);
 
-  // New advisory, posted and not posted, and not yet reviewed
-  const isNew =
-    ["HQR", "SCH", "PUB"].includes(statusCode) &&
-    createdAt.isValid() &&
-    !reviewedDate.isValid() &&
-    !reviewedByName;
+  const isReviewableStatus = ["HQR", "SCH", "PUB"].includes(statusCode);
+  const isUnreviewed = !reviewedDate.isValid() && !reviewedByName;
 
-  // Updated advisory, posted and not posted, and not yet reviewed, but modified after creation
-  const isUpdated =
-    isNew && modifiedDate.isValid() && modifiedDate.isAfter(createdAt);
+  // New advisory with revision number 1, posted and not posted, and not yet reviewed
+  const isNew = isReviewableStatus && isUnreviewed && revisionNumber === 1;
+
+  // Updated advisory with revision number greater than 1, posted and not posted, and not yet reviewed
+  const isUpdated = isReviewableStatus && isUnreviewed && revisionNumber > 1;
 
   // Expiry date approaching within a week
   const isExpiring =
@@ -35,9 +32,7 @@ function buildAdvisoryReviewStatuses(publicAdvisory, now) {
     expiryDate.isBetween(now, oneWeekFromNow, null, "[]");
 
   // Expired date reached
-  const isExpired =
-    expiryDate.isValid() &&
-    expiryDate.isSameOrBefore(now);
+  const isExpired = expiryDate.isValid() && expiryDate.isSameOrBefore(now);
 
   // End date reached
   const isEnded = endDate.isValid() && endDate.isSameOrBefore(now);

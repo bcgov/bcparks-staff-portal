@@ -685,6 +685,7 @@ export default function AdvisoryDashboard({
               "updatedAt",
               "reviewedDate",
               "reviewedByName",
+              "revisionNumber",
               "unpublishedDate",
               "unpublishedByName",
             ],
