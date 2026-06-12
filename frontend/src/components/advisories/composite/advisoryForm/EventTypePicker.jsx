@@ -33,7 +33,7 @@ export default function EventTypePicker({
 
   // Filter event type options based on scope and selected resources (BCP or RST)
   const filteredEventTypes = useMemo(() => {
-    // Both BCP and RST are selected, show all event types with scope "Both"
+    // Both BCP and RST are selected, show only event types with scope "Both"
     if (hasBcpResourcesSelected && hasRstResourcesSelected) {
       return eventTypes.filter((option) => option.scope === "Both");
     }

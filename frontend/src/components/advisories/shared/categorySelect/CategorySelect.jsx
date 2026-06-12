@@ -13,6 +13,14 @@ function defaultGetSearchText(option, categoryKey) {
   return [option?.label, option?.[categoryKey]].filter(Boolean);
 }
 
+function sortOptionsByLabel(items) {
+  return [...items].sort((left, right) =>
+    (left?.label || "").localeCompare(right?.label || "", "en", {
+      sensitivity: "base",
+    }),
+  );
+}
+
 export default function CategorySelect({
   id,
   value = null,
@@ -44,29 +52,27 @@ export default function CategorySelect({
 
     const grouped = Object.entries(groups).map(([label, categoryOptions]) => ({
       label,
-      options: [...categoryOptions].sort((left, right) =>
-        (left?.label || "").localeCompare(right?.label || "", "en", {
-          sensitivity: "base",
-        }),
-      ),
+      options: sortOptionsByLabel(categoryOptions),
     }));
 
+    // If no categories exist, return a flat sorted list.
     if (!grouped.length) {
-      return [...options].sort((left, right) =>
-        (left?.label || "").localeCompare(right?.label || "", "en", {
-          sensitivity: "base",
-        }),
-      );
+      return sortOptionsByLabel(options);
     }
 
-    const sortedUncategorizedOptions = [...uncategorizedOptions].sort(
-      (left, right) =>
-        (left?.label || "").localeCompare(right?.label || "", "en", {
-          sensitivity: "base",
-        }),
-    );
+    // Keep categorized options grouped, and append uncategorized options
+    // in a blank-labeled group so they appear without a visible category heading.
+    if (uncategorizedOptions.length > 0) {
+      return [
+        ...grouped,
+        {
+          label: "",
+          options: sortOptionsByLabel(uncategorizedOptions),
+        },
+      ];
+    }
 
-    return [...grouped, ...sortedUncategorizedOptions];
+    return grouped;
   }, [options, categoryKey]);
 
   return (

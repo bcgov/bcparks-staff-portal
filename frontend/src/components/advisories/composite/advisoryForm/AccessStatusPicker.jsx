@@ -33,7 +33,7 @@ export default function AccessStatusPicker({
 
   // Filter access status options based on scope and selected resources (BCP or RST)
   const filteredAccessStatuses = useMemo(() => {
-    // Both BCP and RST are selected, show all access statuses with scope "Both"
+    // Both BCP and RST are selected, show only access statuses with scope "Both"
     if (hasBcpResourcesSelected && hasRstResourcesSelected) {
       return accessStatuses.filter((option) => option.scope === "Both");
     }
