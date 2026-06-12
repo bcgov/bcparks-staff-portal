@@ -593,6 +593,8 @@ export default function AdvisoryForm({
                 setEventType(nextStatus)
                 markChanged();
                 }}
+              selectedProtectedAreas={selectedProtectedAreas}
+              selectedRecreationResources={selectedRecreationResources}
               onBlur={() => {
                 validateRequiredSelect(advisoryData.eventType);
               }}
