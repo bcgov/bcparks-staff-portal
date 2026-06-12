@@ -655,6 +655,8 @@ export default function Advisory({ mode }) {
           const newEventTypes = eventTypeData.map((et) => ({
             label: et.eventType,
             value: et.documentId,
+            category: et.groupLabel,
+            scope: et.scope,
           }));
 
           setEventTypes([...newEventTypes]);

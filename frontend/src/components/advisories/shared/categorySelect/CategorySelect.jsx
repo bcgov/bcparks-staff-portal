@@ -18,18 +18,18 @@ export default function CategorySelect({
   value = null,
   options = [],
   onChange = () => {},
+  onBlur,
   placeholder = "Select...",
   categoryKey = "category",
   formatValueLabel = defaultFormatLabel,
   formatMenuLabel = defaultFormatLabel,
+  isClearable = false,
 }) {
   const hasSelection = Boolean(value);
 
   // Group options by category if categoryKey is provided and options have the categoryKey
   const groupedOptions = useMemo(() => {
-    const categorizedOptions = options.filter(
-      (option) => option?.[categoryKey],
-    );
+    const uncategorizedOptions = [];
 
     if (categorizedOptions.length !== options.length) {
       return [...options].sort((left, right) =>
@@ -42,7 +42,7 @@ export default function CategorySelect({
     // Group options by category
     const groups = groupBy(options, categoryKey);
 
-    return Object.entries(groups).map(([label, categoryOptions]) => ({
+    const grouped = Object.entries(groups).map(([label, categoryOptions]) => ({
       label,
       options: [...categoryOptions].sort((left, right) =>
         (left?.label || "").localeCompare(right?.label || "", "en", {
@@ -50,6 +50,23 @@ export default function CategorySelect({
         }),
       ),
     }));
+
+    if (!grouped.length) {
+      return [...options].sort((left, right) =>
+        (left?.label || "").localeCompare(right?.label || "", "en", {
+          sensitivity: "base",
+        }),
+      );
+    }
+
+    const sortedUncategorizedOptions = [...uncategorizedOptions].sort(
+      (left, right) =>
+        (left?.label || "").localeCompare(right?.label || "", "en", {
+          sensitivity: "base",
+        }),
+    );
+
+    return [...grouped, ...sortedUncategorizedOptions];
   }, [options, categoryKey]);
 
   return (
@@ -59,10 +76,12 @@ export default function CategorySelect({
       value={value}
       options={groupedOptions}
       onChange={onChange}
+      onBlur={onBlur}
       placeholder={placeholder}
       className={classNames("bcgov-select", {
         "bcgov-select--has-selection": hasSelection,
       })}
+      isClearable={isClearable}
       formatOptionLabel={(option, { context }) => {
         if (context === "value") {
           return formatValueLabel(option);
@@ -96,8 +115,10 @@ CategorySelect.propTypes = {
   value: PropTypes.object,
   options: PropTypes.arrayOf(PropTypes.object),
   onChange: PropTypes.func,
+  onBlur: PropTypes.func,
   placeholder: PropTypes.string,
   categoryKey: PropTypes.string,
   formatValueLabel: PropTypes.func,
   formatMenuLabel: PropTypes.func,
+  isClearable: PropTypes.bool,
 };
