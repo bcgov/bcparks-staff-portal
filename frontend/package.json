@@ -20,7 +20,7 @@
     "@fortawesome/react-fontawesome": "^0.2.6",
     "@tanstack/react-query": "^5.101.0",
     "@vitejs/plugin-react-swc": "^3.11.0",
-    "axios": "^1.17.0",
+    "axios": "^1.18.0",
     "classnames": "^2.5.1",
     "date-fns": "^4.4.0",
     "file-saver": "^2.0.5",
@@ -55,10 +55,10 @@
     "eslint-config-prettier": "^9.1.2",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
-    "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^15.15.0",
     "prettier": "3.8.4",
-    "rollup": "^4.61.1"
+    "rollup": "^4.62.0"
   },
   "engines": {
     "node": "24.x"
