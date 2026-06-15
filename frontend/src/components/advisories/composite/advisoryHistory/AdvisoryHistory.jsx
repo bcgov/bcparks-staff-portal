@@ -4,10 +4,10 @@ import "./AdvisoryHistory.css";
 import { format } from "date-fns";
 import { useAuth } from "react-oidc-context";
 import useCms from "@/hooks/useCms";
-import { dateCompare } from "@/lib/advisories/utils/AppUtil";
+import { advisoryHistoryCompare } from "@/lib/advisories/utils/AppUtil";
 
 function formatTimestamp(date) {
-  const datePart = format(date, "MMM d, yyyy");
+  const datePart = format(date, "MMMM d, yyyy");
   const timePart = format(date, "h:mm aaa");
 
   return `${datePart} at ${timePart}`;
@@ -44,7 +44,6 @@ export default function AdvisoryHistory({
               actorName,
               displayText,
               displayDate: formatTimestamp(ts),
-              dateToCompare: ts,
             });
           }
 
@@ -60,33 +59,59 @@ export default function AdvisoryHistory({
               }
 
               if (ad.revisionNumber === 1) {
-                let actor = ad.createdByName || "";
+                let creatorName = ad.createdByName || "";
                 let text = "drafted";
                 let includeRequestedBy = false;
 
                 if (status === "PUB") {
-                  actor = ad.publishedByName || "";
-                  text = "published";
+                  if (
+                    ad.publishedByName &&
+                    ad.publishedByName === ad.createdByName
+                  ) {
+                    creatorName = ad.publishedByName;
+                    text = "created and published";
+                  } else if (ad.publishedByName) {
+                    creatorName = ad.createdByName;
+                    text = "created";
+                    pushHistory({
+                      revisionNumber: ad.revisionNumber,
+                      displayText: "published",
+                      actorName:
+                        ad.publishedByName === "system"
+                          ? "system based on posting date"
+                          : ad.publishedByName,
+                      date: ad.publishedDate || ad.modifiedDate,
+                    });
+                  }
                 }
 
                 if (status === "SCH") {
-                  actor = ad.modifiedByName || "";
+                  creatorName = ad.modifiedByName || ad.createdByName || "";
                   text = "scheduled";
                 }
 
-                let actorName = actor || "";
+                if (status === "HQR") {
+                  creatorName = ad.modifiedByName || ad.createdByName || "";
+                  text = "submitted";
+                }
 
-                if (actor && actor !== ad.submittedByName) {
+                let requesterName = "";
+
+                if (
+                  creatorName &&
+                  ad.submittedByName &&
+                  creatorName !== ad.submittedByName
+                ) {
                   includeRequestedBy = true;
-                  actorName = ad.submittedByName || "";
+                  requesterName = ad.submittedByName || "";
                 }
 
                 pushHistory({
                   revisionNumber: ad.revisionNumber,
                   displayText: includeRequestedBy
-                    ? `${text} by ${actor} requested`
+                    ? `${text} by ${creatorName} requested`
                     : text,
-                  actorName,
+                  actorName: requesterName || creatorName,
                   date: ad.modifiedDate || ad.createdDate,
                 });
               } else {
@@ -100,9 +125,20 @@ export default function AdvisoryHistory({
                 }
 
                 if (status === "PUB") {
+                  if (ad.publishedByName !== ad.modifiedByName) {
+                    pushHistory({
+                      revisionNumber: ad.revisionNumber,
+                      displayText: "updated",
+                      actorName: ad.modifiedByName,
+                      date: ad.modifiedDate,
+                    });
+                  }
                   pushHistory({
                     revisionNumber: ad.revisionNumber,
-                    displayText: "published",
+                    displayText:
+                      ad.publishedByName !== ad.modifiedByName
+                        ? "published"
+                        : "updated and published",
                     actorName:
                       ad.publishedByName === "system"
                         ? "system based on posting date"
@@ -123,19 +159,10 @@ export default function AdvisoryHistory({
                   });
                 }
 
-                if (status === "HQR") {
+                if (status === "HQR" || status === "DFT") {
                   pushHistory({
                     revisionNumber: ad.revisionNumber,
                     displayText: "updated",
-                    actorName: ad.modifiedByName,
-                    date: ad.modifiedDate,
-                  });
-                }
-
-                if (status === "DFT") {
-                  pushHistory({
-                    revisionNumber: ad.revisionNumber,
-                    displayText: "drafted",
                     actorName: ad.modifiedByName,
                     date: ad.modifiedDate,
                   });
@@ -152,7 +179,7 @@ export default function AdvisoryHistory({
               }
             });
 
-            advisoriesHistory.sort(dateCompare);
+            advisoriesHistory.sort(advisoryHistoryCompare);
             setAdvisoryHistory([...advisoriesHistory]);
           }
         },
