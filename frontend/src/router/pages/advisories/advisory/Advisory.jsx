@@ -3,7 +3,6 @@ import {
   useRef,
   useEffect,
   useContext,
-  useMemo,
   useCallback,
 } from "react";
 import {
@@ -767,12 +766,6 @@ export default function Advisory({ mode }) {
     getStandardMessages,
   ]);
 
-  // Get the advisory status code to determine the form action button text
-  const advisoryStatusCode = useMemo(
-    () => advisoryStatus?.code ?? null,
-    [advisoryStatus],
-  );
-
   async function setToBack() {
     if (dataChanged) {
       // Show the "Unsaved changes" dialog and wait for the user's response before navigating back
@@ -1414,7 +1407,6 @@ export default function Advisory({ mode }) {
                   submittedByName,
                   setSubmittedByName,
                   advisoryStatuses,
-                  advisoryStatusCode,
                   advisoryStatus,
                   setAdvisoryStatus,
                   isStatHoliday,

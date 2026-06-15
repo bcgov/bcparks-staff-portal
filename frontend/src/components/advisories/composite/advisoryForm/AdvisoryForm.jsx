@@ -124,7 +124,6 @@ export default function AdvisoryForm({
     submittedByName,
     setSubmittedByName,
     advisoryStatuses,
-    advisoryStatusCode,
     advisoryStatus,
     setAdvisoryStatus,
     isStatHoliday,
@@ -1697,7 +1696,7 @@ export default function AdvisoryForm({
 
           <PrimaryActions
             mode={mode}
-            advisoryStatusCode={advisoryStatusCode}
+            advisoryStatusCode={advisoryStatus?.code}
             isUrgent={isAfterHourPublish}
             isApprover={isApprover}
             onPublish={handlePublish}
@@ -1792,7 +1791,6 @@ AdvisoryForm.propTypes = {
     submittedByName: PropTypes.string,
     setSubmittedByName: PropTypes.func.isRequired,
     advisoryStatuses: PropTypes.array.isRequired,
-    advisoryStatusCode: PropTypes.string,
     advisoryStatus: PropTypes.shape({
       code: PropTypes.string.isRequired,
       documentId: PropTypes.string.isRequired,
