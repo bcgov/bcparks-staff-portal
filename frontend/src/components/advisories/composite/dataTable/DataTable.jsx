@@ -213,6 +213,7 @@ export default function DataTable(props) {
     onPageChange,
     onPageSizeChange: onPageSizeChangeProp,
     onSortChange,
+    initialSortConfig,
     onFilterChange,
     title,
     initialFilterValues,
@@ -234,7 +235,7 @@ export default function DataTable(props) {
     filterValuesProp !== null && typeof filterValuesProp === "object";
   // Use parent-provided filter values when present, otherwise use local state.
   const effectiveFilterValues = filterValuesProp ?? filterValues;
-  const [sortConfig, setSortConfig] = useState(null);
+  const [sortConfig, setSortConfig] = useState(initialSortConfig || null);
   const [page, setPage] = useState(1);
   const initialPageSize = pageSizeProp || 5;
   const [pageSize, setPageSize] = useState(initialPageSize);
@@ -607,6 +608,10 @@ DataTable.propTypes = {
   onPageChange: PropTypes.func,
   onPageSizeChange: PropTypes.func,
   onSortChange: PropTypes.func,
+  initialSortConfig: PropTypes.shape({
+    columnId: PropTypes.string.isRequired,
+    direction: PropTypes.oneOf(["asc", "desc"]).isRequired,
+  }),
   onFilterChange: PropTypes.func,
   title: PropTypes.oneOfType([PropTypes.string, PropTypes.node]),
   initialFilterValues: PropTypes.objectOf(PropTypes.string),
@@ -631,6 +636,7 @@ DataTable.defaultProps = {
   onPageChange: null,
   onPageSizeChange: null,
   onSortChange: null,
+  initialSortConfig: null,
   onFilterChange: null,
   title: "",
   initialFilterValues: null,

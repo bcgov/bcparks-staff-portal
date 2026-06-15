@@ -63,7 +63,6 @@ import {
   clearDistrictFilter as clearDistrictFilterHandler,
   clearParkFilter as clearParkFilterHandler,
   clearRegionFilter as clearRegionFilterHandler,
-  clearShowUnpublishedFilter as clearShowUnpublishedFilterHandler,
   clearTableFilter as clearTableFilterHandler,
   getPageFilterValue,
   handlePageMultiSelectChange as handlePageMultiSelectChangeHandler,
@@ -444,13 +443,6 @@ export default function AdvisoryDashboard({
       setTableFilterValues,
       resetToFirstPage,
       setStoredFilters,
-    });
-  }
-
-  function clearShowUnpublishedFilter() {
-    clearShowUnpublishedFilterHandler({
-      setShowUnpublished,
-      resetToFirstPage,
     });
   }
 
@@ -1390,6 +1382,7 @@ export default function AdvisoryDashboard({
                 id="show-unpublished"
                 checked={showUnpublished}
                 onChange={(e) => {
+                  setIsLoading(true);
                   setShowUnpublished(e.target.checked);
                   resetToFirstPage();
                 }}
@@ -1413,6 +1406,7 @@ export default function AdvisoryDashboard({
         )}
         <FilterStatus
           totalResults={totalPublicAdvisories}
+          isLoading={isLoading}
           selectedDistrict={selectedDistrict}
           onClearDistrict={clearDistrictFilter}
           selectedRegion={selectedRegion}
@@ -1423,15 +1417,13 @@ export default function AdvisoryDashboard({
           onClearProgramArea={clearProgramAreaFilter}
           selectedTableFilters={activeTableFilters}
           onClearTableFilter={clearTableFilter}
-          showUnpublished={showUnpublished}
-          onClearShowUnpublished={clearShowUnpublishedFilter}
           hasAnyFilters={
             selectedDistrict.length > 0 ||
             selectedRegion.length > 0 ||
             selectedPark.length > 0 ||
             selectedProgramArea !== null ||
-            showUnpublished ||
-            activeTableFilters.length > 0
+            activeTableFilters.length > 0 ||
+            showUnpublished
           }
           onClearAll={clearAllFilters}
         />
@@ -1441,6 +1433,10 @@ export default function AdvisoryDashboard({
             <DataTable
               filtering
               search={false}
+              initialSortConfig={{
+                columnId: "modifiedDate",
+                direction: isReviewDashboard ? "asc" : "desc",
+              }}
               pageSize={pageSize}
               pageSizeOptions={[25, 50, 1000]}
               serverSide
