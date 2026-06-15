@@ -46,10 +46,9 @@ export default function FilterStatus({
 
   return (
     <div className="filter-status mt-3">
-      {hasAnyFilters && (
+      {hasAnyFilters && !isLoading && (
         <div className="num-results mb-2">
-          {!isLoading &&
-            `${totalResults} result${totalResults === 1 ? "" : "s"}`}
+          {`${totalResults} result${totalResults === 1 ? "" : "s"}`}
         </div>
       )}
 
