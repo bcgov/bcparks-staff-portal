@@ -10,18 +10,32 @@ import ALLOWED_IDPS from "@/constants/allowedIdps";
 const frontendBaseUrl = getEnv("VITE_FRONTEND_BASE_URL");
 
 /**
+ * Prevents auth utility routes from becoming post-login destinations.
+ * Replaces "/login" and "/logout" with "/" to avoid redirect loops.
+ * @param {string} pathname Current route pathname
+ * @returns {string} Sanitized pathname safe for post-login redirect storage
+ */
+function sanitizePostLoginPath(pathname) {
+  // Replace login/logout to avoid redirect loops
+  if (pathname === "/login" || pathname === "/logout") return "/";
+
+  return pathname;
+}
+
+/**
  * Returns the original destination URL after login, removing the temporary idp helper param.
  * @param {Object} location The location object from react-router, containing pathname, search, and hash
  * @returns {string} The cleaned absolute URL for post-login redirect
  */
 function getPostLoginRedirectUrl(location) {
   const query = new URLSearchParams(location.search);
+  const sanitizedPathname = sanitizePostLoginPath(location.pathname);
 
   query.delete("idp");
   const cleanedSearch = query.toString();
 
   return new URL(
-    `${location.pathname}${cleanedSearch ? `?${cleanedSearch}` : ""}${location.hash}`,
+    `${sanitizedPathname}${cleanedSearch ? `?${cleanedSearch}` : ""}${location.hash}`,
     frontendBaseUrl,
   ).toString();
 }

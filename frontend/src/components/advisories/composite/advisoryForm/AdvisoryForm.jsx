@@ -44,6 +44,8 @@ import DraftButton from "@/components/advisories/composite/advisoryForm/DraftBut
 
 export default function AdvisoryForm({
   mode,
+  markChanged,
+  registerSaveDraftHandler,
   data: {
     listingRank,
     setListingRank,
@@ -172,6 +174,8 @@ export default function AdvisoryForm({
   const [displayedDateError, setDisplayedDateError] = useState("");
   const [selectedDisplayedDateOption, setSelectedDisplayedDateOption] =
     useState("");
+  // Keep a stable callable for parent registration while always executing latest form state.
+  const saveDraftHandlerRef = useRef(async () => false);
 
   // Reveal event dates in update mode if there are any
   useEffect(() => {
@@ -414,29 +418,39 @@ export default function AdvisoryForm({
    * Saves the advisory as a draft in the CMS (with "Draft" status).
    * The backend middleware determines whether this is an in-place update
    * or a new revision when the current advisory is published.
-   * @returns {void}
+   * @returns {Promise<boolean>} true when save succeeds, false otherwise.
    */
   async function handleSaveDraft() {
     // Don't submit if validation fails
     if (!validAdvisoryData(advisoryData, linksRef, mode, linkErrorsStatus))
-      return;
+      return false;
 
     // Don't submit again if a request is in progress
-    if (isSavingDraft) return;
+    if (isSavingDraft) return false;
 
     // Get the Strapi data for the "Draft" advisory status from its code
     const draftStatus = advisoryStatuses.find(
       (status) => status.code === "DFT",
     );
 
+    if (!draftStatus) return false;
+
     if (mode === "update") {
       // Update advisory with "Draft" status
-      await updateAdvisory(draftStatus);
-    } else {
-      // Create advisory with "Draft" status
-      await createAdvisory(draftStatus);
+      return Boolean(await updateAdvisory(draftStatus));
     }
+    // Create advisory with "Draft" status
+    return Boolean(await createAdvisory(draftStatus));
   }
+
+  saveDraftHandlerRef.current = handleSaveDraft;
+
+  useEffect(() => {
+    if (!registerSaveDraftHandler) return;
+
+    // Parent can call this when the exit dialog chooses "Save draft".
+    registerSaveDraftHandler(async () => saveDraftHandlerRef.current());
+  }, [registerSaveDraftHandler]);
 
   /**
    * Creates or updates the advisory without submitting for review. For users who can publish directly.
@@ -489,11 +503,12 @@ export default function AdvisoryForm({
   }
 
   return (
-    <form className="advisory-form">
+    <form className="advisory-form" onChange={markChanged}>
       <section>
         <h3>Affected resource(s)</h3>
         <AdvisoryAreaPicker
           mode={mode}
+          markChanged={markChanged}
           data={{
             recreationResources,
             selectedRecreationResources,
@@ -547,7 +562,10 @@ export default function AdvisoryForm({
             id="resource-status"
             options={accessStatuses}
             value={accessStatuses.filter((e) => e.value === accessStatus)}
-            onChange={(e) => setAccessStatus(e ? e.value : 0)}
+            onChange={(e) => {
+              setAccessStatus(e ? e.value : 0);
+              markChanged();
+            }}
             placeholder="Search or select resource status"
             className="bcgov-select"
           />
@@ -569,7 +587,10 @@ export default function AdvisoryForm({
               id="event-type"
               options={eventTypes}
               value={eventTypes.filter((e) => e.value === eventType)}
-              onChange={(e) => setEventType(e ? e.value : 0)}
+              onChange={(e) => {
+                setEventType(e ? e.value : 0);
+                markChanged();
+              }}
               placeholder="Search or select an event type"
               className="bcgov-select"
               onBlur={() => {
@@ -622,6 +643,7 @@ export default function AdvisoryForm({
                   key={u.value}
                   onClick={() => {
                     setUrgency(u.value);
+                    markChanged();
                   }}
                   className={
                     urgency === u.value ? `btn-urgency-${u.sequence}` : ""
@@ -678,6 +700,7 @@ export default function AdvisoryForm({
             value={selectedStandardMessages}
             onChange={(e) => {
               setSelectedStandardMessages(e);
+              markChanged();
             }}
             placeholder="Search or select standard message(s)"
             className="bcgov-select"
@@ -701,7 +724,10 @@ export default function AdvisoryForm({
           <CKEditor
             id="custom-message"
             value={description}
-            onChange={setDescription}
+            onChange={(value) => {
+              setDescription(value);
+              markChanged();
+            }}
           />
         </Form.Group>
 
@@ -756,6 +782,7 @@ export default function AdvisoryForm({
                     options={linkTypes}
                     onChange={(e) => {
                       updateLink(idx, "type", e.value);
+                      markChanged();
                     }}
                     value={linkTypes.filter((o) => o.value === l.type)}
                     className="bcgov-select"
@@ -788,6 +815,7 @@ export default function AdvisoryForm({
                   }}
                   onClick={() => {
                     removeLink(idx);
+                    markChanged();
                   }}
                 >
                   <FontAwesomeIcon icon={faXmark} />
@@ -844,6 +872,7 @@ export default function AdvisoryForm({
                         });
                       }
                       updateLink(idx, "url", "");
+                      markChanged();
                     }}
                     className="clear-url-btn"
                     aria-label="Clear URL"
@@ -874,6 +903,7 @@ export default function AdvisoryForm({
                       onClick={(e) => {
                         e.stopPropagation();
                         updateLink(idx, "file", "");
+                        markChanged();
                         validateLink(l, idx, "file", setLinkFileErrors);
                       }}
                       className="clear-url-btn"
@@ -891,6 +921,7 @@ export default function AdvisoryForm({
                       accept=".jpg,.gif,.png,.gif,.pdf"
                       onChange={(e) => {
                         handleFileCapture(e.target.files, idx);
+                        markChanged();
                       }}
                     />
                     <Btn
@@ -924,6 +955,7 @@ export default function AdvisoryForm({
                   e.target.files,
                   linksRef.current.length > 0 ? linksRef.current.length - 1 : 0,
                 );
+                markChanged();
               }}
             />
             <label htmlFor="file-upload" className="mb-0">
@@ -934,10 +966,12 @@ export default function AdvisoryForm({
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
                     addLink("file");
+                    markChanged();
                   }
                 }}
                 onClick={() => {
                   addLink("file");
+                  markChanged();
                 }}
               >
                 + Upload file
@@ -950,10 +984,12 @@ export default function AdvisoryForm({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   addLink("url");
+                  markChanged();
                 }
               }}
               onClick={() => {
                 addLink("url");
+                markChanged();
               }}
             >
               Add URL
@@ -990,6 +1026,7 @@ export default function AdvisoryForm({
                     selected={advisoryDate}
                     onChange={(date) => {
                       handleAdvisoryDateChange(date);
+                      markChanged();
                     }}
                     fixedHeight
                     dateFormat="MMMM d, yyyy"
@@ -1023,7 +1060,10 @@ export default function AdvisoryForm({
                     <DatePicker
                       id="post-start-time"
                       selected={advisoryDate}
-                      onChange={(date) => handleAdvisoryDateChange(date)}
+                      onChange={(date) => {
+                        handleAdvisoryDateChange(date);
+                        markChanged();
+                      }}
                       showTimeSelect
                       showTimeSelectOnly
                       timeIntervals={15}
@@ -1068,6 +1108,7 @@ export default function AdvisoryForm({
                     selected={expiryDate}
                     onChange={(date) => {
                       setExpiryDate(date);
+                      markChanged();
                     }}
                     fixedHeight
                     dateFormat="MMMM d, yyyy"
@@ -1104,6 +1145,7 @@ export default function AdvisoryForm({
                       selected={expiryDate}
                       onChange={(date) => {
                         setExpiryDate(date);
+                        markChanged();
                       }}
                       showTimeSelect
                       showTimeSelectOnly
@@ -1139,6 +1181,7 @@ export default function AdvisoryForm({
                       selected={updatedDate}
                       onChange={(date) => {
                         setUpdatedDate(date);
+                        markChanged();
                       }}
                       fixedHeight
                       dateFormat="MMMM d, yyyy"
@@ -1171,6 +1214,7 @@ export default function AdvisoryForm({
                         selected={updatedDate}
                         onChange={(date) => {
                           setUpdatedDate(date);
+                          markChanged();
                         }}
                         showTimeSelect
                         showTimeSelectOnly
@@ -1201,7 +1245,9 @@ export default function AdvisoryForm({
             <button
               type="button"
               className="btn mt-2 btn-link btn-boolean with-icon"
-              onClick={() => setShowEventDates(true)}
+              onClick={() => {
+                setShowEventDates(true);
+              }}
             >
               Add event dates
               <FontAwesomeIcon icon={faChevronDown} />
@@ -1238,6 +1284,7 @@ export default function AdvisoryForm({
                         selected={startDate}
                         onChange={(date) => {
                           setStartDate(date);
+                          markChanged();
                         }}
                         fixedHeight
                         dateFormat="MMMM d, yyyy"
@@ -1268,7 +1315,10 @@ export default function AdvisoryForm({
                         <DatePicker
                           id="event-start-time"
                           selected={startDate}
-                          onChange={(date) => setStartDate(date)}
+                          onChange={(date) => {
+                            setStartDate(date);
+                            markChanged();
+                          }}
                           showTimeSelect
                           showTimeSelectOnly
                           timeIntervals={15}
@@ -1313,6 +1363,7 @@ export default function AdvisoryForm({
                         selected={endDate}
                         onChange={(date) => {
                           setEndDate(date);
+                          markChanged();
                         }}
                         fixedHeight
                         dateFormat="MMMM d, yyyy"
@@ -1349,7 +1400,10 @@ export default function AdvisoryForm({
                         <DatePicker
                           id="event-end-time"
                           selected={endDate}
-                          onChange={(date) => setEndDate(date)}
+                          onChange={(date) => {
+                            setEndDate(date);
+                            markChanged();
+                          }}
                           showTimeSelect
                           showTimeSelectOnly
                           timeIntervals={15}
@@ -1377,7 +1431,9 @@ export default function AdvisoryForm({
               <button
                 type="button"
                 className="btn mt-2 btn-link btn-boolean with-icon"
-                onClick={() => setShowEventDates(false)}
+                onClick={() => {
+                  setShowEventDates(false);
+                }}
               >
                 Hide event dates
                 <FontAwesomeIcon icon={faChevronUp} />
@@ -1405,6 +1461,7 @@ export default function AdvisoryForm({
               defaultValue={getDisplayedDate()}
               onChange={(e) => {
                 setSelectedDisplayedDateOption(e.value);
+                markChanged();
               }}
               className="bcgov-select"
               onBlur={() => {
@@ -1508,7 +1565,10 @@ export default function AdvisoryForm({
               aria-label="Public safety related"
             >
               <Btn
-                onClick={() => setIsSafetyRelated(true)}
+                onClick={() => {
+                  setIsSafetyRelated(true);
+                  markChanged();
+                }}
                 className={
                   isSafetyRelated === true ? "btn-safety-selected" : ""
                 }
@@ -1520,7 +1580,10 @@ export default function AdvisoryForm({
                 Yes
               </Btn>
               <Btn
-                onClick={() => setIsSafetyRelated(false)}
+                onClick={() => {
+                  setIsSafetyRelated(false);
+                  markChanged();
+                }}
                 className={
                   isSafetyRelated === false ? "btn-safety-selected" : ""
                 }
@@ -1552,7 +1615,10 @@ export default function AdvisoryForm({
                 value={advisoryStatuses.filter(
                   (a) => a.value === advisoryStatus,
                 )}
-                onChange={(e) => setAdvisoryStatus(e ? e.value : null)}
+                onChange={(e) => {
+                  setAdvisoryStatus(e ? e.value : null);
+                  markChanged();
+                }}
                 placeholder="Search or select an advisory status"
                 className="bcgov-select"
                 isClearable
@@ -1590,6 +1656,7 @@ export default function AdvisoryForm({
                     checked={isAfterHourPublish}
                     onChange={() => {
                       setIsAfterHourPublish(true);
+                      markChanged();
                     }}
                     value="Publish"
                     name="after-hour-submission"
@@ -1609,6 +1676,7 @@ export default function AdvisoryForm({
                     checked={!isAfterHourPublish}
                     onChange={() => {
                       setIsAfterHourPublish(false);
+                      markChanged();
                     }}
                     value="Review"
                     name="after-hour-submission"
@@ -1647,6 +1715,8 @@ export default function AdvisoryForm({
 
 AdvisoryForm.propTypes = {
   mode: PropTypes.string.isRequired,
+  markChanged: PropTypes.func.isRequired,
+  registerSaveDraftHandler: PropTypes.func,
   data: PropTypes.shape({
     listingRank: PropTypes.number,
     setListingRank: PropTypes.func.isRequired,

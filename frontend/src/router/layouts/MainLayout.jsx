@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 import "./MainLayout.scss";
 import useAccess from "@/hooks/useAccess";
 import { useApiGet } from "@/hooks/useApi";
@@ -17,7 +17,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
 
 export default function MainLayout() {
-  const { logOut, isAuthenticated } = useAccess();
+  const { isAuthenticated } = useAccess();
   const globalFlashMessage = useFlashMessage();
 
   // Fetch the user name to display in the header
@@ -85,13 +85,9 @@ export default function MainLayout() {
                 <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
                   <div className="user-name me-3">{userName}</div>
 
-                  <button
-                    type="button"
-                    onClick={logOut}
-                    className="btn btn-text text-white"
-                  >
+                  <Link to="/logout" className="btn btn-text text-white">
                     Logout
-                  </button>
+                  </Link>
                 </div>
 
                 <button
@@ -110,7 +106,6 @@ export default function MainLayout() {
           <TouchMenu
             show={showTouchMenu}
             closeMenu={() => setShowTouchMenu(false)}
-            logOut={logOut}
             userName={userName}
           />
 

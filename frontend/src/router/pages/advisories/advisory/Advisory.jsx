@@ -1,7 +1,15 @@
-import { useState, useRef, useEffect, useContext, useMemo } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useContext,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   Navigate,
   useLocation,
+  useBlocker,
   useParams,
   useSearchParams,
 } from "react-router-dom";
@@ -21,6 +29,9 @@ import qs from "qs";
 import useAccess from "@/hooks/useAccess";
 import useAdvisoryRole from "@/hooks/advisories/useAdvisoryRole";
 import useCms from "@/hooks/useCms";
+import useUnsavedChangesDialog from "@/hooks/useUnsavedChangesDialog";
+import useNavigationGuard from "@/hooks/useNavigationGuard";
+import UnsavedChangesDialog from "@/components/advisories/composite/advisoryForm/UnsavedChangesDialog";
 import ErrorContext from "@/contexts/ErrorContext";
 import { ROLES } from "@/config/permissions";
 
@@ -97,6 +108,7 @@ export default function Advisory({ mode }) {
   const [confirmationText, setConfirmationText] = useState("");
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dataChanged, setDataChanged] = useState(false);
   const linksRef = useRef([]);
   const advisoryDateRef = useRef(moment().tz("America/Vancouver").toDate());
   const [advisoryId, setAdvisoryId] = useState();
@@ -131,6 +143,81 @@ export default function Advisory({ mode }) {
   const auth = useAuth();
   const initialized = !auth.isLoading;
   const isAuthenticated = auth.isAuthenticated;
+
+  // Use a route blocker to show a confirmation dialog when the user attempts to navigate away with unsaved changes
+  const blocker = useBlocker(dataChanged);
+  // Ref to track if the route blocker is currently active, to prevent multiple blocker flows from stacking if more navigation is attempted while the dialog is open
+  const isBlockerActive = useRef(false);
+
+  // AdvisoryForm registers its save-draft function here so the "Unsaved changes" dialog can call it
+  const saveDraftHandlerRef = useRef(null);
+
+  // Callback for AdvisoryForm to register its save-draft handler function, so the "Unsaved changes" dialog can call it
+  const registerSaveDraftHandler = useCallback((handler) => {
+    saveDraftHandlerRef.current = handler;
+  }, []);
+
+  // Calls the registered save-draft handler from the AdvisoryForm and returns whether the save was successful.
+  // Saving can fail due to network errors, or validation errors in the form data.
+  // On success, proceed with navigation. On failure, stay on the form.
+  const saveDraftFromForm = useCallback(async () => {
+    const saveDraftHandler = saveDraftHandlerRef.current;
+
+    if (!saveDraftHandler) {
+      return false;
+    }
+
+    return Boolean(await saveDraftHandler());
+  }, []);
+
+  // Use the custom hook to manage the "Unsaved changes" dialog and get the function to trigger it,
+  // along with the props for the dialog component
+  const {
+    confirmNavigation: confirmUnsavedChangesNavigation,
+    props: unsavedChangesDialogProps,
+  } = useUnsavedChangesDialog(saveDraftFromForm);
+
+  // Set dataChanged to true when any of the form fields change, to enable the navigation guard
+  const markChanged = useCallback(() => {
+    setDataChanged(true);
+  }, []);
+
+  useNavigationGuard(dataChanged);
+
+  // Block internal route transitions while there are unsaved changes.
+  // beforeunload is still handled by useNavigationGuard for browser-level exits.
+  useEffect(() => {
+    if (blocker.state !== "blocked" || isBlockerActive.current) {
+      return;
+    }
+
+    // Lock this blocked transition until the router confirms it has been
+    // resolved so we do not start a second prompt flow for the same attempt.
+    isBlockerActive.current = true;
+
+    (async () => {
+      // Wait for the user's choice in the "Unsaved changes" dialog and proceed with navigation accordingly
+      const shouldProceed = await confirmUnsavedChangesNavigation();
+
+      if (shouldProceed) {
+        setDataChanged(false);
+        blocker.proceed();
+        return;
+      }
+
+      if (blocker.state === "blocked") {
+        blocker.reset();
+      }
+    })();
+  }, [blocker, confirmUnsavedChangesNavigation]);
+
+  // Keep the blocked-navigation lock until the router confirms the transition is unblocked.
+  // This prevents a second modal from opening on the same blocked navigation attempt.
+  useEffect(() => {
+    if (blocker.state === "unblocked") {
+      isBlockerActive.current = false;
+    }
+  }, [blocker.state]);
 
   // In "update" mode, track when the original data from the CMS is loaded
   // to prevent re-fetching
@@ -719,7 +806,18 @@ export default function Advisory({ mode }) {
     return null;
   }, [advisoryStatus, allAdvisoryStatuses]);
 
-  function setToBack() {
+  async function setToBack() {
+    if (dataChanged) {
+      // Show the "Unsaved changes" dialog and wait for the user's response before navigating back
+      const shouldProceed = await confirmUnsavedChangesNavigation();
+
+      if (!shouldProceed) {
+        return;
+      }
+
+      setDataChanged(false);
+    }
+
     if (mode === "update" && fromSummary) {
       setIsConfirmation(true);
     } else {
@@ -1061,6 +1159,7 @@ export default function Advisory({ mode }) {
       });
 
       setAdvisoryId(advisory.documentId);
+      setDataChanged(false);
       setIsSubmitting(false);
       setIsSavingDraft(false);
       setConfirmationTextForStatus(status.code);
@@ -1178,6 +1277,7 @@ export default function Advisory({ mode }) {
       });
 
       setAdvisoryId(advisory.documentId);
+      setDataChanged(false);
       setIsSubmitting(false);
       setIsSavingDraft(false);
       setConfirmationTextForStatus(status.code);
@@ -1238,9 +1338,7 @@ export default function Advisory({ mode }) {
                 <button
                   type="button"
                   className="btn btn-link btn-back mt-4"
-                  onClick={() => {
-                    setToBack();
-                  }}
+                  onClick={setToBack}
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                   Back to{" "}
@@ -1269,6 +1367,8 @@ export default function Advisory({ mode }) {
               </div>
               <AdvisoryForm
                 mode={mode}
+                markChanged={markChanged}
+                registerSaveDraftHandler={registerSaveDraftHandler}
                 data={{
                   listingRank,
                   setListingRank,
@@ -1362,6 +1462,13 @@ export default function Advisory({ mode }) {
                   setFormError,
                 }}
               />
+
+              <UnsavedChangesDialog {...unsavedChangesDialogProps}>
+                <p>
+                  Changes for this advisory / closure will be permanently
+                  deleted if you do not save them.
+                </p>
+              </UnsavedChangesDialog>
             </>
           )}
         </div>
