@@ -26,6 +26,7 @@ function normalizeSelections(selection) {
 
 export default function FilterStatus({
   totalResults,
+  isLoading,
   selectedDistrict,
   onClearDistrict,
   selectedRegion,
@@ -36,8 +37,6 @@ export default function FilterStatus({
   onClearProgramArea,
   selectedTableFilters,
   onClearTableFilter,
-  showUnpublished,
-  onClearShowUnpublished,
   hasAnyFilters,
   onClearAll,
 }) {
@@ -49,7 +48,8 @@ export default function FilterStatus({
     <div className="filter-status mt-3">
       {hasAnyFilters && (
         <div className="num-results mb-2">
-          {totalResults} result{totalResults === 1 ? "" : "s"}
+          {!isLoading &&
+            `${totalResults} result${totalResults === 1 ? "" : "s"}`}
         </div>
       )}
 
@@ -93,15 +93,8 @@ export default function FilterStatus({
           />
         ))}
 
-        {showUnpublished && (
-          <FilterBadge
-            label="Include unpublished"
-            onRemove={onClearShowUnpublished}
-          />
-        )}
-
         {hasAnyFilters && (
-          <button type="button" className="btn btn-link" onClick={onClearAll}>
+          <button type="button" className="btn btn-link px-0" onClick={onClearAll}>
             Clear filters
           </button>
         )}
@@ -112,6 +105,7 @@ export default function FilterStatus({
 
 FilterStatus.propTypes = {
   totalResults: PropTypes.number.isRequired,
+  isLoading: PropTypes.bool,
   selectedDistrict: PropTypes.oneOfType([
     PropTypes.shape({
       label: PropTypes.string,
@@ -160,8 +154,6 @@ FilterStatus.propTypes = {
     }),
   ),
   onClearTableFilter: PropTypes.func.isRequired,
-  showUnpublished: PropTypes.bool.isRequired,
-  onClearShowUnpublished: PropTypes.func.isRequired,
   hasAnyFilters: PropTypes.bool.isRequired,
   onClearAll: PropTypes.func.isRequired,
 };

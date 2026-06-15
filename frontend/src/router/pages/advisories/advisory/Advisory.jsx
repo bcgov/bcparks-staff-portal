@@ -1010,6 +1010,7 @@ export default function Advisory({ mode }) {
         note: notes,
         submittedByName: submittedByName ? submittedByName : submitter,
         createdDate: moment().toISOString(),
+        modifiedDate: moment().toISOString(),
         advisoryDate,
         effectiveDate: startDate,
         endDate,

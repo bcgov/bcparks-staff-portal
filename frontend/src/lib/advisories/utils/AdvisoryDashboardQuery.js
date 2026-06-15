@@ -173,5 +173,5 @@ export function buildSort(sortConfig, isReviewDashboard = false) {
     return ["modifiedDate:ASC"];
   }
 
-  return ["advisoryDate:DESC"];
+  return ["modifiedDate:DESC"];
 }
