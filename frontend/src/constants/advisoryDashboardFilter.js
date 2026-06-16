@@ -4,7 +4,7 @@ export const PARK_FILTER_NAME = "park";
 export const TABLE_FILTER_LABELS = {
   "urgency.urgency": "Urgency",
   "advisoryStatus.advisoryStatus": "Advisory status",
-  "accessStatus.accessStatus": "Resource status",
+  "accessStatus.accessStatus": "Public access status",
   advisoryDate: "Posting date",
   endDate: "End date",
   expiryDate: "Expiry date",

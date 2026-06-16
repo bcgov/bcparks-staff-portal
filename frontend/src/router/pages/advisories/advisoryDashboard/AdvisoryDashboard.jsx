@@ -1009,7 +1009,7 @@ export default function AdvisoryDashboard({
         field: "accessStatus.accessStatus",
         title: (
           <>
-            Resource
+            Public access
             <br />
             status
           </>

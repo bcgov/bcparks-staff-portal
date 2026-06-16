@@ -41,6 +41,7 @@ import AdvisoryAreaPicker from "@/components/advisories/composite/advisoryAreaPi
 import CKEditor from "@/components/advisories/composite/ckeditor/CKEditor";
 import PrimaryActions from "@/components/advisories/composite/advisoryForm/PrimaryActions";
 import DraftButton from "@/components/advisories/composite/advisoryForm/DraftButton";
+import AccessStatusPicker from "@/components/advisories/composite/advisoryForm/AccessStatusPicker";
 
 export default function AdvisoryForm({
   mode,
@@ -141,6 +142,7 @@ export default function AdvisoryForm({
 }) {
   const { t } = useTranslation("act");
   const { hasAnyRole } = useAccess();
+  const isRecreationUser = hasAnyRole([ROLES.RECREATION_USER]);
 
   const [showEventDates, setShowEventDates] = useState(false);
   // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
@@ -549,7 +551,7 @@ export default function AdvisoryForm({
 
         <Form.Group className="form-group" controlId="resource-status">
           <Form.Label>
-            <span className="append-required">Resource status</span>
+            <span className="append-required">Public access status</span>
             <LightTooltip
               arrow
               title={t("advisoryForm.resourceStatus.tooltip")}
@@ -558,16 +560,16 @@ export default function AdvisoryForm({
             </LightTooltip>
           </Form.Label>
 
-          <Select
-            id="resource-status"
-            options={accessStatuses}
-            value={accessStatuses.filter((e) => e.value === accessStatus)}
-            onChange={(e) => {
-              setAccessStatus(e ? e.value : 0);
+          <AccessStatusPicker
+            accessStatus={accessStatus}
+            accessStatuses={accessStatuses}
+            setAccessStatus={(nextStatus) => {
+              setAccessStatus(nextStatus);
               markChanged();
             }}
-            placeholder="Search or select resource status"
-            className="bcgov-select"
+            selectedProtectedAreas={selectedProtectedAreas}
+            selectedRecreationResources={selectedRecreationResources}
+            isRecreationUser={isRecreationUser}
           />
         </Form.Group>
 

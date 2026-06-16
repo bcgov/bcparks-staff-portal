@@ -310,7 +310,7 @@ export default function AdvisorySummaryView({
         )}
 
         {advisory.accessStatus && (
-          <Field label="Park status">
+          <Field label="Public access status">
             {advisory.accessStatus.accessStatus}
           </Field>
         )}

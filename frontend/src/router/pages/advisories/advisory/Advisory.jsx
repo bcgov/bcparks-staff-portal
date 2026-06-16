@@ -663,14 +663,22 @@ export default function Advisory({ mode }) {
           const newAccessStatuses = accessStatusData.map((a) => ({
             label: a.accessStatus,
             value: a.documentId,
+            category: a.groupLabel,
+            scope: a.scope,
           }));
 
+          // Default to "Open" access status for non-RST users
           setAccessStatuses([...newAccessStatuses]);
           const openAccessStatus = newAccessStatuses.find(
             (a) => a.label === "Open",
           );
 
-          setAccessStatus(openAccessStatus.value);
+          // Do not pre select access status for RST users
+          const isRecreationUser = hasAnyRole([ROLES.RECREATION_USER]);
+
+          if (!isRecreationUser && openAccessStatus) {
+            setAccessStatus(openAccessStatus.value);
+          }
           const urgencyData = res[11];
           const newUrgencies = urgencyData.map((u) => ({
             label: u.urgency,
