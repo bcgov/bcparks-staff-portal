@@ -37,18 +37,20 @@ export default function CategorySelect({
 
   // Group options by category if categoryKey is provided and options have the categoryKey
   const groupedOptions = useMemo(() => {
-    const uncategorizedOptions = [];
+    const categorizedOptions = options.filter((option) =>
+      Boolean(option?.[categoryKey]),
+    );
+    const uncategorizedOptions = options.filter(
+      (option) => !option?.[categoryKey],
+    );
 
-    if (categorizedOptions.length !== options.length) {
-      return [...options].sort((left, right) =>
-        (left?.label || "").localeCompare(right?.label || "", "en", {
-          sensitivity: "base",
-        }),
-      );
+    // Keep a flat sorted list if nothing can be categorized
+    if (categorizedOptions.length === 0) {
+      return sortOptionsByLabel(options);
     }
 
     // Group options by category
-    const groups = groupBy(options, categoryKey);
+    const groups = groupBy(categorizedOptions, categoryKey);
 
     const grouped = Object.entries(groups).map(([label, categoryOptions]) => ({
       label,
@@ -61,12 +63,12 @@ export default function CategorySelect({
     }
 
     // Keep categorized options grouped, and append uncategorized options
-    // in a blank-labeled group so they appear without a visible category heading.
+    // in an "Other" group at the end if they exist
     if (uncategorizedOptions.length > 0) {
       return [
         ...grouped,
         {
-          label: "",
+          label: "Other",
           options: sortOptionsByLabel(uncategorizedOptions),
         },
       ];
