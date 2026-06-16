@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import Select from "react-select";
+import { groupBy } from "lodash-es";
 
 function defaultFormatLabel(option) {
   return option?.label || "";
@@ -39,16 +40,7 @@ export default function CategorySelect({
     }
 
     // Group options by category
-    const groups = options.reduce((accumulator, option) => {
-      const category = option[categoryKey];
-
-      if (!accumulator[category]) {
-        accumulator[category] = [];
-      }
-
-      accumulator[category].push(option);
-      return accumulator;
-    }, Object.create(null));
+    const groups = groupBy(options, categoryKey);
 
     return Object.entries(groups).map(([label, categoryOptions]) => ({
       label,
