@@ -40,6 +40,8 @@ export default function CategorySelect({
     const categorizedOptions = options.filter((option) =>
       Boolean(option?.[categoryKey]),
     );
+
+    // Keep track of options that cannot be categorized
     const uncategorizedOptions = options.filter(
       (option) => !option?.[categoryKey],
     );
@@ -56,11 +58,6 @@ export default function CategorySelect({
       label,
       options: sortOptionsByLabel(categoryOptions),
     }));
-
-    // If no categories exist, return a flat sorted list.
-    if (!grouped.length) {
-      return sortOptionsByLabel(options);
-    }
 
     // Keep categorized options grouped, and append uncategorized options
     // in an "Other" group at the end if they exist

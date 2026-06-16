@@ -11,9 +11,9 @@ function hasSelectedItems(items) {
 function formatAccessStatusLabel(option) {
   const label = option?.label || "";
   const category = option?.category || "";
-  const shouldShowLabelOnly = !category || category === label;
+  const isCategoryUnique = !category || category === label;
 
-  if (shouldShowLabelOnly) {
+  if (isCategoryUnique) {
     return label;
   }
 
@@ -95,7 +95,6 @@ export default function AccessStatusPicker({
       options={filteredAccessStatuses}
       onChange={(option) => setAccessStatus(option ? option.value : 0)}
       placeholder="Search or select public access status"
-      isClearable
       formatValueLabel={formatAccessStatusLabel}
       formatMenuLabel={(option) => option.label}
     />
