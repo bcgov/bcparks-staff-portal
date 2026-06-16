@@ -3,10 +3,7 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 import Select from "react-select";
 import { groupBy } from "lodash-es";
-
-function defaultFormatLabel(option) {
-  return option?.label || "";
-}
+import { formatCategoryLabel } from "./categorySelectUtils";
 
 // Search an option from both label and category
 function defaultGetSearchText(option, categoryKey) {
@@ -29,11 +26,15 @@ export default function CategorySelect({
   onBlur,
   placeholder = "Select...",
   categoryKey = "category",
-  formatValueLabel = defaultFormatLabel,
-  formatMenuLabel = defaultFormatLabel,
+  defaultValueLabel,
+  defaultMenuLabel,
   isClearable = false,
 }) {
   const hasSelection = Boolean(value);
+  const formatValueLabel =
+    defaultValueLabel || ((option) => formatCategoryLabel(option, categoryKey));
+  const formatMenuLabel =
+    defaultMenuLabel || ((option) => formatCategoryLabel(option, categoryKey));
 
   // Group options by category if categoryKey is provided and options have the categoryKey
   const groupedOptions = useMemo(() => {
@@ -123,7 +124,7 @@ CategorySelect.propTypes = {
   onBlur: PropTypes.func,
   placeholder: PropTypes.string,
   categoryKey: PropTypes.string,
-  formatValueLabel: PropTypes.func,
-  formatMenuLabel: PropTypes.func,
+  defaultValueLabel: PropTypes.func,
+  defaultMenuLabel: PropTypes.func,
   isClearable: PropTypes.bool,
 };
