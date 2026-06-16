@@ -1255,7 +1255,7 @@ export default function Advisory({ mode }) {
       }
 
       // Clear the unpublished info if the advisory is being moved to any other
-      // status.  The unpublished info will be preserved on the previous revision.
+      // status. The unpublished info will be preserved on the previous revision.
       if (status.code !== "UNP") {
         updatedAdvisory.unpublishedDate = null;
         updatedAdvisory.unpublishedByName = null;
