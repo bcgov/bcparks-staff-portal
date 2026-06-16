@@ -26,13 +26,15 @@ export default function CategorySelect({
   onBlur,
   placeholder = "Select...",
   categoryKey = "category",
-  defaultValueLabel,
   defaultMenuLabel,
   isClearable = false,
 }) {
   const hasSelection = Boolean(value);
-  const formatValueLabel =
-    defaultValueLabel || ((option) => formatCategoryLabel(option, categoryKey));
+
+  function formatValueLabel(option) {
+    return formatCategoryLabel(option, categoryKey);
+  }
+
   const formatMenuLabel =
     defaultMenuLabel || ((option) => formatCategoryLabel(option, categoryKey));
 
@@ -124,7 +126,6 @@ CategorySelect.propTypes = {
   onBlur: PropTypes.func,
   placeholder: PropTypes.string,
   categoryKey: PropTypes.string,
-  defaultValueLabel: PropTypes.func,
   defaultMenuLabel: PropTypes.func,
   isClearable: PropTypes.bool,
 };
