@@ -590,9 +590,9 @@ export default function AdvisoryForm({
               eventType={eventType}
               eventTypes={eventTypes}
               setEventType={(nextStatus) => {
-                setEventType(nextStatus)
+                setEventType(nextStatus);
                 markChanged();
-                }}
+              }}
               selectedProtectedAreas={selectedProtectedAreas}
               selectedRecreationResources={selectedRecreationResources}
               onBlur={() => {

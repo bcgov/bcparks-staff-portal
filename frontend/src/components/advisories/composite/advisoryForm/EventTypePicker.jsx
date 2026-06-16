@@ -36,17 +36,17 @@ export default function EventTypePicker({
   );
 
   useEffect(() => {
-    if (!eventType || !filteredEventTypes.length) {
+    if (!eventType) {
       return;
     }
 
-    // If the selected event type is not in the filtered list, reset the selection
-    const hasSelectedEventType = filteredEventTypes.some(
+    // Check if the selected event type exists in the filtered list.
+    // If filtered list is empty or the event type is not available, clear the selection.
+    const isEventTypeAvailable = filteredEventTypes.some(
       (option) => option.value === eventType,
     );
 
-    // Only reset the event type selection if there is a selected event type that is not in the filtered list.
-    if (!hasSelectedEventType) {
+    if (!isEventTypeAvailable) {
       setEventType(0);
     }
   }, [filteredEventTypes, eventType, setEventType]);
