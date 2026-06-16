@@ -10,6 +10,7 @@ function defaultGetSearchText(option, categoryKey) {
   return [option?.label, option?.[categoryKey]].filter(Boolean);
 }
 
+// Sort options alphabetically by label
 function sortOptionsByLabel(items) {
   return [...items].sort((left, right) =>
     (left?.label || "").localeCompare(right?.label || "", "en", {

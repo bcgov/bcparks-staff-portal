@@ -595,7 +595,7 @@ export default function AdvisoryForm({
               }}
               selectedProtectedAreas={selectedProtectedAreas}
               selectedRecreationResources={selectedRecreationResources}
-              onBlur={() => {
+              validation={() => {
                 validateRequiredSelect(advisoryData.eventType);
               }}
             />

@@ -12,7 +12,7 @@ export default function EventTypePicker({
   setEventType,
   selectedProtectedAreas,
   selectedRecreationResources,
-  onBlur,
+  validation,
 }) {
   const hasBcpResourcesSelected = hasSelectedItems(selectedProtectedAreas);
   const hasRstResourcesSelected = hasSelectedItems(selectedRecreationResources);
@@ -57,10 +57,10 @@ export default function EventTypePicker({
       options={filteredEventTypes}
       value={selectedEventTypeOption}
       onChange={(option) => setEventType(option ? option.value : 0)}
+      onBlur={validation}
       placeholder="Search or select an event type"
-      onBlur={onBlur}
-      isClearable
       defaultMenuLabel={(option) => option.label}
+      isClearable
     />
   );
 }
@@ -71,5 +71,5 @@ EventTypePicker.propTypes = {
   setEventType: PropTypes.func.isRequired,
   selectedProtectedAreas: PropTypes.array,
   selectedRecreationResources: PropTypes.array,
-  onBlur: PropTypes.func,
+  validation: PropTypes.func,
 };
