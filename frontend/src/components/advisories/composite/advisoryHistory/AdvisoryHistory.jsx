@@ -148,15 +148,8 @@ export default function AdvisoryHistory({
                 }
 
                 if (status === "UNP") {
-                  pushHistory({
-                    revisionNumber: ad.revisionNumber,
-                    displayText: "unpublished",
-                    actorName:
-                      ad.unpublishedByName === "system"
-                        ? "system based on expiry date"
-                        : statusActorName,
-                    date: ad.unpublishedDate || ad.modifiedDate,
-                  });
+                  // Do not output anything for unpublished records. The
+                  // logging is handled by the previsous published record.
                 }
 
                 if (status === "HQR" || status === "DFT") {
@@ -167,6 +160,18 @@ export default function AdvisoryHistory({
                     date: ad.modifiedDate,
                   });
                 }
+              }
+
+              if (ad.unpublishedByName && status !== "UNP") {
+                pushHistory({
+                  revisionNumber: ad.revisionNumber,
+                  displayText: "unpublished",
+                  actorName:
+                    ad.unpublishedByName === "system"
+                      ? "system based on expiry date"
+                      : ad.unpublishedByName,
+                  date: ad.unpublishedDate,
+                });
               }
 
               if (ad.reviewedByName && ad.reviewedByName !== statusActorName) {

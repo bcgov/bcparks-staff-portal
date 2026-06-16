@@ -1131,7 +1131,6 @@ export default function Advisory({ mode }) {
         isAdvisoryDateDisplayed: displayAdvisoryDate,
         isEffectiveDateDisplayed: displayStartDate,
         isEndDateDisplayed: displayEndDate,
-        publishedAt: new Date(),
         isLatestRevision: true,
         createdByName: auth.user?.profile?.name,
         createdByEmail: auth.user?.profile?.email,
@@ -1244,7 +1243,6 @@ export default function Advisory({ mode }) {
         isEffectiveDateDisplayed: displayStartDate,
         isEndDateDisplayed: displayEndDate,
         isUpdatedDateDisplayed: displayUpdatedDate,
-        publishedAt: new Date(),
         isLatestRevision: true,
         reviewedByName: null,
         reviewedDate: null,
@@ -1254,6 +1252,11 @@ export default function Advisory({ mode }) {
       if (status.code === "PUB") {
         updatedAdvisory.publishedByName = auth.user?.profile?.name;
         updatedAdvisory.publishedDate = moment().toISOString();
+      }
+
+      // Clear the unpublished info if the advisory is being moved to any other
+      // status. The unpublished info will be preserved on the previous revision.
+      if (status.code !== "UNP") {
         updatedAdvisory.unpublishedDate = null;
         updatedAdvisory.unpublishedByName = null;
       }

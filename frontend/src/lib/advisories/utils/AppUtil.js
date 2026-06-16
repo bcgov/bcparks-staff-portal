@@ -28,12 +28,13 @@ export function advisoryHistoryCompare(a, b) {
   }
 
   const displayTextPriority = {
-    reviewed: 1,
-    published: 2,
+    unpublished: 1,
+    reviewed: 2,
+    published: 3,
   };
 
-  const aPriority = displayTextPriority[a.displayText] || 3;
-  const bPriority = displayTextPriority[b.displayText] || 3;
+  const aPriority = displayTextPriority[a.displayText] || 4;
+  const bPriority = displayTextPriority[b.displayText] || 4;
 
   if (aPriority < bPriority) {
     return -1;
