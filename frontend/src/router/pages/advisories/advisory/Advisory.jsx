@@ -3,7 +3,6 @@ import {
   useRef,
   useEffect,
   useContext,
-  useMemo,
   useCallback,
 } from "react";
 import {
@@ -74,9 +73,7 @@ export default function Advisory({ mode }) {
   const [urgencies, setUrgencies] = useState([]);
   const [urgency, setUrgency] = useState();
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
-  // Unfiltered list of all advisory statuses from the CMS (for code lookup)
-  const [allAdvisoryStatuses, setAllAdvisoryStatuses] = useState([]);
-  const [advisoryStatus, setAdvisoryStatus] = useState();
+  const [advisoryStatus, setAdvisoryStatus] = useState(null);
   const [linkTypes, setLinkTypes] = useState([]);
   const [links, setLinks] = useState([]);
   const [headline, setHeadline] = useState("");
@@ -344,7 +341,7 @@ export default function Advisory({ mode }) {
               setUrgency(advisoryData.urgency.documentId);
             }
             if (advisoryData.advisoryStatus) {
-              setAdvisoryStatus(advisoryData.advisoryStatus.documentId);
+              setAdvisoryStatus(advisoryData.advisoryStatus);
             }
             setDisplayAdvisoryDate(
               advisoryData.isAdvisoryDateDisplayed
@@ -688,33 +685,19 @@ export default function Advisory({ mode }) {
 
           setUrgencies([...newUrgencies]);
           const advisoryStatusData = res[12];
-          // Store the list of all advisory statuses before filtering
-          // so we can reference it later for status code lookup
-          const allStatuses = advisoryStatusData.map((s) => ({
-            code: s.code,
-            value: s.documentId,
-          }));
-
-          setAllAdvisoryStatuses(allStatuses);
-
           const restrictedAdvisoryStatusCodes = new Set(["UNP", "SCH"]);
           const desiredOrder = ["PUB", "UNP", "DFT", "SCH", "HQR"];
           const tempAdvisoryStatuses = advisoryStatusData.map((s) => {
-            if (restrictedAdvisoryStatusCodes.has(s.code) && approver) {
-              return {
-                code: s.code,
-                label: s.advisoryStatus,
-                value: s.documentId,
-              };
-            }
-            if (!restrictedAdvisoryStatusCodes.has(s.code)) {
-              return {
-                code: s.code,
-                label: s.advisoryStatus,
-                value: s.documentId,
-              };
-            }
-            return null;
+            const isAllowedStatus =
+              approver || !restrictedAdvisoryStatusCodes.has(s.code);
+
+            if (!isAllowedStatus) return null;
+
+            return {
+              code: s.code,
+              advisoryStatus: s.advisoryStatus,
+              documentId: s.documentId,
+            };
           });
           const filteredStatuses = tempAdvisoryStatuses.filter(
             (s) => s !== null,
@@ -790,29 +773,6 @@ export default function Advisory({ mode }) {
     getLinkTypes,
     getStandardMessages,
   ]);
-
-  // Get the advisory status code to determine the form action button text
-  const advisoryStatusCode = useMemo(() => {
-    // If advisoryStatus is not set, return null
-    if (!advisoryStatus) return null;
-
-    // advisoryStatus can sometimes be an object
-    // return the code property if it exists
-    if (typeof advisoryStatus === "object") {
-      return advisoryStatus.code ?? null;
-    }
-
-    // advisoryStatus can sometimes be a documentId string
-    // Find the document ID in the allAdvisoryStatuses list
-    if (typeof advisoryStatus === "string") {
-      return (
-        allAdvisoryStatuses.find((status) => status.value === advisoryStatus)
-          ?.code ?? null
-      );
-    }
-
-    return null;
-  }, [advisoryStatus, allAdvisoryStatuses]);
 
   async function setToBack() {
     if (dataChanged) {
@@ -1080,7 +1040,7 @@ export default function Advisory({ mode }) {
    * Creates a new advisory in the CMS with the given status.
    * @param {Object} status advisory-status document from the CMS
    * @param {string} status.code the code of the advisory-status to check
-   * @param {string} status.value the documentId of the advisory-status to set for the advisory
+   * @param {string} status.documentId the documentId of the advisory-status to set for the advisory
    * @returns {Promise<Object|null>} the saved advisory document, or null if the save fails
    */
   async function createAdvisory(status) {
@@ -1126,7 +1086,7 @@ export default function Advisory({ mode }) {
         urgency,
         standardMessages: selectedStandardMessages.map((s) => s.value),
         protectedAreas: selProtectedAreas,
-        advisoryStatus: status.value,
+        advisoryStatus: status.documentId,
         links: savedLinks,
         regions: selRegions,
         sections: selSections,
@@ -1187,7 +1147,7 @@ export default function Advisory({ mode }) {
    * Updates advisory details in the CMS, and sets the status to the given status value.
    * @param {Object} status advisory-status document from the CMS
    * @param {string} status.code the code of the advisory-status to check
-   * @param {string} status.value the documentId of the advisory-status to set for the advisory
+   * @param {string} status.documentId the documentId of the advisory-status to set for the advisory
    * @returns {Promise<Object|null>} the updated advisory document, or null if the save fails
    */
   async function updateAdvisory(status) {
@@ -1237,7 +1197,7 @@ export default function Advisory({ mode }) {
         urgency,
         standardMessages: selectedStandardMessages.map((s) => s.value),
         protectedAreas: selProtectedAreas,
-        advisoryStatus: status.value,
+        advisoryStatus: status.documentId,
         links: updatedLinks,
         regions: selRegions,
         sections: selSections,
@@ -1458,7 +1418,6 @@ export default function Advisory({ mode }) {
                   submittedByName,
                   setSubmittedByName,
                   advisoryStatuses,
-                  advisoryStatusCode,
                   advisoryStatus,
                   setAdvisoryStatus,
                   isStatHoliday,

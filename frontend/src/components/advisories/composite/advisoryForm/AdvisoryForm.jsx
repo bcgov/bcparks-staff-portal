@@ -125,7 +125,6 @@ export default function AdvisoryForm({
     submittedByName,
     setSubmittedByName,
     advisoryStatuses,
-    advisoryStatusCode,
     advisoryStatus,
     setAdvisoryStatus,
     isStatHoliday,
@@ -467,10 +466,7 @@ export default function AdvisoryForm({
 
     // Super admins can specify the publishing status with an extra `advisoryStatus` field on the form
     if (hasAnyRole([ROLES.SUPER_ADMIN]) && advisoryStatus) {
-      // Get the Strapi data for the advisory status from the selected value
-      publishedStatus = advisoryStatuses.find(
-        (status) => status.value === advisoryStatus,
-      );
+      publishedStatus = advisoryStatus;
     } else {
       // Get the Strapi data for the "Published" advisory status from its code
       publishedStatus = advisoryStatuses.find(
@@ -1614,11 +1610,11 @@ export default function AdvisoryForm({
               <Select
                 id="advisory-status"
                 options={advisoryStatuses}
-                value={advisoryStatuses.filter(
-                  (a) => a.value === advisoryStatus,
-                )}
+                value={advisoryStatus}
+                getOptionValue={(option) => option.documentId}
+                getOptionLabel={(option) => option.advisoryStatus}
                 onChange={(e) => {
-                  setAdvisoryStatus(e ? e.value : null);
+                  setAdvisoryStatus(e);
                   markChanged();
                 }}
                 placeholder="Search or select an advisory status"
@@ -1702,7 +1698,7 @@ export default function AdvisoryForm({
 
           <PrimaryActions
             mode={mode}
-            advisoryStatusCode={advisoryStatusCode}
+            advisoryStatusCode={advisoryStatus?.code}
             isUrgent={isAfterHourPublish}
             isApprover={isApprover}
             onPublish={handlePublish}
@@ -1797,8 +1793,11 @@ AdvisoryForm.propTypes = {
     submittedByName: PropTypes.string,
     setSubmittedByName: PropTypes.func.isRequired,
     advisoryStatuses: PropTypes.array.isRequired,
-    advisoryStatusCode: PropTypes.string,
-    advisoryStatus: PropTypes.string,
+    advisoryStatus: PropTypes.shape({
+      code: PropTypes.string.isRequired,
+      documentId: PropTypes.string.isRequired,
+      advisoryStatus: PropTypes.string.isRequired,
+    }),
     setAdvisoryStatus: PropTypes.func.isRequired,
     isStatHoliday: PropTypes.bool,
     isAfterHours: PropTypes.bool,
