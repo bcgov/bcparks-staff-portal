@@ -23,8 +23,8 @@ function getInternalNotes(season) {
     .filter((log) => typeof log?.notes === "string" && log.notes.trim())
     .sort(
       (left, right) =>
-        new Date(left.createdAt).valueOf() -
-        new Date(right.createdAt).valueOf(),
+        new Date(right.createdAt).valueOf() -
+        new Date(left.createdAt).valueOf(),
     )
     .map((log) => ({
       id: log.id,

@@ -64,6 +64,12 @@ function seasonModel(minYear, required = true) {
         model: SeasonChangeLog,
         as: "changeLogs",
         attributes: ["id", "notes", "createdAt"],
+        required: false,
+        where: {
+          notes: {
+            [Op.ne]: "",
+          },
+        },
         include: [
           {
             model: User,
