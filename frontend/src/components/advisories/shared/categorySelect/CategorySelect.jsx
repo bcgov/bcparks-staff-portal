@@ -3,14 +3,20 @@ import classNames from "classnames";
 import PropTypes from "prop-types";
 import Select from "react-select";
 import { groupBy } from "lodash-es";
-
-function defaultFormatLabel(option) {
-  return option?.label || "";
-}
+import { formatCategoryLabel } from "./categorySelectUtils";
 
 // Search an option from both label and category
 function defaultGetSearchText(option, categoryKey) {
   return [option?.label, option?.[categoryKey]].filter(Boolean);
+}
+
+// Sort options alphabetically by label
+function sortOptionsByLabel(items) {
+  return [...items].sort((left, right) =>
+    (left?.label || "").localeCompare(right?.label || "", "en", {
+      sensitivity: "base",
+    }),
+  );
 }
 
 export default function CategorySelect({
@@ -18,38 +24,58 @@ export default function CategorySelect({
   value = null,
   options = [],
   onChange = () => {},
+  onBlur,
   placeholder = "Select...",
   categoryKey = "category",
-  formatValueLabel = defaultFormatLabel,
-  formatMenuLabel = defaultFormatLabel,
+  defaultMenuLabel,
+  isClearable = false,
 }) {
   const hasSelection = Boolean(value);
 
+  function formatValueLabel(option) {
+    return formatCategoryLabel(option, categoryKey);
+  }
+
+  const formatMenuLabel =
+    defaultMenuLabel || ((option) => formatCategoryLabel(option, categoryKey));
+
   // Group options by category if categoryKey is provided and options have the categoryKey
   const groupedOptions = useMemo(() => {
-    const categorizedOptions = options.filter(
-      (option) => option?.[categoryKey],
+    const categorizedOptions = options.filter((option) =>
+      Boolean(option?.[categoryKey]),
     );
 
-    if (categorizedOptions.length !== options.length) {
-      return [...options].sort((left, right) =>
-        (left?.label || "").localeCompare(right?.label || "", "en", {
-          sensitivity: "base",
-        }),
-      );
+    // Keep track of options that cannot be categorized
+    const uncategorizedOptions = options.filter(
+      (option) => !option?.[categoryKey],
+    );
+
+    // Keep a flat sorted list if nothing can be categorized
+    if (categorizedOptions.length === 0) {
+      return sortOptionsByLabel(options);
     }
 
     // Group options by category
-    const groups = groupBy(options, categoryKey);
+    const groups = groupBy(categorizedOptions, categoryKey);
 
-    return Object.entries(groups).map(([label, categoryOptions]) => ({
+    const grouped = Object.entries(groups).map(([label, categoryOptions]) => ({
       label,
-      options: [...categoryOptions].sort((left, right) =>
-        (left?.label || "").localeCompare(right?.label || "", "en", {
-          sensitivity: "base",
-        }),
-      ),
+      options: sortOptionsByLabel(categoryOptions),
     }));
+
+    // Keep categorized options grouped, and append uncategorized options
+    // in an "Other" group at the end if they exist
+    if (uncategorizedOptions.length > 0) {
+      return [
+        ...grouped,
+        {
+          label: "Other",
+          options: sortOptionsByLabel(uncategorizedOptions),
+        },
+      ];
+    }
+
+    return grouped;
   }, [options, categoryKey]);
 
   return (
@@ -59,10 +85,12 @@ export default function CategorySelect({
       value={value}
       options={groupedOptions}
       onChange={onChange}
+      onBlur={onBlur}
       placeholder={placeholder}
       className={classNames("bcgov-select", {
         "bcgov-select--has-selection": hasSelection,
       })}
+      isClearable={isClearable}
       formatOptionLabel={(option, { context }) => {
         if (context === "value") {
           return formatValueLabel(option);
@@ -96,8 +124,9 @@ CategorySelect.propTypes = {
   value: PropTypes.object,
   options: PropTypes.arrayOf(PropTypes.object),
   onChange: PropTypes.func,
+  onBlur: PropTypes.func,
   placeholder: PropTypes.string,
   categoryKey: PropTypes.string,
-  formatValueLabel: PropTypes.func,
-  formatMenuLabel: PropTypes.func,
+  defaultMenuLabel: PropTypes.func,
+  isClearable: PropTypes.bool,
 };

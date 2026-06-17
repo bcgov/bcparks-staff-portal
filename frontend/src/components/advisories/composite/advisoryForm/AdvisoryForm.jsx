@@ -42,6 +42,7 @@ import CKEditor from "@/components/advisories/composite/ckeditor/CKEditor";
 import PrimaryActions from "@/components/advisories/composite/advisoryForm/PrimaryActions";
 import DraftButton from "@/components/advisories/composite/advisoryForm/DraftButton";
 import AccessStatusPicker from "@/components/advisories/composite/advisoryForm/AccessStatusPicker";
+import EventTypePicker from "@/components/advisories/composite/advisoryForm/EventTypePicker";
 
 export default function AdvisoryForm({
   mode,
@@ -581,20 +582,18 @@ export default function AdvisoryForm({
               "bcgov-select-error": eventTypeError !== "",
             })}
           >
-            <Select
-              id="event-type"
-              options={eventTypes}
-              value={eventTypes.filter((e) => e.value === eventType)}
-              onChange={(e) => {
-                setEventType(e ? e.value : 0);
+            <EventTypePicker
+              eventType={eventType}
+              eventTypes={eventTypes}
+              setEventType={(nextStatus) => {
+                setEventType(nextStatus);
                 markChanged();
               }}
-              placeholder="Search or select an event type"
-              className="bcgov-select"
-              onBlur={() => {
+              selectedProtectedAreas={selectedProtectedAreas}
+              selectedRecreationResources={selectedRecreationResources}
+              validation={() => {
                 validateRequiredSelect(advisoryData.eventType);
               }}
-              isClearable
             />
             {renderHelperText(eventTypeError, eventTypeError !== "")}
           </div>
