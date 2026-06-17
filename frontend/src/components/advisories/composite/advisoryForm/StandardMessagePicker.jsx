@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
+import { sortBy } from "lodash-es";
 import CategorySelect from "@/components/advisories/shared/categorySelect/CategorySelect";
 import {
   filterOptionsByScope,
@@ -30,22 +31,10 @@ export default function StandardMessagePicker({
   // Sort messages by event type precedence first, then alphabetically by label
   const sortedStandardMessages = useMemo(
     () =>
-      [...filteredStandardMessages].sort((left, right) => {
-        const leftPrecedence = Number.isFinite(left?.eventTypePrecedence)
-          ? left.eventTypePrecedence
-          : Number.POSITIVE_INFINITY;
-        const rightPrecedence = Number.isFinite(right?.eventTypePrecedence)
-          ? right.eventTypePrecedence
-          : Number.POSITIVE_INFINITY;
-
-        if (leftPrecedence !== rightPrecedence) {
-          return leftPrecedence - rightPrecedence;
-        }
-
-        return (left?.label || "").localeCompare(right?.label || "", "en", {
-          sensitivity: "base",
-        });
-      }),
+      sortBy(filteredStandardMessages, [
+        (message) => message?.eventTypePrecedence ?? Number.POSITIVE_INFINITY,
+        (message) => message?.label?.toLowerCase() ?? "",
+      ]),
     [filteredStandardMessages],
   );
 
