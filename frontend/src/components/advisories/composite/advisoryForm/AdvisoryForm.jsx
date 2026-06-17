@@ -43,6 +43,7 @@ import PrimaryActions from "@/components/advisories/composite/advisoryForm/Prima
 import DraftButton from "@/components/advisories/composite/advisoryForm/DraftButton";
 import AccessStatusPicker from "@/components/advisories/composite/advisoryForm/AccessStatusPicker";
 import EventTypePicker from "@/components/advisories/composite/advisoryForm/EventTypePicker";
+import StandardMessagePicker from "@/components/advisories/composite/advisoryForm/StandardMessagePicker";
 
 export default function AdvisoryForm({
   mode,
@@ -560,8 +561,8 @@ export default function AdvisoryForm({
           <AccessStatusPicker
             accessStatus={accessStatus}
             accessStatuses={accessStatuses}
-            setAccessStatus={(nextStatus) => {
-              setAccessStatus(nextStatus);
+            setAccessStatus={(status) => {
+              setAccessStatus(status);
               markChanged();
             }}
             selectedProtectedAreas={selectedProtectedAreas}
@@ -585,8 +586,8 @@ export default function AdvisoryForm({
             <EventTypePicker
               eventType={eventType}
               eventTypes={eventTypes}
-              setEventType={(nextStatus) => {
-                setEventType(nextStatus);
+              setEventType={(type) => {
+                setEventType(type);
                 markChanged();
               }}
               selectedProtectedAreas={selectedProtectedAreas}
@@ -691,18 +692,15 @@ export default function AdvisoryForm({
             </LightTooltip>
           </Form.Label>
 
-          <Select
-            id="standard-messages"
-            options={standardMessages}
-            value={selectedStandardMessages}
-            onChange={(e) => {
-              setSelectedStandardMessages(e);
+          <StandardMessagePicker
+            standardMessages={standardMessages}
+            selectedStandardMessages={selectedStandardMessages}
+            setSelectedStandardMessages={(messages) => {
+              setSelectedStandardMessages(messages);
               markChanged();
             }}
-            placeholder="Search or select standard message(s)"
-            className="bcgov-select"
-            isMulti
-            isClearable
+            selectedProtectedAreas={selectedProtectedAreas}
+            selectedRecreationResources={selectedRecreationResources}
           />
         </Form.Group>
 

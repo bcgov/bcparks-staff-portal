@@ -342,7 +342,7 @@ export default function useCms() {
     () =>
       fetchCached(
         "standardMessages",
-        `/standard-messages?${querySort("precedence")}`,
+        `/standard-messages?${querySort("precedence")}&populate=*`,
       ),
     [fetchCached],
   );
