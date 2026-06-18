@@ -1103,10 +1103,12 @@ export default function Advisory({ mode }) {
         isEndDateDisplayed: displayEndDate,
         isLatestRevision: true,
         createdByName: auth.user?.profile?.name,
+        modifiedByName: auth.user?.profile?.name,
         createdByEmail: auth.user?.profile?.email,
         reviewedByName: null,
         reviewedDate: null,
         createdByRole: getUserAdvisoryRole(),
+        modifiedByRole: getUserAdvisoryRole(),
         isUrgentAfterHours:
           !isApprover && (isAfterHours || isStatHoliday) && isAfterHourPublish,
       };
