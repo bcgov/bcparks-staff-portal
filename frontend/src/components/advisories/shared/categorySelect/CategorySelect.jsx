@@ -28,9 +28,11 @@ export default function CategorySelect({
   placeholder = "Select...",
   categoryKey = "category",
   defaultMenuLabel,
+  isMulti = false,
   isClearable = false,
 }) {
-  const hasSelection = Boolean(value);
+  // value can be object for single select, array for multi select
+  const hasSelection = Array.isArray(value) ? value.length > 0 : Boolean(value);
 
   function formatValueLabel(option) {
     return formatCategoryLabel(option, categoryKey);
@@ -90,6 +92,7 @@ export default function CategorySelect({
       className={classNames("bcgov-select", {
         "bcgov-select--has-selection": hasSelection,
       })}
+      isMulti={isMulti}
       isClearable={isClearable}
       formatOptionLabel={(option, { context }) => {
         if (context === "value") {
@@ -121,12 +124,16 @@ export default function CategorySelect({
 
 CategorySelect.propTypes = {
   id: PropTypes.string,
-  value: PropTypes.object,
+  value: PropTypes.oneOfType([
+    PropTypes.object,
+    PropTypes.arrayOf(PropTypes.object),
+  ]),
   options: PropTypes.arrayOf(PropTypes.object),
   onChange: PropTypes.func,
   onBlur: PropTypes.func,
   placeholder: PropTypes.string,
   categoryKey: PropTypes.string,
   defaultMenuLabel: PropTypes.func,
+  isMulti: PropTypes.bool,
   isClearable: PropTypes.bool,
 };

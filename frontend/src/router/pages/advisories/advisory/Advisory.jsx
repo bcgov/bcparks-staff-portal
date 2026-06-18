@@ -1,10 +1,4 @@
-import {
-  useState,
-  useRef,
-  useEffect,
-  useContext,
-  useCallback,
-} from "react";
+import { useState, useRef, useEffect, useContext, useCallback } from "react";
 import {
   Navigate,
   useLocation,
@@ -721,6 +715,9 @@ export default function Advisory({ mode }) {
           const newStandardMessages = standardMessageData.map((m) => ({
             label: m.title,
             value: m.documentId,
+            category: m.eventType?.groupLabel,
+            scope: m.scope,
+            eventTypePrecedence: m.eventType?.precedence,
             type: "standardMessage",
             obj: m,
           }));
