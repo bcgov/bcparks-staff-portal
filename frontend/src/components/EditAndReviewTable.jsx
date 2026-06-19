@@ -6,15 +6,33 @@ import { faPen } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
+import InternalNotesRow from "@/components/InternalNotesRow";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
-import * as FEATURE_TYPE from "../constants/featureType";
-import * as DATE_TYPE from "../constants/dateType";
+import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
+
+// Functions
+// Get internal notes for a season, sorted by createdAt date
+function getInternalNotes(season) {
+  return (season?.changeLogs || [])
+    .filter((log) => typeof log?.notes === "string" && log.notes.trim())
+    .sort(
+      (left, right) =>
+        new Date(right.createdAt).valueOf() -
+        new Date(left.createdAt).valueOf(),
+    )
+    .map((log) => ({
+      id: log.id,
+      note: log.notes.trim(),
+      createdAt: log.createdAt,
+      createdBy: log.user?.name || "Unknown user",
+    }));
+}
 
 // Components
 function IconButton({
@@ -297,12 +315,18 @@ StatusTableRow.propTypes = {
   color: PropTypes.string,
 };
 
-function FeaturesByFeatureTypeWithAreas({ park, parkAreas, formPanelHandler }) {
+function FeaturesByFeatureTypeWithAreas({
+  park,
+  parkAreas,
+  formPanelHandler,
+  isApprover,
+}) {
   return (
     <>
       {/* 2 - park area level */}
       {parkAreas.map((parkArea) => {
         const regularSeason = parkArea.currentSeason.regular;
+        const regularSeasonInternalNotes = getInternalNotes(regularSeason);
 
         const featuresInCurrentGroup = parkArea.features;
 
@@ -338,6 +362,9 @@ function FeaturesByFeatureTypeWithAreas({ park, parkAreas, formPanelHandler }) {
                   />
                 </React.Fragment>
               ))}
+              {isApprover && (
+                <InternalNotesRow notes={regularSeasonInternalNotes} />
+              )}
             </React.Fragment>
           )
         );
@@ -350,14 +377,21 @@ FeaturesByFeatureTypeWithAreas.propTypes = {
   park: PropTypes.object.isRequired,
   parkAreas: PropTypes.array.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
+  isApprover: PropTypes.bool.isRequired,
 };
 
-function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
+function FeaturesByFeatureTypeNoAreas({
+  park,
+  features,
+  formPanelHandler,
+  isApprover,
+}) {
   return (
     <>
       {/* features that don't belong to park area  */}
       {features.map((feature) => {
         const regularSeason = feature.currentSeason.regular;
+        const regularSeasonInternalNotes = getInternalNotes(regularSeason);
 
         return (
           <React.Fragment key={feature.id}>
@@ -379,6 +413,9 @@ function FeaturesByFeatureTypeNoAreas({ park, features, formPanelHandler }) {
               groupedDateRanges={feature.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
             />
+            {isApprover && (
+              <InternalNotesRow notes={regularSeasonInternalNotes} />
+            )}
           </React.Fragment>
         );
       })}
@@ -390,14 +427,20 @@ FeaturesByFeatureTypeNoAreas.propTypes = {
   park: PropTypes.object.isRequired,
   features: PropTypes.array.isRequired,
   formPanelHandler: PropTypes.func.isRequired,
+  isApprover: PropTypes.bool.isRequired,
 };
 
 function Table({ park, formPanelHandler, sortOrder }) {
+  const { hasAnyRole, ROLES } = useAccess();
+  const isApprover = hasAnyRole([ROLES.APPROVER, ROLES.SUPER_ADMIN]);
+
   // Constants
   const parkAreas = park.parkAreas || [];
   const features = park.features || [];
   const regularSeason = park.currentSeason.regular;
   const winterSeason = park?.currentSeason.winter || {};
+  const regularSeasonInternalNotes = getInternalNotes(regularSeason);
+  const winterSeasonInternalNotes = getInternalNotes(winterSeason);
 
   if (!sortOrder?.length) return <></>;
 
@@ -445,6 +488,9 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.groupedDateRanges}
                   currentYear={regularSeason.operatingYear}
                 />
+                {isApprover && (
+                  <InternalNotesRow notes={regularSeasonInternalNotes} />
+                )}
               </>
             )}
 
@@ -472,6 +518,9 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.winterGroupedDateRanges}
                   currentYear={winterSeason.operatingYear}
                 />
+                {isApprover && (
+                  <InternalNotesRow notes={winterSeasonInternalNotes} />
+                )}
               </>
             )}
           </>
@@ -490,6 +539,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                     groupingType.parkAreaTypeNumber,
                 )}
                 formPanelHandler={formPanelHandler}
+                isApprover={isApprover}
               />
             )}
             {groupingType.type === "FeatureType" && (
@@ -501,6 +551,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                     groupingType.featureTypeNumber,
                 )}
                 formPanelHandler={formPanelHandler}
+                isApprover={isApprover}
               />
             )}
           </React.Fragment>
