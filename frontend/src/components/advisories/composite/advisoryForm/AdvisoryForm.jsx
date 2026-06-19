@@ -149,6 +149,7 @@ export default function AdvisoryForm({
   // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
   const autoExpandedEventDates = useRef(false);
   const [affectedResourceError, setAffectedResourceError] = useState("");
+  const [accessStatusError, setAccessStatusError] = useState("");
   const [eventTypeError, setEventTypeError] = useState("");
   const [urgencyError, setUrgencyError] = useState("");
   const [advisoryStatusError, setAdvisoryStatusError] = useState("");
@@ -203,6 +204,11 @@ export default function AdvisoryForm({
       text: "listing rank",
     },
     headline: { value: headline, setError: setHeadlineError, text: "headline" },
+    accessStatus: {
+      value: accessStatus,
+      setError: setAccessStatusError,
+      text: "public access status",
+    },
     eventType: {
       value: eventType,
       setError: setEventTypeError,
@@ -557,18 +563,27 @@ export default function AdvisoryForm({
               <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
             </LightTooltip>
           </Form.Label>
-
-          <AccessStatusPicker
-            accessStatus={accessStatus}
-            accessStatuses={accessStatuses}
-            setAccessStatus={(status) => {
-              setAccessStatus(status);
-              markChanged();
-            }}
-            selectedProtectedAreas={selectedProtectedAreas}
-            selectedRecreationResources={selectedRecreationResources}
-            isRecreationUser={isRecreationUser}
-          />
+          <div
+            className={classNames({
+              "bcgov-select-error": accessStatusError !== "",
+            })}
+          >
+            <AccessStatusPicker
+              accessStatus={accessStatus}
+              accessStatuses={accessStatuses}
+              setAccessStatus={(status) => {
+                setAccessStatus(status);
+                markChanged();
+              }}
+              selectedProtectedAreas={selectedProtectedAreas}
+              selectedRecreationResources={selectedRecreationResources}
+              validation={() => {
+                validateRequiredSelect(advisoryData.accessStatus);
+              }}
+              isRecreationUser={isRecreationUser}
+            />
+            {renderHelperText(accessStatusError, accessStatusError !== "")}
+          </div>
         </Form.Group>
 
         <Form.Group className="form-group" controlId="event-type">
