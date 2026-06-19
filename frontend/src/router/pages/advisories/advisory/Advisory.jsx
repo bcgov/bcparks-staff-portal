@@ -793,17 +793,9 @@ export default function Advisory({ mode }) {
     getStandardMessages,
   ]);
 
-  async function setToBack() {
-    if (dataChanged) {
-      // Show the "Unsaved changes" dialog and wait for the user's response before navigating back
-      const shouldProceed = await confirmUnsavedChangesNavigation();
-
-      if (!shouldProceed) {
-        return;
-      }
-
-      setDataChanged(false);
-    }
+  // Navigates back to the dashboard or summary page, depending on where the user came from
+  async function navigateBack() {
+    setDataChanged(false);
 
     if (mode === "update" && fromSummary) {
       navigate(getSummaryUrl(documentId));
@@ -1311,7 +1303,7 @@ export default function Advisory({ mode }) {
                 <button
                   type="button"
                   className="btn btn-link btn-back mt-4"
-                  onClick={setToBack}
+                  onClick={navigateBack}
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="me-1" />
                   Back to{" "}
