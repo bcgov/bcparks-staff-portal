@@ -15,7 +15,7 @@ import {
   useDebounceValue,
 } from "usehooks-ts";
 import qs from "qs";
-import { Link, Navigate, NavLink } from "react-router-dom";
+import { Link, Navigate, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { useTranslation } from "react-i18next";
 import ErrorContext from "@/contexts/ErrorContext";
@@ -127,8 +127,9 @@ export default function AdvisoryDashboard({
     cmsGet,
   } = useCms();
 
+  const navigate = useNavigate();
+
   const [toError, setToError] = useState(false);
-  const [toCreate, setToCreate] = useState(false);
   const [selectedRegionId, setSelectedRegionId] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState([]);
@@ -1243,9 +1244,6 @@ export default function AdvisoryDashboard({
     ],
   );
 
-  if (toCreate) {
-    return <Navigate to="/create-advisory" />;
-  }
   if (toError || hasErrors) {
     return <Navigate to="/error" />;
   }
@@ -1368,7 +1366,7 @@ export default function AdvisoryDashboard({
                 }
                 styling="btn-primary btn mt-3"
                 onClick={() => {
-                  setToCreate(true);
+                  navigate("/create-advisory");
                 }}
               />
             </div>

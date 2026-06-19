@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useContext, useCallback } from "react";
 import {
   Navigate,
   useLocation,
+  useNavigate,
   useBlocker,
   useParams,
   useSearchParams,
@@ -32,6 +33,7 @@ export default function Advisory({ mode }) {
   const { setError } = useContext(ErrorContext);
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const tabParam = searchParams.get("tab");
   const fromSummary = location.state?.fromSummary === true;
 
@@ -89,20 +91,16 @@ export default function Advisory({ mode }) {
   const [submitter, setSubmitter] = useState("");
   const [listingRank, setListingRank] = useState(0);
   const [toError, setToError] = useState(false);
-  const [toDashboard, setToDashboard] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isStatHoliday, setIsStatHoliday] = useState(false);
   const [isAfterHours, setIsAfterHours] = useState(false);
   const [isAfterHourPublish, setIsAfterHourPublish] = useState(false);
-  const [isConfirmation, setIsConfirmation] = useState(false);
-  const [confirmationText, setConfirmationText] = useState("");
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [dataChanged, setDataChanged] = useState(false);
   const linksRef = useRef([]);
   const advisoryDateRef = useRef(moment().tz("America/Vancouver").toDate());
-  const [advisoryId, setAdvisoryId] = useState();
   const [isApprover, setIsApprover] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -274,10 +272,27 @@ export default function Advisory({ mode }) {
     setLinks(linkIds);
   }
 
+  /**
+   * Returns the URL for the advisory summary page,
+   * including the "review" tab query parameter if applicable.
+   * @param {string} targetId  The document ID of the advisory to link to the summary page
+   * @returns {string} URL for the advisory summary page
+   */
+  function getSummaryUrl(targetId) {
+    const summaryUrl = `/advisory-summary/${targetId}`;
+
+    return tabParam === "review" ? `${summaryUrl}?tab=review` : summaryUrl;
+  }
+
+  function getDashboardUrl() {
+    return tabParam === "review"
+      ? "/advisories-and-closures/review"
+      : "/advisories-and-closures";
+  }
+
   useEffect(() => {
     if (mode === "update" && !isLoadingData && !originalDataLoaded.current) {
       if (documentId) {
-        setAdvisoryId(documentId);
         cmsGet(`public-advisory-audits/${documentId}?${query}`)
           .then((advisoryData) => {
             linksRef.current = [];
@@ -791,9 +806,9 @@ export default function Advisory({ mode }) {
     }
 
     if (mode === "update" && fromSummary) {
-      setIsConfirmation(true);
+      navigate(getSummaryUrl(documentId));
     } else {
-      setToDashboard(true);
+      navigate(getDashboardUrl());
     }
   }
 
@@ -1030,13 +1045,11 @@ export default function Advisory({ mode }) {
   function setConfirmationTextForStatus(statusCode) {
     switch (statusCode) {
       case "DFT":
-        setConfirmationText("Your advisory has been saved successfully!");
-        break;
+        return "Your advisory has been saved successfully!";
       case "PUB":
-        setConfirmationText("Your advisory has been published successfully!");
-        break;
+        return "Your advisory has been published successfully!";
       default:
-        setConfirmationText("Your advisory has been saved successfully!");
+        return "Your advisory has been saved successfully!";
     }
   }
 
@@ -1131,12 +1144,16 @@ export default function Advisory({ mode }) {
         data: newAdvisory,
       });
 
-      setAdvisoryId(advisory.documentId);
       setDataChanged(false);
       setIsSubmitting(false);
       setIsSavingDraft(false);
-      setConfirmationTextForStatus(status.code);
-      setIsConfirmation(true);
+
+      const confirmationText = setConfirmationTextForStatus(status.code);
+
+      navigate(getSummaryUrl(advisory.documentId), {
+        state: { confirmationText },
+      });
+
       return advisory;
     } catch (error) {
       console.error("error occurred", error);
@@ -1253,12 +1270,16 @@ export default function Advisory({ mode }) {
         data: updatedAdvisory,
       });
 
-      setAdvisoryId(advisory.documentId);
       setDataChanged(false);
       setIsSubmitting(false);
       setIsSavingDraft(false);
-      setConfirmationTextForStatus(status.code);
-      setIsConfirmation(true);
+
+      const confirmationText = setConfirmationTextForStatus(status.code);
+
+      navigate(getSummaryUrl(advisory.documentId), {
+        state: { confirmationText },
+      });
+
       return advisory;
     } catch (error) {
       console.error("error occurred", error);
@@ -1271,33 +1292,8 @@ export default function Advisory({ mode }) {
     }
   }
 
-  if (toDashboard) {
-    const dashboardPath =
-      tabParam === "review"
-        ? "/advisories-and-closures/review"
-        : "/advisories-and-closures";
-
-    return (
-      <Navigate
-        push
-        to={{
-          pathname: dashboardPath,
-          index: 0,
-        }}
-      />
-    );
-  }
-
   if (toError) {
     return <Navigate to="/error" />;
-  }
-
-  if (isConfirmation) {
-    const summaryUrl = `/advisory-summary/${advisoryId}`;
-    const finalUrl =
-      tabParam === "review" ? `${summaryUrl}?tab=review` : summaryUrl;
-
-    return <Navigate to={finalUrl} state={{ confirmationText }} />;
   }
 
   return (
