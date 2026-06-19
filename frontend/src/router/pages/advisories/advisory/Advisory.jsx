@@ -173,7 +173,7 @@ export default function Advisory({ mode }) {
     setDataChanged(true);
   }, []);
 
-  useNavigationGuard(dataChanged);
+  const { isBrowserUnloadActiveRef } = useNavigationGuard(dataChanged);
 
   // Block internal route transitions while there are unsaved changes.
   // beforeunload is still handled by useNavigationGuard for browser-level exits.
@@ -181,6 +181,11 @@ export default function Advisory({ mode }) {
     if (blocker.state !== "blocked" || isBlockerActive.current) {
       return;
     }
+
+    // If a browser-level unload is in progress (e.g., back button, tab close),
+    // the beforeunload handler and native dialog are already managing the exit attempt.
+    // Skip the in-app modal to avoid showing both prompts at once.
+    if (isBrowserUnloadActiveRef.current) return;
 
     // Lock this blocked transition until the router confirms it has been
     // resolved so we do not start a second prompt flow for the same attempt.
@@ -200,7 +205,7 @@ export default function Advisory({ mode }) {
         blocker.reset();
       }
     })();
-  }, [blocker, confirmUnsavedChangesNavigation]);
+  }, [blocker, confirmUnsavedChangesNavigation, isBrowserUnloadActiveRef]);
 
   // Keep the blocked-navigation lock until the router confirms the transition is unblocked.
   // This prevents a second modal from opening on the same blocked navigation attempt.
