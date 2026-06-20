@@ -789,7 +789,7 @@ export default function Advisory({ mode }) {
   ]);
 
   // Navigates back to the dashboard or summary page, depending on where the user came from
-  async function navigateBack() {
+  function navigateBack() {
     if (mode === "update" && fromSummary) {
       navigate(getSummaryUrl(documentId));
     } else {
