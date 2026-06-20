@@ -1023,11 +1023,11 @@ export default function Advisory({ mode }) {
   }
 
   /**
-   * Sets the confirmation text to display on the Advisory summary page after form submission.
+   * Gets the confirmation text to display on the Advisory summary page after form submission, based on the advisory status code.
    * @param {string} statusCode the advisory-status code of the form submission
-   * @returns {void}
+   * @returns {string} confirmation text to display on the summary page after submission
    */
-  function setConfirmationTextForStatus(statusCode) {
+  function getConfirmationTextForStatus(statusCode) {
     switch (statusCode) {
       case "DFT":
         return "Your advisory has been saved successfully!";
@@ -1133,7 +1133,7 @@ export default function Advisory({ mode }) {
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
-      const confirmationText = setConfirmationTextForStatus(status.code);
+      const confirmationText = getConfirmationTextForStatus(status.code);
 
       navigate(getSummaryUrl(advisory.documentId), {
         state: { confirmationText },
@@ -1259,7 +1259,7 @@ export default function Advisory({ mode }) {
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
-      const confirmationText = setConfirmationTextForStatus(status.code);
+      const confirmationText = getConfirmationTextForStatus(status.code);
 
       navigate(getSummaryUrl(advisory.documentId), {
         state: { confirmationText },
