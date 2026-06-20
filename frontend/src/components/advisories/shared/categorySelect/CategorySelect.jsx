@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import classNames from "classnames";
 import PropTypes from "prop-types";
 import Select from "react-select";
-import { groupBy } from "lodash-es";
+import { groupBy, sortBy } from "lodash-es";
 import { formatCategoryLabel } from "./categorySelectUtils";
 
 // Search an option from both label and category
@@ -60,7 +60,9 @@ export default function CategorySelect({
     // Group options by category
     const groups = groupBy(categorizedOptions, categoryKey);
 
-    const grouped = Object.entries(groups).map(([label, categoryOptions]) => ({
+    const grouped = sortBy(Object.entries(groups), ([label]) =>
+      label.toLowerCase(),
+    ).map(([label, categoryOptions]) => ({
       label,
       options: sortOptionsByLabel(categoryOptions),
     }));
