@@ -317,9 +317,9 @@ export default function AdvisorySummary() {
       : baseUrl;
   }, [documentId, tabParam]);
 
-  // Use a different target for the "Back" navigation link based on which page we came from.
-  // If we have an index in location state, that means we came from the dashboard and should return there to preserve pagination context.
-  // If not, return to the default dashboard URL which will show the first page of results.
+  // Dashboard route for the "Back" link.
+  // Use the Review dashboard when the current tab is "review".
+  // Otherwise, return to the main advisories and closures dashboard.
   const dashboardPath = useMemo(
     () =>
       tabParam === "review"
