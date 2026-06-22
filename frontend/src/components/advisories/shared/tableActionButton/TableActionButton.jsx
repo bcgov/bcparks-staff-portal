@@ -12,6 +12,7 @@ import {
   faPen,
 } from "@fa-kit/icons/classic/regular";
 
+import useAccess from "@/hooks/useAccess";
 import "./TableActionButton.scss";
 
 const ACTION_DROPDOWN_OPEN_EVENT = "table-action-dropdown-open";
@@ -38,6 +39,7 @@ export function TableActionButton({
   className = "",
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const { hasAnyRole, ROLES } = useAccess();
 
   function action(callback) {
     setIsOpen(false);
@@ -105,6 +107,7 @@ export function TableActionButton({
             <FontAwesomeIcon icon={faMemo} />
             View
           </Dropdown.Item>
+
           <Dropdown.Item
             as={Link}
             to={editPath}
@@ -113,13 +116,15 @@ export function TableActionButton({
             <FontAwesomeIcon icon={faPen} />
             Edit
           </Dropdown.Item>
-          <Dropdown.Item
-            disabled={!canUnpublish}
-            onClick={() => action(onUnpublish)}
-          >
-            <FontAwesomeIcon icon={faEyeSlash} />
-            Unpublish
-          </Dropdown.Item>
+          {hasAnyRole([ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]) && (
+            <Dropdown.Item
+              disabled={!canUnpublish}
+              onClick={() => action(onUnpublish)}
+            >
+              <FontAwesomeIcon icon={faEyeSlash} />
+              Unpublish
+            </Dropdown.Item>
+          )}
           {onMarkReviewed && (
             <Dropdown.Item onClick={() => action(onMarkReviewed)}>
               <FontAwesomeIcon icon={faCircleCheck} />

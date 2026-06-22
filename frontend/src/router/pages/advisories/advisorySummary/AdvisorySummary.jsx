@@ -540,22 +540,27 @@ export default function AdvisorySummary() {
                           </>
                         )}
 
-                        <Button
-                          label="Unpublish"
-                          styling={classNames(
-                            "btn-outline-primary",
-                            "btn",
-                            "flex-grow-1",
-                            "flex-xl-shrink-0",
-                            // If the user can mark reviewed, hide the unpublish button on smaller screens
-                            // and show an overflow menu instead,
-                            isApprover ? "d-none d-xl-block" : "",
-                          )}
-                          disabled={isRequestingCms || !canUnpublish}
-                          onClick={handleUnpublish}
-                          hasLoader={isUnpublishing}
-                          leftIcon={<FontAwesomeIcon icon={faEyeSlash} />}
-                        />
+                        {hasAnyRole([
+                          ROLES.ADVISORY_SUBMITTER,
+                          ROLES.ADVISORY_APPROVER,
+                        ]) && (
+                          <Button
+                            label="Unpublish"
+                            styling={classNames(
+                              "btn-outline-primary",
+                              "btn",
+                              "flex-grow-1",
+                              "flex-xl-shrink-0",
+                              // If the user can mark reviewed, hide the unpublish button on smaller screens
+                              // and show an overflow menu instead,
+                              isApprover ? "d-none d-xl-block" : "",
+                            )}
+                            disabled={isRequestingCms || !canUnpublish}
+                            onClick={handleUnpublish}
+                            hasLoader={isUnpublishing}
+                            leftIcon={<FontAwesomeIcon icon={faEyeSlash} />}
+                          />
+                        )}
 
                         <Button
                           label="Edit"

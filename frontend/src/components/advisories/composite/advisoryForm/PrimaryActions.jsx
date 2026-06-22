@@ -34,6 +34,10 @@ export default function PrimaryActions({
     return "Create advisory / closure";
   }, [mode, advisoryStatusCode]);
 
+  if (!hasAnyRole([ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER])) {
+    return null;
+  }
+
   if (!canPublish) {
     // Show a button to submit for review if the user can't publish directly
     return (

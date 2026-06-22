@@ -1628,6 +1628,7 @@ export default function AdvisoryForm({
       </section>
 
       {!hasAnyRole([ROLES.ADVISORY_PUBLISH_WITHOUT_APPROVAL]) &&
+        hasAnyRole([ROLES.ADVISORY_SUBMITTER]) &&
         (isStatHoliday || isAfterHours) && (
           <section className="act-af-hour-box d-flex field-bg-blue">
             <FontAwesomeIcon

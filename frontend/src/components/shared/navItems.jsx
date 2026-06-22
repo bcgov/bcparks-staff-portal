@@ -6,7 +6,7 @@ const navItems = [
     label: "Advisories and closures",
     Tag: NavLink,
     to: "/advisories-and-closures",
-    allowedRoles: [ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER],
+    allowedRoles: [ROLES.ADVISORY_USER],
   },
   {
     label: "Park access status",

@@ -70,18 +70,19 @@ const apiRouter = express.Router();
 // Apply JWT check and user middleware to all /api routes
 apiRouter.use(checkJwt);
 
-// Ensure user has DOOT_USER role to access any /api route
-apiRouter.use(checkPermissions([ROLES.DOOT_USER]));
-
 // Attach user data from the DB to the request object
 apiRouter.use(usersMiddleware);
 
-apiRouter.use("/user", userRoutes);
-apiRouter.use("/parks", parkRoutes);
-apiRouter.use("/seasons", seasonRoutes);
-apiRouter.use("/export", exportRoutes);
-apiRouter.use("/publish", publishRoutes);
-apiRouter.use("/filter-options", filterOptionsRoutes);
+apiRouter.use("/user", checkPermissions([ROLES.STAFF_PORTAL_USER]), userRoutes);
+apiRouter.use("/parks", checkPermissions([ROLES.DOOT_USER]), parkRoutes);
+apiRouter.use("/seasons", checkPermissions([ROLES.DOOT_USER]), seasonRoutes);
+apiRouter.use("/export", checkPermissions([ROLES.DOOT_USER]), exportRoutes);
+apiRouter.use("/publish", checkPermissions([ROLES.DOOT_USER]), publishRoutes);
+apiRouter.use(
+  "/filter-options",
+  checkPermissions([ROLES.DOOT_USER]),
+  filterOptionsRoutes,
+);
 
 app.use("/api", apiRouter);
 
