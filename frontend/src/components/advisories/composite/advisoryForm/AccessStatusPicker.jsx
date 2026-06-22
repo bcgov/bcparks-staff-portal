@@ -94,7 +94,11 @@ export default function AccessStatusPicker({
 }
 
 AccessStatusPicker.propTypes = {
-  accessStatus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  accessStatus: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.oneOf([null]),
+  ]),
   accessStatuses: PropTypes.arrayOf(PropTypes.object).isRequired,
   setAccessStatus: PropTypes.func.isRequired,
   selectedProtectedAreas: PropTypes.array,
