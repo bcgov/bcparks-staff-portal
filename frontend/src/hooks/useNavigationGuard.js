@@ -1,12 +1,13 @@
 import { useEffect } from "react";
 
-// adds a beforeunload event listener to the window
-// to prevent navigating away when hasChanges is true
+// Prevent document-level unloads when hasChanges is true.
+// This hook handles native browser prompts for reload/tab close/external document navigation.
 
 export default function useNavigationGuard(hasChanges) {
   useEffect(() => {
     function handleBeforeUnload(event) {
       if (hasChanges) {
+        // Prevent the default unload, which tells the browser to show its native dialog.
         event.preventDefault();
 
         // Included for legacy support, e.g. Chrome/Edge < 119
@@ -15,6 +16,7 @@ export default function useNavigationGuard(hasChanges) {
     }
 
     window.addEventListener("beforeunload", handleBeforeUnload);
+
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };

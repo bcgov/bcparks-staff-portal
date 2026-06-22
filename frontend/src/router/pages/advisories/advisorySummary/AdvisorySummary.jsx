@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useMemo, useCallback } from "react";
 import {
   Navigate,
   useLocation,
+  useNavigate,
   useParams,
   useSearchParams,
 } from "react-router-dom";
@@ -47,13 +48,12 @@ export default function AdvisorySummary() {
   const [advisory, setAdvisory] = useState({});
   const [parkUrls, setParkUrls] = useState("");
   const [siteUrls, setSiteUrls] = useState("");
-  const [toDashboard, setToDashboard] = useState(false);
-  const [toUpdate, setToUpdate] = useState(false);
   const [snackPack, setSnackPack] = useState([]);
   const [openSnack, setOpenSnack] = useState(false);
   const [snackMessageInfo, setSnackMessageInfo] = useState(null);
   const { documentId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
   const [confirmationText] = useState(location.state?.confirmationText || "");
@@ -317,6 +317,17 @@ export default function AdvisorySummary() {
       : baseUrl;
   }, [documentId, tabParam]);
 
+  // Dashboard route for the "Back" link.
+  // Use the Review dashboard when the current tab is "review".
+  // Otherwise, return to the main advisories and closures dashboard.
+  const dashboardPath = useMemo(
+    () =>
+      tabParam === "review"
+        ? "/advisories-and-closures/review"
+        : "/advisories-and-closures",
+    [tabParam],
+  );
+
   // Helper function to build a timestamp string with an actor name
   const buildTimestampString = useCallback((prefix, actorName, timestamp) => {
     if (!timestamp) return "";
@@ -424,27 +435,6 @@ export default function AdvisorySummary() {
     setSnackMessageInfo(null);
   }
 
-  if (toDashboard) {
-    const dashboardPath =
-      tabParam === "review"
-        ? "/advisories-and-closures/review"
-        : "/advisories-and-closures";
-
-    return (
-      <Navigate
-        push
-        to={{
-          pathname: dashboardPath,
-          index: index >= 0 ? index : 0,
-        }}
-      />
-    );
-  }
-
-  if (toUpdate) {
-    return <Navigate to={updateAdvisoryUrl} state={{ fromSummary: true }} />;
-  }
-
   if (toError) {
     return <Navigate to="/error" />;
   }
@@ -466,7 +456,9 @@ export default function AdvisorySummary() {
                     type="button"
                     className="btn btn-link btn-back my-4"
                     onClick={() => {
-                      setToDashboard(true);
+                      navigate(dashboardPath, {
+                        state: { index: index >= 0 ? index : 0 },
+                      });
                     }}
                   >
                     <FontAwesomeIcon icon={faArrowLeft} className="me-2" />
@@ -570,7 +562,9 @@ export default function AdvisorySummary() {
                           styling="btn-primary btn flex-grow-1 flex-xl-shrink-0"
                           disabled={isRequestingCms}
                           onClick={() => {
-                            setToUpdate(true);
+                            navigate(updateAdvisoryUrl, {
+                              state: { fromSummary: true },
+                            });
                           }}
                           leftIcon={<FontAwesomeIcon icon={faPen} />}
                         />
