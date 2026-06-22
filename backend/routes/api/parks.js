@@ -97,6 +97,7 @@ function featureModel(minYear, where = {}) {
       "hasBackcountryPermits",
       "hasReservations",
       "inReservationSystem",
+      "datesCanSpan2Years",
     ],
     include: [
       {
@@ -242,6 +243,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     hasBackcountryPermits: feature.hasBackcountryPermits,
     hasReservations: feature.hasReservations,
     inReservationSystem: feature.inReservationSystem,
+    datesCanSpan2Years: feature.datesCanSpan2Years,
     featureType: {
       id: feature.featureType.id,
       name: feature.featureType.name,
