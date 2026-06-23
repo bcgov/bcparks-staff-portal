@@ -1,11 +1,27 @@
 import { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
-import { sortBy } from "lodash-es";
+import { keyBy, mapValues, sortBy } from "lodash-es";
 import CategorySelect from "@/components/advisories/shared/categorySelect/CategorySelect";
 import {
   filterOptionsByScope,
   hasSelectedItems,
 } from "@/components/advisories/shared/categorySelect/categorySelectUtils";
+
+const CATEGORIES = [
+  { name: "Wildfire", sortOrder: 1 },
+  { name: "Environmental", sortOrder: 2 },
+  { name: "Access", sortOrder: 3 },
+  { name: "Public safety", sortOrder: 4 },
+  { name: "Wildlife", sortOrder: 5 },
+  { name: "Seasonal restrictions", sortOrder: 6 },
+  { name: "Pandemic", sortOrder: 7 },
+];
+
+// Map category names to their sort order
+const CATEGORY_SORT_ORDER = mapValues(
+  keyBy(CATEGORIES, (category) => category.name.toLowerCase()),
+  "sortOrder",
+);
 
 export default function StandardMessagePicker({
   standardMessages,
@@ -16,6 +32,8 @@ export default function StandardMessagePicker({
 }) {
   const hasBcpResourcesSelected = hasSelectedItems(selectedProtectedAreas);
   const hasRstResourcesSelected = hasSelectedItems(selectedRecreationResources);
+  const hasBothResourcesSelected =
+    hasBcpResourcesSelected && hasRstResourcesSelected;
 
   // Filter message options based on scope and selected resources (BCP or RST)
   const filteredStandardMessages = useMemo(
@@ -28,12 +46,14 @@ export default function StandardMessagePicker({
     [standardMessages, hasBcpResourcesSelected, hasRstResourcesSelected],
   );
 
-  // Sort messages by event type precedence first, then alphabetically by label
+  // Sort messages by category order first, then alphabetically by label
   const sortedStandardMessages = useMemo(
     () =>
       sortBy(filteredStandardMessages, [
-        (message) => message?.eventTypePrecedence ?? Number.POSITIVE_INFINITY,
-        (message) => message?.label?.toLowerCase() ?? "",
+        (message) =>
+          CATEGORY_SORT_ORDER[(message.category || "").toLowerCase()] ??
+          Number.POSITIVE_INFINITY,
+        (message) => (message.label || "").toLowerCase(),
       ]),
     [filteredStandardMessages],
   );
@@ -66,8 +86,14 @@ export default function StandardMessagePicker({
       onChange={(messages) => {
         setSelectedStandardMessages(messages || []);
       }}
-      placeholder="Search or select standard message(s)"
+      placeholder={
+        hasBothResourcesSelected
+          ? "No options available based on your resource selection"
+          : "Search or select standard message(s)"
+      }
       defaultMenuLabel={(option) => option.label}
+      sortGroupsByLabel={false}
+      isDisabled={hasBothResourcesSelected}
       isMulti={true}
       isClearable
     />

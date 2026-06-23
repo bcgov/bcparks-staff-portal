@@ -27,7 +27,9 @@ export default function CategorySelect({
   onBlur,
   placeholder = "Select...",
   categoryKey = "category",
+  sortGroupsByLabel = true,
   defaultMenuLabel,
+  isDisabled = false,
   isMulti = false,
   isClearable = false,
 }) {
@@ -60,9 +62,11 @@ export default function CategorySelect({
     // Group options by category
     const groups = groupBy(categorizedOptions, categoryKey);
 
-    const grouped = sortBy(Object.entries(groups), ([label]) =>
-      label.toLowerCase(),
-    ).map(([label, categoryOptions]) => ({
+    const groupedEntries = sortGroupsByLabel
+      ? sortBy(Object.entries(groups), ([label]) => label.toLowerCase())
+      : Object.entries(groups);
+
+    const grouped = groupedEntries.map(([label, categoryOptions]) => ({
       label,
       options: sortOptionsByLabel(categoryOptions),
     }));
@@ -80,7 +84,7 @@ export default function CategorySelect({
     }
 
     return grouped;
-  }, [options, categoryKey]);
+  }, [options, categoryKey, sortGroupsByLabel]);
 
   return (
     <Select
@@ -94,6 +98,7 @@ export default function CategorySelect({
       className={classNames("bcgov-select", {
         "bcgov-select--has-selection": hasSelection,
       })}
+      isDisabled={isDisabled}
       isMulti={isMulti}
       isClearable={isClearable}
       formatOptionLabel={(option, { context }) => {
@@ -135,7 +140,9 @@ CategorySelect.propTypes = {
   onBlur: PropTypes.func,
   placeholder: PropTypes.string,
   categoryKey: PropTypes.string,
+  sortGroupsByLabel: PropTypes.bool,
   defaultMenuLabel: PropTypes.func,
+  isDisabled: PropTypes.bool,
   isMulti: PropTypes.bool,
   isClearable: PropTypes.bool,
 };
