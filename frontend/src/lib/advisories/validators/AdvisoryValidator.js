@@ -184,6 +184,7 @@ export function validAdvisoryData(
     advisoryData.listingRank,
   );
   const validHeadline = validateRequiredText(advisoryData.headline);
+  const validAccessStatus = validateRequiredSelect(advisoryData.accessStatus);
   const validEventType = validateRequiredSelect(advisoryData.eventType);
   const validUrgency = validateRequiredSelect(advisoryData.urgency);
   const validAffectedResources = validateRequiredAffectedResources(
@@ -198,6 +199,7 @@ export function validAdvisoryData(
   let validData =
     validListingRankNumber &&
     validHeadline &&
+    validAccessStatus &&
     validEventType &&
     validUrgency &&
     validAffectedResources &&

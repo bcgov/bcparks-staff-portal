@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
 import CategorySelect from "@/components/advisories/shared/categorySelect/CategorySelect";
 import {
@@ -12,8 +12,10 @@ export default function AccessStatusPicker({
   setAccessStatus,
   selectedProtectedAreas,
   selectedRecreationResources,
+  validation,
   isRecreationUser = false,
 }) {
+  const [isCleared, setIsCleared] = useState(false);
   const hasBcpResourcesSelected = hasSelectedItems(selectedProtectedAreas);
   const hasRstResourcesSelected = hasSelectedItems(selectedRecreationResources);
 
@@ -42,6 +44,11 @@ export default function AccessStatusPicker({
       return;
     }
 
+    // Allow users to clear the picker without immediately re-selecting a value
+    if (isCleared) {
+      return;
+    }
+
     if (!filteredAccessStatuses.length) {
       return;
     }
@@ -55,25 +62,47 @@ export default function AccessStatusPicker({
     if (!hasSelectedAccessStatus) {
       setAccessStatus(filteredAccessStatuses[0].value);
     }
-  }, [filteredAccessStatuses, accessStatus, setAccessStatus, isRecreationUser]);
+  }, [
+    filteredAccessStatuses,
+    accessStatus,
+    setAccessStatus,
+    isRecreationUser,
+    isCleared,
+  ]);
 
   return (
     <CategorySelect
       id="resource-status"
       value={selectedAccessStatusOption}
       options={filteredAccessStatuses}
-      onChange={(option) => setAccessStatus(option ? option.value : 0)}
+      onChange={(option, actionMeta) => {
+        if (actionMeta?.action === "clear") {
+          setIsCleared(true);
+          setAccessStatus(null);
+          return;
+        }
+
+        setIsCleared(false);
+        setAccessStatus(option ? option.value : null);
+      }}
+      onBlur={validation}
       placeholder="Search or select public access status"
       defaultMenuLabel={(option) => option.label}
+      isClearable
     />
   );
 }
 
 AccessStatusPicker.propTypes = {
-  accessStatus: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  accessStatus: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.number,
+    PropTypes.oneOf([null]),
+  ]),
   accessStatuses: PropTypes.arrayOf(PropTypes.object).isRequired,
   setAccessStatus: PropTypes.func.isRequired,
   selectedProtectedAreas: PropTypes.array,
   selectedRecreationResources: PropTypes.array,
+  validation: PropTypes.func,
   isRecreationUser: PropTypes.bool,
 };
