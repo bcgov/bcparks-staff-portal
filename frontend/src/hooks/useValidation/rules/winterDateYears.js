@@ -45,7 +45,7 @@ export default function winterDateYears(seasonData, context) {
       context.addError(
         // Show the error below the empty end date field
         elements.dateField(idOrTempId, "startDate"),
-        `The start date must be after September ${operatingYear}`,
+        `The start date must be between October 1 and December 31, ${operatingYear}`,
       );
     }
 
@@ -53,7 +53,7 @@ export default function winterDateYears(seasonData, context) {
       context.addError(
         // Show the error below the empty end date field
         elements.dateField(idOrTempId, "endDate"),
-        `The end date must be before April ${operatingYear + 1}`,
+        `The end date must be before April 1, ${operatingYear + 1}`,
       );
     }
   });
