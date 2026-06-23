@@ -338,7 +338,7 @@ export default function useCms() {
     [fetchCached],
   );
 
-const getStandardMessages = useCallback(
+  const getStandardMessages = useCallback(
     () =>
       fetchCached(
         "standardMessages",
