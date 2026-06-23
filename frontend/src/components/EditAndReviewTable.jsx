@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import InternalNotesRow from "@/components/InternalNotesRow";
+import SubmittedWithErrorsWarning from "@/components/SubmittedWithErrorsWarning";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
@@ -15,6 +16,9 @@ import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
 import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
+import * as SEASON_STATUS from "@/constants/seasonStatus";
+import completeDateRanges from "@/hooks/useValidation/rules/completeDateRanges";
+import startDateBeforeEndDate from "@/hooks/useValidation/rules/startDateBeforeEndDate";
 
 // Functions
 // Get internal notes for a season, sorted by createdAt date
@@ -23,8 +27,8 @@ function getInternalNotes(season) {
     .filter((log) => typeof log?.notes === "string" && log.notes.trim())
     .sort(
       (left, right) =>
-        new Date(right.createdAt).valueOf() -
-        new Date(left.createdAt).valueOf(),
+        new Date(left.createdAt).valueOf() -
+        new Date(right.createdAt).valueOf(),
     )
     .map((log) => ({
       id: log.id,
@@ -109,6 +113,7 @@ function DateTypeTableRow({
   groupedDateRanges,
   currentYear,
   showYearRange = false,
+  seasonStatus,
 }) {
   if (
     !currentYear ||
@@ -127,11 +132,40 @@ function DateTypeTableRow({
     ? `${currentYear} – ${currentYear + 1}`
     : currentYear;
 
+  // Call the same validation rules used in the form to check current-year date ranges
+  // Build a minimal context that satisfies what completeDateRanges and startDateBeforeEndDate need:
+  // dateRanges, elements, addError, and submitted
+  const validationErrors = [];
+
+  const currentYearDateRanges = Object.values(groupedDateRanges).flatMap(
+    (yearsObj) => yearsObj[currentYear] || [],
+  );
+
+  const minimalValidationContext = {
+    dateRanges: currentYearDateRanges,
+    submitted: true,
+    elements: { dateRange: () => null, dateField: () => null },
+    addError: (_, message) => validationErrors.push(message),
+  };
+
+  completeDateRanges(null, minimalValidationContext);
+  startDateBeforeEndDate(null, minimalValidationContext);
+
+  const hasValidationErrors = validationErrors.length > 0;
+  const hasNotBeenApproved =
+    seasonStatus === SEASON_STATUS.REQUESTED.value ||
+    seasonStatus === SEASON_STATUS.PENDING_REVIEW.value;
+
+  const showWarningIcon = hasNotBeenApproved && hasValidationErrors;
+
   return (
     <tr className="table-row--date-type">
       <th scope="col">Type of date</th>
       <th scope="col">{displayLastYear}</th>
-      <th scope="col">{displayCurrentYear}</th>
+      <th scope="col">
+        {displayCurrentYear}
+        <SubmittedWithErrorsWarning show={showWarningIcon} />
+      </th>
     </tr>
   );
 }
@@ -140,6 +174,7 @@ DateTypeTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
   currentYear: PropTypes.number,
   showYearRange: PropTypes.bool,
+  seasonStatus: PropTypes.string,
 };
 
 function DateTableRow({ groupedDateRanges, currentYear }) {
@@ -238,8 +273,8 @@ function StatusTableRow({
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
-    () => checkAccess(ROLES.APPROVER),
-    [checkAccess, ROLES.APPROVER],
+    () => checkAccess(ROLES.DOOT_APPROVER),
+    [checkAccess, ROLES.DOOT_APPROVER],
   );
 
   /**
@@ -358,6 +393,7 @@ function FeaturesByFeatureTypeWithAreas({
                     groupedDateRanges={parkFeature.groupedDateRanges}
                     currentYear={regularSeason.operatingYear}
                     showYearRange={parkFeature.datesCanSpan2Years}
+                    seasonStatus={regularSeason.status}
                   />
                   <DateTableRow
                     groupedDateRanges={parkFeature.groupedDateRanges}
@@ -412,6 +448,7 @@ function FeaturesByFeatureTypeNoAreas({
               groupedDateRanges={feature.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
               showYearRange={feature.datesCanSpan2Years}
+              seasonStatus={regularSeason.status}
             />
             <DateTableRow
               groupedDateRanges={feature.groupedDateRanges}
@@ -436,7 +473,7 @@ FeaturesByFeatureTypeNoAreas.propTypes = {
 
 function Table({ park, formPanelHandler, sortOrder }) {
   const { hasAnyRole, ROLES } = useAccess();
-  const isApprover = hasAnyRole([ROLES.APPROVER, ROLES.SUPER_ADMIN]);
+  const isApprover = hasAnyRole([ROLES.DOOT_APPROVER, ROLES.SUPER_ADMIN]);
 
   // Constants
   const parkAreas = park.parkAreas || [];
@@ -487,6 +524,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                 <DateTypeTableRow
                   groupedDateRanges={park.groupedDateRanges}
                   currentYear={regularSeason.operatingYear}
+                  seasonStatus={regularSeason.status}
                 />
                 <DateTableRow
                   groupedDateRanges={park.groupedDateRanges}
@@ -517,6 +555,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.winterGroupedDateRanges}
                   currentYear={winterSeason.operatingYear}
                   showYearRange={true}
+                  seasonStatus={winterSeason.status}
                 />
                 <DateTableRow
                   groupedDateRanges={park.winterGroupedDateRanges}
