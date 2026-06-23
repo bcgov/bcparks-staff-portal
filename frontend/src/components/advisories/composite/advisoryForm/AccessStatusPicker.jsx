@@ -1,26 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
-import { keyBy, mapValues, sortBy } from "lodash-es";
+import { sortBy } from "lodash-es";
 import CategorySelect from "@/components/advisories/shared/categorySelect/CategorySelect";
 import {
   filterOptionsByScope,
   hasSelectedItems,
 } from "@/components/advisories/shared/categorySelect/categorySelectUtils";
 
-const CATEGORIES = [
-  { name: "Closed", sortOrder: 1 },
-  { name: "Restricted", sortOrder: 2 },
-  { name: "Limited access", sortOrder: 3 },
-  { name: "Visit with caution", sortOrder: 4 },
-  { name: "Seasonal restrictions", sortOrder: 5 },
-  { name: "Open", sortOrder: 6 },
-];
-
-// Map category names to their sort order
-const CATEGORY_SORT_ORDER = mapValues(
-  keyBy(CATEGORIES, (category) => category.name.toLowerCase()),
-  "sortOrder",
-);
+const CATEGORIES = {
+  closed: 1,
+  restricted: 2,
+  "limited access": 3,
+  "visit with caution": 4,
+  "seasonal restrictions": 5,
+  open: 6,
+};
 
 export default function AccessStatusPicker({
   accessStatus,
@@ -51,7 +45,7 @@ export default function AccessStatusPicker({
     () =>
       sortBy(filteredAccessStatuses, [
         (status) =>
-          CATEGORY_SORT_ORDER[(status.category || "").toLowerCase()] ??
+          CATEGORIES[(status.category || "").toLowerCase()] ??
           Number.POSITIVE_INFINITY,
         (status) => (status.label || "").toLowerCase(),
       ]),

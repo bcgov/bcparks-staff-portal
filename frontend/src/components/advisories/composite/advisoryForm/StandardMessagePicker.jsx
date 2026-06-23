@@ -1,27 +1,21 @@
 import { useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
-import { keyBy, mapValues, sortBy } from "lodash-es";
+import { sortBy } from "lodash-es";
 import CategorySelect from "@/components/advisories/shared/categorySelect/CategorySelect";
 import {
   filterOptionsByScope,
   hasSelectedItems,
 } from "@/components/advisories/shared/categorySelect/categorySelectUtils";
 
-const CATEGORIES = [
-  { name: "Wildfire", sortOrder: 1 },
-  { name: "Environmental", sortOrder: 2 },
-  { name: "Access", sortOrder: 3 },
-  { name: "Public safety", sortOrder: 4 },
-  { name: "Wildlife", sortOrder: 5 },
-  { name: "Seasonal restrictions", sortOrder: 6 },
-  { name: "Pandemic", sortOrder: 7 },
-];
-
-// Map category names to their sort order
-const CATEGORY_SORT_ORDER = mapValues(
-  keyBy(CATEGORIES, (category) => category.name.toLowerCase()),
-  "sortOrder",
-);
+const CATEGORIES = {
+  wildfire: 1,
+  environmental: 2,
+  access: 3,
+  "public safety": 4,
+  wildlife: 5,
+  "seasonal restrictions": 6,
+  pandemic: 7,
+};
 
 export default function StandardMessagePicker({
   standardMessages,
@@ -51,7 +45,7 @@ export default function StandardMessagePicker({
     () =>
       sortBy(filteredStandardMessages, [
         (message) =>
-          CATEGORY_SORT_ORDER[(message.category || "").toLowerCase()] ??
+          CATEGORIES[(message.category || "").toLowerCase()] ??
           Number.POSITIVE_INFINITY,
         (message) => (message.label || "").toLowerCase(),
       ]),

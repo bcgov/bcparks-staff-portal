@@ -342,7 +342,17 @@ export default function useCms() {
     () =>
       fetchCached(
         "standardMessages",
-        `/standard-messages?${querySort("groupLabel")}`,
+        `/standard-messages?${qs.stringify(
+          {
+            filters: {
+              isActive: {
+                $eq: true,
+              },
+            },
+            sort: ["groupLabel"],
+          },
+          { encodeValuesOnly: true },
+        )}`,
       ),
     [fetchCached],
   );
