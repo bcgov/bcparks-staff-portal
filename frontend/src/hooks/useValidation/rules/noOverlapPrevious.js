@@ -43,7 +43,11 @@ export default function noOverlapPrevious(seasonData, context) {
     if (overlaps) {
       context.addError(
         // Show error below the date range
-        elements.dateRange(dateRange.id || dateRange.tempId),
+        elements.dateRange(
+          dateRange.id || dateRange.tempId,
+          dateRange.dateType.name,
+          dateRange.dateableId,
+        ),
         "The dates must not overlap with existing dates submitted in the previous season.",
       );
     }

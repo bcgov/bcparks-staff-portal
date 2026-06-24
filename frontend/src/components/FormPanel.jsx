@@ -10,6 +10,7 @@ import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ErrorSummary from "@/components/FormErrorSummary";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
@@ -199,6 +200,38 @@ function SeasonForm({
   // Find the "Park gate open" date type id
   const gateTypeId = dateTypesByStrapiId[1]?.id;
 
+  // Build a map of Dateable IDs to their Feature names, for display in the Error Summary
+  const dateableNames = useMemo(() => {
+    if (!season) return new Map();
+
+    // For ParkArea-level forms, we need to translate Dateable IDs to names for each Feature in the area
+    if (level === "park-area") {
+      return new Map(
+        season.parkArea.features.map(({ dateableId, name }) => [
+          dateableId,
+          name,
+        ]),
+      );
+    }
+
+    // For Feature-level forms, we only need the Feature itself, so return a map with one entry
+    if (level === "feature") {
+      return new Map([[season.feature.dateableId, season.feature.name]]);
+    }
+
+    // For Park-level forms, we don't need to translate Dateable IDs to names, so return an empty map
+    return new Map();
+  }, [level, season]);
+
+  // Determine if this is a ParkArea-level form with multiple features.
+  // This affects the content of the Error Summary component.
+  const multipleFeatures = useMemo(() => {
+    // Return false if the season data isn't loaded or if it's not an applicable parkArea form
+    if (level !== "park-area" || !season?.parkArea?.features) return false;
+
+    return season.parkArea.features.length > 1;
+  }, [level, season]);
+
   // Clears and re-fetches the data
   function resetData() {
     setData(null);
@@ -346,6 +379,16 @@ function SeasonForm({
     const validationErrors = validation.validateForm();
 
     if (validationErrors.length && !allowInvalid) {
+      // Scroll the Error Summary component into view at the top of the form
+      const errorSummaryElement = document.getElementById("validation-errors");
+
+      if (errorSummaryElement) {
+        errorSummaryElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
       // If there are validation errors and we're not allowing invalid saves, stop here
       throw new Error(
         `Validation failed with ${validationErrors.length} errors`,
@@ -529,6 +572,20 @@ If dates have already been published, they will not be updated until new dates a
         </Offcanvas.Header>
 
         <Offcanvas.Body>
+          <div id="validation-errors">
+            {validation.errors.length > 0 && (
+              <div className="row">
+                <div className="col-12 col-lg-7 col-xl-6 mb-4">
+                  <ErrorSummary
+                    multipleFeatures={multipleFeatures}
+                    errors={validation.errors}
+                    dateableNameMap={dateableNames}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <h3>Public information</h3>
           <p>This information is displayed on bcparks.ca</p>
 
