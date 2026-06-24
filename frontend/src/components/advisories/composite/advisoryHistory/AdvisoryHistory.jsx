@@ -112,7 +112,7 @@ export default function AdvisoryHistory({
                     ? `${text} by ${creatorName} requested`
                     : text,
                   actorName: requesterName || creatorName,
-                  date: ad.modifiedDate || ad.createdDate,
+                  date: ad.modifiedDate || ad.createdDate || ad.createdAt,
                 });
               } else {
                 if (status === "SCH") {

@@ -167,15 +167,13 @@ export function getNaturalResourceDistricts(cmsData, setCmsData) {
 
 export function getEventTypes(cmsData, setCmsData) {
   if (!cmsData.eventTypes) {
-    const result = cmsAxios
-      .get(`/event-types?${querySort("eventType")}`)
-      .then((res) => {
-        const data = cmsData;
+    const result = cmsAxios.get(`/event-types?populate=*`).then((res) => {
+      const data = cmsData;
 
-        data.eventTypes = res.data.data;
-        setCmsData(data);
-        return res.data.data;
-      });
+      data.eventTypes = res.data.data;
+      setCmsData(data);
+      return res.data.data;
+    });
 
     return result;
   }
