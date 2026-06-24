@@ -93,10 +93,23 @@ export default function AdvisorySummaryView({
           <Field label="Recreation Sites and Trails recreation resource(s)">
             <div>
               {advisory.recreationResources.map((resource) => (
-                <div key={resource.id}>
-                  {resource.recResourceId
-                    ? `${resource.resourceName} (${resource.recResourceId})`
-                    : resource.resourceName}
+                <div key={resource.id} className="mb-3">
+                  {resource.recResourceId ? (
+                    <a
+                      href={`https://www.sitesandtrailsbc.ca/resource/${resource.recResourceId}`}
+                      rel="noreferrer"
+                      target="_blank"
+                      className="act-anchor"
+                    >
+                      {`${resource.resourceName} (${resource.recResourceId})`}
+                      <FontAwesomeIcon
+                        icon={faArrowUpRightFromSquare}
+                        className="launchIcon"
+                      />
+                    </a>
+                  ) : (
+                    resource.resourceName
+                  )}
                 </div>
               ))}
             </div>
