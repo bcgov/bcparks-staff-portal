@@ -93,10 +93,23 @@ export default function AdvisorySummaryView({
           <Field label="Recreation Sites and Trails recreation resource(s)">
             <div>
               {advisory.recreationResources.map((resource) => (
-                <div key={resource.id}>
-                  {resource.recResourceId
-                    ? `${resource.resourceName} (${resource.recResourceId})`
-                    : resource.resourceName}
+                <div key={resource.id} className="mb-3">
+                  {resource.recResourceId ? (
+                    <a
+                      href={`https://www.sitesandtrailsbc.ca/resource/${encodeURIComponent(resource.recResourceId)}`}
+                      rel="noopener noreferrer"
+                      target="_blank"
+                      className="act-anchor"
+                    >
+                      {`${resource.resourceName} (${resource.recResourceId})`}
+                      <FontAwesomeIcon
+                        icon={faArrowUpRightFromSquare}
+                        className="launchIcon"
+                      />
+                    </a>
+                  ) : (
+                    resource.resourceName
+                  )}
                 </div>
               ))}
             </div>
@@ -114,7 +127,7 @@ export default function AdvisorySummaryView({
                   {p.url ? (
                     <a
                       href={p.url.replace("https://bcparks.ca", publicUrl)}
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       target="_blank"
                       className="act-anchor"
                     >
@@ -175,7 +188,7 @@ export default function AdvisorySummaryView({
                     {s.url ? (
                       <a
                         href={s.url.replace("https://bcparks.ca", publicUrl)}
-                        rel="noreferrer"
+                        rel="noopener noreferrer"
                         target="_blank"
                         className="act-anchor"
                       >
@@ -358,7 +371,7 @@ export default function AdvisorySummaryView({
                   {l.url && (
                     <a
                       href={l?.file?.url ? l.file.url : l.url}
-                      rel="noreferrer"
+                      rel="noopener noreferrer"
                       target="_blank"
                       className="d-block act-anchor"
                     >
