@@ -338,22 +338,24 @@ export default function useCms() {
     [fetchCached],
   );
 
-  const getStandardMessages = useCallback(() => {
-    const query = qs.stringify(
-      {
-        sort: ["precedence"],
-        fields: ["documentId", "title", "description", "scope"],
-        populate: {
-          eventType: {
-            fields: ["groupLabel", "precedence"],
+  const getStandardMessages = useCallback(
+    () =>
+      fetchCached(
+        "standardMessages",
+        `/standard-messages?${qs.stringify(
+          {
+            filters: {
+              isActive: {
+                $eq: true,
+              },
+            },
+            sort: ["groupLabel"],
           },
-        },
-      },
-      { encodeValuesOnly: true },
-    );
-
-    return fetchCached("standardMessages", `/standard-messages?${query}`);
-  }, [fetchCached]);
+          { encodeValuesOnly: true },
+        )}`,
+      ),
+    [fetchCached],
+  );
 
   /**
    * Determines whether today is a statutory holiday and updates component state.

@@ -1,10 +1,20 @@
 import { useEffect, useMemo, useState } from "react";
 import PropTypes from "prop-types";
+import { sortBy } from "lodash-es";
 import CategorySelect from "@/components/advisories/shared/categorySelect/CategorySelect";
 import {
   filterOptionsByScope,
   hasSelectedItems,
 } from "@/components/advisories/shared/categorySelect/categorySelectUtils";
+
+const CATEGORIES = {
+  closed: 1,
+  restricted: 2,
+  "limited access": 3,
+  "visit with caution": 4,
+  "seasonal restrictions": 5,
+  open: 6,
+};
 
 export default function AccessStatusPicker({
   accessStatus,
@@ -30,12 +40,24 @@ export default function AccessStatusPicker({
     [accessStatuses, hasBcpResourcesSelected, hasRstResourcesSelected],
   );
 
+  // Sort access statuses by category order first, then alphabetically by label
+  const sortedAccessStatuses = useMemo(
+    () =>
+      sortBy(filteredAccessStatuses, [
+        (status) =>
+          CATEGORIES[(status.category || "").toLowerCase()] ??
+          Number.POSITIVE_INFINITY,
+        (status) => (status.label || "").toLowerCase(),
+      ]),
+    [filteredAccessStatuses],
+  );
+
   // If the currently selected access status is not in the filtered list, select the first option by default (if available)
   const selectedAccessStatusOption = useMemo(
     () =>
-      filteredAccessStatuses.find((option) => option.value === accessStatus) ||
+      sortedAccessStatuses.find((option) => option.value === accessStatus) ||
       null,
-    [filteredAccessStatuses, accessStatus],
+    [sortedAccessStatuses, accessStatus],
   );
 
   useEffect(() => {
@@ -49,21 +71,21 @@ export default function AccessStatusPicker({
       return;
     }
 
-    if (!filteredAccessStatuses.length) {
+    if (!sortedAccessStatuses.length) {
       return;
     }
 
     // If the selected access status is not in the filtered options, select the first option by default
-    const hasSelectedAccessStatus = filteredAccessStatuses.some(
+    const hasSelectedAccessStatus = sortedAccessStatuses.some(
       (option) => option.value === accessStatus,
     );
 
     // Only update access status if the current selected access status is not in the filtered list, to avoid unnecessary updates
     if (!hasSelectedAccessStatus) {
-      setAccessStatus(filteredAccessStatuses[0].value);
+      setAccessStatus(sortedAccessStatuses[0].value);
     }
   }, [
-    filteredAccessStatuses,
+    sortedAccessStatuses,
     accessStatus,
     setAccessStatus,
     isRecreationUser,
@@ -74,7 +96,7 @@ export default function AccessStatusPicker({
     <CategorySelect
       id="resource-status"
       value={selectedAccessStatusOption}
-      options={filteredAccessStatuses}
+      options={sortedAccessStatuses}
       onChange={(option, actionMeta) => {
         if (actionMeta?.action === "clear") {
           setIsCleared(true);
@@ -88,6 +110,7 @@ export default function AccessStatusPicker({
       onBlur={validation}
       placeholder="Search or select public access status"
       defaultMenuLabel={(option) => option.label}
+      sortGroupsByLabel={false}
       isClearable
     />
   );

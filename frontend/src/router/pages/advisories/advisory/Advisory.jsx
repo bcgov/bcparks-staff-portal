@@ -730,9 +730,8 @@ export default function Advisory({ mode }) {
           const newStandardMessages = standardMessageData.map((m) => ({
             label: m.title,
             value: m.documentId,
-            category: m.eventType?.groupLabel,
+            category: m.groupLabel,
             scope: m.scope,
-            eventTypePrecedence: m.eventType?.precedence,
             type: "standardMessage",
             obj: m,
           }));
