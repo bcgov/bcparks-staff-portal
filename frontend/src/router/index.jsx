@@ -73,9 +73,7 @@ const RouterConfig = createBrowserRouter([
       {
         path: "advisories-and-closures",
         element: (
-          <AccessControlledRoute
-            allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}
-          >
+          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
             <AdvisoryDashboard />
           </AccessControlledRoute>
         ),
@@ -92,9 +90,7 @@ const RouterConfig = createBrowserRouter([
       {
         path: "/create-advisory",
         element: (
-          <AccessControlledRoute
-            allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}
-          >
+          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
             <Advisory mode="create" />
           </AccessControlledRoute>
         ),
@@ -102,9 +98,7 @@ const RouterConfig = createBrowserRouter([
       {
         path: "/advisory-summary/:documentId",
         element: (
-          <AccessControlledRoute
-            allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}
-          >
+          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
             <AdvisorySummary />
           </AccessControlledRoute>
         ),
@@ -112,9 +106,7 @@ const RouterConfig = createBrowserRouter([
       {
         path: "/update-advisory/:documentId",
         element: (
-          <AccessControlledRoute
-            allowedRoles={[ROLES.ADVISORY_SUBMITTER, ROLES.ADVISORY_APPROVER]}
-          >
+          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
             <Advisory mode="update" />
           </AccessControlledRoute>
         ),

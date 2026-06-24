@@ -98,7 +98,7 @@ export default function Advisory({ mode }) {
   const [isAfterHourPublish, setIsAfterHourPublish] = useState(false);
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [dataChanged, setDataChanged] = useState(false);
+  const dataChanged = useRef(false);
   const linksRef = useRef([]);
   const advisoryDateRef = useRef(moment().tz("America/Vancouver").toDate());
   const [isApprover, setIsApprover] = useState(false);
@@ -134,7 +134,7 @@ export default function Advisory({ mode }) {
   const isAuthenticated = auth.isAuthenticated;
 
   // Use a route blocker to show a confirmation dialog when the user attempts to navigate away with unsaved changes
-  const blocker = useBlocker(dataChanged);
+  const blocker = useBlocker(() => dataChanged.current);
   // Ref to track if the route blocker is currently active, to prevent multiple blocker flows from stacking if more navigation is attempted while the dialog is open
   const isBlockerActive = useRef(false);
 
@@ -168,10 +168,10 @@ export default function Advisory({ mode }) {
 
   // Set dataChanged to true when any of the form fields change, to enable the navigation guard
   const markChanged = useCallback(() => {
-    setDataChanged(true);
+    dataChanged.current = true;
   }, []);
 
-  useNavigationGuard(dataChanged);
+  useNavigationGuard(useCallback(() => dataChanged.current, []));
 
   // Block internal route transitions while there are unsaved changes.
   // beforeunload is still handled by useNavigationGuard for document-level exits.
@@ -189,7 +189,7 @@ export default function Advisory({ mode }) {
       const shouldProceed = await confirmUnsavedChangesNavigation();
 
       if (shouldProceed) {
-        setDataChanged(false);
+        dataChanged.current = false;
         blocker.proceed();
         return;
       }
@@ -1128,7 +1128,7 @@ export default function Advisory({ mode }) {
         data: newAdvisory,
       });
 
-      setDataChanged(false);
+      dataChanged.current = false;
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
@@ -1254,7 +1254,7 @@ export default function Advisory({ mode }) {
         data: updatedAdvisory,
       });
 
-      setDataChanged(false);
+      dataChanged.current = false;
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
