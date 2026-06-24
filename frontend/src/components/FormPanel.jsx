@@ -1,5 +1,6 @@
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 import { isEqual, omit, keyBy } from "lodash-es";
 
@@ -119,6 +120,21 @@ function SeasonForm({
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
+  const [submitWithErrors, setSubmitWithErrors] = useState(false);
+
+  // Determine if the user is allowed to bypass validation errors and submit/approve the form
+  const allowSubmitWithErrors = useMemo(() => {
+    // Return false if the user is not an approver or submitter
+    if (!approver && !submitter) return false;
+
+    // Return false if the user hasn't provided any notes
+    if (!notes.trim()) return false;
+
+    // Return true if the "Submit with errors" checkbox is checked
+    if (submitWithErrors) return true;
+
+    return false;
+  }, [approver, submitter, submitWithErrors, notes]);
 
   // Track form submission state: run more validation rules after the first submit
   const [submitted, setSubmitted] = useState(false);
@@ -429,6 +445,13 @@ function SeasonForm({
         );
     }
 
+    // Send the value of the "Submit with validation errors" checkbox to the API
+    // Always send false for drafts, since drafts can always be saved with errors
+    payload.savedWithErrors =
+      status !== STATUS.REQUESTED.value &&
+      allowInvalid &&
+      validationErrors.length > 0;
+
     try {
       // Send the save request to the API
       await sendSave(payload);
@@ -439,6 +462,7 @@ function SeasonForm({
       // Reset the form state
       setNotes("");
       setDeletedDateRangeIds([]);
+      setSubmitWithErrors(false);
 
       if (close) {
         closePanel();
@@ -486,8 +510,8 @@ If dates have already been published, they will not be updated until new dates a
 
   async function onApprove() {
     try {
-      // Save and update status
-      await saveForm(false, false, STATUS.APPROVED.value); // Don't close the form after saving
+      // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
+      await saveForm(false, allowSubmitWithErrors, STATUS.APPROVED.value); // Don't close the form after saving
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -505,8 +529,8 @@ If dates have already been published, they will not be updated until new dates a
 
   async function onSubmit() {
     try {
-      // Save and update status
-      await saveForm(false, false, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
+      // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
+      await saveForm(false, allowSubmitWithErrors, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -635,6 +659,43 @@ If dates have already been published, they will not be updated until new dates a
               season.status !== STATUS.PUBLISHED.value
             }
           />
+
+          {/* Pseudo-validation for submitting with errors: User must provide an internal note */}
+          {validation.errors.length > 0 &&
+            submitWithErrors &&
+            !notes.trim() && (
+              <div
+                className="text-danger validation-errors mb-5"
+                data-error-slot-id="submit-with-errors-notes"
+              >
+                <div>
+                  Required when submitting with errors. Please explain why
+                  errors do not apply.
+                </div>
+              </div>
+            )}
+
+          {/* For users who can submit or approve, show a checkbox to and bypass validation */}
+          {validation.errors.length > 0 && (submitter || approver) && (
+            <div>
+              <div
+                className="alert alert-warning fade show px-5 py-4 text-black"
+                role="alert"
+              >
+                <h4>Submit anyway</h4>
+
+                <Form.Check
+                  label={
+                    "I have reviewed the errors and confirm the information is correct. An Internal note is required to explain why errors do not apply."
+                  }
+                  id={"submit-with-errors"}
+                  checked={submitWithErrors}
+                  onChange={(e) => setSubmitWithErrors(e.target.checked)}
+                />
+              </div>
+            </div>
+          )}
+
           <Buttons
             approver={approver}
             submitter={submitter}

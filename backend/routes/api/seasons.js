@@ -60,6 +60,7 @@ function checkSeasonExists(season) {
  * If "save" is true, it will first save the changes to the Season.
  * @param {number} seasonId The ID of the season to update
  * @param {string} status The new status to set for the season
+ * @param {boolean} savedWithErrors Whether the form was submitted with validation errors
  * @param {boolean} [readyToPublish] Optionally provide a new readyToPublish value to set
  * @param {Transaction} [transaction] Optional Sequelize transaction object for atomic operations
  * @returns {Promise<Season>} The updated season model
@@ -67,6 +68,7 @@ function checkSeasonExists(season) {
 async function updateStatus(
   seasonId,
   status,
+  savedWithErrors,
   readyToPublish = null,
   transaction = null,
 ) {
@@ -76,6 +78,9 @@ async function updateStatus(
 
   // Update season status
   season.status = status;
+
+  // Update the "savedWithErrors" flag
+  season.savedWithErrors = savedWithErrors;
 
   // Update the "Ready to publish" flag if provided
   if (readyToPublish !== null) {
@@ -262,6 +267,7 @@ const SEASON_ATTRIBUTES = [
   "editable",
   "publishableId",
   "seasonType",
+  "savedWithErrors",
 ];
 
 /**
@@ -490,6 +496,7 @@ async function getWinterSeason(park, operatingYear) {
  * @param {string} params.newStatus New status for the season
  * @param {boolean|null} params.newReadyToPublish New readyToPublish value
  * @param {string} params.notes Notes for the change log
+ * @param {boolean} params.savedWithErrors Whether the form was submitted with validation errors
  * @param {number} params.userId User ID making the changes
  * @param {Transaction} params.transaction Database transaction
  * @param {boolean} params.isWinterSeason Whether this is a winter season
@@ -504,6 +511,7 @@ async function saveSeasonData({
   newStatus,
   newReadyToPublish,
   notes,
+  savedWithErrors,
   userId,
   transaction,
   isWinterSeason = false,
@@ -596,6 +604,7 @@ async function saveSeasonData({
   const saveSeason = updateStatus(
     season.id,
     newStatus,
+    savedWithErrors,
     newReadyToPublish,
     transaction,
   );
@@ -1079,6 +1088,7 @@ router.post(
     const seasonId = Number(req.params.seasonId);
     const {
       notes = "",
+      savedWithErrors = false,
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
       gateDetail = {},
@@ -1146,6 +1156,18 @@ router.post(
       checkSeasonExists(season);
 
       const newStatus = status ?? season.status;
+      const shouldMarkSavedWithErrors =
+        newStatus !== STATUS.REQUESTED && savedWithErrors;
+
+      // Require an explanation note if the form is submitted with validation errors
+      if (shouldMarkSavedWithErrors && !notes.trim()) {
+        const error = new Error(
+          "Validation error: Missing explanation note for saving with errors.",
+        );
+
+        error.status = 400;
+        throw error;
+      }
 
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
@@ -1163,6 +1185,7 @@ router.post(
         newStatus,
         newReadyToPublish,
         notes,
+        savedWithErrors: shouldMarkSavedWithErrors,
         userId: req.user.id,
         transaction,
         isWinterSeason,
