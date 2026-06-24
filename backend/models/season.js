@@ -54,6 +54,11 @@ export default (sequelize) => {
       operatingYear: DataTypes.INTEGER,
       publishableId: DataTypes.INTEGER,
       status: DataTypes.STRING,
+      savedWithErrors: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       readyToPublish: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
