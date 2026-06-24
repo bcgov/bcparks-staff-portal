@@ -759,6 +759,9 @@ router.get(
 
     parkWinterDates.push(...previousParkWinterDates);
 
+    // Add datesCanSpan2Years flag at the season level
+    currentSeason.datesCanSpan2Years = feature.datesCanSpan2Years;
+
     const output = {
       current: currentSeason,
       previous: previousSeason,
@@ -887,6 +890,12 @@ router.get(
     const previousParkWinterDates = (await previousParkDates).parkWinterDates;
 
     parkWinterDates.push(...previousParkWinterDates);
+
+    // Add datesCanSpan2Years flag at the season level
+    // to indicate if any features have dates that span two years
+    currentSeason.datesCanSpan2Years = seasonModel.parkArea.features.some(
+      (feature) => feature.datesCanSpan2Years,
+    );
 
     const output = {
       current: currentSeason,
@@ -1039,6 +1048,11 @@ router.get(
       dateRangeAnnuals,
       gateDetail,
     };
+
+    // Add datesCanSpan2Years flag at the season level.
+    // Park-level forms won't have this flag, but set it false for the template.
+    // Winter season dates can span 2 years, but validation/UI logic is different for winter fees.
+    currentSeason.datesCanSpan2Years = false;
 
     const output = {
       current: currentSeason,

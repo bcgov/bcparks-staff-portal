@@ -18,5 +18,19 @@ table {
         background-color: var(--theme-gray-10);
       }
     }
+    &--note {
+      td {
+        width: 30%;
+        &:first-child {
+          width: 20%;
+        }
+
+        ul li {
+          + li {
+            margin-top: 1rem;
+          }
+        }
+      }
+    }
   }
 }
