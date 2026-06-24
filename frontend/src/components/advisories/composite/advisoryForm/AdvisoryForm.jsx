@@ -934,13 +934,15 @@ export default function AdvisoryForm({
                         markChanged();
                       }}
                     />
-                    <Btn
-                      variant="outline-secondary"
-                      as="span"
-                      className="act-add-link add-file ms-2"
-                    >
-                      Browse
-                    </Btn>
+                    <label htmlFor={`file-upload-${idx}`} >
+                      <Btn
+                        variant="outline-secondary"
+                        as="span"
+                        className="act-add-link add-file ms-2"
+                      >
+                        Browse
+                      </Btn>
+                    </label>
                     {linkFileErrors[idx] && (
                       <span className="d-block text-danger act-helper-text">
                         Select a file
