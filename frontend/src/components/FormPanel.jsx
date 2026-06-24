@@ -152,7 +152,22 @@ function SeasonForm({
     previousWinter: previousWinterSeasonDates,
     ...seasonMetadata
   } = data || {};
-  const currentYear = season?.operatingYear;
+
+  // Derive the header text from the season data
+  const yearHeaderText = useMemo(() => {
+    // operatingYear is always defined for a Season, so data is still loading if it's undefined
+    if (!season?.operatingYear) return "";
+
+    const operatingYear = season.operatingYear;
+    const nextYear = operatingYear + 1;
+
+    if (season.datesCanSpan2Years) {
+      return `${operatingYear} – ${nextYear} dates`;
+    }
+
+    // Default: operating year
+    return `${operatingYear} dates`;
+  }, [season?.datesCanSpan2Years, season?.operatingYear]);
 
   const seasonTitle = useMemo(() => {
     // Return blank while loading
@@ -501,7 +516,7 @@ If dates have already been published, they will not be updated until new dates a
             )}
 
             <h2>{seasonTitle}</h2>
-            <h2 className="fw-normal">{currentYear} dates</h2>
+            <h2 className="fw-normal">{yearHeaderText}</h2>
             <p className="fs-6 fw-normal">
               <a
                 href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"

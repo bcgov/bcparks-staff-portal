@@ -108,7 +108,7 @@ DateRangesList.propTypes = {
 function DateTypeTableRow({
   groupedDateRanges,
   currentYear,
-  isWinterSeason = false,
+  showYearRange = false,
 }) {
   if (
     !currentYear ||
@@ -117,11 +117,13 @@ function DateTypeTableRow({
   )
     return null;
 
+  // Winter fee seasons and seasons with a specific flag have dates that can span 2 years,
+  // So we show a year range in the table header instead of just the year.
   const lastYear = currentYear - 1;
-  const displayLastYear = isWinterSeason
+  const displayLastYear = showYearRange
     ? `${lastYear} – ${currentYear}`
     : lastYear;
-  const displayCurrentYear = isWinterSeason
+  const displayCurrentYear = showYearRange
     ? `${currentYear} – ${currentYear + 1}`
     : currentYear;
 
@@ -137,7 +139,7 @@ function DateTypeTableRow({
 DateTypeTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
   currentYear: PropTypes.number,
-  isWinterSeason: PropTypes.bool,
+  showYearRange: PropTypes.bool,
 };
 
 function DateTableRow({ groupedDateRanges, currentYear }) {
@@ -355,6 +357,7 @@ function FeaturesByFeatureTypeWithAreas({
                   <DateTypeTableRow
                     groupedDateRanges={parkFeature.groupedDateRanges}
                     currentYear={regularSeason.operatingYear}
+                    showYearRange={parkFeature.datesCanSpan2Years}
                   />
                   <DateTableRow
                     groupedDateRanges={parkFeature.groupedDateRanges}
@@ -408,6 +411,7 @@ function FeaturesByFeatureTypeNoAreas({
             <DateTypeTableRow
               groupedDateRanges={feature.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
+              showYearRange={feature.datesCanSpan2Years}
             />
             <DateTableRow
               groupedDateRanges={feature.groupedDateRanges}
@@ -512,7 +516,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                 <DateTypeTableRow
                   groupedDateRanges={park.winterGroupedDateRanges}
                   currentYear={winterSeason.operatingYear}
-                  isWinterSeason={true}
+                  showYearRange={true}
                 />
                 <DateTableRow
                   groupedDateRanges={park.winterGroupedDateRanges}
