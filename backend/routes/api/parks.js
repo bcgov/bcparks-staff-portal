@@ -64,6 +64,12 @@ function seasonModel(minYear, required = true) {
         model: SeasonChangeLog,
         as: "changeLogs",
         attributes: ["id", "notes", "createdAt"],
+        required: false,
+        where: {
+          notes: {
+            [Op.ne]: "",
+          },
+        },
         include: [
           {
             model: User,
@@ -294,7 +300,7 @@ router.get(
     // Constants
     const currentYear = new Date().getFullYear();
     const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
-      USER_ROLES.DOOT_ALL_PARK_ACCESS,
+      USER_ROLES.ALL_PARK_ACCESS,
     ]);
 
     const parks = await Park.findAll({

@@ -27,8 +27,8 @@ function getInternalNotes(season) {
     .filter((log) => typeof log?.notes === "string" && log.notes.trim())
     .sort(
       (left, right) =>
-        new Date(left.createdAt).valueOf() -
-        new Date(right.createdAt).valueOf(),
+        new Date(right.createdAt).valueOf() -
+        new Date(left.createdAt).valueOf(),
     )
     .map((log) => ({
       id: log.id,
@@ -273,8 +273,8 @@ function StatusTableRow({
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
-    () => checkAccess(ROLES.DOOT_APPROVER),
-    [checkAccess, ROLES.DOOT_APPROVER],
+    () => checkAccess(ROLES.APPROVER),
+    [checkAccess, ROLES.APPROVER],
   );
 
   /**
@@ -473,7 +473,7 @@ FeaturesByFeatureTypeNoAreas.propTypes = {
 
 function Table({ park, formPanelHandler, sortOrder }) {
   const { hasAnyRole, ROLES } = useAccess();
-  const isApprover = hasAnyRole([ROLES.DOOT_APPROVER, ROLES.SUPER_ADMIN]);
+  const isApprover = hasAnyRole([ROLES.APPROVER, ROLES.SUPER_ADMIN]);
 
   // Constants
   const parkAreas = park.parkAreas || [];
