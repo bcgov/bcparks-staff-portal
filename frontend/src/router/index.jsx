@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 
 import AccessControlledRoute from "./AccessControlledRoute";
 import EditAndReview from "./pages/EditAndReview";
+import EditPublishedPage from "./pages/EditPublishedPage";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
 import MainLayout from "./layouts/MainLayout";
@@ -41,6 +42,11 @@ const RouterConfig = createBrowserRouter(
             {
               path: "edit/feature/:seasonId",
               element: <EditAndReview />,
+            },
+            // Edit published table / landing page
+            {
+              path: "edit-published",
+              element: <EditPublishedPage />,
             },
             // Export
             {
