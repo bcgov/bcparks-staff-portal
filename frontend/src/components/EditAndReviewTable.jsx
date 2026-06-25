@@ -17,8 +17,6 @@ import "./EditAndReviewTable.scss";
 import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as SEASON_STATUS from "@/constants/seasonStatus";
-import completeDateRanges from "@/hooks/useValidation/rules/completeDateRanges";
-import startDateBeforeEndDate from "@/hooks/useValidation/rules/startDateBeforeEndDate";
 
 // Functions
 // Get internal notes for a season, sorted by createdAt date
@@ -114,6 +112,7 @@ function DateTypeTableRow({
   currentYear,
   showYearRange = false,
   seasonStatus,
+  savedWithErrors,
 }) {
   if (
     !currentYear ||
@@ -132,31 +131,11 @@ function DateTypeTableRow({
     ? `${currentYear} – ${currentYear + 1}`
     : currentYear;
 
-  // Call the same validation rules used in the form to check current-year date ranges
-  // Build a minimal context that satisfies what completeDateRanges and startDateBeforeEndDate need:
-  // dateRanges, elements, addError, and submitted
-  const validationErrors = [];
-
-  const currentYearDateRanges = Object.values(groupedDateRanges).flatMap(
-    (yearsObj) => yearsObj[currentYear] || [],
-  );
-
-  const minimalValidationContext = {
-    dateRanges: currentYearDateRanges,
-    submitted: true,
-    elements: { dateRange: () => null, dateField: () => null },
-    addError: (_, message) => validationErrors.push(message),
-  };
-
-  completeDateRanges(null, minimalValidationContext);
-  startDateBeforeEndDate(null, minimalValidationContext);
-
-  const hasValidationErrors = validationErrors.length > 0;
   const hasNotBeenApproved =
     seasonStatus === SEASON_STATUS.REQUESTED.value ||
     seasonStatus === SEASON_STATUS.PENDING_REVIEW.value;
 
-  const showWarningIcon = hasNotBeenApproved && hasValidationErrors;
+  const showWarningIcon = hasNotBeenApproved && Boolean(savedWithErrors);
 
   return (
     <tr className="table-row--date-type">
@@ -175,6 +154,7 @@ DateTypeTableRow.propTypes = {
   currentYear: PropTypes.number,
   showYearRange: PropTypes.bool,
   seasonStatus: PropTypes.string,
+  savedWithErrors: PropTypes.bool,
 };
 
 function DateTableRow({ groupedDateRanges, currentYear }) {
@@ -394,6 +374,7 @@ function FeaturesByFeatureTypeWithAreas({
                     currentYear={regularSeason.operatingYear}
                     showYearRange={parkFeature.datesCanSpan2Years}
                     seasonStatus={regularSeason.status}
+                    savedWithErrors={regularSeason.savedWithErrors}
                   />
                   <DateTableRow
                     groupedDateRanges={parkFeature.groupedDateRanges}
@@ -449,6 +430,7 @@ function FeaturesByFeatureTypeNoAreas({
               currentYear={regularSeason.operatingYear}
               showYearRange={feature.datesCanSpan2Years}
               seasonStatus={regularSeason.status}
+              savedWithErrors={regularSeason.savedWithErrors}
             />
             <DateTableRow
               groupedDateRanges={feature.groupedDateRanges}
@@ -525,6 +507,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.groupedDateRanges}
                   currentYear={regularSeason.operatingYear}
                   seasonStatus={regularSeason.status}
+                  savedWithErrors={regularSeason.savedWithErrors}
                 />
                 <DateTableRow
                   groupedDateRanges={park.groupedDateRanges}
@@ -556,6 +539,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   currentYear={winterSeason.operatingYear}
                   showYearRange={true}
                   seasonStatus={winterSeason.status}
+                  savedWithErrors={winterSeason.savedWithErrors}
                 />
                 <DateTableRow
                   groupedDateRanges={park.winterGroupedDateRanges}
