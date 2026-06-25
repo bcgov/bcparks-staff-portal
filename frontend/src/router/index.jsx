@@ -52,6 +52,11 @@ const RouterConfig = createBrowserRouter(
                 </AccessControlledRoute>
               ),
             },
+            // Edit published table / landing page
+            {
+              path: "edit-published",
+              element: <EditPublishedPage />,
+            },
             // Export
             {
               path: "export",
