@@ -301,7 +301,7 @@ export default function useCms() {
   );
 
   const getEventTypes = useCallback(
-    () => fetchCached("eventTypes", `/event-types?${querySort("eventType")}`),
+    () => fetchCached("eventTypes", `/event-types?populate=*`),
     [fetchCached],
   );
 

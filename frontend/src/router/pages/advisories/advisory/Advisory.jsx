@@ -658,12 +658,29 @@ export default function Advisory({ mode }) {
 
           setRecreationResources(newRecreationResources);
           const eventTypeData = res[9];
-          const newEventTypes = eventTypeData.map((et) => ({
-            label: et.eventType,
-            value: et.documentId,
-            category: et.groupLabel,
-            scope: et.scope,
-          }));
+          const newEventTypes = eventTypeData.flatMap((et) => {
+            const categories = et.eventTypeSubCategories
+              ?.map((sc) => sc?.subCategory)
+              .filter(Boolean);
+
+            if (!categories?.length) {
+              return [
+                {
+                  label: et.eventType,
+                  value: et.documentId,
+                  category: "Uncategorized",
+                  scope: et.scope,
+                },
+              ];
+            }
+
+            return categories.map((category) => ({
+              label: et.eventType,
+              value: et.documentId,
+              category,
+              scope: et.scope,
+            }));
+          });
 
           setEventTypes([...newEventTypes]);
           const accessStatusData = res[10];
