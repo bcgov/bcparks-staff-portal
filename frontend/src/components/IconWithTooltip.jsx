@@ -5,8 +5,8 @@ import TooltipWrapper from "@/components/TooltipWrapper";
 export default function IconWithTooltip({ icon, tooltip, className }) {
   return (
     <TooltipWrapper placement="top" content={tooltip}>
-      <span className={className} aria-hidden="true">
-        <FontAwesomeIcon icon={icon} />
+      <span className={className} role="img" aria-label={tooltip}>
+        <FontAwesomeIcon icon={icon} aria-hidden="true" focusable="false" />
       </span>
     </TooltipWrapper>
   );

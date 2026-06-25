@@ -39,7 +39,7 @@ function seasonModel(minYear, required = true) {
       "seasonType",
       "readyToPublish",
       "operatingYear",
-      "savedWithErrors"
+      "savedWithErrors",
     ],
     // filter seasons with operatingYear >= minYear
     where: {
