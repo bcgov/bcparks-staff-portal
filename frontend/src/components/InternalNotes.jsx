@@ -75,7 +75,7 @@ function InternalNotes({
         </small>
       </div>
 
-      <ErrorSlot element={elements.INTERNAL_NOTES} />
+      <ErrorSlot elementId={elements.INTERNAL_NOTES.id} />
     </div>
   );
 }

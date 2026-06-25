@@ -93,7 +93,7 @@ function FeatureFormSectionComponent({
         </div>
       ))}
 
-      <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
+      <ErrorSlot elementId={elements.dateableSection(feature.dateableId).id} />
     </div>
   );
 }

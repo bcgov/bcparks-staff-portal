@@ -181,7 +181,9 @@ function FormSection({ dateTypes, feature, season, previousSeasonDates }) {
             canSpan2Years={feature.datesCanSpan2Years}
           />
 
-          <ErrorSlot element={elements.dateableSection(feature.dateableId)} />
+          <ErrorSlot
+            elementId={elements.dateableSection(feature.dateableId).id}
+          />
         </div>
       ))}
     </div>

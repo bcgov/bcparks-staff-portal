@@ -43,8 +43,13 @@ export default function winterDateYears(seasonData, context) {
 
     if (startDate && !isWithinInterval(startDate, validStartDates)) {
       context.addError(
-        // Show the error below the empty end date field
-        elements.dateField(idOrTempId, "startDate"),
+        // Show the error below the empty start date field
+        elements.dateField(
+          idOrTempId,
+          "startDate",
+          `${winterDateRange.dateType.name} start date`,
+          winterDateRange.dateableId,
+        ),
         `The start date must be between October 1 and December 31, ${operatingYear}`,
       );
     }
@@ -52,7 +57,12 @@ export default function winterDateYears(seasonData, context) {
     if (endDate && !isBefore(endDate, april1)) {
       context.addError(
         // Show the error below the empty end date field
-        elements.dateField(idOrTempId, "endDate"),
+        elements.dateField(
+          idOrTempId,
+          "endDate",
+          `${winterDateRange.dateType.name} end date`,
+          winterDateRange.dateableId,
+        ),
         `The end date must be before April 1, ${operatingYear + 1}`,
       );
     }

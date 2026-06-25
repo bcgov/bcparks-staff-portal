@@ -57,7 +57,7 @@ function DootDatePickerComponent({
         <FontAwesomeIcon className="append-content" icon={faCalendarCheck} />
       </div>
 
-      <ErrorSlot element={elements.dateField(id, dateField)} />
+      <ErrorSlot elementId={elements.dateField(id, dateField).id} />
     </>
   );
 }
