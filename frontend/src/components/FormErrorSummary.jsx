@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { groupBy, orderBy, partition } from "lodash-es";
+import { groupBy, orderBy, partition, uniqBy } from "lodash-es";
 import { useCallback, useMemo } from "react";
 
 /**
@@ -52,7 +52,7 @@ export default function FormErrorSummary({
   errors,
   dateableNameMap,
 }) {
-  const numErrors = errors.length;
+  const numErrors = uniqBy(errors, "id").length;
 
   const headline =
     numErrors === 1
