@@ -46,8 +46,12 @@ export function onSigninCallback() {
     url.searchParams.delete(param);
   }
 
+  // Preserve existing history state (idx/key/usr) so React Router's history
+  // data remains valid after we strip OIDC params from the URL.
+  const currentHistoryState = window.history.state ?? null;
+
   window.history.replaceState(
-    {},
+    currentHistoryState,
     document.title,
     `${url.pathname}${url.search}${url.hash}`,
   );
