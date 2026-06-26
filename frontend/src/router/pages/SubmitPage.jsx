@@ -19,7 +19,11 @@ import {
   getMatchingFeatures,
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
+<<<<<<< HEAD
 } from "@/lib/submitPageFilters";
+=======
+} from "@/lib/submitFilters";
+>>>>>>> f2a6cf2 (CMS-1834: Change EditAndReview files name to Submit)
 import { groupBy } from "lodash-es";
 
 function SubmitPage() {
