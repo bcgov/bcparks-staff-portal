@@ -7,6 +7,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import InternalNotesRow from "@/components/InternalNotesRow";
+import SubmittedWithErrorsWarning from "@/components/SubmittedWithErrorsWarning";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
@@ -15,6 +16,7 @@ import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import "./EditAndReviewTable.scss";
 import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
+import * as SEASON_STATUS from "@/constants/seasonStatus";
 
 // Functions
 // Get internal notes for a season, sorted by createdAt date
@@ -109,6 +111,8 @@ function DateTypeTableRow({
   groupedDateRanges,
   currentYear,
   showYearRange = false,
+  seasonStatus,
+  savedWithErrors,
 }) {
   if (
     !currentYear ||
@@ -127,11 +131,20 @@ function DateTypeTableRow({
     ? `${currentYear} – ${currentYear + 1}`
     : currentYear;
 
+  const hasNotBeenApproved =
+    seasonStatus === SEASON_STATUS.REQUESTED.value ||
+    seasonStatus === SEASON_STATUS.PENDING_REVIEW.value;
+
+  const showWarningIcon = hasNotBeenApproved && Boolean(savedWithErrors);
+
   return (
     <tr className="table-row--date-type">
       <th scope="col">Type of date</th>
       <th scope="col">{displayLastYear}</th>
-      <th scope="col">{displayCurrentYear}</th>
+      <th scope="col">
+        {displayCurrentYear}
+        <SubmittedWithErrorsWarning show={showWarningIcon} />
+      </th>
     </tr>
   );
 }
@@ -140,6 +153,8 @@ DateTypeTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
   currentYear: PropTypes.number,
   showYearRange: PropTypes.bool,
+  seasonStatus: PropTypes.string,
+  savedWithErrors: PropTypes.bool,
 };
 
 function DateTableRow({ groupedDateRanges, currentYear }) {
@@ -358,6 +373,8 @@ function FeaturesByFeatureTypeWithAreas({
                     groupedDateRanges={parkFeature.groupedDateRanges}
                     currentYear={regularSeason.operatingYear}
                     showYearRange={parkFeature.datesCanSpan2Years}
+                    seasonStatus={regularSeason.status}
+                    savedWithErrors={regularSeason.savedWithErrors}
                   />
                   <DateTableRow
                     groupedDateRanges={parkFeature.groupedDateRanges}
@@ -412,6 +429,8 @@ function FeaturesByFeatureTypeNoAreas({
               groupedDateRanges={feature.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
               showYearRange={feature.datesCanSpan2Years}
+              seasonStatus={regularSeason.status}
+              savedWithErrors={regularSeason.savedWithErrors}
             />
             <DateTableRow
               groupedDateRanges={feature.groupedDateRanges}
@@ -487,6 +506,8 @@ function Table({ park, formPanelHandler, sortOrder }) {
                 <DateTypeTableRow
                   groupedDateRanges={park.groupedDateRanges}
                   currentYear={regularSeason.operatingYear}
+                  seasonStatus={regularSeason.status}
+                  savedWithErrors={regularSeason.savedWithErrors}
                 />
                 <DateTableRow
                   groupedDateRanges={park.groupedDateRanges}
@@ -517,6 +538,8 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.winterGroupedDateRanges}
                   currentYear={winterSeason.operatingYear}
                   showYearRange={true}
+                  seasonStatus={winterSeason.status}
+                  savedWithErrors={winterSeason.savedWithErrors}
                 />
                 <DateTableRow
                   groupedDateRanges={park.winterGroupedDateRanges}
