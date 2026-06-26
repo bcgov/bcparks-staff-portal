@@ -157,8 +157,13 @@ export async function populateAnnualDateRangesForYear(
         const newStartDate = new Date(prevStartDate);
         const newEndDate = new Date(prevEndDate);
 
+        // Calculate the year difference between the previous end and start dates
+        // to handle dates that span two calendar years (e.g., Nov 2026 to March 2027)
+        const yearDifference =
+          prevEndDate.getFullYear() - prevStartDate.getFullYear();
+
         newStartDate.setFullYear(currentYear);
-        newEndDate.setFullYear(currentYear);
+        newEndDate.setFullYear(currentYear + yearDifference);
 
         dateRangesToCreate.push({
           dateableId,
