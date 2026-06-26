@@ -28,7 +28,7 @@ import * as USER_ROLES from "../../constants/userRoles.js";
 const router = Router();
 
 // Functions
-function seasonModel(minYear, required = true) {
+function seasonModel(minYear, required = true, seasonStatus = null) {
   return {
     model: Season,
     as: "seasons",
@@ -46,6 +46,7 @@ function seasonModel(minYear, required = true) {
       operatingYear: {
         [Op.gte]: minYear,
       },
+      ...(seasonStatus ? { status: seasonStatus } : {}),
     },
     required,
     include: [
@@ -83,7 +84,7 @@ function seasonModel(minYear, required = true) {
   };
 }
 
-function featureModel(minYear, where = {}) {
+function featureModel(minYear, where = {}, seasonStatus = null) {
   return {
     model: Feature,
     as: "features",
@@ -108,7 +109,7 @@ function featureModel(minYear, where = {}) {
         attributes: ["id", "featureTypeNumber", "name"],
       },
       // Publishable Seasons for the Feature
-      seasonModel(minYear, false),
+      seasonModel(minYear, false, seasonStatus),
     ],
   };
 }
@@ -300,6 +301,10 @@ router.get(
   asyncHandler(async (req, res) => {
     // Constants
     const currentYear = new Date().getFullYear();
+    const seasonStatus =
+      typeof req.query.seasonStatus === "string"
+        ? req.query.seasonStatus
+        : null;
     const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
       USER_ROLES.ALL_PARK_ACCESS,
     ]);
@@ -320,7 +325,7 @@ router.get(
       where: { hasDates: true },
       include: [
         // Publishable Seasons for the Park
-        seasonModel(currentYear),
+        seasonModel(currentYear, true, seasonStatus),
 
         // ParkAreas
         {
@@ -336,12 +341,12 @@ router.get(
           include: [
             // Features that are part of the ParkArea
             {
-              ...featureModel(currentYear),
+              ...featureModel(currentYear, {}, seasonStatus),
               // Exclude parkAreas with no active features
               required: true,
             },
             // Publishable Seasons for the ParkArea
-            seasonModel(currentYear),
+            seasonModel(currentYear, true, seasonStatus),
             // ParkAreaType for the ParkArea
             {
               model: ParkAreaType,
@@ -353,12 +358,16 @@ router.get(
         },
 
         // Publishable Features that aren't part of a ParkArea
-        featureModel(currentYear, {
-          parkAreaId: null,
-          publishableId: {
-            [Op.ne]: null,
+        featureModel(
+          currentYear,
+          {
+            parkAreaId: null,
+            publishableId: {
+              [Op.ne]: null,
+            },
           },
-        }),
+          seasonStatus,
+        ),
 
         // Filter AccessGroups on server-side based on user's access,
         // and also return accessGroup IDs for client-side bundle filters
