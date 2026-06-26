@@ -46,7 +46,11 @@ const RouterConfig = createBrowserRouter(
             // Edit published table / landing page
             {
               path: "edit-published",
-              element: <EditPublishedPage />,
+              element: (
+                <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
+                  <EditPublishedPage />
+                </AccessControlledRoute>
+              ),
             },
             // Export
             {
