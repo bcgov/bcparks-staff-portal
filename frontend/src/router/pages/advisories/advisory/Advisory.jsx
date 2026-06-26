@@ -132,9 +132,10 @@ export default function Advisory({ mode }) {
   const auth = useAuth();
   const initialized = !auth.isLoading;
   const isAuthenticated = auth.isAuthenticated;
+  const shouldBlockNavigation = useCallback(() => dataChanged.current, []);
 
   // Use a route blocker to show a confirmation dialog when the user attempts to navigate away with unsaved changes
-  const blocker = useBlocker(() => dataChanged.current);
+  const blocker = useBlocker(shouldBlockNavigation);
   // Ref to track if the route blocker is currently active, to prevent multiple blocker flows from stacking if more navigation is attempted while the dialog is open
   const isBlockerActive = useRef(false);
 
@@ -171,7 +172,7 @@ export default function Advisory({ mode }) {
     dataChanged.current = true;
   }, []);
 
-  useNavigationGuard(useCallback(() => dataChanged.current, []));
+  useNavigationGuard(shouldBlockNavigation);
 
   // Block internal route transitions while there are unsaved changes.
   // beforeunload is still handled by useNavigationGuard for document-level exits.
@@ -190,7 +191,9 @@ export default function Advisory({ mode }) {
 
       if (shouldProceed) {
         dataChanged.current = false;
-        blocker.proceed();
+        // Defer the proceed call to the next tick in the event loop
+        // to avoid race conditions with React router's internal state updates.
+        setTimeout(() => blocker.proceed(), 0);
         return;
       }
 
