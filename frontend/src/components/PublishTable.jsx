@@ -1,6 +1,5 @@
-// TODO: CMS-848, 899 Create a publish table
-// Copied from EditAndReviewTable.jsx (v1) since it had a similar structure to the publish table design
-// Current EditAndReviewTable.jsx has a different structure
+// Copied from SubmitTable.jsx (v1) since it had a similar structure to the publish table design
+// Current SubmitTable.jsx has a different structure
 
 import { useMemo } from "react";
 import PropTypes from "prop-types";
