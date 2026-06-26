@@ -13,7 +13,7 @@ import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
-import "./EditAndReviewTable.scss";
+import "./SubmitTable.scss";
 import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as SEASON_STATUS from "@/constants/seasonStatus";
@@ -646,7 +646,7 @@ Table.propTypes = {
   sortOrder: PropTypes.arrayOf(PropTypes.object),
 };
 
-export default function EditAndReviewTable({
+export default function SubmitTable({
   data,
   onResetFilters,
   formPanelHandler,
@@ -677,8 +677,8 @@ export default function EditAndReviewTable({
   );
 }
 
-// Define prop types for EditAndReviewTable
-EditAndReviewTable.propTypes = {
+// Define prop types for SubmitTable
+SubmitTable.propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number,

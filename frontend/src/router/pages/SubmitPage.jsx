@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import { useParams, useNavigate } from "react-router-dom";
-import EditAndReviewTable from "@/components/EditAndReviewTable";
+import SubmitTable from "@/components/SubmitTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState, useEffect, useCallback } from "react";
@@ -19,13 +19,13 @@ import {
   getMatchingFeatures,
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
-} from "@/lib/editAndReviewFilters";
+} from "@/lib/submitFilters";
 import { groupBy } from "lodash-es";
 
-function EditAndReview() {
+function SubmitPage() {
   const params = useParams();
   const navigate = useNavigate();
-  
+
   const { data, loading, error, fetchData } = useApiGet("/parks");
   const {
     data: filterOptionsData,
@@ -342,7 +342,7 @@ function EditAndReview() {
       <div className="paginated-table">
         <div className="mb-3">
           <RefreshTableContext.Provider value={{ refreshTable }}>
-            <EditAndReviewTable
+            <SubmitTable
               data={pageData}
               onResetFilters={resetFilters}
               formPanelHandler={formPanelHandler}
@@ -473,4 +473,4 @@ function EditAndReview() {
   );
 }
 
-export default EditAndReview;
+export default SubmitPage;

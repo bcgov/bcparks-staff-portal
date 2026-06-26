@@ -1,7 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
 
 import AccessControlledRoute from "./AccessControlledRoute";
-import EditAndReview from "./pages/EditAndReview";
+import SubmitPage from "./pages/SubmitPage";
 import EditPublishedPage from "./pages/EditPublishedPage";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
@@ -25,10 +25,10 @@ const RouterConfig = createBrowserRouter(
           // Tabbed navigation for the landing page
           element: <LandingPageTabs />,
           children: [
-            // Edit & Review table / landing page
+            // Submit table / landing page
             {
               path: "",
-              element: <EditAndReview />,
+              element: <SubmitPage />,
             },
             // Edit season form routes
             {
