@@ -94,7 +94,7 @@ export default function AdvisorySummaryView({
             <div>
               {advisory.recreationResources.map((resource) => (
                 <div key={resource.id} className="mb-3">
-                  {resource.recResourceId && resource.isDisplayed ? (
+                  {resource.isDisplayed ? (
                     <a
                       href={`https://www.sitesandtrailsbc.ca/resource/${encodeURIComponent(resource.recResourceId)}`}
                       rel="noopener noreferrer"
@@ -108,7 +108,7 @@ export default function AdvisorySummaryView({
                       />
                     </a>
                   ) : (
-                    resource.resourceName
+                    `${resource.resourceName} (${resource.recResourceId})`
                   )}
                 </div>
               ))}
