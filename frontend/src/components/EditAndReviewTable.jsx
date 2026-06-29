@@ -436,7 +436,7 @@ FeaturesByFeatureTypeNoAreas.propTypes = {
 
 function Table({ park, formPanelHandler, sortOrder }) {
   const { hasAnyRole, ROLES } = useAccess();
-  const isApprover = hasAnyRole([ROLES.APPROVER, ROLES.SUPER_ADMIN]);
+  const isApprover = hasAnyRole([ROLES.APPROVER]);
 
   // Constants
   const parkAreas = park.parkAreas || [];
