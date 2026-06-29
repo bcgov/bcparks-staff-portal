@@ -23,6 +23,7 @@ export default function StandardMessagePicker({
   setSelectedStandardMessages,
   selectedProtectedAreas,
   selectedRecreationResources,
+  markChanged,
 }) {
   const hasBcpResourcesSelected = hasSelectedItems(selectedProtectedAreas);
   const hasRstResourcesSelected = hasSelectedItems(selectedRecreationResources);
@@ -79,6 +80,7 @@ export default function StandardMessagePicker({
       value={selectedStandardMessages}
       onChange={(messages) => {
         setSelectedStandardMessages(messages || []);
+        markChanged();
       }}
       placeholder={
         hasBothResourcesSelected
@@ -100,4 +102,5 @@ StandardMessagePicker.propTypes = {
   setSelectedStandardMessages: PropTypes.func.isRequired,
   selectedProtectedAreas: PropTypes.array,
   selectedRecreationResources: PropTypes.array,
+  markChanged: PropTypes.func.isRequired,
 };

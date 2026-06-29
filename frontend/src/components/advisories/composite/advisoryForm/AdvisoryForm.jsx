@@ -710,12 +710,10 @@ export default function AdvisoryForm({
           <StandardMessagePicker
             standardMessages={standardMessages}
             selectedStandardMessages={selectedStandardMessages}
-            setSelectedStandardMessages={(messages) => {
-              setSelectedStandardMessages(messages);
-              markChanged();
-            }}
+            setSelectedStandardMessages={setSelectedStandardMessages}
             selectedProtectedAreas={selectedProtectedAreas}
             selectedRecreationResources={selectedRecreationResources}
+            markChanged={markChanged}
           />
         </Form.Group>
 
@@ -934,7 +932,7 @@ export default function AdvisoryForm({
                         markChanged();
                       }}
                     />
-                    <label htmlFor={`file-upload-${idx}`} >
+                    <label htmlFor={`file-upload-${idx}`}>
                       <Btn
                         variant="outline-secondary"
                         as="span"
