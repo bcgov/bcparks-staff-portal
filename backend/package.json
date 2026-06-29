@@ -27,7 +27,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^15.15.0",
     "nodemon": "^3.1.14",
-    "prettier": "3.8.4"
+    "prettier": "3.9.1"
   },
   "dependencies": {
     "@adminjs/express": "^6.1.0",
@@ -37,7 +37,7 @@
     "@dotenvx/dotenvx": "^1.75.1",
     "@fast-csv/format": "^5.0.7",
     "adminjs": "^7.8.17",
-    "axios": "^1.18.0",
+    "axios": "^1.18.1",
     "compression": "^1.8.1",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",
@@ -55,7 +55,7 @@
     "morgan": "^1.11.0",
     "pg": "^8.22.0",
     "pg-hstore": "^2.3.4",
-    "qs": "^6.15.0",
+    "qs": "^6.15.3",
     "sequelize": "^6.37.8",
     "sequelize-cli": "^6.6.5",
     "tslib": "^2.7.0"
