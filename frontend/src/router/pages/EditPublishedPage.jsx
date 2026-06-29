@@ -15,7 +15,7 @@ export default function EditPublishedPage() {
     () =>
       sortBy(
         parks.map((park) => ({
-          value: park.documentId,
+          value: park.id,
           label: park.name,
         })),
         "label",
