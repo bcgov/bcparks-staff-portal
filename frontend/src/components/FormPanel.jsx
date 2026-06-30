@@ -1,4 +1,11 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
@@ -105,9 +112,10 @@ function SeasonForm({
   seasonId,
   level,
   closePanel,
+  handleStatusCancelClose,
   onDataUpdate,
   setDataChanged,
-  openModal,
+  modal,
 }) {
   // Global flash message context
   const flashMessage = useContext(globalFlashMessageContext);
@@ -121,6 +129,12 @@ function SeasonForm({
   const [notes, setNotes] = useState("");
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
   const [submitWithErrors, setSubmitWithErrors] = useState(false);
+  const hasShownStatusPrompt = useRef(false);
+
+  // Reset status prompt tracking when switching to a different season form.
+  useEffect(() => {
+    hasShownStatusPrompt.current = false;
+  }, [seasonId, level]);
 
   // Determine if the user is allowed to bypass validation errors and submit/approve the form
   const allowSubmitWithErrors = useMemo(() => {
@@ -157,9 +171,19 @@ function SeasonForm({
 
   useEffect(() => {
     if (apiData) {
+      // if the season if from a previous year then the user must be in the
+      // approver role to edit it. If not, close the form panel.
+      if (
+        apiData.current.operatingYear < new Date().getFullYear() &&
+        !approver
+      ) {
+        closePanel();
+        return;
+      }
+
       setData(apiData);
     }
-  }, [apiData]);
+  }, [apiData, approver, closePanel]);
 
   // Constants
   const {
@@ -169,6 +193,41 @@ function SeasonForm({
     previousWinter: previousWinterSeasonDates,
     ...seasonMetadata
   } = data || {};
+
+  // Check season status and prompt user if needed (e.g., editing approved or published seasons)
+  useEffect(() => {
+    if (!season || hasShownStatusPrompt.current) return;
+
+    async function checkStatusAndPrompt() {
+      hasShownStatusPrompt.current = true;
+
+      if (season.status === "approved") {
+        const proceed = await modal.open(
+          "Edit approved dates?",
+          "Dates will need to be reviewed again to be approved.",
+          "Edit",
+          "Cancel",
+        );
+
+        if (!proceed) {
+          handleStatusCancelClose();
+        }
+      } else if (season.status === "published") {
+        const proceed = await modal.open(
+          "Edit public dates on API?",
+          "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
+          "Continue to edit",
+          "Cancel",
+        );
+
+        if (!proceed) {
+          handleStatusCancelClose();
+        }
+      }
+    }
+
+    checkStatusAndPrompt();
+  }, [season?.status, modal, handleStatusCancelClose, season]);
 
   // Derive the header text from the season data
   const yearHeaderText = useMemo(() => {
@@ -480,7 +539,7 @@ function SeasonForm({
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
     if (season.status !== STATUS.REQUESTED.value) {
-      const proceed = await openModal(
+      const proceed = await modal.open(
         "Move back to draft?",
         `The dates will be moved back to draft and need to be submitted again to be reviewed.
 
@@ -545,6 +604,13 @@ If dates have already been published, they will not be updated until new dates a
       console.error("Error submitting season:", saveError);
     }
   }
+
+  // Handle 404 errors by closing the panel
+  useEffect(() => {
+    if (error && error?.response?.status === 404) {
+      closePanel();
+    }
+  }, [error, closePanel]);
 
   if (loading) {
     return (
@@ -714,9 +780,10 @@ SeasonForm.propTypes = {
   seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
   closePanel: PropTypes.func.isRequired,
+  handleStatusCancelClose: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
   setDataChanged: PropTypes.func.isRequired,
-  openModal: PropTypes.func.isRequired,
+  modal: PropTypes.object.isRequired,
 };
 
 function FormPanel({ show, setShow, formData, onDataUpdate }) {
@@ -724,20 +791,35 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
   const modal = useConfirmation();
+  const closingFromStatusPrompt = useRef(false);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
 
   // Functions
 
-  // Hides the form panel and resets the dataChanged state
-  function closePanel() {
+  // Hides the form panel and resets the dataChanged state and modal
+  const closePanel = useCallback(() => {
+    closingFromStatusPrompt.current = false;
     setShow(false);
     setDataChanged(false);
-  }
+  }, [setShow, setDataChanged]);
+
+  // Close the panel when the status modal is dismissed
+  const handleStatusCancelClose = useCallback(() => {
+    closingFromStatusPrompt.current = true;
+    setShow(false);
+    setDataChanged(false);
+  }, [setShow, setDataChanged]);
 
   // Prompts the user if data has changed before closing
-  async function promptAndClose() {
+  const promptAndClose = useCallback(async () => {
+    // If we're closing due to the status modal being dismissed, don't prompt
+    if (closingFromStatusPrompt.current) {
+      closePanel();
+      return;
+    }
+
     if (dataChanged) {
       const proceed = await modal.open(
         "Discard changes?",
@@ -753,7 +835,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
     }
 
     closePanel();
-  }
+  }, [dataChanged, modal, closePanel]);
 
   // Hide the form if no seasonId is provided
   return (
@@ -766,12 +848,14 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
       >
         {formData.seasonId && (
           <SeasonForm
+            key={`${formData.level}-${formData.seasonId}`}
             seasonId={formData.seasonId}
             level={formData.level}
             closePanel={closePanel}
+            handleStatusCancelClose={handleStatusCancelClose}
             onDataUpdate={onDataUpdate}
             setDataChanged={setDataChanged}
-            openModal={modal.open}
+            modal={modal}
           />
         )}
       </Offcanvas>

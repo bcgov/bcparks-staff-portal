@@ -29,6 +29,19 @@ const RouterConfig = createBrowserRouter(
               path: "",
               element: <EditAndReview />,
             },
+            // Edit season form routes
+            {
+              path: "edit/park/:seasonId",
+              element: <EditAndReview />,
+            },
+            {
+              path: "edit/park-area/:seasonId",
+              element: <EditAndReview />,
+            },
+            {
+              path: "edit/feature/:seasonId",
+              element: <EditAndReview />,
+            },
             // Export
             {
               path: "export",

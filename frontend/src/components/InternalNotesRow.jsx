@@ -70,7 +70,10 @@ InternalNotesRow.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       note: PropTypes.string.isRequired,
-      createdAt: PropTypes.string,
+      createdAt: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.instanceOf(Date),
+      ]),
       createdBy: PropTypes.string,
     }),
   ),
