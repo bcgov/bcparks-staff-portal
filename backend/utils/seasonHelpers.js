@@ -79,7 +79,7 @@ export async function createDateableId(record, transaction) {
  */
 export async function checkSeasonUserAccess(req, seasonId) {
   const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
-    USER_ROLES.ALL_PARK_ACCESS,
+    USER_ROLES.DOOT_ALL_PARK_ACCESS,
   ]);
 
   if (hasAllParkAccess) {
