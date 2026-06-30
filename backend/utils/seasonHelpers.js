@@ -3,7 +3,19 @@
  * Used by create-seasons and create-winter-seasons scripts.
  */
 
-import { Dateable, Publishable } from "../models/index.js";
+import {
+  Dateable,
+  Publishable,
+  Park,
+  Season,
+  Feature,
+  ParkArea,
+  AccessGroup,
+  User,
+  UserAccessGroup,
+} from "../models/index.js";
+import checkUserRoles, { getRolesFromAuth } from "./checkUserRoles.js";
+import * as USER_ROLES from "../constants/userRoles.js";
 
 /**
  * Creates a new Publishable or Dateable ID and associates it with the given record, if it doesn't already have one.
@@ -56,4 +68,96 @@ export async function createDateableId(record, transaction) {
   );
 
   return { key, added };
+}
+
+/**
+ * Checks if the current user has access to the requested season.
+ * Access is granted when the user has ALL_PARK_ACCESS, otherwise by AccessGroup membership.
+ * @param {Object} req Express request object
+ * @param {number} seasonId The season ID to authorize
+ * @returns {Promise<boolean>} True when authorized, false when season is not found
+ */
+export async function checkSeasonUserAccess(req, seasonId) {
+  const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
+    USER_ROLES.ALL_PARK_ACCESS,
+  ]);
+
+  if (hasAllParkAccess) {
+    return true;
+  }
+
+  const season = await Season.findByPk(seasonId, {
+    attributes: ["id"],
+    include: [
+      {
+        model: Park,
+        as: "park",
+        attributes: ["id"],
+        required: false,
+      },
+      {
+        model: Feature,
+        as: "feature",
+        attributes: ["id", "parkId"],
+        required: false,
+      },
+      {
+        model: ParkArea,
+        as: "parkArea",
+        attributes: ["id", "parkId"],
+        required: false,
+      },
+    ],
+  });
+
+  if (!season) {
+    return false;
+  }
+
+  const parkId =
+    season.park?.id ?? season.feature?.parkId ?? season.parkArea?.parkId;
+
+  if (!parkId) {
+    const error = new Error("Park not found for this season");
+
+    error.status = 404;
+    throw error;
+  }
+
+  const authorizedPark = await Park.findOne({
+    attributes: ["id"],
+    where: { id: parkId },
+    include: [
+      {
+        model: AccessGroup,
+        as: "accessGroups",
+        attributes: ["id"],
+        required: true,
+        include: [
+          {
+            model: User,
+            as: "users",
+            attributes: [],
+            where: { username: req.user?.username },
+            through: {
+              model: UserAccessGroup,
+              attributes: [],
+            },
+            required: true,
+          },
+        ],
+      },
+    ],
+  });
+
+  if (!authorizedPark) {
+    const error = new Error(
+      "Permission denied: You do not have access to this park.",
+    );
+
+    error.status = 403;
+    throw error;
+  }
+
+  return true;
 }
