@@ -605,13 +605,6 @@ If dates have already been published, they will not be updated until new dates a
     }
   }
 
-  // Handle 404 errors by closing the panel
-  useEffect(() => {
-    if (error && error?.response?.status === 404) {
-      closePanel();
-    }
-  }, [error, closePanel]);
-
   if (loading) {
     return (
       <>
@@ -624,10 +617,16 @@ If dates have already been published, they will not be updated until new dates a
   }
 
   if (error || !season) {
+    const errorCode = error?.response?.status ?? error?.status;
+
     return (
       <>
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Error loading season data</Offcanvas.Title>
+          <Offcanvas.Title>
+            {errorCode
+              ? `Error ${errorCode} loading season data`
+              : "Error loading season data"}
+          </Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body></Offcanvas.Body>
       </>
