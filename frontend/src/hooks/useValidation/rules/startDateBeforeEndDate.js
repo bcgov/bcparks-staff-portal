@@ -18,7 +18,11 @@ export default function startDateBeforeEndDate(seasonData, context) {
     if (!isBefore(dateRange.startDate, dateRange.endDate)) {
       context.addError(
         // Show error below the date range
-        elements.dateRange(dateRange.id || dateRange.tempId),
+        elements.dateRange(
+          dateRange.id || dateRange.tempId,
+          dateRange.dateType.name,
+          dateRange.dateableId,
+        ),
         "Enter an end date that comes after the start date",
       );
     }

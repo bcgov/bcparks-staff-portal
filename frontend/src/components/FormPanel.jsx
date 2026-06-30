@@ -1,5 +1,13 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from "react";
 import Offcanvas from "react-bootstrap/Offcanvas";
+import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 import { isEqual, omit, keyBy } from "lodash-es";
 
@@ -10,6 +18,7 @@ import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
+import ErrorSummary from "@/components/FormErrorSummary";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
@@ -103,9 +112,10 @@ function SeasonForm({
   seasonId,
   level,
   closePanel,
+  handleStatusCancelClose,
   onDataUpdate,
   setDataChanged,
-  openModal,
+  modal,
 }) {
   // Global flash message context
   const flashMessage = useContext(globalFlashMessageContext);
@@ -118,6 +128,27 @@ function SeasonForm({
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
+  const [submitWithErrors, setSubmitWithErrors] = useState(false);
+  const hasShownStatusPrompt = useRef(false);
+
+  // Reset status prompt tracking when switching to a different season form.
+  useEffect(() => {
+    hasShownStatusPrompt.current = false;
+  }, [seasonId, level]);
+
+  // Determine if the user is allowed to bypass validation errors and submit/approve the form
+  const allowSubmitWithErrors = useMemo(() => {
+    // Return false if the user is not an approver or submitter
+    if (!approver && !submitter) return false;
+
+    // Return false if the user hasn't provided any notes
+    if (!notes.trim()) return false;
+
+    // Return true if the "Submit with errors" checkbox is checked
+    if (submitWithErrors) return true;
+
+    return false;
+  }, [approver, submitter, submitWithErrors, notes]);
 
   // Track form submission state: run more validation rules after the first submit
   const [submitted, setSubmitted] = useState(false);
@@ -140,9 +171,19 @@ function SeasonForm({
 
   useEffect(() => {
     if (apiData) {
+      // if the season if from a previous year then the user must be in the
+      // approver role to edit it. If not, close the form panel.
+      if (
+        apiData.current.operatingYear < new Date().getFullYear() &&
+        !approver
+      ) {
+        closePanel();
+        return;
+      }
+
       setData(apiData);
     }
-  }, [apiData]);
+  }, [apiData, approver, closePanel]);
 
   // Constants
   const {
@@ -152,6 +193,41 @@ function SeasonForm({
     previousWinter: previousWinterSeasonDates,
     ...seasonMetadata
   } = data || {};
+
+  // Check season status and prompt user if needed (e.g., editing approved or published seasons)
+  useEffect(() => {
+    if (!season || hasShownStatusPrompt.current) return;
+
+    async function checkStatusAndPrompt() {
+      hasShownStatusPrompt.current = true;
+
+      if (season.status === "approved") {
+        const proceed = await modal.open(
+          "Edit approved dates?",
+          "Dates will need to be reviewed again to be approved.",
+          "Edit",
+          "Cancel",
+        );
+
+        if (!proceed) {
+          handleStatusCancelClose();
+        }
+      } else if (season.status === "published") {
+        const proceed = await modal.open(
+          "Edit public dates on API?",
+          "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
+          "Continue to edit",
+          "Cancel",
+        );
+
+        if (!proceed) {
+          handleStatusCancelClose();
+        }
+      }
+    }
+
+    checkStatusAndPrompt();
+  }, [season?.status, modal, handleStatusCancelClose, season]);
 
   // Derive the header text from the season data
   const yearHeaderText = useMemo(() => {
@@ -198,6 +274,38 @@ function SeasonForm({
   );
   // Find the "Park gate open" date type id
   const gateTypeId = dateTypesByStrapiId[1]?.id;
+
+  // Build a map of Dateable IDs to their Feature names, for display in the Error Summary
+  const dateableNames = useMemo(() => {
+    if (!season) return new Map();
+
+    // For ParkArea-level forms, we need to translate Dateable IDs to names for each Feature in the area
+    if (level === "park-area") {
+      return new Map(
+        season.parkArea.features.map(({ dateableId, name }) => [
+          dateableId,
+          name,
+        ]),
+      );
+    }
+
+    // For Feature-level forms, we only need the Feature itself, so return a map with one entry
+    if (level === "feature") {
+      return new Map([[season.feature.dateableId, season.feature.name]]);
+    }
+
+    // For Park-level forms, we don't need to translate Dateable IDs to names, so return an empty map
+    return new Map();
+  }, [level, season]);
+
+  // Determine if this is a ParkArea-level form with multiple features.
+  // This affects the content of the Error Summary component.
+  const multipleFeatures = useMemo(() => {
+    // Return false if the season data isn't loaded or if it's not an applicable parkArea form
+    if (level !== "park-area" || !season?.parkArea?.features) return false;
+
+    return season.parkArea.features.length > 1;
+  }, [level, season]);
 
   // Clears and re-fetches the data
   function resetData() {
@@ -346,6 +454,16 @@ function SeasonForm({
     const validationErrors = validation.validateForm();
 
     if (validationErrors.length && !allowInvalid) {
+      // Scroll the Error Summary component into view at the top of the form
+      const errorSummaryElement = document.getElementById("validation-errors");
+
+      if (errorSummaryElement) {
+        errorSummaryElement.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+
       // If there are validation errors and we're not allowing invalid saves, stop here
       throw new Error(
         `Validation failed with ${validationErrors.length} errors`,
@@ -386,6 +504,13 @@ function SeasonForm({
         );
     }
 
+    // Send the value of the "Submit with validation errors" checkbox to the API
+    // Always send false for drafts, since drafts can always be saved with errors
+    payload.savedWithErrors =
+      status !== STATUS.REQUESTED.value &&
+      allowInvalid &&
+      validationErrors.length > 0;
+
     try {
       // Send the save request to the API
       await sendSave(payload);
@@ -396,6 +521,7 @@ function SeasonForm({
       // Reset the form state
       setNotes("");
       setDeletedDateRangeIds([]);
+      setSubmitWithErrors(false);
 
       if (close) {
         closePanel();
@@ -413,7 +539,7 @@ function SeasonForm({
   // prompt the user to confirm moving back to draft.
   async function promptAndSave(close = true) {
     if (season.status !== STATUS.REQUESTED.value) {
-      const proceed = await openModal(
+      const proceed = await modal.open(
         "Move back to draft?",
         `The dates will be moved back to draft and need to be submitted again to be reviewed.
 
@@ -443,8 +569,8 @@ If dates have already been published, they will not be updated until new dates a
 
   async function onApprove() {
     try {
-      // Save and update status
-      await saveForm(false, false, STATUS.APPROVED.value); // Don't close the form after saving
+      // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
+      await saveForm(false, allowSubmitWithErrors, STATUS.APPROVED.value); // Don't close the form after saving
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -462,8 +588,8 @@ If dates have already been published, they will not be updated until new dates a
 
   async function onSubmit() {
     try {
-      // Save and update status
-      await saveForm(false, false, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
+      // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
+      await saveForm(false, allowSubmitWithErrors, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -491,10 +617,16 @@ If dates have already been published, they will not be updated until new dates a
   }
 
   if (error || !season) {
+    const errorCode = error?.response?.status ?? error?.status;
+
     return (
       <>
         <Offcanvas.Header closeButton>
-          <Offcanvas.Title>Error loading season data</Offcanvas.Title>
+          <Offcanvas.Title>
+            {errorCode
+              ? `Error ${errorCode} loading season data`
+              : "Error loading season data"}
+          </Offcanvas.Title>
         </Offcanvas.Header>
         <Offcanvas.Body></Offcanvas.Body>
       </>
@@ -529,6 +661,20 @@ If dates have already been published, they will not be updated until new dates a
         </Offcanvas.Header>
 
         <Offcanvas.Body>
+          <div id="validation-errors">
+            {validation.errors.length > 0 && (
+              <div className="row">
+                <div className="col-12 col-lg-7 col-xl-6 mb-4">
+                  <ErrorSummary
+                    multipleFeatures={multipleFeatures}
+                    errors={validation.errors}
+                    dateableNameMap={dateableNames}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
           <h3>Public information</h3>
           <p>This information is displayed on bcparks.ca</p>
 
@@ -578,6 +724,43 @@ If dates have already been published, they will not be updated until new dates a
               season.status !== STATUS.PUBLISHED.value
             }
           />
+
+          {/* Pseudo-validation for submitting with errors: User must provide an internal note */}
+          {validation.errors.length > 0 &&
+            submitWithErrors &&
+            !notes.trim() && (
+              <div
+                className="text-danger validation-errors mb-5"
+                data-error-slot-id="submit-with-errors-notes"
+              >
+                <div>
+                  Required when submitting with errors. Please explain why
+                  errors do not apply.
+                </div>
+              </div>
+            )}
+
+          {/* For users who can submit or approve, show a checkbox to and bypass validation */}
+          {validation.errors.length > 0 && (submitter || approver) && (
+            <div>
+              <div
+                className="alert alert-warning fade show px-5 py-4 text-black"
+                role="alert"
+              >
+                <h4>Submit anyway</h4>
+
+                <Form.Check
+                  label={
+                    "I have reviewed the errors and confirm the information is correct. An Internal note is required to explain why errors do not apply."
+                  }
+                  id={"submit-with-errors"}
+                  checked={submitWithErrors}
+                  onChange={(e) => setSubmitWithErrors(e.target.checked)}
+                />
+              </div>
+            </div>
+          )}
+
           <Buttons
             approver={approver}
             submitter={submitter}
@@ -596,9 +779,10 @@ SeasonForm.propTypes = {
   seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
   closePanel: PropTypes.func.isRequired,
+  handleStatusCancelClose: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
   setDataChanged: PropTypes.func.isRequired,
-  openModal: PropTypes.func.isRequired,
+  modal: PropTypes.object.isRequired,
 };
 
 function FormPanel({ show, setShow, formData, onDataUpdate }) {
@@ -606,20 +790,35 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
   const modal = useConfirmation();
+  const closingFromStatusPrompt = useRef(false);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
 
   // Functions
 
-  // Hides the form panel and resets the dataChanged state
-  function closePanel() {
+  // Hides the form panel and resets the dataChanged state and modal
+  const closePanel = useCallback(() => {
+    closingFromStatusPrompt.current = false;
     setShow(false);
     setDataChanged(false);
-  }
+  }, [setShow, setDataChanged]);
+
+  // Close the panel when the status modal is dismissed
+  const handleStatusCancelClose = useCallback(() => {
+    closingFromStatusPrompt.current = true;
+    setShow(false);
+    setDataChanged(false);
+  }, [setShow, setDataChanged]);
 
   // Prompts the user if data has changed before closing
-  async function promptAndClose() {
+  const promptAndClose = useCallback(async () => {
+    // If we're closing due to the status modal being dismissed, don't prompt
+    if (closingFromStatusPrompt.current) {
+      closePanel();
+      return;
+    }
+
     if (dataChanged) {
       const proceed = await modal.open(
         "Discard changes?",
@@ -635,7 +834,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
     }
 
     closePanel();
-  }
+  }, [dataChanged, modal, closePanel]);
 
   // Hide the form if no seasonId is provided
   return (
@@ -648,12 +847,14 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
       >
         {formData.seasonId && (
           <SeasonForm
+            key={`${formData.level}-${formData.seasonId}`}
             seasonId={formData.seasonId}
             level={formData.level}
             closePanel={closePanel}
+            handleStatusCancelClose={handleStatusCancelClose}
             onDataUpdate={onDataUpdate}
             setDataChanged={setDataChanged}
-            openModal={modal.open}
+            modal={modal}
           />
         )}
       </Offcanvas>

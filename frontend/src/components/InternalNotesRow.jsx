@@ -48,7 +48,7 @@ export default function InternalNotesRow({ notes }) {
 
           <button
             type="button"
-            className="btn btn-link p-0"
+            className="btn btn-text text-link text-decoration-underline p-0"
             onClick={() => setIsOpen((open) => !open)}
             aria-expanded={isOpen}
             aria-controls={`internal-notes-${notes[0].id}`}
@@ -70,7 +70,10 @@ InternalNotesRow.propTypes = {
     PropTypes.shape({
       id: PropTypes.number.isRequired,
       note: PropTypes.string.isRequired,
-      createdAt: PropTypes.string,
+      createdAt: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.instanceOf(Date),
+      ]),
       createdBy: PropTypes.string,
     }),
   ),

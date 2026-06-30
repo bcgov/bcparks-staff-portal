@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { useState, useRef } from "react";
+import { useState, useRef, useId } from "react";
 import Overlay from "react-bootstrap/Overlay";
 import Tooltip from "react-bootstrap/Tooltip";
 
@@ -10,6 +10,7 @@ export default function TooltipWrapper({
 }) {
   const [show, setShow] = useState(false);
   const target = useRef(null);
+  const tooltipId = useId();
 
   return (
     <>
@@ -28,7 +29,7 @@ export default function TooltipWrapper({
 
       <Overlay target={target.current} show={show} placement={placement}>
         {(props) => (
-          <Tooltip id="overlay-example" {...props}>
+          <Tooltip id={tooltipId} {...props}>
             {content}
           </Tooltip>
         )}

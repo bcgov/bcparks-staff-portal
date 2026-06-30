@@ -65,7 +65,7 @@ export default function GateForm({
             }}
           />
 
-          <ErrorSlot element={elements.HAS_GATE} />
+          <ErrorSlot elementId={elements.HAS_GATE.id} />
         </div>
         {gateDetail.hasGate && (
           <div>
@@ -144,7 +144,7 @@ export default function GateForm({
               />
             </Form>
 
-            <ErrorSlot element={elements.GATE_TIMES} />
+            <ErrorSlot elementId={elements.GATE_TIMES.id} />
           </div>
         )}
       </div>

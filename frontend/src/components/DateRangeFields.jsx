@@ -96,7 +96,7 @@ function DateRange({
         </div>
       </div>
 
-      <ErrorSlot element={elements.dateRange(idOrTempId)} />
+      <ErrorSlot elementId={elements.dateRange(idOrTempId).id} />
     </div>
   );
 }
@@ -251,7 +251,7 @@ export default function DateRangeFields({
       )}
 
       <ErrorSlot
-        element={elements.dateableDateType(dateableId, dateType.name)}
+        elementId={elements.dateableDateType(dateableId, dateType.name).id}
       />
     </>
   );

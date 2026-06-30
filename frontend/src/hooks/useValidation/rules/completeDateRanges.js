@@ -18,7 +18,12 @@ export default function completeDateRanges(seasonData, context) {
     if (dateRange.startDate && !dateRange.endDate) {
       context.addError(
         // Show the error below the empty end date field
-        elements.dateField(idOrTempId, "endDate"),
+        elements.dateField(
+          idOrTempId,
+          "endDate",
+          `${dateRange.dateType.name} end date`,
+          dateRange.dateableId,
+        ),
         "Enter an end date",
       );
     }
@@ -27,7 +32,12 @@ export default function completeDateRanges(seasonData, context) {
     if (dateRange.endDate && !dateRange.startDate) {
       context.addError(
         // Show the error below the empty start date field
-        elements.dateField(idOrTempId, "startDate"),
+        elements.dateField(
+          idOrTempId,
+          "startDate",
+          `${dateRange.dateType.name} start date`,
+          dateRange.dateableId,
+        ),
         "Enter a start date",
       );
     }

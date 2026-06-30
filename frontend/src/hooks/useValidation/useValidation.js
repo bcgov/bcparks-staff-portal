@@ -17,29 +17,47 @@ import winterAndReservationNoOverlap from "./rules/winterAndReservationNoOverlap
 import winterDateYears from "./rules/winterDateYears.js";
 import reservationAndWinterNoOverlap from "./rules/reservationAndWinterNoOverlap.js";
 
-// Constants for named "validation error slots" in the UI
+// Constants for named "validation error slots" in the UI:
+// `id` is used to identify the DOM element for the error message
+// `name` is a human-readable name for the element (shown in the ErrorSummary component)
+// `dateableId` is the ID of the dateable feature for grouping errors in the ErrorSummary component
 const elements = {
   // Under the "Has gate? Yes/No" radio buttons
-  HAS_GATE: "hasGate",
+  HAS_GATE: { id: "hasGate", name: "Gate" },
 
   // Under the gate hours time range inputs
-  GATE_TIMES: "gateTimes",
+  GATE_TIMES: { id: "gateTimes", name: "Gate Times" },
 
   // Under the "internal notes" textarea
-  INTERNAL_NOTES: "internalNotes",
+  INTERNAL_NOTES: { id: "internalNotes", name: "Internal notes" },
 
   // Under an individual date range by its ID
-  dateRange: (idOrTempId) => `dateRange-${idOrTempId}`,
+  dateRange: (idOrTempId, displayName = "", dateableId = null) => ({
+    id: `dateRange-${idOrTempId}`,
+    name: displayName,
+    dateableId,
+  }),
 
   // Under an individual date input field by its dateRange ID and its field name
-  dateField: (idOrTempId, fieldName) => `dateField-${idOrTempId}-${fieldName}`,
+  dateField: (idOrTempId, fieldName, displayName = "", dateableId = null) => ({
+    id: `dateField-${idOrTempId}-${fieldName}`,
+    name: displayName,
+    dateableId,
+  }),
 
   // Under all the date ranges for a dateable feature, by date type
-  dateableDateType: (dateableId, dateTypeName) =>
-    `dateableDateType-${dateableId}-${dateTypeName}`,
+  dateableDateType: (dateableId, dateTypeName) => ({
+    id: `dateableDateType-${dateableId}-${dateTypeName}`,
+    name: dateTypeName,
+    dateableId,
+  }),
 
   // Under a form section for a dateable entity, such as a Feature, by its dateableId
-  dateableSection: (dateableId) => `formSection-${dateableId}`,
+  dateableSection: (dateableId, displayName = "") => ({
+    id: `formSection-${dateableId}`,
+    name: displayName,
+    dateableId,
+  }),
 };
 
 /**
@@ -90,7 +108,7 @@ function validate(seasonData, seasonContext) {
 
   // Provide a method to add validation errors in the context
   validationContext.addError = (element, message) => {
-    errors.push({ element, message });
+    errors.push({ ...element, message });
   };
 
   // Provide the flat array of Frontcountry Campground Feature Reservation dates in the context,
@@ -202,8 +220,8 @@ export default function useValidation(seasonData, context) {
   // If there are no errors, the form is valid
   const isValid = useMemo(() => errors.length === 0, [errors]);
 
-  // Group errors by element for display in the ValidationErrorSlot component
-  const groupedErrors = useMemo(() => groupBy(errors, "element"), [errors]);
+  // Group errors by element ID for display in the ValidationErrorSlot component
+  const groupedErrors = useMemo(() => groupBy(errors, "id"), [errors]);
 
   return {
     isValid,

@@ -24,8 +24,13 @@ export default function requiredDateRanges(seasonData, context) {
   requiredRanges.forEach((dateRange) => {
     if (!dateRange.startDate) {
       context.addError(
-        // Show the error below the end date field
-        elements.dateField(dateRange.id || dateRange.tempId, "startDate"),
+        // Show the error below the start date field
+        elements.dateField(
+          dateRange.id || dateRange.tempId,
+          "startDate",
+          `${dateRange.dateType.name} start date`,
+          dateRange.dateableId,
+        ),
         "Required",
       );
     }
@@ -33,7 +38,12 @@ export default function requiredDateRanges(seasonData, context) {
     if (!dateRange.endDate) {
       context.addError(
         // Show the error below the end date field
-        elements.dateField(dateRange.id || dateRange.tempId, "endDate"),
+        elements.dateField(
+          dateRange.id || dateRange.tempId,
+          "endDate",
+          `${dateRange.dateType.name} end date`,
+          dateRange.dateableId,
+        ),
         "Required",
       );
     }
