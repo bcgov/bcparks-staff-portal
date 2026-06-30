@@ -316,7 +316,7 @@ function EditAndReview() {
   // Clear URL when form panel closes
   useEffect(() => {
     if (!showFormPanel && params.seasonId) {
-      navigate("/dates", { replace: true });
+      navigate("/dates/", { replace: true });
     }
   }, [showFormPanel, params.seasonId, navigate]);
 

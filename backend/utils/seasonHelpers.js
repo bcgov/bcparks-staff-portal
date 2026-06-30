@@ -72,7 +72,7 @@ export async function createDateableId(record, transaction) {
 
 /**
  * Checks if the current user has access to the requested season.
- * Access is granted when the user has ALL_PARK_ACCESS, otherwise by AccessGroup membership.
+ * Access is granted when the user has DOOT_ALL_PARK_ACCESS, otherwise by AccessGroup membership.
  * @param {Object} req Express request object
  * @param {number} seasonId The season ID to authorize
  * @returns {Promise<boolean>} True when authorized, false when season is not found
