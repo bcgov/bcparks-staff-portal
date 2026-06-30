@@ -12,6 +12,7 @@ import {
   getDateTypesForFeature,
   getDateTypesForPark,
 } from "../../utils/dateTypesHelpers.js";
+import { checkSeasonUserAccess } from "../../utils/seasonHelpers.js";
 
 import {
   Park,
@@ -718,7 +719,10 @@ router.get(
       ],
     });
 
+    // Throw a 404 if the season was not found.
     checkSeasonExists(seasonModel);
+    // Throw a 403 if the user doesn't have access to the park associated with the season.
+    await checkSeasonUserAccess(req, seasonId);
 
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel, {
@@ -829,7 +833,10 @@ router.get(
       ],
     });
 
+    // Throw a 404 if the season was not found.
     checkSeasonExists(seasonModel);
+    // Throw a 403 if the user doesn't have access to the park associated with the season.
+    await checkSeasonUserAccess(req, seasonId);
 
     // Get the previous year's Season Dates for this Feature
     const previousSeason = await getPreviousSeasonDates(seasonModel, {
@@ -993,7 +1000,10 @@ router.get(
       ],
     });
 
+    // Throw a 404 if the season was not found.
     checkSeasonExists(seasonModel);
+    // Throw a 403 if the user doesn't have access to the park associated with the season.
+    await checkSeasonUserAccess(req, seasonId);
 
     const { park } = seasonModel;
 
@@ -1153,7 +1163,10 @@ router.post(
       // Check if the season exists
       const season = await Season.findByPk(seasonId, { transaction });
 
+      // Throw a 404 if the season doesn't exist
       checkSeasonExists(season);
+      // Throw a 403 if the user doesn't have access to the park associated with the season
+      await checkSeasonUserAccess(req, seasonId);
 
       const newStatus = status ?? season.status;
       const shouldMarkSavedWithErrors =

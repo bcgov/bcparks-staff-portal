@@ -1,7 +1,7 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
-import useConfirmation from "@/hooks/useConfirmation";
+import { useParams, useNavigate } from "react-router-dom";
 import EditAndReviewTable from "@/components/EditAndReviewTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
@@ -10,7 +10,6 @@ import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
-import ConfirmationDialog from "@/components/ConfirmationDialog";
 import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import {
@@ -24,6 +23,9 @@ import {
 import { groupBy } from "lodash-es";
 
 function EditAndReview() {
+  const params = useParams();
+  const navigate = useNavigate();
+  
   const { data, loading, error, fetchData } = useApiGet("/parks");
   const {
     data: filterOptionsData,
@@ -105,50 +107,41 @@ function EditAndReview() {
   const [showFormPanel, setShowFormPanel] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
-  const modal = useConfirmation();
+  // Initialize form from URL parameters if provided
+  useEffect(() => {
+    if (params.seasonId) {
+      // Extract level from pathname (park, park-area, or feature)
+      const pathname = window.location.pathname;
+      const match = pathname.match(/\/edit\/([^/]+)\/\d+/u);
+      const level = match ? match[1] : "";
+
+      if (level) {
+        setFormData({
+          seasonId: parseInt(params.seasonId, 10),
+          level,
+        });
+        setShowFormPanel(true);
+      }
+    }
+  }, [params.seasonId]);
 
   // open form panel when the Edit button is clicked
-  async function formPanelHandler(formDataObj) {
+  function formPanelHandler(formDataObj) {
     const regularSeason = formDataObj.currentSeason.regular;
     const winterSeason = formDataObj.currentSeason.winter || {};
     const isWinterSeason = formDataObj.isWinterSeason || false;
     const season = isWinterSeason ? winterSeason : regularSeason;
-    const status = season.status;
 
-    // If the season is already approved, prompt to continue
-    if (status === "approved") {
-      const proceed = await modal.open(
-        "Edit approved dates?",
-        "Dates will need to be reviewed again to be approved.",
-        "Edit",
-        "Cancel",
-      );
-
-      // If the user cancels in the confirmation modal, don't open the edit form
-      if (!proceed) {
-        return;
-      }
-    }
-    // If the season is already published to the CMS, prompt to continue
-    else if (status === "published") {
-      const proceed = await modal.open(
-        "Edit public dates on API?",
-        "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
-        "Continue to edit",
-        "Cancel",
-      );
-
-      // If the user cancels in the confirmation modal, don't open the edit form
-      if (!proceed) {
-        return;
-      }
-    }
-
-    setFormData({
+    const newFormData = {
       seasonId: season.id,
       level: formDataObj.level,
-    });
+    };
+
+    setFormData(newFormData);
     setShowFormPanel(true);
+
+    // Update URL to match the opened form
+    navigate(`/edit/${formDataObj.level}/${season.id}`);
   }
 
   function resetFilters() {
@@ -320,6 +313,13 @@ function EditAndReview() {
     fetchData();
   }
 
+  // Clear URL when form panel closes
+  useEffect(() => {
+    if (!showFormPanel && params.seasonId) {
+      navigate("/", { replace: true });
+    }
+  }, [showFormPanel, params.seasonId, navigate]);
+
   // Slice the list of parks for pagination
   const pageData = useMemo(() => {
     const start = pageSize * (page - 1);
@@ -448,8 +448,6 @@ function EditAndReview() {
         />
 
         <ParksTableWrapper />
-
-        <ConfirmationDialog {...modal.props} />
 
         <FormPanel
           show={showFormPanel}
