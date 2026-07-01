@@ -52,15 +52,6 @@ const RouterConfig = createBrowserRouter(
                 </AccessControlledRoute>
               ),
             },
-            // Edit published table / landing page
-            {
-              path: "edit-published",
-              element: (
-                <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
-                  <EditPublishedPage />
-                </AccessControlledRoute>
-              ),
-            },
             // Export
             {
               path: "export",
