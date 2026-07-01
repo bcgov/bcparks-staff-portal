@@ -301,12 +301,14 @@ router.get(
   asyncHandler(async (req, res) => {
     // Constants
     const currentYear = new Date().getFullYear();
-    const minOperatingYear = parseInt(req.query.operatingYear, 10);
+    const requestedOperatingYear = Number.parseInt(req.query.operatingYear, 10);
+    const minAllowedOperatingYear = currentYear - 1;
+
     // Use currentYear in the Submit tab
-    // Use minOperatingYear in the Edit published tab
-    const operatingYear = Number.isNaN(minOperatingYear)
+    // Use req.query.operatingYear in Edit published, but clamp to a safe lower bound
+    const operatingYear = Number.isNaN(requestedOperatingYear)
       ? currentYear
-      : minOperatingYear;
+      : Math.max(requestedOperatingYear, minAllowedOperatingYear);
     const seasonStatus =
       typeof req.query.seasonStatus === "string"
         ? req.query.seasonStatus

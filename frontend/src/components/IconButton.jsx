@@ -10,12 +10,14 @@ export default function IconButton({
   loading = false,
   disabled = false,
 }) {
+  const isDisabled = disabled || loading;
+
   return (
     <button
       type="button"
       onClick={onClick}
       className={classNames("btn btn-text text-link", textColor)}
-      disabled={disabled}
+      disabled={isDisabled}
     >
       {loading ? (
         <span className="spinner-border spinner-border-sm me-1" role="status" />
