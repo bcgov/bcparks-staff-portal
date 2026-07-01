@@ -8,9 +8,12 @@ const router = Router();
 
 // Reuse parks response for the Edit published page API, but only for published seasons.
 router.get("/", checkPermissions([USER_ROLES.APPROVER]), (req, res, next) => {
+  const minOperatingYear = new Date().getFullYear() - 1;
+
   req.query = {
     ...req.query,
     seasonStatus: SEASON_STATUS.PUBLISHED,
+    minOperatingYear,
   };
 
   parkRoutes.handle(req, res, next);
