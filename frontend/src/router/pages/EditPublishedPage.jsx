@@ -38,9 +38,10 @@ export default function EditPublishedPage() {
   const parkItems = useMemo(() => {
     if (!selectedPark) return [];
 
-    const rows = [];
+    const items = [];
     const targetOperatingYear = new Date().getFullYear() - 1;
 
+    // Find a season by year and type
     function getSeasonByYear(seasons = [], seasonType = "regular") {
       return (
         seasons.find(
@@ -56,7 +57,7 @@ export default function EditPublishedPage() {
     const winterSeason = getSeasonByYear(selectedPark.seasons, "winter");
 
     if (regularSeason) {
-      rows.push({
+      items.push({
         id: regularSeason.id,
         name: "Tiers and gate",
         level: "park",
@@ -64,7 +65,7 @@ export default function EditPublishedPage() {
     }
 
     if (winterSeason) {
-      rows.push({
+      items.push({
         id: winterSeason.id,
         name: "Winter fee",
         level: "park",
@@ -76,7 +77,7 @@ export default function EditPublishedPage() {
       const parkAreaSeason = getSeasonByYear(parkArea.seasons, "regular");
 
       if (parkAreaSeason) {
-        rows.push({
+        items.push({
           id: parkAreaSeason.id,
           name: parkArea.name,
           typeName:
@@ -90,23 +91,24 @@ export default function EditPublishedPage() {
     for (const feature of selectedPark.features || []) {
       const featureSeason = getSeasonByYear(feature.seasons, "regular");
 
-      if (!featureSeason) continue;
-
-      rows.push({
-        id: featureSeason.id,
-        name: feature.name,
-        typeName: feature.featureTypeName ?? feature.featureType?.name ?? null,
-        level: "feature",
-      });
+      if (featureSeason) {
+        items.push({
+          id: featureSeason.id,
+          name: feature.name,
+          typeName:
+            feature.featureTypeName ?? feature.featureType?.name ?? null,
+          level: "feature",
+        });
+      }
     }
 
-    return rows;
+    return items;
   }, [selectedPark]);
 
-  function handleOpenFormPanel(row) {
+  function handleOpenFormPanel(item) {
     setFormData({
-      seasonId: row.id,
-      level: row.level,
+      seasonId: item.id,
+      level: item.level,
     });
     setShowFormPanel(true);
   }
@@ -125,13 +127,12 @@ export default function EditPublishedPage() {
         <h3 className="fw-normal mb-4">Edit published dates</h3>
 
         <div className="row">
-          <div className="col-md-6 col-lg-5">
+          <div className="col-md-8 col-lg-7 col-xl-5">
             <ParkSearch
               options={parkOptions}
               value={selectedParkOption}
               onChange={setSelectedParkOption}
             />
-
             {selectedPark && (
               <div className="table-responsive mt-4">
                 <table className="table has-header-row mb-0">
@@ -147,21 +148,21 @@ export default function EditPublishedPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {parkItems.map((row) => (
-                      <tr key={row.id} className={`table-row--${row.level}`}>
-                        <th>
-                          {row.name}
-                          {row.typeName && (
+                    {parkItems.map((item) => (
+                      <tr key={item.id} className={`table-row--${item.level}`}>
+                        <th className="align-middle">
+                          {item.name}
+                          {item.typeName && (
                             <div className="fw-normal">
-                              <small>{row.typeName}</small>
+                              <small>{item.typeName}</small>
                             </div>
                           )}
                         </th>
-                        <td className="text-end">
+                        <td className="align-middle text-end">
                           <IconButton
                             icon={faPen}
                             label="Edit"
-                            onClick={() => handleOpenFormPanel(row)}
+                            onClick={() => handleOpenFormPanel(item)}
                           />
                         </td>
                       </tr>
@@ -170,7 +171,7 @@ export default function EditPublishedPage() {
                     {parkItems.length === 0 && (
                       <tr>
                         <td colSpan="2" className="text-muted">
-                          No published date forms available for this park.
+                          No published seasons available for this park.
                         </td>
                       </tr>
                     )}

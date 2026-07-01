@@ -304,8 +304,9 @@ router.get(
     const requestedOperatingYear = Number.parseInt(req.query.operatingYear, 10);
     const minAllowedOperatingYear = currentYear - 1;
 
-    // Use currentYear in the Submit tab
-    // Use req.query.operatingYear in Edit published, but clamp to a safe lower bound
+    // Use currentYear in the Submit page
+    // Use requestedOperatingYear in the Edit published page
+    // Clamp to a safe lower bound
     const operatingYear = Number.isNaN(requestedOperatingYear)
       ? currentYear
       : Math.max(requestedOperatingYear, minAllowedOperatingYear);

@@ -6,7 +6,8 @@ import parkRoutes from "./parks.js";
 
 const router = Router();
 
-// Reuse parks response for the Edit published page API, but only for published seasons.
+// Reuse parkRoutes for the Edit published page
+// Get all parks with published seasons for the previous year
 router.get("/", checkPermissions([USER_ROLES.APPROVER]), (req, res, next) => {
   const minOperatingYear = new Date().getFullYear() - 1;
 
