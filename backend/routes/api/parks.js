@@ -301,6 +301,15 @@ router.get(
   asyncHandler(async (req, res) => {
     // Constants
     const currentYear = new Date().getFullYear();
+    const requestedOperatingYear = Number.parseInt(req.query.operatingYear, 10);
+    const minAllowedOperatingYear = currentYear - 1;
+
+    // Use currentYear in the Submit page
+    // Use requestedOperatingYear in the Edit published page
+    // Clamp to a safe lower bound
+    const operatingYear = Number.isNaN(requestedOperatingYear)
+      ? currentYear
+      : Math.max(requestedOperatingYear, minAllowedOperatingYear);
     const seasonStatus =
       typeof req.query.seasonStatus === "string"
         ? req.query.seasonStatus
@@ -325,7 +334,7 @@ router.get(
       where: { hasDates: true },
       include: [
         // Publishable Seasons for the Park
-        seasonModel(currentYear, true, seasonStatus),
+        seasonModel(operatingYear, true, seasonStatus),
 
         // ParkAreas
         {
@@ -341,12 +350,12 @@ router.get(
           include: [
             // Features that are part of the ParkArea
             {
-              ...featureModel(currentYear, {}, seasonStatus),
+              ...featureModel(operatingYear, {}, seasonStatus),
               // Exclude parkAreas with no active features
               required: true,
             },
             // Publishable Seasons for the ParkArea
-            seasonModel(currentYear, true, seasonStatus),
+            seasonModel(operatingYear, true, seasonStatus),
             // ParkAreaType for the ParkArea
             {
               model: ParkAreaType,
@@ -359,7 +368,7 @@ router.get(
 
         // Publishable Features that aren't part of a ParkArea
         featureModel(
-          currentYear,
+          operatingYear,
           {
             parkAreaId: null,
             publishableId: {

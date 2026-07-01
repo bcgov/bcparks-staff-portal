@@ -1,0 +1,20 @@
+.page.edit-published {
+  table {
+    tr.table-row {
+      &--park {
+        th,
+        td {
+          background-color: var(--surface-color-primary-disabled);
+        }
+      }
+      &--park-area,
+      &--park-area-feature,
+      &--feature {
+        th,
+        td {
+          background-color: var(--bs-table-bg);
+        }
+      }
+    }
+  }
+}
