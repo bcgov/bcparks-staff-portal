@@ -68,7 +68,6 @@ export default function EditPublishedPage() {
         id: regularSeason.id,
         name: "Tiers and gate",
         level: "park",
-        editLevel: "park",
       });
     }
 
@@ -77,7 +76,6 @@ export default function EditPublishedPage() {
         id: winterSeason.id,
         name: "Winter fee",
         level: "park",
-        editLevel: "park",
       });
     }
 
