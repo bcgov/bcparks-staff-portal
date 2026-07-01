@@ -25,7 +25,7 @@ import { groupBy } from "lodash-es";
 function EditAndReview() {
   const params = useParams();
   const navigate = useNavigate();
-  
+
   const { data, loading, error, fetchData } = useApiGet("/parks");
   const {
     data: filterOptionsData,
@@ -140,8 +140,8 @@ function EditAndReview() {
     setFormData(newFormData);
     setShowFormPanel(true);
 
-    // Update URL to match the opened form
-    navigate(`/edit/${formDataObj.level}/${season.id}`);
+    // Update URL to match the opened form within the DOOT route namespace
+    navigate(`/dates/edit/${formDataObj.level}/${season.id}`);
   }
 
   function resetFilters() {
@@ -316,7 +316,7 @@ function EditAndReview() {
   // Clear URL when form panel closes
   useEffect(() => {
     if (!showFormPanel && params.seasonId) {
-      navigate("/", { replace: true });
+      navigate("/dates/", { replace: true });
     }
   }, [showFormPanel, params.seasonId, navigate]);
 
