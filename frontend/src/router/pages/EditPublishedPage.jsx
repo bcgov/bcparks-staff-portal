@@ -1,16 +1,21 @@
 import { useMemo, useState } from "react";
 import { sortBy } from "lodash-es";
+import { faPen } from "@fa-kit/icons/classic/regular";
 
 import { useApiGet } from "@/hooks/useApi";
+import FormPanel from "@/components/FormPanel";
+import IconButton from "@/components/IconButton";
 import ParkSearch from "@/components/ParkSearch";
 import LoadingBar from "@/components/LoadingBar";
 import "./EditPublishedPage.scss";
 
 export default function EditPublishedPage() {
-  const { data, loading, error } = useApiGet("/edit-published");
+  const { data, loading, error, fetchData } = useApiGet("/edit-published");
   const parks = useMemo(() => data ?? [], [data]);
 
   const [selectedParkOption, setSelectedParkOption] = useState(null);
+  const [formData, setFormData] = useState({});
+  const [showFormPanel, setShowFormPanel] = useState(false);
 
   const parkOptions = useMemo(
     () =>
@@ -34,68 +39,91 @@ export default function EditPublishedPage() {
     if (!selectedPark) return [];
 
     const rows = [];
-    const regularSeason = selectedPark.currentSeason?.regular;
-    const winterSeason = selectedPark.currentSeason?.winter;
+    const targetOperatingYear = new Date().getFullYear() - 1;
+
+    function getSeasonByYear(seasons = [], seasonType = "regular") {
+      return (
+        seasons.find(
+          (season) =>
+            season.seasonType === seasonType &&
+            season.operatingYear === targetOperatingYear,
+        ) || null
+      );
+    }
+
+    const regularSeason = getSeasonByYear(selectedPark.seasons, "regular");
+    const winterSeason = getSeasonByYear(selectedPark.seasons, "winter");
 
     if (regularSeason) {
       rows.push({
-        id: `park-regular-${regularSeason.id}`,
+        id: regularSeason.id,
         name: "Tiers and gate",
         level: "park",
+        editLevel: "park",
       });
     }
 
     if (winterSeason) {
       rows.push({
-        id: `park-winter-${winterSeason.id}`,
+        id: winterSeason.id,
         name: "Winter fee",
         level: "park",
+        editLevel: "park",
       });
     }
 
     for (const parkArea of selectedPark.parkAreas || []) {
-      const parkAreaSeason = parkArea.currentSeason?.regular;
+      const parkAreaSeason = getSeasonByYear(parkArea.seasons, "regular");
 
       if (parkAreaSeason) {
         rows.push({
-          id: `park-area-${parkArea.id}-${parkAreaSeason.id}`,
+          id: parkAreaSeason.id,
           name: parkArea.name,
           typeName:
             parkArea.parkAreaTypeName ?? parkArea.parkAreaType?.name ?? null,
           level: "park-area",
+          editLevel: "park-area",
         });
       }
 
       for (const feature of parkArea.features || []) {
-        const featureSeason = feature.currentSeason?.regular;
-
-        if (!featureSeason) continue;
+        if (!parkAreaSeason) continue;
 
         rows.push({
-          id: `park-area-feature-${feature.id}-${featureSeason.id}`,
+          id: parkAreaSeason.id,
           name: feature.name,
           typeName:
             feature.featureTypeName ?? feature.featureType?.name ?? null,
           level: "park-area-feature",
+          editLevel: "feature",
         });
       }
     }
 
     for (const feature of selectedPark.features || []) {
-      const featureSeason = feature.currentSeason?.regular;
+      const featureSeason = getSeasonByYear(feature.seasons, "regular");
 
       if (!featureSeason) continue;
 
       rows.push({
-        id: `park-feature-${feature.id}-${featureSeason.id}`,
+        id: featureSeason.id,
         name: feature.name,
         typeName: feature.featureTypeName ?? feature.featureType?.name ?? null,
         level: "feature",
+        editLevel: "feature",
       });
     }
 
     return rows;
   }, [selectedPark]);
+
+  function handleOpenFormPanel(row) {
+    setFormData({
+      seasonId: row.id,
+      level: row.editLevel,
+    });
+    setShowFormPanel(true);
+  }
 
   if (loading) {
     return <LoadingBar />;
@@ -132,7 +160,6 @@ export default function EditPublishedPage() {
                       </th>
                     </tr>
                   </thead>
-
                   <tbody>
                     {parkItems.map((row) => (
                       <tr key={row.id} className={`table-row--${row.level}`}>
@@ -144,7 +171,13 @@ export default function EditPublishedPage() {
                             </div>
                           )}
                         </th>
-                        <td>Edit</td>
+                        <td className="text-end">
+                          <IconButton
+                            icon={faPen}
+                            label="Edit"
+                            onClick={() => handleOpenFormPanel(row)}
+                          />
+                        </td>
                       </tr>
                     ))}
 
@@ -161,6 +194,13 @@ export default function EditPublishedPage() {
             )}
           </div>
         </div>
+
+        <FormPanel
+          show={showFormPanel}
+          setShow={setShowFormPanel}
+          formData={formData}
+          onDataUpdate={fetchData}
+        />
       </div>
     </div>
   );
