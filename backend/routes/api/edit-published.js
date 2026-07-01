@@ -13,7 +13,7 @@ router.get("/", checkPermissions([USER_ROLES.APPROVER]), (req, res, next) => {
   req.query = {
     ...req.query,
     seasonStatus: SEASON_STATUS.PUBLISHED,
-    minOperatingYear,
+    operatingYear: minOperatingYear,
   };
 
   parkRoutes.handle(req, res, next);

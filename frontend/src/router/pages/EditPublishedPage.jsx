@@ -51,6 +51,7 @@ export default function EditPublishedPage() {
       );
     }
 
+    // Park-level seasons (regular and winter)
     const regularSeason = getSeasonByYear(selectedPark.seasons, "regular");
     const winterSeason = getSeasonByYear(selectedPark.seasons, "winter");
 
@@ -59,7 +60,6 @@ export default function EditPublishedPage() {
         id: regularSeason.id,
         name: "Tiers and gate",
         level: "park",
-        editLevel: "park",
       });
     }
 
@@ -68,10 +68,10 @@ export default function EditPublishedPage() {
         id: winterSeason.id,
         name: "Winter fee",
         level: "park",
-        editLevel: "park",
       });
     }
 
+    // Area-level seasons
     for (const parkArea of selectedPark.parkAreas || []) {
       const parkAreaSeason = getSeasonByYear(parkArea.seasons, "regular");
 
@@ -82,24 +82,11 @@ export default function EditPublishedPage() {
           typeName:
             parkArea.parkAreaTypeName ?? parkArea.parkAreaType?.name ?? null,
           level: "park-area",
-          editLevel: "park-area",
-        });
-      }
-
-      for (const feature of parkArea.features || []) {
-        if (!parkAreaSeason) continue;
-
-        rows.push({
-          id: parkAreaSeason.id,
-          name: feature.name,
-          typeName:
-            feature.featureTypeName ?? feature.featureType?.name ?? null,
-          level: "park-area-feature",
-          editLevel: "feature",
         });
       }
     }
 
+    // Feature-level seasons
     for (const feature of selectedPark.features || []) {
       const featureSeason = getSeasonByYear(feature.seasons, "regular");
 
@@ -110,7 +97,6 @@ export default function EditPublishedPage() {
         name: feature.name,
         typeName: feature.featureTypeName ?? feature.featureType?.name ?? null,
         level: "feature",
-        editLevel: "feature",
       });
     }
 
@@ -120,7 +106,7 @@ export default function EditPublishedPage() {
   function handleOpenFormPanel(row) {
     setFormData({
       seasonId: row.id,
-      level: row.editLevel,
+      level: row.level,
     });
     setShowFormPanel(true);
   }
