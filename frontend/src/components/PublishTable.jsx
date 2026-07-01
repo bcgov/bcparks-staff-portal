@@ -1,5 +1,5 @@
-// Copied from SubmitTable.jsx (v1) since it had a similar structure to the publish table design
-// Current SubmitTable.jsx has a different structure
+// Copied from SubmitPageTable.jsx (v1) since it had a similar structure to the publish table design
+// Current SubmitPageTable.jsx has a different structure
 
 import { useMemo } from "react";
 import PropTypes from "prop-types";

@@ -33,15 +33,15 @@ const RouterConfig = createBrowserRouter(
             // Edit season form routes
             {
               path: "edit/park/:seasonId",
-              element: <EditAndReview />,
+              element: <SubmitPage />,
             },
             {
               path: "edit/park-area/:seasonId",
-              element: <EditAndReview />,
+              element: <SubmitPage />,
             },
             {
               path: "edit/feature/:seasonId",
-              element: <EditAndReview />,
+              element: <SubmitPage />,
             },
             // Edit published table / landing page
             {

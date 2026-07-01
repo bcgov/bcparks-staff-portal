@@ -2,7 +2,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import { useParams, useNavigate } from "react-router-dom";
-import SubmitTable from "@/components/SubmitTable";
+import SubmitPageTable from "@/components/SubmitPageTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
 import { useMemo, useState, useEffect, useCallback } from "react";
@@ -19,7 +19,7 @@ import {
   getMatchingFeatures,
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
-} from "@/lib/submitFilters";
+} from "@/lib/submitPageFilters";
 import { groupBy } from "lodash-es";
 
 function SubmitPage() {
@@ -342,7 +342,7 @@ function SubmitPage() {
       <div className="paginated-table">
         <div className="mb-3">
           <RefreshTableContext.Provider value={{ refreshTable }}>
-            <SubmitTable
+            <SubmitPageTable
               data={pageData}
               onResetFilters={resetFilters}
               formPanelHandler={formPanelHandler}
