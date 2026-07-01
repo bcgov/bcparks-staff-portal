@@ -13,11 +13,7 @@ import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
-<<<<<<<< HEAD:frontend/src/components/SubmitPageTable.jsx
 import "./SubmitPageTable.scss";
-========
-import "./SubmitTable.scss";
->>>>>>>> f2a6cf2 (CMS-1834: Change EditAndReview files name to Submit):frontend/src/components/SubmitTable.jsx
 import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as SEASON_STATUS from "@/constants/seasonStatus";
@@ -650,11 +646,7 @@ Table.propTypes = {
   sortOrder: PropTypes.arrayOf(PropTypes.object),
 };
 
-<<<<<<<< HEAD:frontend/src/components/SubmitPageTable.jsx
 export default function SubmitPageTable({
-========
-export default function SubmitTable({
->>>>>>>> f2a6cf2 (CMS-1834: Change EditAndReview files name to Submit):frontend/src/components/SubmitTable.jsx
   data,
   onResetFilters,
   formPanelHandler,
@@ -685,13 +677,8 @@ export default function SubmitTable({
   );
 }
 
-<<<<<<<< HEAD:frontend/src/components/SubmitPageTable.jsx
 // Define prop types for SubmitPageTable
 SubmitPageTable.propTypes = {
-========
-// Define prop types for SubmitTable
-SubmitTable.propTypes = {
->>>>>>>> f2a6cf2 (CMS-1834: Change EditAndReview files name to Submit):frontend/src/components/SubmitTable.jsx
   data: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number,
