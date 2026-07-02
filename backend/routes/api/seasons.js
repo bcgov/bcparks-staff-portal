@@ -1108,6 +1108,7 @@ router.get(
       where: {
         publishableId: currentSeason.publishableId,
         seasonType: currentSeason.seasonType,
+        status: STATUS.PUBLISHED,
       },
       order: [["operatingYear", "DESC"]],
     });

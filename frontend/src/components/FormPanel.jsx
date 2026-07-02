@@ -111,7 +111,7 @@ Buttons.propTypes = {
 function SeasonForm({
   seasonId,
   level,
-  lazyLoadSeasonOptions = false,
+  showOperatingYearSelect = false,
   onSeasonChange,
   closePanel,
   handleStatusCancelClose,
@@ -173,7 +173,7 @@ function SeasonForm({
 
   const { data: seasonOptionsData, loading: loadingSeasonOptions } = useApiGet(
     `/seasons/options/${seasonId}`,
-    { instant: lazyLoadSeasonOptions },
+    { instant: showOperatingYearSelect },
   );
 
   const seasonOptions = useMemo(
@@ -660,12 +660,13 @@ If dates have already been published, they will not be updated until new dates a
             )}
 
             <h2>{seasonTitle}</h2>
-            {lazyLoadSeasonOptions ? (
+            {showOperatingYearSelect ? (
               // Display the operating year form in the Edit published page
               <div className="d-flex align-items-center">
                 <h2 className="fw-normal">Edit dates for </h2>
                 <Form.Select
                   id="operating-year-select"
+                  aria-label="Select operating year"
                   value={seasonId}
                   onChange={(event) => {
                     const nextSeasonId = Number.parseInt(
@@ -818,7 +819,7 @@ If dates have already been published, they will not be updated until new dates a
 SeasonForm.propTypes = {
   seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
-  lazyLoadSeasonOptions: PropTypes.bool,
+  showOperatingYearSelect: PropTypes.bool,
   onSeasonChange: PropTypes.func,
   closePanel: PropTypes.func.isRequired,
   handleStatusCancelClose: PropTypes.func.isRequired,
@@ -883,6 +884,31 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
     closePanel();
   }, [dataChanged, modal, closePanel]);
 
+  const handleSeasonChange = useCallback(
+    async (nextSeasonId) => {
+      if (nextSeasonId === selectedSeasonId) {
+        return;
+      }
+
+      if (dataChanged) {
+        const proceed = await modal.open(
+          "Discard changes?",
+          "Discarded changes will be permanently deleted.",
+          "Discard changes",
+          "Continue editing",
+        );
+
+        if (!proceed) {
+          return;
+        }
+      }
+
+      setSelectedSeasonId(nextSeasonId);
+      setDataChanged(false);
+    },
+    [dataChanged, modal, selectedSeasonId],
+  );
+
   // Hide the form if no seasonId is provided
   return (
     <>
@@ -897,8 +923,8 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
             key={`${formData.level}-${selectedSeasonId}`}
             seasonId={selectedSeasonId}
             level={formData.level}
-            lazyLoadSeasonOptions={Boolean(formData.lazyLoadSeasonOptions)}
-            onSeasonChange={setSelectedSeasonId}
+            showOperatingYearSelect={Boolean(formData.showOperatingYearSelect)}
+            onSeasonChange={handleSeasonChange}
             closePanel={closePanel}
             handleStatusCancelClose={handleStatusCancelClose}
             onDataUpdate={onDataUpdate}
