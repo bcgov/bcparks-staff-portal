@@ -123,7 +123,7 @@ export default function EditPublishedPage() {
     setFormData({
       seasonId: item.id,
       level: item.level,
-      lazyLoadSeasonOptions: true,
+      showOperatingYearSelect: true,
     });
     setShowFormPanel(true);
   }
