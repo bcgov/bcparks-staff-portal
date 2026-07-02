@@ -5,5 +5,9 @@
     @include from-md {
       width: 80%;
     }
+
+    select.form-select#operating-year-select {
+      width: 120px;
+    }
   }
 }
