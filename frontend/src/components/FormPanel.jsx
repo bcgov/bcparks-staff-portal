@@ -662,8 +662,8 @@ If dates have already been published, they will not be updated until new dates a
             <h2>{seasonTitle}</h2>
             {showOperatingYearSelect ? (
               // Display the operating year form in the Edit published page
-              <div className="d-flex align-items-center">
-                <h2 className="fw-normal">Edit dates for </h2>
+              <div className="d-block d-sm-flex align-items-center">
+                <h2 className="fw-normal">Edit dates for</h2>
                 <Form.Select
                   id="operating-year-select"
                   aria-label="Select operating year"
@@ -676,7 +676,7 @@ If dates have already been published, they will not be updated until new dates a
 
                     onSeasonChange(nextSeasonId);
                   }}
-                  className="ms-3 mb-2"
+                  className="ms-0 ms-sm-3 mb-2"
                   disabled={loadingSeasonOptions || seasonOptions.length === 0}
                 >
                   {seasonOptions.map((option) => (
@@ -890,6 +890,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         return;
       }
 
+      // If the form data has changed, prompt the user to confirm discarding changes before switching seasons
       if (dataChanged) {
         const proceed = await modal.open(
           "Discard changes?",
