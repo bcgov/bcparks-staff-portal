@@ -280,6 +280,21 @@ function SeasonForm({
     return title;
   }, [level, season, seasonMetadata]);
 
+  const showOperatingYearRange = useMemo(
+    () =>
+      season?.seasonType === SEASON_TYPE.WINTER ||
+      Boolean(season?.datesCanSpan2Years),
+    [season?.seasonType, season?.datesCanSpan2Years],
+  );
+
+  const formatOperatingYearLabel = useCallback(
+    (operatingYear) =>
+      showOperatingYearRange
+        ? `${operatingYear} – ${operatingYear + 1}`
+        : `${operatingYear}`,
+    [showOperatingYearRange],
+  );
+
   const dateTypesByStrapiId = useMemo(
     () => keyBy(seasonMetadata?.dateTypes || [], "dateTypeNumber"),
     [seasonMetadata],
@@ -681,7 +696,7 @@ If dates have already been published, they will not be updated until new dates a
                 >
                   {seasonOptions.map((option) => (
                     <option key={option.id} value={option.id}>
-                      {option.operatingYear}
+                      {formatOperatingYearLabel(option.operatingYear)}
                     </option>
                   ))}
                 </Form.Select>
