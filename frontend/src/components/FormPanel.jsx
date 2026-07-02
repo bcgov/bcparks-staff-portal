@@ -111,6 +111,8 @@ Buttons.propTypes = {
 function SeasonForm({
   seasonId,
   level,
+  lazyLoadSeasonOptions = false,
+  onSeasonChange,
   closePanel,
   handleStatusCancelClose,
   onDataUpdate,
@@ -168,6 +170,16 @@ function SeasonForm({
     error,
     fetchData: refreshData,
   } = useApiGet(`/seasons/${level}/${seasonId}`);
+
+  const { data: seasonOptionsData, loading: loadingSeasonOptions } = useApiGet(
+    `/seasons/options/${seasonId}`,
+    { instant: lazyLoadSeasonOptions },
+  );
+
+  const seasonOptions = useMemo(
+    () => seasonOptionsData?.seasons ?? [],
+    [seasonOptionsData],
+  );
 
   useEffect(() => {
     if (apiData) {
@@ -648,7 +660,35 @@ If dates have already been published, they will not be updated until new dates a
             )}
 
             <h2>{seasonTitle}</h2>
-            <h2 className="fw-normal">{yearHeaderText}</h2>
+            {lazyLoadSeasonOptions ? (
+              // Display the operating year form in the Edit published page
+              <div className="d-flex align-items-center">
+                <h2 className="fw-normal">Edit dates for </h2>
+                <Form.Select
+                  id="operating-year-select"
+                  value={seasonId}
+                  onChange={(event) => {
+                    const nextSeasonId = Number.parseInt(
+                      event.target.value,
+                      10,
+                    );
+
+                    onSeasonChange(nextSeasonId);
+                  }}
+                  className="ms-3 mb-2"
+                  disabled={loadingSeasonOptions || seasonOptions.length === 0}
+                >
+                  {seasonOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.operatingYear}
+                    </option>
+                  ))}
+                </Form.Select>
+              </div>
+            ) : (
+              // Display the operating year text in the Submit page
+              <h2 className="fw-normal">{yearHeaderText}</h2>
+            )}
             <p className="fs-6 fw-normal">
               <a
                 href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
@@ -778,6 +818,8 @@ If dates have already been published, they will not be updated until new dates a
 SeasonForm.propTypes = {
   seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
+  lazyLoadSeasonOptions: PropTypes.bool,
+  onSeasonChange: PropTypes.func,
   closePanel: PropTypes.func.isRequired,
   handleStatusCancelClose: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
@@ -789,8 +831,13 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   // Track if the form data has changed.
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
+  const [selectedSeasonId, setSelectedSeasonId] = useState(null);
   const modal = useConfirmation();
   const closingFromStatusPrompt = useRef(false);
+
+  useEffect(() => {
+    setSelectedSeasonId(formData?.seasonId ?? null);
+  }, [formData?.seasonId]);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
@@ -845,11 +892,13 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         placement="end"
         className="form-panel"
       >
-        {formData.seasonId && (
+        {selectedSeasonId && (
           <SeasonForm
-            key={`${formData.level}-${formData.seasonId}`}
-            seasonId={formData.seasonId}
+            key={`${formData.level}-${selectedSeasonId}`}
+            seasonId={selectedSeasonId}
             level={formData.level}
+            lazyLoadSeasonOptions={Boolean(formData.lazyLoadSeasonOptions)}
+            onSeasonChange={setSelectedSeasonId}
             closePanel={closePanel}
             handleStatusCancelClose={handleStatusCancelClose}
             onDataUpdate={onDataUpdate}
