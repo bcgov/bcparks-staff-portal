@@ -60,13 +60,17 @@ function Buttons({
   approver,
   submitter,
   loading = false,
+  disableButtons = false,
 }) {
+  const isDisabled = loading || disableButtons;
+
   return (
     <div>
       <button
         type="button"
         onClick={onSave}
         className="btn btn-outline-primary form-btn fw-bold me-3"
+        disabled={isDisabled}
       >
         Save draft
       </button>
@@ -77,6 +81,7 @@ function Buttons({
           type="button"
           onClick={onApprove}
           className="btn btn-primary form-btn fw-bold me-2"
+          disabled={isDisabled}
         >
           Mark approved
         </button>
@@ -88,6 +93,7 @@ function Buttons({
           type="button"
           onClick={onSubmit}
           className="btn btn-primary form-btn fw-bold me-2"
+          disabled={isDisabled}
         >
           Submit to HQ
         </button>
@@ -106,6 +112,7 @@ Buttons.propTypes = {
   approver: PropTypes.bool.isRequired,
   submitter: PropTypes.bool.isRequired,
   loading: PropTypes.bool,
+  disableButtons: PropTypes.bool,
 };
 
 function SeasonForm({
@@ -455,6 +462,9 @@ function SeasonForm({
     // If nothing else has changed, return true if notes are entered
     return changesPayload.notes.length > 0;
   }, [season, changesPayload, apiData]);
+
+  // In the Edit published page, buttons should only be enabled after edits are made
+  const disableButtons = showOperatingYearSelect && !dataChanged;
 
   // Update the parent component when dataChanged is updated
   useEffect(() => {
@@ -824,6 +834,7 @@ If dates have already been published, they will not be updated until new dates a
             onSave={() => promptAndSave(false)}
             onSubmit={onSubmit}
             loading={sendingSave}
+            disableButtons={disableButtons}
           />
         </Offcanvas.Body>
       </ValidationContext.Provider>
