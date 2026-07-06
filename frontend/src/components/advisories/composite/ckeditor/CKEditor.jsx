@@ -16,7 +16,8 @@ import "ckeditor5/ckeditor5.css";
 
 export default function StaffPortalCKEditor({
   value,
-  onChange,
+  onBlur,
+  onChange = () => {},
   ...otherProps
 }) {
   return (
@@ -48,6 +49,9 @@ export default function StaffPortalCKEditor({
         ],
       }}
       onBlur={(_, editor) => {
+        onBlur(editor.getData());
+      }}
+      onChange={(_, editor) => {
         onChange(editor.getData());
       }}
     />
@@ -56,5 +60,6 @@ export default function StaffPortalCKEditor({
 
 StaffPortalCKEditor.propTypes = {
   value: PropTypes.string.isRequired,
-  onChange: PropTypes.func.isRequired,
+  onBlur: PropTypes.func.isRequired,
+  onChange: PropTypes.func,
 };

@@ -732,10 +732,8 @@ export default function AdvisoryForm({
           <CKEditor
             id="custom-message"
             value={description}
-            onChange={(value) => {
-              setDescription(value);
-              markChanged();
-            }}
+            onBlur={setDescription}
+            onChange={markChanged}
           />
         </Form.Group>
 
