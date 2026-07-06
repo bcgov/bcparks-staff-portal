@@ -24,7 +24,12 @@ const ACTION_MENU_POPPER_CONFIG = {
       options: {
         altAxis: true,
         tether: false,
+        boundary: "viewport",
       },
+    },
+    {
+      name: "computeStyles",
+      options: { gpuAcceleration: false },
     },
   ],
 };
