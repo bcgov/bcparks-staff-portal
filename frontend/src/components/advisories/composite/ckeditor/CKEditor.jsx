@@ -52,7 +52,7 @@ export default function StaffPortalCKEditor({
         onBlur(editor.getData());
       }}
       onChange={(_, editor) => {
-        onChange(editor.getData());
+        onChange(editor);
       }}
     />
   );
