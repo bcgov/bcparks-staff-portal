@@ -129,7 +129,13 @@ export default function EditPublishedPage() {
   }
 
   if (loading) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <div className="page edit-published">
+          <LoadingBar />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
