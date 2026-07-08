@@ -7,6 +7,7 @@ import FormPanel from "@/components/FormPanel";
 import IconButton from "@/components/IconButton";
 import ParkSearch from "@/components/ParkSearch";
 import LoadingBar from "@/components/LoadingBar";
+import * as SEASON_TYPE from "@/constants/seasonType";
 import "./EditPublishedPage.scss";
 
 export default function EditPublishedPage() {
@@ -42,7 +43,7 @@ export default function EditPublishedPage() {
     const targetOperatingYear = new Date().getFullYear() - 1;
 
     // Find a season by year and type
-    function getSeasonByYear(seasons = [], seasonType = "regular") {
+    function getSeasonByYear(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
       return (
         seasons.find(
           (season) =>
@@ -53,8 +54,14 @@ export default function EditPublishedPage() {
     }
 
     // Park-level seasons (regular and winter)
-    const regularSeason = getSeasonByYear(selectedPark.seasons, "regular");
-    const winterSeason = getSeasonByYear(selectedPark.seasons, "winter");
+    const regularSeason = getSeasonByYear(
+      selectedPark.seasons,
+      SEASON_TYPE.REGULAR,
+    );
+    const winterSeason = getSeasonByYear(
+      selectedPark.seasons,
+      SEASON_TYPE.WINTER,
+    );
 
     if (regularSeason) {
       items.push({
@@ -74,7 +81,10 @@ export default function EditPublishedPage() {
 
     // Area-level seasons
     for (const parkArea of selectedPark.parkAreas || []) {
-      const parkAreaSeason = getSeasonByYear(parkArea.seasons, "regular");
+      const parkAreaSeason = getSeasonByYear(
+        parkArea.seasons,
+        SEASON_TYPE.REGULAR,
+      );
 
       if (parkAreaSeason) {
         items.push({
@@ -89,7 +99,10 @@ export default function EditPublishedPage() {
 
     // Feature-level seasons
     for (const feature of selectedPark.features || []) {
-      const featureSeason = getSeasonByYear(feature.seasons, "regular");
+      const featureSeason = getSeasonByYear(
+        feature.seasons,
+        SEASON_TYPE.REGULAR,
+      );
 
       if (featureSeason) {
         items.push({
