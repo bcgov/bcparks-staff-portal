@@ -14,6 +14,7 @@ import { isEqual, omit, keyBy } from "lodash-es";
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
 import LoadingBar from "@/components/LoadingBar";
+import OperatingYearSelect from "@/components/OperatingYearSelect";
 import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
@@ -286,21 +287,6 @@ function SeasonForm({
     }
     return title;
   }, [level, season, seasonMetadata]);
-
-  const showOperatingYearRange = useMemo(
-    () =>
-      season?.seasonType === SEASON_TYPE.WINTER ||
-      Boolean(season?.datesCanSpan2Years),
-    [season?.seasonType, season?.datesCanSpan2Years],
-  );
-
-  const formatOperatingYearLabel = useCallback(
-    (operatingYear) =>
-      showOperatingYearRange
-        ? `${operatingYear} – ${operatingYear + 1}`
-        : `${operatingYear}`,
-    [showOperatingYearRange],
-  );
 
   const dateTypesByStrapiId = useMemo(
     () => keyBy(seasonMetadata?.dateTypes || [], "dateTypeNumber"),
@@ -687,30 +673,13 @@ If dates have already been published, they will not be updated until new dates a
             <h2>{seasonTitle}</h2>
             {showOperatingYearSelect ? (
               // Display the operating year form in the Edit published page
-              <div className="d-block d-sm-flex align-items-center">
-                <h2 className="fw-normal">Edit dates for</h2>
-                <Form.Select
-                  id="operating-year-select"
-                  aria-label="Select operating year"
-                  value={seasonId}
-                  onChange={(event) => {
-                    const nextSeasonId = Number.parseInt(
-                      event.target.value,
-                      10,
-                    );
-
-                    onSeasonChange(nextSeasonId);
-                  }}
-                  className="ms-0 ms-sm-3 mb-2"
-                  disabled={loadingSeasonOptions || seasonOptions.length === 0}
-                >
-                  {seasonOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {formatOperatingYearLabel(option.operatingYear)}
-                    </option>
-                  ))}
-                </Form.Select>
-              </div>
+              <OperatingYearSelect
+                seasonId={seasonId}
+                season={season}
+                seasonOptions={seasonOptions}
+                loadingSeasonOptions={loadingSeasonOptions}
+                onSeasonChange={onSeasonChange}
+              />
             ) : (
               // Display the operating year text in the Submit page
               <h2 className="fw-normal">{yearHeaderText}</h2>
