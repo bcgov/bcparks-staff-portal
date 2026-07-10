@@ -84,8 +84,13 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
+      // Only copy complete previous ranges; skip placeholders with null dates.
+      const completePrevRanges = prevDateRanges.filter(
+        (range) => range.startDate && range.endDate,
+      );
+
       // Skip to the next DateRangeAnnual if there are no previous DateRanges to copy
-      if (prevDateRanges.length === 0) continue;
+      if (completePrevRanges.length === 0) continue;
 
       let targetSeason = await Season.findOne({
         where: {
@@ -148,22 +153,15 @@ export async function populateAnnualDateRangesForYear(
         (range) => range.startDate && range.endDate,
       );
 
-      if (completeTargetRanges.length >= prevDateRanges.length) {
-        // Target season already has complete date ranges for this dateType
-        continue;
-      }
+      // Copy only date ranges that are missing in target season.
+      // Compare by transformed target-year start/end values rather than by index.
+      const existingTargetRangeKeys = new Set(
+        completeTargetRanges.map(
+          (range) => `${range.startDate}|${range.endDate}`,
+        ),
+      );
 
-      // Only copy ranges that don't already exist (avoiding duplicates)
-      const numRangesToCopy =
-        prevDateRanges.length - completeTargetRanges.length;
-
-      if (numRangesToCopy <= 0) {
-        continue;
-      }
-
-      // copy each previous DateRange to current season (only the missing ones)
-      for (let i = 0; i < numRangesToCopy; i++) {
-        const prevRange = prevDateRanges[i];
+      for (const prevRange of completePrevRanges) {
         const currentYear = targetSeason.operatingYear;
         const prevStartDate = parse(
           prevRange.startDate,
@@ -179,12 +177,21 @@ export async function populateAnnualDateRangesForYear(
         const newStartDate = addYears(prevStartDate, yearOffset);
         const newEndDate = addYears(prevEndDate, yearOffset);
 
+        const newStartDateStr = format(newStartDate, "yyyy-MM-dd");
+        const newEndDateStr = format(newEndDate, "yyyy-MM-dd");
+        const rangeKey = `${newStartDateStr}|${newEndDateStr}`;
+
+        // Skip ranges that already exist in target season after year transformation.
+        if (existingTargetRangeKeys.has(rangeKey)) continue;
+
+        existingTargetRangeKeys.add(rangeKey);
+
         dateRangesToCreate.push({
           dateableId,
           seasonId: targetSeason.id,
           dateTypeId,
-          startDate: format(newStartDate, "yyyy-MM-dd"),
-          endDate: format(newEndDate, "yyyy-MM-dd"),
+          startDate: newStartDateStr,
+          endDate: newEndDateStr,
         });
 
         console.log(
