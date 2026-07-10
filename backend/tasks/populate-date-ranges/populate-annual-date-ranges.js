@@ -148,7 +148,7 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
-      // If we have the same number of complete ranges as previous year, skip
+      // Only compare against complete target ranges
       const completeTargetRanges = existingTargetDateRanges.filter(
         (range) => range.startDate && range.endDate,
       );
@@ -170,12 +170,12 @@ export async function populateAnnualDateRangesForYear(
         );
         const prevEndDate = parse(prevRange.endDate, "yyyy-MM-dd", new Date());
 
-        // Calculate the year difference between the previous end and start dates
-        // to handle dates that span two calendar years (e.g., Nov 2026 to March 2027)
-        const yearOffset = currentYear - getYear(prevStartDate);
+        // Shift this previous range into the target operating year while preserving
+        // the start/end year relationship for cross-year ranges.
+        const targetYearOffset = currentYear - getYear(prevStartDate);
 
-        const newStartDate = addYears(prevStartDate, yearOffset);
-        const newEndDate = addYears(prevEndDate, yearOffset);
+        const newStartDate = addYears(prevStartDate, targetYearOffset);
+        const newEndDate = addYears(prevEndDate, targetYearOffset);
 
         const newStartDateStr = format(newStartDate, "yyyy-MM-dd");
         const newEndDateStr = format(newEndDate, "yyyy-MM-dd");
