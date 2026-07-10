@@ -4,10 +4,9 @@ import PropTypes from "prop-types";
 import * as SEASON_TYPE from "@/constants/seasonType";
 
 export default function OperatingYearSelect({
-  seasonId,
-  season,
+  season = null,
   seasonOptions,
-  loadingSeasonOptions,
+  loadingSeasonOptions = false,
   onSeasonChange,
 }) {
   const showOperatingYearRange = useMemo(
@@ -31,7 +30,7 @@ export default function OperatingYearSelect({
       <Form.Select
         id="operating-year-select"
         aria-label="Select operating year"
-        value={seasonId}
+        value={season?.id ?? ""}
         onChange={(event) => {
           const nextSeasonId = Number.parseInt(event.target.value, 10);
 
@@ -51,8 +50,8 @@ export default function OperatingYearSelect({
 }
 
 OperatingYearSelect.propTypes = {
-  seasonId: PropTypes.number.isRequired,
   season: PropTypes.shape({
+    id: PropTypes.number,
     seasonType: PropTypes.string,
     feature: PropTypes.shape({
       datesCanSpan2Years: PropTypes.bool,
@@ -66,9 +65,4 @@ OperatingYearSelect.propTypes = {
   ).isRequired,
   loadingSeasonOptions: PropTypes.bool,
   onSeasonChange: PropTypes.func.isRequired,
-};
-
-OperatingYearSelect.defaultProps = {
-  loadingSeasonOptions: false,
-  season: null,
 };

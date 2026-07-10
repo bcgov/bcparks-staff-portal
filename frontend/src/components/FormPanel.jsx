@@ -674,7 +674,6 @@ If dates have already been published, they will not be updated until new dates a
             {showOperatingYearSelect ? (
               // Display the operating year form in the Edit published page
               <OperatingYearSelect
-                seasonId={seasonId}
                 season={season}
                 seasonOptions={seasonOptions}
                 loadingSeasonOptions={loadingSeasonOptions}
