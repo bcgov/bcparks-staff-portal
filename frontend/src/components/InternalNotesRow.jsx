@@ -5,6 +5,7 @@ import Accordion from "react-bootstrap/Accordion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fa-kit/icons/classic/solid";
 import { formatDateShort } from "@/lib/utils";
+import { useApiGet } from "@/hooks/useApi";
 
 // Formats createdAt date
 // e.g. "2024-06-20T18:25:43.511Z" -> "Thu, Jun 20"
@@ -18,10 +19,34 @@ function formatCreatedAt(value) {
   return formatDateShort(date);
 }
 
-export default function InternalNotesRow({ notes }) {
+export default function InternalNotesRow({ seasonId }) {
+  const [hasRequestedNotes, setHasRequestedNotes] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const {
+    data: fetchedNotes,
+    loading,
+    error,
+    fetchData,
+  } = useApiGet(`/seasons/${seasonId}/notes`, { instant: false });
 
-  if (!notes || notes.length === 0) return null;
+  const visibleNotes = Array.isArray(fetchedNotes) ? fetchedNotes : [];
+
+  // Toggles the open state and fetches notes if opening for the first time
+  async function toggleOpen() {
+    const openingRow = !isOpen;
+
+    setIsOpen(openingRow);
+
+    if (openingRow && !hasRequestedNotes) {
+      try {
+        await fetchData();
+        setHasRequestedNotes(true);
+      } catch {
+        // Keep this false so collapsing and reopening retries the request.
+        setHasRequestedNotes(false);
+      }
+    }
+  }
 
   return (
     <tr className={classNames("table-row--note")}>
@@ -31,27 +56,48 @@ export default function InternalNotesRow({ notes }) {
       <td>
         <Accordion activeKey={isOpen ? "internal-notes" : null}>
           <Accordion.Collapse
-            id={`internal-notes-${notes[0].id}`}
+            id={`internal-notes-${seasonId}`}
             eventKey="internal-notes"
           >
-            <ul className="list-unstyled">
-              {notes.map((note) => (
-                <li key={note.id}>
-                  <div>{note.note}</div>
-                  <p className="text-muted">
-                    {formatCreatedAt(note.createdAt)} by {note.createdBy}
+            <>
+              {loading && <p className="mb-0 text-muted">Loading notes...</p>}
+
+              {!loading && error && (
+                <p className="mb-0 text-danger">
+                  Unable to load internal notes.
+                </p>
+              )}
+
+              {!loading && !error && visibleNotes.length > 0 && (
+                <ul className="list-unstyled">
+                  {visibleNotes.map((note) => (
+                    <li key={note.id}>
+                      <div>{note.note}</div>
+                      <p className="text-muted">
+                        {formatCreatedAt(note.createdAt)} by {note.createdBy}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              {!loading &&
+                !error &&
+                hasRequestedNotes &&
+                visibleNotes.length === 0 && (
+                  <p className="mb-0 text-muted">
+                    No internal notes found for this season.
                   </p>
-                </li>
-              ))}
-            </ul>
+                )}
+            </>
           </Accordion.Collapse>
 
           <button
             type="button"
             className="btn btn-text text-link text-decoration-underline p-0"
-            onClick={() => setIsOpen((open) => !open)}
+            onClick={toggleOpen}
             aria-expanded={isOpen}
-            aria-controls={`internal-notes-${notes[0].id}`}
+            aria-controls={`internal-notes-${seasonId}`}
           >
             {isOpen ? "Hide internal notes" : "Show internal notes"}
             <FontAwesomeIcon
@@ -66,15 +112,5 @@ export default function InternalNotesRow({ notes }) {
 }
 
 InternalNotesRow.propTypes = {
-  notes: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.number.isRequired,
-      note: PropTypes.string.isRequired,
-      createdAt: PropTypes.oneOfType([
-        PropTypes.string,
-        PropTypes.instanceOf(Date),
-      ]),
-      createdBy: PropTypes.string,
-    }),
-  ),
+  seasonId: PropTypes.number.isRequired,
 };

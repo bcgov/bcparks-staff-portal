@@ -20,19 +20,81 @@ import {
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
 } from "@/lib/submitPageFilters";
-import { groupBy } from "lodash-es";
+import { groupBy, maxBy } from "lodash-es";
+
+// Build the currentSeason object for a Park from its seasons array.
+// Same logic used in the backend for Feature-level currentSeason objects.
+function getCurrentSeason(seasons = []) {
+  if (!seasons || seasons.length === 0) return { regular: null, winter: null };
+
+  // group seasons by seasonType
+  const seasonsByType = groupBy(seasons, "seasonType");
+
+  // find the most recent season (highest operatingYear) for each type
+  const regularSeason = seasonsByType.regular
+    ? maxBy(seasonsByType.regular, "operatingYear")
+    : null;
+
+  const winterSeason = seasonsByType.winter
+    ? maxBy(seasonsByType.winter, "operatingYear")
+    : null;
+
+  return {
+    regular: regularSeason,
+    winter: winterSeason,
+  };
+}
 
 function SubmitPage() {
   const params = useParams();
   const navigate = useNavigate();
 
+  // Load Park data for the table
   const { data, loading, error, fetchData } = useApiGet("/parks");
+
+  // Load metadata for each park (park section, management area, access groups) and filter options for the filter panel
+  const {
+    data: metadataRaw,
+    loading: metadataLoading,
+    error: metadataError,
+  } = useApiGet("/parks/metadata");
+
   const {
     data: filterOptionsData,
     loading: filterOptionsLoading,
     error: filterOptionsError,
   } = useApiGet("/filter-options");
-  const parks = useMemo(() => data ?? [], [data]);
+
+  // disable filters until Park metadata is loaded
+  const metadataLoaded = metadataRaw && !metadataLoading;
+
+  // Build a lookup map from the metadata array: parkId -> { section, managementArea, accessGroups }
+  const metadataById = useMemo(
+    () =>
+      new Map(
+        (metadataRaw ?? []).map(({ id, ...metadataFields }) => [
+          id,
+          metadataFields,
+        ]),
+      ),
+    [metadataRaw],
+  );
+
+  // Transform the API response to include currentSeason objects for each Park.
+  // Once metadata is available, merge section/managementArea/accessGroups per park.
+  const parks = useMemo(
+    () =>
+      (data ?? []).map((park) => ({
+        ...park,
+
+        // Merge in metadata for this park
+        ...(metadataById.get(park.id) ?? {}),
+
+        // Build the currentSeason object for this park
+        currentSeason: getCurrentSeason(park.seasons),
+      })),
+    [data, metadataById],
+  );
 
   const filterOptions = useMemo(
     () => filterOptionsData ?? {},
@@ -175,6 +237,20 @@ function SubmitPage() {
   const flattenedFilteredResults = useMemo(() => {
     // Flatten the parks, areas, and features into a single "results" array
     // and exclude any areas or features that don't match the filters.
+
+    // Skip all filter logic until metadata has been merged in
+    // (section, managementArea, accessGroups)
+    if (!metadataLoaded) {
+      return parks.map((park) => ({
+        ...park,
+        matchesFilters: true,
+        entityType: "park",
+        parkName: park.name,
+        showTiersAndGate: true,
+        showWinterFee: park.hasWinterFeeDates,
+      }));
+    }
+
     const results = parks.flatMap((park) => {
       // If the Park doesn't match the Park-level "hard" filters, exclude it entirely.
       if (parkFiltersActive && !checkParkHard(park, filters)) {
@@ -249,7 +325,7 @@ function SubmitPage() {
     });
 
     return results;
-  }, [parks, filters, parkFiltersActive]);
+  }, [parks, filters, parkFiltersActive, metadataLoaded]);
 
   // Count the number of "results" - Parks, Areas, and Features with a status
   const numResults = useMemo(
@@ -338,6 +414,10 @@ function SubmitPage() {
       return <p>Error loading parks data: {error.message}</p>;
     }
 
+    if (metadataError) {
+      return <p>Error loading parks metadata: {metadataError.message}</p>;
+    }
+
     return (
       <div className="paginated-table">
         <div className="mb-3">
@@ -373,6 +453,7 @@ function SubmitPage() {
           updateFilter("status", value);
         }}
         value={filters.status}
+        disabled={!metadataLoaded}
       >
         Filter by status{" "}
         {filters.status.length > 0 && `(${filters.status.length})`}
@@ -413,6 +494,7 @@ function SubmitPage() {
                   setPage(1);
                   updateFilter("name", e.target.value);
                 }}
+                disabled={!metadataLoaded}
               />
               <FontAwesomeIcon
                 className="append-content"
@@ -433,6 +515,7 @@ function SubmitPage() {
               type="button"
               onClick={() => setShowFilterPanel(!showFilterPanel)}
               className="btn btn-outline-primary align-self-end me-2"
+              disabled={!metadataLoaded}
             >
               <FontAwesomeIcon icon={faFilter} className="me-1" />
               All filters
