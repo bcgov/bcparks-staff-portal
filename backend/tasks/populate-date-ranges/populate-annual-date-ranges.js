@@ -9,7 +9,6 @@ import {
   DateRangeAnnual,
   DateType,
 } from "../../models/index.js";
-import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
@@ -61,10 +60,11 @@ export async function populateAnnualDateRangesForYear(
 
       if (!prevSeason) continue;
 
-      // Find DateRanges for the previous season and this dateType
+      // Find previous-season DateRanges for this dateable+dateType
       const prevDateRanges = await DateRange.findAll({
         where: {
           seasonId: prevSeason.id,
+          dateableId: annual.dateableId,
           dateTypeId: annual.dateTypeId,
         },
         transaction,
@@ -114,16 +114,11 @@ export async function populateAnnualDateRangesForYear(
         }
       }
 
-      // find dateableId for targetSeason's Park/ParkArea/Feature by publishableId
-      const dateableId = await findDateableIdByPublishableId(
-        targetSeason.publishableId,
-        transaction,
-      );
-
-      // check if target season already has DateRanges for this dateType
+      // check if target season already has DateRanges for this dateable+dateType
       const existingTargetDateRanges = await DateRange.findAll({
         where: {
           seasonId: targetSeason.id,
+          dateableId: annual.dateableId,
           dateTypeId: annual.dateTypeId,
         },
         transaction,
@@ -151,8 +146,8 @@ export async function populateAnnualDateRangesForYear(
       for (let i = 0; i < numRangesToCopy; i++) {
         const prevRange = prevDateRanges[i];
         const currentYear = targetSeason.operatingYear;
-        const prevStartDate = prevRange.startDate;
-        const prevEndDate = prevRange.endDate;
+        const prevStartDate = new Date(prevRange.startDate);
+        const prevEndDate = new Date(prevRange.endDate);
 
         const newStartDate = new Date(prevStartDate);
         const newEndDate = new Date(prevEndDate);
