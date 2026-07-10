@@ -742,21 +742,29 @@ If dates have already been published, they will not be updated until new dates a
 
           {/* For users who can submit or approve, show a checkbox to and bypass validation */}
           {validation.errors.length > 0 && (submitter || approver) && (
-            <div>
-              <div
-                className="alert alert-warning fade show px-5 py-4 text-black"
-                role="alert"
-              >
-                <h4>Submit anyway</h4>
+            <div className="row">
+              <div className="col-12 col-lg-7 col-xl-6 mb-4">
+                <div
+                  className="alert alert-warning fade show px-5 py-4 text-black"
+                  role="alert"
+                >
+                  <h4>Submit anyway</h4>
 
-                <Form.Check
-                  label={
-                    "I have reviewed the errors and confirm the information is correct. An Internal note is required to explain why errors do not apply."
-                  }
-                  id={"submit-with-errors"}
-                  checked={submitWithErrors}
-                  onChange={(e) => setSubmitWithErrors(e.target.checked)}
-                />
+                  <Form.Check
+                    label={
+                      <>
+                        I have reviewed the errors and confirm the information
+                        is correct.
+                        <br />
+                        An <strong>Internal note</strong> is required to explain
+                        why errors do not apply.
+                      </>
+                    }
+                    id={"submit-with-errors"}
+                    checked={submitWithErrors}
+                    onChange={(e) => setSubmitWithErrors(e.target.checked)}
+                  />
+                </div>
               </div>
             </div>
           )}
