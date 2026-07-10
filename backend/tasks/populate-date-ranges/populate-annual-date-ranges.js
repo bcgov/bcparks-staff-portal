@@ -2,6 +2,7 @@
 // based on previous year's DateRanges if isDateRangeAnnual is TRUE.
 
 import "../../env.js";
+import { addYears, format, getYear, parse } from "date-fns";
 
 import {
   Season,
@@ -164,26 +165,26 @@ export async function populateAnnualDateRangesForYear(
       for (let i = 0; i < numRangesToCopy; i++) {
         const prevRange = prevDateRanges[i];
         const currentYear = targetSeason.operatingYear;
-        const prevStartDate = new Date(prevRange.startDate);
-        const prevEndDate = new Date(prevRange.endDate);
-
-        const newStartDate = new Date(prevStartDate);
-        const newEndDate = new Date(prevEndDate);
+        const prevStartDate = parse(
+          prevRange.startDate,
+          "yyyy-MM-dd",
+          new Date(),
+        );
+        const prevEndDate = parse(prevRange.endDate, "yyyy-MM-dd", new Date());
 
         // Calculate the year difference between the previous end and start dates
         // to handle dates that span two calendar years (e.g., Nov 2026 to March 2027)
-        const yearDifference =
-          prevEndDate.getFullYear() - prevStartDate.getFullYear();
+        const yearOffset = currentYear - getYear(prevStartDate);
 
-        newStartDate.setFullYear(currentYear);
-        newEndDate.setFullYear(currentYear + yearDifference);
+        const newStartDate = addYears(prevStartDate, yearOffset);
+        const newEndDate = addYears(prevEndDate, yearOffset);
 
         dateRangesToCreate.push({
           dateableId,
           seasonId: targetSeason.id,
           dateTypeId,
-          startDate: newStartDate,
-          endDate: newEndDate,
+          startDate: format(newStartDate, "yyyy-MM-dd"),
+          endDate: format(newEndDate, "yyyy-MM-dd"),
         });
 
         console.log(
