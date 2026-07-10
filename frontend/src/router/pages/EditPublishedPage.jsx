@@ -93,7 +93,6 @@ export default function EditPublishedPage() {
           typeName:
             parkArea.parkAreaTypeName ?? parkArea.parkAreaType?.name ?? null,
           level: "park-area",
-          editLevel: "park-area",
         });
       }
     }
