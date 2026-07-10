@@ -31,27 +31,35 @@ export async function populateAnnualDateRangesForYear(
       ],
 
       where: { isDateRangeAnnual: true },
+      order: [
+        ["publishableId", "ASC"],
+        ["dateableId", "ASC"],
+        ["dateTypeId", "ASC"],
+        ["id", "ASC"],
+      ],
       transaction,
     });
 
     const dateRangesToCreate = [];
 
     for (const annual of annuals) {
+      const { id, publishableId, dateTypeId, dateableId, dateType } = annual;
+
       // Find the previous season for this DateRangeAnnual
 
-      if (!annual.dateType) {
-        throw new Error(`DateType missing for DateRangeAnnual ${annual.id}`);
+      if (!dateType) {
+        throw new Error(`DateType missing for DateRangeAnnual ${id}`);
       }
 
       // Season type based on the date type of the DateRangeAnnual
       const seasonType =
-        annual.dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE
+        dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE
           ? SEASON_TYPE.WINTER
           : SEASON_TYPE.REGULAR;
 
       const prevSeason = await Season.findOne({
         where: {
-          publishableId: annual.publishableId,
+          publishableId,
           operatingYear: targetYear - 1,
           seasonType,
         },
@@ -64,9 +72,14 @@ export async function populateAnnualDateRangesForYear(
       const prevDateRanges = await DateRange.findAll({
         where: {
           seasonId: prevSeason.id,
-          dateableId: annual.dateableId,
-          dateTypeId: annual.dateTypeId,
+          dateableId,
+          dateTypeId,
         },
+        order: [
+          ["startDate", "ASC"],
+          ["endDate", "ASC"],
+          ["id", "ASC"],
+        ],
         transaction,
       });
 
@@ -75,7 +88,7 @@ export async function populateAnnualDateRangesForYear(
 
       let targetSeason = await Season.findOne({
         where: {
-          publishableId: annual.publishableId,
+          publishableId,
           operatingYear: targetYear,
           seasonType: prevSeason.seasonType,
         },
@@ -87,14 +100,14 @@ export async function populateAnnualDateRangesForYear(
       if (!targetSeason) {
         // Determine the status of the new season based on annual dates
         const status = await resolveNewSeasonStatus(
-          annual.publishableId,
+          publishableId,
           prevSeason.seasonType,
           transaction,
         );
 
         targetSeason = await Season.create(
           {
-            publishableId: annual.publishableId,
+            publishableId,
             operatingYear: targetYear,
             status,
             readyToPublish: true,
@@ -106,9 +119,9 @@ export async function populateAnnualDateRangesForYear(
 
       // For winter seasons, only copy Winter fee date types
       if (targetSeason.seasonType === SEASON_TYPE.WINTER) {
-        if (annual.dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE) {
+        if (dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE) {
           console.log(
-            `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${annual.publishableId})`,
+            `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${publishableId})`,
           );
           continue;
         }
@@ -118,9 +131,14 @@ export async function populateAnnualDateRangesForYear(
       const existingTargetDateRanges = await DateRange.findAll({
         where: {
           seasonId: targetSeason.id,
-          dateableId: annual.dateableId,
-          dateTypeId: annual.dateTypeId,
+          dateableId,
+          dateTypeId,
         },
+        order: [
+          ["startDate", "ASC"],
+          ["endDate", "ASC"],
+          ["id", "ASC"],
+        ],
         transaction,
       });
 
@@ -163,13 +181,13 @@ export async function populateAnnualDateRangesForYear(
         dateRangesToCreate.push({
           dateableId,
           seasonId: targetSeason.id,
-          dateTypeId: annual.dateTypeId,
+          dateTypeId,
           startDate: newStartDate,
           endDate: newEndDate,
         });
 
         console.log(
-          `Copied DateRange from season ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${annual.publishableId}`,
+          `Copied DateRange from season ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${publishableId}`,
         );
       }
     }
