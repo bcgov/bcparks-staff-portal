@@ -122,12 +122,19 @@ export default function EditPublishedPage() {
     setFormData({
       seasonId: item.id,
       level: item.level,
+      showOperatingYearSelect: true,
     });
     setShowFormPanel(true);
   }
 
   if (loading) {
-    return <LoadingBar />;
+    return (
+      <div className="container">
+        <div className="page edit-published">
+          <LoadingBar />
+        </div>
+      </div>
+    );
   }
 
   if (error) {
