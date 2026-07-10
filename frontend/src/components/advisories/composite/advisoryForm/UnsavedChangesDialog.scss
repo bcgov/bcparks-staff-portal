@@ -2,4 +2,11 @@
   &.modal-content {
     border: none;
   }
+
+  .modal-body {
+    // No bottom margin for the last paragraph
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
 }
