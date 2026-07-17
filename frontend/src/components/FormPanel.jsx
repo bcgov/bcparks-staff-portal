@@ -788,10 +788,8 @@ If dates have already been published, they will not be updated until new dates a
                     label={
                       <>
                         I have reviewed the errors and confirm the information
-                        is correct.
-                        <br />
-                        An <strong>Internal note</strong> is required to explain
-                        why errors do not apply.
+                        is correct. An <strong>Internal note</strong> is
+                        required to explain why errors do not apply.
                       </>
                     }
                     id={"submit-with-errors"}
