@@ -206,6 +206,9 @@ function SeasonForm({
         // Set the "submitted" flag to true, so the full form validation will run
         // and re-validate on every change.
         setSubmitted(true);
+      } else {
+        // If loading new data, reset the submitted state to false.
+        setSubmitted(false);
       }
 
       setData(apiData);
