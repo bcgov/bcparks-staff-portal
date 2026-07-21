@@ -23,6 +23,7 @@ Imports and updates `Feature` records from Strapi's `park-feature` collection by
 | `hasReservations`               | `hasReservations`       | Defaults to `false` if not provided           |
 | `hasBackcountryPermits`         | `hasBackcountryPermits` | Defaults to `false` if not provided           |
 | `hasDates`                      | `hasDates`              | Defaults to `false` if not provided           |
+| `hasWinterFee`                  | `hasWinterFeeDates`     | Defaults to `false` if not provided           |
 | `datesCanSpan2Years`            | `datesCanSpan2Years`    | Required boolean from Strapi (`true`/`false`) |
 | `parkFeatureType.featureTypeId` | `featureTypeId`         | DOOT Feature Type, matched by well-known key  |
 | `protectedArea.orcs`            | `parkId`                | DOOT Park, matched by well-known key          |
