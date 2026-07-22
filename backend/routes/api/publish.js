@@ -202,7 +202,7 @@ router.get(
           {
             model: Feature,
             as: "features",
-            attributes: ["id", "name"],
+            attributes: ["id", "name", "datesCanSpan2Years"],
             include: [
               {
                 model: FeatureType,
@@ -215,7 +215,7 @@ router.get(
       }),
       Feature.findAll({
         where: { publishableId: { [Op.in]: publishableIds } },
-        attributes: ["id", "publishableId", "name"],
+        attributes: ["id", "publishableId", "name", "datesCanSpan2Years"],
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
           { model: ParkArea, as: "parkArea", attributes: ["id", "name"] },
@@ -254,11 +254,29 @@ router.get(
       // Determine displayOperatingYear based on publishable type and season type
       let displayOperatingYear = season.operatingYear;
 
+      const operatingYear = Number(season.operatingYear);
+      const nextYear = operatingYear + 1;
+
+      // Show a display name for the operating year
       if (publishable?.type === "park") {
         displayOperatingYear =
           season.seasonType === SEASON_TYPE.WINTER
-            ? `${season.operatingYear} Winter fee`
-            : `${season.operatingYear} Tiers and gate`;
+            ? `${operatingYear} – ${nextYear} Winter fee`
+            : `${operatingYear} Tiers and gate`;
+      } else if (publishable?.type === "feature") {
+        // If Feature season dates can span 2 years, show both years
+        if (publishable.datesCanSpan2Years) {
+          displayOperatingYear = `${operatingYear} – ${nextYear}`;
+        }
+      } else if (publishable?.type === "parkArea") {
+        // If any Feature in the ParkArea has dates that can span 2 years, show both years
+        const canSpan2Years = publishable.features.some(
+          (feature) => feature.datesCanSpan2Years,
+        );
+
+        if (canSpan2Years) {
+          displayOperatingYear = `${operatingYear} – ${nextYear}`;
+        }
       }
 
       if (!publishable) {
