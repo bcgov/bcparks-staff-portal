@@ -189,6 +189,7 @@ function SeasonForm({
     [seasonOptionsData],
   );
 
+  // Initialize the form data when the API data is loaded
   useEffect(() => {
     if (apiData) {
       // if the season if from a previous year then the user must be in the
@@ -199,6 +200,15 @@ function SeasonForm({
       ) {
         closePanel();
         return;
+      }
+
+      if (apiData.current.savedWithErrors) {
+        // Set the "submitted" flag to true, so the full form validation will run
+        // and re-validate on every change.
+        setSubmitted(true);
+      } else {
+        // If loading new data, reset the submitted state to false.
+        setSubmitted(false);
       }
 
       setData(apiData);
