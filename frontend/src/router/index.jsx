@@ -73,7 +73,10 @@ const RouterConfig = createBrowserRouter([
       {
         path: "advisories-and-closures",
         element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
+          <AccessControlledRoute
+            redirectTo="/unauthorized"
+            allowedRoles={[ROLES.ADVISORY_USER]}
+          >
             <AdvisoryDashboard />
           </AccessControlledRoute>
         ),
@@ -98,7 +101,10 @@ const RouterConfig = createBrowserRouter([
       {
         path: "/advisory-summary/:documentId",
         element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
+          <AccessControlledRoute
+            redirectTo="/unauthorized"
+            allowedRoles={[ROLES.ADVISORY_USER]}
+          >
             <AdvisorySummary />
           </AccessControlledRoute>
         ),
@@ -120,7 +126,10 @@ const RouterConfig = createBrowserRouter([
       {
         path: "park-access-status",
         element: (
-          <AccessControlledRoute allowedRoles={[ROLES.BCPARKS_USER]}>
+          <AccessControlledRoute
+            redirectTo="/unauthorized"
+            allowedRoles={[ROLES.BCPARKS_USER]}
+          >
             <ParkAccessStatus />
           </AccessControlledRoute>
         ),
@@ -148,7 +157,7 @@ const RouterConfig = createBrowserRouter([
 
   // DOOT "Unauthorized" message for users without the doot user role in Keycloak
   {
-    path: "/dates/unauthorized",
+    path: "/unauthorized",
     element: <MainLayoutPublic />,
     children: [{ path: "", element: <Unauthorized /> }],
   },
@@ -161,7 +170,7 @@ const RouterConfig = createBrowserRouter([
     element: (
       <ProtectedRoute>
         <AccessControlledRoute
-          redirectTo="/dates/unauthorized"
+          redirectTo="/unauthorized"
           allowedRoles={[ROLES.DOOT_USER]}
         >
           <MainLayout />
