@@ -17,6 +17,7 @@ Imports and updates `ParkArea` records from Strapi's `park-area` collection by m
 | `parkAreaName`            | `name`                | Park area name                                 |
 | `isActive`                | `active`              | Defaults to `false` if not provided            |
 | `inReservationSystem`     | `inReservationSystem` | Defaults to `false` if not provided            |
+| `hasWinterFee`            | `hasWinterFeeDates`   | Defaults to `false` if not provided            |
 | `orcsAreaNumber`          | `orcsAreaNumber`      | Used for matching existing records             |
 | `protectedArea.orcs`      | `parkId`              | DOOT Park ID, matched by ORCS value            |
 | `parkAreaType.areaTypeId` | `parkAreaTypeId`      | DOOT Park Area Type, matched by well-known key |

@@ -98,6 +98,7 @@ function featureModel(minYear, where = {}, seasonStatus = null) {
       "name",
       "hasBackcountryPermits",
       "hasReservations",
+      "hasWinterFeeDates",
       "inReservationSystem",
       "datesCanSpan2Years",
     ],
@@ -244,6 +245,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     name: feature.name,
     hasBackcountryPermits: feature.hasBackcountryPermits,
     hasReservations: feature.hasReservations,
+    hasWinterFeeDates: feature.hasWinterFeeDates,
     inReservationSystem: feature.inReservationSystem,
     datesCanSpan2Years: feature.datesCanSpan2Years,
     featureType: {
@@ -285,6 +287,7 @@ function buildParkAreaOutput(parkArea) {
     publishableId: parkArea.publishableId,
     name: parkArea.name,
     inReservationSystem: parkArea.inReservationSystem,
+    hasWinterFeeDates: parkArea.hasWinterFeeDates,
     features: parkArea.features.map((feature) =>
       buildFeatureOutput(feature, parkArea.seasons, false),
     ),
@@ -346,6 +349,7 @@ router.get(
             "publishableId",
             "name",
             "inReservationSystem",
+            "hasWinterFeeDates",
           ],
           include: [
             // Features that are part of the ParkArea

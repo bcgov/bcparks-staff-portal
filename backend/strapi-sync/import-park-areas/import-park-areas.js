@@ -94,6 +94,7 @@ export default async function importStrapiParkAreas(transaction = null) {
         parkAreaName,
         isActive,
         inReservationSystem,
+        hasWinterFee,
         protectedArea,
       } = strapiParkArea;
 
@@ -149,12 +150,22 @@ export default async function importStrapiParkAreas(transaction = null) {
 
       const dootParkAreaToSave = {
         name: parkAreaName,
-        orcsAreaNumber: orcsAreaNumber,
+        orcsAreaNumber,
         active: isActive ?? false,
         inReservationSystem: inReservationSystem ?? false,
+        hasWinterFeeDates: hasWinterFee ?? false,
         parkId,
         parkAreaTypeId,
       };
+
+      if (
+        matchedDootParkArea?.hasWinterFeeDates &&
+        dootParkAreaToSave.hasWinterFeeDates === false
+      ) {
+        console.warn(
+          `Winter fee flag removed for ParkArea ${parkAreaName} (${orcsAreaNumber}). Existing winter seasons may need manual review.`,
+        );
+      }
 
       if (matchedDootParkArea) {
         if (isActive && !matchedDootParkArea.active) {

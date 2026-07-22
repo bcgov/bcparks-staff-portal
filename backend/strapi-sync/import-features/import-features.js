@@ -106,6 +106,7 @@ export default async function importStrapiFeatures(transaction = null) {
         hasReservations,
         hasBackcountryPermits,
         hasDates,
+        hasWinterFee,
         datesCanSpan2Years,
         protectedArea,
         parkArea,
@@ -170,12 +171,22 @@ export default async function importStrapiFeatures(transaction = null) {
         inReservationSystem: inReservationSystem ?? false,
         hasReservations: hasReservations ?? false,
         hasBackcountryPermits: hasBackcountryPermits ?? false,
+        hasWinterFeeDates: hasWinterFee ?? false,
         hasDates: hasDates ?? false,
         datesCanSpan2Years,
         parkId,
         parkAreaId,
         featureTypeId,
       };
+
+      if (
+        matchedDootFeature?.hasWinterFeeDates &&
+        dootFeatureToSave.hasWinterFeeDates === false
+      ) {
+        console.warn(
+          `Winter fee flag removed for Feature ${parkFeatureName} (${orcsFeatureNumber}). Existing winter seasons may need manual review.`,
+        );
+      }
 
       if (matchedDootFeature) {
         if (isActive && !matchedDootFeature.active) {
