@@ -34,7 +34,7 @@ import { checkPermissions } from "../../middleware/permissions.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
-// import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
 import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
@@ -1230,6 +1230,12 @@ router.post(
         transaction,
         isWinterSeason,
       });
+
+      // Recalculate Feature-level Winter fee dates whenever an approver saves this
+      // season as approved (including edit-published updates by operating year).
+      if (newStatus === STATUS.APPROVED) {
+        await propagateWinterFeeDates(season.id, transaction);
+      }
 
       await transaction.commit();
       res.sendStatus(200);
