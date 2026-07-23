@@ -267,13 +267,15 @@ function SeasonForm({
     const operatingYear = season.operatingYear;
     const nextYear = operatingYear + 1;
 
-    if (season.datesCanSpan2Years) {
+    const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+
+    if (season.datesCanSpan2Years || isWinterSeason) {
       return `${operatingYear} – ${nextYear} dates`;
     }
 
     // Default: operating year
     return `${operatingYear} dates`;
-  }, [season?.datesCanSpan2Years, season?.operatingYear]);
+  }, [season?.datesCanSpan2Years, season?.operatingYear, season?.seasonType]);
 
   const seasonTitle = useMemo(() => {
     // Return blank while loading
