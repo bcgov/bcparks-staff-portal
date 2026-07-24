@@ -696,7 +696,7 @@ async function hasOperationDateChanges({
   deletedDateRangeIds,
   transaction,
 }) {
-  const operationDateTypes = await DateType.findAll({
+  const operationDateType = await DateType.findOne({
     attributes: ["id"],
     where: {
       dateTypeNumber: DATE_TYPE.OPERATION,
@@ -704,21 +704,17 @@ async function hasOperationDateChanges({
     transaction,
   });
 
-  const operationDateTypeIds = new Set(
-    operationDateTypes.map((dateType) => dateType.id),
-  );
-
-  if (operationDateTypeIds.size === 0) {
+  if (!operationDateType) {
     return false;
   }
+
+  const operationDateTypeId = operationDateType.id;
 
   const existingOperationRanges = await DateRange.findAll({
     attributes: ["id", "dateTypeId", "dateableId", "startDate", "endDate"],
     where: {
       seasonId,
-      dateTypeId: {
-        [Op.in]: Array.from(operationDateTypeIds),
-      },
+      dateTypeId: operationDateTypeId,
     },
     transaction,
   });
@@ -730,7 +726,7 @@ async function hasOperationDateChanges({
   // New operation ranges (no ID) are always a change.
   const hasOperationCreate = (dateRanges || []).some(
     (dateRange) =>
-      !dateRange.id && operationDateTypeIds.has(dateRange.dateTypeId),
+      !dateRange.id && dateRange.dateTypeId === operationDateTypeId,
   );
 
   if (hasOperationCreate) {
@@ -752,7 +748,7 @@ async function hasOperationDateChanges({
     const incomingTypeId = dateRange.dateTypeId;
 
     // Existing operation range changed to a non-operation type.
-    if (!operationDateTypeIds.has(incomingTypeId)) {
+    if (incomingTypeId !== operationDateTypeId) {
       return true;
     }
 
@@ -1338,7 +1334,7 @@ router.post(
         isWinterSeason,
       });
 
-      // Recalculate feature-level Winter fee dates when park-level Winter fee dates are updated,
+      // Recalculate feature-level Winter fee dates when a Winter season is saved,
       // or when feature-level Operation dates are changed.
       if (isWinterSeason || operationDateChanged) {
         await propagateWinterFeeDates(season.id, transaction);

@@ -1,8 +1,17 @@
 // This script creates winter seasons using these drivers:
-// - Park-level winter seasons: park.hasWinterFeeDates = true
-// - ParkArea/Feature-level winter seasons: feature.hasWinterFeeDates = true
+//
+// Park-level
+// - winter seasons: park.hasWinterFeeDates = true
+// - DateRangeAnnual for the winter fee date type
+// - winter fee dates
+//
+// ParkArea/Feature-level
+// - winter seasons: feature.hasWinterFeeDates = true
+// - feature-level winter fee dates
 // - parkArea.hasWinterFeeDates is intentionally ignored
-// It will skip creating a season if one already exists for the given operating year and publishable.
+//
+// It skips creating a season when one already exists
+// for the given operating year and publishable.
 
 import "../../env.js";
 

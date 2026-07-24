@@ -17,7 +17,7 @@ import { APPROVED } from "../constants/seasonStatus.js";
 import consolidateRanges from "./consolidateDateRanges.js";
 import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
 
-async function getSeasonWithOwner(seasonId, transaction = null) {
+async function getSeason(seasonId, transaction = null) {
   return await Season.findByPk(seasonId, {
     include: [
       {
@@ -36,8 +36,6 @@ async function getSeasonWithOwner(seasonId, transaction = null) {
     transaction,
   });
 }
-
-// Helper functions
 
 /**
  * Returns the Park record associated with the given Season.
@@ -395,7 +393,7 @@ export default async function propagateWinterFeeDates(
   seasonId,
   transaction = null,
 ) {
-  const sourceSeason = await getSeasonWithOwner(seasonId, transaction);
+  const sourceSeason = await getSeason(seasonId, transaction);
 
   if (!sourceSeason) {
     throw new Error(`Season ${seasonId} not found for Winter fee propagation.`);
