@@ -1,5 +1,5 @@
 // Recalculate Feature-level Winter fee dates from Park-level Winter fee dates.
-// This runs on approved saves so updates to Winter fee or Operation dates are reflected.
+// This runs on Winter fee or Operation date saves so derived Winter ranges stay current.
 
 import { Op } from "sequelize";
 
@@ -199,6 +199,77 @@ async function getFeatureOperationRanges(
 }
 
 /**
+ * Replaces Winter fee DateRanges for a season/dateable pair.
+ * @param {Object} params Replacement parameters
+ * @param {number} params.seasonId Season ID to update
+ * @param {number} params.dateableId Dateable ID to update
+ * @param {number} params.dateTypeId Winter fee DateType ID
+ * @param {Array} params.ranges New date ranges to insert
+ * @param {boolean} [params.createPlaceholderWhenEmpty=false] Whether to insert a single empty placeholder when ranges is empty
+ * @param {Transaction} [params.transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
+ */
+async function rebuildWinterDateRanges({
+  seasonId,
+  dateableId,
+  dateTypeId,
+  ranges,
+  createPlaceholderWhenEmpty = false,
+  transaction = null,
+}) {
+  await DateRange.destroy({
+    where: {
+      seasonId,
+      dateableId,
+      dateTypeId,
+    },
+    transaction,
+  });
+
+  if (!ranges.length && !createPlaceholderWhenEmpty) {
+    return;
+  }
+
+  await DateRange.bulkCreate(
+    (ranges.length ? ranges : [{ startDate: null, endDate: null }]).map(
+      (range) => ({
+        seasonId,
+        dateableId,
+        dateTypeId,
+        startDate: range.startDate,
+        endDate: range.endDate,
+      }),
+    ),
+    { transaction },
+  );
+}
+
+/**
+ * Synchronizes derived Winter season publishable state.
+ * @param {Object} params State sync parameters
+ * @param {Season} params.winterSeason Winter Season to update
+ * @param {boolean|null|undefined} params.parkWinterReadyToPublish Ready-to-publish value to copy
+ * @param {Transaction} [params.transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
+ */
+async function syncWinterSeasonState({
+  winterSeason,
+  parkWinterReadyToPublish,
+  transaction = null,
+}) {
+  if (
+    parkWinterReadyToPublish !== null &&
+    typeof parkWinterReadyToPublish !== "undefined"
+  ) {
+    winterSeason.readyToPublish = parkWinterReadyToPublish;
+  }
+
+  winterSeason.status = APPROVED;
+  winterSeason.updatedAt = new Date();
+  await winterSeason.save({ transaction });
+}
+
+/**
  * Rebuilds a Feature winter season's Winter fee DateRanges from the Park-level
  * Winter fee dates and the Feature's Operation date ranges.
  * @param {Feature} feature Feature record to recalculate
@@ -230,39 +301,20 @@ async function syncFeatureWinterSeason(
     return false;
   }
 
-  await DateRange.destroy({
-    where: {
-      seasonId: winterSeason.id,
-      dateableId: feature.dateableId,
-      dateTypeId: featureWinterTypeId,
-    },
+  await rebuildWinterDateRanges({
+    seasonId: winterSeason.id,
+    dateableId: feature.dateableId,
+    dateTypeId: featureWinterTypeId,
+    ranges: overlaps,
+    createPlaceholderWhenEmpty: true,
     transaction,
   });
 
-  if (overlaps.length > 0) {
-    await DateRange.bulkCreate(
-      overlaps.map((range) => ({
-        seasonId: winterSeason.id,
-        dateableId: feature.dateableId,
-        dateTypeId: featureWinterTypeId,
-        startDate: range.startDate,
-        endDate: range.endDate,
-      })),
-      { transaction },
-    );
-  }
-
-  if (
-    parkWinterReadyToPublish !== null &&
-    typeof parkWinterReadyToPublish !== "undefined"
-  ) {
-    winterSeason.readyToPublish = parkWinterReadyToPublish;
-  }
-
-  // Feature-level Winter seasons are re-approval outputs and should remain publishable.
-  winterSeason.status = APPROVED;
-  winterSeason.updatedAt = new Date();
-  await winterSeason.save({ transaction });
+  await syncWinterSeasonState({
+    winterSeason,
+    parkWinterReadyToPublish,
+    transaction,
+  });
 
   return true;
 }
@@ -303,12 +355,12 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
     return false;
   }
 
-  await DateRange.destroy({
-    where: {
-      seasonId: winterSeason.id,
-      dateableId: feature.dateableId,
-      dateTypeId: featureWinterTypeId,
-    },
+  await rebuildWinterDateRanges({
+    seasonId: winterSeason.id,
+    dateableId: feature.dateableId,
+    dateTypeId: featureWinterTypeId,
+    ranges: overlaps,
+    createPlaceholderWhenEmpty: true,
     transaction,
   });
 
@@ -323,36 +375,18 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
     });
   }
 
-  if (overlaps.length > 0) {
-    await DateRange.bulkCreate(
-      overlaps.map((range) => ({
-        seasonId: winterSeason.id,
-        dateableId: feature.dateableId,
-        dateTypeId: featureWinterTypeId,
-        startDate: range.startDate,
-        endDate: range.endDate,
-      })),
-      { transaction },
-    );
-  }
-
-  if (
-    parkWinterReadyToPublish !== null &&
-    typeof parkWinterReadyToPublish !== "undefined"
-  ) {
-    winterSeason.readyToPublish = parkWinterReadyToPublish;
-  }
-
-  winterSeason.status = APPROVED;
-  winterSeason.updatedAt = new Date();
-  await winterSeason.save({ transaction });
+  await syncWinterSeasonState({
+    winterSeason,
+    parkWinterReadyToPublish,
+    transaction,
+  });
 
   return true;
 }
 
 /**
  * Recalculates Feature-level Winter fee dates for a park + operating year.
- * Trigger this on approved saves (including edit-published flows).
+ * Trigger this on Winter fee or Operation date saves.
  * @param {number} seasonId The season being approved/saved
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean | Array>} Number of Feature winter seasons updated and skipped.
@@ -422,11 +456,27 @@ export default async function propagateWinterFeeDates(
 
   let updatedFeatures = 0;
   let skippedFeatures = 0;
-  const updatedParkAreas = 0;
-  const skippedParkAreas = 0;
+  const updatedParkAreaIds = new Set();
+  const skippedParkAreaIds = new Set();
 
   for (const feature of features) {
-    if (!feature.publishableId || !feature.dateableId) {
+    if (!feature.dateableId) {
+      if (feature.parkAreaId) {
+        skippedParkAreaIds.add(feature.parkAreaId);
+      }
+      skippedFeatures++;
+      continue;
+    }
+
+    const featureHasParentParkArea = Boolean(feature.parkArea);
+
+    if (!featureHasParentParkArea && !feature.publishableId) {
+      skippedFeatures++;
+      continue;
+    }
+
+    if (featureHasParentParkArea && !feature.parkArea.publishableId) {
+      skippedParkAreaIds.add(feature.parkArea.id);
       skippedFeatures++;
       continue;
     }
@@ -440,7 +490,7 @@ export default async function propagateWinterFeeDates(
 
     const overlaps = getOverlappingDateRanges(winterDates, operationRanges);
 
-    const updated = feature.parkArea
+    const updated = featureHasParentParkArea
       ? await syncFeatureWinterDatesOnParkAreaSeason(
           feature,
           feature.parkArea.publishableId,
@@ -462,15 +512,24 @@ export default async function propagateWinterFeeDates(
 
     if (updated) {
       updatedFeatures++;
+
+      if (featureHasParentParkArea) {
+        updatedParkAreaIds.add(feature.parkArea.id);
+        skippedParkAreaIds.delete(feature.parkArea.id);
+      }
     } else {
       skippedFeatures++;
+
+      if (featureHasParentParkArea) {
+        skippedParkAreaIds.add(feature.parkArea.id);
+      }
     }
   }
 
   return {
     updatedFeatures,
     skippedFeatures,
-    updatedParkAreas,
-    skippedParkAreas,
+    updatedParkAreas: updatedParkAreaIds.size,
+    skippedParkAreas: skippedParkAreaIds.size,
   };
 }
