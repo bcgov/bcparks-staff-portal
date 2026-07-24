@@ -14,6 +14,7 @@ import { isEqual, omit, keyBy } from "lodash-es";
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
 import LoadingBar from "@/components/LoadingBar";
+import OperatingYearSelect from "@/components/OperatingYearSelect";
 import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
@@ -60,13 +61,17 @@ function Buttons({
   approver,
   submitter,
   loading = false,
+  disableButtons = false,
 }) {
+  const isDisabled = loading || disableButtons;
+
   return (
     <div>
       <button
         type="button"
         onClick={onSave}
         className="btn btn-outline-primary form-btn fw-bold me-3"
+        disabled={isDisabled}
       >
         Save draft
       </button>
@@ -77,6 +82,7 @@ function Buttons({
           type="button"
           onClick={onApprove}
           className="btn btn-primary form-btn fw-bold me-2"
+          disabled={isDisabled}
         >
           Mark approved
         </button>
@@ -88,6 +94,7 @@ function Buttons({
           type="button"
           onClick={onSubmit}
           className="btn btn-primary form-btn fw-bold me-2"
+          disabled={isDisabled}
         >
           Submit to HQ
         </button>
@@ -106,11 +113,14 @@ Buttons.propTypes = {
   approver: PropTypes.bool.isRequired,
   submitter: PropTypes.bool.isRequired,
   loading: PropTypes.bool,
+  disableButtons: PropTypes.bool,
 };
 
 function SeasonForm({
   seasonId,
   level,
+  showOperatingYearSelect = false,
+  onSeasonChange,
   closePanel,
   handleStatusCancelClose,
   onDataUpdate,
@@ -169,6 +179,17 @@ function SeasonForm({
     fetchData: refreshData,
   } = useApiGet(`/seasons/${level}/${seasonId}`);
 
+  const { data: seasonOptionsData, loading: loadingSeasonOptions } = useApiGet(
+    `/seasons/options/${seasonId}`,
+    { instant: showOperatingYearSelect },
+  );
+
+  const seasonOptions = useMemo(
+    () => seasonOptionsData?.seasons ?? [],
+    [seasonOptionsData],
+  );
+
+  // Initialize the form data when the API data is loaded
   useEffect(() => {
     if (apiData) {
       // if the season if from a previous year then the user must be in the
@@ -179,6 +200,15 @@ function SeasonForm({
       ) {
         closePanel();
         return;
+      }
+
+      if (apiData.current.savedWithErrors) {
+        // Set the "submitted" flag to true, so the full form validation will run
+        // and re-validate on every change.
+        setSubmitted(true);
+      } else {
+        // If loading new data, reset the submitted state to false.
+        setSubmitted(false);
       }
 
       setData(apiData);
@@ -237,13 +267,15 @@ function SeasonForm({
     const operatingYear = season.operatingYear;
     const nextYear = operatingYear + 1;
 
-    if (season.datesCanSpan2Years) {
+    const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+
+    if (season.datesCanSpan2Years || isWinterSeason) {
       return `${operatingYear} – ${nextYear} dates`;
     }
 
     // Default: operating year
     return `${operatingYear} dates`;
-  }, [season?.datesCanSpan2Years, season?.operatingYear]);
+  }, [season?.datesCanSpan2Years, season?.operatingYear, season?.seasonType]);
 
   const seasonTitle = useMemo(() => {
     // Return blank while loading
@@ -428,6 +460,9 @@ function SeasonForm({
     // If nothing else has changed, return true if notes are entered
     return changesPayload.notes.length > 0;
   }, [season, changesPayload, apiData]);
+
+  // In the Edit published page, buttons should only be enabled after edits are made
+  const disableButtons = showOperatingYearSelect && !dataChanged;
 
   // Update the parent component when dataChanged is updated
   useEffect(() => {
@@ -648,7 +683,18 @@ If dates have already been published, they will not be updated until new dates a
             )}
 
             <h2>{seasonTitle}</h2>
-            <h2 className="fw-normal">{yearHeaderText}</h2>
+            {showOperatingYearSelect ? (
+              // Display the operating year form in the Edit published page
+              <OperatingYearSelect
+                season={season}
+                seasonOptions={seasonOptions}
+                loadingSeasonOptions={loadingSeasonOptions}
+                onSeasonChange={onSeasonChange}
+              />
+            ) : (
+              // Display the operating year text in the Submit page
+              <h2 className="fw-normal">{yearHeaderText}</h2>
+            )}
             <p className="fs-6 fw-normal">
               <a
                 href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
@@ -742,21 +788,27 @@ If dates have already been published, they will not be updated until new dates a
 
           {/* For users who can submit or approve, show a checkbox to and bypass validation */}
           {validation.errors.length > 0 && (submitter || approver) && (
-            <div>
-              <div
-                className="alert alert-warning fade show px-5 py-4 text-black"
-                role="alert"
-              >
-                <h4>Submit anyway</h4>
+            <div className="row">
+              <div className="col-12 col-lg-7 col-xl-6 mb-4">
+                <div
+                  className="alert alert-warning fade show px-5 py-4 text-black"
+                  role="alert"
+                >
+                  <h4>Submit anyway</h4>
 
-                <Form.Check
-                  label={
-                    "I have reviewed the errors and confirm the information is correct. An Internal note is required to explain why errors do not apply."
-                  }
-                  id={"submit-with-errors"}
-                  checked={submitWithErrors}
-                  onChange={(e) => setSubmitWithErrors(e.target.checked)}
-                />
+                  <Form.Check
+                    label={
+                      <>
+                        I have reviewed the errors and confirm the information
+                        is correct. An <strong>Internal note</strong> is
+                        required to explain why errors do not apply.
+                      </>
+                    }
+                    id={"submit-with-errors"}
+                    checked={submitWithErrors}
+                    onChange={(e) => setSubmitWithErrors(e.target.checked)}
+                  />
+                </div>
               </div>
             </div>
           )}
@@ -768,6 +820,7 @@ If dates have already been published, they will not be updated until new dates a
             onSave={() => promptAndSave(false)}
             onSubmit={onSubmit}
             loading={sendingSave}
+            disableButtons={disableButtons}
           />
         </Offcanvas.Body>
       </ValidationContext.Provider>
@@ -778,6 +831,8 @@ If dates have already been published, they will not be updated until new dates a
 SeasonForm.propTypes = {
   seasonId: PropTypes.number.isRequired,
   level: PropTypes.string.isRequired,
+  showOperatingYearSelect: PropTypes.bool,
+  onSeasonChange: PropTypes.func,
   closePanel: PropTypes.func.isRequired,
   handleStatusCancelClose: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
@@ -789,8 +844,13 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   // Track if the form data has changed.
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
+  const [selectedSeasonId, setSelectedSeasonId] = useState(null);
   const modal = useConfirmation();
   const closingFromStatusPrompt = useRef(false);
+
+  useEffect(() => {
+    setSelectedSeasonId(formData?.seasonId ?? null);
+  }, [formData?.seasonId]);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
@@ -836,6 +896,32 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
     closePanel();
   }, [dataChanged, modal, closePanel]);
 
+  const handleSeasonChange = useCallback(
+    async (nextSeasonId) => {
+      if (nextSeasonId === selectedSeasonId) {
+        return;
+      }
+
+      // If the form data has changed, prompt the user to confirm discarding changes before switching seasons
+      if (dataChanged) {
+        const proceed = await modal.open(
+          "Discard changes?",
+          "Discarded changes will be permanently deleted.",
+          "Discard changes",
+          "Continue editing",
+        );
+
+        if (!proceed) {
+          return;
+        }
+      }
+
+      setSelectedSeasonId(nextSeasonId);
+      setDataChanged(false);
+    },
+    [dataChanged, modal, selectedSeasonId],
+  );
+
   // Hide the form if no seasonId is provided
   return (
     <>
@@ -845,11 +931,13 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         placement="end"
         className="form-panel"
       >
-        {formData.seasonId && (
+        {selectedSeasonId && (
           <SeasonForm
-            key={`${formData.level}-${formData.seasonId}`}
-            seasonId={formData.seasonId}
+            key={`${formData.level}-${selectedSeasonId}`}
+            seasonId={selectedSeasonId}
             level={formData.level}
+            showOperatingYearSelect={Boolean(formData.showOperatingYearSelect)}
+            onSeasonChange={handleSeasonChange}
             closePanel={closePanel}
             handleStatusCancelClose={handleStatusCancelClose}
             onDataUpdate={onDataUpdate}

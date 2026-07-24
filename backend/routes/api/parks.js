@@ -28,7 +28,7 @@ import * as USER_ROLES from "../../constants/userRoles.js";
 const router = Router();
 
 // Functions
-function seasonModel(minYear, required = true) {
+function seasonModel(minYear, required = true, seasonStatus = null) {
   return {
     model: Season,
     as: "seasons",
@@ -46,6 +46,7 @@ function seasonModel(minYear, required = true) {
       operatingYear: {
         [Op.gte]: minYear,
       },
+      ...(seasonStatus ? { status: seasonStatus } : {}),
     },
     required,
     include: [
@@ -83,7 +84,7 @@ function seasonModel(minYear, required = true) {
   };
 }
 
-function featureModel(minYear, where = {}) {
+function featureModel(minYear, where = {}, seasonStatus = null) {
   return {
     model: Feature,
     as: "features",
@@ -97,6 +98,7 @@ function featureModel(minYear, where = {}) {
       "name",
       "hasBackcountryPermits",
       "hasReservations",
+      "hasWinterFeeDates",
       "inReservationSystem",
       "datesCanSpan2Years",
     ],
@@ -108,7 +110,7 @@ function featureModel(minYear, where = {}) {
         attributes: ["id", "featureTypeNumber", "name"],
       },
       // Publishable Seasons for the Feature
-      seasonModel(minYear, false),
+      seasonModel(minYear, false, seasonStatus),
     ],
   };
 }
@@ -243,6 +245,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     name: feature.name,
     hasBackcountryPermits: feature.hasBackcountryPermits,
     hasReservations: feature.hasReservations,
+    hasWinterFeeDates: feature.hasWinterFeeDates,
     inReservationSystem: feature.inReservationSystem,
     datesCanSpan2Years: feature.datesCanSpan2Years,
     featureType: {
@@ -284,6 +287,7 @@ function buildParkAreaOutput(parkArea) {
     publishableId: parkArea.publishableId,
     name: parkArea.name,
     inReservationSystem: parkArea.inReservationSystem,
+    hasWinterFeeDates: parkArea.hasWinterFeeDates,
     features: parkArea.features.map((feature) =>
       buildFeatureOutput(feature, parkArea.seasons, false),
     ),
@@ -300,6 +304,19 @@ router.get(
   asyncHandler(async (req, res) => {
     // Constants
     const currentYear = new Date().getFullYear();
+    const requestedOperatingYear = Number.parseInt(req.query.operatingYear, 10);
+    const minAllowedOperatingYear = currentYear - 1;
+
+    // Use currentYear in the Submit page
+    // Use requestedOperatingYear in the Edit published page
+    // Clamp to a safe lower bound
+    const operatingYear = Number.isNaN(requestedOperatingYear)
+      ? currentYear
+      : Math.max(requestedOperatingYear, minAllowedOperatingYear);
+    const seasonStatus =
+      typeof req.query.seasonStatus === "string"
+        ? req.query.seasonStatus
+        : null;
     const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
       USER_ROLES.DOOT_ALL_PARK_ACCESS,
     ]);
@@ -320,7 +337,7 @@ router.get(
       where: { hasDates: true },
       include: [
         // Publishable Seasons for the Park
-        seasonModel(currentYear),
+        seasonModel(operatingYear, true, seasonStatus),
 
         // ParkAreas
         {
@@ -332,16 +349,17 @@ router.get(
             "publishableId",
             "name",
             "inReservationSystem",
+            "hasWinterFeeDates",
           ],
           include: [
             // Features that are part of the ParkArea
             {
-              ...featureModel(currentYear),
+              ...featureModel(operatingYear, {}, seasonStatus),
               // Exclude parkAreas with no active features
               required: true,
             },
             // Publishable Seasons for the ParkArea
-            seasonModel(currentYear),
+            seasonModel(operatingYear, true, seasonStatus),
             // ParkAreaType for the ParkArea
             {
               model: ParkAreaType,
@@ -353,12 +371,16 @@ router.get(
         },
 
         // Publishable Features that aren't part of a ParkArea
-        featureModel(currentYear, {
-          parkAreaId: null,
-          publishableId: {
-            [Op.ne]: null,
+        featureModel(
+          operatingYear,
+          {
+            parkAreaId: null,
+            publishableId: {
+              [Op.ne]: null,
+            },
           },
-        }),
+          seasonStatus,
+        ),
 
         // Filter AccessGroups on server-side based on user's access,
         // and also return accessGroup IDs for client-side bundle filters

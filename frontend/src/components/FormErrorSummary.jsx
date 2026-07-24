@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { groupBy, orderBy, partition, uniqBy } from "lodash-es";
+import { groupBy, orderBy, partition } from "lodash-es";
 import { useCallback, useMemo } from "react";
 
 /**
@@ -52,13 +52,6 @@ export default function FormErrorSummary({
   errors,
   dateableNameMap,
 }) {
-  const numErrors = uniqBy(errors, "id").length;
-
-  const headline =
-    numErrors === 1
-      ? "There is 1 entry that may be incorrect"
-      : `There are ${numErrors} entries that may be incorrect`;
-
   const [featureErrors, formErrors] = partition(
     errors,
     (error) => error.dateableId,
@@ -91,7 +84,10 @@ export default function FormErrorSummary({
       className="alert alert-danger fade show px-5 py-4 text-black"
       role="alert"
     >
-      <h3 className="h5">{headline}</h3>
+      <h3 className="h5">
+        Please review the error(s) and date(s) to ensure they are correct, and
+        revise them if needed:
+      </h3>
 
       {multipleFeatures &&
         groupedFeatureErrors.map((feature) => (
@@ -118,9 +114,8 @@ export default function FormErrorSummary({
       )}
 
       <p className="mb-0">
-        Please review the dates to ensure they are correct, and revise them if
-        needed. If you’ve confirmed the information is correct, proceed to
-        submit anyway.
+        If you’ve confirmed the information is correct, proceed to submit
+        anyway.
       </p>
     </div>
   );

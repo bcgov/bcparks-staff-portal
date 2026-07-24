@@ -60,6 +60,12 @@ export default (sequelize) => {
         defaultValue: false,
       },
 
+      hasWinterFeeDates: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+
       orcsAreaNumber: {
         type: DataTypes.STRING,
         allowNull: true,

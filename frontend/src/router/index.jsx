@@ -1,7 +1,8 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import AccessControlledRoute from "./AccessControlledRoute";
-import EditAndReview from "./pages/EditAndReview";
+import SubmitPage from "./pages/SubmitPage";
+import EditPublishedPage from "./pages/EditPublishedPage";
 import PublishPage from "./pages/PublishPage";
 import ExportPage from "./pages/ExportPage";
 import LogoutPage from "./pages/LogoutPage";
@@ -188,21 +189,31 @@ const RouterConfig = createBrowserRouter([
           // Edit & Review table / landing page
           {
             path: "",
-            element: <EditAndReview />,
+            element: <SubmitPage />,
           },
 
           // Edit season form routes
           {
             path: "edit/park/:seasonId",
-            element: <EditAndReview />,
+            element: <SubmitPage />,
           },
           {
             path: "edit/park-area/:seasonId",
-            element: <EditAndReview />,
+            element: <SubmitPage />,
           },
           {
             path: "edit/feature/:seasonId",
-            element: <EditAndReview />,
+            element: <SubmitPage />,
+          },
+
+          // Edit published table / landing page
+          {
+            path: "edit-published",
+            element: (
+              <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
+                <EditPublishedPage />
+              </AccessControlledRoute>
+            ),
           },
 
           // Export

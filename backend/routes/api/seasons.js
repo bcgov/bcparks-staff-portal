@@ -1090,6 +1090,33 @@ router.get(
   }),
 );
 
+// Get all seasons for a given publishableId and seasonType
+router.get(
+  "/options/:seasonId",
+  asyncHandler(async (req, res) => {
+    const seasonId = Number(req.params.seasonId);
+
+    const currentSeason = await Season.findByPk(seasonId, {
+      attributes: ["id", "publishableId", "seasonType"],
+    });
+
+    checkSeasonExists(currentSeason);
+    await checkSeasonUserAccess(req, seasonId);
+
+    const seasons = await Season.findAll({
+      attributes: ["id", "operatingYear"],
+      where: {
+        publishableId: currentSeason.publishableId,
+        seasonType: currentSeason.seasonType,
+        status: STATUS.PUBLISHED,
+      },
+      order: [["operatingYear", "DESC"]],
+    });
+
+    res.json({ seasons });
+  }),
+);
+
 // Save draft
 router.post(
   "/:seasonId/save/",

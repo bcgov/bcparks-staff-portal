@@ -3,17 +3,17 @@ import PropTypes from "prop-types";
 import classNames from "classnames";
 import { faCheck } from "@fa-kit/icons/classic/solid";
 import { faPen } from "@fa-kit/icons/classic/regular";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import InternalNotesRow from "@/components/InternalNotesRow";
 import SubmittedWithErrorsWarning from "@/components/SubmittedWithErrorsWarning";
+import IconButton from "@/components/IconButton";
 import { formatDateRange } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
-import "./EditAndReviewTable.scss";
+import "./SubmitPageTable.scss";
 import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as SEASON_STATUS from "@/constants/seasonStatus";
@@ -35,41 +35,6 @@ function getInternalNotes(season) {
       createdBy: log.user?.name || "Unknown user",
     }));
 }
-
-// Components
-function IconButton({
-  icon,
-  label,
-  onClick,
-  textColor,
-  loading = false,
-  disabled = false,
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={classNames("btn btn-text text-link", textColor)}
-      disabled={disabled}
-    >
-      {/* Show a spinner instead of the icon while loading */}
-      {loading ? (
-        <span className="spinner-border spinner-border-sm me-1" role="status" />
-      ) : (
-        <FontAwesomeIcon icon={icon} />
-      )}
-      <span className="ms-1">{label}</span>
-    </button>
-  );
-}
-
-IconButton.propTypes = {
-  icon: PropTypes.object.isRequired,
-  label: PropTypes.string.isRequired,
-  onClick: PropTypes.func,
-  textColor: PropTypes.string,
-  loading: PropTypes.bool,
-  disabled: PropTypes.bool,
-};
 
 // renders all date ranges for a given year as a list
 // e.g. [{ startDate: "Mon Jan 1", endDate: "Tue Jan 2" }, { startDate: "Mon Dec 30", endDate: "Tue Dec 31" }]
@@ -646,7 +611,7 @@ Table.propTypes = {
   sortOrder: PropTypes.arrayOf(PropTypes.object),
 };
 
-export default function EditAndReviewTable({
+export default function SubmitPageTable({
   data,
   onResetFilters,
   formPanelHandler,
@@ -677,8 +642,8 @@ export default function EditAndReviewTable({
   );
 }
 
-// Define prop types for EditAndReviewTable
-EditAndReviewTable.propTypes = {
+// Define prop types for SubmitPageTable
+SubmitPageTable.propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
       id: PropTypes.number,

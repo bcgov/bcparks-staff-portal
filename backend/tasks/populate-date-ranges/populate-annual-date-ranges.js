@@ -2,6 +2,7 @@
 // based on previous year's DateRanges if isDateRangeAnnual is TRUE.
 
 import "../../env.js";
+import { addYears, format, getYear, parse } from "date-fns";
 
 import {
   Season,
@@ -9,7 +10,6 @@ import {
   DateRangeAnnual,
   DateType,
 } from "../../models/index.js";
-import { findDateableIdByPublishableId } from "../../utils/findDateableIdByPublishableId.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
@@ -32,27 +32,35 @@ export async function populateAnnualDateRangesForYear(
       ],
 
       where: { isDateRangeAnnual: true },
+      order: [
+        ["publishableId", "ASC"],
+        ["dateableId", "ASC"],
+        ["dateTypeId", "ASC"],
+        ["id", "ASC"],
+      ],
       transaction,
     });
 
     const dateRangesToCreate = [];
 
     for (const annual of annuals) {
+      const { id, publishableId, dateTypeId, dateableId, dateType } = annual;
+
       // Find the previous season for this DateRangeAnnual
 
-      if (!annual.dateType) {
-        throw new Error(`DateType missing for DateRangeAnnual ${annual.id}`);
+      if (!dateType) {
+        throw new Error(`DateType missing for DateRangeAnnual ${id}`);
       }
 
       // Season type based on the date type of the DateRangeAnnual
       const seasonType =
-        annual.dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE
+        dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE
           ? SEASON_TYPE.WINTER
           : SEASON_TYPE.REGULAR;
 
       const prevSeason = await Season.findOne({
         where: {
-          publishableId: annual.publishableId,
+          publishableId,
           operatingYear: targetYear - 1,
           seasonType,
         },
@@ -61,21 +69,32 @@ export async function populateAnnualDateRangesForYear(
 
       if (!prevSeason) continue;
 
-      // Find DateRanges for the previous season and this dateType
+      // Find previous-season DateRanges for this dateable+dateType
       const prevDateRanges = await DateRange.findAll({
         where: {
           seasonId: prevSeason.id,
-          dateTypeId: annual.dateTypeId,
+          dateableId,
+          dateTypeId,
         },
+        order: [
+          ["startDate", "ASC"],
+          ["endDate", "ASC"],
+          ["id", "ASC"],
+        ],
         transaction,
       });
 
+      // Only copy complete previous ranges; skip placeholders with null dates.
+      const completePrevRanges = prevDateRanges.filter(
+        (range) => range.startDate && range.endDate,
+      );
+
       // Skip to the next DateRangeAnnual if there are no previous DateRanges to copy
-      if (prevDateRanges.length === 0) continue;
+      if (completePrevRanges.length === 0) continue;
 
       let targetSeason = await Season.findOne({
         where: {
-          publishableId: annual.publishableId,
+          publishableId,
           operatingYear: targetYear,
           seasonType: prevSeason.seasonType,
         },
@@ -87,14 +106,14 @@ export async function populateAnnualDateRangesForYear(
       if (!targetSeason) {
         // Determine the status of the new season based on annual dates
         const status = await resolveNewSeasonStatus(
-          annual.publishableId,
+          publishableId,
           prevSeason.seasonType,
           transaction,
         );
 
         targetSeason = await Season.create(
           {
-            publishableId: annual.publishableId,
+            publishableId,
             operatingYear: targetYear,
             status,
             readyToPublish: true,
@@ -106,75 +125,77 @@ export async function populateAnnualDateRangesForYear(
 
       // For winter seasons, only copy Winter fee date types
       if (targetSeason.seasonType === SEASON_TYPE.WINTER) {
-        if (annual.dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE) {
+        if (dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE) {
           console.log(
-            `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${annual.publishableId})`,
+            `Skipping non-winter fee dates for winter season ${targetSeason.operatingYear} (publishableId=${publishableId})`,
           );
           continue;
         }
       }
 
-      // find dateableId for targetSeason's Park/ParkArea/Feature by publishableId
-      const dateableId = await findDateableIdByPublishableId(
-        targetSeason.publishableId,
-        transaction,
-      );
-
-      // check if target season already has DateRanges for this dateType
+      // check if target season already has DateRanges for this dateable+dateType
       const existingTargetDateRanges = await DateRange.findAll({
         where: {
           seasonId: targetSeason.id,
-          dateTypeId: annual.dateTypeId,
+          dateableId,
+          dateTypeId,
         },
+        order: [
+          ["startDate", "ASC"],
+          ["endDate", "ASC"],
+          ["id", "ASC"],
+        ],
         transaction,
       });
 
-      // If we have the same number of complete ranges as previous year, skip
+      // Only compare against complete target ranges
       const completeTargetRanges = existingTargetDateRanges.filter(
         (range) => range.startDate && range.endDate,
       );
 
-      if (completeTargetRanges.length >= prevDateRanges.length) {
-        // Target season already has complete date ranges for this dateType
-        continue;
-      }
+      // Copy only date ranges that are missing in target season.
+      // Compare by transformed target-year start/end values rather than by index.
+      const existingTargetRangeKeys = new Set(
+        completeTargetRanges.map(
+          (range) => `${range.startDate}|${range.endDate}`,
+        ),
+      );
 
-      // Only copy ranges that don't already exist (avoiding duplicates)
-      const numRangesToCopy =
-        prevDateRanges.length - completeTargetRanges.length;
-
-      if (numRangesToCopy <= 0) {
-        continue;
-      }
-
-      // copy each previous DateRange to current season (only the missing ones)
-      for (let i = 0; i < numRangesToCopy; i++) {
-        const prevRange = prevDateRanges[i];
+      for (const prevRange of completePrevRanges) {
         const currentYear = targetSeason.operatingYear;
-        const prevStartDate = prevRange.startDate;
-        const prevEndDate = prevRange.endDate;
+        const prevStartDate = parse(
+          prevRange.startDate,
+          "yyyy-MM-dd",
+          new Date(),
+        );
+        const prevEndDate = parse(prevRange.endDate, "yyyy-MM-dd", new Date());
 
-        const newStartDate = new Date(prevStartDate);
-        const newEndDate = new Date(prevEndDate);
+        // Shift this previous range into the target operating year while preserving
+        // the start/end year relationship for cross-year ranges.
+        const targetYearOffset = currentYear - getYear(prevStartDate);
 
-        // Calculate the year difference between the previous end and start dates
-        // to handle dates that span two calendar years (e.g., Nov 2026 to March 2027)
-        const yearDifference =
-          prevEndDate.getFullYear() - prevStartDate.getFullYear();
+        const newStartDate = addYears(prevStartDate, targetYearOffset);
+        const newEndDate = addYears(prevEndDate, targetYearOffset);
 
-        newStartDate.setFullYear(currentYear);
-        newEndDate.setFullYear(currentYear + yearDifference);
+        const newStartDateStr = format(newStartDate, "yyyy-MM-dd");
+        const newEndDateStr = format(newEndDate, "yyyy-MM-dd");
+        const rangeKey = `${newStartDateStr}|${newEndDateStr}`;
+
+        // Skip ranges that already exist in target season after year transformation.
+        if (existingTargetRangeKeys.has(rangeKey)) continue;
+
+        existingTargetRangeKeys.add(rangeKey);
 
         dateRangesToCreate.push({
           dateableId,
           seasonId: targetSeason.id,
-          dateTypeId: annual.dateTypeId,
-          startDate: newStartDate,
-          endDate: newEndDate,
+          dateTypeId,
+          startDate: newStartDateStr,
+          endDate: newEndDateStr,
         });
 
         console.log(
-          `Copied DateRange from season ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${annual.publishableId}`,
+          `Copied DateRange from season ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${publishableId}`,
         );
       }
     }

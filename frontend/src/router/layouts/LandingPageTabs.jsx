@@ -11,9 +11,8 @@ export default function LandingPageTabs() {
   const { data: userData } = useContext(UserContext);
 
   // Check user permissions
-  const { isApprover, hqStaff, hasAllParkAccess } = useMemo(
+  const { hqStaff, hasAllParkAccess } = useMemo(
     () => ({
-      isApprover: checkAccess(ROLES.DOOT_APPROVER),
       hqStaff: hasAnyRole([ROLES.DOOT_APPROVER]),
       hasAllParkAccess: checkAccess(ROLES.DOOT_ALL_PARK_ACCESS),
     }),
@@ -36,8 +35,8 @@ export default function LandingPageTabs() {
 
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/dates/" end>
-                Edit{isApprover && " and review"}
+              <NavLink className="nav-link" to="/">
+                Submit
               </NavLink>
             </li>
             {hqStaff && (
@@ -48,7 +47,12 @@ export default function LandingPageTabs() {
                   </NavLink>
                 </li>
                 <li className="nav-item">
-                  <NavLink className="nav-link" to="/dates/export">
+                  <NavLink className="nav-link" to="/edit-published">
+                    Edit published
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/export">
                     Export
                   </NavLink>
                 </li>

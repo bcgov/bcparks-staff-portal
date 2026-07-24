@@ -12,6 +12,7 @@ import { admin, adminRouter } from "./middleware/adminJs.js";
 import homeRoutes from "./routes/home.js";
 import userRoutes from "./routes/api/user.js";
 import parkRoutes from "./routes/api/parks.js";
+import editPublishedRoutes from "./routes/api/edit-published.js";
 import seasonRoutes from "./routes/api/seasons.js";
 import exportRoutes from "./routes/api/export.js";
 import publishRoutes from "./routes/api/publish.js";
@@ -78,6 +79,7 @@ apiRouter.use(usersMiddleware);
 
 apiRouter.use("/user", userRoutes);
 apiRouter.use("/parks", checkPermissions([ROLES.DOOT_USER]), parkRoutes);
+apiRouter.use("/edit-published", checkPermissions([ROLES.DOOT_USER]), editPublishedRoutes);
 apiRouter.use("/seasons", checkPermissions([ROLES.DOOT_USER]), seasonRoutes);
 apiRouter.use("/export", checkPermissions([ROLES.DOOT_USER]), exportRoutes);
 apiRouter.use("/publish", checkPermissions([ROLES.DOOT_USER]), publishRoutes);
