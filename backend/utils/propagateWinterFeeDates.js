@@ -381,6 +381,89 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
 }
 
 /**
+ * Writes Feature winter fee DateRanges into the parent ParkArea winter season.
+ * This is used for Features that belong to a ParkArea.
+ * @param {Feature} feature Feature record to recalculate
+ * @param {number} parkAreaPublishableId Parent ParkArea Publishable ID
+ * @param {number} parkAreaDateableId Parent ParkArea Dateable ID
+ * @param {number} operatingYear Operating year to process
+ * @param {Array} overlaps Consolidated Winter fee overlap ranges for this Feature
+ * @param {number} featureWinterTypeId Winter fee DateType ID
+ * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<boolean>} True when the parent ParkArea winter season was updated, false when it did not exist
+ */
+async function syncFeatureWinterDatesOnParkAreaSeason(
+  feature,
+  parkAreaPublishableId,
+  parkAreaDateableId,
+  operatingYear,
+  overlaps,
+  featureWinterTypeId,
+  parkWinterReadyToPublish,
+  transaction = null,
+) {
+  const winterSeason = await Season.findOne({
+    where: {
+      publishableId: parkAreaPublishableId,
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
+    },
+    transaction,
+  });
+
+  if (!winterSeason) {
+    return false;
+  }
+
+  await DateRange.destroy({
+    where: {
+      seasonId: winterSeason.id,
+      dateableId: feature.dateableId,
+      dateTypeId: featureWinterTypeId,
+    },
+    transaction,
+  });
+
+  if (parkAreaDateableId) {
+    await DateRange.destroy({
+      where: {
+        seasonId: winterSeason.id,
+        dateableId: parkAreaDateableId,
+        dateTypeId: featureWinterTypeId,
+      },
+      transaction,
+    });
+  }
+
+  if (overlaps.length > 0) {
+    await DateRange.bulkCreate(
+      overlaps.map((range) => ({
+        seasonId: winterSeason.id,
+        dateableId: feature.dateableId,
+        dateTypeId: featureWinterTypeId,
+        startDate: range.startDate,
+        endDate: range.endDate,
+      })),
+      { transaction },
+    );
+  }
+
+  if (
+    parkWinterReadyToPublish !== null &&
+    typeof parkWinterReadyToPublish !== "undefined"
+  ) {
+    winterSeason.readyToPublish = parkWinterReadyToPublish;
+  }
+
+  winterSeason.status = APPROVED;
+  winterSeason.updatedAt = new Date();
+  await winterSeason.save({ transaction });
+
+  return true;
+}
+
+/**
  * Recalculates Feature-level Winter fee dates for a park + operating year.
  * Trigger this on Winter fee or Operation date saves.
  * @param {number} seasonId The season being approved/saved
