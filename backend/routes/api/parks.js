@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import { Router } from "express";
 import _ from "lodash";
+import sequelize from "../../db/connection.js";
 import {
   Park,
   Season,
@@ -10,7 +11,6 @@ import {
   DateType,
   Feature,
   ParkArea,
-  SeasonChangeLog,
   AccessGroup,
   GateDetail,
   User,
@@ -28,6 +28,14 @@ import * as USER_ROLES from "../../constants/userRoles.js";
 const router = Router();
 
 // Functions
+
+/**
+ * Builds Sequelize include configuration for Season model with date ranges.
+ * @param {number} minYear Minimum operating year to filter seasons by (inclusive)
+ * @param {boolean} [required=true] Whether seasons are required in the join
+ * @param {string|null} [seasonStatus=null] Optional status filter (e.g., 'published')
+ * @returns {Object} Sequelize include config for Season model with nested DateRanges
+ */
 function seasonModel(minYear, required = true, seasonStatus = null) {
   return {
     model: Season,
@@ -62,28 +70,17 @@ function seasonModel(minYear, required = true, seasonStatus = null) {
           },
         ],
       },
-      {
-        model: SeasonChangeLog,
-        as: "changeLogs",
-        attributes: ["id", "notes", "createdAt"],
-        required: false,
-        where: {
-          notes: {
-            [Op.ne]: "",
-          },
-        },
-        include: [
-          {
-            model: User,
-            as: "user",
-            attributes: ["id", "name"],
-          },
-        ],
-      },
     ],
   };
 }
 
+/**
+ * Builds Sequelize include configuration for Feature model with type and seasons.
+ * @param {number} minYear Minimum operating year to filter seasons by (inclusive)
+ * @param {Object} [where={}] Additional Sequelize WHERE conditions for features
+ * @param {string|null} [seasonStatus=null] Optional season status filter
+ * @returns {Object} Sequelize include config for Feature model with FeatureType and Seasons
+ */
 function featureModel(minYear, where = {}, seasonStatus = null) {
   return {
     model: Feature,
@@ -115,8 +112,16 @@ function featureModel(minYear, where = {}, seasonStatus = null) {
   };
 }
 
-// group dateRanges by date type name then by year
-// e.g. {Operation: {2024: [...], 2025: [...]}, Winter: {2024: [...], 2025: [...]}, ...}
+/**
+ * Groups date ranges hierarchically by type name and year.
+ * Optionally filters out PARK_GATE_OPEN type if hasGate is false.
+ * @param {Array<Object>} dateRanges Array of date range objects with dateType
+ * @param {boolean|null} [hasGate=null] If false, filter out PARK_GATE_OPEN type
+ * @returns {Object} Nested map: {dateTypeName: {year: [ranges]}}
+ * @example
+ * {"Operation": {2024: [...], 2025: [...]}, "Winter": {2024: [...]}}
+ *
+ */
 function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   // filter out invalid dateRanges
   let validRanges = dateRanges.filter((dateRange) => dateRange.dateType);
@@ -140,7 +145,13 @@ function groupDateRangesByTypeAndYear(dateRanges, hasGate = null) {
   );
 }
 
-// build a date range output object
+/**
+ * Creates standardized date range output object.
+ * @param {Object} dateRange Raw date range from database
+ * @param {number} operatingYear Operating year for context
+ * @param {boolean} readyToPublish Whether the season is ready to publish
+ * @returns {Object} Formatted date range with id, dates, type, and year
+ */
 function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
   return {
     id: dateRange.id,
@@ -160,7 +171,11 @@ function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
   };
 }
 
-// build a current season object
+/**
+ * Extracts most recent season for each season type (REGULAR and WINTER).
+ * @param {Array<Object>|null} seasons Array of season objects
+ * @returns {Object} {regular: season|null, winter: season|null} - Most recent of each type
+ */
 function buildCurrentSeasonOutput(seasons) {
   if (!seasons || seasons.length === 0) return { regular: null, winter: null };
 
@@ -182,7 +197,11 @@ function buildCurrentSeasonOutput(seasons) {
   };
 }
 
-// get all date ranges from seasons
+/**
+ * Flattens nested season.dateRanges into single array with season context.
+ * @param {Array<Object>} seasons Array of season objects containing dateRanges
+ * @returns {Array<Object>} Flattened array of standardized date range objects
+ */
 function getAllDateRanges(seasons) {
   return _.flatMap(seasons, (season) =>
     (season.dateRanges || []).map((dateRange) =>
@@ -195,24 +214,73 @@ function getAllDateRanges(seasons) {
   );
 }
 
-// build feature output object
-function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
+/**
+ * Converts Sequelize instance to plain JavaScript object.
+ * @param {Object} season Sequelize instance or plain object
+ * @returns {Object} Plain JavaScript object
+ */
+function getPlainSeason(season) {
+  return typeof season.toJSON === "function" ? season.toJSON() : season;
+}
+
+/**
+ * Queries SeasonChangeLogs table to check for non-empty notes and returns a lookup map.
+ * @param {Array<string>} seasonIds Array of season IDs to check
+ * @returns {Promise<Map<string, boolean>>} Map of seasonId -> hasNotes (boolean)
+ */
+async function fetchAndMapSeasonNotes(seasonIds) {
+  if (seasonIds.length === 0) {
+    return new Map();
+  }
+
+  // Query the SeasonChangeLogs table for the given season IDs to check for notes
+  const notesResult = await sequelize.query(
+    `SELECT DISTINCT "s"."id" as "seasonId",
+      EXISTS(
+        SELECT 1 FROM "SeasonChangeLogs" scl
+        WHERE scl."seasonId" = s."id" AND TRIM(scl."notes") != ''
+      ) as "hasNotes"
+    FROM "Seasons" s
+    WHERE s."id" IN (${seasonIds.map(() => "?").join(",")})`,
+    {
+      replacements: seasonIds,
+      type: sequelize.QueryTypes.SELECT,
+    },
+  );
+
+  const seasonNotesMap = new Map();
+
+  notesResult.forEach((row) => {
+    seasonNotesMap.set(row.seasonId, row.hasNotes);
+  });
+
+  return seasonNotesMap;
+}
+
+/**
+ * Formats feature output with filtered seasons and optional currentSeason.
+ * @param {Object} feature Feature instance with id, dateableId, seasons, etc.
+ * @param {Array<Object>} seasons Parent seasons array to filter from
+ * @param {boolean} [includeCurrentSeason=true] Whether to include computed currentSeason
+ * @param {Map<string, boolean>} [seasonNotesMap=new Map()] seasonId -> hasNotes lookup
+ * @returns {Object} Formatted feature with id, name, seasons, groupedDateRanges, etc.
+ */
+function buildFeatureOutput(
+  feature,
+  seasons,
+  includeCurrentSeason = true,
+  seasonNotesMap = new Map(),
+) {
   // filter seasons if dateRange's dateableId matches feature's dateableId
   const filteredSeasons = (seasons || [])
     // first, filter seasons that have at least one matching dateRange
-    .filter((season) => {
-      // convert to plain object if it's a Sequelize instance
-      const plainSeason =
-        typeof season.toJSON === "function" ? season.toJSON() : season;
-
-      return (plainSeason.dateRanges || []).some(
+    .filter((season) =>
+      (getPlainSeason(season).dateRanges || []).some(
         (dateRange) => dateRange.dateableId === feature.dateableId,
-      );
-    })
+      ),
+    )
     .map((season) => {
-      // convert to plain object if it's a Sequelize instance
-      const plainSeason =
-        typeof season.toJSON === "function" ? season.toJSON() : season;
+      const plainSeason = getPlainSeason(season);
 
       return {
         ...plainSeason,
@@ -224,6 +292,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
               feature.hasReservations ||
               dateRange.dateType?.name !== "Reservation",
           ),
+        hasNotes: !!seasonNotesMap.get(plainSeason.id),
       };
     });
 
@@ -258,14 +327,35 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
   };
 
   if (includeCurrentSeason) {
-    output.currentSeason = buildCurrentSeasonOutput(feature.seasons);
+    const currentSeason = buildCurrentSeasonOutput(feature.seasons);
+
+    // Add hasNotes to current season objects and convert to plain objects
+    if (currentSeason.regular) {
+      currentSeason.regular = {
+        ...getPlainSeason(currentSeason.regular),
+        hasNotes: !!seasonNotesMap.get(currentSeason.regular.id),
+      };
+    }
+    if (currentSeason.winter) {
+      currentSeason.winter = {
+        ...getPlainSeason(currentSeason.winter),
+        hasNotes: !!seasonNotesMap.get(currentSeason.winter.id),
+      };
+    }
+    output.currentSeason = currentSeason;
   }
 
   return output;
 }
 
-// build park area output object
-function buildParkAreaOutput(parkArea) {
+/**
+ * Formats park area output with features, seasons, and metadata.
+ * Adds hasNotes from the provided map.
+ * @param {Object} parkArea ParkArea instance with seasons, features, parkAreaType
+ * @param {Map<string, boolean>} seasonNotesMap seasonId -> hasNotes lookup map
+ * @returns {Object} Formatted park area with id, name, features, seasons, currentSeason, etc.
+ */
+function buildParkAreaOutput(parkArea, seasonNotesMap) {
   // get date ranges for parkArea
   const parkAreaDateRanges = getAllDateRanges(parkArea.seasons)
     // Temporarily disabling display of Winter Fees
@@ -281,6 +371,20 @@ function buildParkAreaOutput(parkArea) {
   // get a current season
   const currentSeason = buildCurrentSeasonOutput(parkArea.seasons);
 
+  // Add hasNotes to current season objects and convert to plain objects
+  if (currentSeason.regular) {
+    currentSeason.regular = {
+      ...getPlainSeason(currentSeason.regular),
+      hasNotes: !!seasonNotesMap.get(currentSeason.regular.id),
+    };
+  }
+  if (currentSeason.winter) {
+    currentSeason.winter = {
+      ...getPlainSeason(currentSeason.winter),
+      hasNotes: !!seasonNotesMap.get(currentSeason.winter.id),
+    };
+  }
+
   return {
     id: parkArea.id,
     dateableId: parkArea.dateableId,
@@ -289,11 +393,14 @@ function buildParkAreaOutput(parkArea) {
     inReservationSystem: parkArea.inReservationSystem,
     hasWinterFeeDates: parkArea.hasWinterFeeDates,
     features: parkArea.features.map((feature) =>
-      buildFeatureOutput(feature, parkArea.seasons, false),
+      buildFeatureOutput(feature, parkArea.seasons, false, seasonNotesMap),
     ),
     featureTypes,
     parkAreaType: parkArea.parkAreaType,
-    seasons: parkArea.seasons,
+    seasons: parkArea.seasons.map((season) => ({
+      ...getPlainSeason(season),
+      hasNotes: !!seasonNotesMap.get(season.id),
+    })),
     currentSeason,
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
@@ -317,10 +424,8 @@ router.get(
       typeof req.query.seasonStatus === "string"
         ? req.query.seasonStatus
         : null;
-    const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
-      USER_ROLES.ALL_PARK_ACCESS,
-    ]);
 
+    // Main query: Fetch Parks with their Seasons
     const parks = await Park.findAll({
       attributes: [
         "id",
@@ -339,37 +444,6 @@ router.get(
         // Publishable Seasons for the Park
         seasonModel(operatingYear, true, seasonStatus),
 
-        // ParkAreas
-        {
-          model: ParkArea,
-          as: "parkAreas",
-          attributes: [
-            "id",
-            "dateableId",
-            "publishableId",
-            "name",
-            "inReservationSystem",
-            "hasWinterFeeDates",
-          ],
-          include: [
-            // Features that are part of the ParkArea
-            {
-              ...featureModel(operatingYear, {}, seasonStatus),
-              // Exclude parkAreas with no active features
-              required: true,
-            },
-            // Publishable Seasons for the ParkArea
-            seasonModel(operatingYear, true, seasonStatus),
-            // ParkAreaType for the ParkArea
-            {
-              model: ParkAreaType,
-              as: "parkAreaType",
-              attributes: ["id", "parkAreaTypeNumber", "name"],
-              required: true,
-            },
-          ],
-        },
-
         // Publishable Features that aren't part of a ParkArea
         featureModel(
           operatingYear,
@@ -381,13 +455,209 @@ router.get(
           },
           seasonStatus,
         ),
+      ],
+      order: [
+        ["name", "ASC"],
+        // For Features that ARE NOT part of a ParkArea
+        [{ model: Feature, as: "features" }, "name", "ASC"],
+      ],
+    });
 
-        // Filter AccessGroups on server-side based on user's access,
-        // and also return accessGroup IDs for client-side bundle filters
+    const parkIds = parks.map((park) => park.id);
+    const publishableIds = parks.map((park) => park.publishableId);
+
+    // Collect season IDs from parks for later hasNotes fetch
+    const parkSeasonIds = parks.flatMap((park) =>
+      park.seasons.map((season) => season.id),
+    );
+
+    // Query 2: Fetch ParkAreas with their Features and Seasons for the Parks in the main query
+    const parkAreasQuery = ParkArea.findAll({
+      attributes: [
+        "id",
+        "dateableId",
+        "publishableId",
+        "parkId",
+        "name",
+        "inReservationSystem",
+        "hasWinterFeeDates",
+      ],
+      where: { parkId: parkIds },
+      include: [
+        // Features that are part of the ParkArea
+        {
+          ...featureModel(operatingYear, {}, seasonStatus),
+          // Exclude parkAreas with no active features
+          required: true,
+        },
+        // Publishable Seasons for the ParkArea
+        seasonModel(operatingYear, true, seasonStatus),
+        // ParkAreaType for the ParkArea
+        {
+          model: ParkAreaType,
+          as: "parkAreaType",
+          attributes: ["id", "parkAreaTypeNumber", "name"],
+          required: true,
+        },
+      ],
+      order: [
+        ["name", "ASC"],
+        // For Features that ARE part of a ParkArea
+        [
+          { model: Feature, as: "features" },
+          { model: FeatureType, as: "featureType" },
+          "rank",
+          "ASC",
+        ],
+        [{ model: Feature, as: "features" }, "name", "ASC"],
+      ],
+    });
+
+    // Query 3: Fetch GateDetails for the Parks in the main query
+    const gateDetailsQuery = GateDetail.findAll({
+      attributes: ["publishableId", "hasGate"],
+      where: {
+        publishableId: {
+          [Op.in]: publishableIds,
+        },
+      },
+    });
+
+    const [parkAreas, allGateDetails] = await Promise.all([
+      parkAreasQuery,
+      gateDetailsQuery,
+    ]);
+
+    // Merge ParkAreas back into the main query results by parkId
+    const parkAreasByParkId = _.groupBy(parkAreas, "parkId");
+
+    parks.forEach((park) => {
+      park.parkAreas = parkAreasByParkId[park.id] || [];
+    });
+
+    // Collect all season IDs from parks, parkAreas, and their features
+    const allSeasonIds = new Set(parkSeasonIds);
+
+    parkAreas.forEach((parkArea) => {
+      parkArea.seasons?.forEach((season) => {
+        allSeasonIds.add(season.id);
+      });
+      parkArea.features?.forEach((feature) => {
+        feature.seasons?.forEach((season) => {
+          allSeasonIds.add(season.id);
+        });
+      });
+    });
+
+    // Collect season IDs from park features
+    parks.forEach((park) => {
+      park.features?.forEach((feature) => {
+        feature.seasons?.forEach((season) => {
+          allSeasonIds.add(season.id);
+        });
+      });
+    });
+
+    // Populate seasonNotesMap for all seasons (park, parkArea, and feature seasons) with single query
+    const seasonNotesMap = await fetchAndMapSeasonNotes(
+      Array.from(allSeasonIds),
+    );
+
+    // Build lookup map for GateDetails by publishableId
+    const gateDetailMap = new Map();
+
+    allGateDetails.forEach((gate) => {
+      gateDetailMap.set(gate.publishableId, gate.hasGate);
+    });
+
+    const output = parks.map((park) => {
+      const [regularSeasons, winterSeasons] = _.partition(
+        park.seasons,
+        (season) => season.seasonType === SEASON_TYPE.REGULAR,
+      );
+      // Get date ranges for park
+      // For regular seasons, exclude Winter fee dates
+      const parkDateRanges = getAllDateRanges(regularSeasons).filter(
+        (dateRange) =>
+          dateRange.dateType?.dateTypeNumber !== DATE_TYPE.WINTER_FEE,
+      );
+      // For winter seasons, only include Winter fee dates
+      const parkWinterDateRanges = getAllDateRanges(winterSeasons).filter(
+        (dateRange) =>
+          dateRange.dateType?.dateTypeNumber === DATE_TYPE.WINTER_FEE,
+      );
+      // Get hasGate for park
+      const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
+
+      return {
+        id: park.id,
+        dateableId: park.dateableId,
+        publishableId: park.publishableId,
+        name: park.name,
+        orcs: park.orcs,
+        hasGate: parkHasGate,
+        hasTier1Dates: park.hasTier1Dates,
+        hasTier2Dates: park.hasTier2Dates,
+        hasWinterFeeDates: park.hasWinterFeeDates,
+        inReservationSystem: park.inReservationSystem,
+        groupedDateRanges: groupDateRangesByTypeAndYear(
+          parkDateRanges,
+          parkHasGate,
+        ),
+        winterGroupedDateRanges:
+          groupDateRangesByTypeAndYear(parkWinterDateRanges),
+        features: park.features.map((feature) =>
+          buildFeatureOutput(feature, feature.seasons, true, seasonNotesMap),
+        ),
+        parkAreas: park.parkAreas.map((parkArea) =>
+          buildParkAreaOutput(parkArea, seasonNotesMap),
+        ),
+        // Park-level "currentSeason" is derived on the frontend from the seasons array
+        seasons: park.seasons.map((season) => ({
+          id: season.id,
+          publishableId: season.publishableId,
+          operatingYear: season.operatingYear,
+          status: season.status,
+          readyToPublish: season.readyToPublish,
+          hasNotes: !!seasonNotesMap.get(season.id),
+          dateRanges: season.dateRanges.map((dateRange) =>
+            buildDateRangeObject(
+              dateRange,
+              season.operatingYear,
+              season.readyToPublish,
+            ),
+          ),
+          seasonType: season.seasonType,
+        })),
+      };
+    });
+
+    res.json(output);
+  }),
+);
+
+// GET /parks/metadata
+// Returns supplemental park data needed for table filtering.
+// Separated from main `/parks` payload so data can be lazy-loaded.
+// Frontend merges this into parks array by park id once resolved, then enables filters.
+router.get(
+  "/metadata",
+  asyncHandler(async (req, res) => {
+    const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
+      USER_ROLES.ALL_PARK_ACCESS,
+    ]);
+
+    const parks = await Park.findAll({
+      attributes: ["id", "managementAreas"],
+      where: { hasDates: true },
+      include: [
         {
           model: AccessGroup,
           as: "accessGroups",
           attributes: ["id"],
+          through: {
+            attributes: [],
+          },
           required: !hasAllParkAccess,
           include: hasAllParkAccess
             ? []
@@ -406,114 +676,15 @@ router.get(
               ],
         },
       ],
-      order: [
-        ["name", "ASC"],
-        [{ model: ParkArea, as: "parkAreas" }, "name", "ASC"],
-        // For Features that ARE part of a ParkArea
-        [
-          { model: ParkArea, as: "parkAreas" },
-          { model: Feature, as: "features" },
-          { model: FeatureType, as: "featureType" },
-          "rank",
-          "ASC",
-        ],
-        [
-          { model: ParkArea, as: "parkAreas" },
-          { model: Feature, as: "features" },
-          "name",
-          "ASC",
-        ],
-        // For Features that ARE NOT part of a ParkArea
-        [{ model: Feature, as: "features" }, "name", "ASC"],
-      ],
     });
 
-    // constrain GateDetail query to only publishableIds in parks
-    const publishableIds = parks.map((park) => park.publishableId);
+    const output = parks.map((park) => ({
+      id: park.id,
+      section: park.managementAreas.map((area) => area.section),
+      managementArea: park.managementAreas.map((area) => area.mgmtArea),
+      accessGroups: park.accessGroups,
+    }));
 
-    const allGateDetails = await GateDetail.findAll({
-      attributes: ["publishableId", "hasGate"],
-      where: {
-        publishableId: {
-          [Op.in]: publishableIds,
-        },
-      },
-    });
-
-    const gateDetailMap = new Map();
-
-    allGateDetails.forEach((gate) => {
-      gateDetailMap.set(gate.publishableId, gate.hasGate);
-    });
-
-    const output = parks.map((park) => {
-      const [regularSeasons, winterSeasons] = _.partition(
-        park.seasons,
-        (season) => season.seasonType === SEASON_TYPE.REGULAR,
-      );
-      // get date ranges for park
-      // For regular seasons, exclude Winter fee dates
-      const parkDateRanges = getAllDateRanges(regularSeasons).filter(
-        (dateRange) =>
-          dateRange.dateType?.dateTypeNumber !== DATE_TYPE.WINTER_FEE,
-      );
-      // For winter seasons, only include Winter fee dates
-      const parkWinterDateRanges = getAllDateRanges(winterSeasons).filter(
-        (dateRange) =>
-          dateRange.dateType?.dateTypeNumber === DATE_TYPE.WINTER_FEE,
-      );
-      // get hasGate for park
-      const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
-
-      // get current season
-      const currentSeason = buildCurrentSeasonOutput(park.seasons);
-
-      return {
-        id: park.id,
-        dateableId: park.dateableId,
-        publishableId: park.publishableId,
-        name: park.name,
-        orcs: park.orcs,
-        hasGate: parkHasGate,
-        hasTier1Dates: park.hasTier1Dates,
-        hasTier2Dates: park.hasTier2Dates,
-        hasWinterFeeDates: park.hasWinterFeeDates,
-        section: park.managementAreas.map((area) => area.section),
-        managementArea: park.managementAreas.map((area) => area.mgmtArea),
-        accessGroups: park.accessGroups,
-        inReservationSystem: park.inReservationSystem,
-        currentSeason,
-        groupedDateRanges: groupDateRangesByTypeAndYear(
-          parkDateRanges,
-          parkHasGate,
-        ),
-        winterGroupedDateRanges:
-          groupDateRangesByTypeAndYear(parkWinterDateRanges),
-        features: park.features.map((feature) =>
-          buildFeatureOutput(feature, feature.seasons, true),
-        ),
-        parkAreas: park.parkAreas.map((parkArea) =>
-          buildParkAreaOutput(parkArea),
-        ),
-        seasons: park.seasons.map((season) => ({
-          id: season.id,
-          publishableId: season.publishableId,
-          operatingYear: season.operatingYear,
-          status: season.status,
-          readyToPublish: season.readyToPublish,
-          dateRanges: season.dateRanges.map((dateRange) =>
-            buildDateRangeObject(
-              dateRange,
-              season.operatingYear,
-              season.readyToPublish,
-            ),
-          ),
-          seasonType: season.seasonType,
-        })),
-      };
-    });
-
-    // Return all rows
     res.json(output);
   }),
 );
