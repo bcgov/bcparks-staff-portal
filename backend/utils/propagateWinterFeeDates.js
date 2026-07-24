@@ -198,15 +198,13 @@ async function getFeatureOperationRanges(
   return consolidateRanges(operationRanges.map((range) => range.toJSON()));
 }
 
-
 /**
  * Rebuilds a Feature winter season's Winter fee DateRanges from the Park-level
  * Winter fee dates and the Feature's Operation date ranges.
  * @param {Feature} feature Feature record to recalculate
  * @param {number} operatingYear Operating year to process
- * @param {Array} parkWinterDates Consolidated Park-level Winter fee ranges
+ * @param {Array} overlaps Consolidated Winter fee overlap ranges for this Feature
  * @param {number} featureWinterTypeId Winter fee DateType ID
- * @param {number} featureOperationTypeId Feature Operation DateType ID
  * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} True when the Feature winter season was updated, false when it did not exist
@@ -214,9 +212,8 @@ async function getFeatureOperationRanges(
 async function syncFeatureWinterSeason(
   feature,
   operatingYear,
-  parkWinterDates,
+  overlaps,
   featureWinterTypeId,
-  featureOperationTypeId,
   parkWinterReadyToPublish,
   transaction = null,
 ) {
@@ -232,15 +229,6 @@ async function syncFeatureWinterSeason(
   if (!winterSeason) {
     return false;
   }
-
-  const operationRanges = await getFeatureOperationRanges(
-    feature,
-    operatingYear,
-    featureOperationTypeId,
-    transaction,
-  );
-
-  const overlaps = getOverlappingDateRanges(parkWinterDates, operationRanges);
 
   await DateRange.destroy({
     where: {
@@ -280,6 +268,89 @@ async function syncFeatureWinterSeason(
 }
 
 /**
+ * Writes Feature winter fee DateRanges into the parent ParkArea winter season.
+ * This is used for Features that belong to a ParkArea.
+ * @param {Feature} feature Feature record to recalculate
+ * @param {number} parkAreaPublishableId Parent ParkArea Publishable ID
+ * @param {number} parkAreaDateableId Parent ParkArea Dateable ID
+ * @param {number} operatingYear Operating year to process
+ * @param {Array} overlaps Consolidated Winter fee overlap ranges for this Feature
+ * @param {number} featureWinterTypeId Winter fee DateType ID
+ * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<boolean>} True when the parent ParkArea winter season was updated, false when it did not exist
+ */
+async function syncFeatureWinterDatesOnParkAreaSeason(
+  feature,
+  parkAreaPublishableId,
+  parkAreaDateableId,
+  operatingYear,
+  overlaps,
+  featureWinterTypeId,
+  parkWinterReadyToPublish,
+  transaction = null,
+) {
+  const winterSeason = await Season.findOne({
+    where: {
+      publishableId: parkAreaPublishableId,
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
+    },
+    transaction,
+  });
+
+  if (!winterSeason) {
+    return false;
+  }
+
+  await DateRange.destroy({
+    where: {
+      seasonId: winterSeason.id,
+      dateableId: feature.dateableId,
+      dateTypeId: featureWinterTypeId,
+    },
+    transaction,
+  });
+
+  if (parkAreaDateableId) {
+    await DateRange.destroy({
+      where: {
+        seasonId: winterSeason.id,
+        dateableId: parkAreaDateableId,
+        dateTypeId: featureWinterTypeId,
+      },
+      transaction,
+    });
+  }
+
+  if (overlaps.length > 0) {
+    await DateRange.bulkCreate(
+      overlaps.map((range) => ({
+        seasonId: winterSeason.id,
+        dateableId: feature.dateableId,
+        dateTypeId: featureWinterTypeId,
+        startDate: range.startDate,
+        endDate: range.endDate,
+      })),
+      { transaction },
+    );
+  }
+
+  if (
+    parkWinterReadyToPublish !== null &&
+    typeof parkWinterReadyToPublish !== "undefined"
+  ) {
+    winterSeason.readyToPublish = parkWinterReadyToPublish;
+  }
+
+  winterSeason.status = APPROVED;
+  winterSeason.updatedAt = new Date();
+  await winterSeason.save({ transaction });
+
+  return true;
+}
+
+/**
  * Recalculates Feature-level Winter fee dates for a park + operating year.
  * Trigger this on approved saves (including edit-published flows).
  * @param {number} seasonId The season being approved/saved
@@ -298,13 +369,13 @@ export default async function propagateWinterFeeDates(
 
   const park = await getSeasonPark(sourceSeason, transaction);
 
-  if (
-    !park ||
-    !park.hasWinterFeeDates ||
-    !park.publishableId ||
-    !park.dateableId
-  ) {
-    return { updatedFeatures: 0, skippedFeatures: 0 };
+  if (!park) {
+    return {
+      updatedFeatures: 0,
+      skippedFeatures: 0,
+      updatedParkAreas: 0,
+      skippedParkAreas: 0,
+    };
   }
 
   const operatingYear = sourceSeason.operatingYear;
@@ -323,21 +394,36 @@ export default async function propagateWinterFeeDates(
   const winterDates = parkWinter.ranges || [];
 
   const features = await Feature.findAll({
-    attributes: ["id", "name", "publishableId", "dateableId"],
+    attributes: ["id", "name", "publishableId", "dateableId", "parkAreaId"],
     where: {
       parkId: park.id,
       hasWinterFeeDates: true,
       active: true,
     },
+    include: [
+      {
+        model: ParkArea,
+        as: "parkArea",
+        attributes: ["id", "publishableId", "dateableId"],
+        required: false,
+      },
+    ],
     transaction,
   });
 
   if (!features.length) {
-    return { updatedFeatures: 0, skippedFeatures: 0 };
+    return {
+      updatedFeatures: 0,
+      skippedFeatures: 0,
+      updatedParkAreas: 0,
+      skippedParkAreas: 0,
+    };
   }
 
   let updatedFeatures = 0;
   let skippedFeatures = 0;
+  const updatedParkAreas = 0;
+  const skippedParkAreas = 0;
 
   for (const feature of features) {
     if (!feature.publishableId || !feature.dateableId) {
@@ -345,15 +431,34 @@ export default async function propagateWinterFeeDates(
       continue;
     }
 
-    const updated = await syncFeatureWinterSeason(
+    const operationRanges = await getFeatureOperationRanges(
       feature,
       operatingYear,
-      winterDates,
-      featureWinterTypeId,
       featureOperationTypeId,
-      parkWinter.season?.readyToPublish,
       transaction,
     );
+
+    const overlaps = getOverlappingDateRanges(winterDates, operationRanges);
+
+    const updated = feature.parkArea
+      ? await syncFeatureWinterDatesOnParkAreaSeason(
+          feature,
+          feature.parkArea.publishableId,
+          feature.parkArea.dateableId,
+          operatingYear,
+          overlaps,
+          featureWinterTypeId,
+          parkWinter.season?.readyToPublish,
+          transaction,
+        )
+      : await syncFeatureWinterSeason(
+          feature,
+          operatingYear,
+          overlaps,
+          featureWinterTypeId,
+          parkWinter.season?.readyToPublish,
+          transaction,
+        );
 
     if (updated) {
       updatedFeatures++;
@@ -365,5 +470,7 @@ export default async function propagateWinterFeeDates(
   return {
     updatedFeatures,
     skippedFeatures,
+    updatedParkAreas,
+    skippedParkAreas,
   };
 }

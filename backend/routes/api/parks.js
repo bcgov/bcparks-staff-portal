@@ -228,9 +228,8 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     });
 
   // Temporarily disabling display of excluded types
-  // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
   // @TODO: Remove this filter when FCFS logic is revised
-  const excludedDateTypes = new Set(["Winter fee", "First come, first served"]);
+  const excludedDateTypes = new Set(["First come, first served"]);
 
   // get date ranges for park.feature
   const featureDateRanges = getAllDateRanges(filteredSeasons).filter(
@@ -267,10 +266,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
 // build park area output object
 function buildParkAreaOutput(parkArea) {
   // get date ranges for parkArea
-  const parkAreaDateRanges = getAllDateRanges(parkArea.seasons)
-    // Temporarily disabling display of Winter Fees
-    // @TODO: Remove this filter when Winter fee logic is revised (CMS-898)
-    .filter((dateRange) => dateRange.dateType?.name !== "Winter fee");
+  const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
 
   // Get a distinct list of feature types in the park area for filtering purposes
   const featureTypes = _.uniqBy(

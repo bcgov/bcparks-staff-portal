@@ -1,4 +1,7 @@
-// This script creates winter seasons for parks that have hasWinterFeeDates = true.
+// This script creates winter seasons using these drivers:
+// - Park-level winter seasons: park.hasWinterFeeDates = true
+// - ParkArea/Feature-level winter seasons: feature.hasWinterFeeDates = true
+// - parkArea.hasWinterFeeDates is intentionally ignored
 // It will skip creating a season if one already exists for the given operating year and publishable.
 
 import "../../env.js";
@@ -9,6 +12,7 @@ import {
   DateType,
   Feature,
   Park,
+  ParkArea,
   Season,
 } from "../../models/index.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
@@ -40,8 +44,8 @@ export default async function createWinterSeasons(
   let winterDateRangeAnnualsAdded = 0;
 
   /**
-   * Creates a new Publishable ID for a Park/Feature when missing.
-   * @param {Park} record The record to check and update
+   * Creates a new Publishable ID for a Park/Feature/ParkArea when missing.
+   * @param {Park|Feature|ParkArea} record The record to check and update
    * @returns {Promise<number>} The record's Publishable ID
    */
   async function createPublishable(record) {
@@ -53,8 +57,8 @@ export default async function createWinterSeasons(
   }
 
   /**
-   * Creates a new Dateable ID a Park/Feature when missing.
-   * @param {Park} record The record to check and update
+   * Creates a new Dateable ID a Park/Feature/ParkArea when missing.
+   * @param {Park|Feature|ParkArea} record The record to check and update
    * @returns {Promise<number>} The record's Dateable ID
    */
   async function createDateable(record) {
@@ -132,6 +136,7 @@ export default async function createWinterSeasons(
     const existingDateRange = await DateRange.findOne({
       where: {
         seasonId,
+        dateableId,
         dateTypeId: winterFeeDateTypeId,
       },
       transaction,
@@ -227,11 +232,6 @@ export default async function createWinterSeasons(
     `Found ${parksWithWinterFees.length} Parks with Winter Fee Dates`,
   );
 
-  if (parksWithWinterFees.length === 0) {
-    console.log("No parks with winter fee dates found. Exiting.");
-    return;
-  }
-
   // Process each park
   const parkQueries = parksWithWinterFees.map(async (park) => {
     // Ensure the park has a publishableId
@@ -266,7 +266,8 @@ export default async function createWinterSeasons(
 
   await Promise.all(parkQueries);
 
-  // Create winter seasons for Features flagged for winter fees
+  // Create winter seasons for Features flagged for winter fees.
+  // This is the only driver for ParkArea/Feature-level winter seasons.
   const featuresWithWinterFees = await Feature.findAll({
     attributes: [
       "id",
@@ -280,6 +281,14 @@ export default async function createWinterSeasons(
       hasWinterFeeDates: true,
       active: true,
     },
+    include: [
+      {
+        model: ParkArea,
+        as: "parkArea",
+        attributes: ["id", "name", "publishableId", "dateableId"],
+        required: false,
+      },
+    ],
     transaction,
   });
 
@@ -288,40 +297,59 @@ export default async function createWinterSeasons(
   );
 
   const featureQueries = featuresWithWinterFees.map(async (feature) => {
-    const publishableId = await createPublishable(feature);
-    const dateableId = await createDateable(feature);
+    const featureDateableId =
+      feature.dateableId || (await createDateable(feature));
+
+    // Feature belongs to a ParkArea:
+    // create/update winter season under ParkArea publishable, keyed by feature dateable.
+    // Do not consult parkArea.hasWinterFeeDates.
+    if (feature.parkArea) {
+      const parkAreaPublishableId =
+        feature.parkArea.publishableId ||
+        (await createPublishable(feature.parkArea));
+
+      const parkAreaWinterSeasonId = await createWinterSeason(
+        parkAreaPublishableId,
+        operatingYear,
+        `${feature.parkArea.name} (park area)`,
+      );
+
+      await createWinterFeeDateRange(
+        parkAreaWinterSeasonId,
+        featureDateableId,
+        winterFeeDateType.id,
+        `${feature.name} (${feature.parkArea.name})`,
+      );
+
+      return;
+    }
+
+    // Independent Features (without a ParkArea) own Winter seasons.
+    const featurePublishableId = await createPublishable(feature);
 
     const winterSeasonId = await createWinterSeason(
-      publishableId,
+      featurePublishableId,
       operatingYear,
       feature.name,
     );
 
-    if (winterSeasonId) {
-      await createWinterFeeDateRange(
-        winterSeasonId,
-        dateableId,
-        winterFeeDateType.id,
-        feature.name,
-      );
-
-      await ensureWinterDateRangeAnnual(
-        publishableId,
-        dateableId,
-        winterFeeDateType.id,
-      );
-    }
+    await createWinterFeeDateRange(
+      winterSeasonId,
+      featureDateableId,
+      winterFeeDateType.id,
+      feature.name,
+    );
   });
 
   await Promise.all(featureQueries);
 
   console.log(`\nSummary:`);
-  console.log(`Added ${publishablesAdded} missing Park Publishables`);
-  console.log(`Added ${dateablesAdded} missing Park Dateables`);
+  console.log(`Added ${publishablesAdded} missing Publishables`);
+  console.log(`Added ${dateablesAdded} missing Dateables`);
   console.log(`Added ${winterSeasonsAdded} new Winter Seasons`);
   console.log(`Added ${winterDateRangesAdded} new Winter Fee DateRanges`);
   console.log(
-    `Added ${winterDateRangeAnnualsAdded} new Winter Fee DateRangeAnnuals`,
+    `Added ${winterDateRangeAnnualsAdded} new Park-level Winter Fee DateRangeAnnuals`,
   );
 
   console.log(`Done creating winter seasons for ${operatingYear}\n`);

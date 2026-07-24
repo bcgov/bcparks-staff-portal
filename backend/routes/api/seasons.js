@@ -680,6 +680,64 @@ async function saveSeasonData({
   ]);
 }
 
+/**
+ * Detects whether the request changes any Operation date ranges.
+ * Checks both updated/created dateRanges and deleted dateRange IDs.
+ * @param {Object} params Parameters for operation-date change detection
+ * @param {Array} params.dateRanges DateRanges from the request payload
+ * @param {Array<number>} params.deletedDateRangeIds DateRange IDs marked for deletion
+ * @param {Transaction} params.transaction Database transaction
+ * @returns {Promise<boolean>} True when Operation dates are changed
+ */
+async function hasOperationDateChanges({
+  dateRanges,
+  deletedDateRangeIds,
+  transaction,
+}) {
+  const operationDateTypes = await DateType.findAll({
+    attributes: ["id"],
+    where: {
+      dateTypeNumber: DATE_TYPE.OPERATION,
+    },
+    transaction,
+  });
+
+  const operationDateTypeIds = new Set(
+    operationDateTypes.map((dateType) => dateType.id),
+  );
+
+  if (operationDateTypeIds.size === 0) {
+    return false;
+  }
+
+  const hasOperationInPayload = (dateRanges || []).some((dateRange) =>
+    operationDateTypeIds.has(dateRange.dateTypeId),
+  );
+
+  if (hasOperationInPayload) {
+    return true;
+  }
+
+  if (!deletedDateRangeIds?.length) {
+    return false;
+  }
+
+  const deletedOperationDate = await DateRange.findOne({
+    attributes: ["id"],
+    where: {
+      id: {
+        [Op.in]: deletedDateRangeIds,
+      },
+      dateTypeId: {
+        [Op.in]: Array.from(operationDateTypeIds),
+      },
+    },
+    transaction,
+  });
+
+  return Boolean(deletedOperationDate);
+}
+
 // Get all form data and DateRanges for a Feature Season
 router.get(
   "/feature/:seasonId",
@@ -1214,6 +1272,11 @@ router.post(
 
       // Determine if this is a winter season based on seasonType
       const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+      const operationDateChanged = await hasOperationDateChanges({
+        dateRanges,
+        deletedDateRangeIds,
+        transaction,
+      });
 
       // Process season data
       await saveSeasonData({
@@ -1231,9 +1294,9 @@ router.post(
         isWinterSeason,
       });
 
-      // Recalculate Feature-level Winter fee dates whenever an approver saves this
-      // season as approved (including edit-published updates by operating year).
-      if (newStatus === STATUS.APPROVED) {
+      // Recalculate feature-level Winter fee dates when park-level Winter fee dates are updated,
+      // or when feature-level Operation dates are changed.
+      if (isWinterSeason || operationDateChanged) {
         await propagateWinterFeeDates(season.id, transaction);
       }
 
