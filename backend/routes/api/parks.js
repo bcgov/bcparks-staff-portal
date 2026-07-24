@@ -15,6 +15,7 @@ import {
   GateDetail,
   User,
   UserAccessGroup,
+  SeasonChangeLog,
 } from "../../models/index.js";
 import asyncHandler from "express-async-handler";
 import checkUserRoles, {
@@ -172,6 +173,17 @@ function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
 }
 
 /**
+ * Returns the ID of the most recent season (highest operatingYear) per seasonType.
+ * @param {Array<Object>} seasons Array of season objects
+ * @returns {Array<number>} Array of current season IDs
+ */
+function getCurrentSeasonIds(seasons) {
+  return Object.values(_.groupBy(seasons, "seasonType"))
+    .map((group) => _.maxBy(group, "operatingYear")?.id)
+    .filter(Boolean);
+}
+
+/**
  * Extracts most recent season for each season type (REGULAR and WINTER).
  * @param {Array<Object>|null} seasons Array of season objects
  * @returns {Object} {regular: season|null, winter: season|null} - Most recent of each type
@@ -225,8 +237,8 @@ function getPlainSeason(season) {
 
 /**
  * Queries SeasonChangeLogs table to check for non-empty notes and returns a lookup map.
- * @param {Array<string>} seasonIds Array of season IDs to check
- * @returns {Promise<Map<string, boolean>>} Map of seasonId -> hasNotes (boolean)
+ * @param {Array<number>} seasonIds Array of season IDs to check
+ * @returns {Promise<Map<number, boolean>>} Map of seasonId -> hasNotes (boolean)
  */
 async function fetchAndMapSeasonNotes(seasonIds) {
   if (seasonIds.length === 0) {
@@ -262,15 +274,9 @@ async function fetchAndMapSeasonNotes(seasonIds) {
  * @param {Object} feature Feature instance with id, dateableId, seasons, etc.
  * @param {Array<Object>} seasons Parent seasons array to filter from
  * @param {boolean} [includeCurrentSeason=true] Whether to include computed currentSeason
- * @param {Map<string, boolean>} [seasonNotesMap=new Map()] seasonId -> hasNotes lookup
  * @returns {Object} Formatted feature with id, name, seasons, groupedDateRanges, etc.
  */
-function buildFeatureOutput(
-  feature,
-  seasons,
-  includeCurrentSeason = true,
-  seasonNotesMap = new Map(),
-) {
+function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
   // filter seasons if dateRange's dateableId matches feature's dateableId
   const filteredSeasons = (seasons || [])
     // first, filter seasons that have at least one matching dateRange
@@ -292,7 +298,6 @@ function buildFeatureOutput(
               feature.hasReservations ||
               dateRange.dateType?.name !== "Reservation",
           ),
-        hasNotes: !!seasonNotesMap.get(plainSeason.id),
       };
     });
 
@@ -329,18 +334,12 @@ function buildFeatureOutput(
   if (includeCurrentSeason) {
     const currentSeason = buildCurrentSeasonOutput(feature.seasons);
 
-    // Add hasNotes to current season objects and convert to plain objects
+    // Convert current season objects to plain objects (metadata will be added later)
     if (currentSeason.regular) {
-      currentSeason.regular = {
-        ...getPlainSeason(currentSeason.regular),
-        hasNotes: !!seasonNotesMap.get(currentSeason.regular.id),
-      };
+      currentSeason.regular = getPlainSeason(currentSeason.regular);
     }
     if (currentSeason.winter) {
-      currentSeason.winter = {
-        ...getPlainSeason(currentSeason.winter),
-        hasNotes: !!seasonNotesMap.get(currentSeason.winter.id),
-      };
+      currentSeason.winter = getPlainSeason(currentSeason.winter);
     }
     output.currentSeason = currentSeason;
   }
@@ -349,13 +348,67 @@ function buildFeatureOutput(
 }
 
 /**
+ * Adds hasNotes and lastUpdated metadata to current seasons.
+ * Returns the parks array with metadata added to season objects at all levels.
+ * @param {Array<Object>} parks Array of park objects with seasons, parkAreas, features
+ * @param {Set<number>} currentSeasonIds Set of current season IDs to update
+ * @param {Map<number, boolean>} seasonNotesMap seasonId -> hasNotes lookup
+ * @param {Map<number, Object>} lastUpdatedMap seasonId -> lastUpdated lookup
+ * @returns {Array<Object>} Parks array with metadata added to current seasons
+ */
+function addSeasonChangelogMetadata(
+  parks,
+  currentSeasonIds,
+  seasonNotesMap,
+  lastUpdatedMap,
+) {
+  // Adds hasNotes and lastUpdated metadata to a season object if it is a current season.
+  function addMetadataToSeason(season) {
+    if (currentSeasonIds.has(season.id)) {
+      season.hasNotes = !!seasonNotesMap.get(season.id);
+      season.lastUpdated = lastUpdatedMap.get(season.id) ?? null;
+    }
+  }
+
+  parks.forEach((park) => {
+    // Park-level seasons
+    park.seasons.forEach(addMetadataToSeason);
+
+    // ParkArea-level seasons
+    park.parkAreas.forEach((parkArea) => {
+      // ParkArea-level currentSeason
+      if (parkArea.currentSeason?.regular)
+        addMetadataToSeason(parkArea.currentSeason.regular);
+      if (parkArea.currentSeason?.winter)
+        addMetadataToSeason(parkArea.currentSeason.winter);
+    });
+
+    // Features (not part of a parkArea)
+    park.features.forEach((feature) => {
+      // Feature-level currentSeason
+      if (feature.currentSeason?.regular)
+        addMetadataToSeason(feature.currentSeason.regular);
+      if (feature.currentSeason?.winter)
+        addMetadataToSeason(feature.currentSeason.winter);
+    });
+  });
+
+  return parks;
+}
+
+/**
  * Formats park area output with features, seasons, and metadata.
- * Adds hasNotes from the provided map.
+ * Adds hasNotes and lastUpdated from the provided maps.
  * @param {Object} parkArea ParkArea instance with seasons, features, parkAreaType
- * @param {Map<string, boolean>} seasonNotesMap seasonId -> hasNotes lookup map
+ * @param {Map<number, boolean>} seasonNotesMap seasonId -> hasNotes lookup map
+ * @param {Map<number, Object>} [lastUpdatedMap=new Map()] seasonId -> lastUpdated lookup map
  * @returns {Object} Formatted park area with id, name, features, seasons, currentSeason, etc.
  */
-function buildParkAreaOutput(parkArea, seasonNotesMap) {
+function buildParkAreaOutput(
+  parkArea,
+  seasonNotesMap,
+  lastUpdatedMap = new Map(),
+) {
   // get date ranges for parkArea
   const parkAreaDateRanges = getAllDateRanges(parkArea.seasons)
     // Temporarily disabling display of Winter Fees
@@ -371,18 +424,12 @@ function buildParkAreaOutput(parkArea, seasonNotesMap) {
   // get a current season
   const currentSeason = buildCurrentSeasonOutput(parkArea.seasons);
 
-  // Add hasNotes to current season objects and convert to plain objects
+  // Convert current season objects to plain objects (metadata will be added later)
   if (currentSeason.regular) {
-    currentSeason.regular = {
-      ...getPlainSeason(currentSeason.regular),
-      hasNotes: !!seasonNotesMap.get(currentSeason.regular.id),
-    };
+    currentSeason.regular = getPlainSeason(currentSeason.regular);
   }
   if (currentSeason.winter) {
-    currentSeason.winter = {
-      ...getPlainSeason(currentSeason.winter),
-      hasNotes: !!seasonNotesMap.get(currentSeason.winter.id),
-    };
+    currentSeason.winter = getPlainSeason(currentSeason.winter);
   }
 
   return {
@@ -393,14 +440,19 @@ function buildParkAreaOutput(parkArea, seasonNotesMap) {
     inReservationSystem: parkArea.inReservationSystem,
     hasWinterFeeDates: parkArea.hasWinterFeeDates,
     features: parkArea.features.map((feature) =>
-      buildFeatureOutput(feature, parkArea.seasons, false, seasonNotesMap),
+      buildFeatureOutput(
+        feature,
+        parkArea.seasons,
+        false,
+        seasonNotesMap,
+        lastUpdatedMap,
+      ),
     ),
     featureTypes,
     parkAreaType: parkArea.parkAreaType,
-    seasons: parkArea.seasons.map((season) => ({
-      ...getPlainSeason(season),
-      hasNotes: !!seasonNotesMap.get(season.id),
-    })),
+    // Build parkArea seasons array without metadata. Metadata (hasNotes, lastUpdated)
+    // will be added in `addSeasonChangelogMetadata` for current seasons only.
+    seasons: parkArea.seasons.map((season) => getPlainSeason(season)),
     currentSeason,
     groupedDateRanges: groupDateRangesByTypeAndYear(parkAreaDateRanges),
   };
@@ -466,11 +518,6 @@ router.get(
     const parkIds = parks.map((park) => park.id);
     const publishableIds = parks.map((park) => park.publishableId);
 
-    // Collect season IDs from parks for later hasNotes fetch
-    const parkSeasonIds = parks.flatMap((park) =>
-      park.seasons.map((season) => season.id),
-    );
-
     // Query 2: Fetch ParkAreas with their Features and Seasons for the Parks in the main query
     const parkAreasQuery = ParkArea.findAll({
       attributes: [
@@ -523,6 +570,7 @@ router.get(
       },
     });
 
+    // Fetch ParkAreas and GateDetails in parallel
     const [parkAreas, allGateDetails] = await Promise.all([
       parkAreasQuery,
       gateDetailsQuery,
@@ -535,33 +583,65 @@ router.get(
       park.parkAreas = parkAreasByParkId[park.id] || [];
     });
 
-    // Collect all season IDs from parks, parkAreas, and their features
-    const allSeasonIds = new Set(parkSeasonIds);
+    // Compute current season IDs across all levels (parks, parkAreas, and their features)
+    // so lastUpdated can be populated for every current season in the response.
+    // parkAreas must be fetched before this can run.
+    // "Current season" is the highest operatingYear per seasonType.
+    const currentSeasonIds = new Set([
+      // Park-level current seasons
+      ...parks.flatMap((park) => getCurrentSeasonIds(park.seasons)),
 
-    parkAreas.forEach((parkArea) => {
-      parkArea.seasons?.forEach((season) => {
-        allSeasonIds.add(season.id);
-      });
-      parkArea.features?.forEach((feature) => {
-        feature.seasons?.forEach((season) => {
-          allSeasonIds.add(season.id);
-        });
-      });
-    });
+      // Park Feature current seasons
+      ...parks.flatMap((park) =>
+        park.features.flatMap((feature) =>
+          getCurrentSeasonIds(feature.seasons),
+        ),
+      ),
 
-    // Collect season IDs from park features
-    parks.forEach((park) => {
-      park.features?.forEach((feature) => {
-        feature.seasons?.forEach((season) => {
-          allSeasonIds.add(season.id);
-        });
-      });
-    });
+      // ParkArea current seasons
+      ...parkAreas.flatMap((parkArea) => getCurrentSeasonIds(parkArea.seasons)),
 
-    // Populate seasonNotesMap for all seasons (park, parkArea, and feature seasons) with single query
-    const seasonNotesMap = await fetchAndMapSeasonNotes(
-      Array.from(allSeasonIds),
+      // ParkArea Feature current seasons
+      ...parkAreas.flatMap((parkArea) =>
+        parkArea.features.flatMap((feature) =>
+          getCurrentSeasonIds(feature.seasons),
+        ),
+      ),
+    ]);
+
+    // Query 4: Fetch season notes for current seasons only
+    const seasonNotesQuery = fetchAndMapSeasonNotes(
+      Array.from(currentSeasonIds),
     );
+
+    // Query 5: Fetch last updated info for current seasons (if any)
+    const lastUpdatedQuery =
+      currentSeasonIds.size > 0
+        ? SeasonChangeLog.findAll({
+            attributes: ["id", "seasonId", "createdAt"],
+            where: {
+              seasonId: { [Op.in]: [...currentSeasonIds] },
+            },
+            include: [
+              {
+                model: User,
+                as: "user",
+                attributes: ["name"],
+                required: false,
+              },
+            ],
+            order: [
+              ["seasonId", "ASC"],
+              ["createdAt", "DESC"],
+            ],
+          })
+        : Promise.resolve([]);
+
+    // Fetch season notes and last updated info in parallel
+    const [seasonNotesMap, lastUpdatedResult] = await Promise.all([
+      seasonNotesQuery,
+      lastUpdatedQuery,
+    ]);
 
     // Build lookup map for GateDetails by publishableId
     const gateDetailMap = new Map();
@@ -570,7 +650,20 @@ router.get(
       gateDetailMap.set(gate.publishableId, gate.hasGate);
     });
 
-    const output = parks.map((park) => {
+    // Build lookup map for lastUpdated by seasonId
+    // Take only first result per seasonId (most recent due to sorting in query)
+    const lastUpdatedMap = new Map();
+
+    lastUpdatedResult.forEach((row) => {
+      if (!lastUpdatedMap.has(row.seasonId)) {
+        lastUpdatedMap.set(row.seasonId, {
+          createdAt: row.createdAt,
+          createdBy: row.user?.name ?? "Unknown",
+        });
+      }
+    });
+
+    let output = parks.map((park) => {
       const [regularSeasons, winterSeasons] = _.partition(
         park.seasons,
         (season) => season.seasonType === SEASON_TYPE.REGULAR,
@@ -607,19 +700,25 @@ router.get(
         winterGroupedDateRanges:
           groupDateRangesByTypeAndYear(parkWinterDateRanges),
         features: park.features.map((feature) =>
-          buildFeatureOutput(feature, feature.seasons, true, seasonNotesMap),
+          buildFeatureOutput(
+            feature,
+            feature.seasons,
+            true,
+            seasonNotesMap,
+            lastUpdatedMap,
+          ),
         ),
         parkAreas: park.parkAreas.map((parkArea) =>
-          buildParkAreaOutput(parkArea, seasonNotesMap),
+          buildParkAreaOutput(parkArea, seasonNotesMap, lastUpdatedMap),
         ),
-        // Park-level "currentSeason" is derived on the frontend from the seasons array
+        // Build park-level seasons array with all seasons. Metadata (hasNotes, lastUpdated)
+        // will be added in post-processing for current seasons only.
         seasons: park.seasons.map((season) => ({
           id: season.id,
           publishableId: season.publishableId,
           operatingYear: season.operatingYear,
           status: season.status,
           readyToPublish: season.readyToPublish,
-          hasNotes: !!seasonNotesMap.get(season.id),
           dateRanges: season.dateRanges.map((dateRange) =>
             buildDateRangeObject(
               dateRange,
@@ -631,6 +730,13 @@ router.get(
         })),
       };
     });
+
+    output = addSeasonChangelogMetadata(
+      output,
+      currentSeasonIds,
+      seasonNotesMap,
+      lastUpdatedMap,
+    );
 
     res.json(output);
   }),

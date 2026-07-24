@@ -8,7 +8,7 @@ import NotReadyFlag from "@/components/NotReadyFlag";
 import InternalNotesRow from "@/components/InternalNotesRow";
 import SubmittedWithErrorsWarning from "@/components/SubmittedWithErrorsWarning";
 import IconButton from "@/components/IconButton";
-import { formatDateRange } from "@/lib/utils";
+import { formatDateRange, formatDateShortWithYear } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
@@ -230,8 +230,13 @@ function StatusTableRow({
       >
         {name}
         {typeName && (
-          <div className="fw-normal">
-            <small>{typeName}</small>
+          <div className="fw-normal feature-type-name">{typeName}</div>
+        )}
+
+        {!!season.lastUpdated && (
+          <div className="fw-normal last-updated">
+            Last updated {formatDateShortWithYear(season.lastUpdated.createdAt)}{" "}
+            by {season.lastUpdated.createdBy}
           </div>
         )}
       </th>
