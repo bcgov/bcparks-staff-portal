@@ -416,12 +416,12 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
     return false;
   }
 
-  await DateRange.destroy({
-    where: {
-      seasonId: winterSeason.id,
-      dateableId: feature.dateableId,
-      dateTypeId: featureWinterTypeId,
-    },
+  await rebuildWinterDateRanges({
+    seasonId: winterSeason.id,
+    dateableId: feature.dateableId,
+    dateTypeId: featureWinterTypeId,
+    ranges: overlaps,
+    createPlaceholderWhenEmpty: true,
     transaction,
   });
 
@@ -436,29 +436,11 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
     });
   }
 
-  if (overlaps.length > 0) {
-    await DateRange.bulkCreate(
-      overlaps.map((range) => ({
-        seasonId: winterSeason.id,
-        dateableId: feature.dateableId,
-        dateTypeId: featureWinterTypeId,
-        startDate: range.startDate,
-        endDate: range.endDate,
-      })),
-      { transaction },
-    );
-  }
-
-  if (
-    parkWinterReadyToPublish !== null &&
-    typeof parkWinterReadyToPublish !== "undefined"
-  ) {
-    winterSeason.readyToPublish = parkWinterReadyToPublish;
-  }
-
-  winterSeason.status = APPROVED;
-  winterSeason.updatedAt = new Date();
-  await winterSeason.save({ transaction });
+  await syncWinterSeasonState({
+    winterSeason,
+    parkWinterReadyToPublish,
+    transaction,
+  });
 
   return true;
 }
