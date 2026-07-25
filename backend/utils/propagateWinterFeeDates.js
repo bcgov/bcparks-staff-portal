@@ -399,7 +399,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
   parkAreaDateableId,
   operatingYear,
   overlaps,
-  featureWinterTypeId,
+  winterTypeId,
   parkWinterReadyToPublish,
   transaction = null,
 ) {
@@ -419,7 +419,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
   await rebuildWinterDateRanges({
     seasonId: winterSeason.id,
     dateableId: feature.dateableId,
-    dateTypeId: featureWinterTypeId,
+    dateTypeId: winterTypeId,
     ranges: overlaps,
     createPlaceholderWhenEmpty: true,
     transaction,
@@ -430,7 +430,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
       where: {
         seasonId: winterSeason.id,
         dateableId: parkAreaDateableId,
-        dateTypeId: featureWinterTypeId,
+        dateTypeId: winterTypeId,
       },
       transaction,
     });
