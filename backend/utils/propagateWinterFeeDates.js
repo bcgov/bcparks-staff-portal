@@ -1,5 +1,5 @@
 // Recalculate Feature-level Winter fee dates from Park-level Winter fee dates.
-// This runs on Winter fee or Operation date saves so derived Winter ranges stay current.
+// This runs on Winter fee date or Operation date saves so derived Winter ranges stay current.
 
 import { Op } from "sequelize";
 
@@ -80,23 +80,21 @@ async function getDateTypeIds(transaction = null) {
     throw new Error("Winter fee DateType not found.");
   }
 
-  const featureOperationType = await DateType.findOne({
+  const operationType = await DateType.findOne({
     attributes: ["id"],
     where: {
       dateTypeNumber: DATE_TYPE.OPERATION,
-      featureLevel: true,
     },
     transaction,
   });
 
-  if (!featureOperationType) {
-    throw new Error("Feature-level Operation DateType not found.");
+  if (!operationType) {
+    throw new Error("Operation DateType not found.");
   }
 
   return {
-    parkWinterTypeId: winterType.id,
-    featureWinterTypeId: winterType.id,
-    featureOperationTypeId: featureOperationType.id,
+    winterTypeId: winterType.id,
+    operationTypeId: operationType.id,
   };
 }
 
@@ -104,14 +102,14 @@ async function getDateTypeIds(transaction = null) {
  * Gets the Park-level Winter fee season and its complete date ranges for an operating year.
  * @param {Park} park Park record that owns the winter season
  * @param {number} operatingYear Operating year to look up
- * @param {number} parkWinterTypeId Winter fee DateType ID
+ * @param {number} winterTypeId Winter fee DateType ID
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<{season: Season|null, ranges: Array}>} The Park winter season and its consolidated Winter fee ranges.
  */
 async function getParkWinterDateRanges(
   park,
   operatingYear,
-  parkWinterTypeId,
+  winterTypeId,
   transaction = null,
 ) {
   const parkWinterSeason = await Season.findOne({
@@ -135,7 +133,7 @@ async function getParkWinterDateRanges(
     where: {
       seasonId: parkWinterSeason.id,
       dateableId: park.dateableId,
-      dateTypeId: parkWinterTypeId,
+      dateTypeId: winterTypeId,
       startDate: {
         [Op.ne]: null,
       },
@@ -156,14 +154,14 @@ async function getParkWinterDateRanges(
  * Gets the consolidated Feature-level Operation date ranges for a given year.
  * @param {Feature} feature Feature record to inspect
  * @param {number} operatingYear Operating year to look up
- * @param {number} featureOperationTypeId Operation DateType ID
+ * @param {number} operationTypeId Operation DateType ID
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Array>} Consolidated Operation date ranges for the Feature.
  */
 async function getFeatureOperationRanges(
   feature,
   operatingYear,
-  featureOperationTypeId,
+  operationTypeId,
   transaction = null,
 ) {
   const operationRanges = await DateRange.findAll({
@@ -182,7 +180,7 @@ async function getFeatureOperationRanges(
     ],
     where: {
       dateableId: feature.dateableId,
-      dateTypeId: featureOperationTypeId,
+      dateTypeId: operationTypeId,
       startDate: {
         [Op.ne]: null,
       },
@@ -273,7 +271,7 @@ async function syncWinterSeasonState({
  * @param {Feature} feature Feature record to recalculate
  * @param {number} operatingYear Operating year to process
  * @param {Array} overlaps Consolidated Winter fee overlap ranges for this Feature
- * @param {number} featureWinterTypeId Winter fee DateType ID
+ * @param {number} winterTypeId Winter fee DateType ID
  * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} True when the Feature winter season was updated, false when it did not exist
@@ -282,7 +280,7 @@ async function syncFeatureWinterSeason(
   feature,
   operatingYear,
   overlaps,
-  featureWinterTypeId,
+  winterTypeId,
   parkWinterReadyToPublish,
   transaction = null,
 ) {
@@ -302,7 +300,7 @@ async function syncFeatureWinterSeason(
   await rebuildWinterDateRanges({
     seasonId: winterSeason.id,
     dateableId: feature.dateableId,
-    dateTypeId: featureWinterTypeId,
+    dateTypeId: winterTypeId,
     ranges: overlaps,
     createPlaceholderWhenEmpty: true,
     transaction,
@@ -325,7 +323,7 @@ async function syncFeatureWinterSeason(
  * @param {number} parkAreaDateableId Parent ParkArea Dateable ID
  * @param {number} operatingYear Operating year to process
  * @param {Array} overlaps Consolidated Winter fee overlap ranges for this Feature
- * @param {number} featureWinterTypeId Winter fee DateType ID
+ * @param {number} winterTypeId Winter fee DateType ID
  * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} True when the parent ParkArea winter season was updated, false when it did not exist
@@ -336,7 +334,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
   parkAreaDateableId,
   operatingYear,
   overlaps,
-  featureWinterTypeId,
+  winterTypeId,
   parkWinterReadyToPublish,
   transaction = null,
 ) {
@@ -356,7 +354,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
   await rebuildWinterDateRanges({
     seasonId: winterSeason.id,
     dateableId: feature.dateableId,
-    dateTypeId: featureWinterTypeId,
+    dateTypeId: winterTypeId,
     ranges: overlaps,
     createPlaceholderWhenEmpty: true,
     transaction,
@@ -367,7 +365,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
       where: {
         seasonId: winterSeason.id,
         dateableId: parkAreaDateableId,
-        dateTypeId: featureWinterTypeId,
+        dateTypeId: winterTypeId,
       },
       transaction,
     });
@@ -412,13 +410,12 @@ export default async function propagateWinterFeeDates(
 
   const operatingYear = sourceSeason.operatingYear;
 
-  const { parkWinterTypeId, featureWinterTypeId, featureOperationTypeId } =
-    await getDateTypeIds(transaction);
+  const { winterTypeId, operationTypeId } = await getDateTypeIds(transaction);
 
   const parkWinter = await getParkWinterDateRanges(
     park,
     operatingYear,
-    parkWinterTypeId,
+    winterTypeId,
     transaction,
   );
 
@@ -482,7 +479,7 @@ export default async function propagateWinterFeeDates(
     const operationRanges = await getFeatureOperationRanges(
       feature,
       operatingYear,
-      featureOperationTypeId,
+      operationTypeId,
       transaction,
     );
 
@@ -495,7 +492,7 @@ export default async function propagateWinterFeeDates(
           feature.parkArea.dateableId,
           operatingYear,
           overlaps,
-          featureWinterTypeId,
+          winterTypeId,
           parkWinter.season?.readyToPublish,
           transaction,
         )
@@ -503,7 +500,7 @@ export default async function propagateWinterFeeDates(
           feature,
           operatingYear,
           overlaps,
-          featureWinterTypeId,
+          winterTypeId,
           parkWinter.season?.readyToPublish,
           transaction,
         );
