@@ -114,7 +114,9 @@ function DateTableRow({
 
   // Helper to get the dateTypeNumber from the first item in a groupedDateRange
   function getDateTypeNumber(datesObj) {
-    const firstRange = Object.values(datesObj)[0]?.[0];
+    const firstRange = Object.values(datesObj || {}).find(
+      (rangesForYear) => Array.isArray(rangesForYear) && rangesForYear.length,
+    )?.[0];
 
     return firstRange?.dateType?.dateTypeNumber ?? Number.MAX_SAFE_INTEGER;
   }
@@ -346,14 +348,11 @@ function FeaturesByFeatureTypeWithAreas({
               />
 
               {/* features that belong to park area */}
-              {featuresInCurrentGroup.map((parkFeature) => (
-                <React.Fragment key={parkFeature.id}>
-                  {(() => {
-                    const displayGroupedDateRanges =
-                      getDisplayGroupedDateRanges(
-                        parkFeature.groupedDateRanges,
-                        isApprover,
-                      );
+              {featuresInCurrentGroup.map((parkFeature) => {
+                const displayGroupedDateRanges = getDisplayGroupedDateRanges(
+                  parkFeature.groupedDateRanges,
+                  isApprover,
+                );
 
                     return (
                       <>
@@ -376,12 +375,7 @@ function FeaturesByFeatureTypeWithAreas({
                         />
                       </>
                     );
-                  })()}
-                </React.Fragment>
-              ))}
-              {isApprover && regularSeason.hasNotes && (
-                <InternalNotesRow seasonId={regularSeason.id} />
-              )}
+                  })}
             </React.Fragment>
           )
         );
