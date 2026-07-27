@@ -1,0 +1,42 @@
+[
+  {
+    "date_type_id": 1,
+    "orcs": 96,
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 211,
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 263,
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 292,
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 530,
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  }
+]

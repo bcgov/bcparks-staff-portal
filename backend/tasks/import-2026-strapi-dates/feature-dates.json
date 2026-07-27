@@ -1,0 +1,794 @@
+[
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "104-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-14"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "1-12",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-09",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "1-12",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-09",
+    "end_date": "2026-09-29"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "117-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-31"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "117-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-11-01",
+    "end_date": "2027-03-31"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "122-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-16",
+    "end_date": "2026-03-26"
+  },
+  {
+    "date_type_id": 1,
+    "orcs_feature_number": "15-2",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "15-2",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "15-2",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "1-6",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-06-26",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "1-6",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-06-26",
+    "end_date": "2026-09-29"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "1-7",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-09",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "1-7",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-09",
+    "end_date": "2026-09-29"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "182-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-16",
+    "end_date": "2026-04-10"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "190-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-14",
+    "end_date": "2026-04-29"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "193-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-26",
+    "end_date": "2026-03-13"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "193-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-26",
+    "end_date": "2026-03-13"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "20-1",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-09-27"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "20-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-09-27"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "210-1",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "2-14",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-15",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "2-14",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-15",
+    "end_date": "2026-09-29"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "255-3",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-06-01",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "262-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-26",
+    "end_date": "2026-03-12"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "267-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-14"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "267-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-13",
+    "end_date": "2026-10-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "267-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-13",
+    "end_date": "2026-10-30"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "273-8",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-15",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "273-8",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-05-15",
+    "end_date": "2026-09-29"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "28-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-19"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "28-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-19"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "28-4",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-19"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "292-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-06-10",
+    "end_date": "2026-10-13"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "292-1",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-06-10",
+    "end_date": "2026-10-12"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "292-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-06-10",
+    "end_date": "2026-10-13"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "292-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-06-10",
+    "end_date": "2026-10-12"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "31-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-16",
+    "end_date": "2026-03-31"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "314-4",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-12",
+    "end_date": "2026-02-28"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "314-6",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-12",
+    "end_date": "2026-02-28"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "33-11",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-18",
+    "end_date": "2026-05-15"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "33-11",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-10-18",
+    "end_date": "2026-05-14"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "33-13",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-10-14"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "33-13",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-10-13"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "33-14",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "33-14",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "33-3",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-12-01",
+    "end_date": "2026-03-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "33-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-12-01",
+    "end_date": "2027-03-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "33-3",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-12-01",
+    "end_date": "2026-03-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "33-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-12-01",
+    "end_date": "2027-03-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "408-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-08",
+    "end_date": "2026-10-11"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "409-1",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-08-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "409-1",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-11-01",
+    "end_date": "2027-08-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "41-11",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-03-06",
+    "end_date": "2027-01-03"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "41-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-16",
+    "end_date": "2026-03-26"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "41-4",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-27",
+    "end_date": "2026-10-18"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "41-4",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-27",
+    "end_date": "2026-10-17"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "41-5",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-27",
+    "end_date": "2026-10-18"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "41-5",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-27",
+    "end_date": "2026-10-17"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "41-8",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-03-06",
+    "end_date": "2027-01-03"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "41-8",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-03-06",
+    "end_date": "2027-01-02"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "45-4",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2025-11-30"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "45-4",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-01",
+    "end_date": "2026-03-19"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "45-5",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-01",
+    "end_date": "2026-03-19"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "45-7",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-03-01",
+    "end_date": "2026-03-19"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "48-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-19"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-1",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-10-01",
+    "end_date": "2026-06-20"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-1",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-10-01",
+    "end_date": "2027-06-20"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "52-6",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-06-27"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "52-6",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-09-07",
+    "end_date": "2026-09-28"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "5-3",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-06-26",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "5-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-06-26",
+    "end_date": "2026-09-30"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-5",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-10-01",
+    "end_date": "2026-06-20"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-5",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-10-01",
+    "end_date": "2027-06-20"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-7",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-10-01",
+    "end_date": "2026-06-20"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-7",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-10-01",
+    "end_date": "2027-06-20"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "6161-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-04-01",
+    "end_date": "2026-10-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "6161-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-04-01",
+    "end_date": "2026-10-30"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "6161-2",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2025-11-01",
+    "end_date": "2026-03-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "6161-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-04-01",
+    "end_date": "2026-10-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "6161-2",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-05-08",
+    "end_date": "2026-09-06"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "6161-3",
+    "is_date_annual": false,
+    "operating_year": 2026,
+    "start_date": "2026-04-01",
+    "end_date": "2026-10-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "6161-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-04-01",
+    "end_date": "2026-10-30"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "6878-4",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-04-10",
+    "end_date": "2026-10-12"
+  },
+  {
+    "date_type_id": 1,
+    "orcs_feature_number": "70-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-09-28"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "70-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-09-28"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "70-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-01",
+    "end_date": "2026-09-27"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "7-12",
+    "is_date_annual": null,
+    "operating_year": 2027,
+    "start_date": "2026-11-01",
+    "end_date": "2027-08-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "7-12",
+    "is_date_annual": null,
+    "operating_year": 2027,
+    "start_date": "2026-11-01",
+    "end_date": "2027-08-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "75-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-05-08",
+    "end_date": "2026-09-29"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "8-10",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "8-11",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "8-11",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-05-15",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "8-11",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-05-14"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "8-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-16",
+    "end_date": "2026-03-26"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "8-4",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-05-15",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "8-4",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-05-14"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "92-3",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-14",
+    "end_date": "2026-03-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "9451-1",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2026-06-01",
+    "end_date": "2026-10-31"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "96-2",
+    "is_date_annual": null,
+    "operating_year": 2026,
+    "start_date": "2025-10-26",
+    "end_date": "2026-03-12"
+  }
+]
