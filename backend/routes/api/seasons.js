@@ -63,16 +63,23 @@ function checkSeasonExists(season) {
  * @param {number} seasonId The ID of the season to update
  * @param {string} status The new status to set for the season
  * @param {boolean} savedWithErrors Whether the form was submitted with validation errors
- * @param {boolean} [readyToPublish] Optionally provide a new readyToPublish value to set
- * @param {Transaction} [transaction] Optional Sequelize transaction object for atomic operations
+ * @param {Object} [options={}] Optional season state updates
+ * @param {boolean} [options.readyToPublish=null] Optionally provide a new readyToPublish value to set
+ * @param {boolean} [options.informationSvcApproved=null] Optional Information Services approval value to set
+ * @param {boolean} [options.reservationSvcApproved=null] Optional Reservation Services approval value to set
+ * @param {Transaction} [options.transaction=null] Optional Sequelize transaction object for atomic operations
  * @returns {Promise<Season>} The updated season model
  */
 async function updateStatus(
   seasonId,
   status,
   savedWithErrors,
-  readyToPublish = null,
-  transaction = null,
+  {
+    readyToPublish = null,
+    informationSvcApproved = null,
+    reservationSvcApproved = null,
+    transaction = null,
+  } = {},
 ) {
   const season = await Season.findByPk(seasonId, { transaction });
 
@@ -87,6 +94,14 @@ async function updateStatus(
   // Update the "Ready to publish" flag if provided
   if (readyToPublish !== null) {
     season.readyToPublish = readyToPublish;
+  }
+
+  if (informationSvcApproved !== null) {
+    season.informationSvcApproved = informationSvcApproved;
+  }
+
+  if (reservationSvcApproved !== null) {
+    season.reservationSvcApproved = reservationSvcApproved;
   }
 
   // Update the updatedAt timestamp
@@ -260,11 +275,183 @@ function featureTypeQueryPart() {
   };
 }
 
+/**
+ * Returns true if the season has any dates in the reservation system.
+ * For ParkArea forms, any true value at area/feature level is treated as true.
+ * @param {Season} season Season object with park/parkArea/feature associations
+ * @returns {boolean} True when any reservation-system coverage exists
+ */
+function isSeasonInReservationSystem(season) {
+  if (season.park) {
+    return Boolean(season.park.inReservationSystem);
+  }
+
+  if (season.feature) {
+    return Boolean(season.feature.inReservationSystem);
+  }
+
+  if (season.parkArea) {
+    const parkAreaFeatures = season.parkArea.features || [];
+    const hasFeatureInReservationSystem = parkAreaFeatures.some(
+      (feature) => feature.inReservationSystem === true,
+    );
+
+    return (
+      Boolean(season.parkArea.inReservationSystem) ||
+      hasFeatureInReservationSystem
+    );
+  }
+
+  return false;
+}
+
+/**
+ * Returns whether the Season form requires Information Services review for gate changes.
+ * Gate review is required when the gate detail hasGate value is true,
+ * or when hasGate is changed from true to false.
+ * @param {Object|null} oldGateDetail Existing gate detail before the save
+ * @param {Object|null} newGateDetail Incoming gate detail from the request
+ * @returns {boolean} True when the gate state requires Information Services review
+ */
+function requiresGateApproval(oldGateDetail, newGateDetail) {
+  const oldHasGate = oldGateDetail?.hasGate === true;
+  const newHasGate = newGateDetail?.hasGate === true;
+
+  // Info services team must review forms with gate info, or cases where a gate was removed.
+  return newHasGate || (oldHasGate && newGateDetail?.hasGate === false);
+}
+
+/**
+ * Determines which team approvals are required to change the season status to APPROVED so it can be published.
+ * The decision is based on reservation-system coverage and gate data.
+ * Logic is additive: a condition requiring an IS approval and
+ * a different condition requiring RS approval would mean both IS and RS approval is required.
+ * @param {Object} params Inputs used to determine approval requirements
+ * @param {Season} params.season Season object with park/parkArea/feature association and reservation-system flags
+ * @param {Object|null} params.oldGateDetail Existing gate detail before the save
+ * @param {Object|null} params.gateDetail Incoming gate detail from the request
+ * @returns {{requiresInformationSvcApproval: boolean, requiresReservationSvcApproval: boolean}} Required team approvals for this save
+ */
+function getRequiredApprovalsForSeason({ season, oldGateDetail, gateDetail }) {
+  let requiresInformationSvcApproval = false;
+  let requiresReservationSvcApproval = false;
+
+  // InReservationSystem requires RS team approval,
+  // or IS team approval is required if InReservationSystem is false.
+  if (isSeasonInReservationSystem(season)) {
+    requiresReservationSvcApproval = true;
+  } else {
+    requiresInformationSvcApproval = true;
+  }
+
+  // Park-level Winter fee seasons require RS approval.
+  if (season.park && season.seasonType === SEASON_TYPE.WINTER) {
+    requiresReservationSvcApproval = true;
+  }
+
+  // Check features within ParkAreas
+  if (season.parkArea) {
+    // ParkAreas are covered by isSeasonInReservationSystem,
+    // but we need to check if any features in this area are explicitly
+    // not in the reservation system, and require approval from the IS team if so.
+    const parkAreaFeatures = season.parkArea.features || [];
+    const hasFeatureNotInReservationSystem = parkAreaFeatures.some(
+      (feature) => feature.inReservationSystem === false,
+    );
+
+    if (hasFeatureNotInReservationSystem) {
+      requiresInformationSvcApproval = true;
+    }
+  }
+
+  // Info Services team approval is required if hasGate is true,
+  // or if hasGate was changed to false.
+  const hasGateApprovalRequirement = requiresGateApproval(
+    oldGateDetail,
+    gateDetail,
+  );
+
+  if (hasGateApprovalRequirement) {
+    requiresInformationSvcApproval = true;
+  }
+
+  return {
+    requiresInformationSvcApproval,
+    requiresReservationSvcApproval,
+  };
+}
+
+/**
+ * Resolves team approval flags and the status that should be saved for this request.
+ * Team-specific approvers can only satisfy their own side of the approval state.
+ * Overall Season status can only be set to APPROVED with all required team approvals.
+ * @param {Object} params Inputs used to resolve approval state
+ * @param {Season} params.season Existing season from the DB
+ * @param {string} params.requestedNewStatus Status requested by the user
+ * @param {Object|null} params.oldGateDetail Existing gate detail from the DB
+ * @param {Object|null} params.gateDetail Incoming gate detail from the user request
+ * @param {boolean} params.isInformationSvcApprover Whether the current user can approve for Information Services
+ * @param {boolean} params.isReservationSvcApprover Whether the current user can approve for Reservation Services
+ * @returns {{resolvedStatus: string, informationSvcApproved: boolean, reservationSvcApproved: boolean, requiresInformationSvcApproval: boolean, requiresReservationSvcApproval: boolean}} Resolved season status and approval state for the save
+ */
+function resolveSeasonApprovalState({
+  season,
+  requestedNewStatus,
+  oldGateDetail,
+  gateDetail,
+  isInformationSvcApprover,
+  isReservationSvcApprover,
+}) {
+  const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
+    getRequiredApprovalsForSeason({
+      season,
+      oldGateDetail,
+      gateDetail,
+    });
+
+  // Start with values from the DB (prior team may approvals exist)
+  let informationSvcApproved = season.informationSvcApproved;
+  let reservationSvcApproved = season.reservationSvcApproved;
+  let resolvedStatus = requestedNewStatus;
+
+  // APPROVED status can only be set if all required team approvals are satisfied.
+  // Any other status can be set without team approvals, and will not change the approval flags.
+  if (requestedNewStatus === STATUS.APPROVED) {
+    // A team-specific approver can only satisfy their own side of the approval state.
+    if (requiresInformationSvcApproval && isInformationSvcApprover) {
+      // Info Services team approver is approving
+      informationSvcApproved = true;
+    }
+
+    if (requiresReservationSvcApproval && isReservationSvcApprover) {
+      // Reservation Services team approver is approving
+      reservationSvcApproved = true;
+    }
+
+    const hasAllRequiredApprovals =
+      (informationSvcApproved || !requiresInformationSvcApproval) &&
+      (reservationSvcApproved || !requiresReservationSvcApproval);
+
+    // Do not advance the workflow until every required team approval is satisfied.
+    resolvedStatus = hasAllRequiredApprovals ? STATUS.APPROVED : season.status;
+  }
+
+  return {
+    resolvedStatus,
+    informationSvcApproved,
+    reservationSvcApproved,
+    requiresInformationSvcApproval,
+    requiresReservationSvcApproval,
+  };
+}
+
 // Common attributes for all Season queries
 const SEASON_ATTRIBUTES = [
   "id",
   "operatingYear",
   "status",
+  "informationSvcApproved",
+  "reservationSvcApproved",
   "readyToPublish",
   "editable",
   "publishableId",
@@ -494,8 +681,11 @@ async function getWinterSeason(park, operatingYear) {
  * @param {Array} params.dateRanges Array of date ranges to save
  * @param {Array} params.dateRangeAnnuals Array of date range annuals to save
  * @param {Object|null} params.gateDetail Gate detail object (null for winter seasons)
+ * @param {Object|null} params.oldGateDetail Existing gate detail object before save
  * @param {Array} params.deletedDateRangeIds Array of date range IDs to delete
  * @param {string} params.newStatus New status for the season
+ * @param {boolean} params.informationSvcApproved Resolved Information Services team approval value
+ * @param {boolean} params.reservationSvcApproved Resolved Reservation Services team approval value
  * @param {boolean|null} params.newReadyToPublish New readyToPublish value
  * @param {string} params.notes Notes for the change log
  * @param {boolean} params.savedWithErrors Whether the form was submitted with validation errors
@@ -509,8 +699,11 @@ async function saveSeasonData({
   dateRanges,
   dateRangeAnnuals,
   gateDetail,
+  oldGateDetail,
   deletedDateRangeIds,
   newStatus,
+  informationSvcApproved,
+  reservationSvcApproved,
   newReadyToPublish,
   notes,
   savedWithErrors,
@@ -571,11 +764,9 @@ async function saveSeasonData({
 
   // Handle gateDetail for regular seasons only
   let saveGateDetail = Promise.resolve();
-  let oldGateDetail = null;
   let gateDetailToSave = null;
 
   if (!isWinterSeason && gateDetail) {
-    oldGateDetail = await getGateDetail(season.publishableId);
     gateDetailToSave = {
       ...gateDetail,
       publishableId: season.publishableId,
@@ -603,13 +794,12 @@ async function saveSeasonData({
   );
 
   // Update the season object with the new status and readyToPublish values
-  const saveSeason = updateStatus(
-    season.id,
-    newStatus,
-    savedWithErrors,
-    newReadyToPublish,
+  const saveSeason = updateStatus(season.id, newStatus, savedWithErrors, {
+    readyToPublish: newReadyToPublish,
+    informationSvcApproved,
+    reservationSvcApproved,
     transaction,
-  );
+  });
 
   // Create date change logs for updated dateRanges
   const existingDateIds = filteredDateRanges
@@ -1118,7 +1308,7 @@ router.get(
   }),
 );
 
-// Save draft
+// Save changes from the season form
 router.post(
   "/:seasonId/save/",
   checkPermissions([USER_ROLES.SUBMITTER, USER_ROLES.CONTRIBUTOR]),
@@ -1150,6 +1340,14 @@ router.post(
     const userRoles = getRolesFromAuth(req.auth);
     const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
     const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.SUBMITTER]);
+
+    // Check IS/RS team-specific approver roles
+    const isInformationSvcApprover = checkUserRoles(userRoles, [
+      USER_ROLES.INFORMATION_SVC_APPROVER,
+    ]);
+    const isReservationSvcApprover = checkUserRoles(userRoles, [
+      USER_ROLES.RESERVATION_SVC_APPROVER,
+    ]);
 
     // Contributors can only save drafts. If the payload is trying to set status
     // to anything other than "requested", check if the user has permission.
@@ -1189,14 +1387,64 @@ router.post(
 
     try {
       // Check if the season exists
-      const season = await Season.findByPk(seasonId, { transaction });
+      const season = await Season.findByPk(seasonId, {
+        transaction,
+        include: [
+          {
+            model: Park,
+            as: "park",
+            attributes: ["id", "inReservationSystem"],
+            required: false,
+          },
+          {
+            model: ParkArea,
+            as: "parkArea",
+            attributes: ["id", "inReservationSystem"],
+            required: false,
+            include: [
+              {
+                model: Feature,
+                as: "features",
+                attributes: ["id", "inReservationSystem"],
+                required: false,
+              },
+            ],
+          },
+          {
+            model: Feature,
+            as: "feature",
+            attributes: ["id", "inReservationSystem"],
+            required: false,
+          },
+        ],
+      });
 
       // Throw a 404 if the season doesn't exist
       checkSeasonExists(season);
       // Throw a 403 if the user doesn't have access to the park associated with the season
       await checkSeasonUserAccess(req, seasonId);
 
-      const newStatus = status ?? season.status;
+      const requestedNewStatus = status ?? season.status;
+      const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+      // Load the old gate state once and reuse it for both approval decisions
+      // and the season change log written later in this same transaction.
+      const oldGateDetail = isWinterSeason
+        ? null
+        : await getGateDetail(season.publishableId);
+
+      const {
+        resolvedStatus: newStatus,
+        informationSvcApproved,
+        reservationSvcApproved,
+      } = resolveSeasonApprovalState({
+        season,
+        requestedNewStatus,
+        oldGateDetail,
+        gateDetail: isWinterSeason ? null : gateDetail,
+        isInformationSvcApprover,
+        isReservationSvcApprover,
+      });
+
       const shouldMarkSavedWithErrors =
         newStatus !== STATUS.REQUESTED && savedWithErrors;
 
@@ -1222,14 +1470,17 @@ router.post(
         transaction,
       });
 
-      // Process season data
+      // Persist the season state, dates, and related audit records to the DB
       await saveSeasonData({
         season,
         dateRanges,
         dateRangeAnnuals,
         gateDetail: isWinterSeason ? null : gateDetail,
+        oldGateDetail,
         deletedDateRangeIds,
         newStatus,
+        informationSvcApproved,
+        reservationSvcApproved,
         newReadyToPublish,
         notes,
         savedWithErrors: shouldMarkSavedWithErrors,
