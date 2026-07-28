@@ -42,10 +42,11 @@ export function isSeasonInReservationSystem(season) {
 export function requiresGateApproval(oldGateDetail, newGateDetail) {
   const oldHasGate = oldGateDetail?.hasGate === true;
   const newHasGate = newGateDetail?.hasGate === true;
+  const removedGate = oldHasGate && !newHasGate;
 
   // Information Services team must review seasons with gate info,
   // or cases where a gate was removed.
-  return newHasGate || (oldHasGate && newGateDetail?.hasGate === false);
+  return newHasGate || removedGate;
 }
 
 /**
