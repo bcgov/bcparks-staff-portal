@@ -61,17 +61,16 @@ function Buttons({
   approver,
   submitter,
   loading = false,
-  disableButtons = false,
+  disableDraftButton = false,
+  disablePrimaryActionButton = false,
 }) {
-  const isDisabled = loading || disableButtons;
-
   return (
     <div>
       <button
         type="button"
         onClick={onSave}
         className="btn btn-outline-primary form-btn fw-bold me-3"
-        disabled={isDisabled}
+        disabled={loading || disableDraftButton}
       >
         Save draft
       </button>
@@ -82,7 +81,7 @@ function Buttons({
           type="button"
           onClick={onApprove}
           className="btn btn-primary form-btn fw-bold me-2"
-          disabled={isDisabled}
+          disabled={loading || disablePrimaryActionButton}
         >
           Mark approved
         </button>
@@ -94,7 +93,7 @@ function Buttons({
           type="button"
           onClick={onSubmit}
           className="btn btn-primary form-btn fw-bold me-2"
-          disabled={isDisabled}
+          disabled={loading || disablePrimaryActionButton}
         >
           Submit to HQ
         </button>
@@ -113,7 +112,8 @@ Buttons.propTypes = {
   approver: PropTypes.bool.isRequired,
   submitter: PropTypes.bool.isRequired,
   loading: PropTypes.bool,
-  disableButtons: PropTypes.bool,
+  disableDraftButton: PropTypes.bool,
+  disablePrimaryActionButton: PropTypes.bool,
 };
 
 function SeasonForm({
@@ -461,8 +461,9 @@ function SeasonForm({
     return changesPayload.notes.length > 0;
   }, [season, changesPayload, apiData]);
 
-  // In the Edit published page, buttons should only be enabled after edits are made
-  const disableButtons = showOperatingYearSelect && !dataChanged;
+  // When editing published dates: primary action only enabled after changes; draft button always disabled
+  const disablePrimaryActionButton = showOperatingYearSelect && !dataChanged;
+  const disableDraftButton = showOperatingYearSelect;
 
   // Update the parent component when dataChanged is updated
   useEffect(() => {
@@ -820,7 +821,8 @@ If dates have already been published, they will not be updated until new dates a
             onSave={() => promptAndSave(false)}
             onSubmit={onSubmit}
             loading={sendingSave}
-            disableButtons={disableButtons}
+            disableDraftButton={disableDraftButton}
+            disablePrimaryActionButton={disablePrimaryActionButton}
           />
         </Offcanvas.Body>
       </ValidationContext.Provider>
