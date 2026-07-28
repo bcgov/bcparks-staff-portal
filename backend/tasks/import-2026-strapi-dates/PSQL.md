@@ -17,7 +17,7 @@ FROM (
         pdt.date_type_id,
         pf.orcs_feature_number,
         pd.is_date_annual,
-        pd.operating_year,
+        EXTRACT(YEAR FROM pd.start_date)::int AS operating_year,
         pd.start_date,
         pd.end_date
     FROM park_dates pd
@@ -29,7 +29,7 @@ FROM (
         ON pdpfl.park_date_id = pd.id
     INNER JOIN park_features pf
         ON pf.id = pdpfl.park_feature_id
-    WHERE pd.operating_year >= 2026
+    WHERE pd.start_date >= '2026-01-01'
       AND (pd.created_by_id IS NOT NULL OR pd.updated_by_id IS NOT NULL)
       AND pd.is_active = TRUE
       AND pd.published_at IS NOT NULL
@@ -45,7 +45,7 @@ FROM (
         pdt.date_type_id,
         pa.orcs,
         pd.is_date_annual,
-        pd.operating_year,
+        EXTRACT(YEAR FROM pd.start_date)::int AS operating_year,
         pd.start_date,
         pd.end_date
     FROM park_dates pd
@@ -57,7 +57,7 @@ FROM (
         ON pdpal.park_date_id = pd.id
     INNER JOIN protected_areas pa
         ON pa.id = pdpal.protected_area_id
-    WHERE pd.operating_year >= 2026
+    WHERE pd.start_date >= '2026-01-01'
       AND (pd.created_by_id IS NOT NULL OR pd.updated_by_id IS NOT NULL)
       AND pd.is_active = TRUE
       AND pd.published_at IS NOT NULL
