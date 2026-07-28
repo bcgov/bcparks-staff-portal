@@ -8,10 +8,11 @@ import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import PaginationControls from "@/components/PaginationControls";
+import * as SEASON_TYPE from "@/constants/seasonType";
 import "./PublishPage.scss";
 
 function formatSeasonType(seasonType, publishableType) {
-  if (seasonType !== "winter") {
+  if (seasonType !== SEASON_TYPE.WINTER) {
     return "";
   }
 

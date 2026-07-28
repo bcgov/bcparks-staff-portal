@@ -229,11 +229,11 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
 
   // Temporarily disabling display of excluded types
   // @TODO: Remove this filter when FCFS logic is revised
-  const excludedDateTypes = new Set(["First come, first served"]);
+  const excludedDateTypes = new Set([DATE_TYPE.FIRST_COME_FIRST_SERVED]);
 
   // get date ranges for park.feature
   const featureDateRanges = getAllDateRanges(filteredSeasons).filter(
-    (dateRange) => !excludedDateTypes.has(dateRange.dateType?.name),
+    (dateRange) => !excludedDateTypes.has(dateRange.dateType?.dateTypeNumber),
   );
 
   const output = {

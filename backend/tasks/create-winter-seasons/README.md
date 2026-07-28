@@ -6,7 +6,7 @@ Creation rules:
 
 - Park-level Winter seasons are created from `park.hasWinterFeeDates = true`.
 - ParkArea/Feature-level Winter seasons are created from `feature.hasWinterFeeDates = true`.
-- `parkArea.hasWinterFeeDates` is ignored for season creation.
+- `parkArea.hasWinterFeeDates` is ignored for season creation, because ParkArea publishables do not own the feature-level Winter fee DateRanges used by this flow.
 
 ## What does the script do?
 
@@ -97,6 +97,6 @@ Done creating winter seasons for 2027
 - Winter seasons are created with `readyToPublish = true`
 - Park-level creation is driven by `park.hasWinterFeeDates`
 - ParkArea/Feature-level creation is driven by `feature.hasWinterFeeDates`
-- `parkArea.hasWinterFeeDates` is not used by this script
+- `parkArea.hasWinterFeeDates` is not used by this script, because this flow creates Winter seasons from feature-level ownership (or park-level ownership), not a ParkArea-level Winter fee DateRange source.
 - If you need to add winter fee capability to additional parks, set `hasWinterFeeDates = true` on those parks first
 - The operating year parameter is required and must be a valid number (e.g., 2027)
