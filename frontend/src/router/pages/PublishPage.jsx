@@ -15,7 +15,9 @@ function formatSeasonType(seasonType, publishableType) {
     return "";
   }
 
-  return publishableType === "park" ? "Winter fee" : "Winter fee (calculated)";
+  return publishableType === "feature" || publishableType === "parkArea"
+    ? "Winter fee (calculated)"
+    : "";
 }
 
 function PublishPage() {
