@@ -24,7 +24,7 @@ export default function ParkSearch({ options, value, onChange }) {
         onChange={onChange}
         isClearable
         isSearchable
-        placeholder="Search or select by park name"
+        placeholder="Search or select park name"
         classNamePrefix="react-select"
         components={{
           DropdownIndicator: SearchIndicator,
