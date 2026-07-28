@@ -461,7 +461,7 @@ function SeasonForm({
     return changesPayload.notes.length > 0;
   }, [season, changesPayload, apiData]);
 
-  // In the Edit published page, buttons should only be enabled after edits are made
+  // When editing published dates: primary action only enabled after changes; draft button always disabled
   const disablePrimaryActionButton = showOperatingYearSelect && !dataChanged;
   const disableDraftButton = showOperatingYearSelect;
 
@@ -822,8 +822,7 @@ If dates have already been published, they will not be updated until new dates a
             onSubmit={onSubmit}
             loading={sendingSave}
             disableDraftButton={disableDraftButton}
-            disableApproveButton={disablePrimaryActionButton}
-            disableSubmitButton={disablePrimaryActionButton}
+            disablePrimaryActionButton={disablePrimaryActionButton}
           />
         </Offcanvas.Body>
       </ValidationContext.Provider>
