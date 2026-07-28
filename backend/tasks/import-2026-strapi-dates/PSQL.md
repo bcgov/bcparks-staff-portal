@@ -16,6 +16,7 @@ FROM (
     SELECT distinct
         pdt.date_type_id,
         pf.orcs_feature_number,
+        pd.name,
         pd.is_date_annual,
         EXTRACT(YEAR FROM pd.start_date)::int AS operating_year,
         pd.start_date,
@@ -44,6 +45,7 @@ FROM (
     SELECT distinct
         pdt.date_type_id,
         pa.orcs,
+        pd.name,
         pd.is_date_annual,
         EXTRACT(YEAR FROM pd.start_date)::int AS operating_year,
         pd.start_date,
