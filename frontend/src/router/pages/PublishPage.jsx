@@ -10,6 +10,16 @@ import NotReadyFlag from "@/components/NotReadyFlag";
 import PaginationControls from "@/components/PaginationControls";
 import "./PublishPage.scss";
 
+function formatSeasonType(seasonType, publishableType) {
+  if (seasonType !== "winter") {
+    return "";
+  }
+
+  return publishableType === "feature" || publishableType === "parkArea"
+    ? "Winter fee (calculated)"
+    : "";
+}
+
 function PublishPage() {
   // table pagination
   const [page, setPage] = useState(1);
@@ -169,7 +179,11 @@ function PublishPage() {
                     </ul>
                   </td>
                   <td>
-                    {season.displayOperatingYear}
+                    {season.displayOperatingYear}{" "}
+                    {formatSeasonType(
+                      season.seasonType,
+                      season.publishableType,
+                    )}
                     <NotReadyFlag show={!season.readyToPublish} />
                   </td>
                 </tr>
