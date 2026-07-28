@@ -5,7 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import SubmitPageTable from "@/components/SubmitPageTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/components/MultiSelect";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FilterStatus from "@/components/FilterStatus";
@@ -166,8 +166,9 @@ function SubmitPage() {
     hasDateNote: false,
   });
   const [formData, setFormData] = useState({});
-  const [showFormPanel, setShowFormPanel] = useState(false);
+  const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const previousIsFormPanelOpenRef = useRef(false);
 
   // Initialize form from URL parameters if provided
   useEffect(() => {
@@ -182,7 +183,7 @@ function SubmitPage() {
           seasonId: parseInt(params.seasonId, 10),
           level,
         });
-        setShowFormPanel(true);
+        setIsFormPanelOpen(true);
       }
     }
   }, [params.seasonId]);
@@ -200,7 +201,7 @@ function SubmitPage() {
     };
 
     setFormData(newFormData);
-    setShowFormPanel(true);
+    setIsFormPanelOpen(true);
 
     // Update URL to match the opened form
     navigate(`/edit/${formDataObj.level}/${season.id}`);
@@ -391,10 +392,14 @@ function SubmitPage() {
 
   // Clear URL when form panel closes
   useEffect(() => {
-    if (!showFormPanel && params.seasonId) {
+    const wasFormPanelOpen = previousIsFormPanelOpenRef.current;
+
+    if (wasFormPanelOpen && !isFormPanelOpen && params.seasonId) {
       navigate("/", { replace: true });
     }
-  }, [showFormPanel, params.seasonId, navigate]);
+
+    previousIsFormPanelOpenRef.current = isFormPanelOpen;
+  }, [isFormPanelOpen, params.seasonId, navigate]);
 
   // Slice the list of parks for pagination
   const pageData = useMemo(() => {
@@ -533,8 +538,8 @@ function SubmitPage() {
         <ParksTableWrapper />
 
         <FormPanel
-          show={showFormPanel}
-          setShow={setShowFormPanel}
+          show={isFormPanelOpen}
+          setShow={setIsFormPanelOpen}
           formData={formData}
           onDataUpdate={refreshTable}
         />
