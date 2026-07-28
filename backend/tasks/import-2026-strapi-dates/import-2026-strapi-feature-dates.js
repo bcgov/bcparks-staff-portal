@@ -112,21 +112,28 @@ try {
       );
     }
 
-    let publishableId = parkArea?.publishableId
+    let publishableId = parkArea
       ? parkArea.publishableId
       : feature.publishableId;
 
-    // If publishableId is still null, create one for the feature
+    // If publishableId is still null, create one for the parkArea or feature
     if (!publishableId) {
       const publishable = await Publishable.create({}, { transaction });
 
       publishableId = publishable.id;
-      feature.publishableId = publishableId;
-      await feature.save({ transaction });
-
-      console.log(
-        `${dryRun ? "[DRY RUN] Would create" : "Created"} publishableId for feature ${orcsFeatureNumber}: ${publishableId}`,
-      );
+      if (parkArea) {
+        parkArea.publishableId = publishableId;
+        await parkArea.save({ transaction });
+        console.log(
+          `${dryRun ? "[DRY RUN] Would create" : "Created"} publishableId for park area ${parkArea.id}: ${publishableId}`,
+        );
+      } else {
+        feature.publishableId = publishableId;
+        await feature.save({ transaction });
+        console.log(
+          `${dryRun ? "[DRY RUN] Would create" : "Created"} publishableId for feature ${orcsFeatureNumber}: ${publishableId}`,
+        );
+      }
     }
 
     const seasonType =
