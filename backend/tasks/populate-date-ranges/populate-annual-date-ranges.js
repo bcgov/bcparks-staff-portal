@@ -12,7 +12,7 @@ import {
 } from "../../models/index.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
-import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
+import resolveSeasonCreationStatus from "../../utils/resolveSeasonCreationStatus.js";
 
 // Functions
 
@@ -105,7 +105,7 @@ export async function populateAnnualDateRangesForYear(
       // @TODO: Update criteria to create seasons in create-seasons/create-winter-seasons instead
       if (!targetSeason) {
         // Determine the status of the new season based on annual dates
-        const status = await resolveNewSeasonStatus(
+        const status = await resolveSeasonCreationStatus(
           publishableId,
           prevSeason.seasonType,
           transaction,
