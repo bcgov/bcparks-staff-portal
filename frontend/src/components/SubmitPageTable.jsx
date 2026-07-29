@@ -114,9 +114,7 @@ function DateTableRow({
 
   // Helper to get the dateTypeNumber from the first item in a groupedDateRange
   function getDateTypeNumber(datesObj) {
-    const firstRange = Object.values(datesObj || {}).find(
-      (rangesForYear) => Array.isArray(rangesForYear) && rangesForYear.length,
-    )?.[0];
+    const firstRange = Object.values(datesObj)[0]?.[0];
 
     return firstRange?.dateType?.dateTypeNumber ?? Number.MAX_SAFE_INTEGER;
   }
@@ -354,28 +352,28 @@ function FeaturesByFeatureTypeWithAreas({
                   isApprover,
                 );
 
-                    return (
-                      <>
-                        <tr className="table-row--park-area-feature">
-                          <th scope="colgroup" colSpan="3">
-                            {parkFeature.name}
-                          </th>
-                        </tr>
-                        <DateTypeTableRow
-                          groupedDateRanges={displayGroupedDateRanges}
-                          currentYear={regularSeason.operatingYear}
-                          showYearRange={parkFeature.datesCanSpan2Years}
-                          seasonStatus={regularSeason.status}
-                          savedWithErrors={regularSeason.savedWithErrors}
-                        />
-                        <DateTableRow
-                          groupedDateRanges={displayGroupedDateRanges}
-                          currentYear={regularSeason.operatingYear}
-                          showCalculatedWinterFeeLabel={true}
-                        />
-                      </>
-                    );
-                  })}
+                return (
+                  <>
+                    <tr className="table-row--park-area-feature">
+                      <th scope="colgroup" colSpan="3">
+                        {parkFeature.name}
+                      </th>
+                    </tr>
+                    <DateTypeTableRow
+                      groupedDateRanges={displayGroupedDateRanges}
+                      currentYear={regularSeason.operatingYear}
+                      showYearRange={parkFeature.datesCanSpan2Years}
+                      seasonStatus={regularSeason.status}
+                      savedWithErrors={regularSeason.savedWithErrors}
+                    />
+                    <DateTableRow
+                      groupedDateRanges={displayGroupedDateRanges}
+                      currentYear={regularSeason.operatingYear}
+                      showCalculatedWinterFeeLabel={true}
+                    />
+                  </>
+                );
+              })}
             </React.Fragment>
           )
         );
@@ -402,6 +400,10 @@ function FeaturesByFeatureTypeNoAreas({
       {/* features that don't belong to park area  */}
       {features.map((feature) => {
         const regularSeason = feature.currentSeason.regular;
+        const displayGroupedDateRanges = getDisplayGroupedDateRanges(
+          feature.groupedDateRanges,
+          isApprover,
+        );
 
         return (
           <React.Fragment key={feature.id}>
