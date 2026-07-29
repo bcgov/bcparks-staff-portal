@@ -603,9 +603,6 @@ If dates have already been published, they will not be updated until new dates a
       // Don't reset the form data after saving, because the panel will close
       await saveForm(allowSubmitWithErrors, STATUS.APPROVED.value, false);
 
-      // Start refreshing the main page data from the API
-      onDataUpdate();
-
       flashMessage.open(
         "Dates approved",
         `${seasonTitle} ${season.operatingYear} dates marked as approved`,
@@ -622,9 +619,6 @@ If dates have already been published, they will not be updated until new dates a
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
       // Don't reset the form data after saving, because the panel will close
       await saveForm(allowSubmitWithErrors, STATUS.PENDING_REVIEW.value, false);
-
-      // Start refreshing the main page data from the API
-      onDataUpdate();
 
       flashMessage.open(
         "Dates submitted to HQ",
