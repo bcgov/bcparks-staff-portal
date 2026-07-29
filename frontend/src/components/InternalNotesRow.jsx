@@ -33,18 +33,20 @@ export default function InternalNotesRow({ seasonId }) {
 
   // Toggles the open state and fetches notes if opening for the first time
   async function toggleOpen() {
-    const openingRow = !isOpen;
-
-    setIsOpen(openingRow);
-
-    if (openingRow && !hasRequestedNotes) {
+    if (!isOpen && !hasRequestedNotes) {
+      // If the notes data isn't loaded yet, load it and then open the notes
       try {
         await fetchData();
         setHasRequestedNotes(true);
+        setIsOpen(true);
       } catch {
         // Keep this false so collapsing and reopening retries the request.
         setHasRequestedNotes(false);
+        console.error("Failed to fetch internal notes for season", seasonId);
       }
+    } else {
+      // If the notes data is already loaded, just toggle the open state
+      setIsOpen((prev) => !prev);
     }
   }
 
@@ -60,15 +62,7 @@ export default function InternalNotesRow({ seasonId }) {
             eventKey="internal-notes"
           >
             <>
-              {loading && <p className="mb-0 text-muted">Loading notes...</p>}
-
-              {!loading && error && (
-                <p className="mb-0 text-danger">
-                  Unable to load internal notes.
-                </p>
-              )}
-
-              {!loading && !error && visibleNotes.length > 0 && (
+              {visibleNotes.length > 0 && (
                 <ul className="list-unstyled">
                   {visibleNotes.map((note) => (
                     <li key={note.id}>
@@ -81,16 +75,17 @@ export default function InternalNotesRow({ seasonId }) {
                 </ul>
               )}
 
-              {!loading &&
-                !error &&
-                hasRequestedNotes &&
-                visibleNotes.length === 0 && (
-                  <p className="mb-0 text-muted">
-                    No internal notes found for this season.
-                  </p>
-                )}
+              {!error && hasRequestedNotes && visibleNotes.length === 0 && (
+                <p className="mb-0 text-muted">
+                  No internal notes found for this season.
+                </p>
+              )}
             </>
           </Accordion.Collapse>
+
+          {!loading && error && (
+            <p className="mb-0 text-danger">Unable to load internal notes.</p>
+          )}
 
           <button
             type="button"
@@ -98,12 +93,26 @@ export default function InternalNotesRow({ seasonId }) {
             onClick={toggleOpen}
             aria-expanded={isOpen}
             aria-controls={`internal-notes-${seasonId}`}
+            disabled={loading}
           >
-            {isOpen ? "Hide internal notes" : "Show internal notes"}
-            <FontAwesomeIcon
-              icon={isOpen ? faChevronUp : faChevronDown}
-              className="ms-2"
-            />
+            {loading ? (
+              <>
+                Loading internal notes...
+                <span
+                  className="spinner-border spinner-border-sm ms-2"
+                  role="status"
+                  aria-hidden="true"
+                />
+              </>
+            ) : (
+              <>
+                {isOpen ? "Hide internal notes" : "Show internal notes"}
+                <FontAwesomeIcon
+                  icon={isOpen ? faChevronUp : faChevronDown}
+                  className="ms-2"
+                />
+              </>
+            )}
           </button>
         </Accordion>
       </td>
