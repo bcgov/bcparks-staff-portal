@@ -34,7 +34,8 @@ import { checkPermissions } from "../../middleware/permissions.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
-// import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+import hasOperationDateChanges from "../../utils/hasOperationDateChanges.js";
 import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
@@ -1214,6 +1215,12 @@ router.post(
 
       // Determine if this is a winter season based on seasonType
       const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+      const operationDateChanged = await hasOperationDateChanges({
+        seasonId: season.id,
+        dateRanges,
+        deletedDateRangeIds,
+        transaction,
+      });
 
       // Process season data
       await saveSeasonData({
@@ -1231,12 +1238,69 @@ router.post(
         isWinterSeason,
       });
 
+      // Recalculate feature-level Winter fee dates when a Winter season is saved,
+      // or when feature-level Operation dates are changed.
+      if (isWinterSeason || operationDateChanged) {
+        await propagateWinterFeeDates(season.id, transaction);
+      }
+
       await transaction.commit();
       res.sendStatus(200);
     } catch (error) {
       await transaction.rollback();
       throw error; // Re-throw to let global error handler catch it
     }
+  }),
+);
+
+/**
+ * Retrieves all changelog notes for a specific season.
+ * Returns SeasonChangeLog entries sorted by most recent first.
+ * GET /api/seasons/:seasonId/notes
+ */
+router.get(
+  "/:seasonId/notes",
+  asyncHandler(async (req, res) => {
+    const { seasonId } = req.params;
+
+    const season = await Season.findByPk(seasonId, {
+      attributes: ["id"],
+    });
+
+    // Throw a 404 if the season doesn't exist
+    checkSeasonExists(season);
+    // Throw a 403 if the user doesn't have access to the park associated with the season
+    await checkSeasonUserAccess(req, seasonId);
+
+    // Fetch all changelog notes for the season
+    const changeLog = await SeasonChangeLog.findAll({
+      where: {
+        seasonId,
+        [Op.and]: sequelize.where(
+          sequelize.fn("TRIM", sequelize.col("notes")),
+          Op.ne,
+          "",
+        ),
+      },
+      attributes: ["id", "notes", "createdAt"],
+      include: [
+        {
+          model: User,
+          as: "user",
+          attributes: ["name"],
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+    });
+
+    const output = changeLog.map((entry) => ({
+      id: entry.id,
+      note: entry.notes,
+      createdAt: entry.createdAt,
+      createdBy: entry.user?.name || "Unknown",
+    }));
+
+    return res.json(output);
   }),
 );
 

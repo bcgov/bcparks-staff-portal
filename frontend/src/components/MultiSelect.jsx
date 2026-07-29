@@ -9,6 +9,7 @@ export default function MultiSelect({
   onInput,
   value = [],
   children,
+  disabled = false,
 }) {
   function OptionCheckbox({ option }) {
     const id = `option-${option.value}`;
@@ -91,6 +92,7 @@ export default function MultiSelect({
         className="btn btn-outline-primary dropdown-toggle"
         aria-expanded={expanded}
         onClick={toggleExpanded}
+        disabled={disabled}
       >
         {children}
       </button>
@@ -117,5 +119,6 @@ MultiSelect.propTypes = {
   ).isRequired,
   onInput: PropTypes.func.isRequired,
   value: PropTypes.arrayOf(PropTypes.string),
+  disabled: PropTypes.bool,
   children: PropTypes.node,
 };

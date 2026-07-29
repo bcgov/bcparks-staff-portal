@@ -1,6 +1,7 @@
 import React, { useMemo, useContext } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { format } from "date-fns";
 import { faCheck } from "@fa-kit/icons/classic/solid";
 import { faPen } from "@fa-kit/icons/classic/regular";
 import StatusBadge from "@/components/StatusBadge";
@@ -8,7 +9,7 @@ import NotReadyFlag from "@/components/NotReadyFlag";
 import InternalNotesRow from "@/components/InternalNotesRow";
 import SubmittedWithErrorsWarning from "@/components/SubmittedWithErrorsWarning";
 import IconButton from "@/components/IconButton";
-import { formatDateRange } from "@/lib/utils";
+import { formatDateRange, formatDateShortWithYear } from "@/lib/utils";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
@@ -17,24 +18,6 @@ import "./SubmitPageTable.scss";
 import * as DATE_TYPE from "@/constants/dateType";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as SEASON_STATUS from "@/constants/seasonStatus";
-
-// Functions
-// Get internal notes for a season, sorted by createdAt date
-function getInternalNotes(season) {
-  return (season?.changeLogs || [])
-    .filter((log) => typeof log?.notes === "string" && log.notes.trim())
-    .sort(
-      (left, right) =>
-        new Date(right.createdAt).valueOf() -
-        new Date(left.createdAt).valueOf(),
-    )
-    .map((log) => ({
-      id: log.id,
-      note: log.notes.trim(),
-      createdAt: log.createdAt,
-      createdBy: log.user?.name || "Unknown user",
-    }));
-}
 
 // renders all date ranges for a given year as a list
 // e.g. [{ startDate: "Mon Jan 1", endDate: "Tue Jan 2" }, { startDate: "Mon Dec 30", endDate: "Tue Dec 31" }]
@@ -248,8 +231,14 @@ function StatusTableRow({
       >
         {name}
         {typeName && (
-          <div className="fw-normal">
-            <small>{typeName}</small>
+          <div className="fw-normal feature-type-name">{typeName}</div>
+        )}
+
+        {!!season.lastUpdated && (
+          <div className="fw-normal last-updated">
+            Last updated {formatDateShortWithYear(season.lastUpdated.createdAt)}{" "}
+            at {format(season.lastUpdated.createdAt, "h:mm aaa")} by{" "}
+            {season.lastUpdated.createdBy}
           </div>
         )}
       </th>
@@ -308,7 +297,6 @@ function FeaturesByFeatureTypeWithAreas({
       {/* 2 - park area level */}
       {parkAreas.map((parkArea) => {
         const regularSeason = parkArea.currentSeason.regular;
-        const regularSeasonInternalNotes = getInternalNotes(regularSeason);
 
         const featuresInCurrentGroup = parkArea.features;
 
@@ -347,8 +335,8 @@ function FeaturesByFeatureTypeWithAreas({
                   />
                 </React.Fragment>
               ))}
-              {isApprover && (
-                <InternalNotesRow notes={regularSeasonInternalNotes} />
+              {isApprover && regularSeason.hasNotes && (
+                <InternalNotesRow seasonId={regularSeason.id} />
               )}
             </React.Fragment>
           )
@@ -376,7 +364,6 @@ function FeaturesByFeatureTypeNoAreas({
       {/* features that don't belong to park area  */}
       {features.map((feature) => {
         const regularSeason = feature.currentSeason.regular;
-        const regularSeasonInternalNotes = getInternalNotes(regularSeason);
 
         return (
           <React.Fragment key={feature.id}>
@@ -401,8 +388,8 @@ function FeaturesByFeatureTypeNoAreas({
               groupedDateRanges={feature.groupedDateRanges}
               currentYear={regularSeason.operatingYear}
             />
-            {isApprover && (
-              <InternalNotesRow notes={regularSeasonInternalNotes} />
+            {isApprover && regularSeason.hasNotes && (
+              <InternalNotesRow seasonId={regularSeason.id} />
             )}
           </React.Fragment>
         );
@@ -427,8 +414,6 @@ function Table({ park, formPanelHandler, sortOrder }) {
   const features = park.features || [];
   const regularSeason = park.currentSeason.regular;
   const winterSeason = park?.currentSeason.winter || {};
-  const regularSeasonInternalNotes = getInternalNotes(regularSeason);
-  const winterSeasonInternalNotes = getInternalNotes(winterSeason);
 
   if (!sortOrder?.length) return <></>;
 
@@ -478,8 +463,8 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.groupedDateRanges}
                   currentYear={regularSeason.operatingYear}
                 />
-                {isApprover && (
-                  <InternalNotesRow notes={regularSeasonInternalNotes} />
+                {isApprover && regularSeason.hasNotes && (
+                  <InternalNotesRow seasonId={regularSeason.id} />
                 )}
               </>
             )}
@@ -510,8 +495,8 @@ function Table({ park, formPanelHandler, sortOrder }) {
                   groupedDateRanges={park.winterGroupedDateRanges}
                   currentYear={winterSeason.operatingYear}
                 />
-                {isApprover && (
-                  <InternalNotesRow notes={winterSeasonInternalNotes} />
+                {isApprover && winterSeason.hasNotes && (
+                  <InternalNotesRow seasonId={winterSeason.id} />
                 )}
               </>
             )}
