@@ -100,7 +100,6 @@ export default function InternalNotesRow({ seasonId }) {
                 Loading internal notes...
                 <span
                   className="spinner-border spinner-border-sm ms-2"
-                  role="status"
                   aria-hidden="true"
                 />
               </>
