@@ -472,16 +472,12 @@ function SeasonForm({
 
   /**
    * Saves the form data to the DB.
-   * @param {boolean} close closes the form panel
    * @param {boolean} allowInvalid allows saving even if the form has validation errors
-   * @param {string} status optional status to set for the season
+   * @param {string} status status to set for the season
+   * @param {boolean} [resetDataAfterSave=true] reset the form data after saving
    * @returns {Promise<void>}
    */
-  async function saveForm(
-    close = true,
-    allowInvalid = false,
-    status = STATUS.REQUESTED.value,
-  ) {
+  async function saveForm(allowInvalid, status, resetDataAfterSave = true) {
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
@@ -559,9 +555,7 @@ function SeasonForm({
       setDeletedDateRangeIds([]);
       setSubmitWithErrors(false);
 
-      if (close) {
-        closePanel();
-      } else {
+      if (resetDataAfterSave) {
         resetData();
       }
     } catch (saveError) {
@@ -573,7 +567,7 @@ function SeasonForm({
 
   // If the season is not "requested" (e.g. it is submitted, approved, or published),
   // prompt the user to confirm moving back to draft.
-  async function promptAndSave(close = true) {
+  async function promptAndSave() {
     if (season.status !== STATUS.REQUESTED.value) {
       const proceed = await modal.open(
         "Move back to draft?",
@@ -592,7 +586,7 @@ If dates have already been published, they will not be updated until new dates a
 
     try {
       // Save draft, and allow saving with validation errors
-      await saveForm(close, true, STATUS.REQUESTED.value);
+      await saveForm(true, STATUS.REQUESTED.value);
 
       flashMessage.open(
         "Dates saved as draft",
@@ -606,7 +600,8 @@ If dates have already been published, they will not be updated until new dates a
   async function onApprove() {
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
-      await saveForm(false, allowSubmitWithErrors, STATUS.APPROVED.value); // Don't close the form after saving
+      // Don't reset the form data after saving, because the panel will close
+      await saveForm(allowSubmitWithErrors, STATUS.APPROVED.value, false);
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -625,7 +620,8 @@ If dates have already been published, they will not be updated until new dates a
   async function onSubmit() {
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
-      await saveForm(false, allowSubmitWithErrors, STATUS.PENDING_REVIEW.value); // Don't close the form after saving
+      // Don't reset the form data after saving, because the panel will close
+      await saveForm(allowSubmitWithErrors, STATUS.PENDING_REVIEW.value, false);
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -818,7 +814,7 @@ If dates have already been published, they will not be updated until new dates a
             approver={approver}
             submitter={submitter}
             onApprove={onApprove}
-            onSave={() => promptAndSave(false)}
+            onSave={promptAndSave}
             onSubmit={onSubmit}
             loading={sendingSave}
             disableDraftButton={disableDraftButton}
