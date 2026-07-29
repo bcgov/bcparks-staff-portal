@@ -1,46 +1,41 @@
-// For Winter fee dates collected at the Park level,
-// This script will propagate the dates down to the Frontcountry camping Feature and Area levels.
+// Recalculate Feature-level Winter fee dates from Park-level Winter fee dates.
+// This runs on Winter fee date or Operation date saves so derived Winter ranges stay current.
 
-import _ from "lodash";
+import { Op } from "sequelize";
 
 import {
-  Season,
-  Park,
-  ParkArea,
-  Feature,
-  FeatureType,
   DateRange,
   DateType,
+  Feature,
+  Park,
+  ParkArea,
+  Season,
 } from "../models/index.js";
+import * as DATE_TYPE from "../constants/dateType.js";
+import * as SEASON_TYPE from "../constants/seasonType.js";
 import { APPROVED } from "../constants/seasonStatus.js";
 import consolidateRanges from "./consolidateDateRanges.js";
 import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
 
-const FRONTCOUNTRY_CAMPING_TYPE_NAME = "Frontcountry campground";
-const PARK_WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
-const FEATURE_WINTER_FEE_DATE_TYPE_NAME = "Winter fee";
-const FEATURE_OPERATING_DATE_TYPE_NAME = "Operation";
-
-// Query part helpers
-function seasonsQueryPart(operatingYear) {
-  return {
-    model: Season,
-    as: "seasons",
-    where: { operatingYear },
-    required: false,
-  };
+async function getSeason(seasonId, transaction = null) {
+  return await Season.findByPk(seasonId, {
+    include: [
+      {
+        model: Park,
+        as: "park",
+      },
+      {
+        model: ParkArea,
+        as: "parkArea",
+      },
+      {
+        model: Feature,
+        as: "feature",
+      },
+    ],
+    transaction,
+  });
 }
-
-function frontcountryFeaturesQueryPart(featureTypeId) {
-  return {
-    model: Feature,
-    as: "features",
-    where: { featureTypeId },
-    required: true,
-  };
-}
-
-// Helper functions
 
 /**
  * Returns the Park record associated with the given Season.
@@ -68,323 +63,468 @@ async function getSeasonPark(season, transaction = null) {
 }
 
 /**
- * Gets all Frontcountry camping Seasons in the Park for the operating year.
- * This can include Park, Area, and Feature Seasons.
- * @param {Park} park The Park record to get Seasons for
- * @param {number} operatingYear The operating year to filter Seasons by
+ * Returns the DateType IDs needed for winter-fee propagation.
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Promise<Object>} An object containing arrays of Seasons by level: park, parkArea, and feature.
- * @throws {Error} If the Frontcountry campground FeatureType is not found
+ * @returns {Promise<Object>} DateType IDs used by the winter-fee propagation flow.
  */
-async function getAllFrontcountrySeasons(
-  park,
-  operatingYear,
-  transaction = null,
-) {
-  // Find the FeatureTypeId for "Frontcountry campground"
-  const frontcountryType = await FeatureType.findOne({
-    where: { name: FRONTCOUNTRY_CAMPING_TYPE_NAME },
+async function getDateTypeIds(transaction = null) {
+  const winterType = await DateType.findOne({
     attributes: ["id"],
+    where: {
+      dateTypeNumber: DATE_TYPE.WINTER_FEE,
+    },
     transaction,
   });
 
-  if (!frontcountryType) {
-    throw new Error("Frontcountry campground FeatureType not found.");
+  if (!winterType) {
+    throw new Error("Winter fee DateType not found.");
   }
 
-  const FRONTCOUNTRY_CAMPING_TYPE_ID = frontcountryType.id;
-
-  // Get all Seasons in the Park for the operating year
-  const parkSeasons = await Park.findByPk(park.id, {
-    include: [
-      // Park seasons
-      seasonsQueryPart(operatingYear),
-
-      // ParkAreas
-      {
-        model: ParkArea,
-        as: "parkAreas",
-        include: [
-          // Frontcountry camping Features within Areas
-          frontcountryFeaturesQueryPart(FRONTCOUNTRY_CAMPING_TYPE_ID),
-
-          // Area seasons
-          seasonsQueryPart(operatingYear),
-        ],
-      },
-
-      // Features directly in the Park, and Features within Areas
-      {
-        ...frontcountryFeaturesQueryPart(FRONTCOUNTRY_CAMPING_TYPE_ID),
-
-        include: [
-          // Feature seasons
-          seasonsQueryPart(operatingYear),
-        ],
-      },
-    ],
+  const operationType = await DateType.findOne({
+    attributes: ["id"],
+    where: {
+      dateTypeNumber: DATE_TYPE.OPERATION,
+    },
     transaction,
   });
 
-  // If no season satisfies the criteria, return an empty structure
-  if (!parkSeasons) {
-    return {
-      park: [],
-      parkArea: [],
-      feature: [],
-    };
+  if (!operationType) {
+    throw new Error("Operation DateType not found.");
   }
 
-  // Return all of the Seasons, organized by level
   return {
-    park: parkSeasons.seasons,
-
-    parkArea: parkSeasons.parkAreas.flatMap((parkArea) => parkArea.seasons),
-
-    feature: parkSeasons.features.flatMap((feature) => feature.seasons),
+    winterTypeId: winterType.id,
+    operationTypeId: operationType.id,
   };
 }
 
 /**
- * Adds winter fee dates for a given Season. Winter fee DateRanges are created
- * based on the overlapping date ranges between the provided winterDates and
- * the operating dates for any Dateables in the Season.
- * @param {Season} season Season record to add winter fee dates for
- * @param {Array} winterDates array of Winter fee DateRanges to add to the Areas and Features
- * @param {number} featureWinterTypeId DB ID of the Area/Feature-level Winter fee DateType
- * @param {number} featureOperatingTypeId DB ID of the Area/Feature-level Operation dates DateType
+ * Gets the Park-level Winter fee season and its complete date ranges for an operating year.
+ * @param {Park} park Park record that owns the winter season
+ * @param {number} operatingYear Operating year to look up
+ * @param {number} winterTypeId Winter fee DateType ID
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Promise<Array | boolean>} Array of results from bulkCreate
- * for the winter fee DateRanges, or false if no dates need to be added
+ * @returns {Promise<{season: Season|null, ranges: Array}>} The Park winter season and its consolidated Winter fee ranges.
  */
-async function addWinterFeeDatesForSeason(
-  season,
-  winterDates,
-  featureWinterTypeId,
-  featureOperatingTypeId,
-  transaction,
-) {
-  // If the season has any Area/Feature-level winter dates already, skip it
-  const existingWinterDates = await DateRange.count({
-    where: {
-      seasonId: season.id,
-      dateTypeId: featureWinterTypeId,
-    },
-    transaction,
-  });
-
-  // Skip if the season already has Area/Feature-level winter dates
-  if (existingWinterDates) return false;
-
-  // Get operating dates for the season
-  const operatingDatesResults = await DateRange.findAll({
-    where: {
-      seasonId: season.id,
-      dateTypeId: featureOperatingTypeId,
-    },
-    transaction,
-  });
-
-  // Skip if the season has no Operating dates
-  if (!operatingDatesResults.length) return false;
-
-  // Group operating dates by dateableId
-  const groupedOperatingDates = _.groupBy(
-    operatingDatesResults,
-    (dateRange) => dateRange.dateableId,
-  );
-
-  const creationResults = _.map(
-    groupedOperatingDates,
-    (dateRanges, dateableId) => {
-      // Consolidate the operating date ranges for this dateableId
-      const operatingDates = consolidateRanges(
-        dateRanges.map((dateRange) => dateRange.toJSON()),
-      );
-
-      // Get an array of overlapping dates from winterDates and operatingDates
-      const overlappingDates = getOverlappingDateRanges(
-        winterDates,
-        operatingDates,
-      );
-
-      // Skip creating winter dates if there are no overlapping dates
-      if (!overlappingDates.length) return false;
-
-      // Create winter fee DateRanges for the overlapping dates for this dateableId
-      return DateRange.bulkCreate(
-        overlappingDates.map((dateRange) => ({
-          seasonId: season.id,
-          dateableId,
-          dateTypeId: featureWinterTypeId,
-          startDate: dateRange.startDate,
-          endDate: dateRange.endDate,
-        })),
-        { transaction },
-      );
-    },
-  );
-
-  return Promise.all(creationResults);
-}
-
-/**
- * Processes the Area and Feature Seasons to add winter fee dates, if applicable.
- * @param {Object} allSeasons object containing seasons organized by level (from `getAllFrontcountrySeasons`)
- * @param {Park} park Park record for the Seasons
- * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Promise<Array>} Array of query results from calling `addWinterFeeDatesForSeason` for each Season
- * @throws {Error} If the Winter fee DateType or Operating DateType is not found
- */
-async function processAreaAndFeatureSeasons(
-  allSeasons,
+async function getParkWinterDateRanges(
   park,
+  operatingYear,
+  winterTypeId,
   transaction = null,
 ) {
-  const areaAndFeatureSeasons = [...allSeasons.parkArea, ...allSeasons.feature];
-
-  // Get the IDs for the DateTypes we need in the queries
-
-  // Park-level winter fees
-  const parkLevelWinterFeeType = await DateType.findOne({
-    attributes: ["id"],
-    where: { name: PARK_WINTER_FEE_DATE_TYPE_NAME, parkLevel: true },
-    transaction,
-  });
-
-  // Throw an error if the DateType isn't in the DB
-  if (!parkLevelWinterFeeType) {
-    throw new Error("Park-level Winter fee DateType not found.");
-  }
-
-  // Area/Feature-level winter fees
-  const featureLevelWinterFeeType = await DateType.findOne({
-    attributes: ["id"],
-    where: { name: FEATURE_WINTER_FEE_DATE_TYPE_NAME, featureLevel: true },
-    transaction,
-  });
-
-  if (!featureLevelWinterFeeType) {
-    throw new Error("Feature-level Winter fee DateType not found.");
-  }
-
-  // Area/Feature-level operating dates
-  const featureLevelOperatingType = await DateType.findOne({
-    attributes: ["id"],
-    where: { name: FEATURE_OPERATING_DATE_TYPE_NAME, featureLevel: true },
-    transaction,
-  });
-
-  if (!featureLevelOperatingType) {
-    throw new Error("Operating DateType not found.");
-  }
-
-  // Get all of the winter dates for the Park level
-  const parkWinterDates = await DateRange.findAll({
+  const parkWinterSeason = await Season.findOne({
+    attributes: ["id", "readyToPublish"],
     where: {
-      dateableId: park.dateableId,
-      dateTypeId: parkLevelWinterFeeType.id,
+      publishableId: park.publishableId,
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
     },
     transaction,
   });
 
-  // Consolidate Winter fee dates (sort & remove duplicates)
-  const consolidatedWinterDates = consolidateRanges(
-    parkWinterDates.map((dateRange) => dateRange.toJSON()),
-  );
-
-  if (!consolidatedWinterDates.length) return false;
-
-  // Loop through each Area and Feature Season and add winter fee dates
-  const addedDates = [];
-
-  for (const season of areaAndFeatureSeasons) {
-    const result = await addWinterFeeDatesForSeason(
-      season,
-      consolidatedWinterDates,
-      featureLevelWinterFeeType.id,
-      featureLevelOperatingType.id,
-      transaction,
-    );
-
-    addedDates.push(result);
+  if (!parkWinterSeason) {
+    return {
+      season: null,
+      ranges: [],
+    };
   }
 
-  return addedDates;
+  const parkWinterRanges = await DateRange.findAll({
+    where: {
+      seasonId: parkWinterSeason.id,
+      dateableId: park.dateableId,
+      dateTypeId: winterTypeId,
+      startDate: {
+        [Op.ne]: null,
+      },
+      endDate: {
+        [Op.ne]: null,
+      },
+    },
+    transaction,
+  });
+
+  return {
+    season: parkWinterSeason,
+    ranges: consolidateRanges(parkWinterRanges.map((range) => range.toJSON())),
+  };
 }
 
 /**
- * Propagates winter fee dates from the Park level down to Area and Feature Seasons.
- * This happens if the park supports winter fee dates and all Frontcountry camping Seasons are approved.
- * @param {number} seasonId The ID of the Season being approved
+ * Gets the consolidated Feature-level Operation date ranges for a given year.
+ * @param {Feature} feature Feature record to inspect
+ * @param {number} operatingYear Operating year to look up
+ * @param {number} operationTypeId Operation DateType ID
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Promise<boolean | Array>} Returns false if no winter fee dates are added,
+ * @returns {Promise<Array>} Consolidated Operation date ranges for the Feature.
+ */
+async function getFeatureOperationRanges(
+  feature,
+  operatingYear,
+  operationTypeId,
+  transaction = null,
+) {
+  const operationRanges = await DateRange.findAll({
+    attributes: ["startDate", "endDate"],
+    include: [
+      {
+        model: Season,
+        as: "season",
+        attributes: ["id"],
+        required: true,
+        where: {
+          operatingYear,
+          seasonType: SEASON_TYPE.REGULAR,
+        },
+      },
+    ],
+    where: {
+      dateableId: feature.dateableId,
+      dateTypeId: operationTypeId,
+      startDate: {
+        [Op.ne]: null,
+      },
+      endDate: {
+        [Op.ne]: null,
+      },
+    },
+    transaction,
+  });
+
+  return consolidateRanges(operationRanges.map((range) => range.toJSON()));
+}
+
+/**
+ * Replaces Winter fee DateRanges for a season/dateable pair.
+ * @param {Object} params Replacement parameters
+ * @param {number} params.seasonId Season ID to update
+ * @param {number} params.dateableId Dateable ID to update
+ * @param {number} params.dateTypeId Winter fee DateType ID
+ * @param {Array} params.ranges New date ranges to insert
+ * @param {boolean} [params.createPlaceholderWhenEmpty=false] Whether to insert a single empty placeholder when ranges is empty
+ * @param {Transaction} [params.transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
+ */
+async function rebuildWinterDateRanges({
+  seasonId,
+  dateableId,
+  dateTypeId,
+  ranges,
+  createPlaceholderWhenEmpty = false,
+  transaction = null,
+}) {
+  await DateRange.destroy({
+    where: {
+      seasonId,
+      dateableId,
+      dateTypeId,
+    },
+    transaction,
+  });
+
+  if (!ranges.length && !createPlaceholderWhenEmpty) {
+    return;
+  }
+
+  await DateRange.bulkCreate(
+    (ranges.length ? ranges : [{ startDate: null, endDate: null }]).map(
+      (range) => ({
+        seasonId,
+        dateableId,
+        dateTypeId,
+        startDate: range.startDate,
+        endDate: range.endDate,
+      }),
+    ),
+    { transaction },
+  );
+}
+
+/**
+ * Synchronizes derived Winter season publishable state.
+ * @param {Object} params State sync parameters
+ * @param {Season} params.winterSeason Winter Season to update
+ * @param {boolean|null|undefined} params.parkWinterReadyToPublish Ready-to-publish value to copy
+ * @param {Transaction} [params.transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
+ */
+async function syncWinterSeasonState({
+  winterSeason,
+  parkWinterReadyToPublish,
+  transaction = null,
+}) {
+  if (
+    parkWinterReadyToPublish !== null &&
+    typeof parkWinterReadyToPublish !== "undefined"
+  ) {
+    winterSeason.readyToPublish = parkWinterReadyToPublish;
+  }
+
+  winterSeason.status = APPROVED;
+  winterSeason.updatedAt = new Date();
+  await winterSeason.save({ transaction });
+}
+
+/**
+ * Rebuilds a Feature winter season's Winter fee DateRanges from the Park-level
+ * Winter fee dates and the Feature's Operation date ranges.
+ * @param {Feature} feature Feature record to recalculate
+ * @param {number} operatingYear Operating year to process
+ * @param {Array} overlaps Consolidated Winter fee overlap ranges for this Feature
+ * @param {number} winterTypeId Winter fee DateType ID
+ * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<boolean>} True when the Feature winter season was updated, false when it did not exist
+ */
+async function syncFeatureWinterSeason(
+  feature,
+  operatingYear,
+  overlaps,
+  winterTypeId,
+  parkWinterReadyToPublish,
+  transaction = null,
+) {
+  const winterSeason = await Season.findOne({
+    where: {
+      publishableId: feature.publishableId,
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
+    },
+    transaction,
+  });
+
+  if (!winterSeason) {
+    return false;
+  }
+
+  await rebuildWinterDateRanges({
+    seasonId: winterSeason.id,
+    dateableId: feature.dateableId,
+    dateTypeId: winterTypeId,
+    ranges: overlaps,
+    createPlaceholderWhenEmpty: true,
+    transaction,
+  });
+
+  await syncWinterSeasonState({
+    winterSeason,
+    parkWinterReadyToPublish,
+    transaction,
+  });
+
+  return true;
+}
+
+/**
+ * Writes Feature winter fee DateRanges into the parent ParkArea winter season.
+ * This is used for Features that belong to a ParkArea.
+ * @param {Feature} feature Feature record to recalculate
+ * @param {number} parkAreaPublishableId Parent ParkArea Publishable ID
+ * @param {number} parkAreaDateableId Parent ParkArea Dateable ID
+ * @param {number} operatingYear Operating year to process
+ * @param {Array} overlaps Consolidated Winter fee overlap ranges for this Feature
+ * @param {number} winterTypeId Winter fee DateType ID
+ * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<boolean>} True when the parent ParkArea winter season was updated, false when it did not exist
+ */
+async function syncFeatureWinterDatesOnParkAreaSeason(
+  feature,
+  parkAreaPublishableId,
+  parkAreaDateableId,
+  operatingYear,
+  overlaps,
+  winterTypeId,
+  parkWinterReadyToPublish,
+  transaction = null,
+) {
+  const winterSeason = await Season.findOne({
+    where: {
+      publishableId: parkAreaPublishableId,
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
+    },
+    transaction,
+  });
+
+  if (!winterSeason) {
+    return false;
+  }
+
+  await rebuildWinterDateRanges({
+    seasonId: winterSeason.id,
+    dateableId: feature.dateableId,
+    dateTypeId: winterTypeId,
+    ranges: overlaps,
+    createPlaceholderWhenEmpty: true,
+    transaction,
+  });
+
+  if (parkAreaDateableId) {
+    await DateRange.destroy({
+      where: {
+        seasonId: winterSeason.id,
+        dateableId: parkAreaDateableId,
+        dateTypeId: winterTypeId,
+      },
+      transaction,
+    });
+  }
+
+  await syncWinterSeasonState({
+    winterSeason,
+    parkWinterReadyToPublish,
+    transaction,
+  });
+
+  return true;
+}
+
+/**
+ * Recalculates Feature-level Winter fee dates for a park + operating year.
+ * Trigger this on Winter fee or Operation date saves.
+ * @param {number} seasonId The season being approved/saved
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<boolean | Array>} Number of Feature winter seasons updated and skipped.
  */
 export default async function propagateWinterFeeDates(
   seasonId,
   transaction = null,
 ) {
-  // Get details for the provided Season that was just approved, along with its Park details
-  // We'll use it to check all the other seasons for the Park and operatingYear
-  const season = await Season.findByPk(seasonId, {
-    include: [
-      // Park details, if it's a Park season
-      {
-        model: Park,
-        as: "park",
-      },
+  const sourceSeason = await getSeason(seasonId, transaction);
 
-      // Area details, if it's an Area season
+  if (!sourceSeason) {
+    throw new Error(`Season ${seasonId} not found for Winter fee propagation.`);
+  }
+
+  const park = await getSeasonPark(sourceSeason, transaction);
+
+  if (!park) {
+    return {
+      updatedFeatures: 0,
+      skippedFeatures: 0,
+      updatedParkAreas: 0,
+      skippedParkAreas: 0,
+    };
+  }
+
+  const operatingYear = sourceSeason.operatingYear;
+
+  const { winterTypeId, operationTypeId } = await getDateTypeIds(transaction);
+
+  const parkWinter = await getParkWinterDateRanges(
+    park,
+    operatingYear,
+    winterTypeId,
+    transaction,
+  );
+
+  // If there is no Park-level Winter season, or it has no complete dates, clear derived Feature winter ranges.
+  const winterDates = parkWinter.ranges || [];
+
+  const features = await Feature.findAll({
+    attributes: ["id", "name", "publishableId", "dateableId", "parkAreaId"],
+    where: {
+      parkId: park.id,
+      hasWinterFeeDates: true,
+      active: true,
+    },
+    include: [
       {
         model: ParkArea,
         as: "parkArea",
-      },
-
-      // Feature details, if it's a Feature season (including Features within Areas)
-      {
-        model: Feature,
-        as: "feature",
+        attributes: ["id", "publishableId", "dateableId"],
+        required: false,
       },
     ],
     transaction,
   });
 
-  // Get the Park details
-  const park = await getSeasonPark(season, transaction);
-  const operatingYear = season.operatingYear;
+  if (!features.length) {
+    return {
+      updatedFeatures: 0,
+      skippedFeatures: 0,
+      updatedParkAreas: 0,
+      skippedParkAreas: 0,
+    };
+  }
 
-  // If the Park doesn't have winter fee dates, return false
-  if (!park.hasWinterFeeDates) return false;
+  let updatedFeatures = 0;
+  let skippedFeatures = 0;
+  const updatedParkAreaIds = new Set();
+  const skippedParkAreaIds = new Set();
 
-  // Get all Frontcountry camping Seasons in the Park (Park/Area/Feature) for the operating year
-  const allFrontcountrySeasons = await getAllFrontcountrySeasons(
-    park,
-    operatingYear,
-    transaction,
-  );
+  for (const feature of features) {
+    if (!feature.dateableId) {
+      if (feature.parkAreaId) {
+        skippedParkAreaIds.add(feature.parkAreaId);
+      }
+      skippedFeatures++;
+      continue;
+    }
 
-  const combinedFrontcountrySeasons = [
-    ...allFrontcountrySeasons.park,
-    ...allFrontcountrySeasons.parkArea,
-    ...allFrontcountrySeasons.feature,
-  ];
+    const featureHasParentParkArea = Boolean(feature.parkArea);
 
-  // If no Frontcountry camping Seasons are found, there's nothing to do, so return false
-  if (!combinedFrontcountrySeasons.length) return false;
+    if (!featureHasParentParkArea && !feature.publishableId) {
+      skippedFeatures++;
+      continue;
+    }
 
-  // Check if all of the frontcountry camping seasons are approved
-  const allApproved = combinedFrontcountrySeasons.every(
-    (frontcountrySeason) => frontcountrySeason.status === APPROVED,
-  );
+    if (featureHasParentParkArea && !feature.parkArea.publishableId) {
+      skippedParkAreaIds.add(feature.parkArea.id);
+      skippedFeatures++;
+      continue;
+    }
 
-  // If any of the seasons are still unapproved, return false
-  // Winter fee dates should only be propagated when all seasons are approved
-  if (!allApproved) return false;
+    const operationRanges = await getFeatureOperationRanges(
+      feature,
+      operatingYear,
+      operationTypeId,
+      transaction,
+    );
 
-  // All seasons are approved, so add winter fee dates to the Feature and Area seasons
-  return processAreaAndFeatureSeasons(
-    allFrontcountrySeasons,
-    park,
-    transaction,
-  );
+    const overlaps = getOverlappingDateRanges(winterDates, operationRanges);
+
+    const updated = featureHasParentParkArea
+      ? await syncFeatureWinterDatesOnParkAreaSeason(
+          feature,
+          feature.parkArea.publishableId,
+          feature.parkArea.dateableId,
+          operatingYear,
+          overlaps,
+          winterTypeId,
+          parkWinter.season?.readyToPublish,
+          transaction,
+        )
+      : await syncFeatureWinterSeason(
+          feature,
+          operatingYear,
+          overlaps,
+          winterTypeId,
+          parkWinter.season?.readyToPublish,
+          transaction,
+        );
+
+    if (updated) {
+      updatedFeatures++;
+
+      if (featureHasParentParkArea) {
+        updatedParkAreaIds.add(feature.parkArea.id);
+        skippedParkAreaIds.delete(feature.parkArea.id);
+      }
+    } else {
+      skippedFeatures++;
+
+      if (featureHasParentParkArea) {
+        skippedParkAreaIds.add(feature.parkArea.id);
+      }
+    }
+  }
+
+  return {
+    updatedFeatures,
+    skippedFeatures,
+    updatedParkAreas: updatedParkAreaIds.size,
+    skippedParkAreas: skippedParkAreaIds.size,
+  };
 }

@@ -34,7 +34,8 @@ import { checkPermissions } from "../../middleware/permissions.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
-// import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
+import hasOperationDateChanges from "../../utils/hasOperationDateChanges.js";
 import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
@@ -1214,6 +1215,12 @@ router.post(
 
       // Determine if this is a winter season based on seasonType
       const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
+      const operationDateChanged = await hasOperationDateChanges({
+        seasonId: season.id,
+        dateRanges,
+        deletedDateRangeIds,
+        transaction,
+      });
 
       // Process season data
       await saveSeasonData({
@@ -1230,6 +1237,12 @@ router.post(
         transaction,
         isWinterSeason,
       });
+
+      // Recalculate feature-level Winter fee dates when a Winter season is saved,
+      // or when feature-level Operation dates are changed.
+      if (isWinterSeason || operationDateChanged) {
+        await propagateWinterFeeDates(season.id, transaction);
+      }
 
       await transaction.commit();
       res.sendStatus(200);
