@@ -1,23 +1,37 @@
 import { Router } from "express";
-import * as SEASON_STATUS from "../../constants/seasonStatus.js";
+import { Season } from "../../models/index.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 import { checkPermissions } from "../../middleware/permissions.js";
 import parkRoutes from "./parks.js";
 
 const router = Router();
 
-// Reuse parkRoutes for the Edit published page
-// Get all parks with published seasons for the previous year
-router.get("/", checkPermissions([USER_ROLES.APPROVER]), (req, res, next) => {
-  const minOperatingYear = new Date().getFullYear() - 1;
+// Reuse parkRoutes for the previous-year edit page.
+// Get all parks with seasons for the previous year, regardless of status or seasonType.
+router.get(
+  "/",
+  checkPermissions([USER_ROLES.APPROVER]),
+  async (req, res, next) => {
+    // get the max season (latest operating year) from the db
+    const maxSeason = await Season.findOne({
+      order: [["operatingYear", "DESC"]],
+    });
 
-  req.query = {
-    ...req.query,
-    seasonStatus: SEASON_STATUS.PUBLISHED,
-    operatingYear: minOperatingYear,
-  };
+    // Group site and picnic shelter dates are collected a year before campsite dates
+    // because they open for reservations 12 months in advance. As a result, the highest
+    // operatingYear in the database is one year ahead of the active camping season.
+    const campingDateCollectionYear = maxSeason?.operatingYear
+      ? maxSeason.operatingYear - 1
+      : new Date().getFullYear();
+    const previousDateCollectionYear = campingDateCollectionYear - 1;
 
-  parkRoutes.handle(req, res, next);
-});
+    req.query = {
+      ...req.query,
+      operatingYear: previousDateCollectionYear,
+    };
+
+    parkRoutes.handle(req, res, next);
+  },
+);
 
 export default router;
