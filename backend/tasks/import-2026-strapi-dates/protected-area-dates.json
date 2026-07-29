@@ -1,0 +1,47 @@
+[
+  {
+    "date_type_id": 1,
+    "orcs": 96,
+    "name": "96: 2026 - Gate",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 211,
+    "name": "211: 2026 - Gate",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 263,
+    "name": "263: 2026 - Gate",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 292,
+    "name": "292: 2026 - Gate",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  },
+  {
+    "date_type_id": 1,
+    "orcs": 530,
+    "name": "530: 2026 - Gate",
+    "is_date_annual": true,
+    "operating_year": 2026,
+    "start_date": "2026-01-01",
+    "end_date": "2026-12-31"
+  }
+]
