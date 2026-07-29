@@ -1,6 +1,7 @@
 import React, { useMemo, useContext } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
+import { format } from "date-fns";
 import { faCheck } from "@fa-kit/icons/classic/solid";
 import { faPen } from "@fa-kit/icons/classic/regular";
 import StatusBadge from "@/components/StatusBadge";
@@ -236,7 +237,8 @@ function StatusTableRow({
         {!!season.lastUpdated && (
           <div className="fw-normal last-updated">
             Last updated {formatDateShortWithYear(season.lastUpdated.createdAt)}{" "}
-            by {season.lastUpdated.createdBy}
+            at {format(season.lastUpdated.createdAt, "h:mm aaa")} by{" "}
+            {season.lastUpdated.createdBy}
           </div>
         )}
       </th>
