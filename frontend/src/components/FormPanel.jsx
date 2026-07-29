@@ -502,13 +502,8 @@ function SeasonForm({
       );
     }
 
-    // Clone the payload
-    const payload = { ...changesPayload };
-
-    // Override status if provided
-    if (status) {
-      payload.status = status;
-    }
+    // Clone the payload, and override the status with the provided value.
+    const payload = { ...changesPayload, status };
 
     // Update isDateRangeAnnual for "Park gate open" date if gateDetail.hasGate is false
     if (
