@@ -1293,7 +1293,6 @@ router.post(
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
 
       // Determine if this is a winter season based on seasonType
-      const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
       const operationDateChanged = await hasOperationDateChanges({
         seasonId: season.id,
         dateRanges,
