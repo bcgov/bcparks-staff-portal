@@ -462,10 +462,8 @@ router.get(
     const requestedOperatingYear = Number.parseInt(req.query.operatingYear, 10);
     const minAllowedOperatingYear = currentYear - 1;
 
-    // Use the previous operating year in the Submit page
-    // so we include both the prior season and the current season
-    // Use requestedOperatingYear in the Edit published page
-    // Clamp to a safe lower bound
+    // Default to the previous operating year so the response includes both the prior and current seasons.
+    // If an operatingYear is explicitly requested, clamp to a safe lower bound.
     const operatingYear = Number.isNaN(requestedOperatingYear)
       ? minAllowedOperatingYear
       : Math.max(requestedOperatingYear, minAllowedOperatingYear);
