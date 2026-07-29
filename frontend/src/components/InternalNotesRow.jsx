@@ -39,10 +39,11 @@ export default function InternalNotesRow({ seasonId }) {
         await fetchData();
         setHasRequestedNotes(true);
         setIsOpen(true);
-      } catch {
+      } catch (apiError) {
         // Keep this false so collapsing and reopening retries the request.
         setHasRequestedNotes(false);
         console.error("Failed to fetch internal notes for season", seasonId);
+        console.error(apiError);
       }
     } else {
       // If the notes data is already loaded, just toggle the open state
