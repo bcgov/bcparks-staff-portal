@@ -105,21 +105,21 @@ DateTypeTableRow.propTypes = {
   savedWithErrors: PropTypes.bool,
 };
 
+// Helper to get the dateTypeNumber from the first item in a groupedDateRange
+function getDateTypeNumber(yearsObj) {
+  const firstRange = Object.values(yearsObj || {}).find(
+    (rangesForYear) => Array.isArray(rangesForYear) && rangesForYear.length,
+  )?.[0];
+
+  return firstRange?.dateType?.dateTypeNumber ?? Number.MAX_SAFE_INTEGER;
+}
+
 function DateTableRow({
   groupedDateRanges,
   currentYear,
-  showCalculatedWinterFeeLabel = false,
+  showCalculatedDateTypeLabels = false,
 }) {
   if (!currentYear || !groupedDateRanges) return null;
-
-  // Helper to get the dateTypeNumber from the first item in a groupedDateRange
-  function getDateTypeNumber(datesObj) {
-    const firstRange = Object.values(datesObj || {}).find(
-      (rangesForYear) => Array.isArray(rangesForYear) && rangesForYear.length,
-    )?.[0];
-
-    return firstRange?.dateType?.dateTypeNumber ?? Number.MAX_SAFE_INTEGER;
-  }
 
   // Sort date types based on DATE_TYPE.SORT_ORDER
   const sortedDateTypes = Object.entries(groupedDateRanges).sort(
@@ -130,14 +130,14 @@ function DateTableRow({
 
   return sortedDateTypes.map(([dateTypeName, yearsObj]) => {
     const dateTypeNumber = getDateTypeNumber(yearsObj);
-    const isCalculatedWinterFee =
-      showCalculatedWinterFeeLabel && dateTypeNumber === DATE_TYPE.WINTER_FEE;
+    const showCalculatedDateTypeLabel =
+      showCalculatedDateTypeLabels && dateTypeNumber === DATE_TYPE.WINTER_FEE;
 
     return (
       <tr key={dateTypeName} className="table-row--date">
         <td>
           <span className="fw-bold">{dateTypeName}</span>
-          {isCalculatedWinterFee && <span> (calculated)</span>}
+          {showCalculatedDateTypeLabel && <span> (calculated)</span>}
         </td>
         <td>
           <DateRangesList
@@ -156,7 +156,7 @@ function DateTableRow({
 DateTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
   currentYear: PropTypes.number,
-  showCalculatedWinterFeeLabel: PropTypes.bool,
+  showCalculatedDateTypeLabels: PropTypes.bool,
 };
 
 function getDisplayGroupedDateRanges(groupedDateRanges, showWinterFeeDates) {
@@ -168,10 +168,7 @@ function getDisplayGroupedDateRanges(groupedDateRanges, showWinterFeeDates) {
   // Hide winter fee dates for non-approvers
   return Object.fromEntries(
     Object.entries(groupedDateRanges).filter(([, yearsObj]) => {
-      const firstRange = Object.values(yearsObj || {}).find(
-        (rangesForYear) => Array.isArray(rangesForYear) && rangesForYear.length,
-      )?.[0];
-      const dateTypeNumber = firstRange?.dateType?.dateTypeNumber;
+      const dateTypeNumber = getDateTypeNumber(yearsObj);
 
       return dateTypeNumber !== DATE_TYPE.WINTER_FEE;
     }),
@@ -373,7 +370,7 @@ function FeaturesByFeatureTypeWithAreas({
                     <DateTableRow
                       groupedDateRanges={displayGroupedDateRanges}
                       currentYear={regularSeason.operatingYear}
-                      showCalculatedWinterFeeLabel={true}
+                      showCalculatedDateTypeLabels={true}
                     />
                     {isApprover && regularSeason.hasNotes && (
                       <InternalNotesRow seasonId={regularSeason.id} />
@@ -434,7 +431,7 @@ function FeaturesByFeatureTypeNoAreas({
             <DateTableRow
               groupedDateRanges={displayGroupedDateRanges}
               currentYear={regularSeason.operatingYear}
-              showCalculatedWinterFeeLabel={true}
+              showCalculatedDateTypeLabels={true}
             />
             {isApprover && regularSeason.hasNotes && (
               <InternalNotesRow seasonId={regularSeason.id} />
