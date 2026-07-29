@@ -114,7 +114,9 @@ function DateTableRow({
 
   // Helper to get the dateTypeNumber from the first item in a groupedDateRange
   function getDateTypeNumber(datesObj) {
-    const firstRange = Object.values(datesObj)[0]?.[0];
+    const firstRange = Object.values(datesObj || {}).find(
+      (rangesForYear) => Array.isArray(rangesForYear) && rangesForYear.length,
+    )?.[0];
 
     return firstRange?.dateType?.dateTypeNumber ?? Number.MAX_SAFE_INTEGER;
   }
@@ -166,7 +168,9 @@ function getDisplayGroupedDateRanges(groupedDateRanges, showWinterFeeDates) {
   // Hide winter fee dates for non-approvers
   return Object.fromEntries(
     Object.entries(groupedDateRanges).filter(([, yearsObj]) => {
-      const firstRange = Object.values(yearsObj || {})[0]?.[0];
+      const firstRange = Object.values(yearsObj || {}).find(
+        (rangesForYear) => Array.isArray(rangesForYear) && rangesForYear.length,
+      )?.[0];
       const dateTypeNumber = firstRange?.dateType?.dateTypeNumber;
 
       return dateTypeNumber !== DATE_TYPE.WINTER_FEE;
@@ -353,7 +357,7 @@ function FeaturesByFeatureTypeWithAreas({
                 );
 
                 return (
-                  <>
+                  <React.Fragment key={parkFeature.id}>
                     <tr className="table-row--park-area-feature">
                       <th scope="colgroup" colSpan="3">
                         {parkFeature.name}
@@ -371,7 +375,10 @@ function FeaturesByFeatureTypeWithAreas({
                       currentYear={regularSeason.operatingYear}
                       showCalculatedWinterFeeLabel={true}
                     />
-                  </>
+                    {isApprover && regularSeason.hasNotes && (
+                      <InternalNotesRow seasonId={regularSeason.id} />
+                    )}
+                  </React.Fragment>
                 );
               })}
             </React.Fragment>
