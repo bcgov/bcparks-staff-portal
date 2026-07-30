@@ -1,4 +1,5 @@
 import { Router } from "express";
+import asyncHandler from "express-async-handler";
 import { Season } from "../../models/index.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 import { checkPermissions } from "../../middleware/permissions.js";
@@ -11,7 +12,7 @@ const router = Router();
 router.get(
   "/",
   checkPermissions([USER_ROLES.APPROVER]),
-  async (req, res, next) => {
+  asyncHandler(async (req, res, next) => {
     // get the max season (latest operating year) from the db
     const maxSeason = await Season.findOne({
       order: [["operatingYear", "DESC"]],
@@ -30,8 +31,9 @@ router.get(
       operatingYear: previousDateCollectionYear,
     };
 
-    parkRoutes.handle(req, res, next);
-  },
+    return next();
+  }),
+  parkRoutes,
 );
 
 export default router;
