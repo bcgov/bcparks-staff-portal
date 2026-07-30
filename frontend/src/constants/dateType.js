@@ -17,11 +17,12 @@ export const SORT_ORDER = [
   PARK_GATE_OPEN,
   TIER_1,
   TIER_2,
-  WINTER_FEE,
   // area/feature-level types
   OPERATION,
   RESERVATION,
   BACKCOUNTRY_REGISTRATION,
   FIRST_COME_FIRST_SERVED,
   FULL_SERVICES_AND_FEES,
+  // all levels type
+  WINTER_FEE,
 ];
