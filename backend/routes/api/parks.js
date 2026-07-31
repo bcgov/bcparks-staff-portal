@@ -84,7 +84,7 @@ function seasonModel(minYear, required = true, seasonStatus = null) {
  */
 function featureSeasonModel(minYear, seasonStatus = null) {
   return {
-    ...seasonModel(minYear, true, seasonStatus),
+    ...seasonModel(minYear, false, seasonStatus),
     where: {
       operatingYear: {
         [Op.gte]: minYear,
