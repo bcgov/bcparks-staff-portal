@@ -12,7 +12,7 @@ import {
  * Returns a query part for including change logs associated with a Season.
  * @returns {Object} Sequelize query part for fetching change logs
  */
-function changeLogsQueryPart() {
+export function changeLogsQueryPart() {
   return {
     model: SeasonChangeLog,
     as: "changeLogs",
@@ -40,7 +40,7 @@ function changeLogsQueryPart() {
  * @param {number} seasonId the ID of the DateRanges' Season
  * @returns {Object} Sequelize query part for fetching DateRanges
  */
-function dateRangesQueryPart(seasonId) {
+export function dateRangesQueryPart(seasonId) {
   return {
     model: DateRange,
     as: "dateRanges",
@@ -65,7 +65,7 @@ function dateRangesQueryPart(seasonId) {
  * @param {number} seasonId the ID of the DateRanges' Season
  * @returns {Object} Sequelize query part for fetching Dateable and its DateRanges
  */
-function dateableAndDatesQueryPart(seasonId) {
+export function dateableAndDatesQueryPart(seasonId) {
   return {
     model: Dateable,
     as: "dateable",
@@ -77,7 +77,7 @@ function dateableAndDatesQueryPart(seasonId) {
  * Returns a query part for including FeatureType details with a Feature.
  * @returns {Object} Sequelize query part for fetching FeatureType details
  */
-function featureTypeQueryPart() {
+export function featureTypeQueryPart() {
   return {
     model: FeatureType,
     as: "featureType",
@@ -86,7 +86,7 @@ function featureTypeQueryPart() {
 }
 
 // Common attributes for all Season queries
-const SEASON_ATTRIBUTES = [
+export const SEASON_ATTRIBUTES = [
   "id",
   "operatingYear",
   "status",
@@ -98,11 +98,3 @@ const SEASON_ATTRIBUTES = [
   "seasonType",
   "savedWithErrors",
 ];
-
-export {
-  changeLogsQueryPart,
-  dateRangesQueryPart,
-  dateableAndDatesQueryPart,
-  featureTypeQueryPart,
-  SEASON_ATTRIBUTES,
-};

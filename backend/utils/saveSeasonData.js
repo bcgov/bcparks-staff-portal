@@ -17,7 +17,7 @@ import {
  * @throws {Error} If the Season is not found, an error with status 404 is thrown
  * @returns {boolean} Returns true if the Season exists
  */
-function checkSeasonExists(season) {
+export function checkSeasonExists(season) {
   if (season) return true;
 
   const error = new Error("Season not found");
@@ -39,7 +39,7 @@ function checkSeasonExists(season) {
  * @param {Transaction} [options.transaction=null] Optional Sequelize transaction object for atomic operations
  * @returns {Promise<Season>} The updated season model
  */
-async function updateStatus(
+export async function updateStatus(
   seasonId,
   status,
   savedWithErrors,
@@ -101,7 +101,7 @@ async function updateStatus(
  * @param {boolean} params.isWinterSeason Whether this is a winter season
  * @returns {Promise<void>}
  */
-async function saveSeasonData({
+export async function saveSeasonData({
   season,
   dateRanges,
   dateRangeAnnuals,
@@ -277,5 +277,3 @@ async function saveSeasonData({
     saveGateDetail,
   ]);
 }
-
-export { checkSeasonExists, updateStatus, saveSeasonData };

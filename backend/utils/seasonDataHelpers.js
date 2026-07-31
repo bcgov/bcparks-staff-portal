@@ -26,7 +26,10 @@ import {
  * @param {Object} dateTypeWhere Optional where clause for filtering DateTypes
  * @returns {Array} Array with any DateRanges from the previous Season
  */
-async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
+export async function getPreviousSeasonDates(
+  currentSeason,
+  dateTypeWhere = {},
+) {
   try {
     // @TODO: the previous season dates here are not the same as the /park endpoint
     const prevSeason = await Season.findOne({
@@ -71,7 +74,7 @@ async function getPreviousSeasonDates(currentSeason, dateTypeWhere = {}) {
  * @param {number} publishableId The ID of the Publishable to get DateRange
  * @returns {Promise<Array>} An array of DateRangeAnnual models with their DateType
  */
-async function getDateRangeAnnuals(publishableId) {
+export async function getDateRangeAnnuals(publishableId) {
   if (!publishableId) return [];
   return await DateRangeAnnual.findAll({
     where: { publishableId },
@@ -91,7 +94,7 @@ async function getDateRangeAnnuals(publishableId) {
  * @param {number} publishableId The ID of the Publishable to get GateDetail
  * @returns {Promise<Object|null>} GateDetail model, or null if not found
  */
-async function getGateDetail(publishableId) {
+export async function getGateDetail(publishableId) {
   if (!publishableId) return null;
   return await GateDetail.findOne({
     where: { publishableId },
@@ -112,7 +115,10 @@ async function getGateDetail(publishableId) {
  * @param {number} operatingYear Operating year for the Seasons
  * @returns {Promise<Array>} - Array of Frontcountry Campground feature reservation dates
  */
-async function getFrontcountryFeatureReservationDates(park, operatingYear) {
+export async function getFrontcountryFeatureReservationDates(
+  park,
+  operatingYear,
+) {
   // Only fetch dates if the park has Winter fee dates or either Tier 1 or Tier 2 dates.
   // This data is needed for Winter/Tier date validation.
   if (!(park.hasWinterFeeDates || park.hasTier1Dates || park.hasTier2Dates))
@@ -209,7 +215,7 @@ async function getFrontcountryFeatureReservationDates(park, operatingYear) {
  * @param {number} operatingYear Operating year for the Seasons
  * @returns {Promise<Object>} - Object with parkTier1Dates, parkTier2Dates, and parkWinterDates arrays
  */
-async function getParkDates(park, operatingYear) {
+export async function getParkDates(park, operatingYear) {
   // Query both regular and winter seasons to get the Tier 1, Tier 2, and Winter fee dates
   // for this park and year
   const seasons = await Season.findAll({
@@ -271,7 +277,7 @@ async function getParkDates(park, operatingYear) {
  * @param {number} operatingYear Operating year for the Seasons
  * @returns {Promise<Object|null>} The winter season object with all related data, or null
  */
-async function getWinterSeason(park, operatingYear) {
+export async function getWinterSeason(park, operatingYear) {
   if (!park.hasWinterFeeDates) {
     return null;
   }
@@ -320,12 +326,3 @@ async function getWinterSeason(park, operatingYear) {
     dateRangeAnnuals,
   };
 }
-
-export {
-  getPreviousSeasonDates,
-  getDateRangeAnnuals,
-  getGateDetail,
-  getFrontcountryFeatureReservationDates,
-  getParkDates,
-  getWinterSeason,
-};
