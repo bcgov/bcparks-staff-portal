@@ -40,7 +40,9 @@ export default function EditPublishedPage() {
     if (!selectedPark) return [];
 
     const items = [];
-    const targetOperatingYear = new Date().getFullYear() - 1;
+    const targetOperatingYear = Math.min(
+      ...selectedPark.seasons.map((s) => s.operatingYear),
+    );
 
     // Find a season by year and type
     function getSeasonByYear(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
@@ -169,7 +171,20 @@ export default function EditPublishedPage() {
                   </thead>
                   <tbody>
                     {parkItems.map((item) => (
-                      <tr key={item.id} className={`table-row--${item.level}`}>
+                      <tr
+                        key={item.id}
+                        className="table-row--clickable"
+                        onClick={() => handleOpenFormPanel(item)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleOpenFormPanel(item);
+                          }
+                        }}
+                        tabIndex={0}
+                        role="button"
+                        aria-label={`Edit ${item.name}`}
+                      >
                         <th className="align-middle">
                           {item.name}
                           {item.typeName && (
@@ -179,11 +194,7 @@ export default function EditPublishedPage() {
                           )}
                         </th>
                         <td className="align-middle text-end">
-                          <IconButton
-                            icon={faPen}
-                            label="Edit"
-                            onClick={() => handleOpenFormPanel(item)}
-                          />
+                          <IconButton icon={faPen} label="Edit" tabIndex={-1} />
                         </td>
                       </tr>
                     ))}

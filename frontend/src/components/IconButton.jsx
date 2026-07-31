@@ -5,18 +5,18 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 export default function IconButton({
   icon,
   label,
-  onClick,
-  textColor,
+  extraClassName,
   loading = false,
   disabled = false,
+  ...props
 }) {
   const isDisabled = disabled || loading;
 
   return (
     <button
+      {...props}
       type="button"
-      onClick={onClick}
-      className={classNames("btn btn-text text-link", textColor)}
+      className={classNames("btn btn-text text-link", extraClassName)}
       disabled={isDisabled}
     >
       {loading ? (
@@ -33,7 +33,7 @@ IconButton.propTypes = {
   icon: PropTypes.object.isRequired,
   label: PropTypes.string.isRequired,
   onClick: PropTypes.func,
-  textColor: PropTypes.string,
+  extraClassName: PropTypes.string,
   loading: PropTypes.bool,
   disabled: PropTypes.bool,
 };

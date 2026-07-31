@@ -175,7 +175,7 @@ function getDisplayGroupedDateRanges(groupedDateRanges, showWinterFeeDates) {
   );
 }
 
-function ApproveButton({ seasonId, status, color = "", onApprove }) {
+function ApproveButton({ seasonId, status, onApprove }) {
   // disable the approve button if a season is already approved, published, or requested by HQ
   const isDisabled = status !== "pending review";
   const { refreshTable } = useContext(RefreshTableContext);
@@ -203,7 +203,6 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
     <IconButton
       icon={faCheck}
       label="Approve"
-      textColor={color}
       onClick={approveSeason}
       loading={sendingSave}
       disabled={isDisabled}
@@ -214,7 +213,6 @@ function ApproveButton({ seasonId, status, color = "", onApprove }) {
 ApproveButton.propTypes = {
   seasonId: PropTypes.number.isRequired,
   status: PropTypes.string.isRequired,
-  color: PropTypes.string,
   onApprove: PropTypes.func.isRequired,
 };
 
@@ -226,7 +224,6 @@ function StatusTableRow({
   typeName,
   season,
   formPanelHandler,
-  color,
 }) {
   const flashMessage = useContext(globalFlashMessageContext);
   const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
@@ -285,14 +282,12 @@ function StatusTableRow({
             icon={faPen}
             label="Edit"
             onClick={formPanelHandler}
-            textColor={color}
           />
 
           {approver && (
             <ApproveButton
               seasonId={season.id}
               status={season.status}
-              color={color}
               onApprove={onApprove}
             />
           )}
@@ -315,7 +310,6 @@ StatusTableRow.propTypes = {
   typeName: PropTypes.string,
   season: PropTypes.object,
   formPanelHandler: PropTypes.func,
-  color: PropTypes.string,
 };
 
 function FeaturesByFeatureTypeWithAreas({
