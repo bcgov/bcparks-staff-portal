@@ -149,6 +149,8 @@ export function resolveSeasonApprovalState({
   // APPROVED status can only be set if all required team approvals are satisfied.
   // Any other status can be set without team approvals, and will not change the approval flags.
   if (requestedNewStatus === STATUS.APPROVED) {
+    // Record a team's approval whenever that team submits APPROVED.
+    // This stores approver history even when that team's approval is not required for status promotion.
     // A team-specific approver can only satisfy their own side of the approval state.
     if (isInformationSvcApprover) {
       // Info Services team approver is approving
