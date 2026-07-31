@@ -150,12 +150,12 @@ export function resolveSeasonApprovalState({
   // Any other status can be set without team approvals, and will not change the approval flags.
   if (requestedNewStatus === STATUS.APPROVED) {
     // A team-specific approver can only satisfy their own side of the approval state.
-    if (requiresInformationSvcApproval && isInformationSvcApprover) {
+    if (isInformationSvcApprover) {
       // Info Services team approver is approving
       informationSvcApproved = true;
     }
 
-    if (requiresReservationSvcApproval && isReservationSvcApprover) {
+    if (isReservationSvcApprover) {
       // Reservation Services team approver is approving
       reservationSvcApproved = true;
     }
