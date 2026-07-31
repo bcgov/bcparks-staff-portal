@@ -133,7 +133,10 @@ function DateTableRow({
     const dateTypeNumber = getDateTypeNumber(yearsObj);
 
     // hasWinterFeeDates flag overrides db dateRange existence
-    if (!hasWinterFeeDates && dateTypeNumber === DATE_TYPE.WINTER_FEE) {
+    if (
+      hasWinterFeeDates === false &&
+      dateTypeNumber === DATE_TYPE.WINTER_FEE
+    ) {
       return null;
     }
 
@@ -441,6 +444,7 @@ function FeaturesByFeatureTypeNoAreas({
               groupedDateRanges={displayGroupedDateRanges}
               currentYear={regularSeason.operatingYear}
               showCalculatedDateTypeLabels={true}
+              hasWinterFeeDates={feature.hasWinterFeeDates}
             />
             {isApprover && regularSeason.hasNotes && (
               <InternalNotesRow seasonId={regularSeason.id} />
