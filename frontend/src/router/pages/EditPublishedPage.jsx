@@ -40,7 +40,9 @@ export default function EditPublishedPage() {
     if (!selectedPark) return [];
 
     const items = [];
-    const targetOperatingYear = new Date().getFullYear() - 1;
+    const targetOperatingYear = Math.min(
+      ...selectedPark.seasons.map((s) => s.operatingYear),
+    );
 
     // Find a season by year and type
     function getSeasonByYear(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
