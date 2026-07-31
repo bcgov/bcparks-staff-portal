@@ -19,7 +19,7 @@ import {
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import { populateAnnualDateRangesForYear } from "../populate-date-ranges/populate-annual-date-ranges.js";
 import { populateBlankDateRangesForYear } from "../populate-date-ranges/populate-blank-date-ranges.js";
-import resolveNewSeasonStatus from "../../utils/resolveNewSeasonStatus.js";
+import resolveSeasonCreationStatus from "../../utils/resolveSeasonCreationStatus.js";
 import {
   createPublishableId,
   createDateableId,
@@ -83,7 +83,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
     if (season) return season.id;
 
     // Determine the status of the new season based on annual dates
-    const status = await resolveNewSeasonStatus(
+    const status = await resolveSeasonCreationStatus(
       publishableId,
       SEASON_TYPE.REGULAR,
       transaction,

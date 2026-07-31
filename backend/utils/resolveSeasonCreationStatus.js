@@ -55,7 +55,7 @@ async function getCachedDateTypeMaps(transaction = null) {
  * @param {Object} [transaction=null] Optional Sequelize transaction object for database operations
  * @returns {Promise<string>} The status for the new season from constants/seasonStatus
  */
-export default async function resolveNewSeasonStatus(
+export default async function resolveSeasonCreationStatus(
   publishableId,
   seasonType,
   transaction = null,

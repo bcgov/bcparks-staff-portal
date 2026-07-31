@@ -22,7 +22,7 @@ Creation rules:
 
 3. **Creates winter seasons for the specified operating year:**
    - Creates new seasons with `seasonType = "winter"`
-   - Sets `status` using `resolveNewSeasonStatus(...)` and `readyToPublish = true`
+   - Sets `status` using `resolveSeasonCreationStatus(...)` and `readyToPublish = true`
    - Skips creation if a Winter season already exists for the same publishable/year
 
 4. **Creates Winter fee DateRanges in winter seasons:**
