@@ -118,7 +118,6 @@ function DateTableRow({
   groupedDateRanges,
   currentYear,
   showCalculatedDateTypeLabels = false,
-  hasWinterFeeDates = false,
 }) {
   if (!currentYear || !groupedDateRanges) return null;
 
@@ -131,15 +130,6 @@ function DateTableRow({
 
   return sortedDateTypes.map(([dateTypeName, yearsObj]) => {
     const dateTypeNumber = getDateTypeNumber(yearsObj);
-
-    // hasWinterFeeDates flag overrides db dateRange existence
-    if (
-      hasWinterFeeDates === false &&
-      dateTypeNumber === DATE_TYPE.WINTER_FEE
-    ) {
-      return null;
-    }
-
     const showCalculatedDateTypeLabel =
       showCalculatedDateTypeLabels && dateTypeNumber === DATE_TYPE.WINTER_FEE;
 
@@ -167,7 +157,6 @@ DateTableRow.propTypes = {
   groupedDateRanges: PropTypes.object,
   currentYear: PropTypes.number,
   showCalculatedDateTypeLabels: PropTypes.bool,
-  hasWinterFeeDates: PropTypes.bool,
 };
 
 function getDisplayGroupedDateRanges(groupedDateRanges, showWinterFeeDates) {
@@ -382,7 +371,6 @@ function FeaturesByFeatureTypeWithAreas({
                       groupedDateRanges={displayGroupedDateRanges}
                       currentYear={regularSeason.operatingYear}
                       showCalculatedDateTypeLabels={true}
-                      hasWinterFeeDates={parkFeature.hasWinterFeeDates}
                     />
                     {isApprover && regularSeason.hasNotes && (
                       <InternalNotesRow seasonId={regularSeason.id} />
@@ -444,7 +432,6 @@ function FeaturesByFeatureTypeNoAreas({
               groupedDateRanges={displayGroupedDateRanges}
               currentYear={regularSeason.operatingYear}
               showCalculatedDateTypeLabels={true}
-              hasWinterFeeDates={feature.hasWinterFeeDates}
             />
             {isApprover && regularSeason.hasNotes && (
               <InternalNotesRow seasonId={regularSeason.id} />
