@@ -6,16 +6,26 @@ import * as SEASON_TYPE from "@/constants/seasonType";
 export default function OperatingYearSelect({
   season = null,
   seasonOptions,
+  featureTypeName = null,
   loadingSeasonOptions = false,
   onSeasonChange,
 }) {
   const currentYear = new Date().getFullYear();
+  const allowCurrentYear =
+    featureTypeName === "Group campground" ||
+    featureTypeName === "Picnic shelter";
 
   // Filter out seasons that are in the future and hide the current operating year in Edit Published.
-  // e.g. if current year is 2026, exclude operatingYear >= 2026.
+  // Group campground and Picnic shelter always carry one extra season ahead,
+  // so allow the current operating year for those feature types.
   const editableSeasonOptions = useMemo(
-    () => seasonOptions.filter((option) => option.operatingYear < currentYear),
-    [seasonOptions, currentYear],
+    () =>
+      seasonOptions.filter((option) =>
+        allowCurrentYear
+          ? option.operatingYear <= currentYear
+          : option.operatingYear < currentYear,
+      ),
+    [allowCurrentYear, seasonOptions, currentYear],
   );
 
   const showOperatingYearRange = useMemo(
@@ -70,6 +80,7 @@ OperatingYearSelect.propTypes = {
       operatingYear: PropTypes.number.isRequired,
     }),
   ).isRequired,
+  featureTypeName: PropTypes.string,
   loadingSeasonOptions: PropTypes.bool,
   onSeasonChange: PropTypes.func.isRequired,
 };

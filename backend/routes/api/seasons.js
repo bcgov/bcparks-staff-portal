@@ -468,6 +468,7 @@ router.get(
   "/options/:seasonId",
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
+    const currentYear = new Date().getFullYear();
 
     const currentSeason = await Season.findByPk(seasonId, {
       attributes: ["id", "publishableId", "seasonType"],
@@ -481,7 +482,7 @@ router.get(
       where: {
         publishableId: currentSeason.publishableId,
         seasonType: currentSeason.seasonType,
-        status: STATUS.PUBLISHED,
+        [Op.or]: [{ status: STATUS.PUBLISHED }, { operatingYear: currentYear }],
       },
       order: [["operatingYear", "DESC"]],
     });
