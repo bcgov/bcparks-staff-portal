@@ -557,7 +557,7 @@ router.get(
           required: true,
         },
         // Publishable Seasons for the ParkArea
-        seasonModel(operatingYear, true, seasonStatus),
+        featureSeasonModel(operatingYear, seasonStatus),
         // ParkAreaType for the ParkArea
         {
           model: ParkAreaType,
