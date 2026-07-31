@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { Op, col, where as sqlWhere } from "sequelize";
 import { Router } from "express";
 import _ from "lodash";
 import sequelize from "../../db/connection.js";
@@ -76,6 +76,30 @@ function seasonModel(minYear, required = true, seasonStatus = null) {
 }
 
 /**
+ * Builds Season include config for Feature relations.
+ * Excludes winter seasons when the parent Feature hasWinterFeeDates is false.
+ * @param {number} minYear Minimum operating year to filter seasons by (inclusive)
+ * @param {string|null} [seasonStatus=null] Optional status filter
+ * @returns {Object} Sequelize include config for Feature -> Season
+ */
+function featureSeasonModel(minYear, seasonStatus = null) {
+  return {
+    ...seasonModel(minYear, true, seasonStatus),
+    where: {
+      operatingYear: {
+        [Op.gte]: minYear,
+      },
+      ...(seasonStatus ? { status: seasonStatus } : {}),
+      // SQL-level guard: if a feature has no winter fee dates, exclude winter seasons.
+      [Op.or]: [
+        { seasonType: { [Op.ne]: SEASON_TYPE.WINTER } },
+        sqlWhere(col("features.hasWinterFeeDates"), true),
+      ],
+    },
+  };
+}
+
+/**
  * Builds Sequelize include configuration for Feature model with type and seasons.
  * @param {number} minYear Minimum operating year to filter seasons by (inclusive)
  * @param {Object} [where={}] Additional Sequelize WHERE conditions for features
@@ -108,7 +132,7 @@ function featureModel(minYear, where = {}, seasonStatus = null) {
         attributes: ["id", "featureTypeNumber", "name"],
       },
       // Publishable Seasons for the Feature
-      seasonModel(minYear, false, seasonStatus),
+      featureSeasonModel(minYear, seasonStatus),
     ],
   };
 }
@@ -462,11 +486,10 @@ router.get(
     const requestedOperatingYear = Number.parseInt(req.query.operatingYear, 10);
     const minAllowedOperatingYear = currentYear - 1;
 
-    // Use currentYear in the Submit page
-    // Use requestedOperatingYear in the Edit published page
-    // Clamp to a safe lower bound
+    // Default to the previous operating year so the response includes both the prior and current seasons.
+    // If an operatingYear is explicitly requested, clamp to a safe lower bound.
     const operatingYear = Number.isNaN(requestedOperatingYear)
-      ? currentYear
+      ? minAllowedOperatingYear
       : Math.max(requestedOperatingYear, minAllowedOperatingYear);
     const seasonStatus =
       typeof req.query.seasonStatus === "string"

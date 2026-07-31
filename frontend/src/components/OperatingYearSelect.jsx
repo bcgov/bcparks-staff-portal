@@ -9,11 +9,20 @@ export default function OperatingYearSelect({
   loadingSeasonOptions = false,
   onSeasonChange,
 }) {
+  const currentYear = new Date().getFullYear();
+
+  // Filter out seasons that are in the future and hide the current operating year in Edit Published.
+  // e.g. if current year is 2026, exclude operatingYear >= 2026.
+  const editableSeasonOptions = useMemo(
+    () => seasonOptions.filter((option) => option.operatingYear < currentYear),
+    [seasonOptions, currentYear],
+  );
+
   const showOperatingYearRange = useMemo(
     () =>
       season?.seasonType === SEASON_TYPE.WINTER ||
-      Boolean(season?.feature?.datesCanSpan2Years),
-    [season?.seasonType, season?.feature?.datesCanSpan2Years],
+      Boolean(season?.datesCanSpan2Years),
+    [season?.seasonType, season?.datesCanSpan2Years],
   );
 
   const formatOperatingYearLabel = useCallback(
@@ -37,9 +46,9 @@ export default function OperatingYearSelect({
           onSeasonChange(nextSeasonId);
         }}
         className="ms-0 ms-sm-3 mb-2"
-        disabled={loadingSeasonOptions || seasonOptions.length === 0}
+        disabled={loadingSeasonOptions || editableSeasonOptions.length === 0}
       >
-        {seasonOptions.map((option) => (
+        {editableSeasonOptions.map((option) => (
           <option key={option.id} value={option.id}>
             {formatOperatingYearLabel(option.operatingYear)}
           </option>
@@ -53,9 +62,7 @@ OperatingYearSelect.propTypes = {
   season: PropTypes.shape({
     id: PropTypes.number,
     seasonType: PropTypes.string,
-    feature: PropTypes.shape({
-      datesCanSpan2Years: PropTypes.bool,
-    }),
+    datesCanSpan2Years: PropTypes.bool,
   }),
   seasonOptions: PropTypes.arrayOf(
     PropTypes.shape({

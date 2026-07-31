@@ -370,7 +370,7 @@ function formatDate(date) {
 async function formatDateRanges(entity, season) {
   // Fetch all date ranges for this season
   const dateRangesRows = await DateRange.findAll({
-    attributes: ["startDate", "endDate", "dateTypeId"],
+    attributes: ["id", "startDate", "endDate", "dateTypeId"],
 
     where: {
       seasonId: season.id,
@@ -440,6 +440,7 @@ async function formatDateRanges(entity, season) {
     }
 
     return {
+      id: dateRange.id,
       isActive: true, // Must be true if the entity has dates being published
       isDateAnnual,
       startDate: formatDate(dateRange.startDate),
