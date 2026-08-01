@@ -9,6 +9,12 @@ export const DOOT_ALL_PARK_ACCESS = "doot-all-park-access";
 // Permission to approve submitted dates
 export const DOOT_APPROVER = "doot-approver";
 
+// IS team approvers: HQ Staff that can approve DOOT submissions on behalf of the Information Services team
+export const INFORMATION_SVC_APPROVER = "doot-information-svc-approver";
+
+// RS team approvers: HQ Staff that can approve DOOT submissions on behalf of the Reservation Services team
+export const RESERVATION_SVC_APPROVER = "doot-reservation-svc-approver";
+
 // Permission to enter dates and save as draft
 export const DOOT_CONTRIBUTOR = "doot-contributor";
 

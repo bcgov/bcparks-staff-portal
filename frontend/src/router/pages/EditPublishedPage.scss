@@ -1,19 +1,30 @@
 .page.edit-published {
   table {
-    tr.table-row {
-      &--park {
-        th,
-        td {
-          background-color: var(--surface-color-secondary-button-hover);
-        }
+    tr.table-row--clickable {
+      cursor: pointer;
+
+      th,
+      td {
+        border-bottom: 1px solid var(--surface-color-border-default);
       }
-      &--park-area,
-      &--park-area-feature,
-      &--feature {
-        th,
-        td {
-          background-color: var(--bs-table-bg);
-        }
+
+      &:active th,
+      &:active td {
+        background-color: var(--surface-color-secondary-pressed);
+      }
+
+      &:hover th,
+      &:hover td,
+      &:focus-visible th,
+      &:focus-visible td {
+        background-color: var(--surface-color-secondary-button-hover);
+      }
+    }
+
+    tr.table-row {
+      th,
+      td {
+        background-color: var(--bs-table-bg);
       }
     }
   }

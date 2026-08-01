@@ -59,6 +59,16 @@ export default (sequelize) => {
         allowNull: false,
         defaultValue: false,
       },
+      informationSvcApproved: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
+      reservationSvcApproved: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       readyToPublish: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
