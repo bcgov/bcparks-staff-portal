@@ -27,6 +27,7 @@ const FEATURE_ATTRIBUTES = [
   "publishableId",
   "hasReservations",
   "hasBackcountryPermits",
+  "hasWinterFeeDates",
 ];
 
 /**
@@ -38,6 +39,31 @@ const FEATURE_ATTRIBUTES = [
  */
 function getDateRangeKey(seasonId, dateableId, dateTypeId) {
   return `${seasonId}-${dateableId}-${dateTypeId}`;
+}
+
+/**
+ * Returns applicable feature-level date types for the provided season type.
+ * Winter feature seasons only support Winter fee dates at the Feature level,
+ * While regular sesasons support anything but winter dates at the Feature level.
+ * @param {Object} feature Feature-like object with seasonal capability flags
+ * @param {Object} featureDateTypesByDateTypeId DateType map keyed by dateTypeNumber
+ * @param {string} seasonType Season type for filtering
+ * @returns {Array<Object>} Applicable DateType objects
+ */
+function getFeatureDateTypesForSeason(
+  feature,
+  featureDateTypesByDateTypeId,
+  seasonType,
+) {
+  if (seasonType === "winter") {
+    return feature.hasWinterFeeDates
+      ? [featureDateTypesByDateTypeId[DATE_TYPE.WINTER_FEE]].filter(Boolean)
+      : [];
+  }
+
+  return getDateTypesForFeature(feature, featureDateTypesByDateTypeId).filter(
+    (dateType) => dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE,
+  );
 }
 
 /**
@@ -159,9 +185,10 @@ export async function populateBlankDateRangesForYear(
       // and applicable date types
       if (season.parkArea) {
         return season.parkArea.features.flatMap((feature) => {
-          const dateTypes = getDateTypesForFeature(
+          const dateTypes = getFeatureDateTypesForSeason(
             feature,
             featureDateTypesByDateTypeId,
+            season.seasonType,
           );
 
           return dateTypes.map((dateType) => ({
@@ -175,9 +202,10 @@ export async function populateBlankDateRangesForYear(
       // If the season is for a Feature, add its ID for all applicable date types
       if (season.feature) {
         const feature = season.feature;
-        const dateTypes = getDateTypesForFeature(
+        const dateTypes = getFeatureDateTypesForSeason(
           feature,
           featureDateTypesByDateTypeId,
+          season.seasonType,
         );
 
         return dateTypes.map((dateType) => ({
