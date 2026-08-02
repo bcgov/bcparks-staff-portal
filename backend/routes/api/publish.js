@@ -553,11 +553,16 @@ async function formatParkAreaData(parkArea, season) {
   // Get all Features in this ParkArea
   const features = await parkArea.getFeatures({
     attributes: FEATURE_ATTRIBUTES,
-
-    where: { active: true, hasDates: true },
+    where: {
+      active: true,
+      hasDates: true,
+      ...(season.seasonType === SEASON_TYPE.WINTER
+        ? { hasWinterFeeDates: true }
+        : {}),
+    },
   });
 
-  // Fetch and format data for each Feature in the ParkArea
+  // Fetch and format data for each applicable Feature in the ParkArea
   const formattedFeatures = [];
 
   for (const feature of features) {
