@@ -21,11 +21,11 @@ export default function MultiSelect({
         ? [...value, changedValue]
         : value.filter((val) => val !== changedValue);
 
-      onInput(updatedOptions); // Pass updated options to parent
+      onInput(updatedOptions, { changedValue, checked });
     }
 
     return (
-      <div className="form-check">
+      <div className={classNames("form-check", { "ms-3": option.indented })}>
         <input
           className="form-check-input"
           type="checkbox"
@@ -45,6 +45,7 @@ export default function MultiSelect({
     option: PropTypes.shape({
       value: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
+      indented: PropTypes.bool,
     }).isRequired,
   };
 
@@ -115,6 +116,7 @@ MultiSelect.propTypes = {
     PropTypes.shape({
       value: PropTypes.string.isRequired,
       label: PropTypes.string.isRequired,
+      indented: PropTypes.bool,
     }),
   ).isRequired,
   onInput: PropTypes.func.isRequired,
