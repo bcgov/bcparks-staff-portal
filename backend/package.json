@@ -37,7 +37,7 @@
     "@dotenvx/dotenvx": "^1.75.1",
     "@fast-csv/format": "^5.0.7",
     "adminjs": "^7.8.17",
-    "axios": "^1.18.1",
+    "axios": "^1.19.0",
     "compression": "^1.8.1",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",

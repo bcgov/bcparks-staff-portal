@@ -20,7 +20,7 @@
     "@fortawesome/react-fontawesome": "^0.2.6",
     "@tanstack/react-query": "^5.101.4",
     "@vitejs/plugin-react-swc": "^3.11.0",
-    "axios": "^1.18.1",
+    "axios": "^1.19.0",
     "classnames": "^2.5.1",
     "date-fns": "^4.4.0",
     "file-saver": "^2.0.5",
@@ -48,8 +48,8 @@
     "web-vitals": "^4.2.4"
   },
   "devDependencies": {
-    "@types/react": "^19.2.17",
-    "@types/react-dom": "^19.2.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "eslint": "^9.39.5",
     "eslint-config-eslint": "^11.0.0",
     "eslint-config-prettier": "^9.1.2",
