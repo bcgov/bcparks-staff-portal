@@ -52,5 +52,7 @@ export const labelByValue = {
   [APPROVED.value]: APPROVED.label,
   [REQUESTED.value]: REQUESTED.label,
   [PENDING_REVIEW.value]: PENDING_REVIEW.label,
+  [IS_REVIEW_FILTER.value]: IS_REVIEW_FILTER.label,
+  [RS_REVIEW_FILTER.value]: RS_REVIEW_FILTER.label,
   [NOT_PROVIDED.value]: NOT_PROVIDED.label,
 };
