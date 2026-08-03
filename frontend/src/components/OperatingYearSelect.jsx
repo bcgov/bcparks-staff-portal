@@ -2,18 +2,20 @@ import { useCallback, useMemo } from "react";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 import * as SEASON_TYPE from "@/constants/seasonType";
+import * as FEATURE_TYPE from "@/constants/featureType";
 
 export default function OperatingYearSelect({
   season = null,
   seasonOptions,
-  featureTypeName = null,
+  featureTypeNumber = null,
   loadingSeasonOptions = false,
   onSeasonChange,
 }) {
   const currentYear = new Date().getFullYear();
+  const normalizedFeatureTypeNumber = Number(featureTypeNumber);
   const allowCurrentYear =
-    featureTypeName === "Group campground" ||
-    featureTypeName === "Picnic shelter";
+    normalizedFeatureTypeNumber === FEATURE_TYPE.GROUP_CAMPGROUND ||
+    normalizedFeatureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER;
 
   // Filter out seasons that are in the future and hide the current operating year in Edit Published.
   // Group campground and Picnic shelter always carry one extra season ahead,
@@ -80,7 +82,7 @@ OperatingYearSelect.propTypes = {
       operatingYear: PropTypes.number.isRequired,
     }),
   ).isRequired,
-  featureTypeName: PropTypes.string,
+  featureTypeNumber: PropTypes.number,
   loadingSeasonOptions: PropTypes.bool,
   onSeasonChange: PropTypes.func.isRequired,
 };

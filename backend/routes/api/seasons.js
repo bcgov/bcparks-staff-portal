@@ -154,6 +154,7 @@ router.get(
       dateTypes: orderedDateTypes,
       icon: seasonModel.feature.featureType.icon,
       featureTypeName: seasonModel.feature.featureType.name,
+      featureTypeNumber: seasonModel.feature.featureType.featureTypeNumber,
       name: seasonModel.feature.name,
       parkName: seasonModel.feature.park.name,
       parkWinterDates,
@@ -252,6 +253,7 @@ router.get(
 
     let icon = null;
     let featureTypeName = null;
+    let featureTypeNumber = null;
 
     // If there are features in the Park Area, use the first feature's type
     if (seasonModel.parkArea.features.length > 0) {
@@ -259,6 +261,7 @@ router.get(
 
       icon = firstFeature.featureType.icon;
       featureTypeName = firstFeature.featureType.name;
+      featureTypeNumber = firstFeature.featureType.featureTypeNumber;
     }
 
     // Get DateRangeAnnuals and GateDetail
@@ -295,6 +298,7 @@ router.get(
       featureDateTypesByFeatureId,
       icon,
       featureTypeName,
+      featureTypeNumber,
       name: seasonModel.parkArea.name,
       parkName: seasonModel.parkArea.park.name,
       parkWinterDates,
@@ -454,6 +458,7 @@ router.get(
       dateTypes: orderedDateTypes,
       icon: null,
       featureTypeName: null,
+      featureTypeNumber: null,
       name: seasonModel.park.name,
       frontcountryFeatureReservationDates:
         await frontcountryFeatureReservationDates,
