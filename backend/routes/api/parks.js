@@ -529,27 +529,30 @@ router.get(
           },
           seasonStatus,
         ),
-        {
-          model: AccessGroup,
-          as: "accessGroups",
-          attributes: ["id"],
-          required: !hasAllParkAccess,
-          include: hasAllParkAccess
-            ? []
-            : [
-                {
-                  model: User,
-                  as: "users",
-                  attributes: [],
-                  where: { username: req.user?.username },
-                  through: {
-                    model: UserAccessGroup,
+        ...(hasAllParkAccess
+          ? []
+          : [
+              {
+                model: AccessGroup,
+                as: "accessGroups",
+                attributes: ["id"],
+                through: { attributes: [] },
+                required: true,
+                include: [
+                  {
+                    model: User,
+                    as: "users",
                     attributes: [],
+                    where: { username: req.user?.username },
+                    through: {
+                      model: UserAccessGroup,
+                      attributes: [],
+                    },
+                    required: true,
                   },
-                  required: true,
-                },
-              ],
-        },
+                ],
+              },
+            ]),
       ],
       order: [
         ["name", "ASC"],
