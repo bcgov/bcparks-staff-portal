@@ -10,8 +10,9 @@ function matchesStatusFilters(season, statusFilters) {
 
   const basicStatuses = statusFilters.filter(
     (status) =>
+      status !== STATUS.PENDING_REVIEW.value &&
       status !== STATUS.IS_REVIEW_FILTER.value &&
-      status !== STATUS.RS_REVIEW_FILTER.value,
+      status !== STATUS.RS_REVIEW_FILTER.value
   );
 
   if (basicStatuses.includes(season.status)) {
