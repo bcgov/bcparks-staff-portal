@@ -5,6 +5,7 @@ import CloseButton from "react-bootstrap/CloseButton";
 import PropTypes from "prop-types";
 import { labelByValue } from "@/constants/seasonStatus";
 import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
+import * as STATUS from "@/constants/seasonStatus";
 
 import "./FilterStatus.scss";
 
@@ -75,6 +76,36 @@ export default function FilterStatus({
         label: `Status: ${labelByValue[status]}`,
 
         remove(filters) {
+          const HQ = STATUS.PENDING_REVIEW.value;
+          const IS = STATUS.IS_REVIEW_FILTER.value;
+          const RS = STATUS.RS_REVIEW_FILTER.value;
+
+          // Keep badge-removal behavior consistent with the dropdown's
+          // parent/child status-selection rules.
+          if (status === HQ) {
+            updateFilter(
+              "status",
+              filters.status.filter(
+                (value) => value !== HQ && value !== IS && value !== RS,
+              ),
+            );
+            return;
+          }
+
+          if (status === IS || status === RS) {
+            const next = without(filters.status, status);
+            const hasIS = next.includes(IS);
+            const hasRS = next.includes(RS);
+
+            if (!hasIS && !hasRS) {
+              updateFilter("status", without(next, HQ));
+              return;
+            }
+
+            updateFilter("status", next);
+            return;
+          }
+
           updateFilter("status", without(filters.status, status));
         },
       }));
