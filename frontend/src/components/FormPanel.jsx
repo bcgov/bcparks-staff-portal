@@ -474,7 +474,7 @@ function SeasonForm({
    * Saves the form data to the DB.
    * @param {boolean} allowInvalid allows saving even if the form has validation errors
    * @param {string} status status to set for the season
-   * @param {boolean} [resetAfterSave=true] reset the form state and refresh the data after saving
+   * @param {boolean} [resetAfterSave=true] reset form state and refresh season data after saving
    * @returns {Promise<void>}
    */
   async function saveForm(allowInvalid, status, resetAfterSave = true) {
