@@ -525,7 +525,7 @@ router.get(
 
         // Skip reservation dates if feature has hasReservations=false
         if (
-          dateRange.dateType.name === "Reservation" &&
+          dateRange.dateType.dateTypeNumber === DATE_TYPE.RESERVATION &&
           feature?.hasReservations === false
         ) {
           return null;
@@ -533,7 +533,10 @@ router.get(
 
         // @TODO: Delete this when FCFS logic is revised
         // Skip FCFS dates
-        if (dateRange.dateType.name === "First come, first served") {
+        if (
+          dateRange.dateType.dateTypeNumber ===
+          DATE_TYPE.FIRST_COME_FIRST_SERVED
+        ) {
           return null;
         }
 
