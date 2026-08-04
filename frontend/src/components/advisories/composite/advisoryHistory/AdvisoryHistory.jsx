@@ -52,6 +52,13 @@ export default function AdvisoryHistory({
               const status = ad.advisoryStatus?.code || "";
               let statusActorName = ad.modifiedByName;
 
+              const creatorIsPublisher =
+                !!ad.publishedByName && ad.createdByName === ad.publishedByName;
+              const creatorIsEditor =
+                !!ad.modifiedByName && ad.createdByName === ad.modifiedByName;
+              const editorIsPublisher =
+                !!ad.modifiedByName && ad.modifiedByName === ad.publishedByName;
+
               if (status === "PUB") {
                 statusActorName = ad.publishedByName || ad.modifiedByName;
               } else if (status === "UNP") {
@@ -60,22 +67,38 @@ export default function AdvisoryHistory({
 
               if (ad.revisionNumber === 1) {
                 let creatorName = ad.createdByName || "";
-                let text = "drafted";
+                let creationText = "drafted";
                 let includeRequestedBy = false;
+                let requesterName = "";
+                let statusDate; // override for "scheduled" and "submitted" events
 
                 if (status === "PUB") {
-                  if (
-                    ad.publishedByName &&
-                    ad.publishedByName === ad.createdByName
-                  ) {
+                  if (creatorIsPublisher && editorIsPublisher) {
                     creatorName = ad.publishedByName;
-                    text = "created and published";
+                    creationText = "created and published";
                   } else if (ad.publishedByName) {
                     creatorName = ad.createdByName;
-                    text = "created";
+                    creationText = "created";
+
+                    if (
+                      ad.modifiedByName &&
+                      !creatorIsEditor &&
+                      !editorIsPublisher
+                    ) {
+                      pushHistory({
+                        revisionNumber: ad.revisionNumber,
+                        displayText: "updated",
+                        actorName: ad.modifiedByName,
+                        date: ad.modifiedDate,
+                      });
+                    }
+
                     pushHistory({
                       revisionNumber: ad.revisionNumber,
-                      displayText: "published",
+                      displayText:
+                        editorIsPublisher && !creatorIsEditor
+                          ? "updated and published"
+                          : "published",
                       actorName:
                         ad.publishedByName === "system"
                           ? "system based on posting date"
@@ -87,15 +110,15 @@ export default function AdvisoryHistory({
 
                 if (status === "SCH") {
                   creatorName = ad.modifiedByName || ad.createdByName || "";
-                  text = "scheduled";
+                  creationText = "scheduled";
+                  statusDate = ad.modifiedDate;
                 }
 
                 if (status === "HQR") {
                   creatorName = ad.modifiedByName || ad.createdByName || "";
-                  text = "submitted";
+                  creationText = "submitted";
+                  statusDate = ad.modifiedDate;
                 }
-
-                let requesterName = "";
 
                 if (
                   creatorName &&
@@ -109,13 +132,10 @@ export default function AdvisoryHistory({
                 pushHistory({
                   revisionNumber: ad.revisionNumber,
                   displayText: includeRequestedBy
-                    ? `${text} by ${creatorName} requested`
-                    : text,
+                    ? `${creationText} by ${creatorName} requested`
+                    : creationText,
                   actorName: requesterName || creatorName,
-                  date:
-                    text === "created"
-                      ? ad.createdDate || ad.createdAt
-                      : ad.modifiedDate || ad.createdDate || ad.createdAt,
+                  date: statusDate || ad.createdDate || ad.createdAt,
                 });
               } else {
                 if (status === "SCH") {
@@ -128,7 +148,7 @@ export default function AdvisoryHistory({
                 }
 
                 if (status === "PUB") {
-                  if (ad.publishedByName !== ad.modifiedByName) {
+                  if (!editorIsPublisher && ad.modifiedByName) {
                     pushHistory({
                       revisionNumber: ad.revisionNumber,
                       displayText: "updated",
@@ -138,10 +158,9 @@ export default function AdvisoryHistory({
                   }
                   pushHistory({
                     revisionNumber: ad.revisionNumber,
-                    displayText:
-                      ad.publishedByName !== ad.modifiedByName
-                        ? "published"
-                        : "updated and published",
+                    displayText: editorIsPublisher
+                      ? "updated and published"
+                      : "published",
                     actorName:
                       ad.publishedByName === "system"
                         ? "system based on posting date"
@@ -152,7 +171,7 @@ export default function AdvisoryHistory({
 
                 if (status === "UNP") {
                   // Do not output anything for unpublished records. The
-                  // logging is handled by the previsous published record.
+                  // logging is handled by the previous published record.
                 }
 
                 if (status === "HQR" || status === "DFT") {
