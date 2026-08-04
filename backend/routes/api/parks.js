@@ -495,6 +495,9 @@ router.get(
       typeof req.query.seasonStatus === "string"
         ? req.query.seasonStatus
         : null;
+    const hasAllParkAccess = checkUserRoles(getRolesFromAuth(req.auth), [
+      USER_ROLES.ALL_PARK_ACCESS,
+    ]);
 
     // Main query: Fetch Parks with their Seasons
     const parks = await Park.findAll({
@@ -526,6 +529,30 @@ router.get(
           },
           seasonStatus,
         ),
+        ...(hasAllParkAccess
+          ? []
+          : [
+              {
+                model: AccessGroup,
+                as: "accessGroups",
+                attributes: ["id"],
+                through: { attributes: [] },
+                required: true,
+                include: [
+                  {
+                    model: User,
+                    as: "users",
+                    attributes: [],
+                    where: { username: req.user?.username },
+                    through: {
+                      model: UserAccessGroup,
+                      attributes: [],
+                    },
+                    required: true,
+                  },
+                ],
+              },
+            ]),
       ],
       order: [
         ["name", "ASC"],
