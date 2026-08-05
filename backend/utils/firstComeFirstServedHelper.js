@@ -6,6 +6,7 @@ import {
   Feature,
   FeatureType,
 } from "../models/index.js";
+import * as DATE_TYPE from "../constants/dateType.js";
 
 // FCFS dates calculation helper function
 
@@ -125,14 +126,18 @@ export async function createFirstComeFirstServedDateRange(
     // Find the DateType IDs for "Operation", "Reservation", and "First come, first served"
     const dateTypes = await DateType.findAll({
       where: {
-        name: ["Operation", "Reservation", "First come, first served"],
+        dateTypeNumber: [
+          DATE_TYPE.OPERATION,
+          DATE_TYPE.RESERVATION,
+          DATE_TYPE.FIRST_COME_FIRST_SERVED,
+        ],
       },
-      attributes: ["id", "name"],
+      attributes: ["id", "dateTypeNumber"],
       transaction,
     });
 
     const dateTypeMap = new Map(
-      dateTypes.map((dateType) => [dateType.name, dateType.id]),
+      dateTypes.map((dateType) => [dateType.dateTypeNumber, dateType.id]),
     );
 
     // Fetch all DateRanges for this specific feature
@@ -143,10 +148,11 @@ export async function createFirstComeFirstServedDateRange(
     });
 
     const operationDateRanges = dateRanges.filter(
-      (dateRange) => dateRange.dateType.name === "Operation",
+      (dateRange) => dateRange.dateType.dateTypeNumber === DATE_TYPE.OPERATION,
     );
     const reservationDateRanges = dateRanges.filter(
-      (dateRange) => dateRange.dateType.name === "Reservation",
+      (dateRange) =>
+        dateRange.dateType.dateTypeNumber === DATE_TYPE.RESERVATION,
     );
 
     if (operationDateRanges.length > 0 && reservationDateRanges.length > 0) {
@@ -175,7 +181,7 @@ export async function createFirstComeFirstServedDateRange(
               firstComeDateRanges.push({
                 seasonId: season.id,
                 dateableId: featureDateableId,
-                dateTypeId: dateTypeMap.get("First come, first served"),
+                dateTypeId: dateTypeMap.get(DATE_TYPE.FIRST_COME_FIRST_SERVED),
                 startDate: firstComeStartDate,
                 endDate: firstComeEndDate,
               });
@@ -194,7 +200,7 @@ export async function createFirstComeFirstServedDateRange(
               firstComeDateRanges.push({
                 seasonId: season.id,
                 dateableId: featureDateableId,
-                dateTypeId: dateTypeMap.get("First come, first served"),
+                dateTypeId: dateTypeMap.get(DATE_TYPE.FIRST_COME_FIRST_SERVED),
                 startDate: firstComeStartDate,
                 endDate: firstComeEndDate,
               });
