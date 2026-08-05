@@ -320,7 +320,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
           .filter(
             (dateRange) =>
               feature.hasReservations ||
-              dateRange.dateType?.name !== "Reservation",
+              dateRange.dateType?.dateTypeNumber !== DATE_TYPE.RESERVATION,
           ),
       };
     });
