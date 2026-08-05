@@ -1,4 +1,5 @@
 import { isWithinInterval } from "date-fns";
+import * as DATE_TYPE from "@/constants/dateType.js";
 
 /**
  * Validates that the date ranges are within the operating year.
@@ -14,7 +15,7 @@ export default function dateInOperatingYear(seasonData, context) {
   // Add errors for all invalid dates (dates must be within operatingYear)
   dateRanges.forEach((dateRange) => {
     // Skip winter dates, since they all break this rule
-    if (dateRange.dateType.name === "Winter fee") return;
+    if (dateRange.dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE) return;
 
     // Create a date interval to check against the dates
     const minAllowedDate = new Date(operatingYear, 0, 1);

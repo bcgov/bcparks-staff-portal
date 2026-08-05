@@ -1,4 +1,5 @@
 import { isBefore, isWithinInterval } from "date-fns";
+import * as DATE_TYPE from "@/constants/dateType.js";
 
 /**
  * Validates that the start and end dates of winter fee date ranges fall in the correct years.
@@ -19,7 +20,7 @@ export default function winterDateYears(seasonData, context) {
   // Get a list of Park-level winter dates
   const winterDates = dateRanges.filter(
     (dateRange) =>
-      dateRange.dateType.name === "Winter fee" &&
+      dateRange.dateType.dateTypeNumber === DATE_TYPE.WINTER_FEE &&
       // Check if either start or end date is present
       (dateRange.startDate || dateRange.endDate),
   );
