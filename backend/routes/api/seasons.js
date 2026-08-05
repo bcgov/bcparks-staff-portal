@@ -474,6 +474,18 @@ router.get(
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const currentYear = new Date().getFullYear();
+    const maxSeason = await Season.findOne({
+      order: [["operatingYear", "DESC"]],
+    });
+
+    // Group site and picnic shelter dates are collected a year before campsite dates
+    // because they open for reservations 12 months in advance. As a result, the highest
+    // operatingYear in the database is one year ahead of the active camping season.
+    const campingDateCollectionYear = maxSeason?.operatingYear
+      ? maxSeason.operatingYear
+      : currentYear;
+
+    const previousDateCollectionYear = campingDateCollectionYear - 1;
 
     const currentSeason = await Season.findByPk(seasonId, {
       attributes: ["id", "publishableId", "seasonType"],
@@ -487,7 +499,10 @@ router.get(
       where: {
         publishableId: currentSeason.publishableId,
         seasonType: currentSeason.seasonType,
-        [Op.or]: [{ status: STATUS.PUBLISHED }, { operatingYear: currentYear }],
+        status: STATUS.PUBLISHED,
+        operatingYear: {
+          [Op.lte]: previousDateCollectionYear,
+        },
       },
       order: [["operatingYear", "DESC"]],
     });
