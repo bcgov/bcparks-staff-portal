@@ -1212,9 +1212,6 @@ export default function Advisory({ mode }) {
         note: notes,
         submittedByName,
         updatedDate,
-        modifiedDate: moment().toISOString(),
-        modifiedByName: auth.user?.profile?.name,
-        modifiedByRole: getUserAdvisoryRole(),
         advisoryDate,
         effectiveDate: startDate,
         endDate,
@@ -1242,6 +1239,13 @@ export default function Advisory({ mode }) {
         reviewedByName: null,
         reviewedDate: null,
       };
+
+      // Only set modified metadata when actual form data changed
+      if (dataChanged.current) {
+        updatedAdvisory.modifiedDate = moment().toISOString();
+        updatedAdvisory.modifiedByName = auth.user?.profile?.name;
+        updatedAdvisory.modifiedByRole = getUserAdvisoryRole();
+      }
 
       // Record the publishing info and clear the unpublishing info
       if (status.code === "PUB") {
