@@ -154,7 +154,7 @@ export default function LoginPage() {
 
         <p className="mb-4">
           Can&apos;t log in? Contact the web team at{" "}
-          <a href="mailto:parksweb@gov.bc.ca">parksweb@gov.bc.ca</a>
+          <a href="mailto:cardweb@gov.bc.ca">cardweb@gov.bc.ca</a>
         </p>
 
         <p className="mb-4">

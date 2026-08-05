@@ -9,8 +9,8 @@ export function NoParkAccess() {
         </p>
         <p>
           To add parks, contact{" "}
-          <a href="mailto:parksweb@gov.bc.ca?subject=No%20park%20access%20assigned">
-            parksweb@gov.bc.ca
+          <a href="mailto:cardweb@gov.bc.ca?subject=No%20park%20access%20assigned">
+            cardweb@gov.bc.ca
           </a>
           .
         </p>
