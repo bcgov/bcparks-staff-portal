@@ -1,4 +1,5 @@
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 /**
  * Validates that the date ranges are provided for required date types.
@@ -28,7 +29,7 @@ export default function requiredDateRanges(seasonData, context) {
         elements.dateField(
           dateRange.id || dateRange.tempId,
           "startDate",
-          `${dateRange.dateType.name} start date`,
+          `${getDateTypeDisplayName(dateRange.dateType.name)} start date`,
           dateRange.dateableId,
         ),
         "Required",
@@ -41,7 +42,7 @@ export default function requiredDateRanges(seasonData, context) {
         elements.dateField(
           dateRange.id || dateRange.tempId,
           "endDate",
-          `${dateRange.dateType.name} end date`,
+          `${getDateTypeDisplayName(dateRange.dateType.name)} end date`,
           dateRange.dateableId,
         ),
         "Required",
