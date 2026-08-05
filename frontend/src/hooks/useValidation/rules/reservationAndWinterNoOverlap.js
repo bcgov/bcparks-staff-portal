@@ -3,6 +3,7 @@ import { groupBy } from "lodash-es";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
 import * as FEATURE_TYPE from "@/constants/featureType";
+import * as DATE_TYPE from "@/constants/dateType.js";
 
 /**
  * Validates that Frontcountry Campground Feature Reservation dates do not overlap with Park-level Winter fee dates.
@@ -19,7 +20,7 @@ export default function reservationAndWinterNoOverlap(seasonData, context) {
   // Get a list of the populated Frontcountry Campground Feature Reservation dates on this form
   const frontcountryReservationDates = dateRanges.filter(
     (dateRange) =>
-      dateRange.dateType.name === "Reservation" &&
+      dateRange.dateType.dateTypeNumber === DATE_TYPE.RESERVATION &&
       dateRange.featureTypeNumber === FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND &&
       dateRange.startDate &&
       dateRange.endDate,
@@ -61,8 +62,11 @@ export default function reservationAndWinterNoOverlap(seasonData, context) {
 
       if (hasOverlaps) {
         // Show the error below the Reservation section
+        const reservationName =
+          dateableDateRanges[0]?.dateType?.name ?? "Reservation";
+
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationName),
           "The reservation dates must not overlap with winter dates. (To change winter dates, edit the park)",
         );
       }

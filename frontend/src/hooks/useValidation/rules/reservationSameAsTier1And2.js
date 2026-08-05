@@ -3,6 +3,7 @@ import { groupBy } from "lodash-es";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
 import * as FEATURE_TYPE from "@/constants/featureType";
+import * as DATE_TYPE from "@/constants/dateType.js";
 
 /**
  * Validates that Frontcountry Campground Feature Reservation dates match the Park-level Tier 1 and 2 dates.
@@ -23,7 +24,7 @@ export default function reservationSameAsTier1And2(seasonData, context) {
   // Get a list of the populated Frontcountry Campground Feature Reservation dates on this form
   const frontcountryReservationDates = dateRanges.filter(
     (dateRange) =>
-      dateRange.dateType.name === "Reservation" &&
+      dateRange.dateType.dateTypeNumber === DATE_TYPE.RESERVATION &&
       dateRange.featureTypeNumber === FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND &&
       dateRange.startDate &&
       dateRange.endDate,
@@ -65,8 +66,11 @@ export default function reservationSameAsTier1And2(seasonData, context) {
           "The reservation dates must include all tier 1 and tier 2 dates. (To change tier 1 and tier 2 dates, edit the park)";
 
         // Show the error below the Reservation dates section
+        const reservationName =
+          reservationDates[0]?.dateType?.name ?? "Reservation";
+
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationName),
           errorText,
         );
       }
