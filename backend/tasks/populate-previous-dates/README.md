@@ -12,7 +12,7 @@ This script populates the `Season` and `DateRange` tables in your database based
    - Updates the Season's `status` to `"published"`, sets `readyToPublish` to `true`, and `seasonType` to `"regular"`.
 
 3. **For each Season:**
-   - Finds the correct `DateType` by `name` and `parkLevel: true`.
+   - Finds the correct `DateType` by `dateTypeNumber` and `parkLevel: true`.
    - Creates (or finds) a `DateRange` entry with:
      - `seasonId` set to the Season's ID,
      - `dateTypeId` set to the ID of the matching `DateType`,
@@ -39,7 +39,7 @@ node tasks/populate-previous-dates/populate-previous-dates.js
     {
       "orcs": 117,
       "operatingYear": 2025,
-      "dateType": "Winter fee",
+      "dateTypeNumber": 4,
       "startDate": "2024-10-31",
       "endDate": "2025-03-30"
     }
@@ -63,5 +63,5 @@ node tasks/populate-previous-dates/populate-previous-dates.js
 - The script assumes your Sequelize models and associations are set up as in the rest of the BC Parks Staff Portal project.
 - You can safely run this script multiple times; it will not create duplicates and will update date ranges as needed.
 - If you add new Parks or update your JSON data, re-running this script will add or update any missing or changed `Season` and `DateRange` entries as needed.
-- Only DateTypes with `parkLevel: true` are used for matching.
+- Only DateTypes with `parkLevel: true` are used for matching. See `constants/dateType.js` for `dateTypeNumber` values.
 - If a required DateType is missing, the entry is skipped (consider logging a warning for missing types).
