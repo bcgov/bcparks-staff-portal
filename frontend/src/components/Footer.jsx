@@ -14,7 +14,7 @@ export default function Footer() {
 
         <a href="https://staff.sitesandtrailsbc.ca/">RecSpace</a>
 
-        <a href="mailto:parksweb@gov.bc.ca">Contact us</a>
+        <a href="mailto:cardweb@gov.bc.ca">Contact us</a>
       </div>
     </footer>
   );
