@@ -25,9 +25,9 @@ export async function populatePreviousDates() {
     const parkByOrcs = _.keyBy(parks, "orcs");
 
     for (const entry of dateData) {
-      const { orcs, operatingYear, dateType, startDate, endDate } = entry;
+      const { orcs, operatingYear, dateTypeNumber, startDate, endDate } = entry;
 
-      if (!orcs || !operatingYear || !dateType || !startDate || !endDate)
+      if (!orcs || !operatingYear || !dateTypeNumber || !startDate || !endDate)
         continue;
 
       const park = parkByOrcs[orcs];
@@ -63,10 +63,10 @@ export async function populatePreviousDates() {
         await season.save({ transaction });
       }
 
-      // find DateType by name and parkLevel
+      // find DateType by dateTypeNumber and parkLevel
       const dateTypeObj = await DateType.findOne({
         where: {
-          name: dateType,
+          dateTypeNumber,
           parkLevel: true,
         },
         transaction,

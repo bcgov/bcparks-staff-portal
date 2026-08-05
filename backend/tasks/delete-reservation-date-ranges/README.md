@@ -1,10 +1,10 @@
 # delete-reservation-date-ranges.js
 
-This script deletes `DateRange` records of type "Reservation" for the 2026 operating year for features where `hasReservations` is set to `false`.
+This script deletes Reservation `DateRange` records for the 2026 operating year for features where `hasReservations` is set to `false`.
 
 ## What does the script do?
 
-- Finds the `DateType` record with the name "Reservation".
+- Finds the Reservation `DateType` record by its Strapi "dateTypeNumber" (7).
 - Finds all `Feature` records where `hasReservations` is `false`.
 - For each feature, finds all reservation `DateRange` records for the 2026 operating year.
 - Deletes only the reservation `DateRange` records for the 2026 season for each feature.

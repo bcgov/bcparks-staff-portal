@@ -82,19 +82,31 @@ export function checkParkSoft(park, filters) {
     filters.dateTypes.length &&
     !filters.dateTypes.some((filterDateType) => {
       // check park.hasGate and dateTypes
-      if (filterDateType.name === "Park gate open" && !park.hasGate) {
+      if (
+        filterDateType.dateTypeNumber === DATE_TYPES.PARK_GATE_OPEN &&
+        !park.hasGate
+      ) {
         return false;
       }
 
       // check park.hasTier1Dates, park.hasTier2Dates, park.hasWinterFeeDates, and dateTypes
-      if (filterDateType.name === "Tier 1" && !park.hasTier1Dates) {
+      if (
+        filterDateType.dateTypeNumber === DATE_TYPES.TIER_1 &&
+        !park.hasTier1Dates
+      ) {
         return false;
       }
-      if (filterDateType.name === "Tier 2" && !park.hasTier2Dates) {
+      if (
+        filterDateType.dateTypeNumber === DATE_TYPES.TIER_2 &&
+        !park.hasTier2Dates
+      ) {
         return false;
       }
 
-      if (filterDateType.name === "Winter fee" && !park.hasWinterFeeDates) {
+      if (
+        filterDateType.dateTypeNumber === DATE_TYPES.WINTER_FEE &&
+        !park.hasWinterFeeDates
+      ) {
         return false;
       }
 
@@ -151,7 +163,8 @@ export function getMatchingAreas(parkAreas, filters) {
       !filters.dateTypes.some((filterDateType) => {
         // Check feature.hasBackcountryPermits and dateTypes
         if (
-          filterDateType.name === "Backcountry registration" &&
+          filterDateType.dateTypeNumber ===
+            DATE_TYPES.BACKCOUNTRY_REGISTRATION &&
           !parkArea.features.some((feature) => feature.hasBackcountryPermits)
         ) {
           return false;
@@ -159,7 +172,7 @@ export function getMatchingAreas(parkAreas, filters) {
 
         // Check feature.hasReservations and dateTypes
         if (
-          filterDateType.name === "Reservation" &&
+          filterDateType.dateTypeNumber === DATE_TYPES.RESERVATION &&
           !parkArea.features.some((feature) => feature.hasReservations)
         ) {
           return false;
@@ -241,14 +254,18 @@ export function getMatchingFeatures(features, filters) {
       !filters.dateTypes.some((filterDateType) => {
         // Check feature.hasBackcountryPermits and dateTypes
         if (
-          filterDateType.name === "Backcountry registration" &&
+          filterDateType.dateTypeNumber ===
+            DATE_TYPES.BACKCOUNTRY_REGISTRATION &&
           !feature.hasBackcountryPermits
         ) {
           return false;
         }
 
         // Check feature.hasReservations and dateTypes
-        if (filterDateType.name === "Reservation" && !feature.hasReservations) {
+        if (
+          filterDateType.dateTypeNumber === DATE_TYPES.RESERVATION &&
+          !feature.hasReservations
+        ) {
           return false;
         }
 

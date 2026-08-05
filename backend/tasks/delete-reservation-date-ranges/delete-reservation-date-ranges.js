@@ -5,12 +5,13 @@ import "../../env.js";
 import { Op } from "sequelize";
 import _ from "lodash";
 import { DateType, DateRange, Feature, Season } from "../../models/index.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 
 async function deleteReservationDateRanges(transaction = null) {
   try {
     // Find the reservation DateType id
     const reservationDateType = await DateType.findOne({
-      where: { name: "Reservation" },
+      where: { dateTypeNumber: DATE_TYPE.RESERVATION },
       attributes: ["id"],
       transaction,
     });

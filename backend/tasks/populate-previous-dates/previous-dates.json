@@ -4,181 +4,207 @@
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-03-14",
-    "endDate": "2025-06-12"
+    "endDate": "2025-06-12",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 45,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-06-13",
-    "endDate": "2025-09-06"
+    "endDate": "2025-09-06",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 45,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-09-07",
-    "endDate": "2025-10-30"
+    "endDate": "2025-10-30",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 307,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-03-21",
-    "endDate": "2025-10-13"
+    "endDate": "2025-10-13",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 54,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-03-28",
-    "endDate": "2025-06-10"
+    "endDate": "2025-06-10",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 54,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-06-11",
-    "endDate": "2025-09-01"
+    "endDate": "2025-09-01",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 54,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-09-02",
-    "endDate": "2025-10-13"
+    "endDate": "2025-10-13",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 210,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-01-01",
-    "endDate": "2025-05-09"
+    "endDate": "2025-05-09",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 210,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-05-10",
-    "endDate": "2025-08-31"
+    "endDate": "2025-08-31",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 210,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-09-01",
-    "endDate": "2025-12-31"
+    "endDate": "2025-12-31",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 8,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-02-28",
-    "endDate": "2025-11-30"
+    "endDate": "2025-11-30",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 235,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-05-05",
-    "endDate": "2025-06-24"
+    "endDate": "2025-06-24",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 235,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-06-25",
-    "endDate": "2025-09-01"
+    "endDate": "2025-09-01",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 235,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-09-02",
-    "endDate": "2025-10-01"
+    "endDate": "2025-10-01",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 193,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-04-11",
-    "endDate": "2025-05-15"
+    "endDate": "2025-05-15",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 193,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-05-16",
-    "endDate": "2025-09-01"
+    "endDate": "2025-09-01",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 193,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-09-02",
-    "endDate": "2025-10-12"
+    "endDate": "2025-10-12",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 90,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-03-14",
-    "endDate": "2025-11-02"
+    "endDate": "2025-11-02",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 314,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-01-01",
-    "endDate": "2025-12-31"
+    "endDate": "2025-12-31",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 41,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-01-01",
-    "endDate": "2025-03-27"
+    "endDate": "2025-03-27",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 41,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-03-28",
-    "endDate": "2025-11-16"
+    "endDate": "2025-11-16",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 41,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-11-17",
-    "endDate": "2025-12-31"
+    "endDate": "2025-12-31",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 89,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-05-01",
-    "endDate": "2025-10-12"
+    "endDate": "2025-10-12",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 96,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-05-02",
-    "endDate": "2025-05-15"
+    "endDate": "2025-05-15",
+    "dateTypeNumber": 3
   },
   {
     "orcs": 96,
     "operatingYear": 2025,
     "dateType": "Tier 1",
     "startDate": "2025-05-16",
-    "endDate": "2025-09-01"
+    "endDate": "2025-09-01",
+    "dateTypeNumber": 2
   },
   {
     "orcs": 96,
     "operatingYear": 2025,
     "dateType": "Tier 2",
     "startDate": "2025-09-02",
-    "endDate": "2025-09-13"
+    "endDate": "2025-09-13",
+    "dateTypeNumber": 3
   }
 ]

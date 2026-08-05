@@ -69,8 +69,8 @@ export async function createDateRangeAnnualEntries() {
 
     // get all dateTypes and build a lookup
     const dateTypes = await DateType.findAll({ transaction });
-    const dateTypeNameById = Object.fromEntries(
-      dateTypes.map((dateType) => [dateType.id, dateType.name]),
+    const dateTypeNumberById = Object.fromEntries(
+      dateTypes.map((dateType) => [dateType.id, dateType.dateTypeNumber]),
     );
 
     // build isDateRangeAnnual lookup from parkOperationData
@@ -112,10 +112,14 @@ export async function createDateRangeAnnualEntries() {
 
           if (!dateTypeId) continue;
 
-          // skip if dateType name is "Tier 1" or "Tier 2"
-          const dateTypeName = dateTypeNameById[dateTypeId];
+          // skip Tier 1 and Tier 2 date types
+          const dateTypeNumber = dateTypeNumberById[dateTypeId];
 
-          if (dateTypeName === "Tier 1" || dateTypeName === "Tier 2") continue;
+          if (
+            dateTypeNumber === DATE_TYPE.TIER_1 ||
+            dateTypeNumber === DATE_TYPE.TIER_2
+          )
+            continue;
 
           const [entry, created] = await DateRangeAnnual.findOrCreate({
             where: {

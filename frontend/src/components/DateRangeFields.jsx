@@ -10,6 +10,7 @@ import Form from "react-bootstrap/Form";
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
+import * as DATE_TYPE from "@/constants/dateType.js";
 
 // Maximum valid JavaScript date (September 13, 275760)
 const MAX_DATE = new Date(8640000000000000);
@@ -138,7 +139,7 @@ export default function DateRangeFields({
   const { elements } = useValidationContext();
   // Constants
   // Tier 1 only allows 1 date range
-  const hasMultipleDates = dateType.name !== "Tier 1";
+  const hasMultipleDates = dateType.dateTypeNumber !== DATE_TYPE.TIER_1;
 
   // Functions
   // find the matching dateRangeAnnual for this dateableId and dateType
@@ -224,7 +225,7 @@ export default function DateRangeFields({
           />
         ))}
 
-      {/* display it if date type is not "Tier 1" or no dateRanges exist */}
+      {/* display the "Add more" button if date type is not "Tier 1" or no dateRanges exist */}
       {(hasMultipleDates || dateRanges.length === 0) && (
         <button
           type="button"
@@ -238,7 +239,10 @@ export default function DateRangeFields({
       )}
 
       {/* Display checkbox except for Tier 1 and Tier 2 */}
-      {!(dateType.name === "Tier 1" || dateType.name === "Tier 2") && (
+      {!(
+        dateType.dateTypeNumber === DATE_TYPE.TIER_1 ||
+        dateType.dateTypeNumber === DATE_TYPE.TIER_2
+      ) && (
         <Form.Check
           type="checkbox"
           id={`date-range-annual-${dateRangeAnnualId}`}
@@ -276,6 +280,7 @@ DateRangeFields.propTypes = {
   addDateRange: PropTypes.func.isRequired,
   dateType: PropTypes.shape({
     id: PropTypes.number.isRequired,
+    dateTypeNumber: PropTypes.number.isRequired,
     name: PropTypes.string.isRequired,
     displayName: PropTypes.string,
   }).isRequired,

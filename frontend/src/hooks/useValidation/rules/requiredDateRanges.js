@@ -17,7 +17,8 @@ export default function requiredDateRanges(seasonData, context) {
 
   // Filter out date ranges with optional date types
   const requiredRanges = dateRanges.filter(
-    (dateRange) => !isDateTypeOptional(dateRange.dateType.name, level),
+    (dateRange) =>
+      !isDateTypeOptional(dateRange.dateType.dateTypeNumber, level),
   );
 
   // Add errors for all invalid dates (missing startDate and/or endDate)

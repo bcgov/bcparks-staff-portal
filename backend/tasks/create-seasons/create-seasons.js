@@ -17,6 +17,7 @@ import {
   Season,
 } from "../../models/index.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as DATE_TYPE from "../../constants/dateType.js";
 import { populateAnnualDateRangesForYear } from "../populate-date-ranges/populate-annual-date-ranges.js";
 import { populateBlankDateRangesForYear } from "../populate-date-ranges/populate-blank-date-ranges.js";
 import resolveSeasonCreationStatus from "../../utils/resolveSeasonCreationStatus.js";
@@ -212,7 +213,7 @@ export default async function createSeasons(operatingYear, transaction = null) {
   // Get the Tier 2 DateType
   const tier2DateType = await DateType.findOne({
     where: {
-      name: "Tier 2",
+      dateTypeNumber: DATE_TYPE.TIER_2,
     },
     transaction,
   });

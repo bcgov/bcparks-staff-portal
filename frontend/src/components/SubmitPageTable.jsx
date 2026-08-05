@@ -278,11 +278,7 @@ function StatusTableRow({
             <StatusBadge status={season.status} />
           </div>
 
-          <IconButton
-            icon={faPen}
-            label="Edit"
-            onClick={formPanelHandler}
-          />
+          <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
 
           {approver && (
             <ApproveButton
