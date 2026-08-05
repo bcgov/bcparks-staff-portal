@@ -32,6 +32,7 @@ import DataContext from "@/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus";
 import * as SEASON_TYPE from "@/constants/seasonType";
+import * as DATE_TYPE from "@/constants/dateType";
 import "./FormPanel.scss";
 
 // Components
@@ -305,7 +306,7 @@ function SeasonForm({
     [seasonMetadata],
   );
   // Find the "Park gate open" date type id
-  const gateTypeId = dateTypesByStrapiId[1]?.id;
+  const gateTypeId = dateTypesByStrapiId[DATE_TYPE.PARK_GATE_OPEN]?.id;
 
   // Build a map of Dateable IDs to their Feature names, for display in the Error Summary
   const dateableNames = useMemo(() => {
