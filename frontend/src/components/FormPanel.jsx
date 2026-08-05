@@ -474,10 +474,10 @@ function SeasonForm({
    * Saves the form data to the DB.
    * @param {boolean} allowInvalid allows saving even if the form has validation errors
    * @param {string} status status to set for the season
-   * @param {boolean} [resetDataAfterSave=true] reset the form data after saving
+   * @param {boolean} [resetAfterSave=true] reset form state and refresh season data after saving
    * @returns {Promise<void>}
    */
-  async function saveForm(allowInvalid, status, resetDataAfterSave = true) {
+  async function saveForm(allowInvalid, status, resetAfterSave = true) {
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
     setSubmitted(true);
@@ -545,13 +545,14 @@ function SeasonForm({
       // Start refreshing the main page data from the API
       onDataUpdate();
 
-      // Reset the form state
-      setNotes("");
-      setDeletedDateRangeIds([]);
-      setSubmitWithErrors(false);
-
-      if (resetDataAfterSave) {
+      if (resetAfterSave) {
+        // Re-fetch the season data from the API
         resetData();
+
+        // Reset the form state
+        setNotes("");
+        setDeletedDateRangeIds([]);
+        setSubmitWithErrors(false);
       }
     } catch (saveError) {
       // @TODO: Catch API error and show a flash message
