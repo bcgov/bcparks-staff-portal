@@ -2,6 +2,7 @@ import { groupBy } from "lodash-es";
 import consolidateRanges from "@/lib/consolidateDateRanges";
 import isDateRangeWithinDateRange from "@/lib/isDateRangeWithinDateRange";
 import { isBefore } from "date-fns";
+import * as DATE_TYPE from "@/constants/dateType.js";
 
 /**
  * Validates that Feature/Area reservation dates must be within its operating dates.
@@ -21,11 +22,19 @@ export default function reservationWithinOperating(seasonData, context) {
   Object.entries(dateRangesByDateableId).forEach(
     ([dateableId, dateableDateRanges]) => {
       // Group dateRanges by type so we can examine the reservation and operation dates
-      const dateRangesByType = groupBy(dateableDateRanges, "dateType.name");
-      const { Operation = [], Reservation = [] } = dateRangesByType;
+      const dateRangesByType = groupBy(
+        dateableDateRanges,
+        "dateType.dateTypeNumber",
+      );
+      const Operation = dateRangesByType[DATE_TYPE.OPERATION] ?? [];
+      const Reservation = dateRangesByType[DATE_TYPE.RESERVATION] ?? [];
 
       // Skip validation if there are no reservation dates
       if (Reservation.length === 0) return;
+
+      // Derive names from data so error slots stay in sync with DateRangeFields
+      const operationName = Operation[0]?.dateType?.name ?? "Operation";
+      const reservationName = Reservation[0]?.dateType?.name ?? "Reservation";
 
       // Skip validation until all operating and reservation dates are filled in
       const allFilled = [...Operation, ...Reservation].every(
@@ -51,12 +60,12 @@ export default function reservationWithinOperating(seasonData, context) {
 
         // Show the error below the Operation and Reservation date range sections
         context.addError(
-          elements.dateableDateType(dateableId, "Operation"),
+          elements.dateableDateType(dateableId, operationName),
           errorText,
         );
 
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationName),
           errorText,
         );
       }
@@ -71,12 +80,12 @@ export default function reservationWithinOperating(seasonData, context) {
 
         // Show the error below the Operation and Reservation date range sections
         context.addError(
-          elements.dateableDateType(dateableId, "Operation"),
+          elements.dateableDateType(dateableId, operationName),
           errorText,
         );
 
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationName),
           errorText,
         );
       }

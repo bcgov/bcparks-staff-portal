@@ -6,6 +6,7 @@ import {
   isSameDay,
   startOfYear,
 } from "date-fns";
+import * as DATE_TYPE from "@/constants/dateType.js";
 
 /**
  * Returns true if the consolidated date ranges span from Jan 1 - Dec 31 of the same year
@@ -50,12 +51,20 @@ export default function reservationEndsBeforeOperatingEnds(
   Object.entries(dateRangesByDateableId).forEach(
     ([dateableId, dateableDateRanges]) => {
       // Group dateRanges by type so we can examine the reservation and operation dates
-      const dateRangesByType = groupBy(dateableDateRanges, "dateType.name");
-      const { Operation = [], Reservation = [] } = dateRangesByType;
+      const dateRangesByType = groupBy(
+        dateableDateRanges,
+        "dateType.dateTypeNumber",
+      );
+      const Operation = dateRangesByType[DATE_TYPE.OPERATION] ?? [];
+      const Reservation = dateRangesByType[DATE_TYPE.RESERVATION] ?? [];
 
       // Skip validation if there are no reservation or operating dates
       if (Reservation.length === 0) return;
       if (Operation.length === 0) return;
+
+      // Derive names from data so error slots stay in sync with DateRangeFields
+      const operationName = Operation[0]?.dateType?.name ?? "Operation";
+      const reservationName = Reservation[0]?.dateType?.name ?? "Reservation";
 
       // Skip validation until all operating and reservation dates are filled in
       const allFilled = [...Operation, ...Reservation].every(
@@ -92,12 +101,12 @@ export default function reservationEndsBeforeOperatingEnds(
 
         // Show the error below the Operation and Reservation date range sections
         context.addError(
-          elements.dateableDateType(dateableId, "Operation"),
+          elements.dateableDateType(dateableId, operationName),
           errorText,
         );
 
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationName),
           errorText,
         );
       }
