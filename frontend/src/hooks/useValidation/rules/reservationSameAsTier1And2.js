@@ -2,6 +2,7 @@ import { isEqual } from "date-fns";
 import { groupBy } from "lodash-es";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import * as FEATURE_TYPE from "@/constants/featureType";
 
 /**
@@ -63,10 +64,11 @@ export default function reservationSameAsTier1And2(seasonData, context) {
       if (!sameDates) {
         const errorText =
           "The reservation dates must include all tier 1 and tier 2 dates. (To change tier 1 and tier 2 dates, edit the park)";
+        const reservationDisplayName = getDateTypeDisplayName("Reservation");
 
         // Show the error below the Reservation dates section
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationDisplayName),
           errorText,
         );
       }

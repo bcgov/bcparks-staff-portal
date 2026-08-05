@@ -253,7 +253,9 @@ export default function DateRangeFields({
       )}
 
       <ErrorSlot
-        elementId={elements.dateableDateType(dateableId, dateType.name).id}
+        elementId={
+          elements.dateableDateType(dateableId, dateTypeDisplayName).id
+        }
       />
     </>
   );
