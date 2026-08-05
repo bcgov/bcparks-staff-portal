@@ -2,20 +2,32 @@ import { useCallback, useMemo } from "react";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 import * as SEASON_TYPE from "@/constants/seasonType";
+import * as FEATURE_TYPE from "@/constants/featureType";
 
 export default function OperatingYearSelect({
   season = null,
   seasonOptions,
+  featureTypeNumber = null,
   loadingSeasonOptions = false,
   onSeasonChange,
 }) {
   const currentYear = new Date().getFullYear();
+  const normalizedFeatureTypeNumber = Number(featureTypeNumber);
+  const allowCurrentYear =
+    normalizedFeatureTypeNumber === FEATURE_TYPE.GROUP_CAMPGROUND ||
+    normalizedFeatureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER;
 
   // Filter out seasons that are in the future and hide the current operating year in Edit Published.
-  // e.g. if current year is 2026, exclude operatingYear >= 2026.
+  // Group campground and Picnic shelter always carry one extra season ahead,
+  // so allow the current operating year for those feature types.
   const editableSeasonOptions = useMemo(
-    () => seasonOptions.filter((option) => option.operatingYear < currentYear),
-    [seasonOptions, currentYear],
+    () =>
+      seasonOptions.filter((option) =>
+        allowCurrentYear
+          ? option.operatingYear <= currentYear
+          : option.operatingYear < currentYear,
+      ),
+    [allowCurrentYear, seasonOptions, currentYear],
   );
 
   const showOperatingYearRange = useMemo(
@@ -70,6 +82,7 @@ OperatingYearSelect.propTypes = {
       operatingYear: PropTypes.number.isRequired,
     }),
   ).isRequired,
+  featureTypeNumber: PropTypes.number,
   loadingSeasonOptions: PropTypes.bool,
   onSeasonChange: PropTypes.func.isRequired,
 };

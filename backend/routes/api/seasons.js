@@ -154,6 +154,7 @@ router.get(
       dateTypes: orderedDateTypes,
       icon: seasonModel.feature.featureType.icon,
       featureTypeName: seasonModel.feature.featureType.name,
+      featureTypeNumber: seasonModel.feature.featureType.featureTypeNumber,
       name: seasonModel.feature.name,
       parkName: seasonModel.feature.park.name,
       parkWinterDates,
@@ -252,6 +253,7 @@ router.get(
 
     let icon = null;
     let featureTypeName = null;
+    let featureTypeNumber = null;
 
     // If there are features in the Park Area, use the first feature's type
     if (seasonModel.parkArea.features.length > 0) {
@@ -259,6 +261,7 @@ router.get(
 
       icon = firstFeature.featureType.icon;
       featureTypeName = firstFeature.featureType.name;
+      featureTypeNumber = firstFeature.featureType.featureTypeNumber;
     }
 
     // Get DateRangeAnnuals and GateDetail
@@ -295,6 +298,7 @@ router.get(
       featureDateTypesByFeatureId,
       icon,
       featureTypeName,
+      featureTypeNumber,
       name: seasonModel.parkArea.name,
       parkName: seasonModel.parkArea.park.name,
       parkWinterDates,
@@ -454,6 +458,7 @@ router.get(
       dateTypes: orderedDateTypes,
       icon: null,
       featureTypeName: null,
+      featureTypeNumber: null,
       name: seasonModel.park.name,
       frontcountryFeatureReservationDates:
         await frontcountryFeatureReservationDates,
@@ -468,6 +473,19 @@ router.get(
   "/options/:seasonId",
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
+    const currentYear = new Date().getFullYear();
+    const maxSeason = await Season.findOne({
+      order: [["operatingYear", "DESC"]],
+    });
+
+    // Group site and picnic shelter dates are collected a year before campsite dates
+    // because they open for reservations 12 months in advance. As a result, the highest
+    // operatingYear in the database is one year ahead of the active camping season.
+    const campingDateCollectionYear = maxSeason?.operatingYear
+      ? maxSeason.operatingYear
+      : currentYear;
+
+    const previousDateCollectionYear = campingDateCollectionYear - 1;
 
     const currentSeason = await Season.findByPk(seasonId, {
       attributes: ["id", "publishableId", "seasonType"],
@@ -482,6 +500,9 @@ router.get(
         publishableId: currentSeason.publishableId,
         seasonType: currentSeason.seasonType,
         status: STATUS.PUBLISHED,
+        operatingYear: {
+          [Op.lte]: previousDateCollectionYear,
+        },
       },
       order: [["operatingYear", "DESC"]],
     });
