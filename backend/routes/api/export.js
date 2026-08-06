@@ -22,6 +22,7 @@ import {
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import getDateTypeDisplayName from "../../utils/getDateTypeDisplayName.js";
+import { getSeasonReservationCoverage } from "../../utils/seasonApprovalHelpers.js";
 
 const router = Router();
 
@@ -45,6 +46,8 @@ const colNames = {
   GATE_START_TIME: "Gate start time",
   GATE_END_TIME: "Gate end time",
   IN_BCP_RESERVATION_SYSTEM: "In BC Parks Reservation system",
+  IS_TEAM_APPROVED: "Information Services team approved",
+  RS_TEAM_APPROVED: "Reservation Services team approved",
   STATUS: "Status",
   READY_TO_PUBLISH: "Ready to publish",
   UPDATE_TIME: "Last updated",
@@ -79,6 +82,53 @@ router.get(
     });
   }),
 );
+
+/**
+ * Returns whether Information Services team approval is required for a season.
+ * @param {Season} season Season with gateDetail and changeLogs associations
+ * @returns {boolean} True when IS team approval is required
+ */
+function seasonRequiresInformationSvcApproval(season) {
+  const { anyNotInReservationSystem } = getSeasonReservationCoverage(season);
+
+  // IS team approval is required if inReservationSystem is false for any dates
+  if (anyNotInReservationSystem) return true;
+
+  // IS team approval is required if hasGate is true
+  if (season.gateDetail?.hasGate === true) return true;
+
+  // IS team approval is required if hasGate was changed to false
+  const gateRemoved = season.changeLogs.some((changeLog) => {
+    const oldHasGate = changeLog.gateDetailOldValue?.hasGate === true;
+    const newHasGate = changeLog.gateDetailNewValue?.hasGate === true;
+
+    return oldHasGate && !newHasGate;
+  });
+
+  // Return true if any changelog shows that hasGate was changed from true to false
+  if (gateRemoved) return true;
+
+  return false;
+}
+
+/**
+ * Returns whether Reservation Services team approval is required for a season.
+ * @param {Season} season Season with park/parkArea/feature associations
+ * @returns {boolean} True when RS team approval is required
+ */
+function seasonRequiresReservationSvcApproval(season) {
+  const { anyInReservationSystem } = getSeasonReservationCoverage(season);
+
+  // RS team approval is required if inReservationSystem is true for any dates
+  if (anyInReservationSystem) return true;
+
+  // RS team approval is required for Park-level Winter fee seasons
+  if (season.park && season.seasonType === SEASON_TYPE.WINTER) {
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * Returns a string with the note, author and email address
@@ -148,7 +198,7 @@ function formatBoolean(value) {
 /**
  * Returns the park associated with a date range from
  * its Feature, ParkArea, or direct Park association.
- * @param {Season} season The date range to get the park for
+ * @param {Season} season The season to get the park for
  * @returns {Park|null} the park associated with the date range, or null if not found
  */
 function getPark(season) {
@@ -169,8 +219,9 @@ function getPark(season) {
  * @returns {boolean} true if the season is in the reservation system, false otherwise
  */
 function getInReservationSystem(season) {
-  // ParkArea seasons: return the ParkArea's inReservationSystem value
-  if (season.parkArea) return season.parkArea.inReservationSystem;
+  // ParkArea seasons: check area and all its features, consistent with "RS approval required" logic
+  if (season.parkArea)
+    return getSeasonReservationCoverage(season).anyInReservationSystem;
 
   // Feature seasons: return the Feature's inReservationSystem value
   if (season.feature) return season.feature.inReservationSystem;
@@ -295,6 +346,46 @@ function getGateDisplayValues(dateRange, gateDetail, annualData) {
   };
 }
 
+/**
+ * Formats the Information Services team approval status for CSV display.
+ * Returns "Yes" if approved, "N/A" if not required, or empty string if pending.
+ * @param {Season} season Season with informationSvcApproved, gateDetail, and changeLogs loaded
+ * @returns {string} Display value for the IS team approved column
+ */
+function formatInformationSvcApprovalStatus(season) {
+  // The season is approved by the Info Services team: return "Yes"
+  if (season.informationSvcApproved) return formatBoolean(true);
+
+  // If the season is not approved by the IS team, check if it requires IS team approval
+  if (seasonRequiresInformationSvcApproval(season)) {
+    // Requires IS approval, but not approved yet: return an empty string
+    return "";
+  }
+
+  // No IS approval required: return "N/A"
+  return "N/A";
+}
+
+/**
+ * Formats the Reservation Services team approval status for CSV display.
+ * Returns "Yes" if approved, "N/A" if not required, or empty string if pending.
+ * @param {Season} season Season with reservationSvcApproved and park/parkArea/feature associations loaded
+ * @returns {string} Display value for the RS team approved column
+ */
+function formatReservationSvcApprovalStatus(season) {
+  // The season is approved by the Reservation Services team: return "Yes"
+  if (season.reservationSvcApproved) return formatBoolean(true);
+
+  // If the season is not approved by the RS team, check if it requires RS team approval
+  if (seasonRequiresReservationSvcApproval(season)) {
+    // Requires RS approval, but not approved yet: return an empty string
+    return "";
+  }
+
+  // No RS approval required: return "N/A"
+  return "N/A";
+}
+
 // Export all dates for a given operatingYear to CSV
 router.get(
   "/csv",
@@ -335,6 +426,8 @@ router.get(
             "status",
             "readyToPublish",
             "seasonType",
+            "informationSvcApproved",
+            "reservationSvcApproved",
           ],
 
           where: { operatingYear },
@@ -377,6 +470,7 @@ router.get(
                     "dateableId",
                     "strapiFeatureId",
                     "hasReservations",
+                    "inReservationSystem",
                   ],
                   required: false,
                   where: { active: true, hasDates: true },
@@ -440,11 +534,17 @@ router.get(
               required: false,
             },
 
-            // Season changelogs with User details and any "internal notes"
+            // All Season changelogs with User details and any "internal notes"
             {
               model: SeasonChangeLog,
               as: "changeLogs",
-              attributes: ["id", "notes", "createdAt"],
+              attributes: [
+                "id",
+                "notes",
+                "createdAt",
+                "gateDetailOldValue",
+                "gateDetailNewValue",
+              ],
 
               required: false,
 
@@ -487,9 +587,9 @@ router.get(
         const { gateDetail } = season;
         const park = getPark(season);
 
-        // Skip this row if park is null (no valid park association)
+        // Skip this row if park is null.
+        // This can happen if the Season's Dateable entity is inactive
         if (!park) {
-          console.log("No park found for season ID:", season.id);
           return null;
         }
 
@@ -572,6 +672,10 @@ router.get(
           [colNames.IN_BCP_RESERVATION_SYSTEM]: formatBoolean(
             getInReservationSystem(season),
           ),
+          [colNames.IS_TEAM_APPROVED]:
+            formatInformationSvcApprovalStatus(season),
+          [colNames.RS_TEAM_APPROVED]:
+            formatReservationSvcApprovalStatus(season),
           [colNames.STATUS]: season.status,
           [colNames.READY_TO_PUBLISH]: formatBoolean(season.readyToPublish),
           [colNames.UPDATE_TIME]: formatChangeLogDate(
