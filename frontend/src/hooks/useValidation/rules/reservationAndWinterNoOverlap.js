@@ -2,6 +2,7 @@ import { areIntervalsOverlapping } from "date-fns";
 import { groupBy } from "lodash-es";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import * as FEATURE_TYPE from "@/constants/featureType";
 
 /**
@@ -60,9 +61,11 @@ export default function reservationAndWinterNoOverlap(seasonData, context) {
       );
 
       if (hasOverlaps) {
+        const reservationDisplayName = getDateTypeDisplayName("Reservation");
+
         // Show the error below the Reservation section
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationDisplayName),
           "The reservation dates must not overlap with winter dates. (To change winter dates, edit the park)",
         );
       }

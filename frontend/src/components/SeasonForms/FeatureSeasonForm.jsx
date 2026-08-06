@@ -20,6 +20,7 @@ import ErrorSlot from "@/components/ValidationErrorSlot";
 
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
@@ -155,7 +156,7 @@ function FormSection({ dateTypes, feature, season, previousSeasonDates }) {
       {dateTypes.map((dateType) => (
         <div key={dateType.name} className="col-lg-6 mb-4">
           <h6 className="fw-normal">
-            {dateType.name}{" "}
+            {getDateTypeDisplayName(dateType.name)}{" "}
             <TooltipWrapper placement="top" content={dateType.description}>
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>

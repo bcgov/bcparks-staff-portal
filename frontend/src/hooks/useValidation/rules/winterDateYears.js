@@ -1,4 +1,5 @@
 import { isBefore, isWithinInterval } from "date-fns";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 /**
  * Validates that the start and end dates of winter fee date ranges fall in the correct years.
@@ -47,7 +48,7 @@ export default function winterDateYears(seasonData, context) {
         elements.dateField(
           idOrTempId,
           "startDate",
-          `${winterDateRange.dateType.name} start date`,
+          `${getDateTypeDisplayName(winterDateRange.dateType.name)} start date`,
           winterDateRange.dateableId,
         ),
         `The start date must be between October 1 and December 31, ${operatingYear}`,
@@ -60,7 +61,7 @@ export default function winterDateYears(seasonData, context) {
         elements.dateField(
           idOrTempId,
           "endDate",
-          `${winterDateRange.dateType.name} end date`,
+          `${getDateTypeDisplayName(winterDateRange.dateType.name)} end date`,
           winterDateRange.dateableId,
         ),
         `The end date must be before April 1, ${operatingYear + 1}`,

@@ -1,6 +1,7 @@
 import { areIntervalsOverlapping } from "date-fns";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as DATE_TYPE from "@/constants/dateType";
 
@@ -56,9 +57,11 @@ export default function winterAndReservationNoOverlap(seasonData, context) {
   );
 
   if (hasOverlaps) {
+    const winterFeeDisplayName = getDateTypeDisplayName("Winter fee");
+
     // Show the error below the Winter fee date range section
     context.addError(
-      elements.dateableDateType(current.park.dateableId, "Winter fee"),
+      elements.dateableDateType(current.park.dateableId, winterFeeDisplayName),
       "Winter dates must not overlap with reservation dates. (To change reservation dates, edit the park's frontcountry campground reservation dates)",
     );
   }

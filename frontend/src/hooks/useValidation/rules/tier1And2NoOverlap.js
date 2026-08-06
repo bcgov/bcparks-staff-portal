@@ -1,6 +1,7 @@
 import { areIntervalsOverlapping } from "date-fns";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 /**
  * Validates that Tier 1 dates do not overlap with Tier 2 dates.
@@ -54,15 +55,17 @@ export default function tier1And2NoOverlap(seasonData, context) {
 
   if (hasOverlaps) {
     const errorText = "The tier 1 and tier 2 dates must not overlap.";
+    const tier1DisplayName = getDateTypeDisplayName("Tier 1");
+    const tier2DisplayName = getDateTypeDisplayName("Tier 2");
 
     // Show the error below the Tier 1 and Tier 2 date range sections
     context.addError(
-      elements.dateableDateType(current.park.dateableId, "Tier 1"),
+      elements.dateableDateType(current.park.dateableId, tier1DisplayName),
       errorText,
     );
 
     context.addError(
-      elements.dateableDateType(current.park.dateableId, "Tier 2"),
+      elements.dateableDateType(current.park.dateableId, tier2DisplayName),
       errorText,
     );
   }

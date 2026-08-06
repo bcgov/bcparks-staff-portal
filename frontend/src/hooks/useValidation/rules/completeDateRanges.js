@@ -1,3 +1,5 @@
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
+
 /**
  * Validates that the DateRanges with a startDate also have an endDate, and vice versa.
  * @param {Object} seasonData The season form data to validate
@@ -21,7 +23,7 @@ export default function completeDateRanges(seasonData, context) {
         elements.dateField(
           idOrTempId,
           "endDate",
-          `${dateRange.dateType.name} end date`,
+          `${getDateTypeDisplayName(dateRange.dateType.name)} end date`,
           dateRange.dateableId,
         ),
         "Enter an end date",
@@ -35,7 +37,7 @@ export default function completeDateRanges(seasonData, context) {
         elements.dateField(
           idOrTempId,
           "startDate",
-          `${dateRange.dateType.name} start date`,
+          `${getDateTypeDisplayName(dateRange.dateType.name)} start date`,
           dateRange.dateableId,
         ),
         "Enter a start date",
