@@ -2,33 +2,43 @@ import * as STATUS from "../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../constants/seasonType.js";
 
 /**
- * Returns true if the season has any dates in the reservation system.
- * For ParkArea forms, any true value at area/feature level is treated as true.
+ * Returns which reservation-system coverage applies to this season.
+ * For ParkArea seasons, coverage is checked at both the area and feature levels,
+ * so both booleans can be true simultaneously when features have mixed values.
  * @param {Season} season Season object with park/parkArea/feature associations
- * @returns {boolean} True when any reservation-system coverage exists
+ * @returns {{anyInReservationSystem: boolean, anyNotInReservationSystem: boolean}} Coverage flags for the season
  */
-export function isSeasonInReservationSystem(season) {
+export function getSeasonReservationCoverage(season) {
+  // Park Season: check the Park's inReservationSystem flag
   if (season.park) {
-    return Boolean(season.park.inReservationSystem);
+    const inRS = Boolean(season.park.inReservationSystem);
+
+    return { anyInReservationSystem: inRS, anyNotInReservationSystem: !inRS };
   }
 
+  // Feature Season: check the Feature's inReservationSystem flag
   if (season.feature) {
-    return Boolean(season.feature.inReservationSystem);
+    const inRS = Boolean(season.feature.inReservationSystem);
+
+    return { anyInReservationSystem: inRS, anyNotInReservationSystem: !inRS };
   }
 
+  // ParkArea Season: check the ParkArea's inReservationSystem flag,
+  // and also check the inReservationSystem flags of all its Features.
   if (season.parkArea) {
-    const parkAreaFeatures = season.parkArea.features || [];
-    const hasAnyFeatureInReservationSystem = parkAreaFeatures.some(
-      (feature) => feature.inReservationSystem === true,
-    );
-
-    return (
+    const features = season.parkArea.features || [];
+    const anyInReservationSystem =
       Boolean(season.parkArea.inReservationSystem) ||
-      hasAnyFeatureInReservationSystem
-    );
+      features.some((f) => f.inReservationSystem === true);
+
+    const anyNotInReservationSystem =
+      !anyInReservationSystem ||
+      features.some((f) => f.inReservationSystem === false);
+
+    return { anyInReservationSystem, anyNotInReservationSystem };
   }
 
-  return false;
+  return { anyInReservationSystem: false, anyNotInReservationSystem: false };
 }
 
 /**
@@ -68,32 +78,15 @@ export function getRequiredApprovalsForSeason({
   let requiresInformationSvcApproval = false;
   let requiresReservationSvcApproval = false;
 
-  // inReservationSystem requires RS team approval,
-  // or IS team approval is required if inReservationSystem is false.
-  if (isSeasonInReservationSystem(season)) {
-    requiresReservationSvcApproval = true;
-  } else {
-    requiresInformationSvcApproval = true;
-  }
+  const { anyInReservationSystem, anyNotInReservationSystem } =
+    getSeasonReservationCoverage(season);
+
+  if (anyInReservationSystem) requiresReservationSvcApproval = true;
+  if (anyNotInReservationSystem) requiresInformationSvcApproval = true;
 
   // Park-level Winter fee seasons require RS approval.
   if (season.park && season.seasonType === SEASON_TYPE.WINTER) {
     requiresReservationSvcApproval = true;
-  }
-
-  // Check features within ParkAreas
-  if (season.parkArea) {
-    // ParkAreas are covered by isSeasonInReservationSystem,
-    // but we need to check if any features in this area are explicitly
-    // not in the reservation system, and require approval from the IS team if so.
-    const parkAreaFeatures = season.parkArea.features || [];
-    const hasAnyFeatureNotInReservationSystem = parkAreaFeatures.some(
-      (feature) => feature.inReservationSystem === false,
-    );
-
-    if (hasAnyFeatureNotInReservationSystem) {
-      requiresInformationSvcApproval = true;
-    }
   }
 
   // Info Services team approval is required if hasGate is true,
