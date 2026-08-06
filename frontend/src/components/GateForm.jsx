@@ -107,10 +107,10 @@ export default function GateForm({
               Gate open hours{" "}
               <TooltipWrapper
                 placement="top"
-                content={`Regular daily hours the gate(s) is open.
-                  If hours are irregular, or change throughout the year,
-                  leave this blank and explain the gate schedule in ‘Internal notes’ below.
-                  If you would rather not publish gate hours, leave this blank.`}
+                content={`Regular daily hours the gate is open. If hours are irregular,
+                  or change throughout the year, leave this blank and enter the schedule
+                  in 'Internal notes'. If you would rather not publish gate hours,
+                  leave hours blank.`}
               >
                 <FontAwesomeIcon icon={faCircleInfo} />
               </TooltipWrapper>{" "}
