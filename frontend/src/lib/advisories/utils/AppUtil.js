@@ -31,10 +31,12 @@ export function advisoryHistoryCompare(a, b) {
     unpublished: 1,
     reviewed: 2,
     published: 3,
+    "updated and published": 4,
+    updated: 4,
   };
 
-  const aPriority = displayTextPriority[a.displayText] || 4;
-  const bPriority = displayTextPriority[b.displayText] || 4;
+  const aPriority = displayTextPriority[a.displayText] || 5;
+  const bPriority = displayTextPriority[b.displayText] || 5;
 
   if (aPriority < bPriority) {
     return -1;
