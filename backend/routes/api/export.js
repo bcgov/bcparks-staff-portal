@@ -469,6 +469,7 @@ router.get(
                     "dateableId",
                     "strapiFeatureId",
                     "hasReservations",
+                    "inReservationSystem",
                   ],
                   required: false,
                   where: { active: true, hasDates: true },
