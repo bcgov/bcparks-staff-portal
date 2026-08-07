@@ -45,6 +45,8 @@ function seasonModel(minYear, required = true, seasonStatus = null) {
       "id",
       "publishableId",
       "status",
+      "informationSvcApproved",
+      "reservationSvcApproved",
       "seasonType",
       "readyToPublish",
       "operatingYear",
@@ -764,6 +766,8 @@ router.get(
           publishableId: season.publishableId,
           operatingYear: season.operatingYear,
           status: season.status,
+          informationSvcApproved: season.informationSvcApproved,
+          reservationSvcApproved: season.reservationSvcApproved,
           readyToPublish: season.readyToPublish,
           dateRanges: season.dateRanges.map((dateRange) =>
             buildDateRangeObject(
