@@ -639,7 +639,7 @@ router.post(
         resolvedStatus: newStatus,
         informationSvcApproved,
         reservationSvcApproved,
-      } = resolveSeasonApprovalState({
+      } = await resolveSeasonApprovalState({
         season,
         requestedNewStatus,
         oldGateDetail,
