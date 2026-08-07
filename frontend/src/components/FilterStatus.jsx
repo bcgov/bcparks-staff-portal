@@ -3,6 +3,7 @@ import { reject, without } from "lodash-es";
 import PropTypes from "prop-types";
 import { labelByValue } from "@/constants/seasonStatus";
 import FilterBadge from "@/components/shared/FilterBadge";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 import "./FilterStatus.scss";
 
@@ -93,7 +94,7 @@ export default function FilterStatus({
     // Date Types filter (multi-select)
     if (activeFilters.dateTypes.length) {
       const dateTypeTags = activeFilters.dateTypes.map((dateType) => ({
-        label: `Date Type: ${dateType.name}`,
+        label: `Date Type: ${getDateTypeDisplayName(dateType.name)}`,
 
         remove(filters) {
           updateFilter(

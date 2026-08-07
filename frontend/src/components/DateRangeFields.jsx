@@ -10,6 +10,7 @@ import Form from "react-bootstrap/Form";
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 // Maximum valid JavaScript date (September 13, 275760)
 const MAX_DATE = new Date(8640000000000000);
@@ -136,6 +137,7 @@ export default function DateRangeFields({
   canSpan2Years = false,
 }) {
   const { elements } = useValidationContext();
+  const dateTypeDisplayName = getDateTypeDisplayName(dateType.name);
   // Constants
   // Tier 1 only allows 1 date range
   const hasMultipleDates = dateType.name !== "Tier 1";
@@ -233,7 +235,7 @@ export default function DateRangeFields({
           disabled={isDateRangeAnnual}
         >
           <FontAwesomeIcon icon={faPlus} />
-          <span className="ms-1">Add more {dateType.name} dates</span>
+          <span className="ms-1">Add more {dateTypeDisplayName} dates</span>
         </button>
       )}
 
@@ -251,7 +253,9 @@ export default function DateRangeFields({
       )}
 
       <ErrorSlot
-        elementId={elements.dateableDateType(dateableId, dateType.name).id}
+        elementId={
+          elements.dateableDateType(dateableId, dateTypeDisplayName).id
+        }
       />
     </>
   );

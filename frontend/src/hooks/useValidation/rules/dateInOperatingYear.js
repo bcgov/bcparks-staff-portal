@@ -1,4 +1,5 @@
 import { isWithinInterval } from "date-fns";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 /**
  * Validates that the date ranges are within the operating year.
@@ -41,7 +42,7 @@ export default function dateInOperatingYear(seasonData, context) {
         elements.dateField(
           dateRange.id || dateRange.tempId,
           "startDate",
-          `${dateRange.dateType.name} start date`,
+          `${getDateTypeDisplayName(dateRange.dateType.name)} start date`,
           dateRange.dateableId,
         ),
         yearErrorMessage,
@@ -57,7 +58,7 @@ export default function dateInOperatingYear(seasonData, context) {
         elements.dateField(
           dateRange.id || dateRange.tempId,
           "endDate",
-          `${dateRange.dateType.name} end date`,
+          `${getDateTypeDisplayName(dateRange.dateType.name)} end date`,
           dateRange.dateableId,
         ),
         yearErrorMessage,

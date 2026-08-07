@@ -1,6 +1,7 @@
 import { isEqual } from "date-fns";
 
 import consolidateRanges from "@/lib/consolidateDateRanges";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 /**
  * Validates that the Park-level Tier 1 and 2 dates match the Frontcountry Campground Feature Reservation dates.
@@ -62,15 +63,17 @@ export default function tier1And2SameAsReservation(seasonData, context) {
   if (!sameDates) {
     const errorText =
       "The tier 1 and tier 2 dates must include all reservation dates. (To change reservation dates, edit the park's frontcountry campground reservation dates)";
+    const tier1DisplayName = getDateTypeDisplayName("Tier 1");
+    const tier2DisplayName = getDateTypeDisplayName("Tier 2");
 
     // Show the error below the Tier 1 and Tier 2 date range sections
     context.addError(
-      elements.dateableDateType(current.park.dateableId, "Tier 1"),
+      elements.dateableDateType(current.park.dateableId, tier1DisplayName),
       errorText,
     );
 
     context.addError(
-      elements.dateableDateType(current.park.dateableId, "Tier 2"),
+      elements.dateableDateType(current.park.dateableId, tier2DisplayName),
       errorText,
     );
   }

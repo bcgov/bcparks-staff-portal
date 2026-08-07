@@ -10,6 +10,7 @@ import InternalNotesRow from "@/components/InternalNotesRow";
 import SubmittedWithErrorsWarning from "@/components/SubmittedWithErrorsWarning";
 import IconButton from "@/components/IconButton";
 import { formatDateRange, formatDateShortWithYear } from "@/lib/utils";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
@@ -136,7 +137,9 @@ function DateTableRow({
     return (
       <tr key={dateTypeName} className="table-row--date">
         <td>
-          <span className="fw-bold">{dateTypeName}</span>
+          <span className="fw-bold">
+            {getDateTypeDisplayName(dateTypeName)}
+          </span>
           {showCalculatedDateTypeLabel && <span> (calculated)</span>}
         </td>
         <td>
@@ -278,11 +281,7 @@ function StatusTableRow({
             <StatusBadge status={season.status} />
           </div>
 
-          <IconButton
-            icon={faPen}
-            label="Edit"
-            onClick={formPanelHandler}
-          />
+          <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
 
           {approver && (
             <ApproveButton

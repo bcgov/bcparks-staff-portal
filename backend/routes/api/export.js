@@ -21,6 +21,7 @@ import {
 } from "../../models/index.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import getDateTypeDisplayName from "../../utils/getDateTypeDisplayName.js";
 
 const router = Router();
 
@@ -561,7 +562,7 @@ router.get(
           [colNames.FEATURE_ID]: feature?.strapiFeatureId ?? "",
           [colNames.FEATURE_TYPE]: getFeatureTypeForSeason(season),
           [colNames.OPERATING_YEAR]: season.operatingYear,
-          [colNames.DATE_TYPE]: dateRange.dateType.name,
+          [colNames.DATE_TYPE]: getDateTypeDisplayName(dateRange.dateType.name),
           [colNames.START_DATE]: formatDate(dateRange.startDate),
           [colNames.END_DATE]: formatDate(dateRange.endDate),
           [colNames.SAME_EVERY_YEAR]: sameEveryYear,

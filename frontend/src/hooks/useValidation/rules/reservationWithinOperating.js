@@ -1,6 +1,7 @@
 import { groupBy } from "lodash-es";
 import consolidateRanges from "@/lib/consolidateDateRanges";
 import isDateRangeWithinDateRange from "@/lib/isDateRangeWithinDateRange";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import { isBefore } from "date-fns";
 
 /**
@@ -23,6 +24,8 @@ export default function reservationWithinOperating(seasonData, context) {
       // Group dateRanges by type so we can examine the reservation and operation dates
       const dateRangesByType = groupBy(dateableDateRanges, "dateType.name");
       const { Operation = [], Reservation = [] } = dateRangesByType;
+      const operationDisplayName = getDateTypeDisplayName("Operation");
+      const reservationDisplayName = getDateTypeDisplayName("Reservation");
 
       // Skip validation if there are no reservation dates
       if (Reservation.length === 0) return;
@@ -51,12 +54,12 @@ export default function reservationWithinOperating(seasonData, context) {
 
         // Show the error below the Operation and Reservation date range sections
         context.addError(
-          elements.dateableDateType(dateableId, "Operation"),
+          elements.dateableDateType(dateableId, operationDisplayName),
           errorText,
         );
 
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationDisplayName),
           errorText,
         );
       }
@@ -71,12 +74,12 @@ export default function reservationWithinOperating(seasonData, context) {
 
         // Show the error below the Operation and Reservation date range sections
         context.addError(
-          elements.dateableDateType(dateableId, "Operation"),
+          elements.dateableDateType(dateableId, operationDisplayName),
           errorText,
         );
 
         context.addError(
-          elements.dateableDateType(dateableId, "Reservation"),
+          elements.dateableDateType(dateableId, reservationDisplayName),
           errorText,
         );
       }

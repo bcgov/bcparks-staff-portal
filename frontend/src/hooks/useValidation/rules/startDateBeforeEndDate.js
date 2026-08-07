@@ -1,4 +1,5 @@
 import { isBefore } from "date-fns";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 /**
  * Validates that the start date is before the end date for each date range.
@@ -20,7 +21,7 @@ export default function startDateBeforeEndDate(seasonData, context) {
         // Show error below the date range
         elements.dateRange(
           dateRange.id || dateRange.tempId,
-          dateRange.dateType.name,
+          getDateTypeDisplayName(dateRange.dateType.name),
           dateRange.dateableId,
         ),
         "Enter an end date that comes after the start date",

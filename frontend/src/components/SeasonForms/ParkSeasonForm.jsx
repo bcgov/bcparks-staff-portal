@@ -19,6 +19,7 @@ import PreviousDates from "@/components/SeasonForms/PreviousDates";
 
 import DataContext from "@/contexts/DataContext";
 import { updateDateRangeAnnualsArray } from "@/lib/utils";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import * as DATE_TYPE from "@/constants/dateType";
@@ -42,7 +43,7 @@ function FormSection({
       {dateTypes.map((dateType) => (
         <div key={dateType.name} className="col-lg-6 mb-4">
           <h6 className="fw-normal">
-            {dateType.name}{" "}
+            {getDateTypeDisplayName(dateType.name)}{" "}
             <TooltipWrapper placement="top" content={dateType.description}>
               <FontAwesomeIcon icon={faCircleInfo} />
             </TooltipWrapper>

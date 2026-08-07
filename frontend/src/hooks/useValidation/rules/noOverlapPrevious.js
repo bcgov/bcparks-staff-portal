@@ -1,4 +1,5 @@
 import { areIntervalsOverlapping } from "date-fns";
+import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
 /**
  * Validates that the date ranges do not overlap with previous season's dates of the same type.
@@ -45,7 +46,7 @@ export default function noOverlapPrevious(seasonData, context) {
         // Show error below the date range
         elements.dateRange(
           dateRange.id || dateRange.tempId,
-          dateRange.dateType.name,
+          getDateTypeDisplayName(dateRange.dateType.name),
           dateRange.dateableId,
         ),
         "The dates must not overlap with existing dates submitted in the previous season.",
