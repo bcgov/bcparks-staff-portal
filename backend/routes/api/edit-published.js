@@ -1,7 +1,7 @@
 import { Router } from "express";
 import asyncHandler from "express-async-handler";
-import { Season } from "../../models/index.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
+import * as SEASON_TYPE from "../../constants/seasonType.js";
 import { checkPermissions } from "../../middleware/permissions.js";
 import parkRoutes from "./parks.js";
 
@@ -13,22 +13,38 @@ router.get(
   "/",
   checkPermissions([USER_ROLES.APPROVER]),
   asyncHandler(async (req, res, next) => {
-    // get the max season (latest operating year) from the db
-    const maxSeason = await Season.findOne({
-      order: [["operatingYear", "DESC"]],
-    });
-
-    // Group site and picnic shelter dates are collected a year before campsite dates
-    // because they open for reservations 12 months in advance. As a result, the highest
-    // operatingYear in the database is one year ahead of the active camping season.
-    const campingDateCollectionYear = maxSeason?.operatingYear
-      ? maxSeason.operatingYear - 1
-      : new Date().getFullYear();
-    const previousDateCollectionYear = campingDateCollectionYear - 1;
-
     req.query = {
       ...req.query,
-      operatingYear: previousDateCollectionYear,
+    };
+
+    const originalJson = res.json.bind(res);
+
+    res.json = (parks) => {
+      const filtered = parks.map((park) => ({
+        ...park,
+        parkAreas: park.parkAreas.map((parkArea) => ({
+          ...parkArea,
+          seasons: parkArea.seasons.filter((season) => {
+            if (season.seasonType === SEASON_TYPE.REGULAR) {
+              return (
+                season.operatingYear ===
+                parkArea.currentSeason?.regular?.operatingYear - 1
+              );
+            }
+
+            if (season.seasonType === SEASON_TYPE.WINTER) {
+              return (
+                season.operatingYear ===
+                parkArea.currentSeason?.winter?.operatingYear - 1
+              );
+            }
+
+            return true;
+          }),
+        })),
+      }));
+
+      return originalJson(filtered);
     };
 
     return next();

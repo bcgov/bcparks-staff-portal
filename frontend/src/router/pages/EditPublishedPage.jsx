@@ -55,6 +55,11 @@ export default function EditPublishedPage() {
       );
     }
 
+    // Find a season by type
+    function getSeasonByType(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
+      return seasons.find((season) => season.seasonType === seasonType) || null;
+    }
+
     // Park-level seasons (regular and winter)
     const regularSeason = getSeasonByYear(
       selectedPark.seasons,
@@ -83,7 +88,7 @@ export default function EditPublishedPage() {
 
     // Area-level seasons
     for (const parkArea of selectedPark.parkAreas || []) {
-      const parkAreaSeason = getSeasonByYear(
+      const parkAreaSeason = getSeasonByType(
         parkArea.seasons,
         SEASON_TYPE.REGULAR,
       );
@@ -101,7 +106,7 @@ export default function EditPublishedPage() {
 
     // Feature-level seasons
     for (const feature of selectedPark.features || []) {
-      const featureSeason = getSeasonByYear(
+      const featureSeason = getSeasonByType(
         feature.seasons,
         SEASON_TYPE.REGULAR,
       );
