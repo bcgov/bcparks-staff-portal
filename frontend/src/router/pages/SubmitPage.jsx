@@ -112,30 +112,23 @@ function SubmitPage() {
         value: STATUS.PENDING_REVIEW.value,
         label: STATUS.PENDING_REVIEW.label,
       },
+      ...(isApprover
+        ? [
+            {
+              value: STATUS.IS_REVIEW_FILTER.value,
+              label: STATUS.IS_REVIEW_FILTER.label,
+              indented: true,
+            },
+            {
+              value: STATUS.RS_REVIEW_FILTER.value,
+              label: STATUS.RS_REVIEW_FILTER.label,
+              indented: true,
+            },
+          ]
+        : []),
       { value: STATUS.APPROVED.value, label: STATUS.APPROVED.label },
       { value: STATUS.PUBLISHED.value, label: STATUS.PUBLISHED.label },
     ];
-
-    if (isApprover) {
-      const pendingIndex = options.findIndex(
-        (option) => option.value === STATUS.PENDING_REVIEW.value,
-      );
-
-      options.splice(
-        pendingIndex + 1,
-        0,
-        {
-          value: STATUS.IS_REVIEW_FILTER.value,
-          label: STATUS.IS_REVIEW_FILTER.label,
-          indented: true,
-        },
-        {
-          value: STATUS.RS_REVIEW_FILTER.value,
-          label: STATUS.RS_REVIEW_FILTER.label,
-          indented: true,
-        },
-      );
-    }
 
     return options;
   }, [isApprover]);

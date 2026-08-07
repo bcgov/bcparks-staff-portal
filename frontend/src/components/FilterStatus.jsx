@@ -76,29 +76,27 @@ export default function FilterStatus({
         label: `Status: ${labelByValue[status]}`,
 
         remove(filters) {
-          const HQ = STATUS.PENDING_REVIEW.value;
-          const IS = STATUS.IS_REVIEW_FILTER.value;
-          const RS = STATUS.RS_REVIEW_FILTER.value;
+          const PENDING_REVIEW = STATUS.PENDING_REVIEW.value;
+          const IS_REVIEW = STATUS.IS_REVIEW_FILTER.value;
+          const RS_REVIEW = STATUS.RS_REVIEW_FILTER.value;
 
           // Keep badge-removal behavior consistent with the dropdown's
           // parent/child status-selection rules.
-          if (status === HQ) {
+          if (status === PENDING_REVIEW) {
             updateFilter(
               "status",
-              filters.status.filter(
-                (value) => value !== HQ && value !== IS && value !== RS,
-              ),
+              without(filters.status, PENDING_REVIEW, IS_REVIEW, RS_REVIEW),
             );
             return;
           }
 
-          if (status === IS || status === RS) {
+          if (status === IS_REVIEW || status === RS_REVIEW) {
             const next = without(filters.status, status);
-            const hasIS = next.includes(IS);
-            const hasRS = next.includes(RS);
+            const hasISReview = next.includes(IS_REVIEW);
+            const hasRSReview = next.includes(RS_REVIEW);
 
-            if (!hasIS && !hasRS) {
-              updateFilter("status", without(next, HQ));
+            if (!hasISReview && !hasRSReview) {
+              updateFilter("status", without(next, PENDING_REVIEW));
               return;
             }
 
