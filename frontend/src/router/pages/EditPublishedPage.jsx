@@ -57,7 +57,17 @@ export default function EditPublishedPage() {
 
     // Find a season by type
     function getSeasonByType(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
-      return seasons.find((season) => season.seasonType === seasonType) || null;
+      const previousSeasonYear = Math.max(
+        ...seasons.map((s) => s.operatingYear),
+      );
+
+      return (
+        seasons.find(
+          (season) =>
+            season.seasonType === seasonType &&
+            season.operatingYear === previousSeasonYear,
+        ) || null
+      );
     }
 
     // Park-level seasons (regular and winter)
