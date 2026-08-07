@@ -2,6 +2,13 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import * as DATE_TYPE from "@/constants/dateType";
 
+const PARK_APPLICABILITY_BY_DATE_TYPE = {
+  [DATE_TYPE.PARK_GATE_OPEN]: "hasGate",
+  [DATE_TYPE.TIER_1]: "hasTier1Dates",
+  [DATE_TYPE.TIER_2]: "hasTier2Dates",
+  [DATE_TYPE.WINTER_FEE]: "hasWinterFeeDates",
+};
+
 /**
  * Validates that the date ranges are provided for required date types.
  * This rule applies to all date types except those that are optional based on the dateType and level.
@@ -29,15 +36,9 @@ export default function requiredDateRanges(seasonData, context) {
 
     // If the level is "park", check if the park has the boolean value for the date type
     if (level === "park" && park) {
-      if (dateTypeNumber === DATE_TYPE.TIER_1 && !park.hasTier1Dates) {
-        return false;
-      }
+      const flagName = PARK_APPLICABILITY_BY_DATE_TYPE[dateTypeNumber];
 
-      if (dateTypeNumber === DATE_TYPE.TIER_2 && !park.hasTier2Dates) {
-        return false;
-      }
-
-      if (dateTypeNumber === DATE_TYPE.WINTER_FEE && !park.hasWinterFeeDates) {
+      if (flagName && !park[flagName]) {
         return false;
       }
     }
