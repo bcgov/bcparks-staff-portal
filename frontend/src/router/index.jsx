@@ -210,7 +210,7 @@ const RouterConfig = createBrowserRouter([
           {
             path: "edit-published",
             element: (
-              <AccessControlledRoute allowedRoles={[ROLES.APPROVER]}>
+              <AccessControlledRoute allowedRoles={[ROLES.DOOT_APPROVER]}>
                 <EditPublishedPage />
               </AccessControlledRoute>
             ),

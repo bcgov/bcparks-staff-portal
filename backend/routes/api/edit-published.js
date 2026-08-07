@@ -11,7 +11,7 @@ const router = Router();
 // Get all parks with seasons for the previous year, regardless of status or seasonType.
 router.get(
   "/",
-  checkPermissions([USER_ROLES.APPROVER]),
+  checkPermissions([USER_ROLES.DOOT_APPROVER]),
   asyncHandler(async (req, res, next) => {
     // get the max season (latest operating year) from the db
     const maxSeason = await Season.findOne({
