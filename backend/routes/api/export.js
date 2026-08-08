@@ -219,8 +219,9 @@ function getPark(season) {
  * @returns {boolean} true if the season is in the reservation system, false otherwise
  */
 function getInReservationSystem(season) {
-  // ParkArea seasons: return the ParkArea's inReservationSystem value
-  if (season.parkArea) return season.parkArea.inReservationSystem;
+  // ParkArea seasons: check area and all its features, consistent with "RS approval required" logic
+  if (season.parkArea)
+    return getSeasonReservationCoverage(season).anyInReservationSystem;
 
   // Feature seasons: return the Feature's inReservationSystem value
   if (season.feature) return season.feature.inReservationSystem;
