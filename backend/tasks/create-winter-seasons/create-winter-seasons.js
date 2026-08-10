@@ -352,7 +352,11 @@ export default async function createWinterSeasons(
     parkAreaPublishableById.set(parkArea.id, publishableId);
   }
 
-  const featureQueries = featuresWithWinterFees.map(async (feature) => {
+  // Process Features by owning publishable so each group is serialized (prevents
+  // duplicate season creation), while independent groups run in parallel.
+  const featureGroupsByOwner = new Map();
+
+  for (const feature of featuresWithWinterFees) {
     const featureDateableId =
       feature.dateableId || (await createDateable(feature));
 
@@ -364,27 +368,42 @@ export default async function createWinterSeasons(
         parkAreaPublishableById.get(feature.parkArea.id) ||
         feature.parkArea.publishableId ||
         (await createPublishable(feature.parkArea));
+      const ownerKey = `parkArea:${parkAreaPublishableId}`;
+      const group = featureGroupsByOwner.get(ownerKey) || [];
 
-      await ensureWinterSeasonSetup({
+      group.push({
         publishableId: parkAreaPublishableId,
         dateableId: featureDateableId,
         itemName: `${feature.name} (${feature.parkArea.name})`,
       });
 
-      return;
+      featureGroupsByOwner.set(ownerKey, group);
+      continue;
     }
 
     // Independent Features (without a ParkArea) own Winter seasons.
     const featurePublishableId = await createPublishable(feature);
+    const ownerKey = `feature:${featurePublishableId}`;
+    const group = featureGroupsByOwner.get(ownerKey) || [];
 
-    await ensureWinterSeasonSetup({
+    group.push({
       publishableId: featurePublishableId,
       dateableId: featureDateableId,
       itemName: feature.name,
     });
-  });
 
-  await Promise.all(featureQueries);
+    featureGroupsByOwner.set(ownerKey, group);
+  }
+
+  const featureGroupQueries = [...featureGroupsByOwner.values()].map(
+    async (group) => {
+      for (const setup of group) {
+        await ensureWinterSeasonSetup(setup);
+      }
+    },
+  );
+
+  await Promise.all(featureGroupQueries);
 
   console.log(`\nSummary:`);
   console.log(`Added ${publishablesAdded} missing Publishables`);
