@@ -157,6 +157,24 @@ function groupSeasons(flattened) {
   return groupedSeasons;
 }
 
+/**
+ * Returns Winter fee Features that should appear in ParkArea rows on the publish table.
+ * @param {Array} features ParkArea Features from the publishable payload
+ * @returns {Array} Filtered Features applicable to the row
+ */
+function getWinterFeeFeatures(features = []) {
+  return features.filter((feature) => feature.hasWinterFeeDates);
+}
+
+/**
+ * Returns true when any Feature can span two years.
+ * @param {Array} features Feature list to inspect
+ * @returns {boolean} True when at least one Feature spans two years
+ */
+function hasAnyTwoYearFeature(features = []) {
+  return features.some((feature) => feature.datesCanSpan2Years);
+}
+
 router.get(
   "/ready-to-publish",
   asyncHandler(async (req, res) => {
@@ -202,7 +220,13 @@ router.get(
           {
             model: Feature,
             as: "features",
-            attributes: ["id", "name", "datesCanSpan2Years"],
+            attributes: [
+              "id",
+              "name",
+              "hasDates",
+              "hasWinterFeeDates",
+              "datesCanSpan2Years",
+            ],
             include: [
               {
                 model: FeatureType,
@@ -249,7 +273,7 @@ router.get(
 
     // Build output
     const output = approvedSeasons.map((season) => {
-      const publishable = publishableMap.get(season.publishableId);
+      let publishable = publishableMap.get(season.publishableId);
 
       // Determine displayOperatingYear based on publishable type and season type
       let displayOperatingYear = season.operatingYear;
@@ -269,14 +293,19 @@ router.get(
           displayOperatingYear = `${operatingYear} – ${nextYear}`;
         }
       } else if (publishable?.type === "parkArea") {
+        const applicableFeatures = getWinterFeeFeatures(publishable.features);
+
         // If any Feature in the ParkArea has dates that can span 2 years, show both years
-        const canSpan2Years = publishable.features.some(
-          (feature) => feature.datesCanSpan2Years,
-        );
+        const canSpan2Years = hasAnyTwoYearFeature(applicableFeatures);
 
         if (canSpan2Years) {
           displayOperatingYear = `${operatingYear} – ${nextYear}`;
         }
+
+        publishable = {
+          ...publishable,
+          features: applicableFeatures,
+        };
       }
 
       if (!publishable) {
