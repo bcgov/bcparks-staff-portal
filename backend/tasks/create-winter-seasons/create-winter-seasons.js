@@ -352,7 +352,7 @@ export default async function createWinterSeasons(
     parkAreaPublishableById.set(parkArea.id, publishableId);
   }
 
-  const featureQueries = featuresWithWinterFees.map(async (feature) => {
+  for (const feature of featuresWithWinterFees) {
     const featureDateableId =
       feature.dateableId || (await createDateable(feature));
 
@@ -371,7 +371,7 @@ export default async function createWinterSeasons(
         itemName: `${feature.name} (${feature.parkArea.name})`,
       });
 
-      return;
+      continue;
     }
 
     // Independent Features (without a ParkArea) own Winter seasons.
@@ -382,9 +382,7 @@ export default async function createWinterSeasons(
       dateableId: featureDateableId,
       itemName: feature.name,
     });
-  });
-
-  await Promise.all(featureQueries);
+  }
 
   console.log(`\nSummary:`);
   console.log(`Added ${publishablesAdded} missing Publishables`);
