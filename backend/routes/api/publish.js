@@ -293,7 +293,10 @@ router.get(
           displayOperatingYear = `${operatingYear} – ${nextYear}`;
         }
       } else if (publishable?.type === "parkArea") {
-        const applicableFeatures = getWinterFeeFeatures(publishable.features);
+        const applicableFeatures =
+          season.seasonType === SEASON_TYPE.WINTER
+            ? getWinterFeeFeatures(publishable.features)
+            : publishable.features;
 
         // If any Feature in the ParkArea has dates that can span 2 years, show both years
         const canSpan2Years = hasAnyTwoYearFeature(applicableFeatures);
