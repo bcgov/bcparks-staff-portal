@@ -30,11 +30,11 @@ export function getSeasonReservationCoverage(season) {
   if (season.parkArea) {
     const features = season.parkArea.features || [];
     const anyInReservationSystem =
-      Boolean(season.parkArea.inReservationSystem) ||
+      season.parkArea.inReservationSystem === true ||
       features.some((f) => f.inReservationSystem === true);
 
     const anyNotInReservationSystem =
-      !anyInReservationSystem ||
+      season.parkArea.inReservationSystem !== true ||
       features.some((f) => f.inReservationSystem === false);
 
     return { anyInReservationSystem, anyNotInReservationSystem };
