@@ -28,6 +28,7 @@ import * as USER_ROLES from "../../constants/userRoles.js";
 // import { createFirstComeFirstServedDateRange } from "../../utils/firstComeFirstServedHelper.js";
 import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
 import hasOperationDateChanges from "../../utils/hasOperationDateChanges.js";
+import hasWinterFeeDateChanges from "../../utils/hasWinterFeeDateChanges.js";
 import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
@@ -663,13 +664,26 @@ router.post(
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
 
-      // Determine if this is a winter season based on seasonType
+      // Check if any operation or winter fee dates have changed
       const operationDateChanged = await hasOperationDateChanges({
         seasonId: season.id,
         dateRanges,
         deletedDateRangeIds,
         transaction,
       });
+
+      // Check if any winter fee dates have changed
+      const winterFeeDateChanged = isWinterSeason
+        ? await hasWinterFeeDateChanges({
+            seasonId: season.id,
+            dateRanges,
+            deletedDateRangeIds,
+            transaction,
+          })
+        : false;
+
+      const statusBecameApproved =
+        season.status !== newStatus && newStatus === STATUS.APPROVED;
 
       // Persist the season state, dates, and related audit records to the DB
       await saveSeasonData({
@@ -690,9 +704,14 @@ router.post(
         isWinterSeason,
       });
 
-      // Recalculate feature-level Winter fee dates when a Winter season is saved,
-      // or when feature-level Operation dates are changed.
-      if (isWinterSeason || operationDateChanged) {
+      // Recalculate feature-level Winter fee dates when relevant date content
+      // changes, or when a season transitions into approved status.
+      // Intentionally exclude approved -> published-only transitions.
+      if (
+        operationDateChanged ||
+        winterFeeDateChanged ||
+        statusBecameApproved
+      ) {
         await propagateWinterFeeDates(season.id, transaction);
       }
 
