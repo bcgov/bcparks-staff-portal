@@ -22,10 +22,13 @@ import * as USER_ROLES from "../../constants/userRoles.js";
 
 import * as STATUS from "../../constants/seasonStatus.js";
 import strapiApi from "../../utils/strapiApi.js";
-import * as DATE_TYPE from "../../constants/dateType.js";
 import * as FEATURE_TYPE from "../../constants/featureType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
+import {
+  getPublishDateTypeWhere,
+  hasCompleteDateRangesForSeason,
+} from "../../utils/publishDateRangeHelpers.js";
 
 const router = Router();
 
@@ -210,7 +213,7 @@ router.get(
     const [parks, parkAreas, features] = await Promise.all([
       Park.findAll({
         where: { publishableId: { [Op.in]: publishableIds } },
-        attributes: ["id", "publishableId", "name"],
+        attributes: ["id", "publishableId", "name", "dateableId"],
       }),
       ParkArea.findAll({
         where: { publishableId: { [Op.in]: publishableIds } },
@@ -223,6 +226,7 @@ router.get(
             attributes: [
               "id",
               "name",
+              "dateableId",
               "hasDates",
               "hasWinterFeeDates",
               "datesCanSpan2Years",
@@ -239,7 +243,13 @@ router.get(
       }),
       Feature.findAll({
         where: { publishableId: { [Op.in]: publishableIds } },
-        attributes: ["id", "publishableId", "name", "datesCanSpan2Years"],
+        attributes: [
+          "id",
+          "publishableId",
+          "name",
+          "dateableId",
+          "datesCanSpan2Years",
+        ],
         include: [
           { model: Park, as: "park", attributes: ["id", "name"] },
           { model: ParkArea, as: "parkArea", attributes: ["id", "name"] },
@@ -271,78 +281,100 @@ router.get(
       }),
     );
 
-    // Build output
-    const output = approvedSeasons.map((season) => {
-      let publishable = publishableMap.get(season.publishableId);
+    // Build output and exclude seasons with incomplete required dates
+    const output = (
+      await Promise.all(
+        approvedSeasons.map(async (season) => {
+          let publishable = publishableMap.get(season.publishableId);
 
-      // Determine displayOperatingYear based on publishable type and season type
-      let displayOperatingYear = season.operatingYear;
+          // Determine displayOperatingYear based on publishable type and season type
+          let displayOperatingYear = season.operatingYear;
 
-      const operatingYear = Number(season.operatingYear);
-      const nextYear = operatingYear + 1;
+          const operatingYear = Number(season.operatingYear);
+          const nextYear = operatingYear + 1;
 
-      // Show a display name for the operating year
-      if (publishable?.type === "park") {
-        displayOperatingYear =
-          season.seasonType === SEASON_TYPE.WINTER
-            ? `${operatingYear} – ${nextYear} Winter fee`
-            : `${operatingYear} Tiers and gate`;
-      } else if (publishable?.type === "feature") {
-        // If Feature season dates can span 2 years, show both years
-        if (publishable.datesCanSpan2Years) {
-          displayOperatingYear = `${operatingYear} – ${nextYear}`;
-        }
-      } else if (publishable?.type === "parkArea") {
-        const applicableFeatures =
-          season.seasonType === SEASON_TYPE.WINTER
-            ? getWinterFeeFeatures(publishable.features)
-            : publishable.features;
+          // Show a display name for the operating year
+          if (publishable?.type === "park") {
+            displayOperatingYear =
+              season.seasonType === SEASON_TYPE.WINTER
+                ? `${operatingYear} – ${nextYear} Winter fee`
+                : `${operatingYear} Tiers and gate`;
+          } else if (publishable?.type === "feature") {
+            // If Feature season dates can span 2 years, show both years
+            if (publishable.datesCanSpan2Years) {
+              displayOperatingYear = `${operatingYear} – ${nextYear}`;
+            }
+          } else if (publishable?.type === "parkArea") {
+            const applicableFeatures =
+              season.seasonType === SEASON_TYPE.WINTER
+                ? getWinterFeeFeatures(publishable.features)
+                : publishable.features;
 
-        // If any Feature in the ParkArea has dates that can span 2 years, show both years
-        const canSpan2Years = hasAnyTwoYearFeature(applicableFeatures);
+            // If any Feature in the ParkArea has dates that can span 2 years, show both years
+            const canSpan2Years = hasAnyTwoYearFeature(applicableFeatures);
 
-        if (canSpan2Years) {
-          displayOperatingYear = `${operatingYear} – ${nextYear}`;
-        }
+            if (canSpan2Years) {
+              displayOperatingYear = `${operatingYear} – ${nextYear}`;
+            }
 
-        publishable = {
-          ...publishable,
-          features: applicableFeatures,
-        };
-      }
+            publishable = {
+              ...publishable,
+              features: applicableFeatures,
+            };
+          }
 
-      if (!publishable) {
-        console.warn(
-          `No publishable entity found for publishableId: ${season.publishableId}`,
-        );
-      }
+          if (!publishable) {
+            console.warn(
+              `No publishable entity found for publishableId: ${season.publishableId}`,
+            );
+            return null;
+          }
 
-      // Extract names based on publishable type
-      let parkName = "-";
-      let parkAreaName = "-";
+          const dateableIds =
+            publishable.type === "parkArea"
+              ? (publishable.features || []).map(
+                  (feature) => feature.dateableId,
+                )
+              : [publishable.dateableId];
 
-      if (publishable?.type === "park") {
-        parkName = publishable.name || "-";
-      } else if (publishable?.type === "parkArea") {
-        parkName = publishable.park?.name || "-";
-        parkAreaName = publishable.name || "-";
-      } else if (publishable?.type === "feature") {
-        parkName = publishable.park?.name || "-";
-        parkAreaName = publishable.parkArea?.name || "-";
-      }
+          const hasCompleteDateRanges = await hasCompleteDateRangesForSeason({
+            seasonId: season.id,
+            dateableIds,
+            seasonType: season.seasonType,
+          });
 
-      return {
-        id: season.id,
-        operatingYear: season.operatingYear,
-        displayOperatingYear,
-        readyToPublish: season.readyToPublish,
-        publishableType: publishable?.type ?? null,
-        publishable: publishable ?? null,
-        parkName,
-        parkAreaName,
-        seasonType: season.seasonType,
-      };
-    });
+          if (!hasCompleteDateRanges) {
+            return null;
+          }
+
+          // Extract names based on publishable type
+          let parkName = "-";
+          let parkAreaName = "-";
+
+          if (publishable?.type === "park") {
+            parkName = publishable.name || "-";
+          } else if (publishable?.type === "parkArea") {
+            parkName = publishable.park?.name || "-";
+            parkAreaName = publishable.name || "-";
+          } else if (publishable?.type === "feature") {
+            parkName = publishable.park?.name || "-";
+            parkAreaName = publishable.parkArea?.name || "-";
+          }
+
+          return {
+            id: season.id,
+            operatingYear: season.operatingYear,
+            displayOperatingYear,
+            readyToPublish: season.readyToPublish,
+            publishableType: publishable?.type ?? null,
+            publishable: publishable ?? null,
+            parkName,
+            parkAreaName,
+            seasonType: season.seasonType,
+          };
+        }),
+      )
+    ).filter(Boolean);
 
     // Flatten, sort, and group the seasons for output
     const flattenedSeasons = flattenSeasons(output);
@@ -400,6 +432,8 @@ function formatDate(date) {
  * @throws {Error} If no valid date ranges are found
  */
 async function formatDateRanges(entity, season) {
+  const dateTypeWhere = getPublishDateTypeWhere(season.seasonType);
+
   // Fetch all date ranges for this season
   const dateRangesRows = await DateRange.findAll({
     attributes: ["id", "startDate", "endDate", "dateTypeId"],
@@ -415,12 +449,7 @@ async function formatDateRanges(entity, season) {
         as: "dateType",
         attributes: ["id", "dateTypeNumber"],
 
-        where: {
-          // @TEMP: Filter out FCFS dates while they're being hidden in the UI
-          dateTypeNumber: {
-            [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
-          },
-        },
+        where: dateTypeWhere,
       },
     ],
   });

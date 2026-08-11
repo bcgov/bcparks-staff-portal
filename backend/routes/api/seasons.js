@@ -684,6 +684,7 @@ router.post(
 
       const statusBecameApproved =
         season.status !== newStatus && newStatus === STATUS.APPROVED;
+      const isApprovedSave = newStatus === STATUS.APPROVED;
 
       // Persist the season state, dates, and related audit records to the DB
       await saveSeasonData({
@@ -704,13 +705,12 @@ router.post(
         isWinterSeason,
       });
 
-      // Recalculate feature-level Winter fee dates when relevant date content
-      // changes, or when a season transitions into approved status.
+      // Recalculate feature-level Winter fee dates only on approved saves.
+      // This avoids recalculation during draft/requested/pending-review saves.
       // Intentionally exclude approved -> published-only transitions.
       if (
-        operationDateChanged ||
-        winterFeeDateChanged ||
-        statusBecameApproved
+        isApprovedSave &&
+        (operationDateChanged || winterFeeDateChanged || statusBecameApproved)
       ) {
         await propagateWinterFeeDates(season.id, transaction);
       }
