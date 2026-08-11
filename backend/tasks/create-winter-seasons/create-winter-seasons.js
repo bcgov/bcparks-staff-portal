@@ -413,10 +413,6 @@ export default async function createWinterSeasons(
   // approved/published before this task created Winter fee structures.
   const uniqueParkWinterSeasonIds = [...new Set(parkWinterSeasonIds)];
 
-  for (const seasonId of uniqueParkWinterSeasonIds) {
-    await propagateWinterFeeDates(seasonId, transaction);
-  }
-
   console.log(`\nSummary:`);
   console.log(`Added ${publishablesAdded} missing Publishables`);
   console.log(`Added ${dateablesAdded} missing Dateables`);
@@ -427,6 +423,10 @@ export default async function createWinterSeasons(
   );
 
   console.log(`Done creating winter seasons for ${operatingYear}\n`);
+
+  return {
+    parkWinterSeasonIds: uniqueParkWinterSeasonIds,
+  };
 }
 
 // Run directly:
@@ -438,9 +438,21 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await Season.sequelize.transaction();
 
   try {
-    await createWinterSeasons(operatingYear, transaction);
+    const { parkWinterSeasonIds = [] } = await createWinterSeasons(
+      operatingYear,
+      transaction,
+    );
+
     await transaction.commit();
     console.log("\nTransaction committed successfully");
+
+    for (const seasonId of parkWinterSeasonIds) {
+      await Season.sequelize.transaction(async (propagationTransaction) => {
+        await propagateWinterFeeDates(seasonId, propagationTransaction);
+      });
+    }
+
+    console.log("Winter fee propagation complete");
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);
