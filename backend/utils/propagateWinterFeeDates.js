@@ -16,6 +16,7 @@ import * as SEASON_TYPE from "../constants/seasonType.js";
 import { APPROVED, PUBLISHED } from "../constants/seasonStatus.js";
 import consolidateRanges from "./consolidateDateRanges.js";
 import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
+import hasApprovedOperationSeasonForFeature from "./hasApprovedOperationSeasonForFeature.js";
 
 const PROPAGATION_ALLOWED_STATUSES = [APPROVED, PUBLISHED];
 
@@ -495,16 +496,18 @@ export default async function propagateWinterFeeDates(
       continue;
     }
 
-    const operationRanges = await getFeatureOperationRanges(
-      feature,
-      operatingYear,
-      operationTypeId,
-      transaction,
-    );
+    const hasApprovedOperationSeason =
+      await hasApprovedOperationSeasonForFeature(
+        feature,
+        operatingYear,
+        PROPAGATION_ALLOWED_STATUSES,
+        transaction,
+      );
 
-    // Skip until this Feature's Operation dates are approved/published.
-    // This avoids recalculation when only one side is approved.
-    if (!operationRanges.length) {
+    // Skip until this Feature has an approved/published REGULAR season.
+    // If the season exists but has no complete Operation dates, we still
+    // proceed so overlaps=[] can clear derived Winter fee ranges.
+    if (!hasApprovedOperationSeason) {
       skippedFeatures++;
 
       if (featureHasParentParkArea) {
@@ -513,6 +516,13 @@ export default async function propagateWinterFeeDates(
 
       continue;
     }
+
+    const operationRanges = await getFeatureOperationRanges(
+      feature,
+      operatingYear,
+      operationTypeId,
+      transaction,
+    );
 
     const overlaps = getOverlappingDateRanges(winterDates, operationRanges);
 
