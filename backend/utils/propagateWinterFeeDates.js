@@ -234,12 +234,12 @@ function getEarliestStartDate(ranges) {
 }
 
 /**
- * Calculates the winter fee window by combining available park winter dates
- * with the current and previous operation season dates.
+ * Calculates winter fee overlap ranges by combining park winter dates
+ * with previous/current operation season dates while preserving gaps.
  * @param {Array} parkWinterRanges Park-level winter fee ranges for the requested winter season
  * @param {Array} previousOperationRanges Previous operating season ranges used only when they exist
  * @param {Array} currentOperationRanges Current operating season ranges
- * @returns {{startDate: Date, endDate: Date}|null} Winter fee window, or null when it cannot be calculated
+ * @returns {Array} Consolidated overlap ranges, or [] when none can be calculated
  */
 export function getWinterFeeRangeWindow(
   parkWinterRanges,
@@ -250,7 +250,7 @@ export function getWinterFeeRangeWindow(
   const parkWinterEnd = getLatestEndDate(parkWinterRanges);
 
   if (!parkWinterStart || !parkWinterEnd) {
-    return null;
+    return [];
   }
 
   const operationRanges = [
@@ -263,21 +263,7 @@ export function getWinterFeeRangeWindow(
     operationRanges,
   );
 
-  if (!overlapRanges.length) {
-    return null;
-  }
-
-  const windowStart = getEarliestStartDate(overlapRanges);
-  const windowEnd = getLatestEndDate(overlapRanges);
-
-  if (!windowStart || !windowEnd) {
-    return null;
-  }
-
-  return {
-    startDate: windowStart,
-    endDate: windowEnd,
-  };
+  return consolidateRanges(overlapRanges);
 }
 
 /**
@@ -607,25 +593,13 @@ export default async function propagateWinterFeeDates(
       transaction,
     );
 
-    const winterFeeRangeWindow = getWinterFeeRangeWindow(
+    const winterFeeOverlapRanges = getWinterFeeRangeWindow(
       winterDates,
       previousOperationRanges,
       currentOperationRanges,
     );
 
-    if (!winterFeeRangeWindow) {
-      skippedFeatures++;
-
-      if (featureHasParentParkArea) {
-        skippedParkAreaIds.add(feature.parkArea.id);
-      }
-
-      continue;
-    }
-
-    const overlaps = getOverlappingDateRanges(winterDates, [
-      winterFeeRangeWindow,
-    ]);
+    const overlaps = winterFeeOverlapRanges;
 
     const updated = featureHasParentParkArea
       ? await syncFeatureWinterDatesOnParkAreaSeason(
