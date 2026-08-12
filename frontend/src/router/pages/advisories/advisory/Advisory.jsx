@@ -1056,14 +1056,20 @@ export default function Advisory({ mode }) {
           flashTitle: "Published",
           flashMessage: `'${title}' published`,
         };
+      case "DFT":
+        return {
+          flashTitle: "Saved as draft",
+          flashMessage: `'${title}' saved`,
+        };
       case "HQR":
         return {
           flashTitle: "Submitted for review",
           flashMessage: `'${title}' submitted for review`,
         };
       default:
+        // For other/unmatched status codes, return a generic message
         return {
-          flashTitle: "Saved as draft",
+          flashTitle: "Advisory / closure saved",
           flashMessage: `'${title}' saved`,
         };
     }
