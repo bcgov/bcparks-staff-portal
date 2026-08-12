@@ -253,9 +253,7 @@ export default function AdvisoryAreaPicker({
       </p>
 
       <Form.Group className="form-group" controlId="resources">
-        <Form.Label>
-          Recreation Sites and Trails recreation resource(s)
-        </Form.Label>
+        <Form.Label>Recreation Sites and Trails</Form.Label>
         <div
           className={classNames({
             "bcgov-select-error": affectedResourceError !== "",
@@ -277,7 +275,7 @@ export default function AdvisoryAreaPicker({
       </Form.Group>
 
       <Form.Group className="form-group" controlId="parks">
-        <Form.Label>BC Parks park(s)</Form.Label>
+        <Form.Label>BC Parks</Form.Label>
         <div
           className={classNames({
             "bcgov-select-error": affectedResourceError !== "",
@@ -299,7 +297,7 @@ export default function AdvisoryAreaPicker({
               // Tell the page component that the form changed to enable the "Unsaved changes" prompt
               markChanged();
             }}
-            placeholder="Search or select BC Parks park(s)"
+            placeholder="Search or select BC Parks"
             isMulti
             className="bcgov-select"
             onBlur={() => {
