@@ -1043,7 +1043,12 @@ export default function Advisory({ mode }) {
     return savedLinks;
   }
 
-  // Returns the flash message title and body for the given advisory status code
+  /**
+   * Returns the global flash message title and body for the given advisory status code.
+   * @param {string} statusCode the advisory status code of the form submission
+   * @param {string} title the headline of the advisory
+   * @returns {{ flashTitle: string, flashMessage: string }} flash message title and body
+   */
   function getFlashContentForStatus(statusCode, title) {
     switch (statusCode) {
       case "PUB":
