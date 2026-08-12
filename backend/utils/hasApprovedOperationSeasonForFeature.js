@@ -10,7 +10,7 @@ const ALLOWED_STATUSES = [APPROVED, PUBLISHED];
  * Returns whether this Feature has the requested regular season approved/published
  * for winter-fee propagation.
  * @param {Feature} feature Feature record (with optional parent parkArea)
- * @param {number} operatingYear Winter season operating year being recalculated
+ * @param {number} operatingYear Requested regular operating year to validate
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} True when the requested regular season exists
  */
