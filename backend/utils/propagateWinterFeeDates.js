@@ -13,9 +13,12 @@ import {
 } from "../models/index.js";
 import * as DATE_TYPE from "../constants/dateType.js";
 import * as SEASON_TYPE from "../constants/seasonType.js";
-import { APPROVED } from "../constants/seasonStatus.js";
+import { APPROVED, PUBLISHED } from "../constants/seasonStatus.js";
 import consolidateRanges from "./consolidateDateRanges.js";
 import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
+import hasApprovedOperationSeasonForFeature from "./hasApprovedOperationSeasonForFeature.js";
+
+const PROPAGATION_ALLOWED_STATUSES = [APPROVED, PUBLISHED];
 
 async function getSeason(seasonId, transaction = null) {
   return await Season.findByPk(seasonId, {
@@ -113,11 +116,14 @@ async function getParkWinterDateRanges(
   transaction = null,
 ) {
   const parkWinterSeason = await Season.findOne({
-    attributes: ["id", "readyToPublish"],
+    attributes: ["id", "readyToPublish", "status"],
     where: {
       publishableId: park.publishableId,
       operatingYear,
       seasonType: SEASON_TYPE.WINTER,
+      status: {
+        [Op.in]: PROPAGATION_ALLOWED_STATUSES,
+      },
     },
     transaction,
   });
@@ -175,6 +181,9 @@ async function getFeatureOperationRanges(
         where: {
           operatingYear,
           seasonType: SEASON_TYPE.REGULAR,
+          status: {
+            [Op.in]: PROPAGATION_ALLOWED_STATUSES,
+          },
         },
       },
     ],
@@ -419,6 +428,17 @@ export default async function propagateWinterFeeDates(
     transaction,
   );
 
+  // Do not recalculate derived Feature winter dates
+  // until Park winter dates are in an approved/published season.
+  if (!parkWinter.season) {
+    return {
+      updatedFeatures: 0,
+      skippedFeatures: 0,
+      updatedParkAreas: 0,
+      skippedParkAreas: 0,
+    };
+  }
+
   // If there is no Park-level Winter season, or it has no complete dates, clear derived Feature winter ranges.
   const winterDates = parkWinter.ranges || [];
 
@@ -473,6 +493,27 @@ export default async function propagateWinterFeeDates(
     if (featureHasParentParkArea && !feature.parkArea.publishableId) {
       skippedParkAreaIds.add(feature.parkArea.id);
       skippedFeatures++;
+      continue;
+    }
+
+    const hasApprovedOperationSeason =
+      await hasApprovedOperationSeasonForFeature(
+        feature,
+        operatingYear,
+        PROPAGATION_ALLOWED_STATUSES,
+        transaction,
+      );
+
+    // Skip until this Feature has an approved/published REGULAR season.
+    // If the season exists but has no complete Operation dates, we still
+    // proceed so overlaps=[] can clear derived Winter fee ranges.
+    if (!hasApprovedOperationSeason) {
+      skippedFeatures++;
+
+      if (featureHasParentParkArea) {
+        skippedParkAreaIds.add(feature.parkArea.id);
+      }
+
       continue;
     }
 
