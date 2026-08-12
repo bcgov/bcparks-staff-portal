@@ -27,10 +27,12 @@ import useUnsavedChangesDialog from "@/hooks/useUnsavedChangesDialog";
 import useNavigationGuard from "@/hooks/useNavigationGuard";
 import UnsavedChangesDialog from "@/components/advisories/composite/advisoryForm/UnsavedChangesDialog";
 import ErrorContext from "@/contexts/ErrorContext";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import { ROLES } from "@/config/permissions";
 
 export default function Advisory({ mode }) {
   const { setError } = useContext(ErrorContext);
+  const globalFlashMessage = useContext(FlashMessageContext);
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -1041,6 +1043,27 @@ export default function Advisory({ mode }) {
     return savedLinks;
   }
 
+  // Returns the flash message title and body for the given advisory status code
+  function getFlashContentForStatus(statusCode, title) {
+    switch (statusCode) {
+      case "PUB":
+        return {
+          flashTitle: "Published",
+          flashMessage: `'${title}' published`,
+        };
+      case "HQR":
+        return {
+          flashTitle: "Submitted for review",
+          flashMessage: `'${title}' submitted for review`,
+        };
+      default:
+        return {
+          flashTitle: "Saved as draft",
+          flashMessage: `'${title}' saved`,
+        };
+    }
+  }
+
   /**
    * Creates a new advisory in the CMS with the given status.
    * @param {Object} status advisory-status document from the CMS
@@ -1136,6 +1159,13 @@ export default function Advisory({ mode }) {
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
+      // Open the flash before navigating so it's visible on the summary page
+      const { flashTitle, flashMessage } = getFlashContentForStatus(
+        status.code,
+        headline,
+      );
+
+      globalFlashMessage.open(flashTitle, flashMessage);
       navigate(getSummaryUrl(advisory.documentId));
 
       return advisory;
@@ -1262,6 +1292,13 @@ export default function Advisory({ mode }) {
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
+      // Open the flash before navigating so it's visible on the summary page
+      const { flashTitle, flashMessage } = getFlashContentForStatus(
+        status.code,
+        headline,
+      );
+
+      globalFlashMessage.open(flashTitle, flashMessage);
       navigate(getSummaryUrl(advisory.documentId));
 
       return advisory;
