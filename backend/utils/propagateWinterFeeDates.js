@@ -170,8 +170,6 @@ async function getFeatureOperationRanges(
   operationTypeId,
   transaction = null,
 ) {
-  const operationYears = [operatingYear, operatingYear + 1];
-
   const operationRanges = await DateRange.findAll({
     attributes: ["startDate", "endDate"],
     include: [
@@ -181,9 +179,7 @@ async function getFeatureOperationRanges(
         attributes: ["id"],
         required: true,
         where: {
-          operatingYear: {
-            [Op.in]: operationYears,
-          },
+          operatingYear,
           seasonType: SEASON_TYPE.REGULAR,
           status: {
             [Op.in]: PROPAGATION_ALLOWED_STATUSES,
@@ -205,6 +201,93 @@ async function getFeatureOperationRanges(
   });
 
   return consolidateRanges(operationRanges.map((range) => range.toJSON()));
+}
+
+/**
+ * Returns the latest end date from a list of date ranges.
+ * @param {Array<{endDate: Date}>} ranges Date ranges to inspect
+ * @returns {Date|null} Latest end date, or null when no ranges exist
+ */
+function getLatestEndDate(ranges) {
+  return ranges.reduce((latestEnd, range) => {
+    if (!latestEnd || range.endDate > latestEnd) {
+      return range.endDate;
+    }
+
+    return latestEnd;
+  }, null);
+}
+
+/**
+ * Returns the earliest start date from a list of date ranges.
+ * @param {Array<{startDate: Date}>} ranges Date ranges to inspect
+ * @returns {Date|null} Earliest start date, or null when no ranges exist
+ */
+function getEarliestStartDate(ranges) {
+  return ranges.reduce((earliestStart, range) => {
+    if (!earliestStart || range.startDate < earliestStart) {
+      return range.startDate;
+    }
+
+    return earliestStart;
+  }, null);
+}
+
+/**
+ * Returns a new Date that is one day after the input date.
+ * @param {Date} date Source date
+ * @returns {Date} Date shifted forward by one day
+ */
+function addOneDay(date) {
+  const nextDate = new Date(date);
+
+  nextDate.setDate(nextDate.getDate() + 1);
+
+  return nextDate;
+}
+
+/**
+ * Calculates the winter fee window by combining available park winter dates
+ * with the current and previous operation season dates.
+ * @param {Array} parkWinterRanges Park-level winter fee ranges
+ * @param {Array} previousOperationRanges Previous operating season ranges
+ * @param {Array} currentOperationRanges Current operating season ranges
+ * @returns {{startDate: Date, endDate: Date}|null} Winter fee window, or null when it cannot be calculated
+ */
+export function getWinterFeeRangeWindow(
+  parkWinterRanges,
+  previousOperationRanges,
+  currentOperationRanges,
+) {
+  if (!previousOperationRanges.length && !currentOperationRanges.length) {
+    return null;
+  }
+
+  const parkWinterStart = getEarliestStartDate(parkWinterRanges);
+  const parkWinterEnd = getLatestEndDate(parkWinterRanges);
+
+  if (!parkWinterStart || !parkWinterEnd) {
+    return null;
+  }
+
+  const startBoundary = previousOperationRanges.length
+    ? addOneDay(getLatestEndDate(previousOperationRanges))
+    : getEarliestStartDate(currentOperationRanges);
+
+  const endBoundary = parkWinterEnd;
+
+  const windowStart =
+    startBoundary > parkWinterStart ? startBoundary : parkWinterStart;
+  const windowEnd = endBoundary < parkWinterEnd ? endBoundary : parkWinterEnd;
+
+  if (windowStart > windowEnd) {
+    return null;
+  }
+
+  return {
+    startDate: windowStart,
+    endDate: windowEnd,
+  };
 }
 
 /**
@@ -520,14 +603,40 @@ export default async function propagateWinterFeeDates(
       continue;
     }
 
-    const operationRanges = await getFeatureOperationRanges(
+    const previousOperationRanges = await getFeatureOperationRanges(
       feature,
       operatingYear,
       operationTypeId,
       transaction,
     );
 
-    const overlaps = getOverlappingDateRanges(winterDates, operationRanges);
+    const currentOperationRanges = await getFeatureOperationRanges(
+      feature,
+      operatingYear + 1,
+      operationTypeId,
+      transaction,
+    );
+
+    const winterFeeRangeWindow = getWinterFeeRangeWindow(
+      winterDates,
+      previousOperationRanges,
+      currentOperationRanges,
+      operatingYear,
+    );
+
+    if (!winterFeeRangeWindow) {
+      skippedFeatures++;
+
+      if (featureHasParentParkArea) {
+        skippedParkAreaIds.add(feature.parkArea.id);
+      }
+
+      continue;
+    }
+
+    const overlaps = getOverlappingDateRanges(winterDates, [
+      winterFeeRangeWindow,
+    ]);
 
     const updated = featureHasParentParkArea
       ? await syncFeatureWinterDatesOnParkAreaSeason(
