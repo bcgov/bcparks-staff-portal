@@ -72,7 +72,7 @@ export default function FilterStatus({
         {selectedParks.map((park) => (
           <FilterBadge
             key={`park-${park.value}`}
-            label={`BC Parks park: ${park.label}`}
+            label={`BC Parks: ${park.label}`}
             onRemove={() => onClearPark(park.value)}
           />
         ))}
@@ -93,7 +93,11 @@ export default function FilterStatus({
         ))}
 
         {hasAnyFilters && (
-          <button type="button" className="btn btn-link px-0" onClick={onClearAll}>
+          <button
+            type="button"
+            className="btn btn-link px-0"
+            onClick={onClearAll}
+          >
             Clear filters
           </button>
         )}

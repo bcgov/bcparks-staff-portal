@@ -1336,8 +1336,8 @@ export default function AdvisoryDashboard({
               </div>
               <div className="filter-col col-md-6 col-12">
                 <MultiSelect
-                  label="BC Parks park"
-                  countLabel="BC Parks park"
+                  label="BC Parks"
+                  countLabel="BC Parks"
                   placeholder="Search or select a park"
                   value={selectedPark}
                   options={parkOptions}
