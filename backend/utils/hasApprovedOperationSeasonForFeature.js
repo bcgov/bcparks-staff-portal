@@ -7,10 +7,10 @@ import { APPROVED, PUBLISHED } from "../constants/seasonStatus.js";
 const ALLOWED_STATUSES = [APPROVED, PUBLISHED];
 
 /**
- * Returns whether this Feature has the next REGULAR season approved/published
+ * Returns whether this Feature has the requested regular season approved/published
  * for winter-fee propagation.
  * @param {Feature} feature Feature record (with optional parent parkArea)
- * @param {number} operatingYear Winter operating year used as the base
+ * @param {number} operatingYear Winter season operating year being recalculated
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<boolean>} True when the requested regular season exists
  */
@@ -27,12 +27,12 @@ export default async function hasApprovedOperationSeasonForFeature(
     return false;
   }
 
-  // Winter propagation uses the next regular season as the source constraint.
+  // Winter propagation uses the requested regular season as the required source.
   const operationSeason = await Season.findOne({
     attributes: ["id"],
     where: {
       publishableId: operationPublishableId,
-      operatingYear: operatingYear + 1,
+      operatingYear,
       seasonType: SEASON_TYPE.REGULAR,
       status: {
         [Op.in]: ALLOWED_STATUSES,

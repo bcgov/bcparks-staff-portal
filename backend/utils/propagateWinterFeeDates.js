@@ -249,8 +249,8 @@ function addOneDay(date) {
 /**
  * Calculates the winter fee window by combining available park winter dates
  * with the current and previous operation season dates.
- * @param {Array} parkWinterRanges Park-level winter fee ranges
- * @param {Array} previousOperationRanges Previous operating season ranges
+ * @param {Array} parkWinterRanges Park-level winter fee ranges for the requested winter season
+ * @param {Array} previousOperationRanges Previous operating season ranges used only when they exist
  * @param {Array} currentOperationRanges Current operating season ranges
  * @returns {{startDate: Date, endDate: Date}|null} Winter fee window, or null when it cannot be calculated
  */
@@ -259,22 +259,48 @@ export function getWinterFeeRangeWindow(
   previousOperationRanges,
   currentOperationRanges,
 ) {
-  if (!previousOperationRanges.length && !currentOperationRanges.length) {
-    return null;
-  }
-
   const parkWinterStart = getEarliestStartDate(parkWinterRanges);
   const parkWinterEnd = getLatestEndDate(parkWinterRanges);
+  const currentOperationStart = getEarliestStartDate(currentOperationRanges);
+  const currentOperationEnd = getLatestEndDate(currentOperationRanges);
+  const previousOperationStart = getEarliestStartDate(previousOperationRanges);
+  const previousOperationEnd = getLatestEndDate(previousOperationRanges);
 
   if (!parkWinterStart || !parkWinterEnd) {
     return null;
   }
 
-  const startBoundary = previousOperationRanges.length
-    ? addOneDay(getLatestEndDate(previousOperationRanges))
-    : getEarliestStartDate(currentOperationRanges);
+  const hasCurrentOperation = Boolean(
+    currentOperationStart && currentOperationEnd,
+  );
+  const hasPreviousOperation = Boolean(
+    previousOperationStart && previousOperationEnd,
+  );
 
-  const endBoundary = parkWinterEnd;
+  if (!hasCurrentOperation && !hasPreviousOperation) {
+    return null;
+  }
+
+  const operationStart = hasCurrentOperation
+    ? currentOperationStart
+    : previousOperationStart;
+  const operationEnd = hasCurrentOperation
+    ? currentOperationEnd
+    : previousOperationEnd;
+
+  let startBoundary = operationStart;
+
+  if (hasCurrentOperation && hasPreviousOperation) {
+    const previousRestrictionStart = addOneDay(previousOperationEnd);
+
+    startBoundary =
+      previousRestrictionStart > startBoundary
+        ? previousRestrictionStart
+        : startBoundary;
+  }
+
+  const endBoundary =
+    operationEnd < parkWinterEnd ? operationEnd : parkWinterEnd;
 
   const windowStart =
     startBoundary > parkWinterStart ? startBoundary : parkWinterStart;
@@ -605,14 +631,14 @@ export default async function propagateWinterFeeDates(
 
     const previousOperationRanges = await getFeatureOperationRanges(
       feature,
-      operatingYear,
+      operatingYear - 1,
       operationTypeId,
       transaction,
     );
 
     const currentOperationRanges = await getFeatureOperationRanges(
       feature,
-      operatingYear + 1,
+      operatingYear,
       operationTypeId,
       transaction,
     );
@@ -621,7 +647,6 @@ export default async function propagateWinterFeeDates(
       winterDates,
       previousOperationRanges,
       currentOperationRanges,
-      operatingYear,
     );
 
     if (!winterFeeRangeWindow) {
