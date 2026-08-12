@@ -231,7 +231,7 @@ export default function AdvisoryForm({
       recreationResourcesFields: [selectedRecreationResources],
 
       setError: setAffectedResourceError,
-      text: "Select at least one Recreation Sites and Trails recreation resource or BC Parks park",
+      text: "Select at least one resource",
     },
     urgency: { value: urgency, setError: setUrgencyError, text: "urgency" },
     advisoryDate: { value: advisoryDate, setError: setAdvisoryDateError },
