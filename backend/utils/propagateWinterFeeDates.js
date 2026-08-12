@@ -170,6 +170,8 @@ async function getFeatureOperationRanges(
   operationTypeId,
   transaction = null,
 ) {
+  const operationYears = [operatingYear, operatingYear + 1];
+
   const operationRanges = await DateRange.findAll({
     attributes: ["startDate", "endDate"],
     include: [
@@ -179,7 +181,9 @@ async function getFeatureOperationRanges(
         attributes: ["id"],
         required: true,
         where: {
-          operatingYear,
+          operatingYear: {
+            [Op.in]: operationYears,
+          },
           seasonType: SEASON_TYPE.REGULAR,
           status: {
             [Op.in]: PROPAGATION_ALLOWED_STATUSES,
@@ -500,7 +504,6 @@ export default async function propagateWinterFeeDates(
       await hasApprovedOperationSeasonForFeature(
         feature,
         operatingYear,
-        PROPAGATION_ALLOWED_STATUSES,
         transaction,
       );
 
