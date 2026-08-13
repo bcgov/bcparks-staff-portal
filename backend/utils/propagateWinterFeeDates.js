@@ -235,7 +235,7 @@ function getEarliestStartDate(ranges) {
 
 /**
  * Consolidates ranges and merges consecutive ranges where
- * current.startDate is exactly one day after previous.endDate.
+ * current.startDate is on or before previous.endDate plus one day.
  * @param {Array<{startDate: Date, endDate: Date}>} ranges Date ranges to combine
  * @returns {Array<{startDate: Date, endDate: Date}>} Combined ranges
  */
