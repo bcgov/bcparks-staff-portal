@@ -204,6 +204,69 @@ async function getFeatureOperationRanges(
 }
 
 /**
+ * Returns the latest end date from a list of date ranges.
+ * @param {Array<{endDate: Date}>} ranges Date ranges to inspect
+ * @returns {Date|null} Latest end date, or null when no ranges exist
+ */
+function getLatestEndDate(ranges) {
+  return ranges.reduce((latestEnd, range) => {
+    if (!latestEnd || range.endDate > latestEnd) {
+      return range.endDate;
+    }
+
+    return latestEnd;
+  }, null);
+}
+
+/**
+ * Returns the earliest start date from a list of date ranges.
+ * @param {Array<{startDate: Date}>} ranges Date ranges to inspect
+ * @returns {Date|null} Earliest start date, or null when no ranges exist
+ */
+function getEarliestStartDate(ranges) {
+  return ranges.reduce((earliestStart, range) => {
+    if (!earliestStart || range.startDate < earliestStart) {
+      return range.startDate;
+    }
+
+    return earliestStart;
+  }, null);
+}
+
+/**
+ * Calculates winter fee overlap ranges by combining park winter dates
+ * with previous/current operation season dates while preserving gaps.
+ * @param {Array} parkWinterRanges Park-level winter fee ranges for the requested winter season
+ * @param {Array} previousOperationRanges Previous operating season ranges used only when they exist
+ * @param {Array} currentOperationRanges Current operating season ranges
+ * @returns {Array} Consolidated overlap ranges, or [] when none can be calculated
+ */
+export function getWinterFeeRangeWindow(
+  parkWinterRanges,
+  previousOperationRanges,
+  currentOperationRanges,
+) {
+  const parkWinterStart = getEarliestStartDate(parkWinterRanges);
+  const parkWinterEnd = getLatestEndDate(parkWinterRanges);
+
+  if (!parkWinterStart || !parkWinterEnd) {
+    return [];
+  }
+
+  const operationRanges = [
+    ...previousOperationRanges,
+    ...currentOperationRanges,
+  ];
+
+  const overlapRanges = getOverlappingDateRanges(
+    parkWinterRanges,
+    operationRanges,
+  );
+
+  return consolidateRanges(overlapRanges);
+}
+
+/**
  * Replaces Winter fee DateRanges for a season/dateable pair.
  * @param {Object} params Replacement parameters
  * @param {number} params.seasonId Season ID to update
@@ -499,8 +562,7 @@ export default async function propagateWinterFeeDates(
     const hasApprovedOperationSeason =
       await hasApprovedOperationSeasonForFeature(
         feature,
-        operatingYear,
-        PROPAGATION_ALLOWED_STATUSES,
+        operatingYear + 1,
         transaction,
       );
 
@@ -517,14 +579,27 @@ export default async function propagateWinterFeeDates(
       continue;
     }
 
-    const operationRanges = await getFeatureOperationRanges(
+    const previousOperationRanges = await getFeatureOperationRanges(
       feature,
       operatingYear,
       operationTypeId,
       transaction,
     );
 
-    const overlaps = getOverlappingDateRanges(winterDates, operationRanges);
+    const currentOperationRanges = await getFeatureOperationRanges(
+      feature,
+      operatingYear + 1,
+      operationTypeId,
+      transaction,
+    );
+
+    const winterFeeOverlapRanges = getWinterFeeRangeWindow(
+      winterDates,
+      previousOperationRanges,
+      currentOperationRanges,
+    );
+
+    const overlaps = winterFeeOverlapRanges;
 
     const updated = featureHasParentParkArea
       ? await syncFeatureWinterDatesOnParkAreaSeason(
