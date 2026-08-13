@@ -90,7 +90,7 @@ export default function AdvisorySummaryView({
         <h3>Affected resource(s)</h3>
 
         {advisory.recreationResources.length > 0 && (
-          <Field label="Recreation Sites and Trails recreation resource(s)">
+          <Field label="Recreation Sites and Trails">
             <div>
               {advisory.recreationResources.map((resource) => (
                 <div key={resource.id} className="mb-3">
@@ -117,7 +117,7 @@ export default function AdvisorySummaryView({
         )}
 
         {advisory.protectedAreas.length > 0 && (
-          <Field label="BC Parks park(s)">
+          <Field label="BC Parks">
             <div>
               {(showParks
                 ? advisory.protectedAreas

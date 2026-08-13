@@ -1340,7 +1340,7 @@ export default function Advisory({ mode }) {
                   <a
                     target="_blank"
                     rel="noopener noreferrer"
-                    href="https://intranet.gov.bc.ca/env/card/prp/voss/information-services/staff-portal/create-advisory"
+                    href="https://intranet.gov.bc.ca/intranet/content?id=947AF902C9DC482D9A5CBC4D343A86C8"
                   >
                     View guide for creating an advisory / closure
                   </a>
