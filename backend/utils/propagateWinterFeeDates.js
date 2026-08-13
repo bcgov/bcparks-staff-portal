@@ -234,6 +234,40 @@ function getEarliestStartDate(ranges) {
 }
 
 /**
+ * Consolidates ranges and merges consecutive ranges where
+ * current.startDate is exactly one day after previous.endDate.
+ * @param {Array<{startDate: Date, endDate: Date}>} ranges Date ranges to combine
+ * @returns {Array<{startDate: Date, endDate: Date}>} Combined ranges
+ */
+function consolidateAndMergeConsecutiveRanges(ranges) {
+  const consolidated = consolidateRanges(ranges);
+
+  return consolidated.reduce((merged, currentRange) => {
+    const lastRange = merged.at(-1);
+
+    if (!lastRange) {
+      merged.push(currentRange);
+      return merged;
+    }
+
+    const nextDay = new Date(lastRange.endDate);
+
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+
+    if (currentRange.startDate <= nextDay) {
+      if (currentRange.endDate > lastRange.endDate) {
+        lastRange.endDate = currentRange.endDate;
+      }
+
+      return merged;
+    }
+
+    merged.push(currentRange);
+    return merged;
+  }, []);
+}
+
+/**
  * Calculates winter fee overlap ranges by combining park winter dates
  * with previous/current operation season dates while preserving gaps.
  * @param {Array} parkWinterRanges Park-level winter fee ranges for the requested winter season
@@ -263,7 +297,7 @@ export function getWinterFeeRangeWindow(
     operationRanges,
   );
 
-  return consolidateRanges(overlapRanges);
+  return consolidateAndMergeConsecutiveRanges(overlapRanges);
 }
 
 /**
@@ -480,13 +514,18 @@ export default async function propagateWinterFeeDates(
     };
   }
 
-  const operatingYear = sourceSeason.operatingYear;
+  // Winter saves target their own operating year.
+  // Regular operation saves target the prior winter operating year.
+  const winterOperatingYear =
+    sourceSeason.seasonType === SEASON_TYPE.REGULAR
+      ? sourceSeason.operatingYear - 1
+      : sourceSeason.operatingYear;
 
   const { winterTypeId, operationTypeId } = await getDateTypeIds(transaction);
 
   const parkWinter = await getParkWinterDateRanges(
     park,
-    operatingYear,
+    winterOperatingYear,
     winterTypeId,
     transaction,
   );
@@ -562,7 +601,7 @@ export default async function propagateWinterFeeDates(
     const hasApprovedOperationSeason =
       await hasApprovedOperationSeasonForFeature(
         feature,
-        operatingYear + 1,
+        winterOperatingYear + 1,
         transaction,
       );
 
@@ -581,14 +620,14 @@ export default async function propagateWinterFeeDates(
 
     const previousOperationRanges = await getFeatureOperationRanges(
       feature,
-      operatingYear,
+      winterOperatingYear,
       operationTypeId,
       transaction,
     );
 
     const currentOperationRanges = await getFeatureOperationRanges(
       feature,
-      operatingYear + 1,
+      winterOperatingYear + 1,
       operationTypeId,
       transaction,
     );
@@ -606,7 +645,7 @@ export default async function propagateWinterFeeDates(
           feature,
           feature.parkArea.publishableId,
           feature.parkArea.dateableId,
-          operatingYear,
+          winterOperatingYear,
           overlaps,
           winterTypeId,
           parkWinter.season?.readyToPublish,
@@ -614,7 +653,7 @@ export default async function propagateWinterFeeDates(
         )
       : await syncFeatureWinterSeason(
           feature,
-          operatingYear,
+          winterOperatingYear,
           overlaps,
           winterTypeId,
           parkWinter.season?.readyToPublish,

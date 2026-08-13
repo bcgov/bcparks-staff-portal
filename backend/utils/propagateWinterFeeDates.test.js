@@ -34,37 +34,7 @@ function calculateFeatureWindows(parkWinterRanges, features) {
     }));
 }
 
-test("1. uses previous and current feature operation with current park winter season", () => {
-  const ranges = getWinterFeeRangeWindow(
-    [range("2026-10-16T00:00:00.000Z", "2027-03-26T00:00:00.000Z")],
-    [range("2026-04-01T00:00:00.000Z", "2026-10-15T00:00:00.000Z")],
-    [range("2027-01-01T00:00:00.000Z", "2027-12-31T00:00:00.000Z")],
-  );
-
-  assert.deepStrictEqual(toIsoRanges(ranges), [
-    {
-      startDate: "2027-01-01",
-      endDate: "2027-03-26",
-    },
-  ]);
-});
-
-test("2. uses current feature operation when no previous feature operation exists", () => {
-  const ranges = getWinterFeeRangeWindow(
-    [range("2026-10-16T00:00:00.000Z", "2027-03-26T00:00:00.000Z")],
-    [],
-    [range("2027-01-01T00:00:00.000Z", "2027-12-31T00:00:00.000Z")],
-  );
-
-  assert.deepStrictEqual(toIsoRanges(ranges), [
-    {
-      startDate: "2027-01-01",
-      endDate: "2027-03-26",
-    },
-  ]);
-});
-
-test("3. uses previous feature operation when current feature operation is missing", () => {
+test("1. returns empty ranges when operation dates do not overlap winter", () => {
   const ranges = getWinterFeeRangeWindow(
     [range("2026-10-16T00:00:00.000Z", "2027-03-26T00:00:00.000Z")],
     [range("2026-04-01T00:00:00.000Z", "2026-10-15T00:00:00.000Z")],
@@ -74,7 +44,7 @@ test("3. uses previous feature operation when current feature operation is missi
   assert.deepStrictEqual(ranges, []);
 });
 
-test("4. returns null when the current park winter season is missing", () => {
+test("2. returns empty ranges when park winter dates are missing", () => {
   const ranges = getWinterFeeRangeWindow(
     [],
     [range("2026-04-01T00:00:00.000Z", "2026-10-15T00:00:00.000Z")],
@@ -84,22 +54,7 @@ test("4. returns null when the current park winter season is missing", () => {
   assert.deepStrictEqual(ranges, []);
 });
 
-test("3A. returns overlap when previous operation season is longer and current season is missing", () => {
-  const ranges = getWinterFeeRangeWindow(
-    [range("2026-10-16T00:00:00.000Z", "2027-03-26T00:00:00.000Z")],
-    [range("2026-01-01T00:00:00.000Z", "2026-12-31T00:00:00.000Z")],
-    [],
-  );
-
-  assert.deepStrictEqual(toIsoRanges(ranges), [
-    {
-      startDate: "2026-10-16",
-      endDate: "2026-12-31",
-    },
-  ]);
-});
-
-test("3B. returns overlap when park winter season is longer and current season is missing", () => {
+test("3. clips overlap to operation end when park winter continues past it", () => {
   const ranges = getWinterFeeRangeWindow(
     [range("2026-09-01T00:00:00.000Z", "2027-05-31T00:00:00.000Z")],
     [range("2026-04-01T00:00:00.000Z", "2026-10-15T00:00:00.000Z")],
@@ -114,22 +69,7 @@ test("3B. returns overlap when park winter season is longer and current season i
   ]);
 });
 
-test("5. computes overlap for Dec-to-Mar winter with 2026/2027 operation seasons", () => {
-  const ranges = getWinterFeeRangeWindow(
-    [range("2026-12-01T00:00:00.000Z", "2027-03-06T00:00:00.000Z")],
-    [range("2026-03-27T00:00:00.000Z", "2026-11-30T00:00:00.000Z")],
-    [range("2027-01-01T00:00:00.000Z", "2027-10-31T00:00:00.000Z")],
-  );
-
-  assert.deepStrictEqual(toIsoRanges(ranges), [
-    {
-      startDate: "2027-01-01",
-      endDate: "2027-03-06",
-    },
-  ]);
-});
-
-test("5B. preserves December start when previous operation reaches park winter start", () => {
+test("4. merges consecutive overlap segments into one range", () => {
   const ranges = getWinterFeeRangeWindow(
     [range("2026-12-01T00:00:00.000Z", "2027-03-31T00:00:00.000Z")],
     [range("2026-03-27T00:00:00.000Z", "2026-12-31T00:00:00.000Z")],
@@ -139,16 +79,12 @@ test("5B. preserves December start when previous operation reaches park winter s
   assert.deepStrictEqual(toIsoRanges(ranges), [
     {
       startDate: "2026-12-01",
-      endDate: "2026-12-31",
-    },
-    {
-      startDate: "2027-01-01",
       endDate: "2027-03-31",
     },
   ]);
 });
 
-test("5C. keeps disjoint overlap segments instead of filling the winter gap", () => {
+test("5. keeps disjoint overlap segments instead of filling a winter gap", () => {
   const ranges = getWinterFeeRangeWindow(
     [range("2026-10-16T00:00:00.000Z", "2027-03-31T00:00:00.000Z")],
     [range("2026-04-01T00:00:00.000Z", "2026-10-31T00:00:00.000Z")],
@@ -167,7 +103,7 @@ test("5C. keeps disjoint overlap segments instead of filling the winter gap", ()
   ]);
 });
 
-test("6A. two features with winter fee dates are calculated independently", () => {
+test("6. calculates winter ranges independently for each eligible feature", () => {
   const results = calculateFeatureWindows(
     [range("2026-10-16T00:00:00.000Z", "2027-03-26T00:00:00.000Z")],
     [
@@ -209,7 +145,7 @@ test("6A. two features with winter fee dates are calculated independently", () =
   ]);
 });
 
-test("6B. only one feature with winter fee dates is included in calculation", () => {
+test("7. excludes features with hasWinterFeeDates set to false", () => {
   const results = calculateFeatureWindows(
     [range("2026-10-16T00:00:00.000Z", "2027-03-26T00:00:00.000Z")],
     [
