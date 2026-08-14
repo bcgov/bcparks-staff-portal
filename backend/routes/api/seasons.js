@@ -663,6 +663,7 @@ router.post(
 
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
+      const readyToPublishChanged = newReadyToPublish !== season.readyToPublish;
 
       // Check if any operation or winter fee dates have changed
       const operationDateChanged = await hasOperationDateChanges({
@@ -703,12 +704,15 @@ router.post(
 
       // Recalculate feature-level Winter fee dates only on approved saves.
       // This avoids recalculation during draft/requested/pending-review saves.
+      // Also recalculate when Winter season readyToPublish changes while approved,
+      // so derived feature/parkArea Winter seasons inherit the park value.
       // Intentionally exclude approved -> published-only transitions.
       if (
         newStatus === STATUS.APPROVED &&
         (operationDateChanged ||
           winterFeeDateChanged ||
-          season.status !== STATUS.APPROVED)
+          season.status !== STATUS.APPROVED ||
+          (isWinterSeason && readyToPublishChanged))
       ) {
         await propagateWinterFeeDates(season.id, transaction);
       }
