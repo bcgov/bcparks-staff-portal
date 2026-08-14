@@ -707,6 +707,13 @@ router.post(
       // Also recalculate when Winter season readyToPublish changes while approved,
       // so derived feature/parkArea Winter seasons inherit the park value.
       // Intentionally exclude approved -> published-only transitions.
+      const shouldSyncStateOnly =
+        isWinterSeason &&
+        readyToPublishChanged &&
+        !operationDateChanged &&
+        !winterFeeDateChanged &&
+        season.status === STATUS.APPROVED;
+
       if (
         newStatus === STATUS.APPROVED &&
         (operationDateChanged ||
@@ -714,7 +721,9 @@ router.post(
           season.status !== STATUS.APPROVED ||
           (isWinterSeason && readyToPublishChanged))
       ) {
-        await propagateWinterFeeDates(season.id, transaction);
+        await propagateWinterFeeDates(season.id, transaction, {
+          syncStateOnly: shouldSyncStateOnly,
+        });
       }
 
       await transaction.commit();

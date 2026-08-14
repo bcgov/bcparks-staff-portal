@@ -491,12 +491,16 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
  * Trigger this on Winter fee or Operation date saves.
  * @param {number} seasonId The season being approved/saved
  * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @param {Object} [options] Optional propagation controls
+ * @param {boolean} [options.syncStateOnly=false] Sync only readyToPublish/status on derived winter seasons
  * @returns {Promise<boolean | Array>} Number of Feature winter seasons updated and skipped.
  */
 export default async function propagateWinterFeeDates(
   seasonId,
   transaction = null,
+  options = {},
 ) {
+  const { syncStateOnly = false } = options;
   const sourceSeason = await getSeason(seasonId, transaction);
 
   if (!sourceSeason) {
@@ -575,6 +579,7 @@ export default async function propagateWinterFeeDates(
   let skippedFeatures = 0;
   const updatedParkAreaIds = new Set();
   const skippedParkAreaIds = new Set();
+  const syncedSeasonIds = new Set();
 
   for (const feature of features) {
     if (!feature.dateableId) {
@@ -595,6 +600,48 @@ export default async function propagateWinterFeeDates(
     if (featureHasParentParkArea && !feature.parkArea.publishableId) {
       skippedParkAreaIds.add(feature.parkArea.id);
       skippedFeatures++;
+      continue;
+    }
+
+    if (syncStateOnly) {
+      const winterSeason = await Season.findOne({
+        where: {
+          publishableId: featureHasParentParkArea
+            ? feature.parkArea.publishableId
+            : feature.publishableId,
+          operatingYear: winterOperatingYear,
+          seasonType: SEASON_TYPE.WINTER,
+        },
+        transaction,
+      });
+
+      if (!winterSeason) {
+        skippedFeatures++;
+
+        if (featureHasParentParkArea) {
+          skippedParkAreaIds.add(feature.parkArea.id);
+        }
+
+        continue;
+      }
+
+      if (!syncedSeasonIds.has(winterSeason.id)) {
+        await syncWinterSeasonState({
+          winterSeason,
+          parkWinterReadyToPublish: parkWinter.season?.readyToPublish,
+          transaction,
+        });
+
+        syncedSeasonIds.add(winterSeason.id);
+      }
+
+      updatedFeatures++;
+
+      if (featureHasParentParkArea) {
+        updatedParkAreaIds.add(feature.parkArea.id);
+        skippedParkAreaIds.delete(feature.parkArea.id);
+      }
+
       continue;
     }
 
