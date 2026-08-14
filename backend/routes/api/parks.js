@@ -21,6 +21,7 @@ import asyncHandler from "express-async-handler";
 import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
+import { addRequiredApprovalFlagsToCurrentSeasons } from "../../utils/seasonApprovalHelpers.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
@@ -691,6 +692,29 @@ router.get(
       lastUpdatedQuery,
     ]);
 
+    const gateRemovedRows =
+      currentSeasonIds.size > 0
+        ? await SeasonChangeLog.findAll({
+            attributes: ["seasonId"],
+            where: {
+              seasonId: { [Op.in]: [...currentSeasonIds] },
+              [Op.and]: [
+                sequelize.literal(
+                  `("gateDetailOldValue"->>'hasGate')::boolean = true`,
+                ),
+                sequelize.literal(
+                  `("gateDetailNewValue"->>'hasGate')::boolean = false`,
+                ),
+              ],
+            },
+            group: ["seasonId"],
+          })
+        : [];
+
+    const gateRemovedSeasonIds = new Set(
+      gateRemovedRows.map((row) => row.seasonId),
+    );
+
     // Build lookup map for GateDetails by publishableId
     const gateDetailMap = new Map();
 
@@ -786,6 +810,11 @@ router.get(
       currentSeasonIds,
       seasonNotesMap,
       lastUpdatedMap,
+    );
+
+    output = addRequiredApprovalFlagsToCurrentSeasons(
+      output,
+      gateRemovedSeasonIds,
     );
 
     res.json(output);

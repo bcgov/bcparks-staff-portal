@@ -40,11 +40,19 @@ function matchesStatusFilters(season, statusFilters) {
   }
 
   // Treat "review" as "still awaiting that team's approval".
-  if (isIsReviewFilterSelected && season.informationSvcApproved !== true) {
+  if (
+    isIsReviewFilterSelected &&
+    season.requiresInformationSvcApproval === true &&
+    season.informationSvcApproved !== true
+  ) {
     return true;
   }
 
-  if (isRsReviewFilterSelected && season.reservationSvcApproved !== true) {
+  if (
+    isRsReviewFilterSelected &&
+    season.requiresReservationSvcApproval === true &&
+    season.reservationSvcApproved !== true
+  ) {
     return true;
   }
 
