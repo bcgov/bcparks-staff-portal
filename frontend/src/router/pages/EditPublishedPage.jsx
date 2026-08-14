@@ -7,12 +7,18 @@ import FormPanel from "@/components/FormPanel";
 import IconButton from "@/components/IconButton";
 import ParkSearch from "@/components/ParkSearch";
 import LoadingBar from "@/components/LoadingBar";
+import getTableSortOrder from "@/lib/getTableSortOrder";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import "./EditPublishedPage.scss";
 
 export default function EditPublishedPage() {
   const { data, loading, error, fetchData } = useApiGet("/edit-published");
+  const { data: filterOptionsData } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
+  const filterOptions = useMemo(
+    () => filterOptionsData ?? {},
+    [filterOptionsData],
+  );
 
   const [selectedParkOption, setSelectedParkOption] = useState(null);
   const [formData, setFormData] = useState({});
@@ -35,6 +41,11 @@ export default function EditPublishedPage() {
 
     return parks.find((park) => park.id === selectedParkOption.value) || null;
   }, [parks, selectedParkOption]);
+
+  const tableSortOrder = useMemo(
+    () => getTableSortOrder(filterOptions),
+    [filterOptions],
+  );
 
   const parkItems = useMemo(() => {
     if (!selectedPark) return [];
@@ -89,43 +100,65 @@ export default function EditPublishedPage() {
     }
 
     // Area-level seasons
-    for (const parkArea of selectedPark.parkAreas || []) {
-      const parkAreaSeason = getSeasonByType(
-        parkArea.seasons,
-        SEASON_TYPE.REGULAR,
-      );
+    for (const groupingType of tableSortOrder) {
+      if (groupingType.type === "ParkAreaType") {
+        for (const parkArea of selectedPark.parkAreas || []) {
+          if (
+            parkArea.parkAreaType?.parkAreaTypeNumber !==
+            groupingType.parkAreaTypeNumber
+          ) {
+            continue;
+          }
 
-      if (parkAreaSeason) {
-        items.push({
-          id: parkAreaSeason.id,
-          name: parkArea.name,
-          typeName:
-            parkArea.parkAreaTypeName ?? parkArea.parkAreaType?.name ?? null,
-          level: "park-area",
-        });
+          const parkAreaSeason = getSeasonByType(
+            parkArea.seasons,
+            SEASON_TYPE.REGULAR,
+          );
+
+          if (parkAreaSeason) {
+            items.push({
+              id: parkAreaSeason.id,
+              name: parkArea.name,
+              typeName:
+                parkArea.parkAreaTypeName ??
+                parkArea.parkAreaType?.name ??
+                null,
+              level: "park-area",
+            });
+          }
+        }
       }
-    }
 
-    // Feature-level seasons
-    for (const feature of selectedPark.features || []) {
-      const featureSeason = getSeasonByType(
-        feature.seasons,
-        SEASON_TYPE.REGULAR,
-      );
+      // Feature-level seasons
+      if (groupingType.type === "FeatureType") {
+        for (const feature of selectedPark.features || []) {
+          if (
+            feature.featureType?.featureTypeNumber !==
+            groupingType.featureTypeNumber
+          ) {
+            continue;
+          }
 
-      if (featureSeason) {
-        items.push({
-          id: featureSeason.id,
-          name: feature.name,
-          typeName:
-            feature.featureTypeName ?? feature.featureType?.name ?? null,
-          level: "feature",
-        });
+          const featureSeason = getSeasonByType(
+            feature.seasons,
+            SEASON_TYPE.REGULAR,
+          );
+
+          if (featureSeason) {
+            items.push({
+              id: featureSeason.id,
+              name: feature.name,
+              typeName:
+                feature.featureTypeName ?? feature.featureType?.name ?? null,
+              level: "feature",
+            });
+          }
+        }
       }
     }
 
     return items;
-  }, [selectedPark]);
+  }, [selectedPark, tableSortOrder]);
 
   function handleOpenFormPanel(item) {
     setFormData({
