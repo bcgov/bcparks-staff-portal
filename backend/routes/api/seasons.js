@@ -5,6 +5,7 @@ import { Op } from "sequelize";
 import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as FEATURE_TYPE from "../../constants/featureType.js";
 import {
   getAllDateTypes,
   getDateTypesForFeature,
@@ -475,25 +476,57 @@ router.get(
   asyncHandler(async (req, res) => {
     const seasonId = Number(req.params.seasonId);
     const currentYear = new Date().getFullYear();
-    const maxSeason = await Season.findOne({
-      order: [["operatingYear", "DESC"]],
-    });
-
-    // Group site and picnic shelter dates are collected a year before campsite dates
-    // because they open for reservations 12 months in advance. As a result, the highest
-    // operatingYear in the database is one year ahead of the active camping season.
-    const campingDateCollectionYear = maxSeason?.operatingYear
-      ? maxSeason.operatingYear
-      : currentYear;
-
-    const previousDateCollectionYear = campingDateCollectionYear - 1;
 
     const currentSeason = await Season.findByPk(seasonId, {
       attributes: ["id", "publishableId", "seasonType"],
+      include: [
+        {
+          model: Feature,
+          as: "feature",
+          attributes: ["featureTypeId"],
+          include: [featureTypeQueryPart()],
+          required: false,
+        },
+        {
+          model: ParkArea,
+          as: "parkArea",
+          attributes: ["id"],
+          required: false,
+          include: [
+            {
+              model: Feature,
+              as: "features",
+              attributes: ["id"],
+              required: false,
+              include: [featureTypeQueryPart()],
+            },
+          ],
+        },
+      ],
     });
 
     checkSeasonExists(currentSeason);
     await checkSeasonUserAccess(req, seasonId);
+
+    const featureTypeNumber =
+      currentSeason.feature?.featureType?.featureTypeNumber;
+
+    const parkAreaFeatureTypeNumber =
+      currentSeason.parkArea?.features?.[0]?.featureType?.featureTypeNumber;
+
+    // Group site and picnic shelter dates are collected a year before campsite dates
+    // because they open for reservations 12 months in advance. As a result, the highest
+    // operatingYear in the database is one year ahead of the active camping season.
+    const isTwoYearsAheadFeatureType =
+      featureTypeNumber === FEATURE_TYPE.GROUP_CAMPGROUND ||
+      featureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER ||
+      parkAreaFeatureTypeNumber === FEATURE_TYPE.GROUP_CAMPGROUND ||
+      parkAreaFeatureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER;
+
+    const requestedOperatingYear =
+      currentSeason.seasonType === SEASON_TYPE.WINTER
+        ? currentYear
+        : currentYear + (isTwoYearsAheadFeatureType ? 2 : 1);
 
     const seasons = await Season.findAll({
       attributes: ["id", "operatingYear"],
@@ -501,7 +534,7 @@ router.get(
         publishableId: currentSeason.publishableId,
         seasonType: currentSeason.seasonType,
         operatingYear: {
-          [Op.lte]: previousDateCollectionYear,
+          [Op.lt]: requestedOperatingYear,
         },
       },
       order: [["operatingYear", "DESC"]],

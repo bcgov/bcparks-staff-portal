@@ -1,34 +1,35 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
 import * as SEASON_TYPE from "@/constants/seasonType";
-import * as FEATURE_TYPE from "@/constants/featureType";
 
 export default function OperatingYearSelect({
   season = null,
   seasonOptions,
-  featureTypeNumber = null,
   loadingSeasonOptions = false,
   onSeasonChange,
 }) {
-  const currentYear = new Date().getFullYear();
-  const normalizedFeatureTypeNumber = Number(featureTypeNumber);
-  const allowCurrentYear =
-    normalizedFeatureTypeNumber === FEATURE_TYPE.GROUP_CAMPGROUND ||
-    normalizedFeatureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER;
+  const latestSeasonId = useMemo(() => {
+    if (!seasonOptions.length) return "";
 
-  // Filter out seasons that are in the future and hide the current operating year in Edit Published.
-  // Group campground and Picnic shelter always carry one extra season ahead,
-  // so allow the current operating year for those feature types.
-  const editableSeasonOptions = useMemo(
-    () =>
-      seasonOptions.filter((option) =>
-        allowCurrentYear
-          ? option.operatingYear <= currentYear
-          : option.operatingYear < currentYear,
-      ),
-    [allowCurrentYear, seasonOptions, currentYear],
-  );
+    return seasonOptions.reduce((latestOption, option) =>
+      option.operatingYear > latestOption.operatingYear ? option : latestOption,
+    ).id;
+  }, [seasonOptions]);
+
+  const selectedSeasonId = useMemo(() => {
+    const selectedId = season?.id;
+
+    return seasonOptions.some((option) => option.id === selectedId)
+      ? selectedId
+      : latestSeasonId;
+  }, [season?.id, seasonOptions, latestSeasonId]);
+
+  useEffect(() => {
+    if (selectedSeasonId && Number(season?.id) !== Number(selectedSeasonId)) {
+      onSeasonChange(selectedSeasonId);
+    }
+  }, [onSeasonChange, season?.id, selectedSeasonId]);
 
   const showOperatingYearRange = useMemo(
     () =>
@@ -51,16 +52,16 @@ export default function OperatingYearSelect({
       <Form.Select
         id="operating-year-select"
         aria-label="Select operating year"
-        value={season?.id ?? ""}
+        value={selectedSeasonId}
         onChange={(event) => {
           const nextSeasonId = Number.parseInt(event.target.value, 10);
 
           onSeasonChange(nextSeasonId);
         }}
         className="ms-0 ms-sm-3 mb-2"
-        disabled={loadingSeasonOptions || editableSeasonOptions.length === 0}
+        disabled={loadingSeasonOptions || seasonOptions.length === 0}
       >
-        {editableSeasonOptions.map((option) => (
+        {seasonOptions.map((option) => (
           <option key={option.id} value={option.id}>
             {formatOperatingYearLabel(option.operatingYear)}
           </option>
@@ -82,7 +83,6 @@ OperatingYearSelect.propTypes = {
       operatingYear: PropTypes.number.isRequired,
     }),
   ).isRequired,
-  featureTypeNumber: PropTypes.number,
   loadingSeasonOptions: PropTypes.bool,
   onSeasonChange: PropTypes.func.isRequired,
 };

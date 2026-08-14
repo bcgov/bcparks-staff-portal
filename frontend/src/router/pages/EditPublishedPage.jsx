@@ -40,42 +40,34 @@ export default function EditPublishedPage() {
     if (!selectedPark) return [];
 
     const items = [];
-    const targetOperatingYear = Math.min(
-      ...selectedPark.seasons.map((s) => s.operatingYear),
-    );
-
-    // Find a season by year and type
-    function getSeasonByYear(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
-      return (
-        seasons.find(
-          (season) =>
-            season.seasonType === seasonType &&
-            season.operatingYear === targetOperatingYear,
-        ) || null
-      );
-    }
 
     // Find a season by type
     function getSeasonByType(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
+      const seasonsOfType = seasons.filter(
+        (season) => season.seasonType === seasonType,
+      );
+
+      if (!seasonsOfType.length) {
+        return null;
+      }
+
       const previousSeasonYear = Math.max(
-        ...seasons.map((s) => s.operatingYear),
+        ...seasonsOfType.map((season) => season.operatingYear),
       );
 
       return (
-        seasons.find(
-          (season) =>
-            season.seasonType === seasonType &&
-            season.operatingYear === previousSeasonYear,
+        seasonsOfType.find(
+          (season) => season.operatingYear === previousSeasonYear,
         ) || null
       );
     }
 
     // Park-level seasons (regular and winter)
-    const regularSeason = getSeasonByYear(
+    const regularSeason = getSeasonByType(
       selectedPark.seasons,
       SEASON_TYPE.REGULAR,
     );
-    const winterSeason = getSeasonByYear(
+    const winterSeason = getSeasonByType(
       selectedPark.seasons,
       SEASON_TYPE.WINTER,
     );
