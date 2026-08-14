@@ -15,7 +15,6 @@ import useCms from "@/hooks/useCms";
 import { useAuth } from "react-oidc-context";
 import "./AdvisorySummary.scss";
 import { Loader } from "@/components/advisories/shared/loader/Loader";
-import Alert from "react-bootstrap/Alert";
 import Toast from "react-bootstrap/Toast";
 import ToastContainer from "react-bootstrap/ToastContainer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -56,7 +55,6 @@ export default function AdvisorySummary() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get("tab");
-  const [confirmationText] = useState(location.state?.confirmationText || "");
   const index = location.state?.index;
   const [isCurrentlyPublished, setIsCurrentlyPublished] = useState(false);
   const [showOriginalAdvisory, setShowOriginalAdvisory] = useState(false);
@@ -467,9 +465,6 @@ export default function AdvisorySummary() {
                 </div>
                 {!showOriginalAdvisory && (
                   <div className="act-summary mt-4">
-                    {confirmationText && (
-                      <Alert variant="success">{confirmationText}</Alert>
-                    )}
                     {isCurrentlyPublished && (
                       <div className="act-right mt-4">
                         <button

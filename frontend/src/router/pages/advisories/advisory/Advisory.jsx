@@ -27,10 +27,12 @@ import useUnsavedChangesDialog from "@/hooks/useUnsavedChangesDialog";
 import useNavigationGuard from "@/hooks/useNavigationGuard";
 import UnsavedChangesDialog from "@/components/advisories/composite/advisoryForm/UnsavedChangesDialog";
 import ErrorContext from "@/contexts/ErrorContext";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import { ROLES } from "@/config/permissions";
 
 export default function Advisory({ mode }) {
   const { setError } = useContext(ErrorContext);
+  const globalFlashMessage = useContext(FlashMessageContext);
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const navigate = useNavigate();
@@ -1042,18 +1044,34 @@ export default function Advisory({ mode }) {
   }
 
   /**
-   * Gets the confirmation text to display on the Advisory summary page after form submission, based on the advisory status code.
-   * @param {string} statusCode the advisory-status code of the form submission
-   * @returns {string} confirmation text to display on the summary page after submission
+   * Returns the global flash message title and body for the given advisory status code.
+   * @param {string} statusCode the advisory status code of the form submission
+   * @param {string} title the headline of the advisory
+   * @returns {{ flashTitle: string, flashMessage: string }} flash message title and body
    */
-  function getConfirmationTextForStatus(statusCode) {
+  function getFlashContentForStatus(statusCode, title) {
     switch (statusCode) {
-      case "DFT":
-        return "Your advisory has been saved successfully!";
       case "PUB":
-        return "Your advisory has been published successfully!";
+        return {
+          flashTitle: "Published",
+          flashMessage: `'${title}' published`,
+        };
+      case "DFT":
+        return {
+          flashTitle: "Saved as draft",
+          flashMessage: `'${title}' saved`,
+        };
+      case "HQR":
+        return {
+          flashTitle: "Submitted for review",
+          flashMessage: `'${title}' submitted for review`,
+        };
       default:
-        return "Your advisory has been saved successfully!";
+        // For other/unmatched status codes, return a generic message
+        return {
+          flashTitle: "Advisory / closure saved",
+          flashMessage: `'${title}' saved`,
+        };
     }
   }
 
@@ -1152,11 +1170,14 @@ export default function Advisory({ mode }) {
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
-      const confirmationText = getConfirmationTextForStatus(status.code);
+      // Open the flash before navigating so it's visible on the summary page
+      const { flashTitle, flashMessage } = getFlashContentForStatus(
+        status.code,
+        headline,
+      );
 
-      navigate(getSummaryUrl(advisory.documentId), {
-        state: { confirmationText },
-      });
+      globalFlashMessage.open(flashTitle, flashMessage);
+      navigate(getSummaryUrl(advisory.documentId));
 
       return advisory;
     } catch (error) {
@@ -1282,11 +1303,14 @@ export default function Advisory({ mode }) {
       setIsSubmitting(false);
       setIsSavingDraft(false);
 
-      const confirmationText = getConfirmationTextForStatus(status.code);
+      // Open the flash before navigating so it's visible on the summary page
+      const { flashTitle, flashMessage } = getFlashContentForStatus(
+        status.code,
+        headline,
+      );
 
-      navigate(getSummaryUrl(advisory.documentId), {
-        state: { confirmationText },
-      });
+      globalFlashMessage.open(flashTitle, flashMessage);
+      navigate(getSummaryUrl(advisory.documentId));
 
       return advisory;
     } catch (error) {
