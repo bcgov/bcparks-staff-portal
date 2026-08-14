@@ -4,15 +4,21 @@ import * as STATUS from "@/constants/seasonStatus.js";
 function matchesStatusFilters(season, statusFilters) {
   if (!season || !statusFilters.length) return false;
 
-  const hasParentPending = statusFilters.includes(STATUS.PENDING_REVIEW.value);
-  const hasIsReview = statusFilters.includes(STATUS.IS_REVIEW_FILTER.value);
-  const hasRsReview = statusFilters.includes(STATUS.RS_REVIEW_FILTER.value);
+  const isPendingReviewFilterSelected = statusFilters.includes(
+    STATUS.PENDING_REVIEW.value,
+  );
+  const isIsReviewFilterSelected = statusFilters.includes(
+    STATUS.IS_REVIEW_FILTER.value,
+  );
+  const isRsReviewFilterSelected = statusFilters.includes(
+    STATUS.RS_REVIEW_FILTER.value,
+  );
 
   const basicStatuses = statusFilters.filter(
     (status) =>
       status !== STATUS.PENDING_REVIEW.value &&
       status !== STATUS.IS_REVIEW_FILTER.value &&
-      status !== STATUS.RS_REVIEW_FILTER.value
+      status !== STATUS.RS_REVIEW_FILTER.value,
   );
 
   if (basicStatuses.includes(season.status)) {
@@ -25,16 +31,20 @@ function matchesStatusFilters(season, statusFilters) {
   }
 
   // If only parent pending is selected, include all pending review seasons.
-  if (hasParentPending && !hasIsReview && !hasRsReview) {
+  if (
+    isPendingReviewFilterSelected &&
+    !isIsReviewFilterSelected &&
+    !isRsReviewFilterSelected
+  ) {
     return true;
   }
 
   // Treat "review" as "still awaiting that team's approval".
-  if (hasIsReview && season.informationSvcApproved !== true) {
+  if (isIsReviewFilterSelected && season.informationSvcApproved !== true) {
     return true;
   }
 
-  if (hasRsReview && season.reservationSvcApproved !== true) {
+  if (isRsReviewFilterSelected && season.reservationSvcApproved !== true) {
     return true;
   }
 
