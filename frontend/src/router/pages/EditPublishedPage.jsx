@@ -99,6 +99,54 @@ export default function EditPublishedPage() {
       });
     }
 
+    function addParkAreaItem(parkArea) {
+      const parkAreaSeason = getSeasonByType(
+        parkArea.seasons,
+        SEASON_TYPE.REGULAR,
+      );
+
+      if (parkAreaSeason) {
+        items.push({
+          id: parkAreaSeason.id,
+          name: parkArea.name,
+          typeName:
+            parkArea.parkAreaTypeName ?? parkArea.parkAreaType?.name ?? null,
+          level: "park-area",
+        });
+      }
+    }
+
+    function addFeatureItem(feature) {
+      const featureSeason = getSeasonByType(
+        feature.seasons,
+        SEASON_TYPE.REGULAR,
+      );
+
+      if (featureSeason) {
+        items.push({
+          id: featureSeason.id,
+          name: feature.name,
+          typeName:
+            feature.featureTypeName ?? feature.featureType?.name ?? null,
+          level: "feature",
+        });
+      }
+    }
+
+    // While /filter-options is still loading, render available rows unsorted
+    // so the table is populated immediately instead of appearing empty.
+    if (tableSortOrder.length === 0) {
+      for (const parkArea of selectedPark.parkAreas || []) {
+        addParkAreaItem(parkArea);
+      }
+
+      for (const feature of selectedPark.features || []) {
+        addFeatureItem(feature);
+      }
+
+      return items;
+    }
+
     // Area-level seasons
     for (const groupingType of tableSortOrder) {
       if (groupingType.type === "ParkAreaType") {
@@ -109,23 +157,7 @@ export default function EditPublishedPage() {
           ) {
             continue;
           }
-
-          const parkAreaSeason = getSeasonByType(
-            parkArea.seasons,
-            SEASON_TYPE.REGULAR,
-          );
-
-          if (parkAreaSeason) {
-            items.push({
-              id: parkAreaSeason.id,
-              name: parkArea.name,
-              typeName:
-                parkArea.parkAreaTypeName ??
-                parkArea.parkAreaType?.name ??
-                null,
-              level: "park-area",
-            });
-          }
+          addParkAreaItem(parkArea);
         }
       }
 
@@ -138,21 +170,7 @@ export default function EditPublishedPage() {
           ) {
             continue;
           }
-
-          const featureSeason = getSeasonByType(
-            feature.seasons,
-            SEASON_TYPE.REGULAR,
-          );
-
-          if (featureSeason) {
-            items.push({
-              id: featureSeason.id,
-              name: feature.name,
-              typeName:
-                feature.featureTypeName ?? feature.featureType?.name ?? null,
-              level: "feature",
-            });
-          }
+          addFeatureItem(feature);
         }
       }
     }
