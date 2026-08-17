@@ -7,12 +7,18 @@ import FormPanel from "@/components/FormPanel";
 import IconButton from "@/components/IconButton";
 import ParkSearch from "@/components/ParkSearch";
 import LoadingBar from "@/components/LoadingBar";
+import getTableSortOrder from "@/lib/getTableSortOrder";
 import * as SEASON_TYPE from "@/constants/seasonType";
 import "./EditPublishedPage.scss";
 
 export default function EditPublishedPage() {
   const { data, loading, error, fetchData } = useApiGet("/edit-published");
+  const { data: filterOptionsData } = useApiGet("/filter-options");
   const parks = useMemo(() => data ?? [], [data]);
+  const filterOptions = useMemo(
+    () => filterOptionsData ?? {},
+    [filterOptionsData],
+  );
 
   const [selectedParkOption, setSelectedParkOption] = useState(null);
   const [formData, setFormData] = useState({});
@@ -36,46 +42,43 @@ export default function EditPublishedPage() {
     return parks.find((park) => park.id === selectedParkOption.value) || null;
   }, [parks, selectedParkOption]);
 
+  const tableSortOrder = useMemo(
+    () => getTableSortOrder(filterOptions),
+    [filterOptions],
+  );
+
   const parkItems = useMemo(() => {
     if (!selectedPark) return [];
 
     const items = [];
-    const targetOperatingYear = Math.min(
-      ...selectedPark.seasons.map((s) => s.operatingYear),
-    );
-
-    // Find a season by year and type
-    function getSeasonByYear(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
-      return (
-        seasons.find(
-          (season) =>
-            season.seasonType === seasonType &&
-            season.operatingYear === targetOperatingYear,
-        ) || null
-      );
-    }
 
     // Find a season by type
     function getSeasonByType(seasons = [], seasonType = SEASON_TYPE.REGULAR) {
+      const seasonsOfType = seasons.filter(
+        (season) => season.seasonType === seasonType,
+      );
+
+      if (!seasonsOfType.length) {
+        return null;
+      }
+
       const previousSeasonYear = Math.max(
-        ...seasons.map((s) => s.operatingYear),
+        ...seasonsOfType.map((season) => season.operatingYear),
       );
 
       return (
-        seasons.find(
-          (season) =>
-            season.seasonType === seasonType &&
-            season.operatingYear === previousSeasonYear,
+        seasonsOfType.find(
+          (season) => season.operatingYear === previousSeasonYear,
         ) || null
       );
     }
 
     // Park-level seasons (regular and winter)
-    const regularSeason = getSeasonByYear(
+    const regularSeason = getSeasonByType(
       selectedPark.seasons,
       SEASON_TYPE.REGULAR,
     );
-    const winterSeason = getSeasonByYear(
+    const winterSeason = getSeasonByType(
       selectedPark.seasons,
       SEASON_TYPE.WINTER,
     );
@@ -96,8 +99,7 @@ export default function EditPublishedPage() {
       });
     }
 
-    // Area-level seasons
-    for (const parkArea of selectedPark.parkAreas || []) {
+    function addParkAreaItem(parkArea) {
       const parkAreaSeason = getSeasonByType(
         parkArea.seasons,
         SEASON_TYPE.REGULAR,
@@ -114,8 +116,7 @@ export default function EditPublishedPage() {
       }
     }
 
-    // Feature-level seasons
-    for (const feature of selectedPark.features || []) {
+    function addFeatureItem(feature) {
       const featureSeason = getSeasonByType(
         feature.seasons,
         SEASON_TYPE.REGULAR,
@@ -132,8 +133,50 @@ export default function EditPublishedPage() {
       }
     }
 
+    // While /filter-options is still loading, render available rows unsorted
+    // so the table is populated immediately instead of appearing empty.
+    if (tableSortOrder.length === 0) {
+      for (const parkArea of selectedPark.parkAreas || []) {
+        addParkAreaItem(parkArea);
+      }
+
+      for (const feature of selectedPark.features || []) {
+        addFeatureItem(feature);
+      }
+
+      return items;
+    }
+
+    // Area-level seasons
+    for (const groupingType of tableSortOrder) {
+      if (groupingType.type === "ParkAreaType") {
+        for (const parkArea of selectedPark.parkAreas || []) {
+          if (
+            parkArea.parkAreaType?.parkAreaTypeNumber !==
+            groupingType.parkAreaTypeNumber
+          ) {
+            continue;
+          }
+          addParkAreaItem(parkArea);
+        }
+      }
+
+      // Feature-level seasons
+      if (groupingType.type === "FeatureType") {
+        for (const feature of selectedPark.features || []) {
+          if (
+            feature.featureType?.featureTypeNumber !==
+            groupingType.featureTypeNumber
+          ) {
+            continue;
+          }
+          addFeatureItem(feature);
+        }
+      }
+    }
+
     return items;
-  }, [selectedPark]);
+  }, [selectedPark, tableSortOrder]);
 
   function handleOpenFormPanel(item) {
     setFormData({
