@@ -13,9 +13,12 @@ import {
 } from "../models/index.js";
 import * as DATE_TYPE from "../constants/dateType.js";
 import * as SEASON_TYPE from "../constants/seasonType.js";
-import { APPROVED } from "../constants/seasonStatus.js";
+import { APPROVED, PUBLISHED } from "../constants/seasonStatus.js";
 import consolidateRanges from "./consolidateDateRanges.js";
 import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
+import hasApprovedOperationSeasonForFeature from "./hasApprovedOperationSeasonForFeature.js";
+
+const PROPAGATION_ALLOWED_STATUSES = [APPROVED, PUBLISHED];
 
 async function getSeason(seasonId, transaction = null) {
   return await Season.findByPk(seasonId, {
@@ -113,11 +116,14 @@ async function getParkWinterDateRanges(
   transaction = null,
 ) {
   const parkWinterSeason = await Season.findOne({
-    attributes: ["id", "readyToPublish"],
+    attributes: ["id", "readyToPublish", "status"],
     where: {
       publishableId: park.publishableId,
       operatingYear,
       seasonType: SEASON_TYPE.WINTER,
+      status: {
+        [Op.in]: PROPAGATION_ALLOWED_STATUSES,
+      },
     },
     transaction,
   });
@@ -175,6 +181,9 @@ async function getFeatureOperationRanges(
         where: {
           operatingYear,
           seasonType: SEASON_TYPE.REGULAR,
+          status: {
+            [Op.in]: PROPAGATION_ALLOWED_STATUSES,
+          },
         },
       },
     ],
@@ -192,6 +201,103 @@ async function getFeatureOperationRanges(
   });
 
   return consolidateRanges(operationRanges.map((range) => range.toJSON()));
+}
+
+/**
+ * Returns the latest end date from a list of date ranges.
+ * @param {Array<{endDate: Date}>} ranges Date ranges to inspect
+ * @returns {Date|null} Latest end date, or null when no ranges exist
+ */
+function getLatestEndDate(ranges) {
+  return ranges.reduce((latestEnd, range) => {
+    if (!latestEnd || range.endDate > latestEnd) {
+      return range.endDate;
+    }
+
+    return latestEnd;
+  }, null);
+}
+
+/**
+ * Returns the earliest start date from a list of date ranges.
+ * @param {Array<{startDate: Date}>} ranges Date ranges to inspect
+ * @returns {Date|null} Earliest start date, or null when no ranges exist
+ */
+function getEarliestStartDate(ranges) {
+  return ranges.reduce((earliestStart, range) => {
+    if (!earliestStart || range.startDate < earliestStart) {
+      return range.startDate;
+    }
+
+    return earliestStart;
+  }, null);
+}
+
+/**
+ * Consolidates ranges and merges consecutive ranges where
+ * current.startDate is on or before previous.endDate plus one day.
+ * @param {Array<{startDate: Date, endDate: Date}>} ranges Date ranges to combine
+ * @returns {Array<{startDate: Date, endDate: Date}>} Combined ranges
+ */
+function consolidateAndMergeConsecutiveRanges(ranges) {
+  const consolidated = consolidateRanges(ranges);
+
+  return consolidated.reduce((merged, currentRange) => {
+    const lastRange = merged.at(-1);
+
+    if (!lastRange) {
+      merged.push(currentRange);
+      return merged;
+    }
+
+    const nextDay = new Date(lastRange.endDate);
+
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+
+    if (currentRange.startDate <= nextDay) {
+      if (currentRange.endDate > lastRange.endDate) {
+        lastRange.endDate = currentRange.endDate;
+      }
+
+      return merged;
+    }
+
+    merged.push(currentRange);
+    return merged;
+  }, []);
+}
+
+/**
+ * Calculates winter fee overlap ranges by combining park winter dates
+ * with previous/current operation season dates while preserving gaps.
+ * @param {Array} parkWinterRanges Park-level winter fee ranges for the requested winter season
+ * @param {Array} previousOperationRanges Previous operating season ranges used only when they exist
+ * @param {Array} currentOperationRanges Current operating season ranges
+ * @returns {Array} Consolidated overlap ranges, or [] when none can be calculated
+ */
+export function getWinterFeeRangeWindow(
+  parkWinterRanges,
+  previousOperationRanges,
+  currentOperationRanges,
+) {
+  const parkWinterStart = getEarliestStartDate(parkWinterRanges);
+  const parkWinterEnd = getLatestEndDate(parkWinterRanges);
+
+  if (!parkWinterStart || !parkWinterEnd) {
+    return [];
+  }
+
+  const operationRanges = [
+    ...previousOperationRanges,
+    ...currentOperationRanges,
+  ];
+
+  const overlapRanges = getOverlappingDateRanges(
+    parkWinterRanges,
+    operationRanges,
+  );
+
+  return consolidateAndMergeConsecutiveRanges(overlapRanges);
 }
 
 /**
@@ -408,16 +514,32 @@ export default async function propagateWinterFeeDates(
     };
   }
 
-  const operatingYear = sourceSeason.operatingYear;
+  // Winter saves target their own operating year.
+  // Regular operation saves target the prior winter operating year.
+  const winterOperatingYear =
+    sourceSeason.seasonType === SEASON_TYPE.REGULAR
+      ? sourceSeason.operatingYear - 1
+      : sourceSeason.operatingYear;
 
   const { winterTypeId, operationTypeId } = await getDateTypeIds(transaction);
 
   const parkWinter = await getParkWinterDateRanges(
     park,
-    operatingYear,
+    winterOperatingYear,
     winterTypeId,
     transaction,
   );
+
+  // Do not recalculate derived Feature winter dates
+  // until Park winter dates are in an approved/published season.
+  if (!parkWinter.season) {
+    return {
+      updatedFeatures: 0,
+      skippedFeatures: 0,
+      updatedParkAreas: 0,
+      skippedParkAreas: 0,
+    };
+  }
 
   // If there is no Park-level Winter season, or it has no complete dates, clear derived Feature winter ranges.
   const winterDates = parkWinter.ranges || [];
@@ -476,21 +598,54 @@ export default async function propagateWinterFeeDates(
       continue;
     }
 
-    const operationRanges = await getFeatureOperationRanges(
+    const hasApprovedOperationSeason =
+      await hasApprovedOperationSeasonForFeature(
+        feature,
+        winterOperatingYear + 1,
+        transaction,
+      );
+
+    // Skip until this Feature has an approved/published REGULAR season.
+    // If the season exists but has no complete Operation dates, we still
+    // proceed so overlaps=[] can clear derived Winter fee ranges.
+    if (!hasApprovedOperationSeason) {
+      skippedFeatures++;
+
+      if (featureHasParentParkArea) {
+        skippedParkAreaIds.add(feature.parkArea.id);
+      }
+
+      continue;
+    }
+
+    const previousOperationRanges = await getFeatureOperationRanges(
       feature,
-      operatingYear,
+      winterOperatingYear,
       operationTypeId,
       transaction,
     );
 
-    const overlaps = getOverlappingDateRanges(winterDates, operationRanges);
+    const currentOperationRanges = await getFeatureOperationRanges(
+      feature,
+      winterOperatingYear + 1,
+      operationTypeId,
+      transaction,
+    );
+
+    const winterFeeOverlapRanges = getWinterFeeRangeWindow(
+      winterDates,
+      previousOperationRanges,
+      currentOperationRanges,
+    );
+
+    const overlaps = winterFeeOverlapRanges;
 
     const updated = featureHasParentParkArea
       ? await syncFeatureWinterDatesOnParkAreaSeason(
           feature,
           feature.parkArea.publishableId,
           feature.parkArea.dateableId,
-          operatingYear,
+          winterOperatingYear,
           overlaps,
           winterTypeId,
           parkWinter.season?.readyToPublish,
@@ -498,7 +653,7 @@ export default async function propagateWinterFeeDates(
         )
       : await syncFeatureWinterSeason(
           feature,
-          operatingYear,
+          winterOperatingYear,
           overlaps,
           winterTypeId,
           parkWinter.season?.readyToPublish,

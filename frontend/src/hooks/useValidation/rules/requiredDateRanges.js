@@ -1,5 +1,13 @@
 import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
+import * as DATE_TYPE from "@/constants/dateType";
+
+const PARK_APPLICABILITY_BY_DATE_TYPE = {
+  [DATE_TYPE.PARK_GATE_OPEN]: "hasGate",
+  [DATE_TYPE.TIER_1]: "hasTier1Dates",
+  [DATE_TYPE.TIER_2]: "hasTier2Dates",
+  [DATE_TYPE.WINTER_FEE]: "hasWinterFeeDates",
+};
 
 /**
  * Validates that the date ranges are provided for required date types.
@@ -15,11 +23,35 @@ export default function requiredDateRanges(seasonData, context) {
   if (!context.submitted) return;
 
   const { dateRanges } = context;
+  const park = seasonData?.current?.park;
+  const feature = seasonData?.current?.feature;
 
   // Filter out date ranges with optional date types
-  const requiredRanges = dateRanges.filter(
-    (dateRange) => !isDateTypeOptional(dateRange.dateType.name, level),
-  );
+  const requiredRanges = dateRanges.filter((dateRange) => {
+    const dateTypeNumber = dateRange.dateType?.dateTypeNumber;
+
+    if (isDateTypeOptional(dateTypeNumber, level)) {
+      return false;
+    }
+
+    // If the level is "park", check if the park has the boolean value for the date type
+    if (level === "park" && park) {
+      const flagName = PARK_APPLICABILITY_BY_DATE_TYPE[dateTypeNumber];
+
+      if (flagName && !park[flagName]) {
+        return false;
+      }
+    }
+
+    // If the level is "feature", check if the feature has the boolean value for the date type
+    if (level === "feature" && dateTypeNumber === DATE_TYPE.WINTER_FEE) {
+      if (feature && !feature.hasWinterFeeDates) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   // Add errors for all invalid dates (missing startDate and/or endDate)
   requiredRanges.forEach((dateRange) => {

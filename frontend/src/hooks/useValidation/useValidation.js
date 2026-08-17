@@ -79,6 +79,9 @@ function addFeatureMetadataToDateRange(feature, dateRange) {
     // Add a flag for whether the feature's dates can span 2 years, for validation rules that need it
     // ("Date in operating year")
     datesCanSpan2Years: feature.datesCanSpan2Years,
+
+    // Add Winter fee applicability for validation rules that need it
+    hasWinterFeeDates: feature.hasWinterFeeDates,
   };
 }
 

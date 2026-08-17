@@ -27,6 +27,7 @@ import {
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import resolveSeasonCreationStatus from "../../utils/resolveSeasonCreationStatus.js";
+import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
 import {
   createPublishableId,
   createDateableId,
@@ -230,7 +231,7 @@ export default async function createWinterSeasons(
    * @param {number} params.dateableId Dateable ID for the Winter fee DateRange
    * @param {string} params.itemName Name used for logging
    * @param {boolean} [params.createDateRangeAnnual=false] Whether to create DateRangeAnnual
-   * @returns {Promise<void>}
+   * @returns {Promise<number>} Winter season ID
    */
   async function ensureWinterSeasonSetup({
     publishableId,
@@ -258,6 +259,8 @@ export default async function createWinterSeasons(
         winterFeeDateType.id,
       );
     }
+
+    return winterSeasonId;
   }
 
   // Get all Parks that have winter fee dates
@@ -287,7 +290,7 @@ export default async function createWinterSeasons(
     // Ensure the park has a dateableId
     const dateableId = await createDateable(park);
 
-    await ensureWinterSeasonSetup({
+    return await ensureWinterSeasonSetup({
       publishableId,
       dateableId,
       itemName: park.name,
@@ -295,7 +298,7 @@ export default async function createWinterSeasons(
     });
   });
 
-  await Promise.all(parkQueries);
+  const parkWinterSeasonIds = await Promise.all(parkQueries);
 
   // Create winter seasons for Features flagged for winter fees.
   // This is the only driver for ParkArea/Feature-level winter seasons.
@@ -352,7 +355,11 @@ export default async function createWinterSeasons(
     parkAreaPublishableById.set(parkArea.id, publishableId);
   }
 
-  const featureQueries = featuresWithWinterFees.map(async (feature) => {
+  // Process Features by owning publishable so each group is serialized (prevents
+  // duplicate season creation), while independent groups run in parallel.
+  const featureGroupsByOwner = new Map();
+
+  for (const feature of featuresWithWinterFees) {
     const featureDateableId =
       feature.dateableId || (await createDateable(feature));
 
@@ -364,27 +371,47 @@ export default async function createWinterSeasons(
         parkAreaPublishableById.get(feature.parkArea.id) ||
         feature.parkArea.publishableId ||
         (await createPublishable(feature.parkArea));
+      const ownerKey = `parkArea:${parkAreaPublishableId}`;
+      const group = featureGroupsByOwner.get(ownerKey) || [];
 
-      await ensureWinterSeasonSetup({
+      group.push({
         publishableId: parkAreaPublishableId,
         dateableId: featureDateableId,
         itemName: `${feature.name} (${feature.parkArea.name})`,
       });
 
-      return;
+      featureGroupsByOwner.set(ownerKey, group);
+      continue;
     }
 
     // Independent Features (without a ParkArea) own Winter seasons.
     const featurePublishableId = await createPublishable(feature);
+    const ownerKey = `feature:${featurePublishableId}`;
+    const group = featureGroupsByOwner.get(ownerKey) || [];
 
-    await ensureWinterSeasonSetup({
+    group.push({
       publishableId: featurePublishableId,
       dateableId: featureDateableId,
       itemName: feature.name,
     });
-  });
 
-  await Promise.all(featureQueries);
+    featureGroupsByOwner.set(ownerKey, group);
+  }
+
+  const featureGroupQueries = [...featureGroupsByOwner.values()].map(
+    async (group) => {
+      for (const setup of group) {
+        await ensureWinterSeasonSetup(setup);
+      }
+    },
+  );
+
+  await Promise.all(featureGroupQueries);
+
+  // Trigger propagation immediately so Feature Winter fee ranges are
+  // recalculated even when Park Winter and Feature Operation dates were already
+  // approved/published before this task created Winter fee structures.
+  const uniqueParkWinterSeasonIds = [...new Set(parkWinterSeasonIds)];
 
   console.log(`\nSummary:`);
   console.log(`Added ${publishablesAdded} missing Publishables`);
@@ -396,6 +423,10 @@ export default async function createWinterSeasons(
   );
 
   console.log(`Done creating winter seasons for ${operatingYear}\n`);
+
+  return {
+    parkWinterSeasonIds: uniqueParkWinterSeasonIds,
+  };
 }
 
 // Run directly:
@@ -407,9 +438,21 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await Season.sequelize.transaction();
 
   try {
-    await createWinterSeasons(operatingYear, transaction);
+    const { parkWinterSeasonIds = [] } = await createWinterSeasons(
+      operatingYear,
+      transaction,
+    );
+
     await transaction.commit();
     console.log("\nTransaction committed successfully");
+
+    for (const seasonId of parkWinterSeasonIds) {
+      await Season.sequelize.transaction(async (propagationTransaction) => {
+        await propagateWinterFeeDates(seasonId, propagationTransaction);
+      });
+    }
+
+    console.log("Winter fee propagation complete");
   } catch (err) {
     await transaction.rollback();
     console.error("Transaction rolled back due to error:", err);
