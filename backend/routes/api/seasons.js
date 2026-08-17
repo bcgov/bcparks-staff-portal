@@ -511,8 +511,14 @@ router.get(
     const featureTypeNumber =
       currentSeason.feature?.featureType?.featureTypeNumber;
 
-    const parkAreaFeatureTypeNumber =
-      currentSeason.parkArea?.features?.[0]?.featureType?.featureTypeNumber;
+    const hasTwoYearsAheadParkAreaFeatureType = (
+      currentSeason.parkArea?.features || []
+    ).some(
+      (feature) =>
+        feature.featureType?.featureTypeNumber ===
+          FEATURE_TYPE.GROUP_CAMPGROUND ||
+        feature.featureType?.featureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER,
+    );
 
     // Group site and picnic shelter dates are collected a year before campsite dates
     // because they open for reservations 12 months in advance. As a result, the highest
@@ -520,8 +526,7 @@ router.get(
     const isTwoYearsAheadFeatureType =
       featureTypeNumber === FEATURE_TYPE.GROUP_CAMPGROUND ||
       featureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER ||
-      parkAreaFeatureTypeNumber === FEATURE_TYPE.GROUP_CAMPGROUND ||
-      parkAreaFeatureTypeNumber === FEATURE_TYPE.PICNIC_SHELTER;
+      hasTwoYearsAheadParkAreaFeatureType;
 
     const requestedOperatingYear =
       currentSeason.seasonType === SEASON_TYPE.WINTER

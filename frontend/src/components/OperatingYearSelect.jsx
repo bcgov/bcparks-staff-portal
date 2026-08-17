@@ -25,6 +25,7 @@ export default function OperatingYearSelect({
       : latestSeasonId;
   }, [season?.id, seasonOptions, latestSeasonId]);
 
+  // Keep the selected season in sync with available options
   useEffect(() => {
     if (selectedSeasonId && Number(season?.id) !== Number(selectedSeasonId)) {
       onSeasonChange(selectedSeasonId);
