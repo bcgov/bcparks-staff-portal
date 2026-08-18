@@ -12,6 +12,7 @@ import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
 import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
+import getTableSortOrder from "@/lib/getTableSortOrder";
 import {
   checkParkHard,
   checkParkSoft,
@@ -109,19 +110,7 @@ function SubmitPage() {
   ];
 
   const tableSortOrder = useMemo(
-    () =>
-      [
-        ...(filterOptions?.parkAreaTypes ?? []).map((p) => ({
-          rank: p.rank,
-          parkAreaTypeNumber: p.parkAreaTypeNumber,
-          type: "ParkAreaType",
-        })),
-        ...(filterOptions?.featureTypes ?? []).map((f) => ({
-          rank: f.rank,
-          featureTypeNumber: f.featureTypeNumber,
-          type: "FeatureType",
-        })),
-      ].sort((a, b) => a.rank - b.rank),
+    () => getTableSortOrder(filterOptions),
     [filterOptions],
   );
 

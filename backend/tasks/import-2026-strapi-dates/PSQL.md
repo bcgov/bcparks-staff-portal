@@ -30,7 +30,11 @@ FROM (
         ON pdpfl.park_date_id = pd.id
     INNER JOIN park_features pf
         ON pf.id = pdpfl.park_feature_id
-    WHERE pd.start_date >= '2026-01-01'
+    WHERE (pd.start_date >= '2026-01-01' OR
+            (pd.start_date >= '2025-01-01' AND
+             pd.start_date <= '2025-12-31' AND
+             pd.end_date >= '2026-01-01' AND
+             pf.dates_can_span_2_years = true))
       AND (pd.created_by_id IS NOT NULL OR pd.updated_by_id IS NOT NULL)
       AND pd.is_active = TRUE
       AND pd.published_at IS NOT NULL

@@ -2,7 +2,7 @@
   {
     "date_type_id": 6,
     "orcs_feature_number": "1-12",
-    "name": "1: 2026 - Operation",
+    "name": "F-1-12: 2026 - Operation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-05-09",
@@ -11,7 +11,7 @@
   {
     "date_type_id": 7,
     "orcs_feature_number": "1-12",
-    "name": "1: 2026 - Reservation",
+    "name": "F-1-12: 2026 - Reservation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-05-09",
@@ -56,7 +56,7 @@
   {
     "date_type_id": 6,
     "orcs_feature_number": "1-6",
-    "name": "1: 2026 - Operation",
+    "name": "F-1-6: 2026 - Operation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-06-26",
@@ -65,7 +65,7 @@
   {
     "date_type_id": 7,
     "orcs_feature_number": "1-6",
-    "name": "1: 2026 - Reservation",
+    "name": "F-1-6: 2026 - Reservation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-06-26",
@@ -74,7 +74,7 @@
   {
     "date_type_id": 6,
     "orcs_feature_number": "1-7",
-    "name": "1: 2026 - Operation",
+    "name": "F-1-7: 2026 - Operation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-05-09",
@@ -83,7 +83,7 @@
   {
     "date_type_id": 7,
     "orcs_feature_number": "1-7",
-    "name": "1: 2026 - Reservation",
+    "name": "F-1-7: 2026 - Reservation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-05-09",
@@ -200,11 +200,47 @@
   {
     "date_type_id": 7,
     "orcs_feature_number": "292-2",
-    "name": "292: 2026 - Reservation",
+    "name": "F-292-2: 2026 - Reservation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-06-10",
     "end_date": "2026-10-12"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "314-4",
+    "name": "F-314-4: 2025 - Winter fee",
+    "is_date_annual": null,
+    "operating_year": 2025,
+    "start_date": "2025-11-12",
+    "end_date": "2026-02-28"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "314-6",
+    "name": "F-314-6: 2025 - Winter fee",
+    "is_date_annual": null,
+    "operating_year": 2025,
+    "start_date": "2025-11-12",
+    "end_date": "2026-02-28"
+  },
+  {
+    "date_type_id": 4,
+    "orcs_feature_number": "33-11",
+    "name": "F-33-11: 2025 - Winter fee",
+    "is_date_annual": null,
+    "operating_year": 2025,
+    "start_date": "2025-10-18",
+    "end_date": "2026-05-15"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "33-11",
+    "name": "F-33-11: 2025 - Operation",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-10-18",
+    "end_date": "2026-05-14"
   },
   {
     "date_type_id": 6,
@@ -245,11 +281,29 @@
   {
     "date_type_id": 6,
     "orcs_feature_number": "33-3",
+    "name": "F-33-3: 2025 - Operation",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-12-01",
+    "end_date": "2026-03-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "33-3",
     "name": "F-33-3: 2026 - Operation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-12-01",
     "end_date": "2027-03-31"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "33-3",
+    "name": "F-33-3: 2025 - Reservation",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-12-01",
+    "end_date": "2026-03-30"
   },
   {
     "date_type_id": 7,
@@ -268,6 +322,15 @@
     "operating_year": 2026,
     "start_date": "2026-05-08",
     "end_date": "2026-10-11"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "409-1",
+    "name": "F-409-1: 2025 - Operation",
+    "is_date_annual": true,
+    "operating_year": 2025,
+    "start_date": "2025-11-01",
+    "end_date": "2026-08-31"
   },
   {
     "date_type_id": 6,
@@ -371,6 +434,15 @@
   {
     "date_type_id": 8,
     "orcs_feature_number": "5-1",
+    "name": "F-5-1: 2025 - Backcountry registration",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-10-01",
+    "end_date": "2026-06-20"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-1",
     "name": "F-5-1: 2026 - Backcountry registration",
     "is_date_annual": false,
     "operating_year": 2026,
@@ -416,11 +488,29 @@
   {
     "date_type_id": 8,
     "orcs_feature_number": "5-5",
+    "name": "F-5-5: 2025 - Backcountry registration",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-10-01",
+    "end_date": "2026-06-20"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-5",
     "name": "F-5-5: 2026 - Backcountry registration",
     "is_date_annual": false,
     "operating_year": 2026,
     "start_date": "2026-10-01",
     "end_date": "2027-06-20"
+  },
+  {
+    "date_type_id": 8,
+    "orcs_feature_number": "5-7",
+    "name": "F-5-7: 2025 - Backcountry registration",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-10-01",
+    "end_date": "2026-06-20"
   },
   {
     "date_type_id": 8,
@@ -524,7 +614,16 @@
   {
     "date_type_id": 6,
     "orcs_feature_number": "7-12",
-    "name": "F-7-12: 2027 - Operation",
+    "name": "F-7-12: 2025 - Operation",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-11-01",
+    "end_date": "2026-08-31"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "7-12",
+    "name": "F-7-12: 2026 - Operation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-11-01",
@@ -533,7 +632,16 @@
   {
     "date_type_id": 7,
     "orcs_feature_number": "7-12",
-    "name": "F-7-12: 2027 - Reservation",
+    "name": "F-7-12: 2025 - Reservation",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-11-01",
+    "end_date": "2026-08-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "7-12",
+    "name": "F-7-12: 2026 - Reservation",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-11-01",
@@ -547,6 +655,33 @@
     "operating_year": 2026,
     "start_date": "2026-05-08",
     "end_date": "2026-09-29"
+  },
+  {
+    "date_type_id": 1,
+    "orcs_feature_number": "7-8",
+    "name": "F-7-8: 2025 - Gate",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-12-01",
+    "end_date": "2026-04-30"
+  },
+  {
+    "date_type_id": 6,
+    "orcs_feature_number": "7-8",
+    "name": "F-7-8: 2025 - Operation",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-12-01",
+    "end_date": "2026-04-30"
+  },
+  {
+    "date_type_id": 7,
+    "orcs_feature_number": "7-8",
+    "name": "F-7-8: 2025 - Reservation",
+    "is_date_annual": false,
+    "operating_year": 2025,
+    "start_date": "2025-12-01",
+    "end_date": "2026-04-29"
   },
   {
     "date_type_id": 6,
@@ -578,7 +713,7 @@
   {
     "date_type_id": 8,
     "orcs_feature_number": "8-11",
-    "name": "",
+    "name": "F-8-11: 2026 - Backcountry registration",
     "is_date_annual": null,
     "operating_year": 2026,
     "start_date": "2026-01-01",

@@ -675,7 +675,6 @@ If dates have already been published, they will not be updated until new dates a
               <OperatingYearSelect
                 season={season}
                 seasonOptions={seasonOptions}
-                featureTypeNumber={seasonMetadata.featureTypeNumber}
                 loadingSeasonOptions={loadingSeasonOptions}
                 onSeasonChange={onSeasonChange}
               />
