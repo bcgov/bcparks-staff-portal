@@ -67,11 +67,28 @@ export async function hasGateRemoved(seasonId) {
 }
 
 /**
+ * Returns whether a season is a Winter fee season at Feature level.
+ * @param {Season} season Season object with park/parkArea/feature associations
+ * @returns {boolean} True when the season is Winter and not park-level
+ */
+export function isFeatureWinterSeason(season) {
+  return (
+    season?.seasonType === SEASON_TYPE.WINTER &&
+    (Boolean(season?.parkArea) || Boolean(season?.feature))
+  );
+}
+
+/**
  * Returns whether Information Services team approval is required for a season.
  * @param {Season} season Season with park/parkArea/feature and optional gateDetail/changeLogs data
  * @returns {boolean} True when IS team approval is required
  */
 export function seasonRequiresInformationSvcApproval(season) {
+  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return false;
+  }
+
   const { anyNotInReservationSystem } = getSeasonReservationCoverage(season);
 
   // IS team approval is required if inReservationSystem is false for any dates
@@ -99,6 +116,11 @@ export function seasonRequiresInformationSvcApproval(season) {
  * @returns {boolean} True when RS team approval is required
  */
 export function seasonRequiresReservationSvcApproval(season) {
+  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return false;
+  }
+
   const { anyInReservationSystem } = getSeasonReservationCoverage(season);
 
   // RS team approval is required if inReservationSystem is true for any dates
@@ -148,7 +170,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
       seasonRequiresReservationSvcApproval(seasonContext);
   }
 
-  parks.forEach((park) => {
+  return parks.map((park) => {
     annotateCurrentSeason(park.currentSeason?.regular, {
       park: { inReservationSystem: park.inReservationSystem },
       gateDetail: { hasGate: park.hasGate },
@@ -169,7 +191,6 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
       };
 
       annotateCurrentSeason(parkArea.currentSeason?.regular, parkAreaContext);
-      annotateCurrentSeason(parkArea.currentSeason?.winter, parkAreaContext);
     });
 
     park.features.forEach((feature) => {
@@ -178,11 +199,10 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
       };
 
       annotateCurrentSeason(feature.currentSeason?.regular, featureContext);
-      annotateCurrentSeason(feature.currentSeason?.winter, featureContext);
     });
-  });
 
-  return parks;
+    return park;
+  });
 }
 
 /**
@@ -219,6 +239,15 @@ export async function getRequiredApprovalsForSeason({
   oldGateDetail,
   gateDetail,
 }) {
+  // Feature/Area Winter fee seasons are system-derived and bypass team approvals.
+  // Park-level Winter fee seasons still follow approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return {
+      requiresInformationSvcApproval: false,
+      requiresReservationSvcApproval: false,
+    };
+  }
+
   let requiresInformationSvcApproval = false;
   let requiresReservationSvcApproval = false;
 
