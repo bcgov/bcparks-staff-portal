@@ -683,7 +683,7 @@ router.post(
           isReservationSvcApprover,
         });
 
-      let newStatus = resolvedStatus;
+      const newStatus = resolvedStatus;
 
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
@@ -706,13 +706,6 @@ router.post(
             transaction,
           })
         : false;
-
-      if (
-        season.status === STATUS.PUBLISHED &&
-        (operationDateChanged || winterFeeDateChanged)
-      ) {
-        newStatus = STATUS.APPROVED;
-      }
 
       const shouldMarkSavedWithErrors =
         newStatus !== STATUS.REQUESTED && savedWithErrors;
