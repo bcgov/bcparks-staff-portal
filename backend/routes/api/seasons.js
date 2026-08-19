@@ -673,31 +673,17 @@ router.post(
         ? null
         : await getGateDetail(season.publishableId);
 
-      const {
-        resolvedStatus: newStatus,
-        informationSvcApproved,
-        reservationSvcApproved,
-      } = await resolveSeasonApprovalState({
-        season,
-        requestedNewStatus,
-        oldGateDetail,
-        gateDetail: isWinterSeason ? null : gateDetail,
-        isInformationSvcApprover,
-        isReservationSvcApprover,
-      });
+      const { resolvedStatus, informationSvcApproved, reservationSvcApproved } =
+        await resolveSeasonApprovalState({
+          season,
+          requestedNewStatus,
+          oldGateDetail,
+          gateDetail: isWinterSeason ? null : gateDetail,
+          isInformationSvcApprover,
+          isReservationSvcApprover,
+        });
 
-      const shouldMarkSavedWithErrors =
-        newStatus !== STATUS.REQUESTED && savedWithErrors;
-
-      // Require an explanation note if the form is submitted with validation errors
-      if (shouldMarkSavedWithErrors && !notes.trim()) {
-        const error = new Error(
-          "Validation error: Missing explanation note for saving with errors.",
-        );
-
-        error.status = 400;
-        throw error;
-      }
+      let newStatus = resolvedStatus;
 
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
@@ -720,6 +706,26 @@ router.post(
             transaction,
           })
         : false;
+
+      if (
+        season.status === STATUS.PUBLISHED &&
+        (operationDateChanged || winterFeeDateChanged)
+      ) {
+        newStatus = STATUS.APPROVED;
+      }
+
+      const shouldMarkSavedWithErrors =
+        newStatus !== STATUS.REQUESTED && savedWithErrors;
+
+      // Require an explanation note if the form is submitted with validation errors
+      if (shouldMarkSavedWithErrors && !notes.trim()) {
+        const error = new Error(
+          "Validation error: Missing explanation note for saving with errors.",
+        );
+
+        error.status = 400;
+        throw error;
+      }
 
       // Persist the season state, dates, and related audit records to the DB
       await saveSeasonData({
