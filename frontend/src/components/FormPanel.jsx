@@ -168,6 +168,20 @@ function SeasonForm({
   );
   const validation = useValidation(data, validationContext);
 
+  const INTERNAL_NOTES_ERROR_ID = validation.elements.INTERNAL_NOTES.id;
+
+  // Show summary/submit-anyway only after submit/approve attempts.
+  // If the only error is internal notes, keep that feedback inline in the field only.
+  const shouldShowSubmitErrorUI = useMemo(() => {
+    if (!submitted) return false;
+
+    if (validation.errors.length === 0) return false;
+
+    return validation.errors.some(
+      (error) => error.id !== INTERNAL_NOTES_ERROR_ID,
+    );
+  }, [submitted, validation.errors, INTERNAL_NOTES_ERROR_ID]);
+
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
   );
@@ -480,7 +494,7 @@ function SeasonForm({
   async function saveForm(allowInvalid, status, resetAfterSave = true) {
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
-    setSubmitted(true);
+    setSubmitted(status !== STATUS.REQUESTED.value);
 
     // Validate the form before saving
     const validationErrors = validation.validateForm();
@@ -695,7 +709,7 @@ If dates have already been published, they will not be updated until new dates a
 
         <Offcanvas.Body>
           <div id="validation-errors">
-            {validation.errors.length > 0 && (
+            {shouldShowSubmitErrorUI && (
               <div className="row">
                 <div className="col-12 col-lg-7 col-xl-6 mb-4">
                   <ErrorSummary
@@ -759,22 +773,20 @@ If dates have already been published, they will not be updated until new dates a
           />
 
           {/* Pseudo-validation for submitting with errors: User must provide an internal note */}
-          {validation.errors.length > 0 &&
-            submitWithErrors &&
-            !notes.trim() && (
-              <div
-                className="text-danger validation-errors mb-5"
-                data-error-slot-id="submit-with-errors-notes"
-              >
-                <div>
-                  Required when submitting with errors. Please explain why
-                  errors do not apply.
-                </div>
+          {shouldShowSubmitErrorUI && submitWithErrors && !notes.trim() && (
+            <div
+              className="text-danger validation-errors mb-5"
+              data-error-slot-id="submit-with-errors-notes"
+            >
+              <div>
+                Required when submitting with errors. Please explain why errors
+                do not apply.
               </div>
-            )}
+            </div>
+          )}
 
           {/* For users who can submit or approve, show a checkbox to and bypass validation */}
-          {validation.errors.length > 0 && (submitter || approver) && (
+          {shouldShowSubmitErrorUI && (submitter || approver) && (
             <div className="row">
               <div className="col-12 col-lg-7 col-xl-6 mb-4">
                 <div
