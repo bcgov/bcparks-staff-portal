@@ -1,8 +1,8 @@
 export function NoParkAccess() {
   return (
     <div className="layout my-5">
-      <div className="container">
-        <h1 className="mt-3 mb-4">No parks found</h1>
+      <div className="container error-page-container">
+        <h1>No parks found</h1>
         <p>
           You’ve successfully signed in, but your account hasn’t yet been
           granted access to any parks.

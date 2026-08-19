@@ -214,6 +214,17 @@ label.form-check-label {
   gap: 0.5em;
 }
 
+// error page styles
+.container {
+  &.error-page-container {
+    h1 {
+      margin-top: 3rem;
+      margin-bottom: 1rem;
+    }
+    max-width: 42rem;
+  }
+}
+
 // custom switch component with text labels for on/off
 .form-switch:has(.label-switch) {
   display: flex;

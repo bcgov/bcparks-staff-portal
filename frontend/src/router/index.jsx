@@ -147,7 +147,7 @@ const RouterConfig = createBrowserRouter([
     ],
   },
 
-  // DOOT "Unauthorized" message for users without group membership in Keycloak
+  // "Unauthorized" message for users without portal group membership in Keycloak
   {
     path: "/unauthorized",
     element: <MainLayoutPublic />,
