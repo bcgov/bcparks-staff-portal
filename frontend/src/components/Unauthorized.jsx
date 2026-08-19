@@ -1,7 +1,7 @@
 export function Unauthorized() {
   return (
-    <div className="container">
-      <h1 className="mt-3 mb-4">You are not authorized to log in yet</h1>
+    <div className="container error-page-container">
+      <h1>You are not authorized to log in yet</h1>
       <p>
         If this is your first time logging in to the parks and recreation staff
         web portal, you&#39;re in the right place! Email us at{" "}

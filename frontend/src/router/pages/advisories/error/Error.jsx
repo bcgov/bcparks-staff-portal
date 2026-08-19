@@ -10,6 +10,11 @@ export default function Error({ error }) {
   if (toHome || error?.status === 401) {
     return <Navigate to="/" />;
   }
+
+  if (error?.status === 403 && error?.message === "Unauthorized") {
+    return <Navigate to="/unauthorized" />;
+  }
+
   let errorContent;
 
   if (!error) {
@@ -25,29 +30,6 @@ export default function Error({ error }) {
         <div>
           <h1>Login failed</h1>
           <p>Unable to login, please try again later.</p>
-        </div>
-      );
-    } else if (error.message === "Unauthorized") {
-      errorContent = (
-        <div>
-          <h1>You are not authorized to log in yet</h1>
-          <br />
-          <p>
-            If this is your first time logging in to the parks and recreation
-            staff web portal, you&#39;re in the right place! Email us at{" "}
-            <a href="mailto:cardweb@gov.bc.ca?subject=First%20login%20to%20Staff%20Portal">
-              cardweb@gov.bc.ca
-            </a>{" "}
-            and we&#39;ll set up your account permissions.
-          </p>
-          <p>
-            If you&#39;re here for another reason and you&#39;re unable to log
-            in, contact{" "}
-            <a href="mailto:cardweb@gov.bc.ca?subject=Unable%20to%20log%20into%20Staff%20Portal">
-              cardweb@gov.bc.ca
-            </a>{" "}
-            and we&#39;ll help you out.
-          </p>
         </div>
       );
     } else {
@@ -86,7 +68,7 @@ export default function Error({ error }) {
   return (
     <main className="advisories-styles">
       <div className="page" data-testid="Error">
-        <div className="content col-md-8">
+        <div className="container error-page-container">
           <br />
           {errorContent}
           <br />
