@@ -500,11 +500,20 @@ function SeasonForm({
     const validationErrors = validation.validateForm();
 
     if (validationErrors.length && !allowInvalid) {
-      // Scroll the Error Summary component into view at the top of the form
-      const errorSummaryElement = document.getElementById("validation-errors");
+      // Scroll the Error Summary component into view at the top of the form when it is visible
+      // Otherwise scroll to the internal-notes inline error slot.
+      const hasNonNotesErrors = validationErrors.some(
+        (validationError) => validationError.id !== INTERNAL_NOTES_ERROR_ID,
+      );
 
-      if (errorSummaryElement) {
-        errorSummaryElement.scrollIntoView({
+      const scrollTarget = hasNonNotesErrors
+        ? document.getElementById("validation-errors")
+        : document.querySelector(
+            `[data-error-slot-id="${INTERNAL_NOTES_ERROR_ID}"]`,
+          );
+
+      if (scrollTarget) {
+        scrollTarget.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
