@@ -177,7 +177,9 @@ function SeasonForm({
     return validation.errors.length > 0;
   }, [submitted, validation.errors]);
 
-  const hasNonNotesErrors = useMemo(() => {
+  // Controls the "Submit anyway"
+  // Only show it when there are errors beyond internal notes
+  const shouldShowSubmitAnyway = useMemo(() => {
     if (!shouldShowErrorSummary) return false;
 
     return validation.errors.some(
@@ -719,7 +721,7 @@ If dates have already been published, they will not be updated until new dates a
                     multipleFeatures={multipleFeatures}
                     errors={validation.errors}
                     dateableNameMap={dateableNames}
-                    showSubmitAnyway={hasNonNotesErrors}
+                    showSubmitAnyway={shouldShowSubmitAnyway}
                   />
                 </div>
               </div>
@@ -777,7 +779,7 @@ If dates have already been published, they will not be updated until new dates a
           />
 
           {/* Pseudo-validation for submitting with errors: User must provide an internal note */}
-          {hasNonNotesErrors && submitWithErrors && !notes.trim() && (
+          {shouldShowSubmitAnyway && submitWithErrors && !notes.trim() && (
             <div
               className="text-danger validation-errors mb-5"
               data-error-slot-id="submit-with-errors-notes"
@@ -790,7 +792,7 @@ If dates have already been published, they will not be updated until new dates a
           )}
 
           {/* For users who can submit or approve, show a checkbox to and bypass validation */}
-          {hasNonNotesErrors && (submitter || approver) && (
+          {shouldShowSubmitAnyway && (submitter || approver) && (
             <div className="row">
               <div className="col-12 col-lg-7 col-xl-6 mb-4">
                 <div
