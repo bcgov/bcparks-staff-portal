@@ -170,17 +170,20 @@ function SeasonForm({
 
   const INTERNAL_NOTES_ERROR_ID = validation.elements.INTERNAL_NOTES.id;
 
-  // Show summary/submit-anyway only after submit/approve attempts.
-  // If the only error is internal notes, keep that feedback inline in the field only.
-  const shouldShowSubmitErrorUI = useMemo(() => {
+  // Show validation summary only after submit/approve attempts.
+  const shouldShowErrorSummary = useMemo(() => {
     if (!submitted) return false;
 
-    if (validation.errors.length === 0) return false;
+    return validation.errors.length > 0;
+  }, [submitted, validation.errors]);
+
+  const hasNonNotesErrors = useMemo(() => {
+    if (!shouldShowErrorSummary) return false;
 
     return validation.errors.some(
       (error) => error.id !== INTERNAL_NOTES_ERROR_ID,
     );
-  }, [submitted, validation.errors, INTERNAL_NOTES_ERROR_ID]);
+  }, [shouldShowErrorSummary, validation.errors, INTERNAL_NOTES_ERROR_ID]);
 
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
@@ -494,26 +497,17 @@ function SeasonForm({
   async function saveForm(allowInvalid, status, resetAfterSave = true) {
     // saveForm is called on any kind of form submission, so validation happens here
     // If the form is submitted by some other means, call the validation function there too
-    setSubmitted(status !== STATUS.REQUESTED.value);
+    setSubmitted(true);
 
     // Validate the form before saving
     const validationErrors = validation.validateForm();
 
     if (validationErrors.length && !allowInvalid) {
-      // Scroll the Error Summary component into view at the top of the form when it is visible
-      // Otherwise scroll to the internal-notes inline error slot.
-      const hasNonNotesErrors = validationErrors.some(
-        (validationError) => validationError.id !== INTERNAL_NOTES_ERROR_ID,
-      );
+      // Scroll the Error Summary component into view at the top of the form
+      const errorSummaryElement = document.getElementById("validation-errors");
 
-      const scrollTarget = hasNonNotesErrors
-        ? document.getElementById("validation-errors")
-        : document.querySelector(
-            `[data-error-slot-id="${INTERNAL_NOTES_ERROR_ID}"]`,
-          );
-
-      if (scrollTarget) {
-        scrollTarget.scrollIntoView({
+      if (errorSummaryElement) {
+        errorSummaryElement.scrollIntoView({
           behavior: "smooth",
           block: "start",
         });
@@ -718,13 +712,14 @@ If dates have already been published, they will not be updated until new dates a
 
         <Offcanvas.Body>
           <div id="validation-errors">
-            {shouldShowSubmitErrorUI && (
+            {shouldShowErrorSummary && (
               <div className="row">
                 <div className="col-12 col-lg-7 col-xl-6 mb-4">
                   <ErrorSummary
                     multipleFeatures={multipleFeatures}
                     errors={validation.errors}
                     dateableNameMap={dateableNames}
+                    showSubmitAnyway={hasNonNotesErrors}
                   />
                 </div>
               </div>
@@ -782,7 +777,7 @@ If dates have already been published, they will not be updated until new dates a
           />
 
           {/* Pseudo-validation for submitting with errors: User must provide an internal note */}
-          {shouldShowSubmitErrorUI && submitWithErrors && !notes.trim() && (
+          {hasNonNotesErrors && submitWithErrors && !notes.trim() && (
             <div
               className="text-danger validation-errors mb-5"
               data-error-slot-id="submit-with-errors-notes"
@@ -795,7 +790,7 @@ If dates have already been published, they will not be updated until new dates a
           )}
 
           {/* For users who can submit or approve, show a checkbox to and bypass validation */}
-          {shouldShowSubmitErrorUI && (submitter || approver) && (
+          {hasNonNotesErrors && (submitter || approver) && (
             <div className="row">
               <div className="col-12 col-lg-7 col-xl-6 mb-4">
                 <div
