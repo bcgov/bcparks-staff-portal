@@ -55,6 +55,33 @@ import {
 
 const router = Router();
 
+async function getLastUpdatedMetadata(seasonModel) {
+  if (!seasonModel?.updatedAt) {
+    return null;
+  }
+
+  const latestChangeLog = await SeasonChangeLog.findOne({
+    where: {
+      seasonId: seasonModel.id,
+    },
+    attributes: ["id", "createdAt"],
+    include: [
+      {
+        model: User,
+        as: "user",
+        attributes: ["name"],
+        required: false,
+      },
+    ],
+    order: [["createdAt", "DESC"]],
+  });
+
+  return {
+    createdAt: seasonModel.updatedAt,
+    createdBy: latestChangeLog?.user?.name ?? "Unknown",
+  };
+}
+
 // Get all form data and DateRanges for a Feature Season
 router.get(
   "/feature/:seasonId",
@@ -133,12 +160,14 @@ router.get(
       seasonModel.publishableId,
     );
     const gateDetail = await getGateDetail(seasonModel.publishableId);
+    const lastUpdated = await getLastUpdatedMetadata(seasonModel);
 
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {
       ...seasonModel.toJSON(),
       dateRangeAnnuals,
       gateDetail,
+      lastUpdated,
     };
 
     // Combine current and previous Park-level winter fee dates
@@ -271,12 +300,14 @@ router.get(
       seasonModel.publishableId,
     );
     const gateDetail = await getGateDetail(seasonModel.publishableId);
+    const lastUpdated = await getLastUpdatedMetadata(seasonModel);
 
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {
       ...seasonModel.toJSON(),
       dateRangeAnnuals,
       gateDetail,
+      lastUpdated,
     };
 
     // Combine current and previous Park-level winter fee dates
@@ -439,12 +470,14 @@ router.get(
     const dateRangeAnnuals = await getDateRangeAnnuals(
       seasonModel.publishableId,
     );
+    const lastUpdated = await getLastUpdatedMetadata(seasonModel);
 
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {
       ...seasonModel.toJSON(),
       dateRangeAnnuals,
       gateDetail,
+      lastUpdated,
     };
 
     // Add datesCanSpan2Years flag at the season level.
