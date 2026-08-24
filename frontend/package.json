@@ -24,7 +24,7 @@
     "classnames": "^2.5.1",
     "date-fns": "^4.4.0",
     "file-saver": "^2.0.5",
-    "i18next": "^26.3.6",
+    "i18next": "^26.4.0",
     "jspdf": "^4.2.0",
     "jspdf-autotable": "^5.0.8",
     "keycloak-js": "^26.2.4",
@@ -38,11 +38,11 @@
     "react-bootstrap": "^2.10.10",
     "react-datepicker": "^9.1.0",
     "react-dom": "^19",
-    "react-i18next": "^17.0.11",
+    "react-i18next": "^17.0.12",
     "react-oidc-context": "^3.3.1",
-    "react-router-dom": "^6.30.4",
+    "react-router-dom": "^6.30.6",
     "react-select": "^5.10.2",
-    "sass-embedded": "^1.102.0",
+    "sass-embedded": "^1.103.1",
     "usehooks-ts": "^3.1.1",
     "vite": "^5.4.1",
     "web-vitals": "^4.2.4"
@@ -58,7 +58,7 @@
     "eslint-plugin-react-refresh": "^0.5.4",
     "globals": "^15.15.0",
     "prettier": "3.9.6",
-    "rollup": "^4.62.4"
+    "rollup": "^4.62.5"
   },
   "engines": {
     "node": "24.x"
