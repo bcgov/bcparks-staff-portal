@@ -56,10 +56,6 @@ import {
 const router = Router();
 
 async function getLastUpdatedMetadata(seasonModel) {
-  if (!seasonModel?.updatedAt) {
-    return null;
-  }
-
   const latestChangeLog = await SeasonChangeLog.findOne({
     where: {
       seasonId: seasonModel.id,
@@ -76,8 +72,12 @@ async function getLastUpdatedMetadata(seasonModel) {
     order: [["createdAt", "DESC"]],
   });
 
+  if (!latestChangeLog) {
+    return null;
+  }
+
   return {
-    createdAt: seasonModel.updatedAt,
+    createdAt: latestChangeLog.createdAt,
     createdBy: latestChangeLog?.user?.name ?? "Unknown",
   };
 }
