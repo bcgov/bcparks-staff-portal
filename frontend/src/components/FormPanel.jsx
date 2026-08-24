@@ -14,6 +14,7 @@ import { isEqual, omit, keyBy } from "lodash-es";
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
 import LoadingBar from "@/components/LoadingBar";
+import LastUpdatedInfo from "@/components/LastUpdatedInfo";
 import OperatingYearSelect from "@/components/OperatingYearSelect";
 import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
@@ -121,6 +122,7 @@ function SeasonForm({
   level,
   showOperatingYearSelect = false,
   onSeasonChange,
+  lastUpdated = null,
   closePanel,
   handleStatusCancelClose,
   onDataUpdate,
@@ -682,6 +684,7 @@ If dates have already been published, they will not be updated until new dates a
               // Display the operating year text in the Submit page
               <h2 className="fw-normal">{yearHeaderText}</h2>
             )}
+            <LastUpdatedInfo lastUpdated={season.lastUpdated ?? lastUpdated} />
             <p className="fs-6 fw-normal">
               <a
                 href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
@@ -821,6 +824,7 @@ SeasonForm.propTypes = {
   level: PropTypes.string.isRequired,
   showOperatingYearSelect: PropTypes.bool,
   onSeasonChange: PropTypes.func,
+  lastUpdated: PropTypes.object,
   closePanel: PropTypes.func.isRequired,
   handleStatusCancelClose: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
@@ -925,6 +929,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
             seasonId={selectedSeasonId}
             level={formData.level}
             showOperatingYearSelect={Boolean(formData.showOperatingYearSelect)}
+            lastUpdated={formData?.lastUpdated ?? null}
             onSeasonChange={handleSeasonChange}
             closePanel={closePanel}
             handleStatusCancelClose={handleStatusCancelClose}

@@ -11,12 +11,6 @@ table {
     &--feature {
       th {
         background-color: var(--theme-blue-10);
-
-        // Metadata text, smaller than a <small> tag
-        .last-updated {
-          line-height: 1.25rem;
-          font-size: 0.75rem;
-        }
       }
     }
     &--park-area-feature {

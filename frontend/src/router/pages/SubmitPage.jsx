@@ -168,10 +168,11 @@ function SubmitPage() {
       const level = match ? match[1] : "";
 
       if (level) {
-        setFormData({
+        setFormData((currentFormData) => ({
+          ...currentFormData,
           seasonId: parseInt(params.seasonId, 10),
           level,
-        });
+        }));
         setIsFormPanelOpen(true);
       }
     }
@@ -187,6 +188,7 @@ function SubmitPage() {
     const newFormData = {
       seasonId: season.id,
       level: formDataObj.level,
+      lastUpdated: formDataObj.lastUpdated,
     };
 
     setFormData(newFormData);

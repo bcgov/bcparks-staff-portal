@@ -1,15 +1,15 @@
 import React, { useMemo, useContext } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
-import { format } from "date-fns";
 import { faCheck } from "@fa-kit/icons/classic/solid";
 import { faPen } from "@fa-kit/icons/classic/regular";
 import StatusBadge from "@/components/StatusBadge";
 import NotReadyFlag from "@/components/NotReadyFlag";
 import InternalNotesRow from "@/components/InternalNotesRow";
+import LastUpdatedInfo from "@/components/LastUpdatedInfo";
 import SubmittedWithErrorsWarning from "@/components/SubmittedWithErrorsWarning";
 import IconButton from "@/components/IconButton";
-import { formatDateRange, formatDateShortWithYear } from "@/lib/utils";
+import { formatDateRange } from "@/lib/utils";
 import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";
@@ -266,13 +266,7 @@ function StatusTableRow({
           <div className="fw-normal feature-type-name">{typeName}</div>
         )}
 
-        {!!season.lastUpdated && (
-          <div className="fw-normal last-updated">
-            Last updated {formatDateShortWithYear(season.lastUpdated.createdAt)}{" "}
-            at {format(season.lastUpdated.createdAt, "h:mm aaa")} by{" "}
-            {season.lastUpdated.createdBy}
-          </div>
-        )}
+        <LastUpdatedInfo lastUpdated={season.lastUpdated} />
       </th>
 
       {season ? (
@@ -335,7 +329,11 @@ function FeaturesByFeatureTypeWithAreas({
                 typeName={parkArea?.parkAreaType?.name || ""}
                 season={regularSeason}
                 formPanelHandler={() =>
-                  formPanelHandler({ ...parkArea, level: "park-area" })
+                  formPanelHandler({
+                    ...parkArea,
+                    level: "park-area",
+                    lastUpdated: regularSeason.lastUpdated,
+                  })
                 }
               />
 
@@ -411,7 +409,11 @@ function FeaturesByFeatureTypeNoAreas({
               typeName={feature.featureType.name}
               season={regularSeason}
               formPanelHandler={() =>
-                formPanelHandler({ ...feature, level: "feature" })
+                formPanelHandler({
+                  ...feature,
+                  level: "feature",
+                  lastUpdated: regularSeason.lastUpdated,
+                })
               }
             />
             <DateTypeTableRow
@@ -488,6 +490,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                       ...park,
                       level: "park",
                       isWinterSeason: false,
+                      lastUpdated: regularSeason.lastUpdated,
                     })
                   }
                 />
@@ -519,6 +522,7 @@ function Table({ park, formPanelHandler, sortOrder }) {
                       ...park,
                       level: "park",
                       isWinterSeason: true,
+                      lastUpdated: winterSeason.lastUpdated,
                     })
                   }
                 />
