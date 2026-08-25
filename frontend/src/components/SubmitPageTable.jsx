@@ -329,11 +329,7 @@ function FeaturesByFeatureTypeWithAreas({
                 typeName={parkArea?.parkAreaType?.name || ""}
                 season={regularSeason}
                 formPanelHandler={() =>
-                  formPanelHandler({
-                    ...parkArea,
-                    level: "park-area",
-                    lastUpdated: regularSeason.lastUpdated,
-                  })
+                  formPanelHandler({ ...parkArea, level: "park-area" })
                 }
               />
 
@@ -409,11 +405,7 @@ function FeaturesByFeatureTypeNoAreas({
               typeName={feature.featureType.name}
               season={regularSeason}
               formPanelHandler={() =>
-                formPanelHandler({
-                  ...feature,
-                  level: "feature",
-                  lastUpdated: regularSeason.lastUpdated,
-                })
+                formPanelHandler({ ...feature, level: "feature" })
               }
             />
             <DateTypeTableRow
@@ -490,7 +482,6 @@ function Table({ park, formPanelHandler, sortOrder }) {
                       ...park,
                       level: "park",
                       isWinterSeason: false,
-                      lastUpdated: regularSeason.lastUpdated,
                     })
                   }
                 />
@@ -522,7 +513,6 @@ function Table({ park, formPanelHandler, sortOrder }) {
                       ...park,
                       level: "park",
                       isWinterSeason: true,
-                      lastUpdated: winterSeason.lastUpdated,
                     })
                   }
                 />
