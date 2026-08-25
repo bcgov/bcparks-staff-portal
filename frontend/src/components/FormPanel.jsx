@@ -20,6 +20,7 @@ import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
 import FeatureSeasonForm from "@/components/SeasonForms/FeatureSeasonForm";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ErrorSummary from "@/components/FormErrorSummary";
+import StatusBadge from "@/components/StatusBadge";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
@@ -670,18 +671,25 @@ If dates have already been published, they will not be updated until new dates a
             )}
 
             <h2>{seasonTitle}</h2>
-            {showOperatingYearSelect ? (
-              // Display the operating year form in the Edit published page
-              <OperatingYearSelect
-                season={season}
-                seasonOptions={seasonOptions}
-                loadingSeasonOptions={loadingSeasonOptions}
-                onSeasonChange={onSeasonChange}
-              />
-            ) : (
-              // Display the operating year text in the Submit page
-              <h2 className="fw-normal">{yearHeaderText}</h2>
-            )}
+            <div className="d-flex align-items-center">
+              {showOperatingYearSelect ? (
+                // Display the operating year form in the Edit published page
+                <OperatingYearSelect
+                  season={season}
+                  seasonOptions={seasonOptions}
+                  loadingSeasonOptions={loadingSeasonOptions}
+                  onSeasonChange={onSeasonChange}
+                />
+              ) : (
+                // Display the operating year text in the Submit page
+                <h2 className="fw-normal">{yearHeaderText}</h2>
+              )}
+
+              <div className="ms-3 mb-2">
+                <StatusBadge status={season.status} />
+              </div>
+            </div>
+
             <p className="fs-6 fw-normal">
               <a
                 href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"
