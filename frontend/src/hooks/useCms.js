@@ -204,6 +204,7 @@ export default function useCms() {
 
   const getProtectedAreas = useCallback(
     // This custom endpoint returns an array at the response root, not under data.
+    // Sorted by protectedAreaName by custom Strapi controller action `items`
     () => fetchCached("protectedAreas", "/protected-areas/items", ""),
     [fetchCached],
   );
@@ -301,7 +302,17 @@ export default function useCms() {
   );
 
   const getEventTypes = useCallback(
-    () => fetchCached("eventTypes", `/event-types?populate=*`),
+    () =>
+      fetchCached(
+        "eventTypes",
+        `/event-types?${qs.stringify(
+          {
+            sort: ["eventType", "documentId"],
+            populate: "*",
+          },
+          { encodeValuesOnly: true },
+        )}`,
+      ),
     [fetchCached],
   );
 
