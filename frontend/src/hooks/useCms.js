@@ -7,14 +7,17 @@ import CmsDataContext from "@/contexts/CmsDataContext";
 import { calculateIsStatHoliday as calculateIsStatHolidayUtil } from "@/lib/advisories/utils/AdvisoryUtil";
 
 /**
- * Builds a sort query string for a single field, matching the pattern used in CmsDataUtil.
- * @param {string} key The field name to sort by
+ * Builds a sort query string with deterministic tie-breaking.
+ * @param {string} key Primary field name to sort by
  * @returns {string} Encoded query string
  */
 function querySort(key) {
+  // Add the ID field as a secondary sort to ensure deterministic ordering for paginated queries.
+  const sort = key === "id" ? ["id"] : [key, "id"];
+
   return qs.stringify(
     {
-      sort: [key],
+      sort,
     },
     { encodeValuesOnly: true },
   );
@@ -287,7 +290,7 @@ export default function useCms() {
         "recreationResources",
         `/recreation-resources?${qs.stringify(
           {
-            sort: ["resourceName"],
+            sort: ["resourceName", "id"],
             fields: ["resourceName", "recResourceId", "closestCommunity"],
             populate: {
               recreationResourceType: {
@@ -305,13 +308,7 @@ export default function useCms() {
     () =>
       fetchCached(
         "eventTypes",
-        `/event-types?${qs.stringify(
-          {
-            sort: ["eventType", "documentId"],
-            populate: "*",
-          },
-          { encodeValuesOnly: true },
-        )}`,
+        `/event-types?${querySort("eventType")}&populate=*`,
       ),
     [fetchCached],
   );
@@ -360,7 +357,7 @@ export default function useCms() {
                 $eq: true,
               },
             },
-            sort: ["groupLabel"],
+            sort: ["groupLabel", "id"],
           },
           { encodeValuesOnly: true },
         )}`,
