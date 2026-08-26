@@ -493,14 +493,15 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @param {Object} [options] Optional propagation controls
  * @param {boolean} [options.syncStateOnly=false] Sync only readyToPublish/status on derived winter seasons
- * @returns {Promise<boolean | Array>} Number of Feature winter seasons updated and skipped.
+ * @returns {Promise<{updatedFeatures:number, skippedFeatures:number, updatedParkAreas:number, skippedParkAreas:number}>}
+ * Summary counts for propagated and skipped records.
  */
 export default async function propagateWinterFeeDates(
   seasonId,
   transaction = null,
   options = {},
 ) {
-  const { syncStateOnly = false } = options;
+  const { syncStateOnly = false, targetWinterOperatingYear = null } = options;
   const sourceSeason = await getSeason(seasonId, transaction);
 
   if (!sourceSeason) {
@@ -519,11 +520,12 @@ export default async function propagateWinterFeeDates(
   }
 
   // Winter saves target their own operating year.
-  // Regular operation saves target the prior winter operating year.
+  // Regular operation saves target the prior winter operating year by default.
   const winterOperatingYear =
-    sourceSeason.seasonType === SEASON_TYPE.REGULAR
+    targetWinterOperatingYear ??
+    (sourceSeason.seasonType === SEASON_TYPE.REGULAR
       ? sourceSeason.operatingYear - 1
-      : sourceSeason.operatingYear;
+      : sourceSeason.operatingYear);
 
   const { winterTypeId, operationTypeId } = await getDateTypeIds(transaction);
 
@@ -537,6 +539,18 @@ export default async function propagateWinterFeeDates(
   // Do not recalculate derived Feature winter dates
   // until Park winter dates are in an approved/published season.
   if (!parkWinter.season) {
+    // For regular-season edits, a missing prior winter season should not block
+    // recalculation of the same-year winter season.
+    if (
+      sourceSeason.seasonType === SEASON_TYPE.REGULAR &&
+      targetWinterOperatingYear === null
+    ) {
+      return propagateWinterFeeDates(seasonId, transaction, {
+        ...options,
+        targetWinterOperatingYear: sourceSeason.operatingYear,
+      });
+    }
+
     return {
       updatedFeatures: 0,
       skippedFeatures: 0,
@@ -723,10 +737,37 @@ export default async function propagateWinterFeeDates(
     }
   }
 
-  return {
+  const output = {
     updatedFeatures,
     skippedFeatures,
     updatedParkAreas: updatedParkAreaIds.size,
     skippedParkAreas: skippedParkAreaIds.size,
   };
+
+  // For regular-season operation edits, also recalculate the same-year winter
+  // (where this regular year is the "previous" operation year).
+  if (
+    sourceSeason.seasonType === SEASON_TYPE.REGULAR &&
+    targetWinterOperatingYear === null
+  ) {
+    const sameYearOutput = await propagateWinterFeeDates(
+      seasonId,
+      transaction,
+      {
+        ...options,
+        targetWinterOperatingYear: sourceSeason.operatingYear,
+      },
+    );
+
+    return {
+      updatedFeatures: output.updatedFeatures + sameYearOutput.updatedFeatures,
+      skippedFeatures: output.skippedFeatures + sameYearOutput.skippedFeatures,
+      updatedParkAreas:
+        output.updatedParkAreas + sameYearOutput.updatedParkAreas,
+      skippedParkAreas:
+        output.skippedParkAreas + sameYearOutput.skippedParkAreas,
+    };
+  }
+
+  return output;
 }
