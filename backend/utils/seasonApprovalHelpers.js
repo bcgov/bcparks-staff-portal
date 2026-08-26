@@ -67,6 +67,145 @@ export async function hasGateRemoved(seasonId) {
 }
 
 /**
+ * Returns whether a season is a Winter fee season at Feature level.
+ * @param {Season} season Season object with park/parkArea/feature associations
+ * @returns {boolean} True when the season is Winter and not park-level
+ */
+export function isFeatureWinterSeason(season) {
+  return (
+    season?.seasonType === SEASON_TYPE.WINTER &&
+    (Boolean(season?.parkArea) || Boolean(season?.feature))
+  );
+}
+
+/**
+ * Returns whether Information Services team approval is required for a season.
+ * @param {Season} season Season with park/parkArea/feature and optional gateDetail/changeLogs data
+ * @returns {boolean} True when IS team approval is required
+ */
+export function seasonRequiresInformationSvcApproval(season) {
+  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return false;
+  }
+
+  const { anyNotInReservationSystem } = getSeasonReservationCoverage(season);
+
+  // IS team approval is required if inReservationSystem is false for any dates
+  if (anyNotInReservationSystem) return true;
+
+  // IS team approval is required if hasGate is true
+  if (season.gateDetail?.hasGate === true) return true;
+
+  // IS team approval is required if hasGate was changed to false
+  const gateRemoved = (season.changeLogs || []).some((changeLog) => {
+    const oldHasGate = changeLog.gateDetailOldValue?.hasGate === true;
+    const newHasGate = changeLog.gateDetailNewValue?.hasGate === true;
+
+    return oldHasGate && !newHasGate;
+  });
+
+  if (gateRemoved) return true;
+
+  return false;
+}
+
+/**
+ * Returns whether Reservation Services team approval is required for a season.
+ * @param {Season} season Season with park/parkArea/feature associations
+ * @returns {boolean} True when RS team approval is required
+ */
+export function seasonRequiresReservationSvcApproval(season) {
+  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return false;
+  }
+
+  const { anyInReservationSystem } = getSeasonReservationCoverage(season);
+
+  // RS team approval is required if inReservationSystem is true for any dates
+  if (anyInReservationSystem) return true;
+
+  // RS team approval is required for Park-level Winter fee seasons
+  if (season.park && season.seasonType === SEASON_TYPE.WINTER) {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Adds required-approval flags to current seasons at park/area/feature levels.
+ * @param {Array<Object>} parks Parks output array
+ * @param {Set<number>} gateRemovedSeasonIds Current season IDs where gate was changed from true to false
+ * @returns {Array<Object>} Parks array with required-approval flags added
+ */
+export function addRequiredApprovalFlagsToCurrentSeasons(
+  parks,
+  gateRemovedSeasonIds,
+) {
+  function annotateCurrentSeason(currentSeason, context) {
+    if (!currentSeason) return;
+
+    const gateRemoved = gateRemovedSeasonIds.has(currentSeason.id);
+    const seasonContext = {
+      seasonType: currentSeason.seasonType,
+      park: context.park,
+      parkArea: context.parkArea,
+      feature: context.feature,
+      gateDetail: context.gateDetail,
+      changeLogs: gateRemoved
+        ? [
+            {
+              gateDetailOldValue: { hasGate: true },
+              gateDetailNewValue: { hasGate: false },
+            },
+          ]
+        : [],
+    };
+
+    currentSeason.requiresInformationSvcApproval =
+      seasonRequiresInformationSvcApproval(seasonContext);
+    currentSeason.requiresReservationSvcApproval =
+      seasonRequiresReservationSvcApproval(seasonContext);
+  }
+
+  return parks.map((park) => {
+    annotateCurrentSeason(park.currentSeason?.regular, {
+      park: { inReservationSystem: park.inReservationSystem },
+      gateDetail: { hasGate: park.hasGate },
+    });
+    annotateCurrentSeason(park.currentSeason?.winter, {
+      park: { inReservationSystem: park.inReservationSystem },
+      gateDetail: { hasGate: park.hasGate },
+    });
+
+    park.parkAreas.forEach((parkArea) => {
+      const parkAreaContext = {
+        parkArea: {
+          inReservationSystem: parkArea.inReservationSystem,
+          features: parkArea.features.map((feature) => ({
+            inReservationSystem: feature.inReservationSystem,
+          })),
+        },
+      };
+
+      annotateCurrentSeason(parkArea.currentSeason?.regular, parkAreaContext);
+    });
+
+    park.features.forEach((feature) => {
+      const featureContext = {
+        feature: { inReservationSystem: feature.inReservationSystem },
+      };
+
+      annotateCurrentSeason(feature.currentSeason?.regular, featureContext);
+    });
+
+    return park;
+  });
+}
+
+/**
  * Returns whether the Season's gate detail requires Information Services review.
  * Gate review is required when the gate detail hasGate value is true,
  * or when hasGate is changed from true to false.
@@ -100,6 +239,15 @@ export async function getRequiredApprovalsForSeason({
   oldGateDetail,
   gateDetail,
 }) {
+  // Feature/Area Winter fee seasons are system-derived and bypass team approvals.
+  // Park-level Winter fee seasons still follow approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return {
+      requiresInformationSvcApproval: false,
+      requiresReservationSvcApproval: false,
+    };
+  }
+
   let requiresInformationSvcApproval = false;
   let requiresReservationSvcApproval = false;
 
