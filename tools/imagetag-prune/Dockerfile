@@ -1,4 +1,4 @@
-FROM node:20-slim
+FROM --platform=linux/amd64 node:24-slim
 
 COPY package.json .
 

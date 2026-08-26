@@ -1,6 +1,11 @@
 "use strict";
 
 const ImagePruner = require("./imagePruner");
+const dotenv = require("dotenv");
+
+dotenv.config({
+  path: `.env`,
+});
 
 const OPENSHIFT_AUTH_TOKEN = process.env.OPENSHIFT_AUTH_TOKEN;
 const OPENSHIFT_API_URL =
@@ -8,9 +13,8 @@ const OPENSHIFT_API_URL =
   "https://api.silver.devops.gov.bc.ca:6443/apis/image.openshift.io/v1";
 const TOOLS_NAMESPACE = process.env.TOOLS_NAMESPACE || "a7dd13-tools";
 
-// Regex pattern used to match git sha hash abcd3456
-const GIT_SHA_HASH_REGEX =
-  process.env.GIT_SHA_HASH_REGEX || "\\b[0-9a-f]{8}\\b";
+// Regex pattern used to match short git SHA hashes (7 or 8 characters)
+const GIT_SHA_HASH_REGEX = process.env.GIT_SHA_HASH_REGEX || "^[0-9a-f]{7,8}$";
 
 // Regex pattern used to match release tags, e.g., v1.12.3
 const RELEASE_TAG_REGEX =
@@ -22,12 +26,9 @@ const IMAGETAGS_TO_KEEP = splitAndTrim(process.env.IMAGETAGS_TO_KEEP) || [
   "test",
   "prod",
 ];
-const IMAGESTRAMS_TO_CLEAN = splitAndTrim(process.env.IMAGESTRAMS_TO_CLEAN) || [
-  "backend-alpha",
-  "backend-main",
-  "frontend-alpha",
-  "frontend-main",
-];
+const IMAGESTREAMS_TO_CLEAN = splitAndTrim(
+  process.env.IMAGESTREAMS_TO_CLEAN,
+) || ["backend-alpha", "backend-main", "frontend-alpha", "frontend-main"];
 
 // Always keep the last "NUM_RELEASES_TO_KEEP" tags
 const NUM_RELEASES_TO_KEEP = process.env.NUM_RELEASES_TO_KEEP || 10;
@@ -47,7 +48,7 @@ const pruner = new ImagePruner({
   openShiftToken: OPENSHIFT_AUTH_TOKEN,
   releaseTagRegex: RELEASE_TAG_REGEX,
   gitShaHashRegex: GIT_SHA_HASH_REGEX,
-  imageStreamsToPrune: IMAGESTRAMS_TO_CLEAN,
+  imageStreamsToPrune: IMAGESTREAMS_TO_CLEAN,
   imageTagsToIgnore: IMAGETAGS_TO_KEEP,
   numReleasesToKeep: NUM_RELEASES_TO_KEEP,
   dryRun: DRY_RUN,

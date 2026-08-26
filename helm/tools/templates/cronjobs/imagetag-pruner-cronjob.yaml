@@ -44,7 +44,7 @@ spec:
                   value: 'false'
                 - name: NUM_RELEASES_TO_KEEP
                   value: '10'
-                - name: IMAGESTRAMS_TO_CLEAN
+                - name: IMAGESTREAMS_TO_CLEAN
                   value: >-
                     frontend-main,frontend-alpha,backend-main,backend-alpha
               resources: {}
