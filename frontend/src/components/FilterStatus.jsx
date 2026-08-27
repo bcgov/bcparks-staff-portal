@@ -4,6 +4,7 @@ import PropTypes from "prop-types";
 import { labelByValue } from "@/constants/seasonStatus";
 import FilterBadge from "@/components/shared/FilterBadge";
 import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
+import * as STATUS from "@/constants/seasonStatus";
 
 import "./FilterStatus.scss";
 
@@ -50,6 +51,34 @@ export default function FilterStatus({
         label: `Status: ${labelByValue[status]}`,
 
         remove(filters) {
+          const PENDING_REVIEW = STATUS.PENDING_REVIEW.value;
+          const IS_REVIEW = STATUS.IS_REVIEW_FILTER.value;
+          const RS_REVIEW = STATUS.RS_REVIEW_FILTER.value;
+
+          // Keep badge-removal behavior consistent with the dropdown's
+          // parent/child status-selection rules.
+          if (status === PENDING_REVIEW) {
+            updateFilter(
+              "status",
+              without(filters.status, PENDING_REVIEW, IS_REVIEW, RS_REVIEW),
+            );
+            return;
+          }
+
+          if (status === IS_REVIEW || status === RS_REVIEW) {
+            const next = without(filters.status, status);
+            const hasISReview = next.includes(IS_REVIEW);
+            const hasRSReview = next.includes(RS_REVIEW);
+
+            if (!hasISReview && !hasRSReview) {
+              updateFilter("status", without(next, PENDING_REVIEW));
+              return;
+            }
+
+            updateFilter("status", next);
+            return;
+          }
+
           updateFilter("status", without(filters.status, status));
         },
       }));

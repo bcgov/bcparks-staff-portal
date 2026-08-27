@@ -20,6 +20,17 @@ export const PENDING_REVIEW = {
   value: "pending review",
 };
 
+// "IS review" and "RS review" - filter-only values for Pending HQ review subsets
+export const IS_REVIEW_FILTER = {
+  label: "IS review",
+  value: "is-review",
+};
+
+export const RS_REVIEW_FILTER = {
+  label: "RS review",
+  value: "rs-review",
+};
+
 // "Published" - dates that have been sent to the Strapi CMS
 export const PUBLISHED = {
   label: "Published",
@@ -41,5 +52,7 @@ export const labelByValue = {
   [APPROVED.value]: APPROVED.label,
   [REQUESTED.value]: REQUESTED.label,
   [PENDING_REVIEW.value]: PENDING_REVIEW.label,
+  [IS_REVIEW_FILTER.value]: IS_REVIEW_FILTER.label,
+  [RS_REVIEW_FILTER.value]: RS_REVIEW_FILTER.label,
   [NOT_PROVIDED.value]: NOT_PROVIDED.label,
 };

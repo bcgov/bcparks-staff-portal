@@ -51,6 +51,7 @@ export default function FormErrorSummary({
   multipleFeatures = false,
   errors,
   dateableNameMap,
+  showSubmitAnyway = true,
 }) {
   const [featureErrors, formErrors] = partition(
     errors,
@@ -113,10 +114,12 @@ export default function FormErrorSummary({
         </>
       )}
 
-      <p className="mb-0">
-        If you’ve confirmed the information is correct, proceed to submit
-        anyway.
-      </p>
+      {showSubmitAnyway && (
+        <p className="mb-0">
+          If you’ve confirmed the information is correct, proceed to submit
+          anyway.
+        </p>
+      )}
     </div>
   );
 }
@@ -126,4 +129,5 @@ FormErrorSummary.propTypes = {
   multipleFeatures: PropTypes.bool,
   errors: PropTypes.array.isRequired,
   dateableNameMap: PropTypes.instanceOf(Map).isRequired,
+  showSubmitAnyway: PropTypes.bool,
 };

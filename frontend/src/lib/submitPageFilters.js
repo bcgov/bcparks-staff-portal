@@ -1,4 +1,63 @@
 import * as DATE_TYPES from "@/constants/dateType.js";
+import * as STATUS from "@/constants/seasonStatus.js";
+
+function matchesStatusFilters(season, statusFilters) {
+  if (!season || !statusFilters.length) return false;
+
+  const isPendingReviewFilterSelected = statusFilters.includes(
+    STATUS.PENDING_REVIEW.value,
+  );
+  const isIsReviewFilterSelected = statusFilters.includes(
+    STATUS.IS_REVIEW_FILTER.value,
+  );
+  const isRsReviewFilterSelected = statusFilters.includes(
+    STATUS.RS_REVIEW_FILTER.value,
+  );
+
+  const basicStatuses = statusFilters.filter(
+    (status) =>
+      status !== STATUS.PENDING_REVIEW.value &&
+      status !== STATUS.IS_REVIEW_FILTER.value &&
+      status !== STATUS.RS_REVIEW_FILTER.value,
+  );
+
+  if (basicStatuses.includes(season.status)) {
+    return true;
+  }
+
+  // Child filters only apply to seasons in pending review status.
+  if (season.status !== STATUS.PENDING_REVIEW.value) {
+    return false;
+  }
+
+  // If only parent pending is selected, include all pending review seasons.
+  if (
+    isPendingReviewFilterSelected &&
+    !isIsReviewFilterSelected &&
+    !isRsReviewFilterSelected
+  ) {
+    return true;
+  }
+
+  // Treat "review" as "still awaiting that team's approval".
+  if (
+    isIsReviewFilterSelected &&
+    season.requiresInformationSvcApproval === true &&
+    season.informationSvcApproved !== true
+  ) {
+    return true;
+  }
+
+  if (
+    isRsReviewFilterSelected &&
+    season.requiresReservationSvcApproval === true &&
+    season.reservationSvcApproved !== true
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 /**
  * Checks a Park against the active Park-level "hard" filters.
@@ -68,10 +127,10 @@ export function checkParkSoft(park, filters) {
     if (
       // Filter out if the regular season status doesn't match, and
       (!park.currentSeason.regular ||
-        !filters.status.includes(park.currentSeason.regular.status)) &&
+        !matchesStatusFilters(park.currentSeason.regular, filters.status)) &&
       // the winter season's status also doesn't match (or there is no winter season)
       (!park.currentSeason.winter ||
-        !filters.status.includes(park.currentSeason.winter.status))
+        !matchesStatusFilters(park.currentSeason.winter, filters.status))
     ) {
       return false;
     }
@@ -140,7 +199,9 @@ export function getMatchingAreas(parkAreas, filters) {
       if (!parkArea.currentSeason.regular) return false;
 
       // If none of the statuses match, filter out
-      if (!filters.status.includes(parkArea.currentSeason.regular.status)) {
+      if (
+        !matchesStatusFilters(parkArea.currentSeason.regular, filters.status)
+      ) {
         return false;
       }
     }
@@ -230,7 +291,9 @@ export function getMatchingFeatures(features, filters) {
       if (!feature.currentSeason.regular) return false;
 
       // If none of the statuses match, filter out
-      if (!filters.status.includes(feature.currentSeason.regular.status)) {
+      if (
+        !matchesStatusFilters(feature.currentSeason.regular, filters.status)
+      ) {
         return false;
       }
     }
@@ -303,7 +366,7 @@ export function shouldShowTiersAndGateSection(park, filters) {
     // Show section if the park's regular season status matches
     if (
       park.currentSeason.regular &&
-      filters.status.includes(park.currentSeason.regular.status)
+      matchesStatusFilters(park.currentSeason.regular, filters.status)
     ) {
       return true;
     }
@@ -392,7 +455,7 @@ export function shouldShowWinterFeeSection(park, filters) {
     // Show section if the park's winter season status matches
     if (
       park.currentSeason.winter &&
-      filters.status.includes(park.currentSeason.winter.status)
+      matchesStatusFilters(park.currentSeason.winter, filters.status)
     ) {
       return true;
     }

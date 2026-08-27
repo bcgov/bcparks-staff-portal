@@ -10,6 +10,7 @@ import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/components/FilterPanel";
 import FilterStatus from "@/components/FilterStatus";
 import FormPanel from "@/components/FormPanel";
+import useAccess from "@/hooks/useAccess";
 import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/contexts/RefreshTableContext";
 import getTableSortOrder from "@/lib/getTableSortOrder";
@@ -49,6 +50,7 @@ function getCurrentSeason(seasons = []) {
 function SubmitPage() {
   const params = useParams();
   const navigate = useNavigate();
+  const { hasAnyRole, ROLES } = useAccess();
 
   // Load Park data for the table
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -102,12 +104,35 @@ function SubmitPage() {
     [filterOptionsData],
   );
 
-  const statusOptions = [
-    { value: STATUS.REQUESTED.value, label: STATUS.REQUESTED.label },
-    { value: STATUS.PENDING_REVIEW.value, label: STATUS.PENDING_REVIEW.label },
-    { value: STATUS.APPROVED.value, label: STATUS.APPROVED.label },
-    { value: STATUS.PUBLISHED.value, label: STATUS.PUBLISHED.label },
-  ];
+  const isApprover = hasAnyRole([ROLES.APPROVER]);
+
+  const statusOptions = useMemo(() => {
+    const options = [
+      { value: STATUS.REQUESTED.value, label: STATUS.REQUESTED.label },
+      {
+        value: STATUS.PENDING_REVIEW.value,
+        label: STATUS.PENDING_REVIEW.label,
+      },
+      ...(isApprover
+        ? [
+            {
+              value: STATUS.IS_REVIEW_FILTER.value,
+              label: STATUS.IS_REVIEW_FILTER.label,
+              indented: true,
+            },
+            {
+              value: STATUS.RS_REVIEW_FILTER.value,
+              label: STATUS.RS_REVIEW_FILTER.label,
+              indented: true,
+            },
+          ]
+        : []),
+      { value: STATUS.APPROVED.value, label: STATUS.APPROVED.label },
+      { value: STATUS.PUBLISHED.value, label: STATUS.PUBLISHED.label },
+    ];
+
+    return options;
+  }, [isApprover]);
 
   const tableSortOrder = useMemo(
     () => getTableSortOrder(filterOptions),
@@ -439,12 +464,50 @@ function SubmitPage() {
 
   // "filter by status" dropdown
   function StatusFilter() {
+    function handleStatusInput(value, metadata = {}) {
+      const { changedValue, checked } = metadata;
+      const HQ = STATUS.PENDING_REVIEW.value;
+      const IS = STATUS.IS_REVIEW_FILTER.value;
+      const RS = STATUS.RS_REVIEW_FILTER.value;
+      const next = new Set(value);
+
+      if (!isApprover) {
+        updateFilter("status", [...next]);
+        return;
+      }
+
+      if (changedValue === HQ) {
+        if (checked) {
+          next.add(HQ);
+          next.add(IS);
+          next.add(RS);
+        } else {
+          next.delete(HQ);
+          next.delete(IS);
+          next.delete(RS);
+        }
+      }
+
+      if (changedValue === IS || changedValue === RS) {
+        const hasIS = next.has(IS);
+        const hasRS = next.has(RS);
+
+        if (hasIS || hasRS) {
+          next.add(HQ);
+        } else {
+          next.delete(HQ);
+        }
+      }
+
+      updateFilter("status", [...next]);
+    }
+
     return (
       <MultiSelect
         options={statusOptions}
-        onInput={(value) => {
+        onInput={(value, metadata) => {
           setPage(1);
-          updateFilter("status", value);
+          handleStatusInput(value, metadata);
         }}
         value={filters.status}
         disabled={!metadataLoaded}
