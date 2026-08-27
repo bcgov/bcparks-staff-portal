@@ -22,6 +22,7 @@ import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
 import { addRequiredApprovalFlagsToCurrentSeasons } from "../../utils/seasonApprovalHelpers.js";
+import getCurrentSeasonIds from "../../utils/getCurrentSeasonIds.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
@@ -197,17 +198,6 @@ function buildDateRangeObject(dateRange, operatingYear, readyToPublish) {
     // Add the Season's operating year for grouping
     operatingYear,
   };
-}
-
-/**
- * Returns the ID of the most recent season (highest operatingYear) per seasonType.
- * @param {Array<Object>} seasons Array of season objects
- * @returns {Array<number>} Array of current season IDs
- */
-function getCurrentSeasonIds(seasons) {
-  return Object.values(_.groupBy(seasons, "seasonType"))
-    .map((group) => _.maxBy(group, "operatingYear")?.id)
-    .filter(Boolean);
 }
 
 /**
