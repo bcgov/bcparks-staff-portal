@@ -2,10 +2,11 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     // Check for NULL publishableId values. changeColumn to allowNull: false will fail if any exist.
-    const [{ count: nullCount }] = await queryInterface.sequelize.query(
+    const [{ count: nullCountRaw }] = await queryInterface.sequelize.query(
       `SELECT COUNT(*) as count FROM "GateDetails" WHERE "publishableId" IS NULL`,
       { type: Sequelize.QueryTypes.SELECT },
     );
+    const nullCount = Number(nullCountRaw);
 
     if (nullCount > 0) {
       throw new Error(
