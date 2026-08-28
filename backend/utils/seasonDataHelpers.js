@@ -92,9 +92,10 @@ export async function getDateRangeAnnuals(publishableId) {
 /**
  * Returns all GateDetails for a given publishableId.
  * @param {number} publishableId The ID of the Publishable to get GateDetail
+ * @param {Transaction} [transaction=null] Optional Sequelize transaction object
  * @returns {Promise<Object|null>} GateDetail model, or null if not found
  */
-export async function getGateDetail(publishableId) {
+export async function getGateDetail(publishableId, transaction = null) {
   if (!publishableId) return null;
   return await GateDetail.findOne({
     where: { publishableId },
@@ -106,6 +107,7 @@ export async function getGateDetail(publishableId) {
       "gateOpensAtDawn",
       "gateClosesAtDusk",
     ],
+    transaction,
   });
 }
 
