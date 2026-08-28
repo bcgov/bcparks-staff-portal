@@ -501,6 +501,7 @@ export default async function propagateWinterFeeDates(
   transaction = null,
   options = {},
 ) {
+  const warnings = [];
   const { syncStateOnly = false, targetWinterOperatingYear = null } = options;
   const sourceSeason = await getSeason(seasonId, transaction);
 
@@ -556,6 +557,7 @@ export default async function propagateWinterFeeDates(
       skippedFeatures: 0,
       updatedParkAreas: 0,
       skippedParkAreas: 0,
+      warnings,
     };
   }
 
@@ -586,6 +588,7 @@ export default async function propagateWinterFeeDates(
       skippedFeatures: 0,
       updatedParkAreas: 0,
       skippedParkAreas: 0,
+      warnings,
     };
   }
 
@@ -597,6 +600,9 @@ export default async function propagateWinterFeeDates(
 
   for (const feature of features) {
     if (!feature.dateableId) {
+      warnings.push(
+        `Feature ${feature.id} (${feature.name}) has no dateableId. Skipping Winter fee propagation.`,
+      );
       if (feature.parkAreaId) {
         skippedParkAreaIds.add(feature.parkAreaId);
       }
@@ -607,11 +613,17 @@ export default async function propagateWinterFeeDates(
     const featureHasParentParkArea = Boolean(feature.parkArea);
 
     if (!featureHasParentParkArea && !feature.publishableId) {
+      warnings.push(
+        `Feature ${feature.id} (${feature.name}) has no publishableId and is not in a parkArea. Skipping Winter fee propagation.`,
+      );
       skippedFeatures++;
       continue;
     }
 
     if (featureHasParentParkArea && !feature.parkArea.publishableId) {
+      warnings.push(
+        `Feature ${feature.id} (${feature.name}) parkArea has no publishableId. Skipping Winter fee propagation.`,
+      );
       skippedParkAreaIds.add(feature.parkArea.id);
       skippedFeatures++;
       continue;
@@ -630,6 +642,10 @@ export default async function propagateWinterFeeDates(
       });
 
       if (!winterSeason) {
+        warnings.push(
+          `No winter season found for feature ${feature.id} (${feature.name}) in operating year ${winterOperatingYear}. `,
+        );
+
         skippedFeatures++;
 
         if (featureHasParentParkArea) {
@@ -670,6 +686,12 @@ export default async function propagateWinterFeeDates(
     // If the season exists but has no complete Operation dates, we still
     // proceed so overlaps=[] can clear derived Winter fee ranges.
     if (!hasApprovedOperationSeason) {
+      warnings.push(
+        `Feature ${feature.id} (${feature.name}) does not have an approved/published regular season for operating year ${
+          winterOperatingYear + 1
+        }. Skipping Winter fee propagation.`,
+      );
+
       skippedFeatures++;
 
       if (featureHasParentParkArea) {
@@ -731,6 +753,10 @@ export default async function propagateWinterFeeDates(
     } else {
       skippedFeatures++;
 
+      warnings.push(
+        `No winter season found for feature ${feature.id} (${feature.name}) in operating year ${winterOperatingYear}.`,
+      );
+
       if (featureHasParentParkArea) {
         skippedParkAreaIds.add(feature.parkArea.id);
       }
@@ -742,6 +768,7 @@ export default async function propagateWinterFeeDates(
     skippedFeatures,
     updatedParkAreas: updatedParkAreaIds.size,
     skippedParkAreas: skippedParkAreaIds.size,
+    warnings,
   };
 
   // For regular-season operation edits, also recalculate the same-year winter
@@ -766,6 +793,7 @@ export default async function propagateWinterFeeDates(
         output.updatedParkAreas + sameYearOutput.updatedParkAreas,
       skippedParkAreas:
         output.skippedParkAreas + sameYearOutput.skippedParkAreas,
+      warnings: [...output.warnings, ...sameYearOutput.warnings],
     };
   }
 
