@@ -493,8 +493,8 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @param {Object} [options] Optional propagation controls
  * @param {boolean} [options.syncStateOnly=false] Sync only readyToPublish/status on derived winter seasons
- * @returns {Promise<{updatedFeatures:number, skippedFeatures:number, updatedParkAreas:number, skippedParkAreas:number}>}
- * Summary counts for propagated and skipped records.
+ * @returns {Promise<{updatedFeatures:number, skippedFeatures:number, updatedParkAreas:number, skippedParkAreas:number, warnings:string[]}>}
+ * Summary counts for propagated and skipped records, plus diagnostic warnings explaining why features were skipped.
  */
 export default async function propagateWinterFeeDates(
   seasonId,
@@ -643,7 +643,7 @@ export default async function propagateWinterFeeDates(
 
       if (!winterSeason) {
         warnings.push(
-          `No winter season found for feature ${feature.id} (${feature.name}) in operating year ${winterOperatingYear}. `,
+          `No winter season found for feature ${feature.id} (${feature.name}) in operating year ${winterOperatingYear}.`,
         );
 
         skippedFeatures++;
