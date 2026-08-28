@@ -554,7 +554,7 @@ router.post(
   "/:seasonId/save/",
   checkPermissions([USER_ROLES.SUBMITTER, USER_ROLES.CONTRIBUTOR]),
   asyncHandler(async (req, res) => {
-    const warnings = [];
+    const diagnostics = [];
     const seasonId = Number(req.params.seasonId);
     const {
       notes = "",
@@ -687,7 +687,7 @@ router.post(
       const newStatus = resolvedStatus;
 
       if (requestedNewStatus !== newStatus) {
-        warnings.push(
+        diagnostics.push(
           `Season status changed from "${requestedNewStatus}" to "${newStatus}" based on approval rules.`,
         );
       }
@@ -768,13 +768,13 @@ router.post(
           syncStateOnly: shouldSyncStateOnly,
         });
 
-        // append the result.warnings array to the warnings array
-        if (result.warnings && result.warnings.length > 0) {
-          warnings.push(...result.warnings);
+        // append the result.diagnostics array to the diagnostics array
+        if (result.diagnostics && result.diagnostics.length > 0) {
+          diagnostics.push(...result.diagnostics);
         }
       } else {
         if (isWinterSeason && newStatus === STATUS.APPROVED) {
-          warnings.push(
+          diagnostics.push(
             `Winter fee dates not propagated for Season ${season.id} because conditions were not met. (oldStatus: ${season.status}, datesChanged: ${operationDateChanged || winterFeeDateChanged}, readyToPublishChanged: ${readyToPublishChanged})`,
           );
         }
@@ -782,13 +782,13 @@ router.post(
 
       await transaction.commit();
 
-      if (warnings.length > 0) {
-        res
-          .status(200)
-          .json({ message: "Season saved with warnings", warnings });
-      } else {
-        res.status(200).json({ message: "Season saved successfully" });
+      const responsePayload = { message: "Season saved" };
+
+      if (diagnostics.length > 0) {
+        responsePayload.executionDetails = diagnostics;
       }
+
+      res.status(200).json(responsePayload);
     } catch (error) {
       await transaction.rollback();
       throw error; // Re-throw to let global error handler catch it

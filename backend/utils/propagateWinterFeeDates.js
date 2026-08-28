@@ -493,15 +493,15 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @param {Object} [options] Optional propagation controls
  * @param {boolean} [options.syncStateOnly=false] Sync only readyToPublish/status on derived winter seasons
- * @returns {Promise<{updatedFeatures:number, skippedFeatures:number, updatedParkAreas:number, skippedParkAreas:number, warnings:string[]}>}
- * Summary counts for propagated and skipped records, plus diagnostic warnings explaining why features were skipped.
+ * @returns {Promise<{updatedFeatures:number, skippedFeatures:number, updatedParkAreas:number, skippedParkAreas:number, diagnostics:string[]}>}
+ * Summary counts for propagated and skipped records, plus diagnostic information explaining why features were skipped.
  */
 export default async function propagateWinterFeeDates(
   seasonId,
   transaction = null,
   options = {},
 ) {
-  const warnings = [];
+  const diagnostics = [];
   const { syncStateOnly = false, targetWinterOperatingYear = null } = options;
   const sourceSeason = await getSeason(seasonId, transaction);
 
@@ -557,7 +557,7 @@ export default async function propagateWinterFeeDates(
       skippedFeatures: 0,
       updatedParkAreas: 0,
       skippedParkAreas: 0,
-      warnings,
+      diagnostics,
     };
   }
 
@@ -588,7 +588,7 @@ export default async function propagateWinterFeeDates(
       skippedFeatures: 0,
       updatedParkAreas: 0,
       skippedParkAreas: 0,
-      warnings,
+      diagnostics,
     };
   }
 
@@ -600,7 +600,7 @@ export default async function propagateWinterFeeDates(
 
   for (const feature of features) {
     if (!feature.dateableId) {
-      warnings.push(
+      diagnostics.push(
         `Feature ${feature.id} (${feature.name}) has no dateableId. Skipping Winter fee propagation.`,
       );
       if (feature.parkAreaId) {
@@ -613,7 +613,7 @@ export default async function propagateWinterFeeDates(
     const featureHasParentParkArea = Boolean(feature.parkArea);
 
     if (!featureHasParentParkArea && !feature.publishableId) {
-      warnings.push(
+      diagnostics.push(
         `Feature ${feature.id} (${feature.name}) has no publishableId and is not in a parkArea. Skipping Winter fee propagation.`,
       );
       skippedFeatures++;
@@ -621,7 +621,7 @@ export default async function propagateWinterFeeDates(
     }
 
     if (featureHasParentParkArea && !feature.parkArea.publishableId) {
-      warnings.push(
+      diagnostics.push(
         `Feature ${feature.id} (${feature.name}) parkArea has no publishableId. Skipping Winter fee propagation.`,
       );
       skippedParkAreaIds.add(feature.parkArea.id);
@@ -642,7 +642,7 @@ export default async function propagateWinterFeeDates(
       });
 
       if (!winterSeason) {
-        warnings.push(
+        diagnostics.push(
           `No winter season found for feature ${feature.id} (${feature.name}) in operating year ${winterOperatingYear}.`,
         );
 
@@ -686,7 +686,7 @@ export default async function propagateWinterFeeDates(
     // If the season exists but has no complete Operation dates, we still
     // proceed so overlaps=[] can clear derived Winter fee ranges.
     if (!hasApprovedOperationSeason) {
-      warnings.push(
+      diagnostics.push(
         `Feature ${feature.id} (${feature.name}) does not have an approved/published regular season for operating year ${
           winterOperatingYear + 1
         }. Skipping Winter fee propagation.`,
@@ -753,7 +753,7 @@ export default async function propagateWinterFeeDates(
     } else {
       skippedFeatures++;
 
-      warnings.push(
+      diagnostics.push(
         `No winter season found for feature ${feature.id} (${feature.name}) in operating year ${winterOperatingYear}.`,
       );
 
@@ -768,7 +768,7 @@ export default async function propagateWinterFeeDates(
     skippedFeatures,
     updatedParkAreas: updatedParkAreaIds.size,
     skippedParkAreas: skippedParkAreaIds.size,
-    warnings,
+    diagnostics,
   };
 
   // For regular-season operation edits, also recalculate the same-year winter
@@ -793,7 +793,7 @@ export default async function propagateWinterFeeDates(
         output.updatedParkAreas + sameYearOutput.updatedParkAreas,
       skippedParkAreas:
         output.skippedParkAreas + sameYearOutput.skippedParkAreas,
-      warnings: [...output.warnings, ...sameYearOutput.warnings],
+      diagnostics: [...output.diagnostics, ...sameYearOutput.diagnostics],
     };
   }
 
