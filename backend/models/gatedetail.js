@@ -11,7 +11,10 @@ export default (sequelize) => {
   }
   GateDetail.init(
     {
-      publishableId: DataTypes.INTEGER,
+      publishableId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
       hasGate: {
         type: DataTypes.BOOLEAN,
         allowNull: true,
