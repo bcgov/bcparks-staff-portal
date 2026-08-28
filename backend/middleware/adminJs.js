@@ -86,8 +86,8 @@ function getSeasonActions() {
           },
         );
 
-        // After May 1st, all winter seasons for current year and earlier
-        // shouldn't be editable so we update their status to "not provided"
+        // Winter operatingYears are based on the Fall/December year; We don't mark
+        // winter seasons as 'not provided' until May 1st of the following spring
         const today = new Date();
         const may1 = new Date(`${today.getFullYear()}-05-01`);
 
