@@ -2,16 +2,19 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     // Check for duplicate publishableId values before enforcing NOT NULL
-    const duplicates = await queryInterface.sequelize.query(`
+    const duplicates = await queryInterface.sequelize.query(
+      `
       SELECT "publishableId", COUNT(*) as count
       FROM "GateDetails"
       WHERE "publishableId" IS NOT NULL
       GROUP BY "publishableId"
       HAVING COUNT(*) > 1
-    `);
+    `,
+      { type: Sequelize.QueryTypes.SELECT },
+    );
 
-    if (duplicates && duplicates[0] && duplicates[0].length > 0) {
-      const duplicateIds = duplicates[0].map((d) => d.publishableId).join(", ");
+    if (duplicates && duplicates.length > 0) {
+      const duplicateIds = duplicates.map((d) => d.publishableId).join(", ");
 
       throw new Error(
         `Cannot add unique constraint: Duplicate publishableId values found: ${duplicateIds}. ` +

@@ -14,6 +14,7 @@ export default (sequelize) => {
       publishableId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        unique: true,
       },
       hasGate: {
         type: DataTypes.BOOLEAN,
