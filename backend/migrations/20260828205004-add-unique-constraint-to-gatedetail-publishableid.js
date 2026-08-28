@@ -1,6 +1,24 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Check for duplicate publishableId values before enforcing NOT NULL
+    const duplicates = await queryInterface.sequelize.query(`
+      SELECT "publishableId", COUNT(*) as count
+      FROM "GateDetails"
+      WHERE "publishableId" IS NOT NULL
+      GROUP BY "publishableId"
+      HAVING COUNT(*) > 1
+    `);
+
+    if (duplicates && duplicates[0] && duplicates[0].length > 0) {
+      const duplicateIds = duplicates[0].map((d) => d.publishableId).join(", ");
+
+      throw new Error(
+        `Cannot add unique constraint: Duplicate publishableId values found: ${duplicateIds}. ` +
+          `Please remove duplicate GateDetail records before running this migration.`,
+      );
+    }
+
     // Make publishableId NOT NULL
     await queryInterface.changeColumn("GateDetails", "publishableId", {
       type: Sequelize.INTEGER,
@@ -12,14 +30,14 @@ module.exports = {
     await queryInterface.addConstraint("GateDetails", {
       fields: ["publishableId"],
       type: "unique",
-      name: "unique_gatedetail_publishableid",
+      name: "GateDetails_publishableId_unique",
     });
   },
 
   async down(queryInterface, Sequelize) {
     await queryInterface.removeConstraint(
       "GateDetails",
-      "unique_gatedetail_publishableid",
+      "GateDetails_publishableId_unique",
     );
 
     await queryInterface.changeColumn("GateDetails", "publishableId", {
