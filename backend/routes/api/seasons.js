@@ -554,6 +554,7 @@ router.post(
   "/:seasonId/save/",
   checkPermissions([USER_ROLES.DOOT_SUBMITTER, USER_ROLES.DOOT_CONTRIBUTOR]),
   asyncHandler(async (req, res) => {
+    const diagnostics = [];
     const seasonId = Number(req.params.seasonId);
     const {
       notes = "",
@@ -685,6 +686,11 @@ router.post(
 
       const newStatus = resolvedStatus;
 
+      if (requestedNewStatus !== newStatus) {
+        diagnostics.push(
+          `Season status changed from "${requestedNewStatus}" to "${newStatus}" based on approval rules.`,
+        );
+      }
       // If readyToPublish is null or undefined, set it to the current value
       const newReadyToPublish = readyToPublish ?? season.readyToPublish;
       const readyToPublishChanged = newReadyToPublish !== season.readyToPublish;
@@ -758,13 +764,31 @@ router.post(
           season.status !== STATUS.APPROVED ||
           (isWinterSeason && readyToPublishChanged))
       ) {
-        await propagateWinterFeeDates(season.id, transaction, {
+        const result = await propagateWinterFeeDates(season.id, transaction, {
           syncStateOnly: shouldSyncStateOnly,
         });
+
+        // append the result.diagnostics array to the diagnostics array
+        if (result.diagnostics && result.diagnostics.length > 0) {
+          diagnostics.push(...result.diagnostics);
+        }
+      } else {
+        if (isWinterSeason && newStatus === STATUS.APPROVED) {
+          diagnostics.push(
+            `Winter fee dates not propagated for Season ${season.id} because conditions were not met. (oldStatus: ${season.status}, datesChanged: ${operationDateChanged || winterFeeDateChanged}, readyToPublishChanged: ${readyToPublishChanged})`,
+          );
+        }
       }
 
       await transaction.commit();
-      res.sendStatus(200);
+
+      const responsePayload = { message: "Season saved" };
+
+      if (diagnostics.length > 0) {
+        responsePayload.executionDetails = diagnostics;
+      }
+
+      res.status(200).json(responsePayload);
     } catch (error) {
       await transaction.rollback();
       throw error; // Re-throw to let global error handler catch it

@@ -2,6 +2,7 @@ import { Op, Sequelize } from "sequelize";
 import { SeasonChangeLog } from "../models/index.js";
 import * as STATUS from "../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../constants/seasonType.js";
+import getCurrentSeasonIds from "./getCurrentSeasonIds.js";
 
 /**
  * Returns which reservation-system coverage applies to this season.
@@ -135,6 +136,40 @@ export function seasonRequiresReservationSvcApproval(season) {
 }
 
 /**
+ * Annotates a season with required team approval flags.
+ * @param {Object} season Season object
+ * @param {Object} context Context containing park/parkArea/feature and gate removal info
+ * @returns {void} Modifies the season object in place
+ */
+function addTeamApprovalRequiredFlags(season, context) {
+  if (!season) return;
+
+  const gateRemovedSeasonIds = context.gateRemovedSeasonIds || new Set();
+
+  const gateRemoved = gateRemovedSeasonIds.has(season.id);
+  const seasonContext = {
+    seasonType: season.seasonType,
+    park: context.park,
+    parkArea: context.parkArea,
+    feature: context.feature,
+    gateDetail: context.gateDetail,
+    changeLogs: gateRemoved
+      ? [
+          {
+            gateDetailOldValue: { hasGate: true },
+            gateDetailNewValue: { hasGate: false },
+          },
+        ]
+      : [],
+  };
+
+  season.requiresInformationSvcApproval =
+    seasonRequiresInformationSvcApproval(seasonContext);
+  season.requiresReservationSvcApproval =
+    seasonRequiresReservationSvcApproval(seasonContext);
+}
+
+/**
  * Adds required-approval flags to current seasons at park/area/feature levels.
  * @param {Array<Object>} parks Parks output array
  * @param {Set<number>} gateRemovedSeasonIds Current season IDs where gate was changed from true to false
@@ -144,40 +179,22 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
   parks,
   gateRemovedSeasonIds,
 ) {
-  function annotateCurrentSeason(currentSeason, context) {
-    if (!currentSeason) return;
+  return parks.map((park) => {
+    // Park object doesn't have currentSeason (winter or regular),
+    // so we need to identify them in the seasons array.
+    const currentParkSeasonIds = getCurrentSeasonIds(park.seasons);
+    const currentParkSeasons = park.seasons.filter((season) =>
+      currentParkSeasonIds.includes(season.id),
+    );
 
-    const gateRemoved = gateRemovedSeasonIds.has(currentSeason.id);
-    const seasonContext = {
-      seasonType: currentSeason.seasonType,
-      park: context.park,
-      parkArea: context.parkArea,
-      feature: context.feature,
-      gateDetail: context.gateDetail,
-      changeLogs: gateRemoved
-        ? [
-            {
-              gateDetailOldValue: { hasGate: true },
-              gateDetailNewValue: { hasGate: false },
-            },
-          ]
-        : [],
+    const parkContext = {
+      park: { inReservationSystem: park.inReservationSystem },
+      gateDetail: { hasGate: park.hasGate },
+      gateRemovedSeasonIds,
     };
 
-    currentSeason.requiresInformationSvcApproval =
-      seasonRequiresInformationSvcApproval(seasonContext);
-    currentSeason.requiresReservationSvcApproval =
-      seasonRequiresReservationSvcApproval(seasonContext);
-  }
-
-  return parks.map((park) => {
-    annotateCurrentSeason(park.currentSeason?.regular, {
-      park: { inReservationSystem: park.inReservationSystem },
-      gateDetail: { hasGate: park.hasGate },
-    });
-    annotateCurrentSeason(park.currentSeason?.winter, {
-      park: { inReservationSystem: park.inReservationSystem },
-      gateDetail: { hasGate: park.hasGate },
+    currentParkSeasons.forEach((season) => {
+      addTeamApprovalRequiredFlags(season, parkContext);
     });
 
     park.parkAreas.forEach((parkArea) => {
@@ -188,17 +205,25 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
             inReservationSystem: feature.inReservationSystem,
           })),
         },
+        gateRemovedSeasonIds,
       };
 
-      annotateCurrentSeason(parkArea.currentSeason?.regular, parkAreaContext);
+      addTeamApprovalRequiredFlags(
+        parkArea.currentSeason?.regular,
+        parkAreaContext,
+      );
     });
 
     park.features.forEach((feature) => {
       const featureContext = {
         feature: { inReservationSystem: feature.inReservationSystem },
+        gateRemovedSeasonIds,
       };
 
-      annotateCurrentSeason(feature.currentSeason?.regular, featureContext);
+      addTeamApprovalRequiredFlags(
+        feature.currentSeason?.regular,
+        featureContext,
+      );
     });
 
     return park;
