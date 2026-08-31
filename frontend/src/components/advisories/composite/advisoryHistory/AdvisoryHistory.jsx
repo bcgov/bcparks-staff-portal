@@ -35,15 +35,12 @@ export default function AdvisoryHistory({
             date,
           }) {
             if (!date) return;
-            const ts = new Date(date).valueOf();
-
-            if (Number.isNaN(ts)) return;
 
             advisoriesHistory.push({
               revisionNumber,
               actorName,
               displayText,
-              displayDate: formatTimestamp(ts),
+              date,
             });
           }
 
@@ -218,7 +215,7 @@ export default function AdvisoryHistory({
                 normalizeDisplayText(event1.displayText) ===
                   normalizeDisplayText(event2.displayText) &&
                 event1.actorName === event2.actorName &&
-                event1.displayDate === event2.displayDate
+                event1.date === event2.date
               );
             }
 
@@ -256,7 +253,7 @@ export default function AdvisoryHistory({
             key={`revision-${ah.revisionNumber}-idx-${index}`}
             className="mb-2"
           >
-            {ah.displayDate} {"\u2013"} Revision {ah.revisionNumber}{" "}
+            {formatTimestamp(ah.date)} {"\u2013"} Revision {ah.revisionNumber}{" "}
             {ah.displayText} {ah.actorName ? <> by {ah.actorName}</> : null}
           </div>
         ))}
