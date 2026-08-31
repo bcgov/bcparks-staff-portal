@@ -1,5 +1,6 @@
 import "../env.js";
-import { Park, Season } from "../models/index.js";
+import { Park } from "../models/index.js";
+import { getCurrentDateCollectionYear } from "../utils/operatingYearHelper.js";
 
 import * as SEASON_TYPE from "../constants/seasonType.js";
 import importStrapiSections from "./import-sections/import-sections.js";
@@ -34,49 +35,29 @@ export async function syncData(transaction) {
   await importStrapiFeatureTypes(transaction);
   await importStrapiFeatures(transaction);
 
-  // Run scripts to create seasons, winter seasons, and gate details
-
-  // get the current season and the current winter season from the db
-  const currentSeason = await Season.findOne({
-    where: { seasonType: SEASON_TYPE.REGULAR },
-    order: [["operatingYear", "DESC"]],
+  // Run script to create seasons
+  const currentDateCollectionYear = await getCurrentDateCollectionYear(
+    SEASON_TYPE.REGULAR,
     transaction,
-  });
+  );
 
-  // The currentSeasonYear is one less than the greatest operatingYear for regular season.
-  // This is because placeholders for group sites and picnic shelters for the next year exist in the database
-  // (which have a much longer booking window), but the current regular season year is still considered
-  // the year for which campsite dates are being entered.
-  const currentSeasonYear = currentSeason
-    ? currentSeason.operatingYear - 1
-    : new Date().getFullYear();
+  // last year
+  await createSeasons(currentDateCollectionYear - 1, transaction);
+  // current year
+  await createSeasons(currentDateCollectionYear, transaction);
 
-  if (currentSeasonYear) {
-    // run it for last year so we handle fall edge cases where two seasons are active at once
-    await createSeasons(currentSeasonYear - 1, transaction);
-    // run it for the current season year
-    await createSeasons(currentSeasonYear, transaction);
-  }
-
-  const currentWinterSeason = await Season.findOne({
-    where: { seasonType: SEASON_TYPE.WINTER },
-    order: [["operatingYear", "DESC"]],
+  // Run script to create winter seasons
+  const currentWinterDateCollectionYear = await getCurrentDateCollectionYear(
+    SEASON_TYPE.WINTER,
     transaction,
-  });
+  );
 
-  // Picnic shelters and group sites don't have winter seasons so we don't need to subtract 1
-  const currentWinterSeasonYear = currentWinterSeason
-    ? currentWinterSeason.operatingYear
-    : new Date().getFullYear();
+  // last year
+  await createWinterSeasons(currentWinterDateCollectionYear - 1, transaction);
+  // current year
+  await createWinterSeasons(currentWinterDateCollectionYear, transaction);
 
-  if (currentWinterSeason) {
-    // last year
-    await createWinterSeasons(currentWinterSeasonYear - 1, transaction);
-    // current year
-    await createWinterSeasons(currentWinterSeason.operatingYear, transaction);
-  }
-
-  // create gate details for parks, park areas, and features
+  // Run script to create gate details
   await createGateDetails(transaction);
 }
 
