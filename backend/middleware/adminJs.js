@@ -78,6 +78,7 @@ function getSeasonActions() {
           {
             where: {
               status: STATUS.REQUESTED,
+              seasonType: SEASON_TYPE.REGULAR,
               operatingYear: {
                 [Op.lt]: currentYear,
               },
@@ -85,33 +86,31 @@ function getSeasonActions() {
           },
         );
 
-        // check if today is over May 1st
+        // Winter operatingYears are based on the Fall/December year; We don't mark
+        // winter seasons as 'not provided' until May 1st of the following spring
         const today = new Date();
-        const may1 = new Date(today.getFullYear(), 4, 1);
+        const may1 = new Date(`${today.getFullYear()}-05-01`);
 
-        let winterSeasonsUpdated = 0;
+        // check if today is over May 1st
+        const winterCutoffYear = today >= may1 ? currentYear : currentYear - 1;
 
-        // After After May 1st, all winter seasons for the current year shouldn't be editable
-        // so we update their status to "not provided"
-        if (today > may1) {
-          const [winterUpdatedCount] = await Season.update(
-            {
-              status: STATUS.NOT_PROVIDED,
-              editable: false,
-            },
-            {
-              where: {
-                status: STATUS.REQUESTED,
-                seasonType: SEASON_TYPE.WINTER,
-                operatingYear: currentYear,
+        const [winterUpdatedCount] = await Season.update(
+          {
+            status: STATUS.NOT_PROVIDED,
+            editable: false,
+          },
+          {
+            where: {
+              status: STATUS.REQUESTED,
+              seasonType: SEASON_TYPE.WINTER,
+              operatingYear: {
+                [Op.lt]: winterCutoffYear,
               },
             },
-          );
+          },
+        );
 
-          winterSeasonsUpdated = winterUpdatedCount;
-        }
-
-        const totalUpdatedCount = updatedCount + winterSeasonsUpdated;
+        const totalUpdatedCount = updatedCount + winterUpdatedCount;
 
         return {
           notice: {
