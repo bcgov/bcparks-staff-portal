@@ -206,8 +206,33 @@ export default function AdvisoryHistory({
               }
             });
 
-            advisoriesHistory.sort(advisoryHistoryCompare);
-            setAdvisoryHistory([...advisoriesHistory]);
+            // Sort in the opposite order of the display order to prepare for duplicate removal
+            advisoriesHistory.sort((a, b) => advisoryHistoryCompare(b, a));
+
+            function normalizeDisplayText(text) {
+              return text === "updated and published" ? "updated" : text;
+            }
+
+            function isSameEvent(event1, event2) {
+              return (
+                normalizeDisplayText(event1.displayText) ===
+                  normalizeDisplayText(event2.displayText) &&
+                event1.actorName === event2.actorName &&
+                event1.displayDate === event2.displayDate
+              );
+            }
+
+            const uniqueAdvisoryHistory = [];
+
+            // Remove duplicates, keeping the lowest revision number
+            advisoriesHistory.forEach((ah) => {
+              if (!uniqueAdvisoryHistory.some((uah) => isSameEvent(uah, ah))) {
+                uniqueAdvisoryHistory.push(ah);
+              }
+            });
+
+            // Reverse the array to have the most recent first for display purposes
+            setAdvisoryHistory([...uniqueAdvisoryHistory.reverse()]);
           }
         },
       );
