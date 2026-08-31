@@ -500,7 +500,11 @@ router.get(
               ],
               required: false,
 
-              where: { active: true, hasDates: true },
+              where: {
+                active: true,
+                hasDates: true,
+                parkAreaId: null, // Only get Features not in a Park Area
+              },
 
               include: [
                 {
