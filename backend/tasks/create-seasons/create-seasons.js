@@ -24,11 +24,44 @@ import {
   createPublishableId,
   createDateableId,
 } from "../../utils/seasonHelpers.js";
+import { getCurrentDateCollectionYear } from "../../utils/operatingYearHelper.js";
 
 export default async function createSeasons(operatingYear, transaction = null) {
-  if (isNaN(operatingYear)) {
+  if (!Number.isInteger(operatingYear)) {
     console.info("Usage example: npm run create-seasons 2027");
     throw new Error("Missing operating year");
+  }
+
+  const currentRegularCollectionYear = await getCurrentDateCollectionYear(
+    SEASON_TYPE.REGULAR,
+    transaction,
+  );
+
+  const currentWinterCollectionYear = await getCurrentDateCollectionYear(
+    SEASON_TYPE.WINTER,
+    transaction,
+  );
+
+  // only the current date collection year, the previous year, and the next year are
+  // valid for season creation
+  if (
+    operatingYear < currentRegularCollectionYear - 1 ||
+    operatingYear > currentRegularCollectionYear + 1
+  ) {
+    throw new Error(
+      `Invalid operating year ${operatingYear}. Must be between ${
+        currentRegularCollectionYear - 1
+      } and ${currentRegularCollectionYear + 1}`,
+    );
+  }
+
+  // the regular collection year can only be one more than the winter collection year
+  if (operatingYear > currentWinterCollectionYear + 1) {
+    throw new Error(
+      `Invalid operating year ${operatingYear}. Regular seasons cannot be created beyond ${
+        currentWinterCollectionYear + 1
+      } (current winter collection year is ${currentWinterCollectionYear})`,
+    );
   }
 
   console.log(`STARTING CREATE-SEASONS FOR OPERATING YEAR ${operatingYear}\n`);
