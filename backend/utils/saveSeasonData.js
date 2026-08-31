@@ -176,6 +176,8 @@ export async function saveSeasonData({
   if (!isWinterSeason && gateDetail) {
     gateDetailToSave = {
       ...gateDetail,
+      // If gateDetail was created between form load and submission, reuse the existing id for upsert.
+      id: gateDetail?.id ?? oldGateDetail?.id,
       publishableId: season.publishableId,
     };
 
