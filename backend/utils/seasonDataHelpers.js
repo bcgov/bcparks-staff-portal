@@ -90,8 +90,8 @@ export async function getDateRangeAnnuals(publishableId) {
 }
 
 /**
- * Returns all GateDetails for a given publishableId.
- * @param {number} publishableId The ID of the Publishable to get GateDetail
+ * Returns the GateDetail for a given publishableId.
+ * @param {number} publishableId The ID of the Publishable to get the GateDetail
  * @param {Transaction} [transaction=null] Optional Sequelize transaction object
  * @returns {Promise<Object|null>} GateDetail model, or null if not found
  */
