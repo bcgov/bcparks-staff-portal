@@ -3,6 +3,7 @@ import { SeasonChangeLog } from "../models/index.js";
 import * as STATUS from "../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../constants/seasonType.js";
 import getCurrentSeasonIds from "./getCurrentSeasonIds.js";
+import { getCurrentDateCollectionYear } from "./operatingYearHelper.js";
 
 /**
  * Returns which reservation-system coverage applies to this season.
@@ -333,6 +334,24 @@ export async function resolveSeasonApprovalState({
       oldGateDetail,
       gateDetail,
     });
+
+  // Check if the season is historical (past operating year) and if so, do not
+  // require team-approval workflow.
+  const currentDateCollectionYear = await getCurrentDateCollectionYear(
+    season.seasonType,
+  );
+
+  if (season.operatingYear < currentDateCollectionYear) {
+    const approvedStatuses = new Set([STATUS.APPROVED, STATUS.PUBLISHED]);
+
+    return {
+      resolvedStatus: requestedNewStatus,
+      informationSvcApproved: approvedStatuses.has(requestedNewStatus),
+      reservationSvcApproved: approvedStatuses.has(requestedNewStatus),
+      requiresInformationSvcApproval: false,
+      requiresReservationSvcApproval: false,
+    };
+  }
 
   // Start with values from the DB (prior team approvals may already exist)
   let informationSvcApproved = season.informationSvcApproved;
