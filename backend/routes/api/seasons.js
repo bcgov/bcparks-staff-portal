@@ -698,7 +698,7 @@ router.post(
 
       if (requestedNewStatus !== newStatus) {
         diagnostics.push(
-          `New season status changed from "${requestedNewStatus}" to "${newStatus}" based on approval rules.`,
+          `Requested season status changed from "${requestedNewStatus}" to "${newStatus}" based on approval rules.`,
         );
       }
       // If readyToPublish is null or undefined, set it to the current value
