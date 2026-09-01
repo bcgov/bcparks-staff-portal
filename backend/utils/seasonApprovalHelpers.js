@@ -361,6 +361,11 @@ export async function resolveSeasonApprovalState({
 
     // Do not advance the workflow until every required team approval is satisfied.
     resolvedStatus = hasAllRequiredApprovals ? STATUS.APPROVED : season.status;
+  } else if (requestedNewStatus !== STATUS.PUBLISHED) {
+    // If the user is not approving or publishing the season,
+    // reset the team approval flags to false, since the season is being modified.
+    informationSvcApproved = false;
+    reservationSvcApproved = false;
   }
 
   return {
