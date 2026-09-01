@@ -28,7 +28,6 @@ export function checkSeasonExists(season) {
 
 /**
  * Updates the status of a Season.
- * If "save" is true, it will first save the changes to the Season.
  * @param {number} seasonId The ID of the season to update
  * @param {string} status The new status to set for the season
  * @param {boolean} savedWithErrors Whether the form was submitted with validation errors
