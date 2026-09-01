@@ -32,9 +32,9 @@ export function checkSeasonExists(season) {
  * @param {string} status The new status to set for the season
  * @param {boolean} savedWithErrors Whether the form was submitted with validation errors
  * @param {Object} [options={}] Optional season state updates
- * @param {boolean} [options.readyToPublish=null] New readyToPublish value to set; pass null to leave the existing value unchanged
- * @param {boolean} [options.informationSvcApproved=null] New Information Services approval value; pass null to leave the existing value unchanged
- * @param {boolean} [options.reservationSvcApproved=null] New Reservation Services approval value; pass null to leave the existing value unchanged
+ * @param {boolean|null} [options.readyToPublish=null] New readyToPublish value to set; pass null to leave the existing value unchanged
+ * @param {boolean|null} [options.informationSvcApproved=null] New Information Services approval value; pass null to leave the existing value unchanged
+ * @param {boolean|null} [options.reservationSvcApproved=null] New Reservation Services approval value; pass null to leave the existing value unchanged
  * @param {Transaction} [options.transaction=null] Optional Sequelize transaction object for atomic operations
  * @returns {Promise<Season>} The updated season model
  */
