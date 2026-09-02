@@ -690,10 +690,10 @@ router.post(
       });
 
       diagnostics.push(
-        `IS approval required: ${requiresInformationSvcApproval}; Approved: ${informationSvcApproved}`,
+        `IS approval - Needed: ${requiresInformationSvcApproval}; Approved: ${informationSvcApproved}`,
       );
       diagnostics.push(
-        `RS approval required: ${requiresReservationSvcApproval}; Approved: ${reservationSvcApproved}`,
+        `RS approval - Needed: ${requiresReservationSvcApproval}; Approved: ${reservationSvcApproved}`,
       );
 
       if (requestedNewStatus !== newStatus) {
