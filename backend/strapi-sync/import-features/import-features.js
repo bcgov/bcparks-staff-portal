@@ -173,7 +173,7 @@ export default async function importStrapiFeatures(transaction = null) {
         hasBackcountryPermits: hasBackcountryPermits ?? false,
         hasWinterFeeDates: hasWinterFee ?? false,
         hasDates: hasDates ?? false,
-        datesCanSpan2Years,
+        datesCanSpan2Years: datesCanSpan2Years ?? false,
         parkId,
         parkAreaId,
         featureTypeId,
