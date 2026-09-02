@@ -100,6 +100,7 @@ const MODEL_CONFIG = {
     endpoint: "/management-areas",
     populate: {
       section: { fields: ["id", "sectionNumber"] },
+      staffContacts: { fields: ["email", "title", "isActive"] },
     },
   },
   "park-feature-type": {
