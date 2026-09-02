@@ -139,11 +139,19 @@ function getSeasonActions() {
 
           season.status = STATUS.REQUESTED;
           season.readyToPublish = true;
+          season.informationSvcApproved = false;
+          season.reservationSvcApproved = false;
           season.updatedAt = null;
 
           // updatedAt can only be set to null if we call save(), not with bulkUpdate
           await season.save({
-            fields: ["status", "readyToPublish", "updatedAt"],
+            fields: [
+              "status",
+              "readyToPublish",
+              "informationSvcApproved",
+              "reservationSvcApproved",
+              "updatedAt",
+            ],
           });
 
           // set startDate and endDate to null for every daterange in this season

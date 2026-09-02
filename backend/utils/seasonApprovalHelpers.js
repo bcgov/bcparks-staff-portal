@@ -340,7 +340,8 @@ export async function resolveSeasonApprovalState({
   let resolvedStatus = requestedNewStatus;
 
   // APPROVED status can only be set if all required team approvals are satisfied.
-  // Any other status can be set without team approvals, and will not change the approval flags.
+  // Any other status besides APPROVED or PUBLISHED resets both approval flags to false,
+  // since the season is assumed to be reopened for edits rather than being approved.
   if (requestedNewStatus === STATUS.APPROVED) {
     // Record a team's approval whenever that team submits APPROVED.
     // This stores approver history even when that team's approval is not required for status promotion.
@@ -361,6 +362,11 @@ export async function resolveSeasonApprovalState({
 
     // Do not advance the workflow until every required team approval is satisfied.
     resolvedStatus = hasAllRequiredApprovals ? STATUS.APPROVED : season.status;
+  } else if (requestedNewStatus !== STATUS.PUBLISHED) {
+    // If the user is not approving or publishing the season,
+    // reset the team approval flags to false, since the season is being modified.
+    informationSvcApproved = false;
+    reservationSvcApproved = false;
   }
 
   return {

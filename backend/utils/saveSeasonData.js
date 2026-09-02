@@ -28,14 +28,13 @@ export function checkSeasonExists(season) {
 
 /**
  * Updates the status of a Season.
- * If "save" is true, it will first save the changes to the Season.
  * @param {number} seasonId The ID of the season to update
  * @param {string} status The new status to set for the season
  * @param {boolean} savedWithErrors Whether the form was submitted with validation errors
  * @param {Object} [options={}] Optional season state updates
- * @param {boolean} [options.readyToPublish=null] Optionally provide a new readyToPublish value to set
- * @param {boolean} [options.informationSvcApproved=null] Optional Information Services approval value to set
- * @param {boolean} [options.reservationSvcApproved=null] Optional Reservation Services approval value to set
+ * @param {boolean|null} [options.readyToPublish=null] New readyToPublish value to set; pass null to leave the existing value unchanged
+ * @param {boolean|null} [options.informationSvcApproved=null] New Information Services approval value; pass null to leave the existing value unchanged
+ * @param {boolean|null} [options.reservationSvcApproved=null] New Reservation Services approval value; pass null to leave the existing value unchanged
  * @param {Transaction} [options.transaction=null] Optional Sequelize transaction object for atomic operations
  * @returns {Promise<Season>} The updated season model
  */
@@ -91,8 +90,8 @@ export async function updateStatus(
  * @param {Object|null} params.oldGateDetail Existing gate detail object before save
  * @param {Array} params.deletedDateRangeIds Array of date range IDs to delete
  * @param {string} params.newStatus New status for the season
- * @param {boolean} params.informationSvcApproved Resolved Information Services team approval value
- * @param {boolean} params.reservationSvcApproved Resolved Reservation Services team approval value
+ * @param {boolean} params.informationSvcApproved Resolved Information Services team approval value, passed through to updateStatus unchanged
+ * @param {boolean} params.reservationSvcApproved Resolved Reservation Services team approval value, passed through to updateStatus unchanged
  * @param {boolean|null} params.newReadyToPublish New readyToPublish value
  * @param {string} params.notes Notes for the change log
  * @param {boolean} params.savedWithErrors Whether the form was submitted with validation errors
