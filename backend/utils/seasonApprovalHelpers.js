@@ -290,7 +290,8 @@ export async function getRequiredApprovalsForSeason({
   const { anyInReservationSystem, anyNotInReservationSystem } =
     getSeasonReservationCoverage(season);
 
-  // If a park area has any features in the reservation system, RS approval is required for the area season.
+  // RS approval is required when reservation-system coverage applies,
+  // including park-area features with mixed coverage.
   if (anyInReservationSystem) requiresReservationSvcApproval = true;
 
   // Park-level Winter fee seasons require RS approval.
@@ -301,7 +302,8 @@ export async function getRequiredApprovalsForSeason({
   // Park-level Winter fee seasons always require RS approval, but never require IS approval.
   // Even if the park has a gate, the gate information is only checked on regular seasons.
   if (!isWinterSeason(season)) {
-    // If a park area has any features NOT in the reservation system, IS approval is required for the area season.
+    // IS approval is required when non-reservation-system coverage applies,
+    // including park-area features with mixed coverage.
     if (anyNotInReservationSystem) {
       requiresInformationSvcApproval = true;
     }
