@@ -1281,7 +1281,7 @@ export default function AdvisoryDashboard({
   return (
     <div className="advisory-dashboard-page-wrap advisories-styles layout landing-page-tabs">
       <header className="section-tabs d-flex flex-column">
-        <div className="container">
+        <div className="container-fluid">
           <h1 className="title m-3 mb-4">Advisories and closures</h1>
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
