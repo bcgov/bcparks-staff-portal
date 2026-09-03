@@ -8,7 +8,7 @@ import { formatDateShortWithYear } from "@/lib/utils";
 import { useApiGet } from "@/hooks/useApi";
 
 // Formats createdAt date
-// e.g. "2024-06-20T18:25:43.511Z" -> "Thu, Jun 20"
+// e.g. "2024-06-20T18:25:43.511Z" -> "Thu, Jun 20, 2024"
 function formatCreatedAt(value) {
   if (!value) return "Unknown date";
 
