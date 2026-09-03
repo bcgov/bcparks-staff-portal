@@ -4,7 +4,7 @@ import classNames from "classnames";
 import Accordion from "react-bootstrap/Accordion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fa-kit/icons/classic/solid";
-import { formatDateShort } from "@/lib/utils";
+import { formatDateShortWithYear } from "@/lib/utils";
 import { useApiGet } from "@/hooks/useApi";
 
 // Formats createdAt date
@@ -16,7 +16,7 @@ function formatCreatedAt(value) {
 
   if (Number.isNaN(date.valueOf())) return "Unknown date";
 
-  return formatDateShort(date);
+  return formatDateShortWithYear(date);
 }
 
 export default function InternalNotesRow({ seasonId }) {
