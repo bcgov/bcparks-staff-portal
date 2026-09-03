@@ -291,9 +291,15 @@ async function fetchAndMapSeasonNotes(seasonIds) {
  * @param {Object} feature Feature instance with id, dateableId, seasons, etc.
  * @param {Array<Object>} seasons Parent seasons array to filter from
  * @param {boolean} [includeCurrentSeason=true] Whether to include computed currentSeason
+ * @param {Map<number, boolean|null>} [hasGateByPublishableId=new Map()] Publishable ID -> hasGate lookup map
  * @returns {Object} Formatted feature with id, name, seasons, groupedDateRanges, etc.
  */
-function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
+function buildFeatureOutput(
+  feature,
+  seasons,
+  includeCurrentSeason = true,
+  hasGateByPublishableId = new Map(),
+) {
   // filter seasons if dateRange's dateableId matches feature's dateableId
   const filteredSeasons = (seasons || [])
     // first, filter seasons that have at least one matching dateRange
@@ -338,6 +344,7 @@ function buildFeatureOutput(feature, seasons, includeCurrentSeason = true) {
     hasWinterFeeDates: feature.hasWinterFeeDates,
     inReservationSystem: feature.inReservationSystem,
     datesCanSpan2Years: feature.datesCanSpan2Years,
+    hasGate: hasGateByPublishableId.get(feature.publishableId) ?? null,
     featureType: {
       id: feature.featureType.id,
       name: feature.featureType.name,
@@ -417,13 +424,13 @@ function addSeasonChangelogMetadata(
  * Adds hasNotes and lastUpdated from the provided maps.
  * @param {Object} parkArea ParkArea instance with seasons, features, parkAreaType
  * @param {Map<number, boolean>} seasonNotesMap seasonId -> hasNotes lookup map
- * @param {Map<number, Object>} [lastUpdatedMap=new Map()] seasonId -> lastUpdated lookup map
+ * @param {Map<number, boolean|null>} [hasGateByPublishableId=new Map()] Publishable ID -> hasGate lookup map
  * @returns {Object} Formatted park area with id, name, features, seasons, currentSeason, etc.
  */
 function buildParkAreaOutput(
   parkArea,
   seasonNotesMap,
-  lastUpdatedMap = new Map(),
+  hasGateByPublishableId = new Map(),
 ) {
   // get date ranges for parkArea
   const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
@@ -452,13 +459,13 @@ function buildParkAreaOutput(
     name: parkArea.name,
     inReservationSystem: parkArea.inReservationSystem,
     hasWinterFeeDates: parkArea.hasWinterFeeDates,
+    hasGate: hasGateByPublishableId.get(parkArea.publishableId) ?? null,
     features: parkArea.features.map((feature) =>
       buildFeatureOutput(
         feature,
         parkArea.seasons,
         false,
-        seasonNotesMap,
-        lastUpdatedMap,
+        hasGateByPublishableId,
       ),
     ),
     featureTypes,
@@ -555,7 +562,6 @@ router.get(
     });
 
     const parkIds = parks.map((park) => park.id);
-    const publishableIds = parks.map((park) => park.publishableId);
 
     // Query 2: Fetch ParkAreas with their Features and Seasons for the Parks in the main query
     const parkAreasQuery = ParkArea.findAll({
@@ -599,20 +605,15 @@ router.get(
       ],
     });
 
-    // Query 3: Fetch GateDetails for the Parks in the main query
-    const gateDetailsQuery = GateDetail.findAll({
+    // Query 3: Fetch hasGate values; stale records are ignored by the lookup map.
+    const hasGateQuery = GateDetail.findAll({
       attributes: ["publishableId", "hasGate"],
-      where: {
-        publishableId: {
-          [Op.in]: publishableIds,
-        },
-      },
     });
 
-    // Fetch ParkAreas and GateDetails in parallel
-    const [parkAreas, allGateDetails] = await Promise.all([
+    // Fetch ParkAreas and hasGate values in parallel
+    const [parkAreas, hasGateRows] = await Promise.all([
       parkAreasQuery,
-      gateDetailsQuery,
+      hasGateQuery,
     ]);
 
     // Merge ParkAreas back into the main query results by parkId
@@ -705,11 +706,11 @@ router.get(
       gateRemovedRows.map((row) => row.seasonId),
     );
 
-    // Build lookup map for GateDetails by publishableId
-    const gateDetailMap = new Map();
+    // Build hasGate lookup map by publishableId.
+    const hasGateByPublishableId = new Map();
 
-    allGateDetails.forEach((gate) => {
-      gateDetailMap.set(gate.publishableId, gate.hasGate);
+    hasGateRows.forEach(({ publishableId, hasGate }) => {
+      hasGateByPublishableId.set(publishableId, hasGate);
     });
 
     // Build lookup map for lastUpdated by seasonId
@@ -742,7 +743,8 @@ router.get(
           dateRange.dateType?.dateTypeNumber === DATE_TYPE.WINTER_FEE,
       );
       // Get hasGate for park
-      const parkHasGate = gateDetailMap.get(park.publishableId) ?? null;
+      const parkHasGate =
+        hasGateByPublishableId.get(park.publishableId) ?? null;
 
       return {
         id: park.id,
@@ -766,12 +768,11 @@ router.get(
             feature,
             feature.seasons,
             true,
-            seasonNotesMap,
-            lastUpdatedMap,
+            hasGateByPublishableId,
           ),
         ),
         parkAreas: park.parkAreas.map((parkArea) =>
-          buildParkAreaOutput(parkArea, seasonNotesMap, lastUpdatedMap),
+          buildParkAreaOutput(parkArea, seasonNotesMap, hasGateByPublishableId),
         ),
         // Build park-level seasons array with all seasons. Metadata (hasNotes, lastUpdated)
         // will be added in post-processing for current seasons only.

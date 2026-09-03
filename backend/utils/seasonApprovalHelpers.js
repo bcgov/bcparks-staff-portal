@@ -205,6 +205,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
             inReservationSystem: feature.inReservationSystem,
           })),
         },
+        gateDetail: { hasGate: parkArea.hasGate },
         gateRemovedSeasonIds,
       };
 
@@ -217,6 +218,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
     park.features.forEach((feature) => {
       const featureContext = {
         feature: { inReservationSystem: feature.inReservationSystem },
+        gateDetail: { hasGate: feature.hasGate },
         gateRemovedSeasonIds,
       };
 
