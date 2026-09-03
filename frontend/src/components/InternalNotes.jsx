@@ -3,7 +3,7 @@ import classNames from "classnames";
 
 import ErrorSlot from "@/components/ValidationErrorSlot";
 
-import { formatDateShort } from "@/lib/utils";
+import { formatDateShortWithYear } from "@/lib/utils";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 import "./InternalNotes.scss";
@@ -32,7 +32,7 @@ function InternalNotes({
             <br />
 
             <span className="note-metadata">
-              {formatDateShort(previousNote.createdAt)} by{" "}
+              {formatDateShortWithYear(previousNote.createdAt)} by{" "}
               {previousNote.user.name}
             </span>
           </p>
