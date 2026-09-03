@@ -23,6 +23,7 @@ import * as DATE_TYPE from "../../constants/dateType.js";
 import getDateTypeDisplayName from "../../utils/getDateTypeDisplayName.js";
 import {
   getSeasonReservationCoverage,
+  isFeatureWinterSeason,
   isWinterSeason,
 } from "../../utils/seasonApprovalHelpers.js";
 
@@ -123,6 +124,11 @@ function seasonRequiresInformationSvcApproval(season) {
  * @returns {boolean} True when RS team approval is required
  */
 function seasonRequiresReservationSvcApproval(season) {
+  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return false;
+  }
+
   const { anyInReservationSystem } = getSeasonReservationCoverage(season);
 
   // RS team approval is required if inReservationSystem is true for any dates
