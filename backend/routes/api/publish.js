@@ -21,11 +21,11 @@ import { checkPermissions } from "../../middleware/permissions.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 
 import * as STATUS from "../../constants/seasonStatus.js";
-import strapiApi from "../../utils/strapiApi.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as FEATURE_TYPE from "../../constants/featureType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
+import { queueStrapiTask } from "../../utils/strapiTaskQueue.js";
 
 const router = Router();
 
@@ -764,12 +764,10 @@ router.post(
     // Send each chunk to the Strapi API with a brief delay
     for (const [index, chunk] of publishDataChunks.entries()) {
       // Send chunk of publish data to Strapi API
-      await strapiApi.post("/queued-tasks", {
-        data: {
-          action: "doot publish",
-          numericData,
-          jsonData: chunk,
-        },
+      await queueStrapiTask({
+        action: "doot publish",
+        numericData,
+        jsonData: chunk,
       });
 
       // Sleep if there are more chunks remaining
