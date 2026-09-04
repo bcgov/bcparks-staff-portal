@@ -69,13 +69,22 @@ export async function hasGateRemoved(seasonId) {
 }
 
 /**
+ * Returns whether a season is a Winter fee season at any level.
+ * @param {Season} season Season object
+ * @returns {boolean} True when the season type is Winter
+ */
+export function isWinterSeason(season) {
+  return season?.seasonType === SEASON_TYPE.WINTER;
+}
+
+/**
  * Returns whether a season is a Winter fee season at Feature level.
  * @param {Season} season Season object with park/parkArea/feature associations
  * @returns {boolean} True when the season is Winter and not park-level
  */
 export function isFeatureWinterSeason(season) {
   return (
-    season?.seasonType === SEASON_TYPE.WINTER &&
+    isWinterSeason(season) &&
     (Boolean(season?.parkArea) || Boolean(season?.feature))
   );
 }
@@ -86,8 +95,9 @@ export function isFeatureWinterSeason(season) {
  * @returns {boolean} True when IS team approval is required
  */
 export function seasonRequiresInformationSvcApproval(season) {
-  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
-  if (isFeatureWinterSeason(season)) {
+  // Winter fee seasons never require Information Services team approval.
+  // Even if the park has a gate, the gate information is only checked on regular seasons.
+  if (isWinterSeason(season)) {
     return false;
   }
 
@@ -129,7 +139,7 @@ export function seasonRequiresReservationSvcApproval(season) {
   if (anyInReservationSystem) return true;
 
   // RS team approval is required for Park-level Winter fee seasons
-  if (season.park && season.seasonType === SEASON_TYPE.WINTER) {
+  if (season.park && isWinterSeason(season)) {
     return true;
   }
 
@@ -206,6 +216,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
             inReservationSystem: feature.inReservationSystem,
           })),
         },
+        gateDetail: { hasGate: parkArea.hasGate },
         gateRemovedSeasonIds,
       };
 
@@ -218,6 +229,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
     park.features.forEach((feature) => {
       const featureContext = {
         feature: { inReservationSystem: feature.inReservationSystem },
+        gateDetail: { hasGate: feature.hasGate },
         gateRemovedSeasonIds,
       };
 
@@ -266,7 +278,6 @@ export async function getRequiredApprovalsForSeason({
   gateDetail,
 }) {
   // Feature/Area Winter fee seasons are system-derived and bypass team approvals.
-  // Park-level Winter fee seasons still follow approval workflow.
   if (isFeatureWinterSeason(season)) {
     return {
       requiresInformationSvcApproval: false,
@@ -280,24 +291,35 @@ export async function getRequiredApprovalsForSeason({
   const { anyInReservationSystem, anyNotInReservationSystem } =
     getSeasonReservationCoverage(season);
 
+  // RS approval is required when reservation-system coverage applies,
+  // including park-area features with mixed coverage.
   if (anyInReservationSystem) requiresReservationSvcApproval = true;
-  if (anyNotInReservationSystem) requiresInformationSvcApproval = true;
 
   // Park-level Winter fee seasons require RS approval.
-  if (season.park && season.seasonType === SEASON_TYPE.WINTER) {
+  if (season.park && isWinterSeason(season)) {
     requiresReservationSvcApproval = true;
   }
 
-  // IS approval required if hasGate is currently true, or is being removed in this save.
-  if (requiresGateApproval(oldGateDetail, gateDetail)) {
-    requiresInformationSvcApproval = true;
-  }
-
-  // IS approval required if hasGate was ever removed in a previous save.
-  // Skip the query if IS approval is already determined.
-  if (!requiresInformationSvcApproval && season.id) {
-    if (await hasGateRemoved(season.id)) {
+  // Park-level Winter fee seasons always require RS approval, but never require IS approval.
+  // Even if the park has a gate, the gate information is only checked on regular seasons.
+  if (!isWinterSeason(season)) {
+    // IS approval is required when non-reservation-system coverage applies,
+    // including park-area features with mixed coverage.
+    if (anyNotInReservationSystem) {
       requiresInformationSvcApproval = true;
+    }
+
+    // IS approval required if hasGate is currently true, or is being removed in this save.
+    if (requiresGateApproval(oldGateDetail, gateDetail)) {
+      requiresInformationSvcApproval = true;
+    }
+
+    // IS approval required if hasGate was ever removed in a previous save.
+    // Skip the query if IS approval is already determined.
+    if (!requiresInformationSvcApproval && season.id) {
+      if (await hasGateRemoved(season.id)) {
+        requiresInformationSvcApproval = true;
+      }
     }
   }
 
