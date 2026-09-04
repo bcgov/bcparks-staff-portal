@@ -602,6 +602,10 @@ router.get(
     ]);
 
     const rows = dateRanges
+      // Filter out area- or feature-level winter fee dates.
+      // These are system-derived and not relevant for the export.
+      .filter(({ season }) => !isFeatureWinterSeason(season))
+
       // Format into a flat array for CSV output
       .map((dateRange) => {
         const { season } = dateRange;
