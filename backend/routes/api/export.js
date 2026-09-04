@@ -424,7 +424,7 @@ router.get(
     ];
 
     // Query for all DateRanges for the given operating year
-    const dateRanges = await DateRange.findAll({
+    const dateRangesPromise = DateRange.findAll({
       attributes: ["id", "startDate", "endDate", "dateableId", "dateTypeId"],
 
       include: [
@@ -594,13 +594,25 @@ router.get(
       ],
     });
 
-    const dateRangeAnnuals = await getDateRangeAnnualsMap();
+    // Run queries in parallel to improve performance
+    const [dateRanges, dateRangeAnnuals] = await Promise.all([
+      dateRangesPromise,
+      // Query for all DateRangeAnnual records to get the isDateRangeAnnual value for each DateRange
+      getDateRangeAnnualsMap(),
+    ]);
 
     const rows = dateRanges
       // Format into a flat array for CSV output
       .map((dateRange) => {
         const { season } = dateRange;
         const { gateDetail } = season;
+
+        // Skip area- or feature-level winter fee dates.
+        // These are system-derived and not relevant for the export.
+        if (isFeatureWinterSeason(season)) {
+          return null;
+        }
+
         const park = getPark(season);
 
         // Skip this row if park is null.
