@@ -420,18 +420,12 @@ function addSeasonChangelogMetadata(
 }
 
 /**
- * Formats park area output with features, seasons, and metadata.
- * Adds hasNotes and lastUpdated from the provided maps.
+ * Formats park area output with features, seasons, and current-season data.
  * @param {Object} parkArea ParkArea instance with seasons, features, parkAreaType
- * @param {Map<number, boolean>} seasonNotesMap seasonId -> hasNotes lookup map
  * @param {Map<number, boolean|null>} [hasGateByPublishableId=new Map()] Publishable ID -> hasGate lookup map
  * @returns {Object} Formatted park area with id, name, features, seasons, currentSeason, etc.
  */
-function buildParkAreaOutput(
-  parkArea,
-  seasonNotesMap,
-  hasGateByPublishableId = new Map(),
-) {
+function buildParkAreaOutput(parkArea, hasGateByPublishableId = new Map()) {
   // get date ranges for parkArea
   const parkAreaDateRanges = getAllDateRanges(parkArea.seasons);
 
@@ -772,7 +766,7 @@ router.get(
           ),
         ),
         parkAreas: park.parkAreas.map((parkArea) =>
-          buildParkAreaOutput(parkArea, seasonNotesMap, hasGateByPublishableId),
+          buildParkAreaOutput(parkArea, hasGateByPublishableId),
         ),
         // Build park-level seasons array with all seasons. Metadata (hasNotes, lastUpdated)
         // will be added in post-processing for current seasons only.
