@@ -5,6 +5,43 @@ import { Section, ManagementArea } from "../../models/index.js";
 import { getStrapiModelData } from "../strapi-data-service.js";
 
 /**
+ * Selects one active Staff Contact email for a Management Area.
+ * Staff Contacts retain Strapi's manually defined relationship order. The first
+ * contact matching a title in the ordered priority list is selected; otherwise,
+ * the first active contact in the relationship list is selected. Only the
+ * selected email is returned as a string.
+ * @param {Array} staffContacts Staff Contacts from Strapi
+ * @returns {string|null} Selected primary contact email
+ */
+function getPrimaryContactEmail(staffContacts = []) {
+  // Job title substrings are checked in priority order; find() preserves Strapi relationship order.
+  const jobTitleSubstringPriority = [
+    "area supervisor",
+    "section head",
+    "operations manager",
+    "regional director",
+    "executive director",
+  ];
+
+  const activeStaffContacts = staffContacts.filter(
+    (contact) => contact.isActive === true,
+  );
+
+  const primaryContact =
+    jobTitleSubstringPriority
+      .map((fragment) =>
+        activeStaffContacts.find((contact) =>
+          contact.title?.toLowerCase().includes(fragment),
+        ),
+      )
+      .find(Boolean) ||
+    activeStaffContacts[0] ||
+    null;
+
+  return primaryContact?.email || null;
+}
+
+/**
  * Imports/updates ManagementArea records from Strapi management area data by matching managementAreaNumber
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Object>} Object containing counts of created and updated records
@@ -53,7 +90,8 @@ export default async function importStrapiManagementAreas(transaction = null) {
     let unchangedCount = 0;
 
     for (const strapiManagementArea of strapiManagementAreas) {
-      const { managementAreaName, managementAreaNumber } = strapiManagementArea;
+      const { managementAreaName, managementAreaNumber, staffContacts } =
+        strapiManagementArea;
 
       if (!managementAreaNumber) {
         console.warn(
@@ -82,6 +120,7 @@ export default async function importStrapiManagementAreas(transaction = null) {
         name: managementAreaName,
         managementAreaNumber,
         sectionId,
+        email: getPrimaryContactEmail(staffContacts),
       };
 
       if (matchedMgmtArea) {
