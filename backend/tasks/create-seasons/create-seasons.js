@@ -193,21 +193,14 @@ export default async function createSeasons(operatingYear, transaction = null) {
 
   // Step 1: Create new regular Seasons for every Park
 
-  // Get all the Parks with Features
+  // Get all active Parks
   const parks = await Park.findAll({
     attributes: ["id", "name", "publishableId", "dateableId", "hasTier2Dates"],
-    include: [
-      {
-        model: Feature,
-        as: "features",
-        required: true,
-        where: { active: true, hasDates: true },
-      },
-    ],
+    where: { hasDates: true },
     transaction,
   });
 
-  console.log(`Found ${parks.length} Parks with Features`);
+  console.log(`Found ${parks.length} active Parks`);
 
   // Get the Tier 2 DateType
   const tier2DateType = await DateType.findOne({
