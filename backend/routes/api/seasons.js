@@ -672,7 +672,7 @@ router.post(
       // and the season change log written later in this same transaction.
       const oldGateDetail = isWinterSeason
         ? null
-        : await getGateDetail(season.publishableId);
+        : await getGateDetail(season.publishableId, transaction);
 
       const { resolvedStatus, informationSvcApproved, reservationSvcApproved } =
         await resolveSeasonApprovalState({

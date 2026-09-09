@@ -17,6 +17,7 @@ import {
   Season,
 } from "../../models/index.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
+import * as FEATURE_TYPE from "../../constants/featureType.js";
 import { populateAnnualDateRangesForYear } from "../populate-date-ranges/populate-annual-date-ranges.js";
 import { populateBlankDateRangesForYear } from "../populate-date-ranges/populate-blank-date-ranges.js";
 import resolveSeasonCreationStatus from "../../utils/resolveSeasonCreationStatus.js";
@@ -193,21 +194,14 @@ export default async function createSeasons(operatingYear, transaction = null) {
 
   // Step 1: Create new regular Seasons for every Park
 
-  // Get all the Parks with Features
+  // Get all active Parks
   const parks = await Park.findAll({
     attributes: ["id", "name", "publishableId", "dateableId", "hasTier2Dates"],
-    include: [
-      {
-        model: Feature,
-        as: "features",
-        required: true,
-        where: { active: true, hasDates: true },
-      },
-    ],
+    where: { hasDates: true },
     transaction,
   });
 
-  console.log(`Found ${parks.length} Parks with Features`);
+  console.log(`Found ${parks.length} active Parks`);
 
   // Get the Tier 2 DateType
   const tier2DateType = await DateType.findOne({
@@ -391,8 +385,8 @@ export default async function createSeasons(operatingYear, transaction = null) {
       required: true,
 
       where: {
-        name: {
-          [Op.in]: ["Group campground", "Picnic shelter"],
+        featureTypeNumber: {
+          [Op.in]: [FEATURE_TYPE.GROUP_CAMPGROUND, FEATURE_TYPE.PICNIC_SHELTER],
         },
       },
     },

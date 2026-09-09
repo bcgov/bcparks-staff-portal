@@ -20,9 +20,12 @@ import {
   GateDetail,
 } from "../../models/index.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
-import * as SEASON_TYPE from "../../constants/seasonType.js";
 import getDateTypeDisplayName from "../../utils/getDateTypeDisplayName.js";
-import { getSeasonReservationCoverage } from "../../utils/seasonApprovalHelpers.js";
+import {
+  getSeasonReservationCoverage,
+  isFeatureWinterSeason,
+  isWinterSeason,
+} from "../../utils/seasonApprovalHelpers.js";
 
 const router = Router();
 
@@ -89,6 +92,10 @@ router.get(
  * @returns {boolean} True when IS team approval is required
  */
 function seasonRequiresInformationSvcApproval(season) {
+  // Winter fee seasons never require Information Services team approval.
+  // Even if the park has a gate, the gate information is only checked on regular seasons.
+  if (isWinterSeason(season)) return false;
+
   const { anyNotInReservationSystem } = getSeasonReservationCoverage(season);
 
   // IS team approval is required if inReservationSystem is false for any dates
@@ -117,13 +124,18 @@ function seasonRequiresInformationSvcApproval(season) {
  * @returns {boolean} True when RS team approval is required
  */
 function seasonRequiresReservationSvcApproval(season) {
+  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
+  if (isFeatureWinterSeason(season)) {
+    return false;
+  }
+
   const { anyInReservationSystem } = getSeasonReservationCoverage(season);
 
   // RS team approval is required if inReservationSystem is true for any dates
   if (anyInReservationSystem) return true;
 
   // RS team approval is required for Park-level Winter fee seasons
-  if (season.park && season.seasonType === SEASON_TYPE.WINTER) {
+  if (season.park && isWinterSeason(season)) {
     return true;
   }
 
@@ -644,7 +656,7 @@ router.get(
 
         // Skip non-winter fee dates for winter seasons
         if (
-          season.seasonType === SEASON_TYPE.WINTER &&
+          isWinterSeason(season) &&
           dateRange.dateType.dateTypeNumber !== DATE_TYPE.WINTER_FEE
         ) {
           return null;

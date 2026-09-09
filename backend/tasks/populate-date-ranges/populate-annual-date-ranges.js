@@ -2,16 +2,20 @@
 // based on previous year's DateRanges if isDateRangeAnnual is TRUE.
 
 import "../../env.js";
-import { addYears, format, getYear, parse } from "date-fns";
+import { addYears, format, getYear, parseISO } from "date-fns";
+import { Op } from "sequelize";
 
 import {
   Season,
   DateRange,
   DateRangeAnnual,
   DateType,
+  Feature,
+  FeatureType,
 } from "../../models/index.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as FEATURE_TYPE from "../../constants/featureType.js";
 import resolveSeasonCreationStatus from "../../utils/resolveSeasonCreationStatus.js";
 
 // Functions
@@ -41,7 +45,42 @@ export async function populateAnnualDateRangesForYear(
       transaction,
     });
 
-    const dateRangesToCreate = [];
+    // build a lookup set of dateableIds for features with 12-month
+    // booking windows (Group Campgrounds and Picnic Shelters).
+    const twelveMonthBookingDateableIds = new Set(
+      (
+        await Feature.findAll({
+          attributes: ["dateableId"],
+          where: {
+            inReservationSystem: true,
+            dateableId: {
+              [Op.in]: [
+                ...new Set(annuals.map(({ dateableId }) => dateableId)),
+              ],
+            },
+          },
+          include: [
+            {
+              model: FeatureType,
+              as: "featureType",
+              attributes: [],
+              required: true,
+              where: {
+                featureTypeNumber: {
+                  [Op.in]: [
+                    FEATURE_TYPE.GROUP_CAMPGROUND,
+                    FEATURE_TYPE.PICNIC_SHELTER,
+                  ],
+                },
+              },
+            },
+          ],
+          transaction,
+        })
+      ).map(({ dateableId }) => dateableId),
+    );
+
+    const dateRangesToCreate = new Map();
 
     for (const annual of annuals) {
       const { id, publishableId, dateTypeId, dateableId, dateType } = annual;
@@ -58,10 +97,15 @@ export async function populateAnnualDateRangesForYear(
           ? SEASON_TYPE.WINTER
           : SEASON_TYPE.REGULAR;
 
+      // For features with 12-month booking windows, populate the next operating year.
+      const adjustedTargetYear = twelveMonthBookingDateableIds.has(dateableId)
+        ? targetYear + 1
+        : targetYear;
+
       const prevSeason = await Season.findOne({
         where: {
           publishableId,
-          operatingYear: targetYear - 1,
+          operatingYear: adjustedTargetYear - 1,
           seasonType,
         },
         transaction,
@@ -95,7 +139,7 @@ export async function populateAnnualDateRangesForYear(
       let targetSeason = await Season.findOne({
         where: {
           publishableId,
-          operatingYear: targetYear,
+          operatingYear: adjustedTargetYear,
           seasonType: prevSeason.seasonType,
         },
         transaction,
@@ -114,7 +158,7 @@ export async function populateAnnualDateRangesForYear(
         targetSeason = await Season.create(
           {
             publishableId,
-            operatingYear: targetYear,
+            operatingYear: adjustedTargetYear,
             status,
             readyToPublish: true,
             seasonType: prevSeason.seasonType,
@@ -148,27 +192,20 @@ export async function populateAnnualDateRangesForYear(
         transaction,
       });
 
-      // Only compare against complete target ranges
-      const completeTargetRanges = existingTargetDateRanges.filter(
-        (range) => range.startDate && range.endDate,
-      );
+      // If there are any complete target ranges, skip copying for this dateable+dateType
+      if (
+        existingTargetDateRanges.some(
+          (range) => range.startDate && range.endDate,
+        )
+      ) {
+        continue;
+      }
 
-      // Copy only date ranges that are missing in target season.
-      // Compare by transformed target-year start/end values rather than by index.
-      const existingTargetRangeKeys = new Set(
-        completeTargetRanges.map(
-          (range) => `${range.startDate}|${range.endDate}`,
-        ),
-      );
-
-      for (const prevRange of completePrevRanges) {
+      // transform previous ranges into the target operating year
+      const transformedRanges = completePrevRanges.map((prevRange) => {
         const currentYear = targetSeason.operatingYear;
-        const prevStartDate = parse(
-          prevRange.startDate,
-          "yyyy-MM-dd",
-          new Date(),
-        );
-        const prevEndDate = parse(prevRange.endDate, "yyyy-MM-dd", new Date());
+        const prevStartDate = parseISO(prevRange.startDate);
+        const prevEndDate = parseISO(prevRange.endDate);
 
         // Shift this previous range into the target operating year while preserving
         // the start/end year relationship for cross-year ranges.
@@ -177,32 +214,51 @@ export async function populateAnnualDateRangesForYear(
         const newStartDate = addYears(prevStartDate, targetYearOffset);
         const newEndDate = addYears(prevEndDate, targetYearOffset);
 
-        const newStartDateStr = format(newStartDate, "yyyy-MM-dd");
-        const newEndDateStr = format(newEndDate, "yyyy-MM-dd");
-        const rangeKey = `${newStartDateStr}|${newEndDateStr}`;
-
-        // Skip ranges that already exist in target season after year transformation.
-        if (existingTargetRangeKeys.has(rangeKey)) continue;
-
-        existingTargetRangeKeys.add(rangeKey);
-
-        dateRangesToCreate.push({
+        return {
           dateableId,
           seasonId: targetSeason.id,
           dateTypeId,
-          startDate: newStartDateStr,
-          endDate: newEndDateStr,
-        });
+          startDate: format(newStartDate, "yyyy-MM-dd"),
+          endDate: format(newEndDate, "yyyy-MM-dd"),
+        };
+      });
 
-        console.log(
-          `Copied DateRange from season ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${publishableId}`,
+      // validatate the transformed ranges for date overlaps so we don't insert bad data
+      const rangeGroupKey = `${targetSeason.id}:${dateableId}:${dateTypeId}`;
+      const rangeGroup = dateRangesToCreate.get(rangeGroupKey) ?? [];
+      const rangesToValidate = [...rangeGroup, ...transformedRanges];
+      const hasOverlappingRanges = rangesToValidate.some((range, index) =>
+        rangesToValidate
+          .slice(index + 1)
+          .some(
+            (otherRange) =>
+              range.startDate <= otherRange.endDate &&
+              range.endDate >= otherRange.startDate,
+          ),
+      );
+
+      // Skip the entire group if any source range overlaps another range.
+      if (hasOverlappingRanges) {
+        console.warn(
+          `Skipping ${transformedRanges.length} annual DateRange(s) for dateTypeId=${dateTypeId} from ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${publishableId} due to overlapping dates.`,
         );
+        dateRangesToCreate.delete(rangeGroupKey);
+        continue;
       }
+
+      rangeGroup.push(...transformedRanges);
+      dateRangesToCreate.set(rangeGroupKey, rangeGroup);
+
+      console.log(
+        `Copied ${transformedRanges.length} annual DateRange(s) for dateTypeId=${dateTypeId} from ${prevSeason.operatingYear} to ${targetSeason.operatingYear} for publishableId=${publishableId}`,
+      );
     }
 
-    if (dateRangesToCreate.length > 0) {
-      await DateRange.bulkCreate(dateRangesToCreate, { transaction });
-      console.log(`Created ${dateRangesToCreate.length} new DateRanges.`);
+    const newDateRanges = [...dateRangesToCreate.values()].flat();
+
+    if (newDateRanges.length > 0) {
+      await DateRange.bulkCreate(newDateRanges, { transaction });
+      console.log(`Created ${newDateRanges.length} new DateRanges.`);
     } else {
       console.log("No new DateRanges to create.");
     }
