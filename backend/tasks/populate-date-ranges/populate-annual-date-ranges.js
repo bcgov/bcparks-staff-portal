@@ -52,6 +52,7 @@ export async function populateAnnualDateRangesForYear(
         await Feature.findAll({
           attributes: ["dateableId"],
           where: {
+            inReservationSystem: true,
             dateableId: {
               [Op.in]: [
                 ...new Set(annuals.map(({ dateableId }) => dateableId)),
