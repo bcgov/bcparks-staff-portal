@@ -674,21 +674,31 @@ router.post(
         ? null
         : await getGateDetail(season.publishableId, transaction);
 
-      const { resolvedStatus, informationSvcApproved, reservationSvcApproved } =
-        await resolveSeasonApprovalState({
-          season,
-          requestedNewStatus,
-          oldGateDetail,
-          gateDetail: isWinterSeason ? null : gateDetail,
-          isInformationSvcApprover,
-          isReservationSvcApprover,
-        });
+      const {
+        resolvedStatus: newStatus,
+        informationSvcApproved,
+        reservationSvcApproved,
+        requiresInformationSvcApproval,
+        requiresReservationSvcApproval,
+      } = await resolveSeasonApprovalState({
+        season,
+        requestedNewStatus,
+        oldGateDetail,
+        gateDetail: isWinterSeason ? null : gateDetail,
+        isInformationSvcApprover,
+        isReservationSvcApprover,
+      });
 
-      const newStatus = resolvedStatus;
+      diagnostics.push(
+        `IS approval - Needed: ${requiresInformationSvcApproval}; Approved: ${informationSvcApproved}`,
+      );
+      diagnostics.push(
+        `RS approval - Needed: ${requiresReservationSvcApproval}; Approved: ${reservationSvcApproved}`,
+      );
 
       if (requestedNewStatus !== newStatus) {
         diagnostics.push(
-          `Season status changed from "${requestedNewStatus}" to "${newStatus}" based on approval rules.`,
+          `Requested season status changed from "${requestedNewStatus}" to "${newStatus}" based on approval rules.`,
         );
       }
       // If readyToPublish is null or undefined, set it to the current value
