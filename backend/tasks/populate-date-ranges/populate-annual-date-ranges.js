@@ -3,15 +3,19 @@
 
 import "../../env.js";
 import { addYears, format, getYear, parseISO } from "date-fns";
+import { Op } from "sequelize";
 
 import {
   Season,
   DateRange,
   DateRangeAnnual,
   DateType,
+  Feature,
+  FeatureType,
 } from "../../models/index.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
+import * as FEATURE_TYPE from "../../constants/featureType.js";
 import resolveSeasonCreationStatus from "../../utils/resolveSeasonCreationStatus.js";
 
 // Functions
@@ -41,6 +45,40 @@ export async function populateAnnualDateRangesForYear(
       transaction,
     });
 
+    // build a lookup set of dateableIds for features with 12-month
+    // booking windows (Group Campgrounds and Picnic Shelters).
+    const twelveMonthBookingDateableIds = new Set(
+      (
+        await Feature.findAll({
+          attributes: ["dateableId"],
+          where: {
+            dateableId: {
+              [Op.in]: [
+                ...new Set(annuals.map(({ dateableId }) => dateableId)),
+              ],
+            },
+          },
+          include: [
+            {
+              model: FeatureType,
+              as: "featureType",
+              attributes: [],
+              required: true,
+              where: {
+                featureTypeNumber: {
+                  [Op.in]: [
+                    FEATURE_TYPE.GROUP_CAMPGROUND,
+                    FEATURE_TYPE.PICNIC_SHELTER,
+                  ],
+                },
+              },
+            },
+          ],
+          transaction,
+        })
+      ).map(({ dateableId }) => dateableId),
+    );
+
     const dateRangesToCreate = new Map();
 
     for (const annual of annuals) {
@@ -58,10 +96,15 @@ export async function populateAnnualDateRangesForYear(
           ? SEASON_TYPE.WINTER
           : SEASON_TYPE.REGULAR;
 
+      // For features with 12-month booking windows, populate the next operating year.
+      const adjustedTargetYear = twelveMonthBookingDateableIds.has(dateableId)
+        ? targetYear + 1
+        : targetYear;
+
       const prevSeason = await Season.findOne({
         where: {
           publishableId,
-          operatingYear: targetYear - 1,
+          operatingYear: adjustedTargetYear - 1,
           seasonType,
         },
         transaction,
@@ -95,7 +138,7 @@ export async function populateAnnualDateRangesForYear(
       let targetSeason = await Season.findOne({
         where: {
           publishableId,
-          operatingYear: targetYear,
+          operatingYear: adjustedTargetYear,
           seasonType: prevSeason.seasonType,
         },
         transaction,
@@ -114,7 +157,7 @@ export async function populateAnnualDateRangesForYear(
         targetSeason = await Season.create(
           {
             publishableId,
-            operatingYear: targetYear,
+            operatingYear: adjustedTargetYear,
             status,
             readyToPublish: true,
             seasonType: prevSeason.seasonType,
