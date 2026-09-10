@@ -449,6 +449,15 @@ async function formatDateRanges(entity, season) {
 
   // Transform date ranges to API format
   return dateRangesRows.map((dateRange) => {
+    const hasStartDate = Boolean(dateRange.startDate);
+    const hasEndDate = Boolean(dateRange.endDate);
+
+    if (hasStartDate !== hasEndDate) {
+      throw new Error(
+        `Cannot publish partial DateRange ${dateRange.id} for season ${season.id}.`,
+      );
+    }
+
     // Look for a matching DateRangeAnnual entry for this date type
     let isDateAnnual = false;
     const dateRangeAnnualData = dateRangeAnnualsByDateType.get(
@@ -465,8 +474,8 @@ async function formatDateRanges(entity, season) {
       isDateAnnual,
       // null (a blank date) means the date was intentionally cleared in DOOT,
       // Strapi removes it rather than keeping a stale value.
-      startDate: dateRange.startDate ? formatDate(dateRange.startDate) : null,
-      endDate: dateRange.endDate ? formatDate(dateRange.endDate) : null,
+      startDate: hasStartDate ? formatDate(dateRange.startDate) : null,
+      endDate: hasEndDate ? formatDate(dateRange.endDate) : null,
       dateTypeId: dateRange.dateType.dateTypeNumber,
     };
   });
