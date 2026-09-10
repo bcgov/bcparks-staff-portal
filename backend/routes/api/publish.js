@@ -396,8 +396,7 @@ function formatDate(date) {
  * Fetches date ranges for an entity and season, and formats them for publishing.
  * @param {Object} entity The entity object (e.g., Park, Feature)
  * @param {Season} season The season object
- * @returns {Array} Array of formatted DateRange objects
- * @throws {Error} If no valid date ranges are found
+ * @returns {Array} Array of formatted DateRange objects (may be empty, e.g. hasGate=false with no tiers)
  */
 async function formatDateRanges(entity, season) {
   // Fetch all date ranges for this season
@@ -425,22 +424,11 @@ async function formatDateRanges(entity, season) {
     ],
   });
 
+  // No date ranges is a valid state (e.g. a park with hasGate=false and
+  // no tiers has no applicable date types), so publish an empty array rather
+  // than blocking the entity's whole publish (gate info, etc).
   if (dateRangesRows.length === 0) {
-    throw new Error(
-      `No date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}, dateableId: ${entity.dateableId}`,
-    );
-  }
-
-  // startDate and endDate must both be non-null to publish.
-  // If any empty or incomplete date ranges exist, we cannot publish.
-  const incompleteDateRange = dateRangesRows.some(
-    (dateRange) => !dateRange.startDate || !dateRange.endDate,
-  );
-
-  if (incompleteDateRange) {
-    throw new Error(
-      `Incomplete date ranges found for publishableId: ${season.publishableId}, seasonId: ${season.id}`,
-    );
+    return [];
   }
 
   // Get all the DateRangeAnnual data for this season/entity
@@ -475,8 +463,10 @@ async function formatDateRanges(entity, season) {
       id: dateRange.id,
       isActive: true, // Must be true if the entity has dates being published
       isDateAnnual,
-      startDate: formatDate(dateRange.startDate),
-      endDate: formatDate(dateRange.endDate),
+      // null (a blank date) means the date was intentionally cleared in DOOT,
+      // Strapi removes it rather than keeping a stale value.
+      startDate: dateRange.startDate ? formatDate(dateRange.startDate) : null,
+      endDate: dateRange.endDate ? formatDate(dateRange.endDate) : null,
       dateTypeId: dateRange.dateType.dateTypeNumber,
     };
   });
