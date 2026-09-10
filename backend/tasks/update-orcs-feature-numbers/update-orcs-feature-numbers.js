@@ -8,7 +8,10 @@ export default async function updateOrcsFeatureNumbers(transaction = null) {
   const strapiFeatures = await strapiApi.getAllPages(
     "/park-features",
     // We just need the ID and the featureId & orcsFeatureNumber attributes
-    { fields: ["featureId", "orcsFeatureNumber"] },
+    {
+      sort: ["id:asc"],
+      fields: ["featureId", "orcsFeatureNumber"],
+    },
   );
 
   // Convert to an entities structure of ID pairs for lookups
