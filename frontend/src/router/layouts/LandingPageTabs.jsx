@@ -30,7 +30,7 @@ export default function LandingPageTabs() {
   return (
     <div className="layout landing-page-tabs">
       <header className="section-tabs d-flex flex-column">
-        <div className="container">
+        <div className="container-fluid">
           <h1 className="m-3 mb-4">Dates management</h1>
 
           <ul className="nav nav-tabs px-2">
