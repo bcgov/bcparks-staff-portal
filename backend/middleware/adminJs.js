@@ -320,11 +320,17 @@ const jsonListComponent = componentLoader.add(
   "../components/JsonList",
 );
 
-const keyEditComponent = componentLoader.add("KeyEdit", "../components/KeyEdit");
+const keyEditComponent = componentLoader.add(
+  "KeyEdit",
+  "../components/KeyEdit",
+);
 
 /**
  * Adds nested JSONB values to AdminJS's flattened record params for custom components.
  * The original flattened params are preserved for AdminJS's normal record handling.
+ *
+ * IMPORTANT: JSON object keys must never contain a "." character; e.g. the key "a.b" would be
+ * unflattened into an unintended nested structure instead of a literal "a.b" key.
  * @param {Object} params AdminJS record params
  * @param {string[]} properties JSONB property names to restore as nested values
  * @returns {void} Modifies the `params` object in place, adding nested values for the specified properties.
