@@ -68,6 +68,22 @@ describe("emailNotifications.js", () => {
     });
   });
 
+  test("throws when a publishable has no named park", async (t) => {
+    for (const publishable of [
+      null,
+      { park: null },
+      { park: { id: 7, name: null } },
+      { park: { id: 7, name: undefined } },
+    ]) {
+      t.mock.method(Publishable, "findByPk", async () => publishable);
+
+      await assert.rejects(
+        getPublishableDetails(42),
+        new Error("Publishable must be associated with a named park"),
+      );
+    }
+  });
+
   test("queues normalized season details for draft review", async (t) => {
     t.mock.method(Publishable, "findByPk", async () => ({
       feature: {
@@ -120,6 +136,27 @@ describe("emailNotifications.js", () => {
     ]);
   });
 
+  test("throws without queuing when required season details are missing", async (t) => {
+    t.mock.method(strapiApi, "post", async () => ({ data: { id: 1 } }));
+
+    for (const season of [
+      null,
+      { seasonType: null, operatingYear: 2027 },
+      { seasonType: "regular", operatingYear: null },
+      { operatingYear: 2027 },
+      { seasonType: "regular" },
+      { seasonType: "", operatingYear: 2027 },
+      { seasonType: "regular", operatingYear: 0 },
+    ]) {
+      await assert.rejects(
+        queueDraftReviewEmail(season, { name: "Example Contributor" }, "test"),
+        new Error("Season must have a season type and operating year"),
+      );
+    }
+
+    assert.strictEqual(strapiApi.post.mock.calls.length, 0);
+  });
+
   test("returns false without queuing when no recipient email is found", async (t) => {
     t.mock.method(Publishable, "findByPk", async () => ({
       park: { id: 7, name: "Example Park" },
@@ -131,7 +168,12 @@ describe("emailNotifications.js", () => {
     t.mock.method(strapiApi, "post", async () => ({ data: { id: 1 } }));
 
     const emailQueued = await queueDraftReviewEmail(
-      { id: 42, publishableId: 99 },
+      {
+        id: 42,
+        publishableId: 99,
+        seasonType: SEASON_TYPE.REGULAR,
+        operatingYear: 2027,
+      },
       { name: "Example Contributor" },
       "routes::api::seasons::season-save",
     );
