@@ -4,9 +4,11 @@ function JsonEdit(props) {
   const { property, record, onChange } = props;
 
   // get current value
-  const rawValue = record.params[property.path] || "";
+  const rawValue = record.params[property.path] ?? "";
   const initial =
-    typeof rawValue === "object" ? JSON.stringify(rawValue, null, 2) : rawValue;
+    typeof rawValue === "object"
+      ? JSON.stringify(rawValue, null, 2)
+      : String(rawValue);
 
   const [value, setValue] = useState(initial);
   const [error, setError] = useState("");
@@ -48,8 +50,19 @@ function JsonEdit(props) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <label htmlFor={property.path} style={{ fontWeight: "bold" }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", marginBottom: "1rem" }}
+    >
+      <label
+        htmlFor={property.path}
+        style={{
+          display: "block",
+          fontFamily: "Roboto, sans-serif",
+          fontSize: "12px",
+          lineHeight: "16px",
+          marginBottom: "8px",
+        }}
+      >
         {property.label}
       </label>
       <textarea
@@ -58,6 +71,8 @@ function JsonEdit(props) {
         onChange={handleChange}
         rows={10}
         style={{
+          fontFamily: "monospace",
+          background: "#f9f9f9",
           padding: "8px",
           border: error ? "1px solid red" : "1px solid #ccc",
           borderRadius: "4px",

@@ -20,6 +20,7 @@ import UserAccessGroupModel from "./useraccessgroup.js";
 import AccessGroupParkModel from "./accessgrouppark.js";
 import SeasonChangeLogModel from "./seasonchangelog.js";
 import DateChangeLogModel from "./datechangelog.js";
+import AppSettingModel from "./appsetting.js";
 
 // Junction tables with ID columns
 const Dateable = DateableModel(sequelize);
@@ -46,6 +47,7 @@ const AccessGroupPark = AccessGroupParkModel(sequelize);
 
 const SeasonChangeLog = SeasonChangeLogModel(sequelize);
 const DateChangeLog = DateChangeLogModel(sequelize);
+const AppSetting = AppSettingModel(sequelize);
 
 const models = {
   Dateable,
@@ -68,6 +70,7 @@ const models = {
   AccessGroupPark,
   SeasonChangeLog,
   DateChangeLog,
+  AppSetting,
 };
 
 Object.values(models).forEach((model) => {
@@ -97,4 +100,5 @@ export {
   AccessGroup,
   UserAccessGroup,
   AccessGroupPark,
+  AppSetting,
 };

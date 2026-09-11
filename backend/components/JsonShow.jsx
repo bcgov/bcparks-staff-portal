@@ -6,7 +6,7 @@ function JsonShow(props) {
   let displayValue = "—";
 
   try {
-    if (rawValue) {
+    if (rawValue !== null && typeof rawValue !== "undefined") {
       // Handle case where admin js gives back a stringified json
       const parsed =
         typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;

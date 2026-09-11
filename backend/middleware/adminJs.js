@@ -32,6 +32,7 @@ import {
   DateChangeLog,
   UserAccessGroup,
   AccessGroupPark,
+  AppSetting,
 } from "../models/index.js";
 
 import { connectionConfig } from "../db/connection.js";
@@ -314,6 +315,54 @@ const jsonEditComponent = componentLoader.add(
   "../components/JsonEdit",
 );
 
+const jsonListComponent = componentLoader.add(
+  "JsonList",
+  "../components/JsonList",
+);
+
+/**
+ * Adds nested JSONB values to AdminJS's flattened record params for custom components.
+ * The original flattened params are preserved for AdminJS's normal record handling.
+ * @param {Object} params AdminJS record params
+ * @param {string[]} properties JSONB property names to restore as nested values
+ * @returns {void} Modifies the `params` object in place, adding nested values for the specified properties.
+ */
+function normalizeJsonProperties(params, properties) {
+  const unflattened = flat.unflatten(params);
+
+  for (const property of properties) {
+    if (Object.hasOwn(unflattened, property)) {
+      params[property] = unflattened[property];
+    }
+  }
+}
+
+/**
+ * Parses JSON values marked by the custom editor before AdminJS persists a payload.
+ * @param {Object} payload AdminJS edit payload
+ * @param {string[]} [properties] Payload keys to process; defaults to all keys
+ * @returns {Object} A copy of the payload with marked JSON values parsed
+ */
+function parseMarkedJsonValues(payload, properties = Object.keys(payload)) {
+  const processedPayload = { ...payload };
+
+  for (const property of properties) {
+    const value = processedPayload[property];
+
+    if (typeof value === "string" && value.startsWith("__JSON_STRING__")) {
+      try {
+        processedPayload[property] = JSON.parse(
+          value.replace("__JSON_STRING__", ""),
+        );
+      } catch (err) {
+        console.error("Failed to parse JSON string:", err);
+      }
+    }
+  }
+
+  return processedPayload;
+}
+
 const GateDetailResource = {
   resource: GateDetail,
   options: {
@@ -335,10 +384,19 @@ const GateDetailResource = {
           show: nullableBooleanComponent,
         },
       },
+    },
+  },
+};
+
+const SeasonChangeLogResource = {
+  resource: SeasonChangeLog,
+  options: {
+    properties: {
       gateDetailOldValue: {
         isVisible: { list: true, filter: true, show: true, edit: true },
         type: "mixed",
         components: {
+          list: jsonListComponent,
           show: jsonShowComponent,
           edit: jsonEditComponent,
         },
@@ -347,8 +405,107 @@ const GateDetailResource = {
         isVisible: { list: true, filter: true, show: true, edit: true },
         type: "mixed",
         components: {
+          list: jsonListComponent,
           show: jsonShowComponent,
           edit: jsonEditComponent,
+        },
+      },
+    },
+    actions: {
+      list: {
+        async after(response) {
+          response.records?.forEach((record) => {
+            if (record.params) {
+              normalizeJsonProperties(record.params, [
+                "gateDetailOldValue",
+                "gateDetailNewValue",
+              ]);
+            }
+          });
+          return response;
+        },
+      },
+      show: {
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return response;
+        },
+      },
+      edit: {
+        async before(request) {
+          if (request.payload) {
+            request.payload = parseMarkedJsonValues(request.payload, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return response;
+        },
+      },
+    },
+  },
+};
+
+const AppSettingResource = {
+  resource: AppSetting,
+  options: {
+    properties: {
+      key: { isId: true, isTitle: true },
+      value: {
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        type: "mixed",
+        components: {
+          list: jsonListComponent,
+          show: jsonShowComponent,
+          edit: jsonEditComponent,
+        },
+      },
+    },
+    actions: {
+      list: {
+        async after(response) {
+          response.records?.forEach((record) => {
+            if (record.params) {
+              normalizeJsonProperties(record.params, ["value"]);
+            }
+          });
+          return response;
+        },
+      },
+      show: {
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["value"]);
+          }
+          return response;
+        },
+      },
+      edit: {
+        async before(request) {
+          if (request.payload) {
+            request.payload = parseMarkedJsonValues(request.payload, ["value"]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["value"]);
+          }
+          return response;
         },
       },
     },
@@ -363,6 +520,7 @@ const ParkResource = {
         isVisible: { list: true, filter: true, show: true, edit: true },
         type: "mixed",
         components: {
+          list: jsonListComponent,
           show: jsonShowComponent,
           edit: jsonEditComponent,
         },
@@ -372,15 +530,22 @@ const ParkResource = {
       },
     },
     actions: {
+      list: {
+        async after(response) {
+          response.records?.forEach((record) => {
+            if (record.params) {
+              normalizeJsonProperties(record.params, ["managementAreas"]);
+            }
+          });
+          return response;
+        },
+      },
       show: {
         async after(response) {
           if (response.record?.params) {
-            const unflattened = flat.unflatten(response.record.params);
-
-            if (unflattened.managementAreas) {
-              response.record.params.managementAreas =
-                unflattened.managementAreas;
-            }
+            normalizeJsonProperties(response.record.params, [
+              "managementAreas",
+            ]);
           }
           return response;
         },
@@ -389,39 +554,22 @@ const ParkResource = {
         async before(request) {
           if (request.payload) {
             // Handle JSON string markers to preserve types
-            const processedPayload = { ...request.payload };
+            const processedPayload = parseMarkedJsonValues(request.payload);
 
-            for (const [key, value] of Object.entries(processedPayload)) {
-              if (
-                typeof value === "string" &&
-                value.startsWith("__JSON_STRING__")
-              ) {
-                const jsonString = value.replace("__JSON_STRING__", "");
+            normalizeJsonProperties(processedPayload, ["managementAreas"]);
 
-                try {
-                  processedPayload[key] = JSON.parse(jsonString);
-                } catch (err) {
-                  console.error("Failed to parse JSON string:", err);
-                }
-              }
-            }
-
-            const unflattened = flat.unflatten(processedPayload);
-
-            if (unflattened.managementAreas) {
-              request.payload.managementAreas = unflattened.managementAreas;
+            if (processedPayload.managementAreas) {
+              request.payload.managementAreas =
+                processedPayload.managementAreas;
             }
           }
           return request;
         },
         async after(response) {
           if (response.record?.params) {
-            const unflattened = flat.unflatten(response.record.params);
-
-            if (unflattened.managementAreas) {
-              response.record.params.managementAreas =
-                unflattened.managementAreas;
-            }
+            normalizeJsonProperties(response.record.params, [
+              "managementAreas",
+            ]);
           }
           return response;
         },
@@ -473,8 +621,9 @@ const adminOptions = {
     AccessGroupResource,
     UserAccessGroup,
     AccessGroupPark,
-    SeasonChangeLog,
+    SeasonChangeLogResource,
     DateChangeLog,
+    AppSettingResource,
   ],
   branding: {
     companyName: "BC Parks Staff Portal Admin",
