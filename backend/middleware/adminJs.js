@@ -363,6 +363,22 @@ function parseMarkedJsonValues(payload, properties = Object.keys(payload)) {
   return processedPayload;
 }
 
+/**
+ * Removes AdminJS's flattened dot-notation keys (e.g. "value.hasGate")
+ * for the given JSONB properties, so they can't overwrite the parsed
+ * object/array we've already reconstructed from the marked JSON string.
+ * @param {Object} payload AdminJS edit payload
+ * @param {string[]} properties JSONB property names to strip flattened keys for
+ * @returns {void} Modifies the `payload` object in place
+ */
+function stripFlattenedKeys(payload, properties) {
+  for (const key of Object.keys(payload)) {
+    if (properties.some((property) => key.startsWith(`${property}.`))) {
+      delete payload[key];
+    }
+  }
+}
+
 const GateDetailResource = {
   resource: GateDetail,
   options: {
@@ -443,6 +459,11 @@ const SeasonChangeLogResource = {
               "gateDetailOldValue",
               "gateDetailNewValue",
             ]);
+
+            stripFlattenedKeys(request.payload, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
           }
           return request;
         },
@@ -498,6 +519,8 @@ const AppSettingResource = {
         async before(request) {
           if (request.payload) {
             request.payload = parseMarkedJsonValues(request.payload, ["value"]);
+
+            stripFlattenedKeys(request.payload, ["value"]);
           }
           return request;
         },
@@ -562,6 +585,8 @@ const ParkResource = {
               request.payload.managementAreas =
                 processedPayload.managementAreas;
             }
+
+            stripFlattenedKeys(request.payload, ["managementAreas"]);
           }
           return request;
         },

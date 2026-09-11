@@ -4,14 +4,21 @@ function JsonEdit(props) {
   const { property, record, onChange } = props;
 
   // get current value
-  const rawValue = record.params[property.path] ?? "";
-  const initial =
-    typeof rawValue === "object"
-      ? JSON.stringify(rawValue, null, 2)
-      : String(rawValue);
+  const rawValue = record.params[property.path];
+  const hasValue = rawValue !== null && typeof rawValue !== "undefined";
+  // Stringify the value to preserve string quotes and output valid JSON
+  const initial = hasValue ? JSON.stringify(rawValue, null, 2) : "";
 
   const [value, setValue] = useState(initial);
   const [error, setError] = useState("");
+
+  // Register the marked initial value with AdminJS on mount, otherwise an
+  // untouched field falls back to AdminJS's default flattened form
+  // submission for this "mixed" property, which coerces values to strings.
+  useEffect(() => {
+    onChange(property.path, hasValue ? `__JSON_STRING__${initial}` : null);
+    // run once on mount only
+  }, []);
 
   useEffect(() => {
     try {

@@ -4,25 +4,24 @@ function JsonList(props) {
   const { property, record } = props;
 
   const rawValue = record.params[property.path];
+  const hasValue = rawValue !== null && typeof rawValue !== "undefined";
 
-  if (rawValue === null || typeof rawValue === "undefined") {
-    return <span>—</span>;
-  }
+  let displayValue = "—";
 
-  let compact;
-
-  try {
-    const parsed =
-      typeof rawValue === "string" ? JSON.parse(rawValue) : rawValue;
-
-    compact = JSON.stringify(parsed);
-  } catch (err) {
-    console.error("Failed to parse JSON:", err);
-    compact = String(rawValue);
+  if (hasValue) {
+    try {
+      // Format the raw value as a compact JSON string
+      displayValue = JSON.stringify(rawValue);
+    } catch (err) {
+      console.error("Failed to stringify JSON:", err);
+      displayValue = String(rawValue);
+    }
   }
 
   const truncated =
-    compact.length > MAX_LENGTH ? `${compact.slice(0, MAX_LENGTH)}…` : compact;
+    displayValue.length > MAX_LENGTH
+      ? `${displayValue.slice(0, MAX_LENGTH)}…`
+      : displayValue;
 
   return (
     <pre
