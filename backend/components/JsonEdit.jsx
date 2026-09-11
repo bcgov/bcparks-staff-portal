@@ -4,52 +4,56 @@ function JsonEdit(props) {
   const { property, record, onChange } = props;
 
   // get current value
-  const rawValue = record.params[property.path] || "";
-  const initial =
-    typeof rawValue === "object" ? JSON.stringify(rawValue, null, 2) : rawValue;
+  const rawValue = record.params[property.path];
+  // null is a valid JSON literal; only undefined means the property is absent.
+  const hasValue = typeof rawValue !== "undefined";
+  // Stringify the value to preserve string quotes and output valid JSON
+  const initial = hasValue ? JSON.stringify(rawValue, null, 2) : "";
 
   const [value, setValue] = useState(initial);
   const [error, setError] = useState("");
 
+  // Re-register when AdminJS replaces form values so untouched values
+  // are submitted with the correct JSON type.
   useEffect(() => {
+    if (value.trim() === "") {
+      onChange(property.path, null);
+      setError("");
+      return;
+    }
+
     try {
-      if (value.trim() !== "") {
-        JSON.parse(value);
-      }
+      // Validate before sending; mark the string so the server knows to
+      // JSON.parse it back instead of storing this literal marked text
+      JSON.parse(value);
+      onChange(property.path, `__JSON_STRING__${value}`);
       setError("");
     } catch (err) {
       console.error("JSON parse error:", err);
       setError("Invalid JSON");
     }
-  }, [value]);
+  }, [value, rawValue]);
 
   function handleChange(e) {
     const val = e.target.value;
 
     setValue(val);
-
-    try {
-      if (val.trim() === "") {
-        // Send null for empty values
-        onChange(property.path, null);
-        setError("");
-      } else {
-        // Parse to validate, but send as JSON string to preserve types
-        JSON.parse(val);
-
-        // Send the raw JSON string with a special marker
-        onChange(property.path, `__JSON_STRING__${val}`);
-        setError("");
-      }
-    } catch (err) {
-      // keep showing error until valid JSON
-      console.error("JSON parse error:", err);
-    }
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column" }}>
-      <label htmlFor={property.path} style={{ fontWeight: "bold" }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", marginBottom: "1rem" }}
+    >
+      <label
+        htmlFor={property.path}
+        style={{
+          display: "block",
+          fontFamily: "Roboto, sans-serif",
+          fontSize: "12px",
+          lineHeight: "16px",
+          marginBottom: "8px",
+        }}
+      >
         {property.label}
       </label>
       <textarea
@@ -58,6 +62,8 @@ function JsonEdit(props) {
         onChange={handleChange}
         rows={10}
         style={{
+          fontFamily: "monospace",
+          background: "#f9f9f9",
           padding: "8px",
           border: error ? "1px solid red" : "1px solid #ccc",
           borderRadius: "4px",
