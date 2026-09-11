@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { queueDraftReviewEmail } from "../../utils/emailNotifications.js";
+import { queueDraftReviewEmail } from "../../utils/email/taskQueuer.js";
 import _ from "lodash";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
