@@ -78,10 +78,20 @@ export async function getPublishableDetails(publishableId) {
 
   const managementAreas = await getParkManagementAreas(park?.id);
 
+  // get the form-type for the DOOT url
+  let seasonFormSlug = "park";
+
+  if (publishable?.parkArea) {
+    seasonFormSlug = "park-area";
+  } else if (publishable?.feature) {
+    seasonFormSlug = "feature";
+  }
+
   return {
     parkName: park.name,
     parkAreaName: publishable?.parkArea?.name || null,
     featureName: publishable?.feature?.name || null,
+    seasonFormSlug,
     recipientEmails: managementAreas
       .map((managementArea) => managementArea.email)
       .filter(Boolean),
@@ -101,8 +111,13 @@ export async function queueDraftReviewEmail(season, user, triggeredBy) {
   }
 
   const parkOperatorName = user?.name || null;
-  const { parkName, parkAreaName, featureName, recipientEmails } =
-    await getPublishableDetails(season.publishableId);
+  const {
+    seasonFormSlug,
+    parkName,
+    parkAreaName,
+    featureName,
+    recipientEmails,
+  } = await getPublishableDetails(season.publishableId);
 
   if (!recipientEmails.length) return false;
 
@@ -118,6 +133,9 @@ export async function queueDraftReviewEmail(season, user, triggeredBy) {
       recipientEmails,
       seasonType: season.seasonType,
       operatingYear: season.operatingYear,
+      seasonFormSlug,
+      seasonId: season.id,
+      isReminder: false,
       triggeredBy: `bcparks-staff-portal::backend::${triggeredBy}`,
     },
   });
