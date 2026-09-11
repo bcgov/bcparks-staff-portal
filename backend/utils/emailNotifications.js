@@ -72,10 +72,14 @@ export async function getPublishableDetails(publishableId) {
     publishable?.parkArea?.park ||
     publishable?.feature?.park;
 
+  if (!park || !park.name) {
+    throw new Error("Publishable must be associated with a named park");
+  }
+
   const managementAreas = await getParkManagementAreas(park?.id);
 
   return {
-    parkName: park?.name || null,
+    parkName: park.name,
     parkAreaName: publishable?.parkArea?.name || null,
     featureName: publishable?.feature?.name || null,
     recipientEmails: managementAreas
@@ -92,6 +96,10 @@ export async function getPublishableDetails(publishableId) {
  * @returns {Promise<boolean>} True when queued, otherwise false when no email exists
  */
 export async function queueDraftReviewEmail(season, user, triggeredBy) {
+  if (!season || !season.seasonType || !season.operatingYear) {
+    throw new Error("Season must have a season type and operating year");
+  }
+
   const parkOperatorName = user?.name || null;
   const { parkName, parkAreaName, featureName, recipientEmails } =
     await getPublishableDetails(season.publishableId);
@@ -108,8 +116,8 @@ export async function queueDraftReviewEmail(season, user, triggeredBy) {
       parkAreaName,
       featureName,
       recipientEmails,
-      seasonType: season?.seasonType || null,
-      operatingYear: season?.operatingYear || null,
+      seasonType: season.seasonType,
+      operatingYear: season.operatingYear,
       triggeredBy: `bcparks-staff-portal::backend::${triggeredBy}`,
     },
   });
