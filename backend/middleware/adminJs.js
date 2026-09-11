@@ -452,6 +452,31 @@ const SeasonChangeLogResource = {
           return response;
         },
       },
+      new: {
+        async before(request) {
+          if (request.payload) {
+            request.payload = parseMarkedJsonValues(request.payload, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+
+            stripFlattenedKeys(request.payload, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return response;
+        },
+      },
       edit: {
         async before(request) {
           if (request.payload) {
@@ -515,6 +540,22 @@ const AppSettingResource = {
           return response;
         },
       },
+      new: {
+        async before(request) {
+          if (request.payload) {
+            request.payload = parseMarkedJsonValues(request.payload, ["value"]);
+
+            stripFlattenedKeys(request.payload, ["value"]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["value"]);
+          }
+          return response;
+        },
+      },
       edit: {
         async before(request) {
           if (request.payload) {
@@ -564,6 +605,32 @@ const ParkResource = {
         },
       },
       show: {
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "managementAreas",
+            ]);
+          }
+          return response;
+        },
+      },
+      new: {
+        async before(request) {
+          if (request.payload) {
+            // Handle JSON string markers to preserve types
+            const processedPayload = parseMarkedJsonValues(request.payload);
+
+            normalizeJsonProperties(processedPayload, ["managementAreas"]);
+
+            if (processedPayload.managementAreas) {
+              request.payload.managementAreas =
+                processedPayload.managementAreas;
+            }
+
+            stripFlattenedKeys(request.payload, ["managementAreas"]);
+          }
+          return request;
+        },
         async after(response) {
           if (response.record?.params) {
             normalizeJsonProperties(response.record.params, [
