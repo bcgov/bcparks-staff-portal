@@ -1,5 +1,11 @@
 import { queueStrapiTask } from "./strapiTaskQueue.js";
-import { ManagementArea, Park, Publishable } from "../models/index.js";
+import {
+  Feature,
+  ManagementArea,
+  Park,
+  ParkArea,
+  Publishable,
+} from "../models/index.js";
 import { Op } from "sequelize";
 
 /**
@@ -45,16 +51,18 @@ export async function getParkManagementAreas(parkId) {
 export async function getPublishableDetails(publishableId) {
   const publishable = await Publishable.findByPk(publishableId, {
     include: [
-      { association: "park", attributes: ["id", "name"] },
+      { model: Park, as: "park", attributes: ["id", "name"] },
       {
-        association: "parkArea",
+        model: ParkArea,
+        as: "parkArea",
         attributes: ["name"],
-        include: [{ association: "park", attributes: ["id", "name"] }],
+        include: [{ model: Park, as: "park", attributes: ["id", "name"] }],
       },
       {
-        association: "feature",
+        model: Feature,
+        as: "feature",
         attributes: ["name"],
-        include: [{ association: "park", attributes: ["id", "name"] }],
+        include: [{ model: Park, as: "park", attributes: ["id", "name"] }],
       },
     ],
   });
