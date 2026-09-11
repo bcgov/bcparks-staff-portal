@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { queueDraftReviewEmail } from "../../utils/emailNotifications.js";
 import _ from "lodash";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
@@ -582,6 +583,10 @@ router.post(
     const userRoles = getRolesFromAuth(req.auth);
     const isApprover = checkUserRoles(userRoles, [USER_ROLES.APPROVER]);
     const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.SUBMITTER]);
+    const isOnlyContributor =
+      checkUserRoles(userRoles, [USER_ROLES.CONTRIBUTOR]) &&
+      !isSubmitter &&
+      !isApprover;
 
     // Check IS/RS team-specific approver roles
     const isInformationSvcApprover = checkUserRoles(userRoles, [
@@ -593,7 +598,7 @@ router.post(
 
     // Contributors can only save drafts. If the payload is trying to set status
     // to anything other than "requested", check if the user has permission.
-    if (status === STATUS.PENDING_REVIEW && !isSubmitter) {
+    if (status === STATUS.PENDING_REVIEW && isOnlyContributor) {
       const error = new Error(
         "Permission denied: You do not have permission to submit this season for review.",
       );
@@ -782,6 +787,43 @@ router.post(
 
       await transaction.commit();
 
+      // if the season was saved as draft by an only contributor, include a note in the response
+      if (isOnlyContributor && newStatus === STATUS.REQUESTED) {
+        // TODO: we will get settings from the AppSettings table later
+        const settings = {
+          notificationsEnabled: true,
+          areaSupervisorNotificationsEnabled: true,
+        };
+
+        if (
+          settings.notificationsEnabled &&
+          settings.areaSupervisorNotificationsEnabled
+        ) {
+          // Notify the regional staff member assigned to the Management Area.
+          try {
+            const emailQueued = await queueDraftReviewEmail(
+              season,
+              req.user,
+              "routes::api::seasons::season-save",
+            );
+
+            diagnostics.push(
+              emailQueued
+                ? `Email notification will be sent to the regional staff member assigned to the Management Area for Season ${season.id}.`
+                : `Email notification was not queued because no recipient email was found for Season ${season.id}.`,
+            );
+          } catch (error) {
+            console.error(
+              `Failed to queue email notification for Season ${season.id}:`,
+              error,
+            );
+            diagnostics.push(
+              `Email notification could not be queued for Season ${season.id}.`,
+            );
+          }
+        }
+      }
+
       const responsePayload = { message: "Season saved" };
 
       if (diagnostics.length > 0) {
@@ -790,7 +832,9 @@ router.post(
 
       res.status(200).json(responsePayload);
     } catch (error) {
-      await transaction.rollback();
+      if (!transaction.finished) {
+        await transaction.rollback();
+      }
       throw error; // Re-throw to let global error handler catch it
     }
   }),
