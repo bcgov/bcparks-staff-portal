@@ -4,7 +4,8 @@ function JsonList(props) {
   const { property, record } = props;
 
   const rawValue = record.params[property.path];
-  const hasValue = rawValue !== null && typeof rawValue !== "undefined";
+  // null is a valid JSON literal; only undefined means the property is absent.
+  const hasValue = typeof rawValue !== "undefined";
 
   let displayValue = "—";
 

@@ -2,8 +2,8 @@ function KeyEdit(props) {
   const { property, record, onChange } = props;
 
   const value = record.params[property.path] ?? "";
-  // Existing records already have an id; new (unsaved) ones don't
-  const isExistingRecord = Boolean(record.id);
+  // Timestamps exist only after Sequelize has persisted the setting.
+  const isExistingRecord = Boolean(record.params.createdAt);
 
   const labelStyle = {
     display: "block",
@@ -15,7 +15,7 @@ function KeyEdit(props) {
 
   if (isExistingRecord) {
     // The key is this record's primary key, so renaming it here would break
-    // the update lookup; show it read-only instead.
+    // AdminJS' update lookup; show it read-only for existing records instead.
     return (
       <div
         style={{

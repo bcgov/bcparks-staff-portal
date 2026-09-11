@@ -5,16 +5,16 @@ function JsonEdit(props) {
 
   // get current value
   const rawValue = record.params[property.path];
-  const hasValue = rawValue !== null && typeof rawValue !== "undefined";
+  // null is a valid JSON literal; only undefined means the property is absent.
+  const hasValue = typeof rawValue !== "undefined";
   // Stringify the value to preserve string quotes and output valid JSON
   const initial = hasValue ? JSON.stringify(rawValue, null, 2) : "";
 
   const [value, setValue] = useState(initial);
   const [error, setError] = useState("");
 
-  // Re-register the current (marked) value with AdminJS after every render,
-  // otherwise an untouched field can fall back to AdminJS's own default form
-  // submission for this "mixed" property, which coerces values to strings.
+  // Re-register when AdminJS replaces form values so untouched values
+  // are submitted with the correct JSON type.
   useEffect(() => {
     if (value.trim() === "") {
       onChange(property.path, null);
@@ -32,7 +32,7 @@ function JsonEdit(props) {
       console.error("JSON parse error:", err);
       setError("Invalid JSON");
     }
-  }, [value]);
+  }, [value, rawValue]);
 
   function handleChange(e) {
     const val = e.target.value;

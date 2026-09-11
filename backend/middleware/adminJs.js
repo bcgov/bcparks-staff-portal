@@ -348,10 +348,11 @@ function normalizeJsonProperties(params, properties) {
 /**
  * Parses JSON values marked by the custom editor before AdminJS persists a payload.
  * @param {Object} payload AdminJS edit payload
- * @param {string[]} [properties] Payload keys to process; defaults to all keys
+ * @param {string[]} properties Payload keys to process
+ * @param {BaseRecord} [record] Existing record used to recover untouched scalars
  * @returns {Object} A copy of the payload with marked JSON values parsed
  */
-function parseMarkedJsonValues(payload, properties = Object.keys(payload)) {
+function parseMarkedJsonValues(payload, properties, record) {
   const processedPayload = { ...payload };
 
   for (const property of properties) {
@@ -372,21 +373,15 @@ function parseMarkedJsonValues(payload, properties = Object.keys(payload)) {
       continue;
     }
 
-    // AdminJS's FormData submission stringifies untouched scalar values with
-    // no marker (e.g. `true` becomes the string "true"). Recover unambiguous
-    // JSON primitives here so they aren't persisted as plain strings.
-    try {
-      const parsed = JSON.parse(value);
+    const existingValue = record?.get(property);
 
-      if (
-        parsed === null ||
-        typeof parsed === "boolean" ||
-        typeof parsed === "number"
-      ) {
-        processedPayload[property] = parsed;
-      }
-    } catch {
-      // Not JSON-parseable, so it's a plain string value; leave it as-is
+    // Recover an unmarked scalar only when it exactly matches the stored
+    // value, preserving strings such as "1234" that resemble JSON numbers.
+    if (
+      typeof existingValue !== "string" &&
+      value === JSON.stringify(existingValue)
+    ) {
+      processedPayload[property] = existingValue;
     }
   }
 
@@ -485,6 +480,7 @@ const SeasonChangeLogResource = {
       new: {
         async before(request) {
           if (request.payload) {
+            // Handle JSON string markers to preserve types
             request.payload = parseMarkedJsonValues(request.payload, [
               "gateDetailOldValue",
               "gateDetailNewValue",
@@ -508,12 +504,14 @@ const SeasonChangeLogResource = {
         },
       },
       edit: {
-        async before(request) {
+        async before(request, context) {
           if (request.payload) {
-            request.payload = parseMarkedJsonValues(request.payload, [
-              "gateDetailOldValue",
-              "gateDetailNewValue",
-            ]);
+            // Handle JSON string markers to preserve types
+            request.payload = parseMarkedJsonValues(
+              request.payload,
+              ["gateDetailOldValue", "gateDetailNewValue"],
+              context.record,
+            );
 
             stripFlattenedKeys(request.payload, [
               "gateDetailOldValue",
@@ -584,13 +582,27 @@ const AppSettingResource = {
       new: {
         async before(request) {
           if (request.payload) {
+            // Handle JSON string markers to preserve types
             request.payload = parseMarkedJsonValues(request.payload, ["value"]);
 
             stripFlattenedKeys(request.payload, ["value"]);
           }
           return request;
         },
-        async after(response) {
+        async after(response, request) {
+          // Unlike edit, the row does not exist until after create; restore an
+          // intentional empty JSONB string after @adminjs/sequelize omits it.
+          if (request.payload?.value === "") {
+            await AppSetting.update(
+              { value: "" },
+              { where: { key: request.payload.key } },
+            );
+
+            if (response.record?.params) {
+              response.record.params.value = "";
+            }
+          }
+
           if (response.record?.params) {
             normalizeJsonProperties(response.record.params, ["value"]);
           }
@@ -598,9 +610,14 @@ const AppSettingResource = {
         },
       },
       edit: {
-        async before(request) {
+        async before(request, context) {
           if (request.payload) {
-            request.payload = parseMarkedJsonValues(request.payload, ["value"]);
+            // Handle JSON string markers to preserve types
+            request.payload = parseMarkedJsonValues(
+              request.payload,
+              ["value"],
+              context.record,
+            );
 
             stripFlattenedKeys(request.payload, ["value"]);
 
@@ -670,16 +687,9 @@ const ParkResource = {
         async before(request) {
           if (request.payload) {
             // Handle JSON string markers to preserve types
-            const processedPayload = parseMarkedJsonValues(request.payload, [
+            request.payload = parseMarkedJsonValues(request.payload, [
               "managementAreas",
             ]);
-
-            normalizeJsonProperties(processedPayload, ["managementAreas"]);
-
-            if (processedPayload.managementAreas) {
-              request.payload.managementAreas =
-                processedPayload.managementAreas;
-            }
 
             stripFlattenedKeys(request.payload, ["managementAreas"]);
           }
@@ -695,19 +705,14 @@ const ParkResource = {
         },
       },
       edit: {
-        async before(request) {
+        async before(request, context) {
           if (request.payload) {
             // Handle JSON string markers to preserve types
-            const processedPayload = parseMarkedJsonValues(request.payload, [
-              "managementAreas",
-            ]);
-
-            normalizeJsonProperties(processedPayload, ["managementAreas"]);
-
-            if (processedPayload.managementAreas) {
-              request.payload.managementAreas =
-                processedPayload.managementAreas;
-            }
+            request.payload = parseMarkedJsonValues(
+              request.payload,
+              ["managementAreas"],
+              context.record,
+            );
 
             stripFlattenedKeys(request.payload, ["managementAreas"]);
           }
