@@ -670,7 +670,9 @@ const ParkResource = {
         async before(request) {
           if (request.payload) {
             // Handle JSON string markers to preserve types
-            const processedPayload = parseMarkedJsonValues(request.payload);
+            const processedPayload = parseMarkedJsonValues(request.payload, [
+              "managementAreas",
+            ]);
 
             normalizeJsonProperties(processedPayload, ["managementAreas"]);
 
@@ -696,7 +698,9 @@ const ParkResource = {
         async before(request) {
           if (request.payload) {
             // Handle JSON string markers to preserve types
-            const processedPayload = parseMarkedJsonValues(request.payload);
+            const processedPayload = parseMarkedJsonValues(request.payload, [
+              "managementAreas",
+            ]);
 
             normalizeJsonProperties(processedPayload, ["managementAreas"]);
 
