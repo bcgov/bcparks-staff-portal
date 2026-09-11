@@ -320,6 +320,8 @@ const jsonListComponent = componentLoader.add(
   "../components/JsonList",
 );
 
+const keyEditComponent = componentLoader.add("KeyEdit", "../components/KeyEdit");
+
 /**
  * Adds nested JSONB values to AdminJS's flattened record params for custom components.
  * The original flattened params are preserved for AdminJS's normal record handling.
@@ -532,7 +534,18 @@ const AppSettingResource = {
   resource: AppSetting,
   options: {
     properties: {
-      key: { isId: true, isTitle: true },
+      // AdminJS treats primary keys as non-editable by default, but ours is
+      // a user-supplied string (not auto-generated), so allow editing it.
+      // KeyEdit renders an input on create and a read-only display on edit,
+      // since renaming an existing row's primary key breaks the update lookup.
+      key: {
+        isId: true,
+        isTitle: true,
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        components: {
+          edit: keyEditComponent,
+        },
+      },
       value: {
         isVisible: { list: true, filter: true, show: true, edit: true },
         type: "mixed",
