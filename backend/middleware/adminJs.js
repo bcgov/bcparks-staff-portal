@@ -349,7 +349,11 @@ function parseMarkedJsonValues(payload, properties = Object.keys(payload)) {
   for (const property of properties) {
     const value = processedPayload[property];
 
-    if (typeof value === "string" && value.startsWith("__JSON_STRING__")) {
+    // Already-typed values (e.g. reconstructed objects) need no parsing
+    if (typeof value !== "string") continue;
+
+    // Check if the value is marked as a JSON string by the custom editor
+    if (value.startsWith("__JSON_STRING__")) {
       try {
         processedPayload[property] = JSON.parse(
           value.replace("__JSON_STRING__", ""),
@@ -357,6 +361,24 @@ function parseMarkedJsonValues(payload, properties = Object.keys(payload)) {
       } catch (err) {
         console.error("Failed to parse JSON string:", err);
       }
+      continue;
+    }
+
+    // AdminJS's FormData submission stringifies untouched scalar values with
+    // no marker (e.g. `true` becomes the string "true"). Recover unambiguous
+    // JSON primitives here so they aren't persisted as plain strings.
+    try {
+      const parsed = JSON.parse(value);
+
+      if (
+        parsed === null ||
+        typeof parsed === "boolean" ||
+        typeof parsed === "number"
+      ) {
+        processedPayload[property] = parsed;
+      }
+    } catch {
+      // Not JSON-parseable, so it's a plain string value; leave it as-is
     }
   }
 
@@ -562,6 +584,17 @@ const AppSettingResource = {
             request.payload = parseMarkedJsonValues(request.payload, ["value"]);
 
             stripFlattenedKeys(request.payload, ["value"]);
+
+            // @adminjs/sequelize drops non-string-typed columns (JSONB
+            // included) from the update entirely when the value is "", so
+            // persist an intentional empty string ourselves instead.
+            if (request.payload.value === "") {
+              await AppSetting.update(
+                { value: "" },
+                { where: { key: request.params.recordId } },
+              );
+              delete request.payload.value;
+            }
           }
           return request;
         },

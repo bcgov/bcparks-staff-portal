@@ -12,19 +12,21 @@ function JsonEdit(props) {
   const [value, setValue] = useState(initial);
   const [error, setError] = useState("");
 
-  // Register the marked initial value with AdminJS on mount, otherwise an
-  // untouched field falls back to AdminJS's default flattened form
+  // Re-register the current (marked) value with AdminJS after every render,
+  // otherwise an untouched field can fall back to AdminJS's own default form
   // submission for this "mixed" property, which coerces values to strings.
   useEffect(() => {
-    onChange(property.path, hasValue ? `__JSON_STRING__${initial}` : null);
-    // run once on mount only
-  }, []);
+    if (value.trim() === "") {
+      onChange(property.path, null);
+      setError("");
+      return;
+    }
 
-  useEffect(() => {
     try {
-      if (value.trim() !== "") {
-        JSON.parse(value);
-      }
+      // Validate before sending; mark the string so the server knows to
+      // JSON.parse it back instead of storing this literal marked text
+      JSON.parse(value);
+      onChange(property.path, `__JSON_STRING__${value}`);
       setError("");
     } catch (err) {
       console.error("JSON parse error:", err);
@@ -36,24 +38,6 @@ function JsonEdit(props) {
     const val = e.target.value;
 
     setValue(val);
-
-    try {
-      if (val.trim() === "") {
-        // Send null for empty values
-        onChange(property.path, null);
-        setError("");
-      } else {
-        // Parse to validate, but send as JSON string to preserve types
-        JSON.parse(val);
-
-        // Send the raw JSON string with a special marker
-        onChange(property.path, `__JSON_STRING__${val}`);
-        setError("");
-      }
-    } catch (err) {
-      // keep showing error until valid JSON
-      console.error("JSON parse error:", err);
-    }
   }
 
   return (
