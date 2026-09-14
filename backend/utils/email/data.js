@@ -6,6 +6,7 @@ import {
   Publishable,
 } from "../../models/index.js";
 import { Op } from "sequelize";
+import { getAppSettings } from "../appSettingsHelper.js";
 
 /**
  * Gets the Management Areas associated with a Park. Most Parks have one
@@ -104,4 +105,31 @@ async function getPublishableDetails(
   };
 }
 
-export { getPublishableDetails, getParkManagementAreas };
+/**
+ * Gets email-related application settings and applies default values.
+ * @returns {Promise<{notificationsEnabled: boolean, areaSupervisorNotificationsEnabled: boolean, infoServicesNotificationsEnabled: boolean, reservationServicesNotificationsEnabled: boolean}>} Notification settings
+ */
+async function getNotificationSettings() {
+  const appSettings = await getAppSettings([
+    "notificationsEnabled",
+    "areaSupervisorNotificationsEnabled",
+    "infoServicesNotificationsEnabled",
+    "reservationServicesNotificationsEnabled",
+  ]);
+
+  return {
+    notificationsEnabled: appSettings.notificationsEnabled ?? true,
+    areaSupervisorNotificationsEnabled:
+      appSettings.areaSupervisorNotificationsEnabled ?? true,
+    infoServicesNotificationsEnabled:
+      appSettings.infoServicesNotificationsEnabled ?? true,
+    reservationServicesNotificationsEnabled:
+      appSettings.reservationServicesNotificationsEnabled ?? true,
+  };
+}
+
+export {
+  getPublishableDetails,
+  getParkManagementAreas,
+  getNotificationSettings,
+};
