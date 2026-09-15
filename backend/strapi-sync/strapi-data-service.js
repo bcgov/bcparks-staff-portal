@@ -159,6 +159,15 @@ async function fetchModel(modelName) {
     params = config.query;
   }
 
+  // Use deterministic ordering for paginated reads when a model config
+  // does not specify its own sort.
+  if (!params.sort) {
+    params = {
+      ...params,
+      sort: ["id:asc"],
+    };
+  }
+
   return await getAllPages(url, params, 200);
 }
 
