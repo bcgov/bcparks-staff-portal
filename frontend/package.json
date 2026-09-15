@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@awesome.me/kit-c1c3245051": "^1.0.4",
-    "@bcgov/bc-sans": "^2.1.1",
+    "@bcgov/bc-sans": "^2.1.2",
     "@bcgov/design-tokens": "^4.0.0",
     "@ckeditor/ckeditor5-react": "^11.2.0",
     "@digitalspace/bcparks-bootstrap-theme": "^1.4.6",
@@ -48,8 +48,8 @@
     "web-vitals": "^4.2.4"
   },
   "devDependencies": {
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
     "eslint": "^9.39.5",
     "eslint-config-eslint": "^11.0.0",
     "eslint-config-prettier": "^9.1.2",
