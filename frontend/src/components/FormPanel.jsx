@@ -124,6 +124,7 @@ function SeasonForm({
   closePanel,
   handleStatusCancelClose,
   onDataUpdate,
+  dataChanged,
   setDataChanged,
   modal,
 }) {
@@ -140,6 +141,9 @@ function SeasonForm({
   const [deletedDateRangeIds, setDeletedDateRangeIds] = useState([]);
   const [submitWithErrors, setSubmitWithErrors] = useState(false);
   const hasShownStatusPrompt = useRef(false);
+
+  // Determine if the user is editing a published season (i.e., the "Edit published dates" page)
+  const isEditingPublishedSeason = showOperatingYearSelect;
 
   // Reset status prompt tracking when switching to a different season form.
   useEffect(() => {
@@ -452,42 +456,63 @@ function SeasonForm({
     return payload;
   }, [level, season, deletedDateRangeIds, notes, gateTypeId]);
 
-  // Calculate if the form data has changed
-  const dataChanged = useMemo(() => {
-    if (!season) return false;
+  // Calculate if the form data has changed, and sync the result to the parent via setDataChanged.
+  // Once true, dataChanged stays true for the rest of the form's lifecycle (until new data loads).
+  useEffect(() => {
+    if (!season) {
+      setDataChanged(false);
+      return;
+    }
 
-    // Return true if date ranges were updated
-    if (changesPayload.dateRanges.length) return true;
+    // Skip further checks if dataChanged is already true
+    if (dataChanged) return;
 
-    // Return true if date ranges were deleted
-    if (changesPayload.deletedDateRangeIds.length) return true;
+    // True if date ranges were updated
+    if (changesPayload.dateRanges.length) {
+      setDataChanged(true);
+      return;
+    }
 
-    // Check if readyToPublish changed
-    if (changesPayload.readyToPublish !== apiData?.current?.readyToPublish)
-      return true;
+    // True if date ranges were deleted
+    if (changesPayload.deletedDateRangeIds.length) {
+      setDataChanged(true);
+      return;
+    }
 
-    // Check if any date annuals were updated
-    if (changesPayload.dateRangeAnnuals.length) return true;
+    // True if readyToPublish changed
+    if (changesPayload.readyToPublish !== apiData?.current?.readyToPublish) {
+      setDataChanged(true);
+      return;
+    }
 
-    // Check if any gateDetail values changed (for regular seasons)
+    // True if any date annuals were updated
+    if (changesPayload.dateRangeAnnuals.length) {
+      setDataChanged(true);
+      return;
+    }
+
+    // True if any gateDetail values changed (for regular seasons)
     if (
       season.seasonType === SEASON_TYPE.REGULAR &&
       !isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail)
-    )
-      return true;
+    ) {
+      setDataChanged(true);
+      return;
+    }
 
-    // If nothing else has changed, return true if notes are entered
-    return changesPayload.notes.length > 0;
-  }, [season, changesPayload, apiData]);
+    // True if notes are entered
+    if (changesPayload.notes.length > 0) {
+      setDataChanged(true);
+    }
+  }, [season, changesPayload, apiData, dataChanged, setDataChanged]);
 
-  // When editing published dates: primary action only enabled after changes; draft button always disabled
-  const disablePrimaryActionButton = showOperatingYearSelect && !dataChanged;
-  const disableDraftButton = showOperatingYearSelect;
+  // Primary action button is disabled in "Edit published seasons" mode when the form has no changes.
+  // Primary action button is always enabled on regular season forms.
+  const disablePrimaryActionButton = isEditingPublishedSeason && !dataChanged;
 
-  // Update the parent component when dataChanged is updated
-  useEffect(() => {
-    setDataChanged(dataChanged);
-  }, [dataChanged, setDataChanged]);
+  // Save draft always disabled in "Edit published seasons" mode.
+  // Save draft is disabled on regular season forms when the form has no changes.
+  const disableDraftButton = isEditingPublishedSeason || !dataChanged;
 
   /**
    * Saves the form data to the DB.
@@ -842,6 +867,7 @@ SeasonForm.propTypes = {
   closePanel: PropTypes.func.isRequired,
   handleStatusCancelClose: PropTypes.func.isRequired,
   onDataUpdate: PropTypes.func.isRequired,
+  dataChanged: PropTypes.bool.isRequired,
   setDataChanged: PropTypes.func.isRequired,
   modal: PropTypes.object.isRequired,
 };
@@ -946,7 +972,10 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
             onSeasonChange={handleSeasonChange}
             closePanel={closePanel}
             handleStatusCancelClose={handleStatusCancelClose}
+            // The form can trigger a function to re-fetch data after saving
             onDataUpdate={onDataUpdate}
+            // Track if the form data has changed from user interaction
+            dataChanged={dataChanged}
             setDataChanged={setDataChanged}
             modal={modal}
           />
