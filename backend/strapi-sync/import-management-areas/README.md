@@ -11,11 +11,13 @@ Imports and updates `ManagementArea` records from Strapi's `management-area` col
 
 **Data mapping:**
 
-| Strapi Field            | DOOT Field             | Notes                                |
-| ----------------------- | ---------------------- | ------------------------------------ |
-| `managementAreaName`    | `name`                 | Management area name                 |
-| `managementAreaNumber`  | `managementAreaNumber` | Well known key                       |
-| `section.sectionNumber` | `sectionId`            | Foreign key lookup by section number |
+| Strapi Field            | DOOT Field             | Notes                                                           |
+| ----------------------- | ---------------------- | --------------------------------------------------------------- |
+| `managementAreaName`    | `name`                 | Management area name                                            |
+| `managementAreaNumber`  | `managementAreaNumber` | Well known key                                                  |
+| `section.sectionNumber` | `sectionId`            | Foreign key lookup by section number                            |
+| `staffContacts.email`   | `email`                | Email of the first active Area Supervisor; otherwise, the first |
+|                         |                        | active contact matching the priority job-title substrings       |
 
 ## Transaction Safety
 
