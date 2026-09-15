@@ -6,6 +6,7 @@ import {
 } from "./content.js";
 import { getPublishableDetails } from "./data.js";
 
+// ...existing code...
 /**
  * Queues an email notification for a season.
  * @param {Object} options Notification options
@@ -17,7 +18,7 @@ import { getPublishableDetails } from "./data.js";
  * @param {boolean} [options.notifyManagementArea=true] Whether to resolve and require Management Area recipient emails
  * @param {boolean} [options.notifyInformationServices=false] Whether to notify the Information Services team
  * @param {boolean} [options.notifyReservationServices=false] Whether to notify the Reservation Services team
- * @returns {Promise<boolean>} True when queued, otherwise false when no email exists
+ * @returns {Promise<{queued: boolean, recipientEmails: string[], editTargetLabel: string}>} Outcome and diagnostic details of the queue attempt
  */
 async function queueNotification({
   emailType,
@@ -40,17 +41,21 @@ async function queueNotification({
   );
   const { seasonFormSlug, recipientEmails } = emailInfo;
 
+  const editTargetLabel = getEditTargetLabel({
+    ...emailInfo,
+    seasonType: season.seasonType,
+  });
+
   // Only Management Area notifications require a resolved recipient list.
-  if (notifyManagementArea && !recipientEmails.length) return false;
+  if (notifyManagementArea && !recipientEmails.length) {
+    return { queued: false, recipientEmails, editTargetLabel };
+  }
 
   const { subject, heading, message, buttonText } = getEmailContentByType(
     emailType,
     isReminder,
     userFullName,
-    getEditTargetLabel({
-      ...emailInfo,
-      seasonType: season.seasonType,
-    }),
+    editTargetLabel,
   );
 
   await queueStrapiTask({
@@ -76,7 +81,7 @@ async function queueNotification({
   // timestamp is unchanged, we will use this information to send a reminder
   // to the original recipients.
 
-  return true;
+  return { queued: true, recipientEmails, editTargetLabel };
 }
 
 /**
@@ -85,7 +90,7 @@ async function queueNotification({
  * @param {User} user User who saved the season
  * @param {string} triggeredBy Identifier for the code path that triggered the email
  * @param {boolean} [isReminder=false] Whether the notification is a reminder
- * @returns {Promise<boolean>} True when queued, otherwise false when no recipient email exists
+ * @returns {Promise<{queued: boolean, recipientEmails: string[], editTargetLabel: string}>} Outcome and diagnostic details of the queue attempt
  */
 async function queueDraftReviewEmail(
   season,
@@ -112,7 +117,7 @@ async function queueDraftReviewEmail(
  * @param {boolean} notifyInformationServices Whether to notify the Information Services team
  * @param {boolean} notifyReservationServices Whether to notify the Reservation Services team
  * @param {boolean} [isReminder=false] Whether the notification is a reminder
- * @returns {Promise<boolean>} True when queued
+ * @returns {Promise<{queued: boolean, recipientEmails: string[], editTargetLabel: string}>} Outcome and diagnostic details of the queue attempt
  */
 async function queueHqApprovalEmail(
   season,
@@ -123,6 +128,7 @@ async function queueHqApprovalEmail(
   isReminder = false,
 ) {
   if (!notifyInformationServices && !notifyReservationServices) {
+    // this error should get handled by the seasonNotifications::notifyHqApprovers
     throw new Error(
       "At least one of notifyInformationServices or notifyReservationServices must be true.",
     );
@@ -146,7 +152,7 @@ async function queueHqApprovalEmail(
  * @param {User} user User who rejected the season
  * @param {string} triggeredBy Identifier for the code path that triggered the email
  * @param {boolean} [isReminder=false] Whether the notification is a reminder
- * @returns {Promise<boolean>} True when queued, otherwise false when no recipient email exists
+ * @returns {Promise<{queued: boolean, recipientEmails: string[], editTargetLabel: string}>} Outcome and diagnostic details of the queue attempt
  */
 async function queueApprovalRejectedEmail(
   season,

@@ -104,4 +104,22 @@ async function getPublishableDetails(
   };
 }
 
-export { getPublishableDetails, getParkManagementAreas };
+/**
+ * Gets application-wide notification settings.
+ * @returns {Promise<{notificationsEnabled: boolean, areaSupervisorNotificationsEnabled: boolean, infoServicesNotificationsEnabled: boolean, reservationServicesNotificationsEnabled: boolean}>} Notification settings
+ */
+// TODO: This will be added to a table and accessed via Sequelize
+async function getNotificationSettings() {
+  return {
+    notificationsEnabled: true,
+    areaSupervisorNotificationsEnabled: true,
+    infoServicesNotificationsEnabled: true,
+    reservationServicesNotificationsEnabled: true,
+  };
+}
+
+export {
+  getPublishableDetails,
+  getParkManagementAreas,
+  getNotificationSettings,
+};
