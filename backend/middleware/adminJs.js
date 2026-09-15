@@ -32,6 +32,7 @@ import {
   DateChangeLog,
   UserAccessGroup,
   AccessGroupPark,
+  AppSetting,
 } from "../models/index.js";
 
 import { connectionConfig } from "../db/connection.js";
@@ -314,6 +315,95 @@ const jsonEditComponent = componentLoader.add(
   "../components/JsonEdit",
 );
 
+const jsonListComponent = componentLoader.add(
+  "JsonList",
+  "../components/JsonList",
+);
+
+const keyEditComponent = componentLoader.add(
+  "KeyEdit",
+  "../components/KeyEdit",
+);
+
+/**
+ * Adds nested JSONB values to AdminJS's flattened record params for custom components.
+ * The original flattened params are preserved for AdminJS's normal record handling.
+ *
+ * IMPORTANT: JSON object keys must never contain a "." character; e.g. the key "a.b" would be
+ * unflattened into an unintended nested structure instead of a literal "a.b" key.
+ * @param {Object} params AdminJS record params
+ * @param {string[]} properties JSONB property names to restore as nested values
+ * @returns {void} Modifies the `params` object in place, adding nested values for the specified properties.
+ */
+function normalizeJsonProperties(params, properties) {
+  const unflattened = flat.unflatten(params);
+
+  for (const property of properties) {
+    if (Object.hasOwn(unflattened, property)) {
+      params[property] = unflattened[property];
+    }
+  }
+}
+
+/**
+ * Parses JSON values marked by the custom editor before AdminJS persists a payload.
+ * @param {Object} payload AdminJS edit payload
+ * @param {string[]} properties Payload keys to process
+ * @param {BaseRecord} [record] Existing record used to recover untouched scalars
+ * @returns {Object} A copy of the payload with marked JSON values parsed
+ */
+function parseMarkedJsonValues(payload, properties, record) {
+  const processedPayload = { ...payload };
+
+  for (const property of properties) {
+    const value = processedPayload[property];
+
+    // Already-typed values (e.g. reconstructed objects) need no parsing
+    if (typeof value !== "string") continue;
+
+    // Check if the value is marked as a JSON string by the custom editor
+    if (value.startsWith("__JSON_STRING__")) {
+      try {
+        processedPayload[property] = JSON.parse(
+          value.replace("__JSON_STRING__", ""),
+        );
+      } catch (err) {
+        console.error("Failed to parse JSON string:", err);
+      }
+      continue;
+    }
+
+    const existingValue = record?.get(property);
+
+    // Recover an unmarked scalar only when it exactly matches the stored
+    // value, preserving strings such as "1234" that resemble JSON numbers.
+    if (
+      typeof existingValue !== "string" &&
+      value === JSON.stringify(existingValue)
+    ) {
+      processedPayload[property] = existingValue;
+    }
+  }
+
+  return processedPayload;
+}
+
+/**
+ * Removes AdminJS's flattened dot-notation keys (e.g. "value.hasGate")
+ * for the given JSONB properties, so they can't overwrite the parsed
+ * object/array we've already reconstructed from the marked JSON string.
+ * @param {Object} payload AdminJS edit payload
+ * @param {string[]} properties JSONB property names to strip flattened keys for
+ * @returns {void} Modifies the `payload` object in place
+ */
+function stripFlattenedKeys(payload, properties) {
+  for (const key of Object.keys(payload)) {
+    if (properties.some((property) => key.startsWith(`${property}.`))) {
+      delete payload[key];
+    }
+  }
+}
+
 const GateDetailResource = {
   resource: GateDetail,
   options: {
@@ -335,10 +425,19 @@ const GateDetailResource = {
           show: nullableBooleanComponent,
         },
       },
+    },
+  },
+};
+
+const SeasonChangeLogResource = {
+  resource: SeasonChangeLog,
+  options: {
+    properties: {
       gateDetailOldValue: {
         isVisible: { list: true, filter: true, show: true, edit: true },
         type: "mixed",
         components: {
+          list: jsonListComponent,
           show: jsonShowComponent,
           edit: jsonEditComponent,
         },
@@ -347,8 +446,199 @@ const GateDetailResource = {
         isVisible: { list: true, filter: true, show: true, edit: true },
         type: "mixed",
         components: {
+          list: jsonListComponent,
           show: jsonShowComponent,
           edit: jsonEditComponent,
+        },
+      },
+    },
+    actions: {
+      list: {
+        async after(response) {
+          response.records?.forEach((record) => {
+            if (record.params) {
+              normalizeJsonProperties(record.params, [
+                "gateDetailOldValue",
+                "gateDetailNewValue",
+              ]);
+            }
+          });
+          return response;
+        },
+      },
+      show: {
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return response;
+        },
+      },
+      new: {
+        async before(request) {
+          if (request.payload) {
+            // Handle JSON string markers to preserve types
+            request.payload = parseMarkedJsonValues(request.payload, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+
+            stripFlattenedKeys(request.payload, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return response;
+        },
+      },
+      edit: {
+        async before(request, context) {
+          if (request.payload) {
+            // Handle JSON string markers to preserve types
+            request.payload = parseMarkedJsonValues(
+              request.payload,
+              ["gateDetailOldValue", "gateDetailNewValue"],
+              context.record,
+            );
+
+            stripFlattenedKeys(request.payload, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "gateDetailOldValue",
+              "gateDetailNewValue",
+            ]);
+          }
+          return response;
+        },
+      },
+    },
+  },
+};
+
+const AppSettingResource = {
+  resource: AppSetting,
+  options: {
+    properties: {
+      // AdminJS treats primary keys as non-editable by default, but ours is
+      // a user-supplied string (not auto-generated), so allow editing it.
+      // KeyEdit renders an input on create and a read-only display on edit,
+      // since renaming an existing row's primary key breaks the update lookup.
+      key: {
+        isId: true,
+        isTitle: true,
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        components: {
+          edit: keyEditComponent,
+        },
+      },
+      value: {
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        type: "mixed",
+        components: {
+          list: jsonListComponent,
+          show: jsonShowComponent,
+          edit: jsonEditComponent,
+        },
+      },
+    },
+    actions: {
+      list: {
+        async after(response) {
+          response.records?.forEach((record) => {
+            if (record.params) {
+              normalizeJsonProperties(record.params, ["value"]);
+            }
+          });
+          return response;
+        },
+      },
+      show: {
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["value"]);
+          }
+          return response;
+        },
+      },
+      new: {
+        async before(request) {
+          if (request.payload) {
+            // Handle JSON string markers to preserve types
+            request.payload = parseMarkedJsonValues(request.payload, ["value"]);
+
+            stripFlattenedKeys(request.payload, ["value"]);
+          }
+          return request;
+        },
+        async after(response, request) {
+          // Unlike edit, the row does not exist until after create; restore an
+          // intentional empty JSONB string after @adminjs/sequelize omits it.
+          if (request.payload?.value === "") {
+            await AppSetting.update(
+              { value: "" },
+              { where: { key: request.payload.key } },
+            );
+
+            if (response.record?.params) {
+              response.record.params.value = "";
+            }
+          }
+
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["value"]);
+          }
+          return response;
+        },
+      },
+      edit: {
+        async before(request, context) {
+          if (request.payload) {
+            // Handle JSON string markers to preserve types
+            request.payload = parseMarkedJsonValues(
+              request.payload,
+              ["value"],
+              context.record,
+            );
+
+            stripFlattenedKeys(request.payload, ["value"]);
+
+            // @adminjs/sequelize drops non-string-typed columns (JSONB
+            // included) from the update entirely when the value is "", so
+            // persist an intentional empty string ourselves instead.
+            if (request.payload.value === "") {
+              await AppSetting.update(
+                { value: "" },
+                { where: { key: request.params.recordId } },
+              );
+              delete request.payload.value;
+            }
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["value"]);
+          }
+          return response;
         },
       },
     },
@@ -363,6 +653,7 @@ const ParkResource = {
         isVisible: { list: true, filter: true, show: true, edit: true },
         type: "mixed",
         components: {
+          list: jsonListComponent,
           show: jsonShowComponent,
           edit: jsonEditComponent,
         },
@@ -372,56 +663,66 @@ const ParkResource = {
       },
     },
     actions: {
+      list: {
+        async after(response) {
+          response.records?.forEach((record) => {
+            if (record.params) {
+              normalizeJsonProperties(record.params, ["managementAreas"]);
+            }
+          });
+          return response;
+        },
+      },
       show: {
         async after(response) {
           if (response.record?.params) {
-            const unflattened = flat.unflatten(response.record.params);
-
-            if (unflattened.managementAreas) {
-              response.record.params.managementAreas =
-                unflattened.managementAreas;
-            }
+            normalizeJsonProperties(response.record.params, [
+              "managementAreas",
+            ]);
           }
           return response;
         },
       },
-      edit: {
+      new: {
         async before(request) {
           if (request.payload) {
             // Handle JSON string markers to preserve types
-            const processedPayload = { ...request.payload };
+            request.payload = parseMarkedJsonValues(request.payload, [
+              "managementAreas",
+            ]);
 
-            for (const [key, value] of Object.entries(processedPayload)) {
-              if (
-                typeof value === "string" &&
-                value.startsWith("__JSON_STRING__")
-              ) {
-                const jsonString = value.replace("__JSON_STRING__", "");
-
-                try {
-                  processedPayload[key] = JSON.parse(jsonString);
-                } catch (err) {
-                  console.error("Failed to parse JSON string:", err);
-                }
-              }
-            }
-
-            const unflattened = flat.unflatten(processedPayload);
-
-            if (unflattened.managementAreas) {
-              request.payload.managementAreas = unflattened.managementAreas;
-            }
+            stripFlattenedKeys(request.payload, ["managementAreas"]);
           }
           return request;
         },
         async after(response) {
           if (response.record?.params) {
-            const unflattened = flat.unflatten(response.record.params);
+            normalizeJsonProperties(response.record.params, [
+              "managementAreas",
+            ]);
+          }
+          return response;
+        },
+      },
+      edit: {
+        async before(request, context) {
+          if (request.payload) {
+            // Handle JSON string markers to preserve types
+            request.payload = parseMarkedJsonValues(
+              request.payload,
+              ["managementAreas"],
+              context.record,
+            );
 
-            if (unflattened.managementAreas) {
-              response.record.params.managementAreas =
-                unflattened.managementAreas;
-            }
+            stripFlattenedKeys(request.payload, ["managementAreas"]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, [
+              "managementAreas",
+            ]);
           }
           return response;
         },
@@ -473,8 +774,9 @@ const adminOptions = {
     AccessGroupResource,
     UserAccessGroup,
     AccessGroupPark,
-    SeasonChangeLog,
+    SeasonChangeLogResource,
     DateChangeLog,
+    AppSettingResource,
   ],
   branding: {
     companyName: "BC Parks Staff Portal Admin",
