@@ -104,7 +104,7 @@ function SubmitPage() {
     [filterOptionsData],
   );
 
-  const isApprover = hasAnyRole([ROLES.APPROVER]);
+  const isApprover = hasAnyRole([ROLES.DOOT_APPROVER]);
 
   const statusOptions = useMemo(() => {
     const options = [
