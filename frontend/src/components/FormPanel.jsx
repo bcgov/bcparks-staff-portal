@@ -14,6 +14,7 @@ import { isEqual, omit, keyBy } from "lodash-es";
 import FeatureIcon from "@/components/FeatureIcon";
 import InternalNotes from "@/components/InternalNotes";
 import LoadingBar from "@/components/LoadingBar";
+import LastUpdatedInfo from "@/components/LastUpdatedInfo";
 import OperatingYearSelect from "@/components/OperatingYearSelect";
 import ParkSeasonForm from "@/components/SeasonForms/ParkSeasonForm";
 import AreaSeasonForm from "@/components/SeasonForms/AreaSeasonForm";
@@ -701,6 +702,7 @@ If dates have already been published, they will not be updated until new dates a
               // Display the operating year text in the Submit page
               <h2 className="fw-normal">{yearHeaderText}</h2>
             )}
+            <LastUpdatedInfo lastUpdated={season?.lastUpdated ?? null} />
             <p className="fs-6 fw-normal">
               <a
                 href="https://www2.gov.bc.ca/gov/content/employment-business/employment-standards-advice/employment-standards/statutory-holidays"

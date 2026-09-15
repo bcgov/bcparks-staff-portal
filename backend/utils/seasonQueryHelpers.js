@@ -97,4 +97,5 @@ export const SEASON_ATTRIBUTES = [
   "publishableId",
   "seasonType",
   "savedWithErrors",
+  "updatedAt",
 ];
