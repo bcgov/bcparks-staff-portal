@@ -17,6 +17,7 @@ import { APPROVED, PUBLISHED } from "../constants/seasonStatus.js";
 import consolidateRanges from "./consolidateDateRanges.js";
 import getOverlappingDateRanges from "./getOverlappingDateRanges.js";
 import hasApprovedOperationSeasonForFeature from "./hasApprovedOperationSeasonForFeature.js";
+import toUtcDayTimestamp from "./toUtcDayTimestamp.js";
 
 const PROPAGATION_ALLOWED_STATUSES = [APPROVED, PUBLISHED];
 
@@ -233,6 +234,8 @@ function getEarliestStartDate(ranges) {
   }, null);
 }
 
+const DAY_IN_MS = 24 * 60 * 60 * 1000;
+
 /**
  * Consolidates ranges and merges consecutive ranges where
  * current.startDate is on or before previous.endDate plus one day.
@@ -250,12 +253,24 @@ function consolidateAndMergeConsecutiveRanges(ranges) {
       return merged;
     }
 
-    const nextDay = new Date(lastRange.endDate);
+    // Compare at UTC day precision so mixed Date/string inputs are handled consistently.
+    const lastEndTs = toUtcDayTimestamp(lastRange.endDate);
+    const currentStartTs = toUtcDayTimestamp(currentRange.startDate);
+    const currentEndTs = toUtcDayTimestamp(currentRange.endDate);
 
-    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    if (
+      Number.isNaN(lastEndTs) ||
+      Number.isNaN(currentStartTs) ||
+      Number.isNaN(currentEndTs)
+    ) {
+      merged.push(currentRange);
+      return merged;
+    }
 
-    if (currentRange.startDate <= nextDay) {
-      if (currentRange.endDate > lastRange.endDate) {
+    const nextDayTs = lastEndTs + DAY_IN_MS;
+
+    if (currentStartTs <= nextDayTs) {
+      if (currentEndTs > lastEndTs) {
         lastRange.endDate = currentRange.endDate;
       }
 
