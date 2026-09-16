@@ -14,6 +14,7 @@ function standardizeName(name) {
 export default async function updateOrcsAreaNumbers(transaction = null) {
   // Get all park area data from Strapi
   const strapiAreas = await strapiApi.getAllPages("/park-areas", {
+    sort: ["id:asc"],
     populate: {
       protectedArea: {
         fields: ["orcs"],
