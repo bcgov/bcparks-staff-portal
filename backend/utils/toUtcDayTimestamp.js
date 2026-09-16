@@ -13,15 +13,30 @@ export default function toUtcDayTimestamp(value) {
   }
 
   if (typeof value === "string") {
-    const [year, month, day] = value.split("-").map(Number);
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/u.exec(value);
+
+    if (!match) {
+      return Number.NaN;
+    }
+
+    const [, yearString, monthString, dayString] = match;
+    const year = Number(yearString);
+    const month = Number(monthString);
+    const day = Number(dayString);
+    const date = new Date(0);
+
+    date.setUTCFullYear(year, month - 1, day);
+    date.setUTCHours(0, 0, 0, 0);
 
     if (
-      Number.isFinite(year) &&
-      Number.isFinite(month) &&
-      Number.isFinite(day)
+      date.getUTCFullYear() !== year ||
+      date.getUTCMonth() !== month - 1 ||
+      date.getUTCDate() !== day
     ) {
-      return Date.UTC(year, month - 1, day);
+      return Number.NaN;
     }
+
+    return date.getTime();
   }
 
   return Number.NaN;
