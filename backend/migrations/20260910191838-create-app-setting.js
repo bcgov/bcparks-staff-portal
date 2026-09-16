@@ -41,6 +41,22 @@ module.exports = {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
+      {
+        key: "infoServicesNotificationsEnabled",
+        value: JSON.stringify(false),
+        description:
+          "Whether email notifications are sent to Information Services staff",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        key: "reservationServicesNotificationsEnabled",
+        value: JSON.stringify(false),
+        description:
+          "Whether email notifications are sent to Reservation Services staff",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     ]);
   },
 
