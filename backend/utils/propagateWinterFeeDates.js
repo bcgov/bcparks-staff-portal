@@ -211,7 +211,10 @@ async function getFeatureOperationRanges(
  */
 function getLatestEndDate(ranges) {
   return ranges.reduce((latestEnd, range) => {
-    if (!latestEnd || range.endDate > latestEnd) {
+    if (
+      !latestEnd ||
+      toUtcDayTimestamp(range.endDate) > toUtcDayTimestamp(latestEnd)
+    ) {
       return range.endDate;
     }
 
@@ -226,7 +229,10 @@ function getLatestEndDate(ranges) {
  */
 function getEarliestStartDate(ranges) {
   return ranges.reduce((earliestStart, range) => {
-    if (!earliestStart || range.startDate < earliestStart) {
+    if (
+      !earliestStart ||
+      toUtcDayTimestamp(range.startDate) < toUtcDayTimestamp(earliestStart)
+    ) {
       return range.startDate;
     }
 
