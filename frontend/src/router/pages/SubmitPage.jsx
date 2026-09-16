@@ -409,7 +409,7 @@ function SubmitPage() {
     const wasFormPanelOpen = previousIsFormPanelOpenRef.current;
 
     if (wasFormPanelOpen && !isFormPanelOpen && params.seasonId) {
-      navigate("/", { replace: true });
+      navigate("/dates", { replace: true });
     }
 
     previousIsFormPanelOpenRef.current = isFormPanelOpen;
