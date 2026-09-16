@@ -6,6 +6,9 @@ import PropTypes from "prop-types";
 import AccessProvider from "@/router/AccessProvider";
 import getEnv from "@/config/getEnv";
 import ALLOWED_IDPS from "@/constants/allowedIdps";
+import HeaderTitle from "@/components/HeaderTitle";
+import LoadingBar from "@/components/LoadingBar";
+import Footer from "@/components/Footer";
 
 const frontendBaseUrl = getEnv("VITE_FRONTEND_BASE_URL");
 
@@ -54,6 +57,30 @@ function getLoginPath(location) {
 
   return "/login";
 }
+
+// Shows a branded loading state while authentication resolves before the main layout mounts.
+function AuthenticationStatus({ message }) {
+  return (
+    <div className="layout main min-vh-100 d-flex flex-column">
+      <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
+        <HeaderTitle />
+      </header>
+
+      <main className="p-0 d-flex flex-fill align-items-start">
+        <div className="container py-5" role="status" aria-live="polite">
+          <h1 className="h3 mb-4">{message}</h1>
+          <LoadingBar />
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
+
+AuthenticationStatus.propTypes = {
+  message: PropTypes.string.isRequired,
+};
 
 // Higher-order component that wraps a route component for authentication
 // Wrap a "layout" component in this component to protect all of its children
@@ -164,21 +191,25 @@ export default function ProtectedRoute({ children }) {
   }, [auth.error, isSilentAuthCheckError]);
 
   if (auth.error && !isSilentAuthCheckError) {
-    return <div>Authentication error: {auth.error?.message}</div>;
+    return (
+      <AuthenticationStatus
+        message={`Authentication error: ${auth.error.message}`}
+      />
+    );
   }
 
   if (auth.isLoading && auth.activeNavigator !== "signinSilent") {
-    return <div>Checking authentication...</div>;
+    return <AuthenticationStatus message="Preparing your session..." />;
   }
 
   if (isCheckingSilentAuth) {
     // Attempting to restore an existing Keycloak SSO session before redirecting to login
-    return <div>Checking authentication...</div>;
+    return <AuthenticationStatus message="Preparing your session..." />;
   }
 
   if (!auth.isAuthenticated) {
     // Block rendering until authenticated, or redirecting
-    return <div>Redirecting to login...</div>;
+    return <AuthenticationStatus message="Taking you to sign in..." />;
   }
 
   return <AccessProvider auth={auth}>{children}</AccessProvider>;
