@@ -4,6 +4,7 @@
 import "../../env.js";
 import { addYears, format, getYear, parseISO } from "date-fns";
 import { Op } from "sequelize";
+import { getCurrentDateCollectionYear } from "../../utils/operatingYearHelper.js";
 
 import {
   Season,
@@ -82,6 +83,11 @@ export async function populateAnnualDateRangesForYear(
 
     const dateRangesToCreate = new Map();
 
+    const currentWinterDateCollectionYear = await getCurrentDateCollectionYear(
+      SEASON_TYPE.WINTER,
+      transaction,
+    );
+
     for (const annual of annuals) {
       const { id, publishableId, dateTypeId, dateableId, dateType } = annual;
 
@@ -144,6 +150,15 @@ export async function populateAnnualDateRangesForYear(
         },
         transaction,
       });
+
+      // don't create winter seasons beyond the current winter date collection year
+      if (
+        !targetSeason &&
+        prevSeason.seasonType === SEASON_TYPE.WINTER &&
+        adjustedTargetYear > currentWinterDateCollectionYear
+      ) {
+        continue;
+      }
 
       // create season if no target season found
       // @TODO: Update criteria to create seasons in create-seasons/create-winter-seasons instead
