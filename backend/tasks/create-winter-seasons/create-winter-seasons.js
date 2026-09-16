@@ -32,14 +32,45 @@ import {
   createPublishableId,
   createDateableId,
 } from "../../utils/seasonHelpers.js";
+import { getCurrentDateCollectionYear } from "../../utils/operatingYearHelper.js";
 
 export default async function createWinterSeasons(
   operatingYear,
   transaction = null,
 ) {
-  if (isNaN(operatingYear)) {
+  if (!Number.isInteger(operatingYear)) {
     console.info("Usage example: npm run create-winter-seasons 2027");
     throw new Error("Missing operating year");
+  }
+
+  const currentRegularCollectionYear = await getCurrentDateCollectionYear(
+    SEASON_TYPE.REGULAR,
+    transaction,
+  );
+
+  const currentWinterCollectionYear = await getCurrentDateCollectionYear(
+    SEASON_TYPE.WINTER,
+    transaction,
+  );
+
+  // only the current winter date collection year, the previous year, and the
+  // next year are valid for winter season creation
+  if (
+    operatingYear < currentWinterCollectionYear - 1 ||
+    operatingYear > currentWinterCollectionYear + 1
+  ) {
+    throw new Error(
+      `Invalid operating year ${operatingYear}. Must be between ${
+        currentWinterCollectionYear - 1
+      } and ${currentWinterCollectionYear + 1}`,
+    );
+  }
+
+  // The winter collection year cannot be more than the regular collection year
+  if (operatingYear > currentRegularCollectionYear) {
+    throw new Error(
+      `Invalid operating year ${operatingYear}. Winter collection year cannot be more than the regular collection year ${currentRegularCollectionYear}.`,
+    );
   }
 
   console.log(
