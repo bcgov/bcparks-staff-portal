@@ -249,6 +249,15 @@ function SeasonForm({
     ...seasonMetadata
   } = data || {};
 
+  const informationSvcApproved =
+    approver && season?.requiresInformationSvcApproval
+      ? season.informationSvcApproved
+      : null;
+  const reservationSvcApproved =
+    approver && season?.requiresReservationSvcApproval
+      ? season.reservationSvcApproved
+      : null;
+
   // Check season status and prompt user if needed (e.g., editing approved or published seasons)
   useEffect(() => {
     if (!season || hasShownStatusPrompt.current) return;
@@ -732,7 +741,11 @@ If dates have already been published, they will not be updated until new dates a
               )}
 
               <div className="ms-3 mb-2">
-                <StatusBadge status={season.status} />
+                <StatusBadge
+                  status={season.status}
+                  informationSvcApproved={informationSvcApproved}
+                  reservationSvcApproved={reservationSvcApproved}
+                />
               </div>
             </div>
 

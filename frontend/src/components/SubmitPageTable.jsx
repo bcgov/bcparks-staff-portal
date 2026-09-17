@@ -237,6 +237,15 @@ function StatusTableRow({
     [checkAccess, ROLES.DOOT_APPROVER],
   );
 
+  const informationSvcApproved =
+    approver && season.requiresInformationSvcApproval
+      ? season.informationSvcApproved
+      : null;
+  const reservationSvcApproved =
+    approver && season.requiresReservationSvcApproval
+      ? season.reservationSvcApproved
+      : null;
+
   /**
    * Displays a flash message when the Season's Dates are approved.
    * @returns {void}
@@ -272,7 +281,11 @@ function StatusTableRow({
       {season ? (
         <th scope="col" className="align-middle text-end text-nowrap">
           <div className="d-inline-block me-2">
-            <StatusBadge status={season.status} />
+            <StatusBadge
+              status={season.status}
+              informationSvcApproved={informationSvcApproved}
+              reservationSvcApproved={reservationSvcApproved}
+            />
           </div>
 
           <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
