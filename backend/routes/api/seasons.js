@@ -903,7 +903,7 @@ router.post(
         }
       }
 
-      const responsePayload = { message: "Season saved" };
+      const responsePayload = { message: "Season saved", status: newStatus };
 
       if (diagnostics.length > 0) {
         responsePayload.executionDetails = diagnostics;
