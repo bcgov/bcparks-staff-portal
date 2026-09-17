@@ -716,7 +716,6 @@ If dates have already been published, they will not be updated until new dates a
             )}
 
             <h2>{seasonTitle}</h2>
-            <LastUpdatedInfo lastUpdated={season?.lastUpdated ?? null} />
             <div className="d-flex align-items-center">
               {showOperatingYearSelect ? (
                 // Display the operating year form in the Edit published page
@@ -735,6 +734,8 @@ If dates have already been published, they will not be updated until new dates a
                 <StatusBadge status={season.status} />
               </div>
             </div>
+
+            <LastUpdatedInfo lastUpdated={season?.lastUpdated ?? null} />
 
             <p className="fs-6 fw-normal">
               <a
