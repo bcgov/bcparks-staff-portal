@@ -1,5 +1,10 @@
 /**
- * Converts a Date or YYYY-MM-DD value to a UTC midnight timestamp.
+ * Converts a Date object or YYYY-MM-DD string to a numeric UTC timestamp
+ * representing the start of the calendar day (00:00:00 UTC). Any
+ * time-of-day information is discarded so that only the date remains.
+ * This allows dates from different input types to be compared using
+ * simple integer comparisons. ISO date-time strings and other string
+ * formats are considered invalid and will return NaN.
  * @param {Date|string} value Date instance or calendar date string
  * @returns {number} UTC day timestamp, or NaN when the value is invalid
  */
