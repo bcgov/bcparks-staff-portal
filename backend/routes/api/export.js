@@ -22,7 +22,9 @@ import {
 import * as DATE_TYPE from "../../constants/dateType.js";
 import getDateTypeDisplayName from "../../utils/getDateTypeDisplayName.js";
 import {
+  getSeasonApprovalRequirements,
   getSeasonReservationCoverage,
+  hasGateHistory,
   isFeatureWinterSeason,
   isWinterSeason,
 } from "../../utils/seasonApprovalHelpers.js";
@@ -85,62 +87,6 @@ router.get(
     });
   }),
 );
-
-/**
- * Returns whether Information Services team approval is required for a season.
- * @param {Season} season Season with gateDetail and changeLogs associations
- * @returns {boolean} True when IS team approval is required
- */
-function seasonRequiresInformationSvcApproval(season) {
-  // Winter fee seasons never require Information Services team approval.
-  // Even if the park has a gate, the gate information is only checked on regular seasons.
-  if (isWinterSeason(season)) return false;
-
-  const { anyNotInReservationSystem } = getSeasonReservationCoverage(season);
-
-  // IS team approval is required if inReservationSystem is false for any dates
-  if (anyNotInReservationSystem) return true;
-
-  // IS team approval is required if hasGate is true
-  if (season.gateDetail?.hasGate === true) return true;
-
-  // IS team approval is required if hasGate was changed to false
-  const gateRemoved = season.changeLogs.some((changeLog) => {
-    const oldHasGate = changeLog.gateDetailOldValue?.hasGate === true;
-    const newHasGate = changeLog.gateDetailNewValue?.hasGate === true;
-
-    return oldHasGate && !newHasGate;
-  });
-
-  // Return true if any changelog shows that hasGate was changed from true to false
-  if (gateRemoved) return true;
-
-  return false;
-}
-
-/**
- * Returns whether Reservation Services team approval is required for a season.
- * @param {Season} season Season with park/parkArea/feature associations
- * @returns {boolean} True when RS team approval is required
- */
-function seasonRequiresReservationSvcApproval(season) {
-  // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
-  if (isFeatureWinterSeason(season)) {
-    return false;
-  }
-
-  const { anyInReservationSystem } = getSeasonReservationCoverage(season);
-
-  // RS team approval is required if inReservationSystem is true for any dates
-  if (anyInReservationSystem) return true;
-
-  // RS team approval is required for Park-level Winter fee seasons
-  if (season.park && isWinterSeason(season)) {
-    return true;
-  }
-
-  return false;
-}
 
 /**
  * Returns a string with the note, author and email address
@@ -361,15 +307,16 @@ function getGateDisplayValues(dateRange, gateDetail, annualData) {
 /**
  * Formats the Information Services team approval status for CSV display.
  * Returns "Yes" if approved, "N/A" if not required, or empty string if pending.
- * @param {Season} season Season with informationSvcApproved, gateDetail, and changeLogs loaded
+ * @param {Season} season Season with informationSvcApproved loaded
+ * @param {boolean} requiresApproval Whether IS team approval is required
  * @returns {string} Display value for the IS team approved column
  */
-function formatInformationSvcApprovalStatus(season) {
+function formatInformationSvcApprovalStatus(season, requiresApproval) {
   // The season is approved by the Info Services team: return "Yes"
   if (season.informationSvcApproved) return formatBoolean(true);
 
   // If the season is not approved by the IS team, check if it requires IS team approval
-  if (seasonRequiresInformationSvcApproval(season)) {
+  if (requiresApproval) {
     // Requires IS approval, but not approved yet: return an empty string
     return "";
   }
@@ -381,15 +328,16 @@ function formatInformationSvcApprovalStatus(season) {
 /**
  * Formats the Reservation Services team approval status for CSV display.
  * Returns "Yes" if approved, "N/A" if not required, or empty string if pending.
- * @param {Season} season Season with reservationSvcApproved and park/parkArea/feature associations loaded
+ * @param {Season} season Season with reservationSvcApproved loaded
+ * @param {boolean} requiresApproval Whether RS team approval is required
  * @returns {string} Display value for the RS team approved column
  */
-function formatReservationSvcApprovalStatus(season) {
+function formatReservationSvcApprovalStatus(season, requiresApproval) {
   // The season is approved by the Reservation Services team: return "Yes"
   if (season.reservationSvcApproved) return formatBoolean(true);
 
   // If the season is not approved by the RS team, check if it requires RS team approval
-  if (seasonRequiresReservationSvcApproval(season)) {
+  if (requiresApproval) {
     // Requires RS approval, but not approved yet: return an empty string
     return "";
   }
@@ -628,6 +576,17 @@ router.get(
         // Get the most recent changelog entry for update time
         const latestChangeLog = season.changeLogs.at(0);
 
+        // Calculate IS/RS team approval requirements from reservation-system coverage,
+        // current gate details, and any historical gate information in the change logs.
+        const {
+          requiresInformationSvcApproval,
+          requiresReservationSvcApproval,
+        } = getSeasonApprovalRequirements({
+          season,
+          gateDetail,
+          hadGate: hasGateHistory(season.changeLogs),
+        });
+
         // Get the Feature for this DateRange, if there is one
         const feature = getFeatureForDateRange(dateRange);
 
@@ -700,10 +659,14 @@ router.get(
           [colNames.IN_BCP_RESERVATION_SYSTEM]: formatBoolean(
             getInReservationSystem(season),
           ),
-          [colNames.IS_TEAM_APPROVED]:
-            formatInformationSvcApprovalStatus(season),
-          [colNames.RS_TEAM_APPROVED]:
-            formatReservationSvcApprovalStatus(season),
+          [colNames.IS_TEAM_APPROVED]: formatInformationSvcApprovalStatus(
+            season,
+            requiresInformationSvcApproval,
+          ),
+          [colNames.RS_TEAM_APPROVED]: formatReservationSvcApprovalStatus(
+            season,
+            requiresReservationSvcApproval,
+          ),
           [colNames.STATUS]: season.status,
           [colNames.READY_TO_PUBLISH]: formatBoolean(season.readyToPublish),
           [colNames.UPDATE_TIME]: formatChangeLogDate(
