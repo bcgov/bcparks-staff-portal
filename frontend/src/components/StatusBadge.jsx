@@ -106,28 +106,34 @@ export default function StatusBadge({
         )
       : [];
 
+  // RS/IS icon group
+  const teamApprovalGroup =
+    teamApprovalIcons.length > 0 ? (
+      <span className="status-badge-team-approvals">
+        {teamApprovalIcons.map(({ prop, abbreviation }) => {
+          const isTeamApproved = teamApprovalValues[prop];
+
+          return (
+            <span key={prop} className="status-badge-team">
+              <FontAwesomeIcon icon={isTeamApproved ? faCheck : faClock} />
+              {abbreviation}
+            </span>
+          );
+        })}
+      </span>
+    ) : null;
+
   // For ACT, show icon for approvers, otherwise show badge label
-  // For DOOT, show badge label for all users, plus the RS/IS approval details
+  // For DOOT, show badge label for all users,
+  // plus the RS/IS approval detail (icons) for approvers only
   return (
     <span className={classes}>
       {approver && icon ? icon : badgeLabel}
 
-      {teamApprovalIcons.length > 0 && (
+      {teamApprovalGroup && (
         <>
           <span className="status-badge-divider"> | </span>
-
-          <span className="status-badge-team-approvals">
-            {teamApprovalIcons.map(({ prop, abbreviation }) => {
-              const isTeamApproved = teamApprovalValues[prop];
-
-              return (
-                <span key={prop} className="status-badge-team">
-                  <FontAwesomeIcon icon={isTeamApproved ? faCheck : faClock} />
-                  {abbreviation}
-                </span>
-              );
-            })}
-          </span>
+          {teamApprovalGroup}
         </>
       )}
     </span>
