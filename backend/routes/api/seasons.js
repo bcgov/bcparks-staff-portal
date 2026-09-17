@@ -673,7 +673,11 @@ router.post(
           {
             model: Park,
             as: "park",
-            attributes: ["id", "inReservationSystem"],
+            attributes: [
+              "id",
+              "hasTier1Dates",
+              "hasTier2Dates",
+            ],
             required: false,
           },
           {
