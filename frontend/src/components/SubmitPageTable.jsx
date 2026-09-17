@@ -189,13 +189,13 @@ function ApproveButton({ seasonId, status, onApprove }) {
   async function approveSeason() {
     try {
       // Save and update status
-      await sendSave({ status: "approved" });
+      const response = await sendSave({ status: "approved" });
 
       // Refresh the main page data from the API
       await refreshTable();
 
       // Emit success to the parent component (to show a flash message)
-      onApprove();
+      onApprove(response.status);
     } catch (error) {
       // @TODO: Catch API error and show a flash message
       console.error("Error approving season:", error);
@@ -248,12 +248,20 @@ function StatusTableRow({
 
   /**
    * Displays a flash message when the Season's Dates are approved.
+   * @param {string} resolvedStatus Status returned by the save API
    * @returns {void}
    */
-  function onApprove() {
+  function onApprove(resolvedStatus) {
+    const statusMessage =
+      resolvedStatus === SEASON_STATUS.APPROVED.value
+        ? "dates marked as approved"
+        : "approval recorded; dates are still pending HQ review";
+
     flashMessage.open(
-      "Dates approved",
-      `${name} ${season.operatingYear} dates marked as approved`,
+      resolvedStatus === SEASON_STATUS.APPROVED.value
+        ? "Dates approved"
+        : "Approval recorded",
+      `${name} ${season.operatingYear} ${statusMessage}`,
     );
   }
 

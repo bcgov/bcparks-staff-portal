@@ -595,7 +595,7 @@ function SeasonForm({
 
     try {
       // Send the save request to the API
-      await sendSave(payload);
+      const response = await sendSave(payload);
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -609,6 +609,8 @@ function SeasonForm({
         setDeletedDateRangeIds([]);
         setSubmitWithErrors(false);
       }
+
+      return response;
     } catch (saveError) {
       // @TODO: Catch API error and show a flash message
       console.error("Error saving season:", saveError);
@@ -652,7 +654,23 @@ If dates have already been published, they will not be updated until new dates a
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
       // Don't reset the form data after saving, because the panel will close
-      await saveForm(allowSubmitWithErrors, STATUS.APPROVED.value, false);
+      const response = await saveForm(
+        allowSubmitWithErrors,
+        STATUS.APPROVED.value,
+        false,
+      );
+
+      // This occurs when one required approval has been recorded,
+      // but another required team approval is still missing.
+      if (response.status !== STATUS.APPROVED.value) {
+        flashMessage.open(
+          "Approval recorded",
+          `${seasonTitle} ${season.operatingYear} approval recorded; dates are still pending HQ review`,
+        );
+
+        resetData();
+        return;
+      }
 
       flashMessage.open(
         "Dates approved",
