@@ -199,12 +199,12 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (auth.isLoading && auth.activeNavigator !== "signinSilent") {
-    return <AuthenticationStatus message="Preparing your session..." />;
+    return <AuthenticationStatus message="Checking your sign-in status..." />;
   }
 
   if (isCheckingSilentAuth) {
-    // Attempting to restore an existing Keycloak SSO session before redirecting to login
-    return <AuthenticationStatus message="Preparing your session..." />;
+    // Check for an existing Keycloak SSO session before redirecting to login
+    return <AuthenticationStatus message="Checking your sign-in status..." />;
   }
 
   if (!auth.isAuthenticated) {
