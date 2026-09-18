@@ -71,8 +71,17 @@ export default [
     },
   },
 
-  // Ignore Admin JS bundle directory
+  // Test files and Vitest config import a devDependency, not a published dependency
   {
-    ignores: [".adminjs/"],
+    files: ["**/*.test.js", "vitest.config.js"],
+
+    rules: {
+      "n/no-unpublished-import": "off",
+    },
+  },
+
+  // Ignore Admin JS bundle directory and generated coverage reports
+  {
+    ignores: [".adminjs/", "coverage/"],
   },
 ];
