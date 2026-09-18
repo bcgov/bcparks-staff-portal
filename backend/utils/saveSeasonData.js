@@ -98,7 +98,7 @@ export async function updateStatus(
  * @param {number} params.userId User ID making the changes
  * @param {Transaction} params.transaction Database transaction
  * @param {boolean} params.isWinterSeason Whether this is a winter season
- * @returns {Promise<void>}
+ * @returns {Promise<Season>} The updated season model
  */
 export async function saveSeasonData({
   season,
@@ -269,7 +269,7 @@ export async function saveSeasonData({
     });
   }
 
-  await Promise.all([
+  const [updatedSeason] = await Promise.all([
     saveSeason,
     updateDates,
     createChangeLogs,
@@ -277,4 +277,6 @@ export async function saveSeasonData({
     saveDateRangeAnnuals,
     saveGateDetail,
   ]);
+
+  return updatedSeason;
 }

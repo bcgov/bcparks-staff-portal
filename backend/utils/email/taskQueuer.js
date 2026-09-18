@@ -1,4 +1,6 @@
 import { queueStrapiTask } from "../strapi/strapiTaskQueue.js";
+import { addDays, format } from "date-fns";
+import { PendingReminder } from "../../models/index.js";
 import {
   getEmailContentByType,
   getEditTargetLabel,
@@ -6,8 +8,13 @@ import {
 } from "./content.js";
 import { getPublishableDetails } from "./data.js";
 
+const FOLLOW_UP_DAYS = 14;
+
 /**
  * Queues an email notification for a season.
+ * NOTE: `isReminder: true` is only ever passed by the cron task, which calls
+ * this function directly and does not use the diagnostics wrapper in
+ * seasonNotifications.js.
  * @param {Object} options Notification options
  * @param {string}  options.emailType Notification email type
  * @param {Season}  options.season Season associated with the notification
@@ -52,7 +59,7 @@ async function queueNotification({
 
   // Only Management Area notifications require a resolved recipient list.
   if (notifyManagementArea && !recipientEmails.length) {
-    return { queued: false, editTargetLabel };
+    return { queued: false, reminderSet: false, editTargetLabel };
   }
 
   const { subject, heading, message, buttonText } = getEmailContentByType(
@@ -82,13 +89,29 @@ async function queueNotification({
     jsonData,
   });
 
-  // TODO: Write a MailLog record containing the email date, email type
-  // recipients, season ID, and season.updatedAt timestamp.
-  // If in two weeks, if the season is still a draft and the season.updatedAt
-  // timestamp is unchanged, we will use this information to send a reminder
-  // to the original recipients.
+  // Track this notification for a follow-up reminder in two weeks, if still
+  // pending. Upsert keeps only the latest version. The cron task sends the
+  // reminder with isReminder: true, so this block never runs for it.
+  if (!isReminder) {
+    try {
+      await PendingReminder.upsert({
+        emailType,
+        numericData: season.id,
+        jsonData, // kept for reference; regenerated when the reminder is sent
+        comparisonDate: season.updatedAt,
+        notifyManagementArea,
+        notifyInformationServices,
+        notifyReservationServices,
+        createdAt: new Date(),
+        followUpDate: format(addDays(new Date(), FOLLOW_UP_DAYS), "yyyy-MM-dd"),
+      });
+    } catch (error) {
+      console.error("Failed to upsert pending reminder:", error);
+      return { queued: true, reminderSet: false, editTargetLabel };
+    }
+  }
 
-  return { queued: true, editTargetLabel };
+  return { queued: true, reminderSet: !isReminder, editTargetLabel };
 }
 
 export { queueNotification, EMAIL_TYPE };
