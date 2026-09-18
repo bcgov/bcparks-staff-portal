@@ -7,7 +7,7 @@ import eslintConfigESLintFormatting from "eslint-config-eslint/formatting";
 import eslintConfigPrettier from "eslint-config-prettier";
 
 export default [
-  { ignores: ["dist"] },
+  { ignores: ["dist", "coverage"] },
   ...eslintConfigESLintBase,
   eslintConfigESLintFormatting,
 
