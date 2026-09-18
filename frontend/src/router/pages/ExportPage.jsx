@@ -115,7 +115,6 @@ function ExportPage() {
                   }}
                 />
               </div>
-              {/* TODO: Add export validation */}
               {!exportYear && (
                 <div className="text-danger validation-errors my-2">
                   Required

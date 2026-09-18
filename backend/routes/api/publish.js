@@ -21,7 +21,6 @@ import { checkPermissions } from "../../middleware/permissions.js";
 import * as USER_ROLES from "../../constants/userRoles.js";
 
 import * as STATUS from "../../constants/seasonStatus.js";
-import * as DATE_TYPE from "../../constants/dateType.js";
 import * as FEATURE_TYPE from "../../constants/featureType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
@@ -413,13 +412,6 @@ async function formatDateRanges(entity, season) {
         model: DateType,
         as: "dateType",
         attributes: ["id", "dateTypeNumber"],
-
-        where: {
-          // @TEMP: Filter out FCFS dates while they're being hidden in the UI
-          dateTypeNumber: {
-            [Op.ne]: DATE_TYPE.FIRST_COME_FIRST_SERVED,
-          },
-        },
       },
     ],
   });

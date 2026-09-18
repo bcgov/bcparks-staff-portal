@@ -58,7 +58,6 @@ TimePicker.propTypes = {
   defaultTime: PropTypes.string,
 };
 
-// TODO: create a shared component for time range and date range
 function TimeRangeForm({ gateDetail, updateGateDetail }) {
   return (
     <div className="row gx-0 mb-3">
