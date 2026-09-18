@@ -13,9 +13,11 @@ import { getCurrentDateCollectionYear } from "./operatingYearHelper.js";
  * @returns {{anyInReservationSystem: boolean, anyNotInReservationSystem: boolean}} Coverage flags for the season
  */
 export function getSeasonReservationCoverage(season) {
-  // Park Season: check the Park's inReservationSystem flag
+  // Park regular seasons are applicable to Reservation Services when they have
+  // Tier 1 or Tier 2 dates. Park inReservationSystem is not used for approvals.
   if (season.park) {
-    const inRS = Boolean(season.park.inReservationSystem);
+    const inRS =
+      season.park.hasTier1Dates === true || season.park.hasTier2Dates === true;
 
     return { anyInReservationSystem: inRS, anyNotInReservationSystem: !inRS };
   }
@@ -200,15 +202,38 @@ export function getSeasonApprovalRequirements({
   gateDetail = null,
   hadGate = false,
 }) {
+  // Area and Feature Winter fee seasons are system-derived and do not require
+  // either team's approval. Return early with both flags set to false.
+  if (isFeatureWinterSeason(season)) {
+    return {
+      requiresInformationSvcApproval: false,
+      requiresReservationSvcApproval: false,
+    };
+  }
+
+  const requiresReservationSvcApproval = seasonRequiresReservationSvcApproval({
+    season,
+  });
+  const requiresInformationSvcApproval = seasonRequiresInformationSvcApproval({
+    season,
+    gateDetail,
+    hadGate,
+  });
+
+  // After the Area/Feature Winter fee exemption, every form needs a reviewer.
+  // This most often covers a gate-only form where hasGate has always been false
+  // and there are no dates. Information Services is the default when no other
+  // rule applies.
+  if (!requiresInformationSvcApproval && !requiresReservationSvcApproval) {
+    return {
+      requiresInformationSvcApproval: true,
+      requiresReservationSvcApproval: false,
+    };
+  }
+
   return {
-    requiresInformationSvcApproval: seasonRequiresInformationSvcApproval({
-      season,
-      gateDetail,
-      hadGate,
-    }),
-    requiresReservationSvcApproval: seasonRequiresReservationSvcApproval({
-      season,
-    }),
+    requiresInformationSvcApproval,
+    requiresReservationSvcApproval,
   };
 }
 
@@ -258,7 +283,10 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
     );
 
     const parkContext = {
-      park: { inReservationSystem: park.inReservationSystem },
+      park: {
+        hasTier1Dates: park.hasTier1Dates,
+        hasTier2Dates: park.hasTier2Dates,
+      },
       gateDetail: { hasGate: park.hasGate },
       seasonIdsWithGateHistory,
     };
