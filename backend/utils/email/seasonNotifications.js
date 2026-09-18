@@ -19,7 +19,7 @@ async function queueNotificationWithDiagnostics(
   const diagnostics = [];
 
   try {
-    const { queued, editTargetLabel } = await queueNotification(
+    const { queued, reminderSet, editTargetLabel } = await queueNotification(
       queueNotificationArgs,
     );
 
@@ -28,6 +28,11 @@ async function queueNotificationWithDiagnostics(
         ? `Email notification (${emailType}) was queued for ${recipientGroup} for ${editTargetLabel} season ${season.id}.`
         : `Email notification (${emailType}) was not queued because no recipient email was found for ${editTargetLabel} season ${season.id}.`,
     );
+    if (queued && !reminderSet) {
+      diagnostics.push(
+        `A reminder for this notification was not scheduled. Check the backend server logs for error details.`,
+      );
+    }
   } catch (error) {
     console.error(
       `Failed to queue email notification (${emailType}) for season ${season.id}:`,

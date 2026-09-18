@@ -787,7 +787,7 @@ router.post(
       }
 
       // Persist the season state, dates, and related audit records to the DB
-      await saveSeasonData({
+      const updatedSeason = await saveSeasonData({
         season,
         dateRanges,
         dateRangeAnnuals,
@@ -847,7 +847,7 @@ router.post(
         diagnostics.push(
           ...(await notifyManagementArea(
             EMAIL_TYPE.DRAFT_REVIEW,
-            season,
+            updatedSeason,
             req.user?.name || "UNKNOWN",
           )),
         );
@@ -857,7 +857,7 @@ router.post(
       if (isOnlySubmitter && newStatus === STATUS.PENDING_REVIEW) {
         diagnostics.push(
           ...(await notifyHqApprovers(
-            season,
+            updatedSeason,
             req.user?.name || "UNKNOWN",
             requiresInformationSvcApproval,
             requiresReservationSvcApproval,
@@ -870,7 +870,7 @@ router.post(
         diagnostics.push(
           ...(await notifyManagementArea(
             EMAIL_TYPE.APPROVAL_REJECTED,
-            season,
+            updatedSeason,
             req.user?.name || "UNKNOWN",
           )),
         );
