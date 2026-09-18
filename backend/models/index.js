@@ -21,6 +21,7 @@ import AccessGroupParkModel from "./accessgrouppark.js";
 import SeasonChangeLogModel from "./seasonchangelog.js";
 import DateChangeLogModel from "./datechangelog.js";
 import AppSettingModel from "./appsetting.js";
+import PendingReminderModel from "./pendingreminder.js";
 
 // Junction tables with ID columns
 const Dateable = DateableModel(sequelize);
@@ -48,6 +49,7 @@ const AccessGroupPark = AccessGroupParkModel(sequelize);
 const SeasonChangeLog = SeasonChangeLogModel(sequelize);
 const DateChangeLog = DateChangeLogModel(sequelize);
 const AppSetting = AppSettingModel(sequelize);
+const PendingReminder = PendingReminderModel(sequelize);
 
 const models = {
   Dateable,
@@ -71,6 +73,7 @@ const models = {
   SeasonChangeLog,
   DateChangeLog,
   AppSetting,
+  PendingReminder,
 };
 
 Object.values(models).forEach((model) => {
@@ -101,4 +104,5 @@ export {
   UserAccessGroup,
   AccessGroupPark,
   AppSetting,
+  PendingReminder,
 };
