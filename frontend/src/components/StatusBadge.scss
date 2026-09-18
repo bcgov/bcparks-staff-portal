@@ -1,4 +1,7 @@
 .status-badge {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0.25rem;
   outline: var(--layout-border-width-medium) solid var(--theme-gray-white);
   &.text-bg-disabled {
     background-color: var(--surface-color-primary-disabled);
@@ -22,6 +25,18 @@
     }
     &.status-unpublished {
       background-color: var(--secondary-light-brown-01, #f2f0eb) !important;
+    }
+  }
+
+  &-team-approvals {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .status-badge-team {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
   }
 }
