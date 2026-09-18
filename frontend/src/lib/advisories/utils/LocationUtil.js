@@ -13,15 +13,16 @@ export function addProtectedAreas(
   sites,
   selProtectedAreas,
   selSites,
-  protectedAreaList = [],
+  protectedAreaList,
 ) {
+  const list = protectedAreaList ?? [];
   const tempParkList = [];
 
   protectedAreas.forEach((park) => {
     if (!selProtectedAreas.includes(park.documentId)) {
       selProtectedAreas.push(park.documentId);
       tempParkList.push(park.documentId);
-      protectedAreaList.push({ orcs: park.orcs, name: park.protectedAreaName });
+      list.push({ orcs: park.orcs, name: park.protectedAreaName });
     }
   });
   if (sites && sites.length > 0) {
@@ -34,8 +35,8 @@ export function addProtectedAreas(
       }
     });
   }
-  protectedAreaList.sort(parkNameCompare);
-  return protectedAreaList;
+  list.sort(parkNameCompare);
+  return list;
 }
 
 export function addProtectedAreasFromArea(
@@ -45,8 +46,10 @@ export function addProtectedAreasFromArea(
   selSites,
   sites,
   areaList,
-  protectedAreaList = [],
+  protectedAreaList,
 ) {
+  const list = protectedAreaList ?? [];
+
   area[field]?.forEach((f) => {
     const relatedArea = areaList.find((a) => a.obj.id === f.id);
 
@@ -55,8 +58,8 @@ export function addProtectedAreasFromArea(
       sites,
       selProtectedAreas,
       selSites,
-      protectedAreaList,
+      list,
     );
   });
-  return protectedAreaList;
+  return list;
 }
