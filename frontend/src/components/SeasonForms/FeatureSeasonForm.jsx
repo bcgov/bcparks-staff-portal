@@ -25,7 +25,13 @@ import isDateTypeOptional from "@/lib/isDateTypeOptional";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 
 // Individual Feature form section
-function FormSection({ dateTypes, feature, season, previousSeasonDates }) {
+function FormSection({
+  dateTypes,
+  feature,
+  season,
+  previousSeasonDates,
+  hideAnnualCheckbox,
+}) {
   const { elements } = useValidationContext();
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
@@ -180,6 +186,7 @@ function FormSection({ dateTypes, feature, season, previousSeasonDates }) {
             updateDateRangeAnnual={updateDateRangeAnnual}
             optional={isDateTypeOptional(dateType.dateTypeNumber, "feature")}
             canSpan2Years={feature.datesCanSpan2Years}
+            hideAnnualCheckbox={hideAnnualCheckbox}
           />
 
           <ErrorSlot
@@ -196,6 +203,7 @@ FormSection.propTypes = {
   feature: PropTypes.object.isRequired,
   season: PropTypes.object.isRequired,
   previousSeasonDates: PropTypes.arrayOf(PropTypes.object).isRequired,
+  hideAnnualCheckbox: PropTypes.bool,
 };
 
 export default function FeatureSeasonForm({
@@ -203,6 +211,7 @@ export default function FeatureSeasonForm({
   previousSeasonDates,
   dateTypes,
   approver,
+  hideAnnualCheckbox = false,
 }) {
   const { setData } = useContext(DataContext);
 
@@ -250,6 +259,7 @@ export default function FeatureSeasonForm({
               feature={feature}
               season={season}
               previousSeasonDates={previousSeasonDates}
+              hideAnnualCheckbox={hideAnnualCheckbox}
             />
           </FormContainer>
         ) : (
@@ -259,6 +269,7 @@ export default function FeatureSeasonForm({
               feature={feature}
               season={season}
               previousSeasonDates={previousSeasonDates}
+              hideAnnualCheckbox={hideAnnualCheckbox}
             />
           </div>
         ))}
@@ -270,6 +281,7 @@ export default function FeatureSeasonForm({
         updateGateDetail={updateGateDetail}
         level={"feature"}
         operatingYear={season.operatingYear}
+        hideAnnualCheckbox={hideAnnualCheckbox}
       />
 
       {/* Show Ready to Publish form input for approvers */}
@@ -323,4 +335,5 @@ FeatureSeasonForm.propTypes = {
   ).isRequired,
 
   approver: PropTypes.bool.isRequired,
+  hideAnnualCheckbox: PropTypes.bool,
 };

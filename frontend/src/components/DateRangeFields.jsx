@@ -135,6 +135,7 @@ export default function DateRangeFields({
   updateDateRangeAnnual,
   optional = false,
   canSpan2Years = false,
+  hideAnnualCheckbox = false,
 }) {
   const { elements } = useValidationContext();
   const dateTypeDisplayName = getDateTypeDisplayName(dateType.name);
@@ -239,18 +240,19 @@ export default function DateRangeFields({
         </button>
       )}
 
-      {/* Display checkbox except for Tier 1 and Tier 2 */}
-      {!(dateType.name === "Tier 1" || dateType.name === "Tier 2") && (
-        <Form.Check
-          type="checkbox"
-          id={`date-range-annual-${dateRangeAnnualId}`}
-          name={`date-range-annual-${dateRangeAnnualId}`}
-          label="Dates are the same every year"
-          checked={isDateRangeAnnual}
-          onChange={handleDateRangeAnnualChange}
-          className="mt-2 mb-0"
-        />
-      )}
+      {/* Display checkbox except for Tier 1 and Tier 2, and never on the Edit Published tab */}
+      {!hideAnnualCheckbox &&
+        !(dateType.name === "Tier 1" || dateType.name === "Tier 2") && (
+          <Form.Check
+            type="checkbox"
+            id={`date-range-annual-${dateRangeAnnualId}`}
+            name={`date-range-annual-${dateRangeAnnualId}`}
+            label="Dates are the same every year"
+            checked={isDateRangeAnnual}
+            onChange={handleDateRangeAnnualChange}
+            className="mt-2 mb-0"
+          />
+        )}
 
       <ErrorSlot
         elementId={
@@ -289,4 +291,5 @@ DateRangeFields.propTypes = {
   updateDateRangeAnnual: PropTypes.func.isRequired,
   optional: PropTypes.bool,
   canSpan2Years: PropTypes.bool,
+  hideAnnualCheckbox: PropTypes.bool,
 };

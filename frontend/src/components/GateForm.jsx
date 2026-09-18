@@ -29,6 +29,7 @@ export default function GateForm({
   previousDateRanges,
   level,
   operatingYear,
+  hideAnnualCheckbox = false,
 }) {
   // Functions
   function handleCheckboxChange(e) {
@@ -99,6 +100,7 @@ export default function GateForm({
                   dateRangeAnnuals={dateRangeAnnuals}
                   updateDateRangeAnnual={updateDateRangeAnnual}
                   optional={isDateTypeOptional(dateType.dateTypeNumber, level)}
+                  hideAnnualCheckbox={hideAnnualCheckbox}
                 />
               </div>
             )}
@@ -179,4 +181,5 @@ GateForm.propTypes = {
   previousDateRanges: PropTypes.arrayOf(PropTypes.object),
   level: PropTypes.string,
   operatingYear: PropTypes.number.isRequired,
+  hideAnnualCheckbox: PropTypes.bool,
 };
