@@ -6,6 +6,9 @@ import PropTypes from "prop-types";
 import AccessProvider from "@/router/AccessProvider";
 import getEnv from "@/config/getEnv";
 import ALLOWED_IDPS from "@/constants/allowedIdps";
+import HeaderTitle from "@/components/HeaderTitle";
+import LoadingBar from "@/components/LoadingBar";
+import Footer from "@/components/Footer";
 
 const frontendBaseUrl = getEnv("VITE_FRONTEND_BASE_URL");
 
@@ -55,6 +58,30 @@ function getLoginPath(location) {
   return "/login";
 }
 
+// Shows a branded loading state while authentication resolves before the main layout mounts.
+function AuthenticationStatus({ message }) {
+  return (
+    <div className="layout main min-vh-100 d-flex flex-column">
+      <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
+        <HeaderTitle />
+      </header>
+
+      <main className="p-0 d-flex flex-fill align-items-start">
+        <div className="container py-5" role="status" aria-live="polite">
+          <h1 className="h3 mb-4">{message}</h1>
+          <LoadingBar />
+        </div>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
+
+AuthenticationStatus.propTypes = {
+  message: PropTypes.string.isRequired,
+};
+
 // Higher-order component that wraps a route component for authentication
 // Wrap a "layout" component in this component to protect all of its children
 // Based on the Keycloak sample repo from the react-oidc-context authors:
@@ -72,6 +99,11 @@ export default function ProtectedRoute({ children }) {
 
   // Track if a redirect has happened to prevent redirect loops
   const [hasTriedSignin, setHasTriedSignin] = useState(false);
+
+  // Track whether we're attempting a silent sign-in to restore an existing
+  // Keycloak SSO session (e.g. a deep link opened in a new tab), so we can
+  // show a loading state instead of prematurely redirecting to /login
+  const [isCheckingSilentAuth, setIsCheckingSilentAuth] = useState(false);
 
   // Keep a ref to the latest location so event handlers always use the current page
   // without needing `location` in dependency arrays (which would re-subscribe on every navigation)
@@ -105,53 +137,79 @@ export default function ProtectedRoute({ children }) {
   }, [auth, navigate, setPostLoginRedirectPath]);
 
   /**
-   * Attempt to automatically sign in
+   * Attempt to automatically sign in.
+   *
+   * The OIDC user store lives in sessionStorage, which is scoped per-tab, so a
+   * fresh tab (e.g. from a deep link) always starts out unauthenticated even
+   * if the user already has a valid Keycloak SSO session. Before bouncing to
+   * the login page, try a silent sign-in via a hidden iframe (prompt=none) to
+   * pick up that existing session. If there is no valid SSO session, this
+   * fails fast (login_required) and we fall back to the normal login redirect.
    * See {@link https://github.com/authts/react-oidc-context?tab=readme-ov-file#automatic-sign-in}
    */
   useEffect(() => {
-    if (
-      !(
-        hasAuthParams() ||
-        auth.isAuthenticated ||
-        auth.activeNavigator ||
-        auth.isLoading ||
-        hasTriedSignin
-      )
-    ) {
+    if (!(
+      hasAuthParams() ||
+      auth.isAuthenticated ||
+      auth.activeNavigator ||
+      auth.isLoading ||
+      hasTriedSignin
+    )) {
       // Clean up any stale state from previous logins
       auth.clearStaleState();
       setHasTriedSignin(true);
+      setIsCheckingSilentAuth(true);
 
-      // Navigate to the login page, which will trigger the sign-in flow and redirect to Keycloak as needed
-      if (!auth.isAuthenticated) {
-        setPostLoginRedirectPath(getPostLoginRedirectUrl(locationRef.current));
-        navigate(getLoginPath(locationRef.current), { replace: true });
-      }
+      auth
+        .signinSilent()
+        .then((user) => {
+          // No active Keycloak SSO session (login_required) - send the user to the login page
+          if (!user) {
+            setPostLoginRedirectPath(
+              getPostLoginRedirectUrl(locationRef.current),
+            );
+            navigate(getLoginPath(locationRef.current), { replace: true });
+          }
+        })
+        .finally(() => setIsCheckingSilentAuth(false));
     }
   }, [auth, hasTriedSignin, navigate, setPostLoginRedirectPath]);
 
+  // A failed silent sign-in (no active SSO session) is expected and already handled
+  // above by redirecting to the login page, so it's excluded from this generic handler
+  const isSilentAuthCheckError = auth.error?.source === "signinSilent";
+
   // Clear broken auth state by sending the user through a fresh sign-out flow
   useEffect(() => {
-    if (auth.error) {
+    if (auth.error && !isSilentAuthCheckError) {
       // If there's an error, redirect to the sign-in page
       console.error("Authentication error:", auth.error);
       console.error("Redirecting to sign-in page...");
       auth.signoutRedirect();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- auth.signoutRedirect is stable; only re-run when error status changes
-  }, [auth.error]);
+  }, [auth.error, isSilentAuthCheckError]);
 
-  if (auth.error) {
-    return <div>Authentication error: {auth.error?.message}</div>;
+  if (auth.error && !isSilentAuthCheckError) {
+    return (
+      <AuthenticationStatus
+        message={`Authentication error: ${auth.error.message}`}
+      />
+    );
   }
 
   if (auth.isLoading && auth.activeNavigator !== "signinSilent") {
-    return <div>Checking authentication...</div>;
+    return <AuthenticationStatus message="Checking your sign-in status..." />;
+  }
+
+  if (isCheckingSilentAuth) {
+    // Check for an existing Keycloak SSO session before redirecting to login
+    return <AuthenticationStatus message="Checking your sign-in status..." />;
   }
 
   if (!auth.isAuthenticated) {
     // Block rendering until authenticated, or redirecting
-    return <div>Redirecting to login...</div>;
+    return <AuthenticationStatus message="Taking you to sign in..." />;
   }
 
   return <AccessProvider auth={auth}>{children}</AccessProvider>;
