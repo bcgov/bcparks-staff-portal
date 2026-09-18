@@ -1,27 +1,11 @@
-export function addProtectedAreasFromArea(
-  area,
-  field,
-  selProtectedAreas,
-  selSites,
-  sites,
-  areaList,
-  protectedAreaList,
-) {
-  if (!protectedAreaList) {
-    protectedAreaList = [];
+export function parkNameCompare(a, b) {
+  if (a.name < b.name) {
+    return -1;
   }
-  area[field]?.forEach((f) => {
-    const relatedArea = areaList.find((a) => a.obj.id === f.id);
-
-    addProtectedAreas(
-      relatedArea.obj.protectedAreas,
-      sites,
-      selProtectedAreas,
-      selSites,
-      protectedAreaList,
-    );
-  });
-  return protectedAreaList;
+  if (a.name > b.name) {
+    return 1;
+  }
+  return 0;
 }
 
 export function addProtectedAreas(
@@ -29,11 +13,8 @@ export function addProtectedAreas(
   sites,
   selProtectedAreas,
   selSites,
-  protectedAreaList,
+  protectedAreaList = [],
 ) {
-  if (!protectedAreaList) {
-    protectedAreaList = [];
-  }
   const tempParkList = [];
 
   protectedAreas.forEach((park) => {
@@ -57,12 +38,25 @@ export function addProtectedAreas(
   return protectedAreaList;
 }
 
-export function parkNameCompare(a, b) {
-  if (a.name < b.name) {
-    return -1;
-  }
-  if (a.name > b.name) {
-    return 1;
-  }
-  return 0;
+export function addProtectedAreasFromArea(
+  area,
+  field,
+  selProtectedAreas,
+  selSites,
+  sites,
+  areaList,
+  protectedAreaList = [],
+) {
+  area[field]?.forEach((f) => {
+    const relatedArea = areaList.find((a) => a.obj.id === f.id);
+
+    addProtectedAreas(
+      relatedArea.obj.protectedAreas,
+      sites,
+      selProtectedAreas,
+      selSites,
+      protectedAreaList,
+    );
+  });
+  return protectedAreaList;
 }
