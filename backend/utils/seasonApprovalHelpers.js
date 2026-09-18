@@ -46,26 +46,68 @@ export function getSeasonReservationCoverage(season) {
 }
 
 /**
- * Returns whether hasGate was ever changed from true to false for a season.
- * Any gate removal at any point in the season's history is treated as requiring IS review.
- * @param {number} seasonId The ID of the season to check
- * @returns {Promise<boolean>} True if a gate removal is recorded in the changelogs
+ * Returns whether a change log contains evidence that a gate existed.
+ * Checking both snapshots also covers a gate whose first recorded change is its removal.
+ * @param {Object} changeLog Season change log with old and new gate detail snapshots
+ * @returns {boolean} True when either snapshot records hasGate as true
  */
-export async function hasGateRemoved(seasonId) {
-  const log = await SeasonChangeLog.findOne({
-    attributes: ["id"],
+export function changeLogHasGate(changeLog) {
+  return (
+    changeLog.gateDetailOldValue?.hasGate === true ||
+    changeLog.gateDetailNewValue?.hasGate === true
+  );
+}
+
+/**
+ * Returns whether any loaded change log contains evidence that a gate existed.
+ * @param {Array<Object>} [changeLogs=[]] Season change logs
+ * @returns {boolean} True when at least one change log records hasGate as true
+ */
+export function hasGateHistory(changeLogs = []) {
+  return changeLogs.some(changeLogHasGate);
+}
+
+/**
+ * Fetches the IDs of seasons whose change logs show that a gate existed.
+ * This bulk loader keeps database access separate from the pure approval rules.
+ * @param {Array<number>|Set<number>} seasonIds Season IDs to check
+ * @param {Object} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Set<number>>} Season IDs with gate history
+ */
+export async function fetchSeasonIdsWithGateHistory(seasonIds, transaction) {
+  const ids = [...seasonIds];
+
+  if (ids.length === 0) return new Set();
+
+  const rows = await SeasonChangeLog.findAll({
+    attributes: ["seasonId"],
     where: {
-      seasonId,
-      [Op.and]: [
+      seasonId: { [Op.in]: ids },
+      [Op.or]: [
         Sequelize.literal(`("gateDetailOldValue"->>'hasGate')::boolean = true`),
-        Sequelize.literal(
-          `("gateDetailNewValue"->>'hasGate')::boolean = false`,
-        ),
+        Sequelize.literal(`("gateDetailNewValue"->>'hasGate')::boolean = true`),
       ],
     },
+    group: ["seasonId"],
+    ...(transaction ? { transaction } : {}),
   });
 
-  return log !== null;
+  return new Set(rows.map((row) => row.seasonId));
+}
+
+/**
+ * Returns whether one season's change logs show that a gate existed.
+ * @param {number} seasonId Season ID to check
+ * @param {Object} [transaction] Optional Sequelize transaction
+ * @returns {Promise<boolean>} True when the season has gate history
+ */
+export async function fetchHasGateHistory(seasonId, transaction) {
+  const seasonIdsWithGateHistory = await fetchSeasonIdsWithGateHistory(
+    [seasonId],
+    transaction,
+  );
+
+  return seasonIdsWithGateHistory.has(seasonId);
 }
 
 /**
@@ -91,10 +133,17 @@ export function isFeatureWinterSeason(season) {
 
 /**
  * Returns whether Information Services team approval is required for a season.
- * @param {Season} season Season with park/parkArea/feature and optional gateDetail/changeLogs data
+ * @param {Object} params Inputs used to determine the requirement
+ * @param {Season} params.season Season with park/parkArea/feature associations
+ * @param {Object|null} params.gateDetail Current gate detail
+ * @param {boolean} params.hadGate Whether current or historical data shows that a gate existed
  * @returns {boolean} True when IS team approval is required
  */
-export function seasonRequiresInformationSvcApproval(season) {
+export function seasonRequiresInformationSvcApproval({
+  season,
+  gateDetail,
+  hadGate = false,
+}) {
   // Winter fee seasons never require Information Services team approval.
   // Even if the park has a gate, the gate information is only checked on regular seasons.
   if (isWinterSeason(season)) {
@@ -106,28 +155,20 @@ export function seasonRequiresInformationSvcApproval(season) {
   // IS team approval is required if inReservationSystem is false for any dates
   if (anyNotInReservationSystem) return true;
 
-  // IS team approval is required if hasGate is true
-  if (season.gateDetail?.hasGate === true) return true;
-
-  // IS team approval is required if hasGate was changed to false
-  const gateRemoved = (season.changeLogs || []).some((changeLog) => {
-    const oldHasGate = changeLog.gateDetailOldValue?.hasGate === true;
-    const newHasGate = changeLog.gateDetailNewValue?.hasGate === true;
-
-    return oldHasGate && !newHasGate;
-  });
-
-  if (gateRemoved) return true;
+  // IS team approval is required when gate information currently exists,
+  // or ever existed for this season form.
+  if (gateDetail?.hasGate === true || hadGate) return true;
 
   return false;
 }
 
 /**
  * Returns whether Reservation Services team approval is required for a season.
- * @param {Season} season Season with park/parkArea/feature associations
+ * @param {Object} params Inputs used to determine the requirement
+ * @param {Season} params.season Season with park/parkArea/feature associations
  * @returns {boolean} True when RS team approval is required
  */
-export function seasonRequiresReservationSvcApproval(season) {
+export function seasonRequiresReservationSvcApproval({ season }) {
   // Feature/Area Winter fee seasons are system-derived and do not require team-approval workflow.
   if (isFeatureWinterSeason(season)) {
     return false;
@@ -147,6 +188,31 @@ export function seasonRequiresReservationSvcApproval(season) {
 }
 
 /**
+ * Calculates all team approval requirements from data supplied by the caller.
+ * @param {Object} params Inputs used to determine approval requirements
+ * @param {Season} params.season Season with park/parkArea/feature associations
+ * @param {Object|null} params.gateDetail Current gate detail
+ * @param {boolean} params.hadGate Whether current or historical data shows that a gate existed
+ * @returns {{requiresInformationSvcApproval: boolean, requiresReservationSvcApproval: boolean}} Required team approvals
+ */
+export function getSeasonApprovalRequirements({
+  season,
+  gateDetail = null,
+  hadGate = false,
+}) {
+  return {
+    requiresInformationSvcApproval: seasonRequiresInformationSvcApproval({
+      season,
+      gateDetail,
+      hadGate,
+    }),
+    requiresReservationSvcApproval: seasonRequiresReservationSvcApproval({
+      season,
+    }),
+  };
+}
+
+/**
  * Annotates a season with required team approval flags.
  * @param {Object} season Season object
  * @param {Object} context Context containing park/parkArea/feature and gate removal info
@@ -155,40 +221,33 @@ export function seasonRequiresReservationSvcApproval(season) {
 function addTeamApprovalRequiredFlags(season, context) {
   if (!season) return;
 
-  const gateRemovedSeasonIds = context.gateRemovedSeasonIds || new Set();
-
-  const gateRemoved = gateRemovedSeasonIds.has(season.id);
   const seasonContext = {
     seasonType: season.seasonType,
     park: context.park,
     parkArea: context.parkArea,
     feature: context.feature,
-    gateDetail: context.gateDetail,
-    changeLogs: gateRemoved
-      ? [
-          {
-            gateDetailOldValue: { hasGate: true },
-            gateDetailNewValue: { hasGate: false },
-          },
-        ]
-      : [],
   };
+  const requirements = getSeasonApprovalRequirements({
+    season: seasonContext,
+    gateDetail: context.gateDetail,
+    hadGate: context.seasonIdsWithGateHistory.has(season.id),
+  });
 
   season.requiresInformationSvcApproval =
-    seasonRequiresInformationSvcApproval(seasonContext);
+    requirements.requiresInformationSvcApproval;
   season.requiresReservationSvcApproval =
-    seasonRequiresReservationSvcApproval(seasonContext);
+    requirements.requiresReservationSvcApproval;
 }
 
 /**
  * Adds required-approval flags to current seasons at park/area/feature levels.
  * @param {Array<Object>} parks Parks output array
- * @param {Set<number>} gateRemovedSeasonIds Current season IDs where gate was changed from true to false
+ * @param {Set<number>} seasonIdsWithGateHistory Current season IDs whose change logs show that a gate existed
  * @returns {Array<Object>} Parks array with required-approval flags added
  */
 export function addRequiredApprovalFlagsToCurrentSeasons(
   parks,
-  gateRemovedSeasonIds,
+  seasonIdsWithGateHistory,
 ) {
   return parks.map((park) => {
     // Park object doesn't have currentSeason (winter or regular),
@@ -201,7 +260,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
     const parkContext = {
       park: { inReservationSystem: park.inReservationSystem },
       gateDetail: { hasGate: park.hasGate },
-      gateRemovedSeasonIds,
+      seasonIdsWithGateHistory,
     };
 
     currentParkSeasons.forEach((season) => {
@@ -217,7 +276,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
           })),
         },
         gateDetail: { hasGate: parkArea.hasGate },
-        gateRemovedSeasonIds,
+        seasonIdsWithGateHistory,
       };
 
       addTeamApprovalRequiredFlags(
@@ -230,7 +289,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
       const featureContext = {
         feature: { inReservationSystem: feature.inReservationSystem },
         gateDetail: { hasGate: feature.hasGate },
-        gateRemovedSeasonIds,
+        seasonIdsWithGateHistory,
       };
 
       addTeamApprovalRequiredFlags(
@@ -245,8 +304,7 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
 
 /**
  * Returns whether the Season's gate detail requires Information Services review.
- * Gate review is required when the gate detail hasGate value is true,
- * or when hasGate is changed from true to false.
+ * Gate review is required when either the old or new gate detail shows that a gate ever existed.
  * @param {Object|null} oldGateDetail Existing gate detail before the save
  * @param {Object|null} newGateDetail Incoming gate detail from the request
  * @returns {boolean} True when the gate state requires Information Services review
@@ -254,16 +312,17 @@ export function addRequiredApprovalFlagsToCurrentSeasons(
 export function requiresGateApproval(oldGateDetail, newGateDetail) {
   const oldHasGate = oldGateDetail?.hasGate === true;
   const newHasGate = newGateDetail?.hasGate === true;
-  const removedGate = oldHasGate && !newHasGate;
 
-  // Information Services team must review seasons with gate info,
-  // or cases where a gate was removed.
-  return newHasGate || removedGate;
+  // Information Services team must review seasons with current gate info,
+  // or cases where gate information existed before this save.
+  return oldHasGate || newHasGate;
 }
 
 /**
- * Determines which team approvals are required to change the season status to APPROVED so it can be published.
- * The decision is based on reservation-system coverage and gate data.
+ * Calculates approval requirements for the season save workflow.
+ * Uses the old and incoming gate details first, then fetches historical gate data only
+ * when another rule has not already determined that Information Services review is required.
+ * Delegates the final IS/RS decisions to getSeasonApprovalRequirements.
  * Logic is additive: a condition requiring an IS approval and
  * a different condition requiring RS approval would mean both IS and RS approval is required.
  * @param {Object} params Inputs used to determine approval requirements
@@ -272,55 +331,30 @@ export function requiresGateApproval(oldGateDetail, newGateDetail) {
  * @param {Object|null} params.gateDetail Incoming gate detail from the request
  * @returns {Promise<{requiresInformationSvcApproval: boolean, requiresReservationSvcApproval: boolean}>} Required team approvals for this save
  */
-export async function getRequiredApprovalsForSeason({
+async function calculateSaveApprovalRequirements({
   season,
   oldGateDetail,
   gateDetail,
 }) {
-  // Feature/Area Winter fee seasons are system-derived and bypass team approvals.
-  if (isFeatureWinterSeason(season)) {
-    return {
-      requiresInformationSvcApproval: false,
-      requiresReservationSvcApproval: false,
-    };
-  }
+  const hadGateInCurrentSave = requiresGateApproval(oldGateDetail, gateDetail);
+  let { requiresInformationSvcApproval, requiresReservationSvcApproval } =
+    getSeasonApprovalRequirements({
+      season,
+      gateDetail,
+      hadGate: hadGateInCurrentSave,
+    });
 
-  let requiresInformationSvcApproval = false;
-  let requiresReservationSvcApproval = false;
+  // Skip the history query when another rule already requires IS approval.
+  // Winter seasons never require IS approval, even if their publishable has gate history.
+  if (!requiresInformationSvcApproval && !isWinterSeason(season) && season.id) {
+    const hadGate = await fetchHasGateHistory(season.id);
 
-  const { anyInReservationSystem, anyNotInReservationSystem } =
-    getSeasonReservationCoverage(season);
-
-  // RS approval is required when reservation-system coverage applies,
-  // including park-area features with mixed coverage.
-  if (anyInReservationSystem) requiresReservationSvcApproval = true;
-
-  // Park-level Winter fee seasons require RS approval.
-  if (season.park && isWinterSeason(season)) {
-    requiresReservationSvcApproval = true;
-  }
-
-  // Park-level Winter fee seasons always require RS approval, but never require IS approval.
-  // Even if the park has a gate, the gate information is only checked on regular seasons.
-  if (!isWinterSeason(season)) {
-    // IS approval is required when non-reservation-system coverage applies,
-    // including park-area features with mixed coverage.
-    if (anyNotInReservationSystem) {
-      requiresInformationSvcApproval = true;
-    }
-
-    // IS approval required if hasGate is currently true, or is being removed in this save.
-    if (requiresGateApproval(oldGateDetail, gateDetail)) {
-      requiresInformationSvcApproval = true;
-    }
-
-    // IS approval required if hasGate was ever removed in a previous save.
-    // Skip the query if IS approval is already determined.
-    if (!requiresInformationSvcApproval && season.id) {
-      if (await hasGateRemoved(season.id)) {
-        requiresInformationSvcApproval = true;
-      }
-    }
+    ({ requiresInformationSvcApproval, requiresReservationSvcApproval } =
+      getSeasonApprovalRequirements({
+        season,
+        gateDetail,
+        hadGate,
+      }));
   }
 
   return {
@@ -351,7 +385,7 @@ export async function resolveSeasonApprovalState({
   isReservationSvcApprover,
 }) {
   const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
-    await getRequiredApprovalsForSeason({
+    await calculateSaveApprovalRequirements({
       season,
       oldGateDetail,
       gateDetail,

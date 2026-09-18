@@ -21,7 +21,10 @@ import asyncHandler from "express-async-handler";
 import checkUserRoles, {
   getRolesFromAuth,
 } from "../../utils/checkUserRoles.js";
-import { addRequiredApprovalFlagsToCurrentSeasons } from "../../utils/seasonApprovalHelpers.js";
+import {
+  addRequiredApprovalFlagsToCurrentSeasons,
+  fetchSeasonIdsWithGateHistory,
+} from "../../utils/seasonApprovalHelpers.js";
 import getCurrentSeasonIds from "../../utils/getCurrentSeasonIds.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
@@ -677,28 +680,10 @@ router.get(
       lastUpdatedQuery,
     ]);
 
-    const gateRemovedRows =
-      currentSeasonIds.size > 0
-        ? await SeasonChangeLog.findAll({
-            attributes: ["seasonId"],
-            where: {
-              seasonId: { [Op.in]: [...currentSeasonIds] },
-              [Op.and]: [
-                sequelize.literal(
-                  `("gateDetailOldValue"->>'hasGate')::boolean = true`,
-                ),
-                sequelize.literal(
-                  `("gateDetailNewValue"->>'hasGate')::boolean = false`,
-                ),
-              ],
-            },
-            group: ["seasonId"],
-          })
-        : [];
-
-    const gateRemovedSeasonIds = new Set(
-      gateRemovedRows.map((row) => row.seasonId),
-    );
+    // Fetch gate history for all current seasons in one query so the approval
+    // calculation below remains synchronous.
+    const seasonIdsWithGateHistory =
+      await fetchSeasonIdsWithGateHistory(currentSeasonIds);
 
     // Build hasGate lookup map by publishableId.
     const hasGateByPublishableId = new Map();
@@ -799,7 +784,7 @@ router.get(
 
     output = addRequiredApprovalFlagsToCurrentSeasons(
       output,
-      gateRemovedSeasonIds,
+      seasonIdsWithGateHistory,
     );
 
     res.json(output);
