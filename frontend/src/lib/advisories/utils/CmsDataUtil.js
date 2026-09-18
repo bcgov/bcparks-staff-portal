@@ -7,8 +7,8 @@ import qs from "qs";
  * All exported functions from this file can be replaced with the corresponding functions from the `useCms` hook.
  */
 
-const querySort = (key) =>
-  qs.stringify(
+function querySort(key) {
+  return qs.stringify(
     {
       sort: [key],
     },
@@ -19,6 +19,7 @@ const querySort = (key) =>
       encodeValuesOnly: true,
     },
   );
+}
 
 export function getProtectedAreas(cmsData, setCmsData) {
   if (!cmsData.protectedAreas) {
@@ -337,7 +338,7 @@ export function getParkRelations(parkId) {
       };
     })
     .catch((err) => {
-      console.log(err);
+      console.error(err);
     });
 
   return result;
