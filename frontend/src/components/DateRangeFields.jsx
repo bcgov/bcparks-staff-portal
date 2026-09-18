@@ -21,6 +21,7 @@ function DateRange({
   removeDateRange,
   removable = true,
   isDateRangeAnnual,
+  hideAnnualCheckbox,
   minDate,
   maxDate,
 }) {
@@ -53,7 +54,7 @@ function DateRange({
             dateField="startDate"
             minDate={minDate}
             maxDate={maxDate}
-            disabled={isDateRangeAnnual}
+            disabled={isDateRangeAnnual && !hideAnnualCheckbox}
             date={dateRange.startDate}
             onSelect={onSelect}
           />
@@ -72,7 +73,7 @@ function DateRange({
               dateRange.startDate ? addDays(dateRange.startDate, 1) : minDate
             }
             maxDate={maxDate}
-            disabled={isDateRangeAnnual}
+            disabled={isDateRangeAnnual && !hideAnnualCheckbox}
             date={dateRange.endDate}
             onSelect={onSelect}
           />
@@ -118,6 +119,7 @@ DateRange.propTypes = {
   // Allow removal only if it's not the first date range
   removable: PropTypes.bool,
   isDateRangeAnnual: PropTypes.bool.isRequired,
+  hideAnnualCheckbox: PropTypes.bool.isRequired,
   minDate: PropTypes.instanceOf(Date).isRequired,
   maxDate: PropTypes.instanceOf(Date).isRequired,
 };
@@ -222,6 +224,7 @@ export default function DateRangeFields({
             removeDateRange={removeDateRange}
             removable={optional || index > 0}
             isDateRangeAnnual={isDateRangeAnnual}
+            hideAnnualCheckbox={hideAnnualCheckbox}
             minDate={minDate}
             maxDate={maxDate}
           />
@@ -233,7 +236,7 @@ export default function DateRangeFields({
           type="button"
           className="btn btn-text text-link p-0"
           onClick={() => addDateRange(dateType)}
-          disabled={isDateRangeAnnual}
+          disabled={isDateRangeAnnual && !hideAnnualCheckbox}
         >
           <FontAwesomeIcon icon={faPlus} />
           <span className="ms-1">Add more {dateTypeDisplayName} dates</span>
