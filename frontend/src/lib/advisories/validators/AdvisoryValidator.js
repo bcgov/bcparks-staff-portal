@@ -3,7 +3,7 @@ import { isEmpty } from "@/lib/advisories/utils/AppUtil";
 
 export function validateOptionalNumber(field) {
   field.setError("");
-  if (field.value === "" || !/^0$|^[1-9]\d{0,3}$/.test(field.value)) {
+  if (field.value === "" || !/^0$|^[1-9]\d{0,3}$/u.test(field.value)) {
     field.setError("Enter a valid number");
     return false;
   }
@@ -68,6 +68,16 @@ export function validateRequiredAffectedResources({
   return false;
 }
 
+export function validateDate(field) {
+  const date = moment(field.value);
+
+  if (!date.isValid()) {
+    field.setError("Enter a valid date");
+    return false;
+  }
+  return true;
+}
+
 export function validateOptionalDate(field) {
   field.setError("");
   if (field.value) {
@@ -79,16 +89,6 @@ export function validateOptionalDate(field) {
 export function validateRequiredDate(field) {
   field.setError("");
   return validateDate(field);
-}
-
-export function validateDate(field) {
-  const date = moment(field.value);
-
-  if (!date.isValid()) {
-    field.setError("Enter a valid date");
-    return false;
-  }
-  return true;
 }
 
 export function validateLinks(links, linkErrorsStatus) {

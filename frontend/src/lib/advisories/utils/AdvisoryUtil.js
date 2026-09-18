@@ -37,6 +37,53 @@ function isLatestStatutoryHolidayList(statData) {
   return true;
 }
 
+function setAreaValues(
+  areas,
+  selAreas,
+  selProtectedAreas,
+  selSites,
+  sites,
+  areaList,
+) {
+  if (areas && areas.length > 0) {
+    areas.forEach((a) => {
+      selAreas.push(a.value);
+      if (
+        a.type === "managementArea" ||
+        a.type === "fireZone" ||
+        a.type === "naturalResourceDistrict"
+      ) {
+        addProtectedAreas(
+          a.obj.protectedAreas,
+          sites,
+          selProtectedAreas,
+          selSites,
+        );
+      } else if (a.type === "site") {
+        selProtectedAreas.push(a.obj.protectedArea.documentId);
+      } else if (a.type === "region" || a.type === "section") {
+        addProtectedAreasFromArea(
+          a.obj,
+          "managementAreas",
+          selProtectedAreas,
+          selSites,
+          sites,
+          areaList,
+        );
+      } else if (a.type === "fireCentre") {
+        addProtectedAreasFromArea(
+          a.obj,
+          "fireZones",
+          selProtectedAreas,
+          selSites,
+          sites,
+          areaList,
+        );
+      }
+    });
+  }
+}
+
 export function generateProtectedAreasListForSelectedRelations(
   selectedRegions,
   selectedSections,
@@ -110,53 +157,6 @@ export function generateProtectedAreasListForSelectedRelations(
   return selProtectedAreas;
 }
 
-const setAreaValues = (
-  areas,
-  selAreas,
-  selProtectedAreas,
-  selSites,
-  sites,
-  areaList,
-) => {
-  if (areas && areas.length > 0) {
-    areas.forEach((a) => {
-      selAreas.push(a.value);
-      if (
-        a.type === "managementArea" ||
-        a.type === "fireZone" ||
-        a.type === "naturalResourceDistrict"
-      ) {
-        addProtectedAreas(
-          a.obj.protectedAreas,
-          sites,
-          selProtectedAreas,
-          selSites,
-        );
-      } else if (a.type === "site") {
-        selProtectedAreas.push(a.obj.protectedArea.documentId);
-      } else if (a.type === "region" || a.type === "section") {
-        addProtectedAreasFromArea(
-          a.obj,
-          "managementAreas",
-          selProtectedAreas,
-          selSites,
-          sites,
-          areaList,
-        );
-      } else if (a.type === "fireCentre") {
-        addProtectedAreasFromArea(
-          a.obj,
-          "fireZones",
-          selProtectedAreas,
-          selSites,
-          sites,
-          areaList,
-        );
-      }
-    });
-  }
-};
-
 export function calculateIsStatHoliday(
   setIsStatHoliday,
   cmsData,
@@ -186,7 +186,7 @@ export function calculateIsStatHoliday(
           setIsStatHoliday(calculateStatHoliday(statData));
         })
         .catch((err) => {
-          console.log(err);
+          console.error(err);
           // Call Statutory Holiday API if CMS cache is not available
           axios
             .get(getEnv("VITE_STAT_HOLIDAY_API"))
@@ -206,7 +206,7 @@ export function calculateIsStatHoliday(
                   },
                 )
                 .catch((error) => {
-                  console.log(
+                  console.error(
                     "error occurred writing statutory holidays to cms",
                     error,
                   );
@@ -214,7 +214,7 @@ export function calculateIsStatHoliday(
             })
             .catch((error) => {
               setIsStatHoliday(false);
-              console.log(
+              console.error(
                 "error occurred fetching statutory holidays from API",
                 error,
               );
