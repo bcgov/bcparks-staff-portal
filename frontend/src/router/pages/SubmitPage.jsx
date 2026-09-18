@@ -177,7 +177,6 @@ function SubmitPage() {
     dateTypes: [],
     featureTypes: [],
     isInReservationSystem: false,
-    hasDateNote: false,
   });
   const [formData, setFormData] = useState({});
   const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
@@ -232,7 +231,6 @@ function SubmitPage() {
       dateTypes: [],
       featureTypes: [],
       isInReservationSystem: false,
-      hasDateNote: false,
     });
   }
 

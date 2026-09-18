@@ -163,17 +163,6 @@ export default function FilterStatus({
       });
     }
 
-    // Has Date Note filter (boolean)
-    if (activeFilters.hasDateNote) {
-      tags.push({
-        label: `Has Date Note`,
-
-        remove() {
-          updateFilter("hasDateNote", false);
-        },
-      });
-    }
-
     return tags;
   }, [activeFilters, updateFilter]);
 
@@ -239,7 +228,6 @@ FilterStatus.propTypes = {
       }),
     ),
     isInReservationSystem: PropTypes.bool,
-    hasDateNote: PropTypes.bool,
   }).isRequired,
   filteredCount: PropTypes.number.isRequired,
   ClearFilters: PropTypes.func.isRequired,

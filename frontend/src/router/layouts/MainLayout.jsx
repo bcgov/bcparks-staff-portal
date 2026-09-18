@@ -21,7 +21,6 @@ export default function MainLayout() {
   const globalFlashMessage = useFlashMessage();
 
   // Fetch the user name to display in the header
-  // @TODO: Fetch this in a hook, only if the user is authenticated
   const userDetails = useApiGet("/user");
 
   // Check if the app is running in production

@@ -29,7 +29,6 @@ export default function AccessProvider({ children, auth }) {
   const rolesKey = useMemo(() => JSON.stringify(roles), [roles]);
   const memoizedRoles = useMemo(() => JSON.parse(rolesKey), [rolesKey]);
 
-  // @TODO: implement fine-grained permission checks here
   const checkAccess = useCallback(
     (requiredRole) => {
       // Super admin can access everything

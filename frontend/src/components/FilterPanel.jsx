@@ -105,17 +105,6 @@ function FilterPanel({
                   }
                 />
               </div>
-              <div className="mt-4">
-                {/* TODO: CMS-788 */}
-                <SwitchToggle
-                  id="has-date-note"
-                  label="Has date note"
-                  checked={filters.hasDateNote}
-                  onChange={(e) =>
-                    updateFilter("hasDateNote", e.target.checked)
-                  }
-                />
-              </div>
             </div>
             <div className="mt-4">
               <h3>Park</h3>
@@ -162,7 +151,6 @@ FilterPanel.propTypes = {
     featureTypes: PropTypes.arrayOf(PropTypes.object),
     accessGroups: PropTypes.arrayOf(PropTypes.object),
     isInReservationSystem: PropTypes.bool,
-    hasDateNote: PropTypes.bool,
   }).isRequired,
   updateFilter: PropTypes.func.isRequired,
   filterOptions: PropTypes.shape({

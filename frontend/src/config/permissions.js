@@ -1,5 +1,3 @@
-// @TODO: map role names to specific permissions
-
 // Export constants for role names
 export const ROLES = {
   SUPER_ADMIN: "super-admin",
