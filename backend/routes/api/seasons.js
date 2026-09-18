@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { queueDraftReviewEmail } from "../../utils/email/taskQueuer.js";
+import {
+  notifyManagementArea,
+  notifyHqApprovers,
+  EMAIL_TYPE,
+} from "../../utils/email/seasonNotifications.js";
 import _ from "lodash";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
@@ -586,7 +590,11 @@ router.get(
 // Save changes from the season form
 router.post(
   "/:seasonId/save/",
-  checkPermissions([USER_ROLES.DOOT_SUBMITTER, USER_ROLES.DOOT_CONTRIBUTOR]),
+  checkPermissions([
+    USER_ROLES.DOOT_APPROVER,
+    USER_ROLES.DOOT_SUBMITTER,
+    USER_ROLES.DOOT_CONTRIBUTOR,
+  ]),
   asyncHandler(async (req, res) => {
     const diagnostics = [];
     const seasonId = Number(req.params.seasonId);
@@ -616,10 +624,11 @@ router.post(
     const userRoles = getRolesFromAuth(req.auth);
     const isApprover = checkUserRoles(userRoles, [USER_ROLES.DOOT_APPROVER]);
     const isSubmitter = checkUserRoles(userRoles, [USER_ROLES.DOOT_SUBMITTER]);
-    const isOnlyContributor =
-      checkUserRoles(userRoles, [USER_ROLES.DOOT_CONTRIBUTOR]) &&
-      !isSubmitter &&
-      !isApprover;
+    const isOnlySubmitter = isSubmitter && !isApprover;
+    const isContributor = checkUserRoles(userRoles, [
+      USER_ROLES.DOOT_CONTRIBUTOR,
+    ]);
+    const isOnlyContributor = isContributor && !isSubmitter && !isApprover;
 
     // Check IS/RS team-specific approver roles
     const isInformationSvcApprover = checkUserRoles(userRoles, [
@@ -830,41 +839,38 @@ router.post(
 
       await transaction.commit();
 
-      // if the season was saved as draft by an only contributor, include a note in the response
+      // contributor role clicked 'Save draft' button, notify the Management Area
       if (isOnlyContributor && newStatus === STATUS.REQUESTED) {
-        // TODO: we will get settings from the AppSettings table later
-        const settings = {
-          notificationsEnabled: true,
-          areaSupervisorNotificationsEnabled: true,
-        };
+        diagnostics.push(
+          ...(await notifyManagementArea(
+            EMAIL_TYPE.DRAFT_REVIEW,
+            season,
+            req.user?.name || "UNKNOWN",
+          )),
+        );
+      }
 
-        if (
-          settings.notificationsEnabled &&
-          settings.areaSupervisorNotificationsEnabled
-        ) {
-          // Notify the regional staff member assigned to the Management Area.
-          try {
-            const emailQueued = await queueDraftReviewEmail(
-              season,
-              req.user,
-              "routes::api::seasons::season-save",
-            );
+      // submitter role clicked 'Submit to HQ' button, notify IS or RS or both
+      if (isOnlySubmitter && newStatus === STATUS.PENDING_REVIEW) {
+        diagnostics.push(
+          ...(await notifyHqApprovers(
+            season,
+            req.user?.name || "UNKNOWN",
+            requiresInformationSvcApproval,
+            requiresReservationSvcApproval,
+          )),
+        );
+      }
 
-            diagnostics.push(
-              emailQueued
-                ? `Email notification will be sent to the regional staff member assigned to the Management Area for Season ${season.id}.`
-                : `Email notification was not queued because no recipient email was found for Season ${season.id}.`,
-            );
-          } catch (error) {
-            console.error(
-              `Failed to queue email notification for Season ${season.id}:`,
-              error,
-            );
-            diagnostics.push(
-              `Email notification could not be queued for Season ${season.id}.`,
-            );
-          }
-        }
+      // approver role clicked 'Save draft' button, notify the Management Area
+      if (isApprover && newStatus === STATUS.REQUESTED) {
+        diagnostics.push(
+          ...(await notifyManagementArea(
+            EMAIL_TYPE.APPROVAL_REJECTED,
+            season,
+            req.user?.name || "UNKNOWN",
+          )),
+        );
       }
 
       const responsePayload = { message: "Season saved" };
