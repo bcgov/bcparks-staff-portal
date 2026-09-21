@@ -389,14 +389,25 @@ export default function AdvisoryForm({
     return `bcgov-input ${error ? "is-invalid" : ""} ${className}`.trim();
   }
 
+  // Removes a link row and keeps its per-row validation/UI state arrays in sync,
+  // since they're indexed positionally alongside linksRef.current
+  function removeLinkRow(idx) {
+    removeLink(idx);
+    setLinkTypeErrors((prev) => prev.filter((_, i) => i !== idx));
+    setLinkTitleErrors((prev) => prev.filter((_, i) => i !== idx));
+    setLinkUrlErrors((prev) => prev.filter((_, i) => i !== idx));
+    setLinkFileErrors((prev) => prev.filter((_, i) => i !== idx));
+    setHasFileDeleted((prev) => prev.filter((_, i) => i !== idx));
+    markChanged();
+  }
+
   // Removes a link row left empty when the user opens the file picker and cancels it
   function handleFileInputCancel(idx) {
     const link = linksRef.current[idx];
     const isEmpty = link && !link.type && !link.title && !link.url && !link.file;
 
     if (isEmpty) {
-      removeLink(idx);
-      markChanged();
+      removeLinkRow(idx);
     }
   }
 
@@ -786,8 +797,7 @@ export default function AdvisoryForm({
               tabIndex="0"
               aria-label="Remove link"
               onClick={() => {
-                removeLink(idx);
-                markChanged();
+                removeLinkRow(idx);
               }}
             >
               <FontAwesomeIcon icon={faXmark} />
