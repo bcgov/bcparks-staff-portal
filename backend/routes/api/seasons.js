@@ -19,7 +19,8 @@ import {
 import { checkSeasonUserAccess } from "../../utils/seasonHelpers.js";
 import {
   resolveSeasonApprovalState,
-  getRequiredApprovalsForSeason,
+  getSeasonApprovalRequirements,
+  fetchHasGateHistory,
 } from "../../utils/seasonApprovalHelpers.js";
 
 import {
@@ -172,11 +173,12 @@ router.get(
 
     // Determine which team approvals are still required, so the UI can show
     // partial-approval detail on the "Pending HQ review" status
+    const hadGate = await fetchHasGateHistory(seasonModel.id);
     const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
-      await getRequiredApprovalsForSeason({
+      getSeasonApprovalRequirements({
         season: seasonModel,
-        oldGateDetail: gateDetail,
         gateDetail,
+        hadGate,
       });
 
     // Add DateRangeAnnuals to seasonModel
@@ -323,11 +325,12 @@ router.get(
 
     // Determine which team approvals are still required, so the UI can show
     // partial-approval detail on the "Pending HQ review" status
+    const hadGate = await fetchHasGateHistory(seasonModel.id);
     const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
-      await getRequiredApprovalsForSeason({
+      getSeasonApprovalRequirements({
         season: seasonModel,
-        oldGateDetail: gateDetail,
         gateDetail,
+        hadGate,
       });
 
     // Add DateRangeAnnuals to seasonModel
@@ -504,11 +507,12 @@ router.get(
 
     // Determine which team approvals are still required, so the UI can show
     // partial-approval detail on the "Pending HQ review" status
+    const hadGate = await fetchHasGateHistory(seasonModel.id);
     const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
-      await getRequiredApprovalsForSeason({
+      getSeasonApprovalRequirements({
         season: seasonModel,
-        oldGateDetail: gateDetail,
         gateDetail,
+        hadGate,
       });
 
     // Add DateRangeAnnuals to seasonModel
