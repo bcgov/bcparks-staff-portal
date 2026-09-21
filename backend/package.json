@@ -27,7 +27,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^15.15.0",
     "nodemon": "^3.1.14",
-    "prettier": "3.9.6"
+    "prettier": "3.9.8"
   },
   "dependencies": {
     "@adminjs/express": "^6.1.0",
@@ -38,11 +38,11 @@
     "@fast-csv/format": "^5.0.7",
     "adminjs": "^7.8.17",
     "axios": "^1.20.0",
-    "compression": "^1.8.1",
+    "compression": "^1.8.2",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",
     "date-fns": "^4.4.0",
-    "express": "^4.22.2",
+    "express": "^4.22.3",
     "express-async-handler": "^1.2.0",
     "express-formidable": "^1.2.0",
     "express-jwt": "^8.4.1",
@@ -52,7 +52,7 @@
     "helmet": "^7.2.0",
     "jwks-rsa": "^3.2.2",
     "lodash": "^4.18.1",
-    "morgan": "^1.12.0",
+    "morgan": "^1.12.1",
     "pg": "^8.23.0",
     "pg-hstore": "^2.3.4",
     "qs": "^6.16.0",
