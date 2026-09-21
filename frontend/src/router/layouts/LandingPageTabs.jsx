@@ -35,7 +35,7 @@ export default function LandingPageTabs() {
 
           <ul className="nav nav-tabs px-2">
             <li className="nav-item">
-              <NavLink className="nav-link" to="/dates">
+              <NavLink className="nav-link" to="/dates/submit">
                 Submit
               </NavLink>
             </li>

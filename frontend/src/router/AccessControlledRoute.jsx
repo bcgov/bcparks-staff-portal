@@ -17,7 +17,7 @@ export default function AccessControlledRoute({ children, allowedRoles }) {
   if (!hasAccess) {
     // Use smart role-based redirect
     if (checkAccess(ROLES.DOOT_USER)) {
-      return <Navigate to="/dates" replace />;
+      return <Navigate to="/dates/submit" replace />;
     }
 
     if (checkAccess(ROLES.ADVISORY_USER)) {
