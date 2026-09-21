@@ -619,12 +619,6 @@ router.get(
           return null;
         }
 
-        // @TODO: Delete this when FCFS logic is revised
-        // Skip FCFS dates
-        if (dateRange.dateType.name === "First come, first served") {
-          return null;
-        }
-
         // Skip non-winter fee dates for winter seasons
         if (
           isWinterSeason(season) &&

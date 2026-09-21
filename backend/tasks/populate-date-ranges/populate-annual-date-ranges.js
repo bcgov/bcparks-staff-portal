@@ -161,7 +161,6 @@ export async function populateAnnualDateRangesForYear(
       }
 
       // create season if no target season found
-      // @TODO: Update criteria to create seasons in create-seasons/create-winter-seasons instead
       if (!targetSeason) {
         // Determine the status of the new season based on annual dates
         const status = await resolveSeasonCreationStatus(

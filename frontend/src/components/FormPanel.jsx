@@ -803,7 +803,6 @@ If dates have already been published, they will not be updated until new dates a
             />
           )}
 
-          {/* TODO: add Public Notes for v3 */}
           <InternalNotes
             notes={notes}
             setNotes={setNotes}
