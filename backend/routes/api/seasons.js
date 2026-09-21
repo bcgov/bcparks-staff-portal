@@ -1,9 +1,4 @@
 import { Router } from "express";
-import {
-  notifyManagementArea,
-  notifyHqApprovers,
-  EMAIL_TYPE,
-} from "../../utils/email/seasonNotifications.js";
 import _ from "lodash";
 import asyncHandler from "express-async-handler";
 import { Op } from "sequelize";
@@ -22,6 +17,7 @@ import {
   getSeasonApprovalRequirements,
   fetchHasGateHistory,
 } from "../../utils/seasonApprovalHelpers.js";
+import { sendSeasonNotifications } from "../../utils/email/seasonNotifications.js";
 
 import {
   Park,
@@ -721,11 +717,7 @@ router.post(
           {
             model: Park,
             as: "park",
-            attributes: [
-              "id",
-              "hasTier1Dates",
-              "hasTier2Dates",
-            ],
+            attributes: ["id", "hasTier1Dates", "hasTier2Dates"],
             required: false,
           },
           {
@@ -882,39 +874,19 @@ router.post(
 
       await transaction.commit();
 
-      // contributor role clicked 'Save draft' button, notify the Management Area
-      if (isOnlyContributor && newStatus === STATUS.REQUESTED) {
-        diagnostics.push(
-          ...(await notifyManagementArea(
-            EMAIL_TYPE.DRAFT_REVIEW,
-            updatedSeason,
-            req.user?.name || "UNKNOWN",
-          )),
-        );
-      }
-
-      // submitter role clicked 'Submit to HQ' button, notify IS or RS or both
-      if (isOnlySubmitter && newStatus === STATUS.PENDING_REVIEW) {
-        diagnostics.push(
-          ...(await notifyHqApprovers(
-            updatedSeason,
-            req.user?.name || "UNKNOWN",
-            requiresInformationSvcApproval,
-            requiresReservationSvcApproval,
-          )),
-        );
-      }
-
-      // approver role clicked 'Save draft' button, notify the Management Area
-      if (isApprover && newStatus === STATUS.REQUESTED) {
-        diagnostics.push(
-          ...(await notifyManagementArea(
-            EMAIL_TYPE.APPROVAL_REJECTED,
-            updatedSeason,
-            req.user?.name || "UNKNOWN",
-          )),
-        );
-      }
+      // Notifications run after the season changes are committed, in their
+      // own transaction so a notification failure cannot roll back the save.
+      diagnostics.push(
+        ...(await sendSeasonNotifications({
+          updatedSeason,
+          userFullName: req.user?.name || "UNKNOWN",
+          isOnlyContributor,
+          isOnlySubmitter,
+          isApprover,
+          requiresInformationSvcApproval,
+          requiresReservationSvcApproval,
+        })),
+      );
 
       const responsePayload = { message: "Season saved", status: newStatus };
 

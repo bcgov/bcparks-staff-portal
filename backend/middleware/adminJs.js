@@ -12,27 +12,28 @@ import * as SEASON_TYPE from "../constants/seasonType.js";
 import "../env.js";
 
 import {
-  Dateable,
-  Publishable,
-  Park,
-  User,
-  ParkAreaType,
-  ParkArea,
-  FeatureType,
-  Feature,
-  DateType,
-  Season,
-  DateRange,
-  Section,
-  ManagementArea,
-  DateRangeAnnual,
-  GateDetail,
   AccessGroup,
-  SeasonChangeLog,
-  DateChangeLog,
-  UserAccessGroup,
   AccessGroupPark,
   AppSetting,
+  DateChangeLog,
+  DateRange,
+  DateRangeAnnual,
+  DateType,
+  Dateable,
+  Feature,
+  FeatureType,
+  GateDetail,
+  ManagementArea,
+  Park,
+  ParkArea,
+  ParkAreaType,
+  PendingReminder,
+  Publishable,
+  Season,
+  SeasonChangeLog,
+  Section,
+  User,
+  UserAccessGroup,
 } from "../models/index.js";
 
 import { connectionConfig } from "../db/connection.js";
@@ -760,31 +761,113 @@ const ParkResource = {
   ],
 };
 
+const PendingReminderResource = {
+  resource: PendingReminder,
+  options: {
+    properties: {
+      createdAt: {
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        isDisabled: true,
+      },
+      jsonData: {
+        isVisible: { list: true, filter: true, show: true, edit: true },
+        type: "mixed",
+        components: {
+          list: jsonListComponent,
+          show: jsonShowComponent,
+          edit: jsonEditComponent,
+        },
+      },
+    },
+    editProperties: [
+      "emailType",
+      "numericData",
+      "comparisonDate",
+      "notifyManagementArea",
+      "notifyInformationServices",
+      "notifyReservationServices",
+      "followUpDate",
+      "jsonData",
+      "createdAt",
+    ],
+    listProperties: [
+      "emailType",
+      "numericData",
+      "comparisonDate",
+      "followUpDate",
+      "createdAt",
+    ],
+    actions: {
+      new: {
+        isVisible: false,
+      },
+      list: {
+        async after(response) {
+          response.records?.forEach((record) => {
+            if (record.params) {
+              normalizeJsonProperties(record.params, ["jsonData"]);
+            }
+          });
+          return response;
+        },
+      },
+      show: {
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["jsonData"]);
+          }
+          return response;
+        },
+      },
+      edit: {
+        async before(request, context) {
+          if (request.payload) {
+            request.payload = parseMarkedJsonValues(
+              request.payload,
+              ["jsonData"],
+              context.record,
+            );
+            stripFlattenedKeys(request.payload, ["jsonData"]);
+          }
+          return request;
+        },
+        async after(response) {
+          if (response.record?.params) {
+            normalizeJsonProperties(response.record.params, ["jsonData"]);
+          }
+          return response;
+        },
+      },
+    },
+  },
+};
+
 const adminOptions = {
   // We pass Category to `resources`
   componentLoader,
   resources: [
-    Dateable,
-    Publishable,
-    ParkResource,
-    UserResource,
-    ParkAreaType,
-    ParkArea,
-    FeatureType,
-    Feature,
-    DateType,
-    SeasonResource,
-    DateRange,
-    Section,
-    ManagementArea,
-    DateRangeAnnual,
-    GateDetailResource,
-    AccessGroupResource,
-    UserAccessGroup,
     AccessGroupPark,
-    SeasonChangeLogResource,
-    DateChangeLog,
+    AccessGroupResource,
     AppSettingResource,
+    DateChangeLog,
+    DateRange,
+    DateRangeAnnual,
+    DateType,
+    Dateable,
+    Feature,
+    FeatureType,
+    GateDetailResource,
+    ManagementArea,
+    ParkArea,
+    ParkAreaType,
+    ParkResource,
+    PendingReminderResource,
+    Publishable,
+    SeasonChangeLogResource,
+    SeasonResource,
+    Section,
+    UserAccessGroup,
+    UserResource,
   ],
   branding: {
     companyName: "BC Parks Staff Portal Admin",

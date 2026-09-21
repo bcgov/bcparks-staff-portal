@@ -6,19 +6,20 @@ import {
   Publishable,
 } from "../../models/index.js";
 import { Op } from "sequelize";
-import { getAppSettings } from "../appSettingsHelper.js";
 
 /**
  * Gets the Management Areas associated with a Park. Most Parks have one
  * Management Area, but Tweedsmuir and Strathcona each belong to two areas.
  * @param {number} parkId Park ID
+ * @param {Transaction} [transaction] Sequelize transaction
  * @returns {Promise<Array>} Matching ManagementArea records with their emails
  */
-async function getParkManagementAreas(parkId) {
+async function getParkManagementAreas(parkId, transaction) {
   if (!parkId) return [];
 
   const park = await Park.findByPk(parkId, {
     attributes: ["managementAreas"],
+    transaction,
   });
 
   // Park.managementAreas is a JSONB field. Extract the managementAreaNumber
@@ -35,6 +36,7 @@ async function getParkManagementAreas(parkId) {
 
   return await ManagementArea.findAll({
     attributes: ["email"],
+    transaction,
     where: {
       managementAreaNumber: {
         [Op.in]: managementAreaNumbers,
@@ -47,12 +49,16 @@ async function getParkManagementAreas(parkId) {
  * Gets the names and Management Area emails associated with a publishable.
  * @param {number} publishableId Publishable ID
  * @param {boolean} [includeManagementAreaEmails=true] Whether to resolve Management Area recipient emails
+ * @param {Transaction} [transaction] Sequelize transaction
  * @returns {Promise<Object>} Publishable details for email notifications
  */
 async function getPublishableDetails(
   publishableId,
-  includeManagementAreaEmails = true,
+  includeManagementAreaEmails,
+  transaction,
 ) {
+  const shouldIncludeManagementAreaEmails = includeManagementAreaEmails ?? true;
+
   const publishable = await Publishable.findByPk(publishableId, {
     include: [
       { model: Park, as: "park", attributes: ["id", "name"] },
@@ -69,6 +75,7 @@ async function getPublishableDetails(
         include: [{ model: Park, as: "park", attributes: ["id", "name"] }],
       },
     ],
+    transaction,
   });
 
   const park =
@@ -81,8 +88,8 @@ async function getPublishableDetails(
   }
 
   // Skip the Management Area lookup when recipients come from elsewhere.
-  const managementAreas = includeManagementAreaEmails
-    ? await getParkManagementAreas(park?.id)
+  const managementAreas = shouldIncludeManagementAreaEmails
+    ? await getParkManagementAreas(park?.id, transaction)
     : [];
 
   // get the form-type for the DOOT url
@@ -105,31 +112,4 @@ async function getPublishableDetails(
   };
 }
 
-/**
- * Gets email-related application settings and applies default values.
- * @returns {Promise<{notificationsEnabled: boolean, areaSupervisorNotificationsEnabled: boolean, infoServicesNotificationsEnabled: boolean, reservationServicesNotificationsEnabled: boolean}>} Notification settings
- */
-async function getNotificationSettings() {
-  const appSettings = await getAppSettings([
-    "notificationsEnabled",
-    "areaSupervisorNotificationsEnabled",
-    "infoServicesNotificationsEnabled",
-    "reservationServicesNotificationsEnabled",
-  ]);
-
-  return {
-    notificationsEnabled: appSettings.notificationsEnabled ?? true,
-    areaSupervisorNotificationsEnabled:
-      appSettings.areaSupervisorNotificationsEnabled ?? true,
-    infoServicesNotificationsEnabled:
-      appSettings.infoServicesNotificationsEnabled ?? true,
-    reservationServicesNotificationsEnabled:
-      appSettings.reservationServicesNotificationsEnabled ?? true,
-  };
-}
-
-export {
-  getPublishableDetails,
-  getParkManagementAreas,
-  getNotificationSettings,
-};
+export { getPublishableDetails, getParkManagementAreas };
