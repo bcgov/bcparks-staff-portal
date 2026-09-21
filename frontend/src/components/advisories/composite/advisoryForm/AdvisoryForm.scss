@@ -54,6 +54,22 @@
     margin-bottom: 1rem;
   }
 
+  .link-sub-section {
+    position: relative;
+    padding-top: 2.5rem;
+
+    .remove-link-btn {
+      position: absolute;
+      top: 0.25rem;
+      right: 0.25rem;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+  }
+
   // Read-only field: use "disabled" background color
   .standard-message-preview {
     background: var(--surface-color-primary-disabled);
