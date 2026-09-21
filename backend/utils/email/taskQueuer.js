@@ -1,4 +1,4 @@
-import { queueStrapiTask } from "../strapiTaskQueue.js";
+import { queueStrapiTask } from "../strapi/strapiTaskQueue.js";
 import {
   getEmailContentByType,
   getEditTargetLabel,

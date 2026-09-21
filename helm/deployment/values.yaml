@@ -62,7 +62,7 @@ backend:
     cpuUtilizationThreshold: 125
 
 cron:
-  componentName: strapi-sync
+  componentName: staff-portal-jobs
 
   enabled: true
 

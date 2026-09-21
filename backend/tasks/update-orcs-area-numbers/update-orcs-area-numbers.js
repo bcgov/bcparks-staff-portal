@@ -1,5 +1,5 @@
 import "../../env.js";
-import strapiApi from "../../utils/strapiApi.js";
+import strapiApi from "../../utils/strapi/strapiApi.js";
 import { ParkArea, Park } from "../../models/index.js";
 
 function standardizeName(name) {
