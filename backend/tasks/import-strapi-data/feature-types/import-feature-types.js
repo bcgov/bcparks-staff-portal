@@ -1,0 +1,126 @@
+import "../../../env.js";
+
+import { Op } from "sequelize";
+import { FeatureType } from "../../../models/index.js";
+import { getStrapiModelData } from "../../../utils/strapi/strapiDataService.js";
+
+/**
+ * Imports/updates FeatureType records from Strapi park-feature-type data by matching featureTypeId
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Object>} Object containing counts of created and updated records
+ */
+export default async function importStrapiFeatureTypes(transaction = null) {
+  console.log("STARTING IMPORT OF FEATURE TYPES FROM STRAPI\n");
+  try {
+    // Get park-feature-type data from Strapi
+    const featureTypeData = await getStrapiModelData("park-feature-type");
+    const strapiFeatureTypes = featureTypeData?.items || [];
+
+    if (strapiFeatureTypes.length === 0) {
+      console.log("No park-feature-type data found in Strapi");
+      return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
+    }
+
+    // Get all DOOT FeatureTypes for featureTypeNumber lookup
+    const dootFeatureTypes = await FeatureType.findAll({
+      where: { featureTypeNumber: { [Op.ne]: null } },
+      transaction,
+    });
+    const featureTypeLookup = new Map(
+      dootFeatureTypes.map((featureType) => [
+        featureType.featureTypeNumber, // Key: e.g. "10"
+        featureType, // Value: FeatureType record
+      ]),
+    );
+
+    console.log(
+      `Found ${dootFeatureTypes.length} existing feature types in DOOT`,
+    );
+
+    let createdCount = 0;
+    let updatedCount = 0;
+    let skippedCount = 0;
+    let unchangedCount = 0;
+
+    for (const strapiFeatureType of strapiFeatureTypes) {
+      const { parkFeatureType, featureTypeId, rank } = strapiFeatureType;
+
+      if (!featureTypeId) {
+        console.warn(
+          `Skipping feature type "${parkFeatureType}" - no featureTypeId found`,
+        );
+        skippedCount++;
+        continue;
+      }
+
+      // Find matched FeatureType by featureTypeId
+      const matchedFeatureType = featureTypeLookup.get(featureTypeId);
+
+      const featureTypeToSave = {
+        name: parkFeatureType,
+        featureTypeNumber: featureTypeId,
+        rank: rank || 1000000,
+      };
+
+      if (matchedFeatureType) {
+        // check if any fields have changed
+        const hasChanges = Object.keys(featureTypeToSave).some(
+          (key) => matchedFeatureType[key] !== featureTypeToSave[key],
+        );
+
+        if (!hasChanges) {
+          unchangedCount++;
+          continue;
+        }
+
+        // Update matched feature type
+        await matchedFeatureType.update(featureTypeToSave, { transaction });
+        console.log(
+          `Updated feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
+        );
+        updatedCount++;
+      } else {
+        // Default the icon to 'information' so it shows a questionmark until set
+        featureTypeToSave.icon = "information";
+
+        // Create new feature type
+        await FeatureType.create(featureTypeToSave, { transaction });
+        console.log(
+          `Created feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
+        );
+        createdCount++;
+      }
+    }
+
+    console.log(`\nImport complete:`);
+    console.log(`- Created: ${createdCount} feature types`);
+    console.log(`- Updated: ${updatedCount} feature types`);
+    console.log(`- Unchanged: ${unchangedCount} feature types`);
+    console.log(`- Skipped (invalid): ${skippedCount} feature types\n\n`);
+
+    return {
+      created: createdCount,
+      updated: updatedCount,
+      skipped: skippedCount,
+      unchanged: unchangedCount,
+    };
+  } catch (error) {
+    console.error("Error importing feature types from Strapi:", error);
+    throw error;
+  }
+}
+
+// Run directly
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+  const transaction = await FeatureType.sequelize.transaction();
+
+  try {
+    await importStrapiFeatureTypes(transaction);
+    await transaction.commit();
+    console.log("\nTransaction committed successfully");
+  } catch (err) {
+    await transaction.rollback();
+    console.error("Transaction rolled back due to error:", err);
+    throw err;
+  }
+}

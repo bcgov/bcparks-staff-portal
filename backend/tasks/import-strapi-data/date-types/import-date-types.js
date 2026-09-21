@@ -1,0 +1,121 @@
+import "../../../env.js";
+
+import { Op } from "sequelize";
+import { DateType } from "../../../models/index.js";
+import { getStrapiModelData } from "../../../utils/strapi/strapiDataService.js";
+
+/**
+ * Imports/updates DateType records from Strapi park-date-type data by matching dateTypeId
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Object>} Object containing counts of created and updated records
+ */
+export default async function importStrapiDateTypes(transaction = null) {
+  console.log("STARTING IMPORT OF DATE TYPES FROM STRAPI");
+  try {
+    // Get park-date-type data from Strapi
+    const dateTypeData = await getStrapiModelData("park-date-type");
+    const strapiDateTypes = dateTypeData?.items || [];
+
+    if (strapiDateTypes.length === 0) {
+      console.log("No park-date-type data found in Strapi");
+      return { created: 0, updated: 0, skipped: 0, unchanged: 0 };
+    }
+
+    // Get all DOOT DateTypes for dateTypeNumber lookup
+    const dootDateTypes = await DateType.findAll({
+      where: { dateTypeNumber: { [Op.ne]: null } },
+      transaction,
+    });
+    const dateTypeLookup = new Map(
+      dootDateTypes.map((dateType) => [
+        dateType.dateTypeNumber, // Key: e.g. "10"
+        dateType, // Value: DateType record
+      ]),
+    );
+
+    console.log(`Found ${dootDateTypes.length} existing date types in DOOT`);
+
+    let createdCount = 0;
+    let updatedCount = 0;
+    let skippedCount = 0;
+    let unchangedCount = 0;
+
+    for (const strapiDateType of strapiDateTypes) {
+      const { dateType, dateTypeId } = strapiDateType;
+
+      if (!dateTypeId) {
+        console.warn(`Skipping date type "${dateType}" - no dateTypeId found`);
+        skippedCount++;
+        continue;
+      }
+
+      // Find matched DateType by dateTypeId
+      const matchedDateType = dateTypeLookup.get(dateTypeId);
+
+      const dateTypeToSave = {
+        name: dateType,
+        dateTypeNumber: dateTypeId,
+        description: strapiDateType.description,
+        featureLevel: strapiDateType.featureLevel || false,
+        parkLevel: strapiDateType.parkLevel || false,
+      };
+
+      if (matchedDateType) {
+        // check if any fields have changed
+        const hasChanges = Object.keys(dateTypeToSave).some(
+          (key) => matchedDateType[key] !== dateTypeToSave[key],
+        );
+
+        if (!hasChanges) {
+          unchangedCount++;
+          continue;
+        }
+
+        // Update matched date type
+        await matchedDateType.update(dateTypeToSave, { transaction });
+        console.log(
+          `Updated date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
+        );
+        updatedCount++;
+      } else {
+        // Create new date type
+        await DateType.create(dateTypeToSave, { transaction });
+        console.log(
+          `Created date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
+        );
+        createdCount++;
+      }
+    }
+
+    console.log(`\nImport complete:`);
+    console.log(`- Created: ${createdCount} date types`);
+    console.log(`- Updated: ${updatedCount} date types`);
+    console.log(`- Unchanged: ${unchangedCount} date types`);
+    console.log(`- Skipped (invalid): ${skippedCount} date types\n\n`);
+
+    return {
+      created: createdCount,
+      updated: updatedCount,
+      skipped: skippedCount,
+      unchanged: unchangedCount,
+    };
+  } catch (error) {
+    console.error("Error importing date types from Strapi:", error);
+    throw error;
+  }
+}
+
+// Run directly
+if (process.argv[1] === new URL(import.meta.url).pathname) {
+  const transaction = await DateType.sequelize.transaction();
+
+  try {
+    await importStrapiDateTypes(transaction);
+    await transaction.commit();
+    console.log("\nTransaction committed successfully");
+  } catch (err) {
+    await transaction.rollback();
+    console.error("Transaction rolled back due to error:", err);
+    throw err;
+  }
+}
