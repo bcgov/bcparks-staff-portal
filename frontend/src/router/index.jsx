@@ -154,9 +154,9 @@ const RouterConfig = createBrowserRouter([
     children: [{ path: "", element: <Unauthorized /> }],
   },
 
-  // /dates/ path - Dates of Operation Tool
+  // /dates path - Dates of Operation Tool
   {
-    path: "/dates/",
+    path: "/dates",
 
     // Protect the entire route with the ProtectedRoute component
     element: (
@@ -174,9 +174,15 @@ const RouterConfig = createBrowserRouter([
         // Tabbed navigation for the landing page
         element: <LandingPageTabs />,
         children: [
-          // Edit & Review table / landing page
+          // Redirect the section root to the canonical submit page
           {
-            path: "",
+            index: true,
+            element: <Navigate to="submit" replace />,
+          },
+
+          // Dates editing/submission table landing page
+          {
+            path: "submit",
             element: <SubmitPage />,
           },
 

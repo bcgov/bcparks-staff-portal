@@ -23,7 +23,7 @@ const navItems = [
   {
     label: "Dates management",
     Tag: NavLink,
-    to: "/dates/",
+    to: "/dates",
     allowedRoles: [ROLES.DOOT_USER],
   },
 ];
