@@ -59,7 +59,6 @@ const RouterConfig = createBrowserRouter([
       },
 
       // Legacy staff portal error route
-      // @TODO: use errorElement instead of setError with ErrorProvider
       {
         path: "error",
         element: <ErrorPage />,

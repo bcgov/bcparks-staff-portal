@@ -197,7 +197,6 @@ function ApproveButton({ seasonId, status, onApprove }) {
       // Emit success to the parent component (to show a flash message)
       onApprove();
     } catch (error) {
-      // @TODO: Catch API error and show a flash message
       console.error("Error approving season:", error);
     }
   }

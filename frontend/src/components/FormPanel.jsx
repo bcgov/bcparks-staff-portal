@@ -601,7 +601,6 @@ function SeasonForm({
         setSubmitWithErrors(false);
       }
     } catch (saveError) {
-      // @TODO: Catch API error and show a flash message
       console.error("Error saving season:", saveError);
       throw saveError;
     }
