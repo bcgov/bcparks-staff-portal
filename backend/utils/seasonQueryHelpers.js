@@ -49,7 +49,6 @@ export function dateRangesQueryPart(seasonId) {
       seasonId,
     },
     required: false,
-    order: [["startDate", "ASC"]], // @TODO: This doesn't work?
     include: [
       {
         model: DateType,

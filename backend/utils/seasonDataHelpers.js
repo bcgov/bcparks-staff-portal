@@ -31,7 +31,6 @@ export async function getPreviousSeasonDates(
   dateTypeWhere = {},
 ) {
   try {
-    // @TODO: the previous season dates here are not the same as the /park endpoint
     const prevSeason = await Season.findOne({
       where: {
         operatingYear: currentSeason.operatingYear - 1,
