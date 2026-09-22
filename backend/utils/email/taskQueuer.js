@@ -94,6 +94,7 @@ async function queueNotification({
   // reminder with isReminder: true, so this block never runs for it.
   if (!isReminder) {
     try {
+      const now = new Date();
       await PendingReminder.upsert({
         emailType,
         numericData: season.id,
@@ -102,8 +103,8 @@ async function queueNotification({
         notifyManagementArea,
         notifyInformationServices,
         notifyReservationServices,
-        createdAt: new Date(),
-        followUpDate: format(addDays(new Date(), FOLLOW_UP_DAYS), "yyyy-MM-dd"),
+        createdAt: now,
+        followUpDate: format(addDays(now, FOLLOW_UP_DAYS), "yyyy-MM-dd"),
       });
     } catch (error) {
       console.error("Failed to upsert pending reminder:", error);
