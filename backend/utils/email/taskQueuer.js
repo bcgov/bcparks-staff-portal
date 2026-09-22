@@ -95,6 +95,7 @@ async function queueNotification({
   if (!isReminder) {
     try {
       const now = new Date();
+
       await PendingReminder.upsert({
         emailType,
         numericData: season.id,
