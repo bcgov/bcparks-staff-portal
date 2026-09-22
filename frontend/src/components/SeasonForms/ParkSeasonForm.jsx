@@ -37,7 +37,6 @@ function FormSection({
   removeDateRange,
   dateRangeAnnuals,
   updateDateRangeAnnual,
-  hideAnnualCheckbox,
 }) {
   return (
     <div className="row">
@@ -70,7 +69,6 @@ function FormSection({
             dateRangeAnnuals={dateRangeAnnuals}
             updateDateRangeAnnual={updateDateRangeAnnual}
             optional={isDateTypeOptional(dateType.dateTypeNumber, "park")}
-            hideAnnualCheckbox={hideAnnualCheckbox}
           />
         </div>
       ))}
@@ -90,7 +88,6 @@ FormSection.propTypes = {
   removeDateRange: PropTypes.func.isRequired,
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
-  hideAnnualCheckbox: PropTypes.bool,
 };
 
 export default function ParkSeasonForm({
@@ -99,7 +96,6 @@ export default function ParkSeasonForm({
   // All date types, including "Park gate open" and "Winter fee" (which is shown separately)
   dateTypes: allDateTypes,
   approver,
-  hideAnnualCheckbox = false,
 }) {
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
@@ -323,7 +319,6 @@ export default function ParkSeasonForm({
             removeDateRange={removeDateRange}
             dateRangeAnnuals={dateRangeAnnuals}
             updateDateRangeAnnual={updateDateRangeAnnual}
-            hideAnnualCheckbox={hideAnnualCheckbox}
           />
         </FormContainer>
       ) : (
@@ -343,7 +338,6 @@ export default function ParkSeasonForm({
                 removeDateRange={removeDateRange}
                 dateRangeAnnuals={dateRangeAnnuals}
                 updateDateRangeAnnual={updateDateRangeAnnual}
-                hideAnnualCheckbox={hideAnnualCheckbox}
               />
             </FormContainer>
           )}
@@ -367,7 +361,6 @@ export default function ParkSeasonForm({
             }
             level={"park"}
             operatingYear={season.operatingYear}
-            hideAnnualCheckbox={hideAnnualCheckbox}
           />
         </>
       )}
@@ -443,5 +436,4 @@ ParkSeasonForm.propTypes = {
   ).isRequired,
 
   approver: PropTypes.bool.isRequired,
-  hideAnnualCheckbox: PropTypes.bool,
 };

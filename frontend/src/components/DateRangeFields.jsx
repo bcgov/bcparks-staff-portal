@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useContext, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { sortBy } from "lodash-es";
@@ -9,6 +9,7 @@ import Form from "react-bootstrap/Form";
 
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
+import DataContext from "@/contexts/DataContext";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
@@ -137,9 +138,9 @@ export default function DateRangeFields({
   updateDateRangeAnnual,
   optional = false,
   canSpan2Years = false,
-  hideAnnualCheckbox = false,
 }) {
   const { elements } = useValidationContext();
+  const { hideAnnualCheckbox } = useContext(DataContext);
   const dateTypeDisplayName = getDateTypeDisplayName(dateType.name);
   // Constants
   // Tier 1 only allows 1 date range
@@ -294,5 +295,4 @@ DateRangeFields.propTypes = {
   updateDateRangeAnnual: PropTypes.func.isRequired,
   optional: PropTypes.bool,
   canSpan2Years: PropTypes.bool,
-  hideAnnualCheckbox: PropTypes.bool,
 };

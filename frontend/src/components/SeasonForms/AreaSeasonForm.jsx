@@ -39,7 +39,6 @@ function FeatureFormSectionComponent({
   dateRangeAnnuals,
   updateDateRangeAnnual,
   operatingYear,
-  hideAnnualCheckbox,
 }) {
   const { elements } = useValidationContext();
 
@@ -91,7 +90,6 @@ function FeatureFormSectionComponent({
             updateDateRangeAnnual={updateDateRangeAnnual}
             optional={isDateTypeOptional(dateType.dateTypeNumber, "feature")}
             canSpan2Years={feature.datesCanSpan2Years}
-            hideAnnualCheckbox={hideAnnualCheckbox}
           />
         </div>
       ))}
@@ -143,7 +141,6 @@ FeatureFormSectionComponent.propTypes = {
   dateRangeAnnuals: PropTypes.arrayOf(PropTypes.object).isRequired,
   updateDateRangeAnnual: PropTypes.func.isRequired,
   operatingYear: PropTypes.number.isRequired,
-  hideAnnualCheckbox: PropTypes.bool,
 };
 
 const FeatureFormSection = memo(FeatureFormSectionComponent);
@@ -154,7 +151,6 @@ export default function AreaSeasonForm({
   areaDateTypes,
   featureDateTypesByFeatureId,
   approver,
-  hideAnnualCheckbox = false,
 }) {
   const { setData, addDeletedDateRangeId } = useContext(DataContext);
 
@@ -545,7 +541,6 @@ export default function AreaSeasonForm({
                     dateType.dateTypeNumber,
                     "parkArea",
                   )}
-                  hideAnnualCheckbox={hideAnnualCheckbox}
                 />
               </div>
             ))}
@@ -566,7 +561,6 @@ export default function AreaSeasonForm({
                 removeFeatureDateRange={removeFeatureDateRange}
                 dateRangeAnnuals={dateRangeAnnuals}
                 updateDateRangeAnnual={updateDateRangeAnnual}
-                hideAnnualCheckbox={hideAnnualCheckbox}
                 key={feature.id}
               />
             ))}
@@ -592,7 +586,6 @@ export default function AreaSeasonForm({
               removeFeatureDateRange={removeFeatureDateRange}
               dateRangeAnnuals={dateRangeAnnuals}
               updateDateRangeAnnual={updateDateRangeAnnual}
-              hideAnnualCheckbox={hideAnnualCheckbox}
               key={feature.id}
             />
           ))}
@@ -606,7 +599,6 @@ export default function AreaSeasonForm({
         updateGateDetail={updateGateDetail}
         level={"park-area"}
         operatingYear={season.operatingYear}
-        hideAnnualCheckbox={hideAnnualCheckbox}
       />
 
       {/* Show Ready to Publish form input for approvers */}
@@ -671,5 +663,4 @@ AreaSeasonForm.propTypes = {
   ).isRequired,
 
   approver: PropTypes.bool.isRequired,
-  hideAnnualCheckbox: PropTypes.bool,
 };

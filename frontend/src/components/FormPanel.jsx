@@ -715,7 +715,13 @@ If dates have already been published, they will not be updated until new dates a
   }
 
   return (
-    <DataContext.Provider value={{ setData, addDeletedDateRangeId }}>
+    <DataContext.Provider
+      value={{
+        setData,
+        addDeletedDateRangeId,
+        hideAnnualCheckbox: isEditingPublishedSeason,
+      }}
+    >
       <ValidationContext.Provider value={validation}>
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>
@@ -788,7 +794,6 @@ If dates have already been published, they will not be updated until new dates a
               previousWinterSeasonDates={previousWinterSeasonDates}
               dateTypes={seasonMetadata.dateTypes}
               approver={approver}
-              hideAnnualCheckbox={isEditingPublishedSeason}
             />
           )}
 
@@ -803,7 +808,6 @@ If dates have already been published, they will not be updated until new dates a
                 seasonMetadata.featureDateTypesByFeatureId
               }
               approver={approver}
-              hideAnnualCheckbox={isEditingPublishedSeason}
             />
           )}
 
@@ -814,7 +818,6 @@ If dates have already been published, they will not be updated until new dates a
               previousSeasonDates={previousSeasonDates}
               dateTypes={seasonMetadata.dateTypes}
               approver={approver}
-              hideAnnualCheckbox={isEditingPublishedSeason}
             />
           )}
 
