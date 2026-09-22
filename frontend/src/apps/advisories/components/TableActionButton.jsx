@@ -24,12 +24,7 @@ const ACTION_MENU_POPPER_CONFIG = {
       options: {
         altAxis: true,
         tether: false,
-        boundary: "viewport",
       },
-    },
-    {
-      name: "computeStyles",
-      options: { gpuAcceleration: false },
     },
   ],
 };
@@ -92,6 +87,7 @@ export function TableActionButton({
       <Dropdown
         show={isOpen}
         onToggle={handleToggle}
+        align="end"
         className="action-button__dropdown-button"
       >
         <Dropdown.Toggle id={`action-button-${rowId}`} size="sm">

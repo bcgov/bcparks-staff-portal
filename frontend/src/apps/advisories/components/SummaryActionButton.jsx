@@ -58,12 +58,7 @@ const ACTION_MENU_POPPER_CONFIG = {
       options: {
         altAxis: true,
         tether: false,
-        boundary: "viewport",
       },
-    },
-    {
-      name: "computeStyles",
-      options: { gpuAcceleration: false },
     },
   ],
 };
@@ -104,6 +99,7 @@ export default function SummaryActionButton({
       <Dropdown
         show={isOpen}
         onToggle={handleToggle}
+        align="end"
         className="action-button__dropdown-button d-flex"
       >
         <Dropdown.Toggle
