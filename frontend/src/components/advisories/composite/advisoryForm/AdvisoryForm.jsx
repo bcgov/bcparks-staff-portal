@@ -27,6 +27,7 @@ import {
   validateRequiredSelect,
   validateRequiredDate,
   validateOptionalDate,
+  validateOptionalFutureDate,
   validAdvisoryData,
   validateLink,
   validateDisplayedDate,
@@ -1123,7 +1124,7 @@ export default function AdvisoryForm({
                     minDate={advisoryDate}
                     className={`${expiryDateError !== "" ? "error" : ""}`}
                     onBlur={() => {
-                      validateOptionalDate(advisoryData.expiryDate);
+                      validateOptionalFutureDate(advisoryData.expiryDate);
                     }}
                   />
 
@@ -1136,7 +1137,9 @@ export default function AdvisoryForm({
                 {renderHelperText("month dd, yyyy")}
                 {expiryDateError !== "" &&
                   renderHelperText(
-                    "Expiry date should not be before Posting date",
+                    expiryDateError === "Enter a future date"
+                      ? expiryDateError
+                      : "Expiry date should not be before Posting date",
                     true,
                   )}
               </Form.Group>
