@@ -4,9 +4,17 @@ import PropTypes from "prop-types";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheck } from "@fa-kit/icons/classic/solid";
+import { faClock } from "@fa-kit/icons/classic/regular";
 import * as STATUS from "@/constants/seasonStatus.js";
 import { ACT_STATUS_MAP } from "@/constants/advisoryStatus";
 import "./StatusBadge.scss";
+
+// RS/IS team approval icons for the badge
+const TEAM_APPROVAL_ICONS = [
+  { prop: "reservationSvcApproved", abbreviation: "RS" },
+  { prop: "informationSvcApproved", abbreviation: "IS" },
+];
 
 // Map status code to color class and display label
 const DOOT_STATUS_MAP = new Map([
@@ -39,6 +47,8 @@ export default function StatusBadge({
   status,
   label = null,
   approver = false,
+  informationSvcApproved,
+  reservationSvcApproved,
   className = "",
 }) {
   const tooltipId = useId();
@@ -83,10 +93,50 @@ export default function StatusBadge({
     className,
   ]);
 
+  // DOOT-only
+  // Show which team(s) still need to approve while a season is "Pending HQ review".
+  const teamApprovalValues = {
+    informationSvcApproved,
+    reservationSvcApproved,
+  };
+  const teamApprovalIcons =
+    status === STATUS.PENDING_REVIEW.value
+      ? TEAM_APPROVAL_ICONS.filter(
+          ({ prop }) => typeof teamApprovalValues[prop] === "boolean",
+        )
+      : [];
+
+  // RS/IS icon group
+  const teamApprovalGroup =
+    teamApprovalIcons.length > 0 ? (
+      <span className="status-badge-team-approvals">
+        {teamApprovalIcons.map(({ prop, abbreviation }) => {
+          const isTeamApproved = teamApprovalValues[prop];
+
+          return (
+            <span key={prop} className="status-badge-team">
+              <FontAwesomeIcon icon={isTeamApproved ? faCheck : faClock} />
+              {abbreviation}
+            </span>
+          );
+        })}
+      </span>
+    ) : null;
+
   // For ACT, show icon for approvers, otherwise show badge label
-  // For DOOT, show badge label for all users
+  // For DOOT, show badge label for all users,
+  // plus the RS/IS approval detail (icons) for approvers only
   return (
-    <span className={classes}>{approver && icon ? icon : badgeLabel}</span>
+    <span className={classes}>
+      {approver && icon ? icon : badgeLabel}
+
+      {teamApprovalGroup && (
+        <>
+          <span className="status-badge-divider"> | </span>
+          {teamApprovalGroup}
+        </>
+      )}
+    </span>
   );
 }
 
@@ -94,5 +144,7 @@ StatusBadge.propTypes = {
   status: PropTypes.string,
   label: PropTypes.string,
   approver: PropTypes.bool,
+  informationSvcApproved: PropTypes.bool,
+  reservationSvcApproved: PropTypes.bool,
   className: PropTypes.string,
 };

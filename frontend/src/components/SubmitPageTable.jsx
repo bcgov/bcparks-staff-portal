@@ -189,13 +189,13 @@ function ApproveButton({ seasonId, status, onApprove }) {
   async function approveSeason() {
     try {
       // Save and update status
-      await sendSave({ status: "approved" });
+      const response = await sendSave({ status: "approved" });
 
       // Refresh the main page data from the API
       await refreshTable();
 
       // Emit success to the parent component (to show a flash message)
-      onApprove();
+      onApprove(response.status);
     } catch (error) {
       console.error("Error approving season:", error);
     }
@@ -236,14 +236,31 @@ function StatusTableRow({
     [checkAccess, ROLES.DOOT_APPROVER],
   );
 
+  const informationSvcApproved =
+    approver && season.requiresInformationSvcApproval
+      ? season.informationSvcApproved
+      : null;
+  const reservationSvcApproved =
+    approver && season.requiresReservationSvcApproval
+      ? season.reservationSvcApproved
+      : null;
+
   /**
    * Displays a flash message when the Season's Dates are approved.
+   * @param {string} resolvedStatus Status returned by the save API
    * @returns {void}
    */
-  function onApprove() {
+  function onApprove(resolvedStatus) {
+    const statusMessage =
+      resolvedStatus === SEASON_STATUS.APPROVED.value
+        ? "dates marked as approved"
+        : "approval recorded; dates are still pending HQ review";
+
     flashMessage.open(
-      "Dates approved",
-      `${name} ${season.operatingYear} dates marked as approved`,
+      resolvedStatus === SEASON_STATUS.APPROVED.value
+        ? "Dates approved"
+        : "Approval recorded",
+      `${name} ${season.operatingYear} ${statusMessage}`,
     );
   }
 
@@ -271,7 +288,11 @@ function StatusTableRow({
       {season ? (
         <th scope="col" className="align-middle text-end text-nowrap">
           <div className="d-inline-block me-2">
-            <StatusBadge status={season.status} />
+            <StatusBadge
+              status={season.status}
+              informationSvcApproved={informationSvcApproved}
+              reservationSvcApproved={reservationSvcApproved}
+            />
           </div>
 
           <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />

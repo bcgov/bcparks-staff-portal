@@ -249,6 +249,15 @@ function SeasonForm({
     ...seasonMetadata
   } = data || {};
 
+  const informationSvcApproved =
+    approver && season?.requiresInformationSvcApproval
+      ? season.informationSvcApproved
+      : null;
+  const reservationSvcApproved =
+    approver && season?.requiresReservationSvcApproval
+      ? season.reservationSvcApproved
+      : null;
+
   // Check season status and prompt user if needed (e.g., editing approved or published seasons)
   useEffect(() => {
     if (!season || hasShownStatusPrompt.current) return;
@@ -518,10 +527,11 @@ function SeasonForm({
 
   /**
    * Saves the form data to the DB.
-   * @param {boolean} allowInvalid allows saving even if the form has validation errors
-   * @param {string} status status to set for the season
-   * @param {boolean} [resetAfterSave=true] reset form state and refresh season data after saving
-   * @returns {Promise<void>}
+   * @param {boolean} allowInvalid Allows saving even if the form has validation errors.
+   * @param {string} status Status to set for the season.
+   * @param {boolean} [resetAfterSave=true] Reset form state and refresh season data after saving.
+   * @returns {Promise<object>} API response from the save request.
+   * @throws {Error} When validation fails and invalid saves are not allowed.
    */
   async function saveForm(allowInvalid, status, resetAfterSave = true) {
     // saveForm is called on any kind of form submission, so validation happens here
@@ -586,7 +596,7 @@ function SeasonForm({
 
     try {
       // Send the save request to the API
-      await sendSave(payload);
+      const response = await sendSave(payload);
 
       // Start refreshing the main page data from the API
       onDataUpdate();
@@ -600,6 +610,8 @@ function SeasonForm({
         setDeletedDateRangeIds([]);
         setSubmitWithErrors(false);
       }
+
+      return response;
     } catch (saveError) {
       console.error("Error saving season:", saveError);
       throw saveError;
@@ -642,7 +654,23 @@ If dates have already been published, they will not be updated until new dates a
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
       // Don't reset the form data after saving, because the panel will close
-      await saveForm(allowSubmitWithErrors, STATUS.APPROVED.value, false);
+      const response = await saveForm(
+        allowSubmitWithErrors,
+        STATUS.APPROVED.value,
+        false,
+      );
+
+      // This occurs when one required approval has been recorded,
+      // but another required team approval is still missing.
+      if (response.status !== STATUS.APPROVED.value) {
+        flashMessage.open(
+          "Approval recorded",
+          `${seasonTitle} ${season.operatingYear} approval recorded; dates are still pending HQ review`,
+        );
+
+        resetData();
+        return;
+      }
 
       flashMessage.open(
         "Dates approved",
@@ -730,7 +758,11 @@ If dates have already been published, they will not be updated until new dates a
               )}
 
               <div className="ms-3 mb-2">
-                <StatusBadge status={season.status} />
+                <StatusBadge
+                  status={season.status}
+                  informationSvcApproved={informationSvcApproved}
+                  reservationSvcApproved={reservationSvcApproved}
+                />
               </div>
             </div>
 

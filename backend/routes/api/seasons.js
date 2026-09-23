@@ -17,7 +17,11 @@ import {
   getDateTypesForPark,
 } from "../../utils/dateTypesHelpers.js";
 import { checkSeasonUserAccess } from "../../utils/seasonHelpers.js";
-import { resolveSeasonApprovalState } from "../../utils/seasonApprovalHelpers.js";
+import {
+  resolveSeasonApprovalState,
+  getSeasonApprovalRequirements,
+  fetchHasGateHistory,
+} from "../../utils/seasonApprovalHelpers.js";
 
 import {
   Park,
@@ -166,12 +170,24 @@ router.get(
     const gateDetail = await getGateDetail(seasonModel.publishableId);
     const lastUpdated = await getLastUpdatedMetadata(seasonModel);
 
+    // Determine which team approvals are still required, so the UI can show
+    // partial-approval detail on the "Pending HQ review" status
+    const hadGate = await fetchHasGateHistory(seasonModel.id);
+    const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
+      getSeasonApprovalRequirements({
+        season: seasonModel,
+        gateDetail,
+        hadGate,
+      });
+
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {
       ...seasonModel.toJSON(),
       dateRangeAnnuals,
       gateDetail,
       lastUpdated,
+      requiresInformationSvcApproval,
+      requiresReservationSvcApproval,
     };
 
     // Combine current and previous Park-level winter fee dates
@@ -306,12 +322,24 @@ router.get(
     const gateDetail = await getGateDetail(seasonModel.publishableId);
     const lastUpdated = await getLastUpdatedMetadata(seasonModel);
 
+    // Determine which team approvals are still required, so the UI can show
+    // partial-approval detail on the "Pending HQ review" status
+    const hadGate = await fetchHasGateHistory(seasonModel.id);
+    const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
+      getSeasonApprovalRequirements({
+        season: seasonModel,
+        gateDetail,
+        hadGate,
+      });
+
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {
       ...seasonModel.toJSON(),
       dateRangeAnnuals,
       gateDetail,
       lastUpdated,
+      requiresInformationSvcApproval,
+      requiresReservationSvcApproval,
     };
 
     // Combine current and previous Park-level winter fee dates
@@ -476,12 +504,24 @@ router.get(
     );
     const lastUpdated = await getLastUpdatedMetadata(seasonModel);
 
+    // Determine which team approvals are still required, so the UI can show
+    // partial-approval detail on the "Pending HQ review" status
+    const hadGate = await fetchHasGateHistory(seasonModel.id);
+    const { requiresInformationSvcApproval, requiresReservationSvcApproval } =
+      getSeasonApprovalRequirements({
+        season: seasonModel,
+        gateDetail,
+        hadGate,
+      });
+
     // Add DateRangeAnnuals to seasonModel
     const currentSeason = {
       ...seasonModel.toJSON(),
       dateRangeAnnuals,
       gateDetail,
       lastUpdated,
+      requiresInformationSvcApproval,
+      requiresReservationSvcApproval,
     };
 
     // Add datesCanSpan2Years flag at the season level.
@@ -876,7 +916,7 @@ router.post(
         );
       }
 
-      const responsePayload = { message: "Season saved" };
+      const responsePayload = { message: "Season saved", status: newStatus };
 
       if (diagnostics.length > 0) {
         responsePayload.executionDetails = diagnostics;
