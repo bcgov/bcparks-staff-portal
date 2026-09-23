@@ -33,6 +33,8 @@ const FEATURE_ATTRIBUTES = [
   "publishableId",
   "dateableId",
   "orcsFeatureNumber",
+  "hasReservations",
+  "hasBackcountryPermits",
 ];
 
 // ensures non-feature rows appear before features
@@ -494,9 +496,10 @@ function formatGateInfo(gateDetails = {}) {
  * Fetches and formats Park-level data for publishing.
  * @param {Park} park The Park object for the season
  * @param {Season} season The season object
+ * @param {Object} parkDateTypesByDateTypeId Park-level DateTypes keyed by dateTypeNumber
  * @returns {Object|null} Formatted park data for publishing, or null to skip publishing
  */
-async function formatParkData(park, season) {
+async function formatParkData(park, season, parkDateTypesByDateTypeId) {
   // Return null to skip publishing if the ORCS code is missing
   // We can't connect to anything in Strapi without this key
   if (!park.orcs) return null;
@@ -505,12 +508,23 @@ async function formatParkData(park, season) {
     const dateRanges = await formatDateRanges(park, season);
     const gateInfo = formatGateInfo(park.gateDetails);
 
+    // The date types DOOT considers relevant to this Park/season,
+    // regardless of whether any of them currently have a DateRange row.
+    // Strapi uses this to know it's safe to delete a date type's existing
+    // park-date record when DOOT no longer has any date range for it.
+    const applicableDateTypeIds = getDateTypesForPark(
+      park,
+      parkDateTypesByDateTypeId,
+      season.seasonType,
+    ).map((dateType) => dateType.dateTypeNumber);
+
     // Return formatted Park data
     return {
       // Strapi expects the ORCS code as a number
       orcs: Number(park.orcs),
       operatingYear: season.operatingYear,
       dateRanges,
+      applicableDateTypeIds,
       gateInfo,
     };
   } catch (error) {
@@ -523,10 +537,16 @@ async function formatParkData(park, season) {
  * Fetches and formats Feature-level data for publishing.
  * @param {Feature} feature The Feature object for the season
  * @param {Season} season The season object
+ * @param {Object} featureDateTypesByDateTypeId Feature-level DateTypes keyed by dateTypeNumber
  * @param {boolean} includeGateInfo Whether to include gate info (default: false)
  * @returns {Object|null} Formatted feature data for publishing, or null to skip publishing
  */
-async function formatFeatureData(feature, season, includeGateInfo = false) {
+async function formatFeatureData(
+  feature,
+  season,
+  featureDateTypesByDateTypeId,
+  includeGateInfo = false,
+) {
   // Return null to skip publishing if the ORCS Feature Number is missing
   // We can't connect to anything in Strapi without this key
   if (!feature.orcsFeatureNumber) return null;
@@ -534,11 +554,19 @@ async function formatFeatureData(feature, season, includeGateInfo = false) {
   try {
     const dateRanges = await formatDateRanges(feature, season);
 
+    // Strapi safely delete a date type's existing record
+    // when DOOT no longer has a date range for it.
+    const applicableDateTypeIds = getDateTypesForFeature(
+      feature,
+      featureDateTypesByDateTypeId,
+    ).map((dateType) => dateType.dateTypeNumber);
+
     // Return formatted Feature data
     const featureData = {
       orcsFeatureNumber: feature.orcsFeatureNumber,
       operatingYear: season.operatingYear,
       dateRanges,
+      applicableDateTypeIds,
     };
 
     // Only include gate info for independent features (not in park area)
@@ -557,9 +585,14 @@ async function formatFeatureData(feature, season, includeGateInfo = false) {
  * Formats ParkArea data for publishing, including all Features within the ParkArea.
  * @param {ParkArea} parkArea The ParkArea object
  * @param {Season} season The season object
+ * @param {Object} featureDateTypesByDateTypeId Feature-level DateTypes keyed by dateTypeNumber
  * @returns {Array|null} Array of formatted data objects for the Area and its Features, or null to skip publishing
  */
-async function formatParkAreaData(parkArea, season) {
+async function formatParkAreaData(
+  parkArea,
+  season,
+  featureDateTypesByDateTypeId,
+) {
   // Return null to skip publishing if the ORCS Area Number is missing
   // We can't connect to anything in Strapi without this key
   if (!parkArea.orcsAreaNumber) return null;
@@ -590,7 +623,11 @@ async function formatParkAreaData(parkArea, season) {
 
   for (const feature of features) {
     // Features in park areas should not have gate info
-    const featureData = await formatFeatureData(feature, season);
+    const featureData = await formatFeatureData(
+      feature,
+      season,
+      featureDateTypesByDateTypeId,
+    );
 
     // If the formatting function returned null for any reason,
     // return null to skip publishing this entire Area and its Features
@@ -624,7 +661,15 @@ router.post(
           model: Park,
           as: "park",
 
-          attributes: ["id", "orcs", "publishableId", "dateableId"],
+          attributes: [
+            "id",
+            "orcs",
+            "publishableId",
+            "dateableId",
+            "hasTier1Dates",
+            "hasTier2Dates",
+            "hasWinterFeeDates",
+          ],
 
           include: [
             {
@@ -664,6 +709,18 @@ router.post(
       ],
     });
 
+    // DateTypes applicable to Park/Feature levels, keyed by dateTypeNumber,
+    // used to tell Strapi which date types DOOT considers relevant to an
+    // entity/season even when they currently have no DateRange rows.
+    const parkDateTypesByDateTypeId = _.keyBy(
+      await getAllDateTypes({ parkLevel: true }),
+      "dateTypeNumber",
+    );
+    const featureDateTypesByDateTypeId = _.keyBy(
+      await getAllDateTypes({ featureLevel: true }),
+      "dateTypeNumber",
+    );
+
     // Build array of details for each season to be published
     const publishData = [];
 
@@ -691,7 +748,11 @@ router.post(
 
       if (publishableEntity.type === "park") {
         // If the Season is for a Park, fetch the Park-level dates and format the data
-        const parkData = await formatParkData(publishableEntity.park, season);
+        const parkData = await formatParkData(
+          publishableEntity.park,
+          season,
+          parkDateTypesByDateTypeId,
+        );
 
         // If the formatting function returned null for any reason,
         // skip publishing this Park
@@ -706,6 +767,7 @@ router.post(
         const featureData = await formatFeatureData(
           publishableEntity.feature,
           season,
+          featureDateTypesByDateTypeId,
           true,
         );
 
@@ -721,6 +783,7 @@ router.post(
         const parkAreaData = await formatParkAreaData(
           publishableEntity.parkArea,
           season,
+          featureDateTypesByDateTypeId,
         );
 
         // If the formatting function returned null for any reason,
