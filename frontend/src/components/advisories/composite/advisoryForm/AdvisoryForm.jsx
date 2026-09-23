@@ -391,13 +391,23 @@ export default function AdvisoryForm({
 
   // Removes a link row and keeps its per-row validation/UI state arrays in sync,
   // since they're indexed positionally alongside linksRef.current
-  function removeLinkRow(idx) {
-    removeLink(idx);
-    setLinkTypeErrors((prev) => prev.filter((_, i) => i !== idx));
-    setLinkTitleErrors((prev) => prev.filter((_, i) => i !== idx));
-    setLinkUrlErrors((prev) => prev.filter((_, i) => i !== idx));
-    setLinkFileErrors((prev) => prev.filter((_, i) => i !== idx));
-    setHasFileDeleted((prev) => prev.filter((_, i) => i !== idx));
+  function removeLinkRow(linkIndex) {
+    removeLink(linkIndex);
+    setLinkTypeErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setLinkTitleErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setLinkUrlErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setLinkFileErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setHasFileDeleted((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
     markChanged();
   }
 
