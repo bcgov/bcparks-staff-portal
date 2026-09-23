@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useContext, useMemo, useCallback } from "react";
 import PropTypes from "prop-types";
 import classNames from "classnames";
 import { sortBy } from "lodash-es";
@@ -9,6 +9,7 @@ import Form from "react-bootstrap/Form";
 
 import DootDatePicker from "@/components/DatePicker";
 import ErrorSlot from "@/components/ValidationErrorSlot";
+import DataContext from "@/contexts/DataContext";
 import { useValidationContext } from "@/hooks/useValidation/useValidation";
 import getDateTypeDisplayName from "@/lib/getDateTypeDisplayName";
 
@@ -21,6 +22,7 @@ function DateRange({
   removeDateRange,
   removable = true,
   isDateRangeAnnual,
+  hideAnnualCheckbox,
   minDate,
   maxDate,
 }) {
@@ -53,7 +55,7 @@ function DateRange({
             dateField="startDate"
             minDate={minDate}
             maxDate={maxDate}
-            disabled={isDateRangeAnnual}
+            disabled={isDateRangeAnnual && !hideAnnualCheckbox}
             date={dateRange.startDate}
             onSelect={onSelect}
           />
@@ -72,7 +74,7 @@ function DateRange({
               dateRange.startDate ? addDays(dateRange.startDate, 1) : minDate
             }
             maxDate={maxDate}
-            disabled={isDateRangeAnnual}
+            disabled={isDateRangeAnnual && !hideAnnualCheckbox}
             date={dateRange.endDate}
             onSelect={onSelect}
           />
@@ -118,6 +120,7 @@ DateRange.propTypes = {
   // Allow removal only if it's not the first date range
   removable: PropTypes.bool,
   isDateRangeAnnual: PropTypes.bool.isRequired,
+  hideAnnualCheckbox: PropTypes.bool.isRequired,
   minDate: PropTypes.instanceOf(Date).isRequired,
   maxDate: PropTypes.instanceOf(Date).isRequired,
 };
@@ -137,6 +140,7 @@ export default function DateRangeFields({
   canSpan2Years = false,
 }) {
   const { elements } = useValidationContext();
+  const { hideAnnualCheckbox } = useContext(DataContext);
   const dateTypeDisplayName = getDateTypeDisplayName(dateType.name);
   // Constants
   // Tier 1 only allows 1 date range
@@ -221,6 +225,7 @@ export default function DateRangeFields({
             removeDateRange={removeDateRange}
             removable={optional || index > 0}
             isDateRangeAnnual={isDateRangeAnnual}
+            hideAnnualCheckbox={hideAnnualCheckbox}
             minDate={minDate}
             maxDate={maxDate}
           />
@@ -232,25 +237,26 @@ export default function DateRangeFields({
           type="button"
           className="btn btn-text text-link p-0"
           onClick={() => addDateRange(dateType)}
-          disabled={isDateRangeAnnual}
+          disabled={isDateRangeAnnual && !hideAnnualCheckbox}
         >
           <FontAwesomeIcon icon={faPlus} />
           <span className="ms-1">Add more {dateTypeDisplayName} dates</span>
         </button>
       )}
 
-      {/* Display checkbox except for Tier 1 and Tier 2 */}
-      {!(dateType.name === "Tier 1" || dateType.name === "Tier 2") && (
-        <Form.Check
-          type="checkbox"
-          id={`date-range-annual-${dateRangeAnnualId}`}
-          name={`date-range-annual-${dateRangeAnnualId}`}
-          label="Dates are the same every year"
-          checked={isDateRangeAnnual}
-          onChange={handleDateRangeAnnualChange}
-          className="mt-2 mb-0"
-        />
-      )}
+      {/* Display checkbox except for Tier 1 and Tier 2, and never on the Edit Published tab */}
+      {!hideAnnualCheckbox &&
+        !(dateType.name === "Tier 1" || dateType.name === "Tier 2") && (
+          <Form.Check
+            type="checkbox"
+            id={`date-range-annual-${dateRangeAnnualId}`}
+            name={`date-range-annual-${dateRangeAnnualId}`}
+            label="Dates are the same every year"
+            checked={isDateRangeAnnual}
+            onChange={handleDateRangeAnnualChange}
+            className="mt-2 mb-0"
+          />
+        )}
 
       <ErrorSlot
         elementId={

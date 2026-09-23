@@ -435,9 +435,13 @@ function SeasonForm({
       // We only need the dateTypeId, drop fields we don't need to send
       .map((range) => omit(range, ["changed", "dateType"]));
 
-    const changedDateRangeAnnuals = season.dateRangeAnnuals.filter(
-      (dateRangeAnnual) => dateRangeAnnual.changed,
-    );
+    // The "Dates are the same every year" checkbox is hidden on the Edit Published tab,
+    // so never send dateRangeAnnuals changes from that form.
+    const changedDateRangeAnnuals = isEditingPublishedSeason
+      ? []
+      : season.dateRangeAnnuals.filter(
+          (dateRangeAnnual) => dateRangeAnnual.changed,
+        );
 
     // Clear gateDetail if hasGate is false
     if (gateDetail && gateDetail.hasGate === false) {
@@ -465,7 +469,14 @@ function SeasonForm({
     };
 
     return payload;
-  }, [level, season, deletedDateRangeIds, notes, gateTypeId]);
+  }, [
+    level,
+    season,
+    deletedDateRangeIds,
+    notes,
+    gateTypeId,
+    isEditingPublishedSeason,
+  ]);
 
   // Calculate if the form data has changed, and sync the result to the parent via setDataChanged.
   // Once true, dataChanged stays true for the rest of the form's lifecycle (until new data loads).
@@ -561,8 +572,10 @@ function SeasonForm({
     // Clone the payload, and override the status with the provided value.
     const payload = { ...changesPayload, status };
 
-    // Update isDateRangeAnnual for "Park gate open" date if gateDetail.hasGate is false
+    // Update isDateRangeAnnual for "Park gate open" date if gateDetail.hasGate is false.
+    // Skip this on the Edit Published tab, since dateRangeAnnuals are never sent from there.
     if (
+      !isEditingPublishedSeason &&
       payload.gateDetail &&
       payload.gateDetail.hasGate === false &&
       Array.isArray(season.dateRangeAnnuals)
@@ -729,7 +742,13 @@ If dates have already been published, they will not be updated until new dates a
   }
 
   return (
-    <DataContext.Provider value={{ setData, addDeletedDateRangeId }}>
+    <DataContext.Provider
+      value={{
+        setData,
+        addDeletedDateRangeId,
+        hideAnnualCheckbox: isEditingPublishedSeason,
+      }}
+    >
       <ValidationContext.Provider value={validation}>
         <Offcanvas.Header closeButton>
           <Offcanvas.Title>
