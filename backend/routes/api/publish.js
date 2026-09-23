@@ -492,12 +492,8 @@ function formatGateInfo(gateDetails = {}) {
 }
 
 /**
- * Returns the date type numbers whose sole DateRange row can be removed
- * entirely (down to zero rows) via the "x" button in the DOOT form, for a Park
- * in the given season. Every other date type's first row is protected from
- * removal (see DateRangeFields.jsx: `removable = optional || index > 0`), so
- * it can never disappear from `dateRanges` altogether - only these two ever
- * need Strapi to be told "this type is still relevant, even with no rows."
+ * Returns the date types that are allowed to have zero date ranges for this
+ * park/season, so a missing date range doesn't mean "not applicable."
  * @param {Park} park The Park object for the season
  * @param {Season} season The season object
  * @returns {Array<number>} Optionally-removable date type numbers for this Park/season
