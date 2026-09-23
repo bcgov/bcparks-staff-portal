@@ -4,12 +4,17 @@ This directory contains the code for the backend REST API server built with Expr
 
 ## Project structure
 
-- `index.js`: The entry point of the server.
-- `routes/`: Directory containing endpoint route handlers. The API endpoints are inside the `api/` directory.
-- `db/`: Directory that contains DB connection and config
-- `models/`: Directory for Sequelize models.
-- `migrations/`: List of DB migrations. Each file represents a change to the DB schema. The name of the file starts with a timestamp. So that they are sorted by the time they were created.
--
+- `index.js`: Express server entry point and AdminJS route registration.
+- `routes/`: HTTP route handlers, including the public API under `routes/api/`.
+- `middleware/`: Express middleware, authentication, permissions, user handling, and AdminJS configuration.
+- `components/`: Custom React components used by AdminJS for editing and displaying JSON and other specialized fields.
+- `models/`: Sequelize model definitions and associations.
+- `migrations/`: Timestamped Sequelize migrations that create and modify the database schema.
+- `db/`: Database connection and Sequelize configuration.
+- `constants/`: Shared application constants, including season statuses, types, feature types, and user roles.
+- `cron/`: Scheduled-job orchestration. Runs the Strapi import and follow-up season and gate-detail jobs in one transaction.
+- `tasks/`: Standalone data-maintenance and batch jobs, including Strapi imports, season creation, date-range population, and access-group updates.
+- `utils/`: Reusable application helpers, including email notifications, data access, season logic, task queues, and save utilities.
 
 ## Setup
 
@@ -69,25 +74,36 @@ Sequelize will keep track of which migration have been run.
 
 ### Adding data to the DB
 
-You can add seed data inside the `seeders/` directory.
-To add a new seed file, you can run `npx sequelize-cli seed:generate --name seed-name`
-Then, you can run them by running the command `npx sequelize-cli db:seed:all`
+For realistic local development data, restore both databases from production
+backups before running the application:
 
-The seed data can be useful if you want to test something specific. However, we can directly import the data from Strapi and test with real data.
+Follow the team Confluence instructions titled **"Copying prod data to Docker
+Desktop"**. These instructions are the preferred procedure for restoring both
+the local Docker Postgres database used by the backend and the local Strapi
+database.
 
-To add the data from Strapi:
+For additional Strapi development context, see the [Strapi development
+README](https://github.com/bcgov/bcparks.ca/blob/main/src/cms/README.md).
 
-1. Make sure that you have run all the migrations `npm run migrate`
-2. Run `npm run import-data` command to import data and run one-time creation scripts.
-3. Go to the admin dashboard and create a user `http://localhost:8100/admin/login`
+After restoring both databases, configure the local environment to connect to
+the restored Strapi instance and database, then verify the `STRAPI_URL` and
+`STRAPI_TOKEN` values. Run any pending backend migrations with
+`npm run migrate`.
 
-If for some reason, there is something wrong with the data in the DB and the app becomes unusable.
-Just recreate the DB and readd the data from Strapi.
+Use the team's approved backup and restore procedure for the database engines
+and environments involved. Do not commit backup files or production
+credentials to the repository.
 
-1. `npx sequelize-cli db:drop `
-2. `npx sequelize-cli db:create`
-3. `npm run migrate`
-4. `npm run import-data`
+After the restores and migrations are complete, run the Strapi import and
+other one-time setup tasks required for the local environment. See the
+[Strapi import README](./tasks/import-strapi-data/README.md) for the import
+pipeline and [cron README](./cron/README.md) for the full scheduled job.
+
+Sign in to the AdminJS dashboard using the credentials configured in `.env.local`.
+
+Do not commit `.env.local` or share the configured password.
+
+`http://localhost:8100/admin/login`
 
 ### Creating new seasons
 

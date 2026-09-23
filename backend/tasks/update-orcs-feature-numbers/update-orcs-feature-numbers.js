@@ -1,6 +1,6 @@
 import "../../env.js";
 import _ from "lodash";
-import strapiApi from "../../utils/strapiApi.js";
+import strapiApi from "../../utils/strapi/strapiApi.js";
 import { Feature } from "../../models/index.js";
 
 export default async function updateOrcsFeatureNumbers(transaction = null) {

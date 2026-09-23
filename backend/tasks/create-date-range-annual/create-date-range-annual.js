@@ -12,7 +12,7 @@ import {
   DateRangeAnnual,
 } from "../../models/index.js";
 import { Op } from "sequelize";
-import { getStrapiModelData } from "../../strapi-sync/strapi-data-service.js";
+import { getStrapiModelData } from "../../utils/strapi/strapiDataService.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 
 // Functions

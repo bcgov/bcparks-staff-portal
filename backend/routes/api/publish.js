@@ -24,7 +24,7 @@ import * as STATUS from "../../constants/seasonStatus.js";
 import * as FEATURE_TYPE from "../../constants/featureType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
-import { queueStrapiTask } from "../../utils/strapiTaskQueue.js";
+import { queueStrapiTask } from "../../utils/strapi/strapiTaskQueue.js";
 
 const router = Router();
 
