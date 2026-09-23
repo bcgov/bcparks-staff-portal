@@ -20,7 +20,7 @@ async function savePendingReminder(notificationOptions, jsonData, transaction) {
   const { season } = notificationOptions;
   const now = new Date();
 
-  // remove some stuff for the jsonData to prevent confusion
+  // remove some stuff from the jsonData to prevent confusion
   const newJsonData = {
     sendToIS: jsonData.sendToIS,
     sendToRS: jsonData.sendToRS,
