@@ -5,6 +5,7 @@ import {
   Season,
   SeasonChangeLog,
 } from "../../../models/index.js";
+import { executeWithRetry } from "../../../db/transaction.js";
 
 const FOLLOW_UP_DAYS = 14;
 
@@ -111,16 +112,20 @@ async function deletePendingReminder(emailType, numericData, transaction) {
 
 /**
  * Finds reminders whose follow-up date is today or earlier.
+ * The cron job runs this lookup outside the per-reminder transaction, so the
+ * query uses retry handling for transient database connection failures.
  * @returns {Promise<Array<PendingReminder>>} Due pending reminders
  */
 async function findDuePendingReminders() {
-  return PendingReminder.findAll({
-    where: {
-      followUpDate: {
-        [Op.lte]: format(new Date(), "yyyy-MM-dd"),
+  return executeWithRetry(() =>
+    PendingReminder.findAll({
+      where: {
+        followUpDate: {
+          [Op.lte]: format(new Date(), "yyyy-MM-dd"),
+        },
       },
-    },
-  });
+    }),
+  );
 }
 
 export {
