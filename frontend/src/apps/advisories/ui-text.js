@@ -7,6 +7,28 @@ export default {
       tooltip:
         "By default, unpublished advisories and closures are hidden. Check this box to show all unpublished advisories and closures.",
     },
+    /* eslint-disable camelcase -- i18next plural suffixes (_one, _other) */
+    associatedResources: {
+      // i18next picks the _one or _other key based on the {{count}} value
+      moreResources: {
+        tooltip_one: "Plus {{count}} more resource",
+        tooltip_other: "Plus {{count}} more resources",
+      },
+      moreRegions: {
+        tooltip_one: "Plus {{count}} more region",
+        tooltip_other: "Plus {{count}} more regions",
+      },
+    },
+    /* eslint-enable camelcase -- end of plural keys */
+  },
+
+  reviewIcon: {
+    warning: {
+      tooltip: "Warning",
+    },
+    updated: {
+      tooltip: "Updated",
+    },
   },
 
   advisoryAreaPicker: {
