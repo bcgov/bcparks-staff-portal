@@ -1139,18 +1139,31 @@ const DateRangeResource = {
   ],
 };
 
+// Junction tables are managed through the relations plugin's many-to-many tabs,
+// but must stay registered because the plugin looks them up by resource ID.
+const AccessGroupParkResource = {
+  resource: AccessGroupPark,
+  options: { navigation: false },
+};
+
+const UserAccessGroupResource = {
+  resource: UserAccessGroup,
+  options: { navigation: false },
+};
+
 const adminOptions = {
   // We pass Category to `resources`
   componentLoader,
+  // Keep in alphabetical order by sidebar label (the table name), not by variable name
   resources: [
-    AccessGroupPark,
+    AccessGroupParkResource,
     AccessGroupResource,
     AppSettingResource,
+    DateableResource,
     DateChangeLog,
     DateRangeAnnual,
     DateRangeResource,
     DateType,
-    DateableResource,
     Feature,
     FeatureType,
     GateDetailResource,
@@ -1163,7 +1176,7 @@ const adminOptions = {
     SeasonChangeLogResource,
     SeasonResource,
     SectionResource,
-    UserAccessGroup,
+    UserAccessGroupResource,
     UserResource,
   ],
   branding: {
