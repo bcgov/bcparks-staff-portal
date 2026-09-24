@@ -2,7 +2,10 @@
 
 import "../../env.js";
 
-import { PendingReminder } from "../../models/index.js";
+import {
+  createTransactionWithRetry,
+  isTransientConnectionError,
+} from "../../db/transaction.js";
 import {
   processPendingReminder,
   REMINDER_RESULT,
@@ -20,6 +23,7 @@ export async function queueEmailReminders() {
   let resolvedCount = 0;
   let queuedCount = 0;
   let failedCount = 0;
+  let connectionFailureCount = 0;
   let staleCount = 0;
   let skippedCount = 0;
   let missingCount = 0;
@@ -36,6 +40,7 @@ export async function queueEmailReminders() {
         queuedCount,
         resolvedCount,
         failedCount,
+        connectionFailureCount,
         staleCount,
         skippedCount,
         missingCount,
@@ -50,7 +55,19 @@ export async function queueEmailReminders() {
     );
 
     for (const reminder of pendingReminders) {
-      const transaction = await PendingReminder.sequelize.transaction();
+      let transaction;
+
+      try {
+        transaction = await createTransactionWithRetry();
+      } catch (error) {
+        connectionFailureCount++;
+        console.error(
+          `Unable to create a transaction for reminder ${reminder.emailType}:${reminder.numericData}. ` +
+            "The reminder will remain queued for a later run:",
+          error,
+        );
+        continue;
+      }
 
       try {
         const result = await processPendingReminder(reminder, transaction);
@@ -76,8 +93,18 @@ export async function queueEmailReminders() {
 
         await transaction.commit();
       } catch (error) {
-        await transaction.rollback();
-        failedCount++;
+        if (transaction && !transaction.finished) {
+          try {
+            await transaction.rollback();
+          } catch (rollbackError) {
+            console.error("Failed to roll back transaction:", rollbackError);
+          }
+        }
+        if (isTransientConnectionError(error)) {
+          connectionFailureCount++;
+        } else {
+          failedCount++;
+        }
         console.error(
           `Error processing reminder ${reminder.emailType}:${reminder.numericData}:`,
           error,
@@ -85,36 +112,58 @@ export async function queueEmailReminders() {
       }
     }
 
-    console.log(`\nReminder processing complete:`);
-
-    const summaryRows = [
-      [
-        "Queued",
-        queuedCount,
-        queuedCount > 0 ? "email(s) will be sent" : "no emails to send",
-      ],
-      [
-        "Skipped",
-        skippedCount,
-        "team notifications disabled; won't retry, record deleted",
-      ],
-      ["Resolved", resolvedCount, "action no longer required"],
-      ["Stale", staleCount, "follow-up date is over 7 days ago"],
-      ["Failed", failedCount, "errors occurred during processing"],
-      ["Missing", missingCount, "season record not found"],
-    ].filter(([label, count]) => count > 0 || label === "Queued");
-
-    for (const [label, count, description] of summaryRows) {
+    console.log(`\nReminder processing summary:`);
+    if (queuedCount > 0) {
       console.log(
-        `- ${`${label}:`.padEnd(8)} ${String(count).padStart(3)} — ${description}`,
+        `- Queued ${queuedCount} email(s) and removed the related reminder(s).`,
+      );
+    } else {
+      console.log("- No follow-up emails were queued.");
+    }
+
+    if (skippedCount > 0) {
+      console.log(
+        `- Skipped and removed ${skippedCount} reminder(s) because team notifications are disabled.`,
       );
     }
+
+    if (resolvedCount > 0) {
+      console.log(
+        `- Removed ${resolvedCount} reminder(s) because the action was already completed.`,
+      );
+    }
+
+    if (staleCount > 0) {
+      console.log(
+        `- Removed ${staleCount} reminder(s) because they were more than 7 days overdue.`,
+      );
+    }
+
+    if (connectionFailureCount > 0) {
+      console.log(
+        `- Left ${connectionFailureCount} reminder(s) queued due to a database connection issue.`,
+      );
+    }
+
+    if (failedCount > 0) {
+      console.log(
+        `- Left ${failedCount} reminder(s) queued because processing failed.`,
+      );
+    }
+
+    if (missingCount > 0) {
+      console.log(
+        `- Removed ${missingCount} reminder(s) because the season record was not found.`,
+      );
+    }
+
     console.log("\n");
 
     return {
       queuedCount,
       resolvedCount,
       failedCount,
+      connectionFailureCount,
       staleCount,
       skippedCount,
       missingCount,

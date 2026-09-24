@@ -1,7 +1,10 @@
 import { getAppSettings } from "../appSettingsHelper.js";
+import { executeWithRetry } from "../../db/transaction.js";
 
 /**
  * Gets email-related application settings and applies default values.
+ * Cron loads these settings outside a transaction, so transient database
+ * connection failures are retried before the operation fails.
  * @returns {Promise<{notificationsEnabled: boolean, areaSupervisorNotificationsEnabled: boolean, infoServicesNotificationsEnabled: boolean, reservationServicesNotificationsEnabled: boolean}>} Notification settings:
  * - `notificationsEnabled`: global switch controlling whether the app sends any email notifications
  * - `areaSupervisorNotificationsEnabled`: whether email notifications are sent to area supervisors
@@ -9,12 +12,14 @@ import { getAppSettings } from "../appSettingsHelper.js";
  * - `reservationServicesNotificationsEnabled`: whether email notifications are sent to Reservation Services staff
  */
 async function getNotificationSettings() {
-  const appSettings = await getAppSettings([
-    "notificationsEnabled",
-    "areaSupervisorNotificationsEnabled",
-    "infoServicesNotificationsEnabled",
-    "reservationServicesNotificationsEnabled",
-  ]);
+  const appSettings = await executeWithRetry(() =>
+    getAppSettings([
+      "notificationsEnabled",
+      "areaSupervisorNotificationsEnabled",
+      "infoServicesNotificationsEnabled",
+      "reservationServicesNotificationsEnabled",
+    ]),
+  );
 
   return {
     notificationsEnabled: appSettings.notificationsEnabled ?? true,

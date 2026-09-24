@@ -1,7 +1,7 @@
 import "../env.js";
 
 import * as SEASON_TYPE from "../constants/seasonType.js";
-import { Park } from "../models/index.js";
+import { createTransactionWithRetry } from "../db/transaction.js";
 import { getCurrentDateCollectionYear } from "../utils/operatingYearHelper.js";
 
 import { syncStrapiData } from "../tasks/import-strapi-data/index.js";
@@ -17,9 +17,11 @@ import { queueEmailReminders } from "../tasks/queue-email-reminders/queue-email-
  * @returns {Promise<void>} Resolves when all jobs have completed
  */
 async function runAllJobs() {
-  const transaction = await Park.sequelize.transaction();
+  let transaction;
 
   try {
+    transaction = await createTransactionWithRetry();
+
     // Import data from Strapi.
     await syncStrapiData(transaction);
 
@@ -47,8 +49,16 @@ async function runAllJobs() {
     await transaction.commit();
     console.log("\nTransaction committed successfully");
   } catch (err) {
-    await transaction.rollback();
-    console.error("Transaction rolled back due to error:", err);
+    if (transaction && !transaction.finished) {
+      try {
+        await transaction.rollback();
+        console.error("Transaction rolled back due to error:", err);
+      } catch (rollbackError) {
+        console.error("Failed to roll back transaction:", rollbackError);
+      }
+    }
+    console.error("Scheduled jobs failed:", err);
+    console.error(err.stack || err);
     throw err;
   }
 
