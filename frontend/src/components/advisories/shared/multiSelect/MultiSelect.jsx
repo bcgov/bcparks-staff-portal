@@ -68,6 +68,9 @@ export function MultiSelect({
         hideSelectedOptions={false}
         controlShouldRenderValue={false}
         closeMenuOnSelect={false}
+        // react-select blurs the input on select for touch devices by default,
+        // which closes the menu and overrides closeMenuOnSelect
+        blurInputOnSelect={false}
         styles={{
           menu: (base) => ({ ...base, zIndex: 999 }),
         }}
