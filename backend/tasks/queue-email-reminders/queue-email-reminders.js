@@ -2,7 +2,10 @@
 
 import "../../env.js";
 
-import { createTransactionWithRetry } from "../../db/transaction.js";
+import {
+  createTransactionWithRetry,
+  isTransientConnectionError,
+} from "../../db/transaction.js";
 import {
   processPendingReminder,
   REMINDER_RESULT,
@@ -97,7 +100,11 @@ export async function queueEmailReminders() {
             console.error("Failed to roll back transaction:", rollbackError);
           }
         }
-        failedCount++;
+        if (isTransientConnectionError(error)) {
+          connectionFailureCount++;
+        } else {
+          failedCount++;
+        }
         console.error(
           `Error processing reminder ${reminder.emailType}:${reminder.numericData}:`,
           error,

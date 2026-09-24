@@ -15,7 +15,7 @@ const TRANSIENT_CONNECTION_ERROR_CODES = new Set([
  *   Error raised while opening a database connection
  * @returns {boolean} Whether the error has a transient connection error code
  */
-function isTransientConnectionError(error) {
+export function isTransientConnectionError(error) {
   return TRANSIENT_CONNECTION_ERROR_CODES.has(
     error?.code ||
       error?.parent?.code ||
