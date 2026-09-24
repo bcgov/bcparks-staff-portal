@@ -1164,6 +1164,9 @@ export default function AdvisoryForm({
                       timeCaption="Time"
                       dateFormat="h:mm aa"
                       className={`${expiryDateError !== "" ? "error" : ""}`}
+                      onBlur={() => {
+                        validateOptionalFutureDate(advisoryData.expiryDate);
+                      }}
                     />
 
                     <FontAwesomeIcon
