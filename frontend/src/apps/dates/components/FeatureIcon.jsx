@@ -30,7 +30,7 @@ import horsebackRiding from "@/assets/icons/horseback-riding.svg";
 import horseshoes from "@/assets/icons/horseshoes.svg";
 import hotspring from "@/assets/icons/hotspring.svg";
 import hunting from "@/assets/icons/hunting.svg";
-import informationDhelter from "@/assets/icons/information-shelter.svg";
+import informationShelter from "@/assets/icons/information-shelter.svg";
 import information from "@/assets/icons/information.svg";
 import interpretiveProgramsOutside from "@/assets/icons/interpretive-programs-outside.svg";
 import kayaking from "@/assets/icons/kayaking.svg";
@@ -97,7 +97,7 @@ const pathMap = new Map([
   ["horseshoes", horseshoes],
   ["hotspring", hotspring],
   ["hunting", hunting],
-  ["information-shelter", informationDhelter],
+  ["information-shelter", informationShelter],
   ["information", information],
   ["interpretive-programs-outside", interpretiveProgramsOutside],
   ["kayaking", kayaking],
