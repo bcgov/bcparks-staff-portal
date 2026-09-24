@@ -12,9 +12,17 @@ export default (sequelize) => {
         foreignKey: "dateableId",
         as: "dateRanges",
       });
-      Dateable.hasMany(models.Feature, {
+      Dateable.hasOne(models.Feature, {
         foreignKey: "dateableId",
         as: "feature",
+      });
+      Dateable.hasOne(models.Park, {
+        foreignKey: "dateableId",
+        as: "park",
+      });
+      Dateable.hasOne(models.ParkArea, {
+        foreignKey: "dateableId",
+        as: "parkArea",
       });
     }
   }

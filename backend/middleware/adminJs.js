@@ -306,6 +306,28 @@ const SeasonResource = {
       "updatedAt",
     ],
   },
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        dateRanges: {
+          type: "one-to-many",
+          target: {
+            resourceId: "DateRanges",
+            joinKey: "seasonId",
+          },
+        },
+        changeLogs: {
+          type: "one-to-many",
+          target: {
+            resourceId: "SeasonChangeLogs",
+            joinKey: "seasonId",
+          },
+        },
+      },
+    }),
+  ],
 };
 
 // Allow nullable booleans to be displayed as "Yes", "No", and "null"
@@ -541,6 +563,21 @@ const SeasonChangeLogResource = {
       },
     },
   },
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        dateChangeLogs: {
+          type: "one-to-many",
+          target: {
+            resourceId: "DateChangeLogs",
+            joinKey: "seasonChangeLogId",
+          },
+        },
+      },
+    }),
+  ],
 };
 
 const AppSettingResource = {
@@ -654,6 +691,124 @@ const AppSettingResource = {
   },
 };
 
+/**
+ * Populates hasOne associations (where the foreign key is on the related model)
+ * so AdminJS's built-in reference component renders them as links.
+ * @param {Array<Object>} records RecordJSON objects from the action response
+ * @param {Object} context AdminJS action context
+ * @param {string} foreignKey Foreign key column on the related models
+ * @param {Array<Object>} links List of { path, model, resourceId } to populate
+ * @param {string} [sourceKey="id"] Column on the owner record that the foreign key references
+ * @returns {Promise<void>}
+ */
+async function populateHasOneLinks(
+  records,
+  context,
+  foreignKey,
+  links,
+  sourceKey = "id",
+) {
+  const ownerKeys = records
+    .map((record) => record.params[sourceKey])
+    .filter((key) => key !== null && typeof key !== "undefined");
+
+  if (!ownerKeys.length) return;
+
+  for (const { path, model, resourceId } of links) {
+    const rows = await model.findAll({
+      where: { [foreignKey]: ownerKeys },
+      attributes: ["id", foreignKey],
+    });
+
+    if (!rows.length) continue;
+
+    // eslint-disable-next-line no-underscore-dangle -- AdminJS exposes the instance as _admin
+    const resource = context._admin.findResource(resourceId);
+    const targets = await resource.findMany(rows.map((row) => row.id));
+    const targetsById = new Map(
+      targets.map((target) => [String(target.id()), target]),
+    );
+    const targetsByOwnerKey = new Map(
+      rows.map((row) => [
+        String(row[foreignKey]),
+        targetsById.get(String(row.id)),
+      ]),
+    );
+
+    records.forEach((record) => {
+      const target = targetsByOwnerKey.get(String(record.params[sourceKey]));
+
+      if (target) {
+        record.params[path] = target.id();
+        record.populated[path] = target.toJSON(context.currentAdmin);
+      }
+    });
+  }
+}
+
+/**
+ * Returns read-only virtual reference properties for hasOne links.
+ * @param {Array<Object>} links List of { path, resourceId } to display
+ * @returns {Object} AdminJS property options keyed by path
+ */
+function hasOneLinkProperties(links) {
+  return Object.fromEntries(
+    links.map(({ path, resourceId }) => [
+      path,
+      {
+        type: "reference",
+        reference: resourceId,
+        isVisible: { list: true, filter: false, show: true, edit: false },
+      },
+    ]),
+  );
+}
+
+/**
+ * Returns AdminJS resource options that display hasOne associations as links.
+ * Adds a read-only virtual reference property for each link, and list/show
+ * hooks to populate them.
+ * @param {string} foreignKey Foreign key column on the related models
+ * @param {Array<Object>} links List of { path, model, resourceId } to display
+ * @returns {Object} AdminJS resource options with properties and actions
+ */
+function hasOneLinkOptions(foreignKey, links) {
+  return {
+    properties: hasOneLinkProperties(links),
+    actions: {
+      list: {
+        async after(response, request, context) {
+          await populateHasOneLinks(
+            response.records ?? [],
+            context,
+            foreignKey,
+            links,
+          );
+          return response;
+        },
+      },
+      show: {
+        async after(response, request, context) {
+          if (response.record) {
+            await populateHasOneLinks(
+              [response.record],
+              context,
+              foreignKey,
+              links,
+            );
+          }
+          return response;
+        },
+      },
+    },
+  };
+}
+
+// hasOne associations of Park, joined on the Park's publishableId
+const PARK_LINKS = [
+  { path: "gateDetail", model: GateDetail, resourceId: "GateDetails" },
+];
+
 const ParkResource = {
   resource: Park,
   options: {
@@ -670,24 +825,39 @@ const ParkResource = {
           label: "Management Areas",
         },
       },
+      ...hasOneLinkProperties(PARK_LINKS),
     },
     actions: {
       list: {
-        async after(response) {
+        async after(response, request, context) {
           response.records?.forEach((record) => {
             if (record.params) {
               normalizeJsonProperties(record.params, ["managementAreas"]);
             }
           });
+          await populateHasOneLinks(
+            response.records ?? [],
+            context,
+            "publishableId",
+            PARK_LINKS,
+            "publishableId",
+          );
           return response;
         },
       },
       show: {
-        async after(response) {
+        async after(response, request, context) {
           if (response.record?.params) {
             normalizeJsonProperties(response.record.params, [
               "managementAreas",
             ]);
+            await populateHasOneLinks(
+              [response.record],
+              context,
+              "publishableId",
+              PARK_LINKS,
+              "publishableId",
+            );
           }
           return response;
         },
@@ -754,6 +924,20 @@ const ParkResource = {
             resourceId: "AccessGroups",
             joinKey: "id",
             targetPropertyKey: "id",
+          },
+        },
+        features: {
+          type: "one-to-many",
+          target: {
+            resourceId: "Features",
+            joinKey: "parkId",
+          },
+        },
+        parkAreas: {
+          type: "one-to-many",
+          target: {
+            resourceId: "ParkAreas",
+            joinKey: "parkId",
           },
         },
       },
@@ -842,6 +1026,119 @@ const PendingReminderResource = {
   },
 };
 
+const PublishableResource = {
+  resource: Publishable,
+  options: hasOneLinkOptions("publishableId", [
+    { path: "park", model: Park, resourceId: "Parks" },
+    { path: "parkArea", model: ParkArea, resourceId: "ParkAreas" },
+    { path: "feature", model: Feature, resourceId: "Features" },
+    { path: "gateDetail", model: GateDetail, resourceId: "GateDetails" },
+  ]),
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        seasons: {
+          type: "one-to-many",
+          target: {
+            resourceId: "Seasons",
+            joinKey: "publishableId",
+          },
+        },
+        dateRangeAnnuals: {
+          type: "one-to-many",
+          target: {
+            resourceId: "DateRangeAnnuals",
+            joinKey: "publishableId",
+          },
+        },
+      },
+    }),
+  ],
+};
+
+const DateableResource = {
+  resource: Dateable,
+  options: hasOneLinkOptions("dateableId", [
+    { path: "park", model: Park, resourceId: "Parks" },
+    { path: "parkArea", model: ParkArea, resourceId: "ParkAreas" },
+    { path: "feature", model: Feature, resourceId: "Features" },
+  ]),
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        dateRanges: {
+          type: "one-to-many",
+          target: {
+            resourceId: "DateRanges",
+            joinKey: "dateableId",
+          },
+        },
+      },
+    }),
+  ],
+};
+
+const ParkAreaResource = {
+  resource: ParkArea,
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        features: {
+          type: "one-to-many",
+          target: {
+            resourceId: "Features",
+            joinKey: "parkAreaId",
+          },
+        },
+      },
+    }),
+  ],
+};
+
+const SectionResource = {
+  resource: Section,
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        managementAreas: {
+          type: "one-to-many",
+          target: {
+            resourceId: "ManagementAreas",
+            joinKey: "sectionId",
+          },
+        },
+      },
+    }),
+  ],
+};
+
+const DateRangeResource = {
+  resource: DateRange,
+  features: [
+    owningRelationSettingsFeature({
+      componentLoader,
+      licenseKey: LICENSE_KEY,
+      relations: {
+        dateChangeLogs: {
+          type: "one-to-many",
+          target: {
+            resourceId: "DateChangeLogs",
+            joinKey: "dateRangeId",
+          },
+        },
+      },
+    }),
+  ],
+};
+
 const adminOptions = {
   // We pass Category to `resources`
   componentLoader,
@@ -850,22 +1147,22 @@ const adminOptions = {
     AccessGroupResource,
     AppSettingResource,
     DateChangeLog,
-    DateRange,
     DateRangeAnnual,
+    DateRangeResource,
     DateType,
-    Dateable,
+    DateableResource,
     Feature,
     FeatureType,
     GateDetailResource,
     ManagementArea,
-    ParkArea,
+    ParkAreaResource,
     ParkAreaType,
     ParkResource,
     PendingReminderResource,
-    Publishable,
+    PublishableResource,
     SeasonChangeLogResource,
     SeasonResource,
-    Section,
+    SectionResource,
     UserAccessGroup,
     UserResource,
   ],

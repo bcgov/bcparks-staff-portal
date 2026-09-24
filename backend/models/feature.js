@@ -53,7 +53,10 @@ export default (sequelize) => {
       parkId: DataTypes.INTEGER,
       strapiFeatureId: DataTypes.STRING,
       featureTypeId: DataTypes.INTEGER,
-      dateableId: DataTypes.INTEGER,
+      dateableId: {
+        type: DataTypes.INTEGER,
+        unique: true,
+      },
       hasReservations: DataTypes.BOOLEAN,
       parkAreaId: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
