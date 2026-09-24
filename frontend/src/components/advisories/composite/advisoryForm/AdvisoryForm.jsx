@@ -799,7 +799,7 @@ export default function AdvisoryForm({
           </Form.Label>
         </Form.Group>
 
-        {linksRef.current.map((l, idx) => (
+        {linksRef.current.map((link, idx) => (
           <div key={idx} className="sub-section link-sub-section">
             <button
               type="button"
@@ -830,11 +830,13 @@ export default function AdvisoryForm({
                     updateLink(idx, "type", e.value);
                     markChanged();
                   }}
-                  value={linkTypes.filter((o) => o.value === l.type)}
+                  value={linkTypes.filter(
+                    (option) => option.value === link.type,
+                  )}
                   className="bcgov-select"
                   placeholder="Search or select link or document type"
                   onBlur={() =>
-                    validateLink(l, idx, "type", setLinkTypeErrors)
+                    validateLink(link, idx, "type", setLinkTypeErrors)
                   }
                   styles={{
                     menu: (base) => ({ ...base, zIndex: 999 }),
@@ -853,14 +855,16 @@ export default function AdvisoryForm({
               </Form.Label>
 
               <Form.Control
-                value={l.title}
+                value={link.title}
                 onChange={(event) => {
                   updateLink(idx, "title", event.target.value);
                 }}
                 className={getControlClassName(linkTitleErrors[idx])}
                 maxLength={255}
                 required={linkTitleInput.required}
-                onBlur={() => validateLink(l, idx, "title", setLinkTitleErrors)}
+                onBlur={() =>
+                  validateLink(link, idx, "title", setLinkTitleErrors)
+                }
               />
               {renderHelperText(
                 linkTitleErrors[idx] && "Provide a link title",
@@ -868,7 +872,7 @@ export default function AdvisoryForm({
               )}
             </Form.Group>
 
-            {l.format !== "file" && !hasFileDeleted[idx] ? (
+            {link.format !== "file" && !hasFileDeleted[idx] ? (
               <Form.Group className="form-group">
                 <Form.Label htmlFor={`${linkUrlInput.id}-${idx}`}>
                   <span className="append-required">URL</span>
@@ -876,12 +880,14 @@ export default function AdvisoryForm({
 
                 <InputGroup>
                   <Form.Control
-                    value={l.file ? l.file.url : l.url}
+                    value={link.file ? link.file.url : link.url}
                     onChange={(event) => {
                       updateLink(idx, "url", event.target.value);
                     }}
                     className={getControlClassName(linkUrlErrors[idx], "url")}
-                    onBlur={() => validateLink(l, idx, "url", setLinkUrlErrors)}
+                    onBlur={() =>
+                      validateLink(link, idx, "url", setLinkUrlErrors)
+                    }
                     maxLength={255}
                     id={`${linkUrlInput.id}-${idx}`}
                     required={linkUrlInput.required}
@@ -889,7 +895,7 @@ export default function AdvisoryForm({
                   <button
                     type="button"
                     onClick={() => {
-                      if (isFile(l.url)) {
+                      if (isFile(link.url)) {
                         setHasFileDeleted((prev) => {
                           hasFileDeleted[idx] = true;
                           return [...prev];
@@ -915,10 +921,10 @@ export default function AdvisoryForm({
                   <span className="append-required">File</span>
                 </Form.Label>
 
-                {l.file ? (
+                {link.file ? (
                   <InputGroup>
                     <Form.Control
-                      value={l.file ? l.file.name : ""}
+                      value={link.file ? link.file.name : ""}
                       className={getControlClassName(false)}
                       readOnly
                     />
@@ -928,7 +934,7 @@ export default function AdvisoryForm({
                         e.stopPropagation();
                         updateLink(idx, "file", "");
                         markChanged();
-                        validateLink(l, idx, "file", setLinkFileErrors);
+                        validateLink(link, idx, "file", setLinkFileErrors);
                       }}
                       className="clear-url-btn"
                       aria-label="Clear file"
