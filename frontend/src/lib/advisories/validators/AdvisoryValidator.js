@@ -116,6 +116,15 @@ export function validateLinks(links, linkErrorsStatus) {
   const newLinkFileErrors = [...linkErrorsStatus.linkFileErrors];
 
   links.forEach((link, idx) => {
+    // Skip validation for a link row the user never actually filled in
+    // (e.g. opening the file picker and cancelling it without picking a file)
+    if (!link.type && !link.title && !link.url && !link.file) {
+      newLinkTypeErrors[idx] = false;
+      newLinkTitleErrors[idx] = false;
+      newLinkUrlErrors[idx] = false;
+      newLinkFileErrors[idx] = false;
+      return;
+    }
     if (!link.type) {
       newLinkTypeErrors[idx] = true;
       isValid = false;

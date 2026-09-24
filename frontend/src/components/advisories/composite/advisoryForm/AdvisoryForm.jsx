@@ -390,6 +390,38 @@ export default function AdvisoryForm({
     return `bcgov-input ${error ? "is-invalid" : ""} ${className}`.trim();
   }
 
+  // Removes a link row and keeps its per-row validation/UI state arrays in sync,
+  // since they're indexed positionally alongside linksRef.current
+  function removeLinkRow(linkIndex) {
+    removeLink(linkIndex);
+    setLinkTypeErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setLinkTitleErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setLinkUrlErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setLinkFileErrors((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    setHasFileDeleted((prev) =>
+      prev.filter((_, errorIndex) => errorIndex !== linkIndex),
+    );
+    markChanged();
+  }
+
+  // Removes a link row left empty when the user opens the file picker and cancels it
+  function handleFileInputCancel(idx) {
+    const link = linksRef.current[idx];
+    const isEmpty = link && !link.type && !link.title && !link.url && !link.file;
+
+    if (isEmpty) {
+      removeLinkRow(idx);
+    }
+  }
+
   useEffect(() => {
     if (selectedDisplayedDateOption === "posting") {
       setDisplayAdvisoryDate(true);
@@ -768,65 +800,53 @@ export default function AdvisoryForm({
           </Form.Label>
         </Form.Group>
 
-        {linksRef.current.map((l, idx) => (
-          <div key={idx} className="sub-section">
+        {linksRef.current.map((link, idx) => (
+          <div key={idx} className="sub-section link-sub-section">
+            <button
+              type="button"
+              className="pointer btn remove-link-btn"
+              tabIndex="0"
+              aria-label="Remove link"
+              onClick={() => {
+                removeLinkRow(idx);
+              }}
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+
             <Form.Group className="form-group" controlId={`link-type-${idx}`}>
               <Form.Label>
                 <span className="append-required">Type</span>
               </Form.Label>
 
-              <div className="d-flex">
-                <div
-                  className={classNames(
-                    "bcgov-select-form flex-grow-1 flex-shrink-1",
-                    {
-                      "bcgov-select-error": linkTypeErrors[idx],
-                    },
-                  )}
-                >
-                  <Select
-                    id={`link-type-${idx}`}
-                    options={linkTypes}
-                    onChange={(e) => {
-                      updateLink(idx, "type", e.value);
-                      markChanged();
-                    }}
-                    value={linkTypes.filter((o) => o.value === l.type)}
-                    className="bcgov-select"
-                    placeholder="Search or select link or document type"
-                    onBlur={() =>
-                      validateLink(l, idx, "type", setLinkTypeErrors)
-                    }
-                    styles={{
-                      menu: (base) => ({ ...base, zIndex: 999 }),
-                    }}
-                  />
-                  {renderHelperText(
-                    linkTypeErrors[idx] && "Provide a link type",
-                    linkTypeErrors[idx],
-                  )}
-                </div>
-
-                <button
-                  className="pointer btn flex-shrink-0 flex-grow-0 ms-2"
-                  tabIndex="0"
-                  style={{
-                    width: "36px",
-                    minWidth: "36px",
-                    maxWidth: "36px",
-                    height: "36px",
-                    display: "flex",
-                    alignSelf: "flex-start",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}
-                  onClick={() => {
-                    removeLink(idx);
+              <div
+                className={classNames("bcgov-select-form", {
+                  "bcgov-select-error": linkTypeErrors[idx],
+                })}
+              >
+                <Select
+                  id={`link-type-${idx}`}
+                  options={linkTypes}
+                  onChange={(e) => {
+                    updateLink(idx, "type", e.value);
                     markChanged();
                   }}
-                >
-                  <FontAwesomeIcon icon={faXmark} />
-                </button>
+                  value={linkTypes.filter(
+                    (option) => option.value === link.type,
+                  )}
+                  className="bcgov-select"
+                  placeholder="Search or select link or document type"
+                  onBlur={() =>
+                    validateLink(link, idx, "type", setLinkTypeErrors)
+                  }
+                  styles={{
+                    menu: (base) => ({ ...base, zIndex: 999 }),
+                  }}
+                />
+                {renderHelperText(
+                  linkTypeErrors[idx] && "Provide a link type",
+                  linkTypeErrors[idx],
+                )}
               </div>
             </Form.Group>
 
@@ -836,14 +856,16 @@ export default function AdvisoryForm({
               </Form.Label>
 
               <Form.Control
-                value={l.title}
+                value={link.title}
                 onChange={(event) => {
                   updateLink(idx, "title", event.target.value);
                 }}
                 className={getControlClassName(linkTitleErrors[idx])}
                 maxLength={255}
                 required={linkTitleInput.required}
-                onBlur={() => validateLink(l, idx, "title", setLinkTitleErrors)}
+                onBlur={() =>
+                  validateLink(link, idx, "title", setLinkTitleErrors)
+                }
               />
               {renderHelperText(
                 linkTitleErrors[idx] && "Provide a link title",
@@ -851,7 +873,7 @@ export default function AdvisoryForm({
               )}
             </Form.Group>
 
-            {l.format !== "file" && !hasFileDeleted[idx] ? (
+            {link.format !== "file" && !hasFileDeleted[idx] ? (
               <Form.Group className="form-group">
                 <Form.Label htmlFor={`${linkUrlInput.id}-${idx}`}>
                   <span className="append-required">URL</span>
@@ -859,12 +881,14 @@ export default function AdvisoryForm({
 
                 <InputGroup>
                   <Form.Control
-                    value={l.file ? l.file.url : l.url}
+                    value={link.file ? link.file.url : link.url}
                     onChange={(event) => {
                       updateLink(idx, "url", event.target.value);
                     }}
                     className={getControlClassName(linkUrlErrors[idx], "url")}
-                    onBlur={() => validateLink(l, idx, "url", setLinkUrlErrors)}
+                    onBlur={() =>
+                      validateLink(link, idx, "url", setLinkUrlErrors)
+                    }
                     maxLength={255}
                     id={`${linkUrlInput.id}-${idx}`}
                     required={linkUrlInput.required}
@@ -872,7 +896,7 @@ export default function AdvisoryForm({
                   <button
                     type="button"
                     onClick={() => {
-                      if (isFile(l.url)) {
+                      if (isFile(link.url)) {
                         setHasFileDeleted((prev) => {
                           hasFileDeleted[idx] = true;
                           return [...prev];
@@ -898,10 +922,10 @@ export default function AdvisoryForm({
                   <span className="append-required">File</span>
                 </Form.Label>
 
-                {l.file ? (
+                {link.file ? (
                   <InputGroup>
                     <Form.Control
-                      value={l.file ? l.file.name : ""}
+                      value={link.file ? link.file.name : ""}
                       className={getControlClassName(false)}
                       readOnly
                     />
@@ -911,7 +935,7 @@ export default function AdvisoryForm({
                         e.stopPropagation();
                         updateLink(idx, "file", "");
                         markChanged();
-                        validateLink(l, idx, "file", setLinkFileErrors);
+                        validateLink(link, idx, "file", setLinkFileErrors);
                       }}
                       className="clear-url-btn"
                       aria-label="Clear file"
@@ -929,6 +953,9 @@ export default function AdvisoryForm({
                       onChange={(e) => {
                         handleFileCapture(e.target.files, idx);
                         markChanged();
+                      }}
+                      ref={(e) => {
+                        if (e) e.oncancel = () => handleFileInputCancel(idx);
                       }}
                     />
                     <label htmlFor={`file-upload-${idx}`}>
@@ -965,6 +992,16 @@ export default function AdvisoryForm({
                   linksRef.current.length > 0 ? linksRef.current.length - 1 : 0,
                 );
                 markChanged();
+              }}
+              ref={(e) => {
+                if (e) {
+                  e.oncancel = () =>
+                    handleFileInputCancel(
+                      linksRef.current.length > 0
+                        ? linksRef.current.length - 1
+                        : 0,
+                    );
+                }
               }}
             />
             <label htmlFor="file-upload" className="mb-0">
