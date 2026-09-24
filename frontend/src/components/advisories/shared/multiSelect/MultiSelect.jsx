@@ -71,6 +71,8 @@ export function MultiSelect({
         // react-select blurs the input on select for touch devices by default,
         // which closes the menu and overrides closeMenuOnSelect
         blurInputOnSelect={false}
+        // let Tab move focus to the next control instead of toggling the focused option
+        tabSelectsValue={false}
         styles={{
           menu: (base) => ({ ...base, zIndex: 999 }),
         }}
