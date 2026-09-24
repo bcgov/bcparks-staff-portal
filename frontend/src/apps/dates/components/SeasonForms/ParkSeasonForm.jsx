@@ -18,7 +18,7 @@ import TooltipWrapper from "@/apps/dates/components/TooltipWrapper";
 import PreviousDates from "@/apps/dates/components/SeasonForms/PreviousDates";
 
 import DataContext from "@/apps/dates/contexts/DataContext";
-import { updateDateRangeAnnualsArray } from "@/lib/utils";
+import { updateDateRangeAnnualsArray } from "@/utils";
 import getDateTypeDisplayName from "@/apps/dates/utils/getDateTypeDisplayName";
 import isDateTypeOptional from "@/apps/dates/utils/isDateTypeOptional";
 import * as SEASON_TYPE from "@/apps/dates/constants/seasonType";

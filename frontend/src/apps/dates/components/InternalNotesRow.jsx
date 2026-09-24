@@ -4,7 +4,7 @@ import classNames from "classnames";
 import Accordion from "react-bootstrap/Accordion";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fa-kit/icons/classic/solid";
-import { formatDateShortWithYear } from "@/lib/utils";
+import { formatDateShortWithYear } from "@/utils";
 import { useApiGet } from "@/hooks/useApi";
 
 // Formats createdAt date

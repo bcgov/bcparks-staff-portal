@@ -9,7 +9,7 @@ import InternalNotesRow from "@/apps/dates/components/InternalNotesRow";
 import LastUpdatedInfo from "@/apps/dates/components/LastUpdatedInfo";
 import SubmittedWithErrorsWarning from "@/apps/dates/components/SubmittedWithErrorsWarning";
 import IconButton from "@/apps/dates/components/IconButton";
-import { formatDateRange } from "@/lib/utils";
+import { formatDateRange } from "@/utils";
 import getDateTypeDisplayName from "@/apps/dates/utils/getDateTypeDisplayName";
 import useAccess from "@/hooks/useAccess";
 import { useApiPost } from "@/hooks/useApi";

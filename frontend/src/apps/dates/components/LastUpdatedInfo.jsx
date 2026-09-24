@@ -1,7 +1,7 @@
 import PropTypes from "prop-types";
 import { format } from "date-fns";
 
-import { formatDateShortWithYear } from "@/lib/utils";
+import { formatDateShortWithYear } from "@/utils";
 import "./LastUpdatedInfo.scss";
 
 export default function LastUpdatedInfo({ lastUpdated }) {

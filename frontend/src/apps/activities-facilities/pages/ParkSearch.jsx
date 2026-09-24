@@ -1,15 +1,14 @@
 import { useState, useEffect, useContext } from "react";
 import ErrorContext from "@/contexts/ErrorContext";
-import CmsDataContext from "@/apps/advisories/contexts/CmsDataContext";
+import CmsDataContext from "@/contexts/CmsDataContext";
 import "./ParkSearch.scss";
 // Include styles from AdvisoryForm component
-import "@/apps/advisories/components/advisoryForm/AdvisoryForm.scss";
 import { useAuth } from "react-oidc-context";
 import { Navigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
 import Select, { components } from "react-select";
-import { Loader } from "@/apps/advisories/components/shared/loader/Loader";
+import { Loader } from "@/components/Loader";
 import ListGroup from "react-bootstrap/ListGroup";
 import {
   getProtectedAreas,
@@ -17,12 +16,12 @@ import {
   getSections,
   getManagementAreas,
   getSites,
-} from "@/apps/advisories/utils/CmsDataUtil";
+} from "@/utils/cms/cmsDataUtil";
 import {
   addProtectedAreasFromArea,
   addProtectedAreas,
-} from "@/apps/advisories/utils/LocationUtil";
-import { isEmpty } from "@/apps/advisories/utils/AppUtil";
+} from "@/utils/cms/locationUtil";
+import { isEmpty } from "@/utils/appUtil";
 
 export default function ParkSearch() {
   const { setError } = useContext(ErrorContext);

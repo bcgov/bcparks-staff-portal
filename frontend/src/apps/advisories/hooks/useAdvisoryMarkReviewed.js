@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 import { isFuture, isValid, parseISO } from "date-fns";
 
-import { buildReviewPayload } from "@/apps/advisories/utils/AdvisoryReviewPayload";
-import useCms from "@/apps/advisories/hooks/useCms";
+import { buildReviewPayload } from "@/apps/advisories/utils/advisoryReviewPayload";
+import useCms from "@/hooks/useCms";
 
 function resolveReviewedStatus(rowData, advisoryStatuses) {
   const publishedStatus = advisoryStatuses.find(

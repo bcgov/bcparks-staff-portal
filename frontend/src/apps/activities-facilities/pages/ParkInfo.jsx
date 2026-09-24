@@ -1,12 +1,12 @@
 import { useState, useEffect, useContext, useCallback, useRef } from "react";
 import { orderBy } from "lodash-es";
 import ErrorContext from "@/contexts/ErrorContext";
-import "./ParkInfo.css";
+import "./ParkInfo.scss";
 import { Navigate, useParams, useNavigate } from "react-router-dom";
-import { Loader } from "@/apps/advisories/components/shared/loader/Loader";
+import { Loader } from "@/components/Loader";
 import { useAuth } from "react-oidc-context";
-import useCms from "@/apps/advisories/hooks/useCms";
-import { Button } from "@/apps/advisories/components/shared/button/Button";
+import useCms from "@/hooks/useCms";
+import { Button } from "@/components/Button";
 import { Accordion, Form, Tab, Tabs } from "react-bootstrap";
 import moment from "moment";
 import SwitchButton from "@/apps/activities-facilities/components/SwitchButton";

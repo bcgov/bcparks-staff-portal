@@ -1,6 +1,6 @@
 import PropTypes from "prop-types";
 
-import { formatPreviousDateRange } from "@/lib/utils";
+import { formatPreviousDateRange } from "@/utils";
 
 export default function PreviousDates({ label = "Previous", dateRanges = [] }) {
   if (!dateRanges.length) {

@@ -21,24 +21,24 @@ import { useTranslation } from "react-i18next";
 import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useAccess from "@/hooks/useAccess";
-import useCms from "@/apps/advisories/hooks/useCms";
+import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
-import emptyReviewQueueImage from "@/apps/advisories/pages/empty-review-queue.png";
-import { Button } from "@/apps/advisories/components/shared/button/Button";
-import { CountBadge } from "@/apps/advisories/components/shared/countBadge/CountBadge";
-import { MultiSelect } from "@/apps/advisories/components/shared/multiSelect/MultiSelect";
-import { ReviewIcon } from "@/apps/advisories/components/shared/reviewIcon/ReviewIcon";
-import { SingleSelect } from "@/apps/advisories/components/shared/singleSelect/SingleSelect";
-import { TableActionButton } from "@/apps/advisories/components/shared/tableActionButton/TableActionButton";
-import DataTable from "@/apps/advisories/components/dataTable/DataTable";
+import emptyReviewQueueImage from "@/apps/advisories/assets/empty-review-queue.png";
+import { Button } from "@/components/Button";
+import { CountBadge } from "@/apps/advisories/components/CountBadge";
+import { MultiSelect } from "@/apps/advisories/components/MultiSelect";
+import { ReviewIcon } from "@/apps/advisories/components/ReviewIcon";
+import { SingleSelect } from "@/apps/advisories/components/SingleSelect";
+import { TableActionButton } from "@/apps/advisories/components/TableActionButton";
+import DataTable from "@/components/DataTable";
 import StatusBadge from "@/components/StatusBadge";
-import FilterStatus from "@/apps/advisories/components/shared/filterStatus/FilterStatus";
+import FilterStatus from "@/apps/advisories/components/FilterStatus";
 import moment from "moment";
-import { Loader } from "@/apps/advisories/components/shared/loader/Loader";
+import { Loader } from "@/components/Loader";
 import Form from "react-bootstrap/Form";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
-import LightTooltip from "@/apps/advisories/components/shared/tooltip/LightTooltip";
+import LightTooltip from "@/apps/advisories/components/LightTooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCircleExclamation,
@@ -48,16 +48,16 @@ import {
   faStar,
   faTriangleExclamation,
 } from "@fa-kit/icons/classic/solid";
-import { updatePublicAdvisories } from "@/apps/advisories/utils/AdvisoryDataUtil";
+import { updatePublicAdvisories } from "@/apps/advisories/utils/advisoryDataUtil";
 import {
   buildFilter,
   buildSort,
-} from "@/apps/advisories/utils/AdvisoryDashboardQuery";
+} from "@/apps/advisories/utils/advisoryDashboardQuery";
 import useAdvisoryMarkReviewed from "@/apps/advisories/hooks/useAdvisoryMarkReviewed";
 import useAdvisoryUnpublish from "@/apps/advisories/hooks/useAdvisoryUnpublish";
 import { TABLE_FILTER_LABELS } from "@/apps/advisories/constants/advisoryDashboardFilter";
 import { REVIEW_STATUS } from "@/apps/advisories/constants/reviewStatus";
-import buildReviewFilter from "@/apps/advisories/utils/AdvisoryReviewDashboardQuery";
+import buildReviewFilter from "@/apps/advisories/utils/advisoryReviewDashboardQuery";
 import {
   clearAllFilters as clearAllFiltersHandler,
   clearDistrictFilter as clearDistrictFilterHandler,

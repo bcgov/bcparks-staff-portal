@@ -3,7 +3,7 @@ import classNames from "classnames";
 
 import ErrorSlot from "@/apps/dates/components/ValidationErrorSlot";
 
-import { formatDateShortWithYear } from "@/lib/utils";
+import { formatDateShortWithYear } from "@/utils";
 import { useValidationContext } from "@/apps/dates/hooks/useValidation/useValidation";
 
 import "./InternalNotes.scss";

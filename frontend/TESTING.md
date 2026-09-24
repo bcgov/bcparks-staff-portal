@@ -29,7 +29,7 @@ module, `vi.spyOn()` to wrap an existing function.
 
 ## Current scope
 
-Only pure functions in `src/lib/` and `src/apps/*/utils/` are covered so far — nothing that renders a
+Only pure functions in `src/utils/` and `src/apps/*/utils/` are covered so far — nothing that renders a
 component, uses a hook, or touches the DOM. See
 [src/apps/dates/utils/isDateTypeOptional.test.js](src/apps/dates/utils/isDateTypeOptional.test.js) for the
 reference example.

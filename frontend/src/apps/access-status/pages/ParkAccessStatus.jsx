@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { cmsAxios } from "@/apps/advisories/utils/axios_config";
-import DataTable from "@/apps/advisories/components/dataTable/DataTable";
-import { Loader } from "@/apps/advisories/components/shared/loader/Loader";
+import { cmsAxios } from "@/utils/cms/axiosConfig";
+import DataTable from "@/components/DataTable";
+import { Loader } from "@/components/Loader";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
-import { exportPdf } from "@/apps/advisories/utils/ExportPdfUtil";
+import { exportPdf } from "@/apps/access-status/utils/exportPdfUtil";
 import "./ParkAccessStatus.scss";
 
 function exportCsvFile(columns, rows, fileName) {

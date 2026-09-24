@@ -16,7 +16,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "html"],
       // Scoped to the areas this round of tests actually covers; broaden as more layers get tests
-      include: ["src/lib/**", "src/apps/*/utils/**"],
+      include: ["src/utils/**", "src/apps/*/utils/**"],
     },
   },
 });

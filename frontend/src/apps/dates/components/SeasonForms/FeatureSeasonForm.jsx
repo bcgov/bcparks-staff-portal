@@ -19,7 +19,7 @@ import PreviousDates from "@/apps/dates/components/SeasonForms/PreviousDates";
 import ErrorSlot from "@/apps/dates/components/ValidationErrorSlot";
 
 import DataContext from "@/apps/dates/contexts/DataContext";
-import { updateDateRangeAnnualsArray } from "@/lib/utils";
+import { updateDateRangeAnnualsArray } from "@/utils";
 import getDateTypeDisplayName from "@/apps/dates/utils/getDateTypeDisplayName";
 import isDateTypeOptional from "@/apps/dates/utils/isDateTypeOptional";
 import { useValidationContext } from "@/apps/dates/hooks/useValidation/useValidation";

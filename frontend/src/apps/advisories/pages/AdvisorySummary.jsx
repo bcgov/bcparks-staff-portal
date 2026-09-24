@@ -9,12 +9,12 @@ import {
 import { format } from "date-fns";
 import classNames from "classnames";
 import ErrorContext from "@/contexts/ErrorContext";
-import CmsDataContext from "@/apps/advisories/contexts/CmsDataContext";
+import CmsDataContext from "@/contexts/CmsDataContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
-import useCms from "@/apps/advisories/hooks/useCms";
+import useCms from "@/hooks/useCms";
 import { useAuth } from "react-oidc-context";
 import "./AdvisorySummary.scss";
-import { Loader } from "@/apps/advisories/components/shared/loader/Loader";
+import { Loader } from "@/components/Loader";
 import Toast from "react-bootstrap/Toast";
 import ToastContainer from "react-bootstrap/ToastContainer";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -24,12 +24,12 @@ import {
   faEyeSlash,
   faPen,
 } from "@fa-kit/icons/classic/regular";
-import { Button } from "@/apps/advisories/components/shared/button/Button";
-import { getLinkTypes } from "@/apps/advisories/utils/CmsDataUtil";
-import { getAdvisoryStatuses } from "@/apps/advisories/utils/CmsDataUtil";
-import AdvisorySummaryView from "@/apps/advisories/components/advisorySummaryView/AdvisorySummaryView";
+import { Button } from "@/components/Button";
+import { getLinkTypes } from "@/utils/cms/cmsDataUtil";
+import { getAdvisoryStatuses } from "@/utils/cms/cmsDataUtil";
+import AdvisorySummaryView from "@/apps/advisories/components/AdvisorySummaryView";
 import StatusBadge from "@/components/StatusBadge";
-import SummaryActionButton from "@/apps/advisories/components/shared/summaryActionButton/SummaryActionButton";
+import SummaryActionButton from "@/apps/advisories/components/SummaryActionButton";
 import useAccess from "@/hooks/useAccess";
 import useAdvisoryMarkReviewed from "@/apps/advisories/hooks/useAdvisoryMarkReviewed";
 import useAdvisoryUnpublish from "@/apps/advisories/hooks/useAdvisoryUnpublish";

@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 
 import { ADVISORY_QUERY } from "@/apps/advisories/constants/advisoryQuery";
-import { buildUnpublishPayload } from "@/apps/advisories/utils/AdvisoryUnpublishPayload";
-import useCms from "@/apps/advisories/hooks/useCms";
+import { buildUnpublishPayload } from "@/apps/advisories/utils/advisoryUnpublishPayload";
+import useCms from "@/hooks/useCms";
 import useAdvisoryRole from "@/apps/advisories/hooks/useAdvisoryRole";
 
 export default function useAdvisoryUnpublish({

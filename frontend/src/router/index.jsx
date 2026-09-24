@@ -11,7 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import { Unauthorized } from "@/components/Unauthorized";
 
 import { ErrorProvider } from "@/contexts/ErrorProvider";
-import { CmsDataProvider } from "@/apps/advisories/contexts/CmsDataProvider";
+import { CmsDataProvider } from "@/contexts/CmsDataProvider";
 import ProtectedRoute from "./ProtectedRoute";
 
 import advisoriesRoutes from "@/apps/advisories/routes";

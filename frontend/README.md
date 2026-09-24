@@ -5,6 +5,10 @@ This directory contains the code for the frontend Staff Portal web application, 
 ## Project structure
 
 - `src/`: Directory containing the main application code.
+  - `apps/`: One folder per portal tool (`advisories`, `dates`, `access-status`, `activities-facilities`). Each has its own `routes.jsx` and `components/`, `hooks/`, `pages/`, `utils/` etc. as needed. Apps must not import from each other (enforced by ESLint).
+  - `components/`, `contexts/`, `hooks/`, `utils/`, `constants/`: Code shared across apps, including the portal shell (navigation, header, footer).
+  - `router/`: Root router configuration that mounts each app's routes, plus portal-level pages and layouts.
+  - `config/`, `styles/`, `assets/`, `ui-text/`: Portal configuration, global styles, shared images/icons, and shared UI text.
 - `public/`: Directory for static assets.
 - `vite.config.js`: Configuration file for Vite, the build tool.
 

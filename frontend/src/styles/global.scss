@@ -18,6 +18,8 @@
 
 // Advisories portal custom styles
 @use "advisories";
+// Shared page layout styles for ACT, Park Access Status, and Activities & Facilities
+@use "advisory-pages";
 
 // UL and OL styles
 @use "list";

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { cmsAxios } from "@/apps/advisories/utils/axios_config";
+import { cmsAxios } from "@/utils/cms/axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import getEnv from "@/config/getEnv";

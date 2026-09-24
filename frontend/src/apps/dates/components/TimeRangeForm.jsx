@@ -3,7 +3,7 @@ import classNames from "classnames";
 import DatePicker from "react-datepicker";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faClock } from "@fa-kit/icons/classic/regular";
-import { dateToTimeString, timeStringToDate } from "@/lib/utils";
+import { dateToTimeString, timeStringToDate } from "@/utils";
 
 function TimePicker({
   value,
