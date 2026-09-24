@@ -1,7 +1,7 @@
 import { useContext } from "react";
 import { useRouteError } from "react-router-dom";
 import ErrorContext from "@/contexts/ErrorContext";
-import LegacyErrorPage from "@/router/pages/advisories/error/Error";
+import LegacyErrorPage from "@/apps/advisories/pages/Error";
 
 export default function ErrorPage() {
   // Get the error from the route context (errorElement)

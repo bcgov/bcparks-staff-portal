@@ -1,29 +1,22 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import AccessControlledRoute from "./AccessControlledRoute";
-import SubmitPage from "./pages/SubmitPage";
-import EditPublishedPage from "./pages/EditPublishedPage";
-import PublishPage from "./pages/PublishPage";
-import ExportPage from "./pages/ExportPage";
+// App routes are imported before the portal layouts to keep the existing CSS cascade order
+import datesRoutes from "@/apps/dates/routes";
 import LogoutPage from "./pages/LogoutPage";
 import MainLayout from "./layouts/MainLayout";
 import MainLayoutPublic from "./layouts/MainLayoutPublic";
-import LandingPageTabs from "./layouts/LandingPageTabs";
 import ErrorPage from "./pages/Error";
 import LoginPage from "./pages/LoginPage";
 import { Unauthorized } from "@/components/Unauthorized";
 
 import { ErrorProvider } from "@/contexts/ErrorProvider";
-import { CmsDataProvider } from "@/contexts/CmsDataProvider";
-import AdvisoryDashboard from "./pages/advisories/advisoryDashboard/AdvisoryDashboard";
-import ParkAccessStatus from "./pages/advisories/parkAccessStatus/ParkAccessStatus";
-import ParkSearch from "./pages/advisories/parkSearch/ParkSearch";
-import ParkInfo from "./pages/advisories/parkInfo/ParkInfo";
-import Advisory from "./pages/advisories/advisory/Advisory";
-import AdvisorySummary from "./pages/advisories/advisorySummary/AdvisorySummary";
-import AdvisoryLink from "./pages/advisories/advisoryLink/AdvisoryLink";
-import AdvisoryReviewDashboard from "./pages/advisories/advisoryReviewDashboard/AdvisoryReviewDashboard";
+import { CmsDataProvider } from "@/apps/advisories/contexts/CmsDataProvider";
 import ProtectedRoute from "./ProtectedRoute";
+
+import advisoriesRoutes from "@/apps/advisories/routes";
+import accessStatusRoutes from "@/apps/access-status/routes";
+import activitiesFacilitiesRoutes from "@/apps/activities-facilities/routes";
 
 import { ROLES } from "@/config/permissions";
 
@@ -69,80 +62,14 @@ const RouterConfig = createBrowserRouter([
         element: <LogoutPage />,
       },
 
-      // Advisories and closures - All
-      {
-        path: "advisories-and-closures",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
-            <AdvisoryDashboard />
-          </AccessControlledRoute>
-        ),
-      },
-      // Advisories and closures - Review
-      {
-        path: "advisories-and-closures/review",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_APPROVER]}>
-            <AdvisoryReviewDashboard />
-          </AccessControlledRoute>
-        ),
-      },
-      {
-        path: "/create-advisory",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
-            <Advisory mode="create" />
-          </AccessControlledRoute>
-        ),
-      },
-      {
-        path: "/advisory-summary/:documentId",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
-            <AdvisorySummary />
-          </AccessControlledRoute>
-        ),
-      },
-      {
-        path: "/update-advisory/:documentId",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_USER]}>
-            <Advisory mode="update" />
-          </AccessControlledRoute>
-        ),
-      },
-      {
-        path: "/advisory-link/:advisoryNumber",
-        element: <AdvisoryLink />,
-      },
+      // Advisories and closures
+      ...advisoriesRoutes,
 
       // Park Access Status
-      {
-        path: "park-access-status",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.BCPARKS_USER]}>
-            <ParkAccessStatus />
-          </AccessControlledRoute>
-        ),
-      },
+      ...accessStatusRoutes,
 
       // Activities & Facilities
-      {
-        path: "activities-and-facilities",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_APPROVER]}>
-            <ParkSearch />
-          </AccessControlledRoute>
-        ),
-      },
-      {
-        path: "/park-info/:id",
-        element: (
-          <AccessControlledRoute allowedRoles={[ROLES.ADVISORY_APPROVER]}>
-            <ParkInfo />
-          </AccessControlledRoute>
-        ),
-      },
+      ...activitiesFacilitiesRoutes,
     ],
   },
 
@@ -167,70 +94,7 @@ const RouterConfig = createBrowserRouter([
     ),
     errorElement: <ErrorPage />,
 
-    children: [
-      {
-        path: "",
-        // Tabbed navigation for the landing page
-        element: <LandingPageTabs />,
-        children: [
-          // Redirect the section root to the canonical submit page
-          {
-            index: true,
-            element: <Navigate to="submit" replace />,
-          },
-
-          // Dates editing/submission table landing page
-          {
-            path: "submit",
-            element: <SubmitPage />,
-          },
-
-          // Edit season form routes
-          {
-            path: "edit/park/:seasonId",
-            element: <SubmitPage />,
-          },
-          {
-            path: "edit/park-area/:seasonId",
-            element: <SubmitPage />,
-          },
-          {
-            path: "edit/feature/:seasonId",
-            element: <SubmitPage />,
-          },
-
-          // Edit published table / landing page
-          {
-            path: "edit-published",
-            element: (
-              <AccessControlledRoute allowedRoles={[ROLES.DOOT_APPROVER]}>
-                <EditPublishedPage />
-              </AccessControlledRoute>
-            ),
-          },
-
-          // Export
-          {
-            path: "export",
-            element: (
-              <AccessControlledRoute allowedRoles={[ROLES.DOOT_APPROVER]}>
-                <ExportPage />
-              </AccessControlledRoute>
-            ),
-          },
-
-          // Publish
-          {
-            path: "publish",
-            element: (
-              <AccessControlledRoute allowedRoles={[ROLES.DOOT_APPROVER]}>
-                <PublishPage />
-              </AccessControlledRoute>
-            ),
-          },
-        ],
-      },
-    ],
+    children: datesRoutes,
   },
 
   // Catch-all route for invalid paths
