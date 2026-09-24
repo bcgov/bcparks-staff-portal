@@ -86,6 +86,23 @@ export function validateOptionalDate(field) {
   return true;
 }
 
+/**
+ * Validates an optional date field that must be in the future when provided.
+ * Mirrors the CMS advisory status logic, which sets the status to "Unpublished"
+ * when the expiry date is now or in the past.
+ * @param {Object} field Field object with `value` (Date|null) and `setError`
+ * @returns {boolean} True if the date is empty or a valid future date
+ */
+export function validateOptionalFutureDate(field) {
+  if (!validateOptionalDate(field)) return false;
+
+  if (field.value && !moment(field.value).isAfter(moment())) {
+    field.setError("Enter a future date");
+    return false;
+  }
+  return true;
+}
+
 export function validateRequiredDate(field) {
   field.setError("");
   return validateDate(field);
@@ -193,7 +210,7 @@ export function validAdvisoryData(
   const validAdvisoryDate = validateRequiredDate(advisoryData.advisoryDate);
   const validStartDate = validateOptionalDate(advisoryData.startDate);
   const validEndDate = validateOptionalDate(advisoryData.endDate);
-  const validExpiryDate = validateOptionalDate(advisoryData.expiryDate);
+  const validExpiryDate = validateOptionalFutureDate(advisoryData.expiryDate);
   const validLinks = validateLinks(linksRef.current, linkErrorsStatus);
   const validDisplayedDate = validateDisplayedDate(advisoryData.displayedDate);
   let validData =
