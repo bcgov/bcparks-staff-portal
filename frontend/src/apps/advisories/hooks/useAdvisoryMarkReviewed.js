@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { isFuture, isValid, parseISO } from "date-fns";
 
 import { buildReviewPayload } from "@/apps/advisories/utils/advisoryReviewPayload";
+import { isNowOrPast } from "@/apps/advisories/utils/advisoryValidator";
 import useCms from "@/hooks/useCms";
 
 function resolveReviewedStatus(rowData, advisoryStatuses) {
@@ -45,21 +46,6 @@ function resolveReviewedStatus(rowData, advisoryStatuses) {
   return advisoryStatuses.find((status) => status.code === statusCode);
 }
 
-/**
- * Checks whether the advisory's expiry date is now or in the past.
- * Mirrors the CMS advisory status logic, which unpublishes expired advisories.
- * @param {Object} rowData The advisory data
- * @param {string|null} rowData.expiryDate The ISO expiry date, if any
- * @returns {boolean} True if the advisory has a valid expiry date that has passed
- */
-function isExpired(rowData) {
-  if (!rowData.expiryDate) return false;
-
-  const expiryDate = parseISO(rowData.expiryDate);
-
-  return isValid(expiryDate) && expiryDate <= new Date();
-}
-
 export default function useAdvisoryMarkReviewed({
   advisoryStatuses,
   reviewedByName,
@@ -75,7 +61,7 @@ export default function useAdvisoryMarkReviewed({
       const isApproving = rowData.advisoryStatus?.code === "HQR";
 
       // Don't publish an advisory that has already expired
-      if (isApproving && isExpired(rowData)) {
+      if (isApproving && isNowOrPast(rowData.expiryDate)) {
         openMarkReviewedError(
           `${rowData.title} has an expiry date in the past. Enter a future date.`,
         );
