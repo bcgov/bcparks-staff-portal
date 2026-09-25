@@ -249,12 +249,17 @@ function SeasonForm({
     ...seasonMetadata
   } = data || {};
 
+  // Show a team's icon when its approval is required,
+  // or when that team has already approved even though it wasn't required
+  // (e.g. an IS approver approving a winter fee season, which only requires RS approval).
   const informationSvcApproved =
-    approver && season?.requiresInformationSvcApproval
+    approver &&
+    (season?.requiresInformationSvcApproval || season?.informationSvcApproved)
       ? season.informationSvcApproved
       : null;
   const reservationSvcApproved =
-    approver && season?.requiresReservationSvcApproval
+    approver &&
+    (season?.requiresReservationSvcApproval || season?.reservationSvcApproved)
       ? season.reservationSvcApproved
       : null;
 
@@ -682,6 +687,10 @@ If dates have already been published, they will not be updated until new dates a
         );
 
         resetData();
+        setNotes("");
+        setDeletedDateRangeIds([]);
+        setSubmitWithErrors(false);
+        setDataChanged(false);
         return;
       }
 

@@ -236,12 +236,17 @@ function StatusTableRow({
     [checkAccess, ROLES.DOOT_APPROVER],
   );
 
+  // Show a team's icon when its approval is required,
+  // or when that team has already approved even though it wasn't required
+  // (e.g. an IS approver approving a winter fee season, which only requires RS approval).
   const informationSvcApproved =
-    approver && season.requiresInformationSvcApproval
+    approver &&
+    (season.requiresInformationSvcApproval || season.informationSvcApproved)
       ? season.informationSvcApproved
       : null;
   const reservationSvcApproved =
-    approver && season.requiresReservationSvcApproval
+    approver &&
+    (season.requiresReservationSvcApproval || season.reservationSvcApproved)
       ? season.reservationSvcApproved
       : null;
 
