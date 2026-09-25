@@ -510,6 +510,7 @@ async function formatParkData(park, season) {
       // Strapi expects the ORCS code as a number
       orcs: Number(park.orcs),
       operatingYear: season.operatingYear,
+      seasonType: season.seasonType,
       dateRanges,
       gateInfo,
     };
@@ -538,6 +539,7 @@ async function formatFeatureData(feature, season, includeGateInfo = false) {
     const featureData = {
       orcsFeatureNumber: feature.orcsFeatureNumber,
       operatingYear: season.operatingYear,
+      seasonType: season.seasonType,
       dateRanges,
     };
 
