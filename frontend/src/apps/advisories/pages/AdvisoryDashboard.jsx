@@ -1,0 +1,1483 @@
+import {
+  useState,
+  useEffect,
+  useMemo,
+  useContext,
+  useRef,
+  useCallback,
+} from "react";
+import PropTypes from "prop-types";
+import classNames from "classnames";
+import {
+  useLocalStorage,
+  useSessionStorage,
+  useDebounceCallback,
+  useDebounceValue,
+} from "usehooks-ts";
+import qs from "qs";
+import { Link, Navigate, NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "react-oidc-context";
+import { useTranslation } from "react-i18next";
+import ErrorContext from "@/contexts/ErrorContext";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
+import useAccess from "@/hooks/useAccess";
+import useCms from "@/hooks/useCms";
+import "./AdvisoryDashboard.scss";
+import emptyReviewQueueImage from "@/apps/advisories/assets/empty-review-queue.png";
+import { Button } from "@/components/Button";
+import { CountBadge } from "@/apps/advisories/components/CountBadge";
+import { MultiSelect } from "@/apps/advisories/components/MultiSelect";
+import { ReviewIcon } from "@/apps/advisories/components/ReviewIcon";
+import { SingleSelect } from "@/apps/advisories/components/SingleSelect";
+import { TableActionButton } from "@/apps/advisories/components/TableActionButton";
+import DataTable from "@/components/DataTable";
+import StatusBadge from "@/components/StatusBadge";
+import FilterStatus from "@/apps/advisories/components/FilterStatus";
+import moment from "moment";
+import { Loader } from "@/components/Loader";
+import Form from "react-bootstrap/Form";
+import OverlayTrigger from "react-bootstrap/OverlayTrigger";
+import Tooltip from "react-bootstrap/Tooltip";
+import LightTooltip from "@/apps/advisories/components/LightTooltip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCircleExclamation,
+  faCircleSmall,
+  faCircleQuestion,
+  faPlus,
+  faStar,
+  faTriangleExclamation,
+} from "@fa-kit/icons/classic/solid";
+import { updatePublicAdvisories } from "@/apps/advisories/utils/advisoryDataUtil";
+import {
+  buildFilter,
+  buildSort,
+} from "@/apps/advisories/utils/advisoryDashboardQuery";
+import useAdvisoryMarkReviewed from "@/apps/advisories/hooks/useAdvisoryMarkReviewed";
+import useAdvisoryUnpublish from "@/apps/advisories/hooks/useAdvisoryUnpublish";
+import { TABLE_FILTER_LABELS } from "@/apps/advisories/constants/advisoryDashboardFilter";
+import { REVIEW_STATUS } from "@/apps/advisories/constants/reviewStatus";
+import buildReviewFilter from "@/apps/advisories/utils/advisoryReviewDashboardQuery";
+import {
+  clearAllFilters as clearAllFiltersHandler,
+  clearDistrictFilter as clearDistrictFilterHandler,
+  clearParkFilter as clearParkFilterHandler,
+  clearRegionFilter as clearRegionFilterHandler,
+  clearTableFilter as clearTableFilterHandler,
+  getPageFilterValue,
+  handlePageMultiSelectChange as handlePageMultiSelectChangeHandler,
+  normalizePageFilterValues,
+  updateRegionAndParkFilters as updateRegionAndParkFiltersHandler,
+} from "@/apps/advisories/utils/advisoryDashboardFilterHandlers";
+
+const DEFAULT_PAGE_SIZE = 50;
+const PROGRAM_AREA_OPTIONS = [
+  { label: "BC Parks", value: "BCP" },
+  { label: "Recreation Sites and Trails", value: "RST" },
+];
+
+// Component to render when there are no advisories/closures to review in the Review tab
+function ReviewEmptyState() {
+  return (
+    <div className="review-empty-state" role="status" aria-atomic="true">
+      <img
+        src={emptyReviewQueueImage}
+        alt="No items waiting for review"
+        width="335"
+        height="500"
+        className="empty-state-image mb-3"
+      />
+
+      <div className="h2 mb-2 fw-normal">You’re doing great!</div>
+
+      <div>
+        I’m obsessed with you.
+        <br />
+        No items to review here.
+      </div>
+    </div>
+  );
+}
+
+// Format the tooltip text for count badges that indicate additional associated resources
+function formatCountBadge(
+  count,
+  singularLabel,
+  pluralLabel = `${singularLabel}s`,
+) {
+  return `Plus ${count} more ${count === 1 ? singularLabel : pluralLabel}`;
+}
+
+export default function AdvisoryDashboard({
+  filterStorageKey = "advisoryFilters",
+  isReviewDashboard = false,
+}) {
+  const { t } = useTranslation("act");
+  const { setError } = useContext(ErrorContext);
+  const globalFlashMessage = useContext(FlashMessageContext);
+  const auth = useAuth();
+  const { hasAnyRole, ROLES } = useAccess();
+  const {
+    getRegions,
+    getManagementAreas,
+    getProtectedAreas,
+    getRecreationDistricts,
+    getAdvisoryStatuses,
+    getUrgencies,
+    cmsGet,
+  } = useCms();
+
+  const navigate = useNavigate();
+
+  const [toError, setToError] = useState(false);
+  const [selectedRegionId, setSelectedRegionId] = useState([]);
+  const [selectedRegion, setSelectedRegion] = useState([]);
+  const [selectedDistrictId, setSelectedDistrictId] = useState([]);
+  const [selectedDistrict, setSelectedDistrict] = useState([]);
+  const [selectedParkId, setSelectedParkId] = useState([]);
+  const [selectedPark, setSelectedPark] = useState([]);
+  const [selectedProgramArea, setSelectedProgramArea] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasErrors, setHasErrors] = useState(false);
+  const [publicAdvisories, setPublicAdvisories] = useState([]);
+  const [regions, setRegions] = useState([]);
+  const [managementAreas, setManagementAreas] = useState([]);
+  const [protectedAreas, setProtectedAreas] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
+  const [urgencies, setUrgencies] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [totalPublicAdvisories, setTotalPublicAdvisories] = useState(0);
+  // Track the total number of items regardless of filters when we need to know if the filters are hiding items on the server
+  const [unfilteredTotalItems, setUnfilteredTotalItems] = useState(null);
+  // Ref keeps the latest total accessible inside fetchAdvisories
+  const totalPublicAdvisoriesRef = useRef(0);
+  const [isCmsDataLoaded, setIsCmsDataLoaded] = useState(false);
+  const [sortConfig, setSortConfig] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  // Flash message functions for unpublish actions
+  const openUnpublishError = useCallback(
+    (message) => {
+      globalFlashMessage.open(
+        "Failed to unpublish advisory / closure",
+        message,
+        {
+          variant: "error",
+        },
+      );
+    },
+    [globalFlashMessage],
+  );
+
+  const openUnpublishSuccess = useCallback(
+    (message) => {
+      globalFlashMessage.open("Unpublished advisory / closure", message, {
+        variant: "success",
+      });
+    },
+    [globalFlashMessage],
+  );
+
+  const openMarkReviewedError = useCallback(
+    (message) => {
+      globalFlashMessage.open(
+        "Failed to mark advisory / closure reviewed",
+        message,
+        {
+          variant: "error",
+        },
+      );
+    },
+    [globalFlashMessage],
+  );
+
+  const openMarkReviewedSuccess = useCallback(
+    (message) => {
+      globalFlashMessage.open("Marked advisory / closure reviewed", message, {
+        variant: "success",
+      });
+    },
+    [globalFlashMessage],
+  );
+
+  const handleUnpublish = useAdvisoryUnpublish({
+    advisoryStatuses,
+    modifiedByName: auth.user?.profile?.name,
+    openUnpublishError,
+    openUnpublishSuccess,
+    onSuccess() {
+      // Refresh the advisory dashboard to reflect the unpublished change
+      setRefreshKey((current) => current + 1);
+    },
+  });
+
+  const handleMarkReviewed = useAdvisoryMarkReviewed({
+    advisoryStatuses,
+    reviewedByName: auth.user?.profile?.name,
+    openMarkReviewedError,
+    openMarkReviewedSuccess,
+    onSuccess() {
+      // Refresh the advisory dashboard to reflect the reviewed change
+      setRefreshKey((current) => current + 1);
+    },
+  });
+
+  const isApprover = hasAnyRole([ROLES.ADVISORY_APPROVER]);
+  const canMarkReviewed = isReviewDashboard && isApprover;
+
+  const defaultPageFilters = [
+    { filterName: "region", filterValue: [], type: "page" },
+    { filterName: "district", filterValue: [], type: "page" },
+    { filterName: "park", filterValue: [], type: "page" },
+    { filterName: "programArea", filterValue: "", type: "page" },
+  ];
+
+  // Persisted filter state for the dashboard (region, district, park, and table filters)
+  // Saved to localStorage as an array of { type: "page"|"table", filterName/fieldName, filterValue/fieldValue }
+  const [storedFilters, setStoredFilters] = useLocalStorage(
+    filterStorageKey,
+    defaultPageFilters,
+  );
+  const [initialStoredFilters] = useState(() => storedFilters || []);
+
+  // Load table filter values from the latest storedFilters
+  const initialTableFilterValues = useMemo(() => {
+    const tableEntries = (storedFilters || []).filter(
+      (f) => f.type === "table",
+    );
+
+    // Convert [{fieldName, fieldValue}] to { [fieldName]: fieldValue }
+    return Object.fromEntries(
+      tableEntries.map((f) => [f.fieldName, f.fieldValue]),
+    );
+  }, [storedFilters]);
+
+  const [tableFilterValues, setTableFilterValues] = useState(
+    initialTableFilterValues,
+  );
+  // Active table filters for rendering filter badges and building Strapi queries
+  const activeTableFilters = useMemo(
+    () =>
+      Object.entries(tableFilterValues || {})
+        .filter(([, value]) => value !== "" && value !== null)
+        .map(([field, value]) => ({
+          field,
+          label: `${TABLE_FILTER_LABELS[field] || field}: ${value}`,
+        })),
+    [tableFilterValues],
+  );
+  // Debounced copy used as the fetchAdvisories dependency
+  // Prevents Strapi request on every keystroke while keeping filter inputs responsive
+  const [debouncedTableFilterValues] = useDebounceValue(tableFilterValues, 300);
+
+  // Debounced callback: persist table filter values to localStorage
+  // Called by DataTable after user stops typing
+  const persistTableFilterValues = useDebounceCallback((values) => {
+    setStoredFilters((currentFilters) => {
+      // Keep page-level filters (region, district, park)
+      const pageFilters = currentFilters.filter((f) => f.type === "page");
+      // Convert { [fieldName]: value } to array of { fieldName, fieldValue, type: "table" }
+      const tableFilters = Object.entries(values)
+        // Only save non-empty filters
+        .filter(([, value]) => value !== "")
+        .map(([fieldName, fieldValue]) => ({
+          fieldName,
+          fieldValue,
+          type: "table",
+        }));
+
+      return [...pageFilters, ...tableFilters];
+    });
+  }, 75);
+
+  // Persist showUnpublished in sessionStorage
+  // Use separate keys for All vs Review tabs so each maintains independent state
+  const showUnpublishedStorageKey = isReviewDashboard
+    ? "showUnpublishedReview"
+    : "showUnpublished";
+  const [showUnpublished, setShowUnpublished] = useSessionStorage(
+    showUnpublishedStorageKey,
+    false,
+  );
+
+  function resetToFirstPage() {
+    setCurrentPage(1);
+  }
+
+  function updateRegionAndParkFilters(regionFilterValue, parkFilterValue) {
+    updateRegionAndParkFiltersHandler({
+      setStoredFilters,
+      regionFilterValue,
+      parkFilterValue,
+    });
+  }
+
+  function handlePageMultiSelectChange(
+    selectedOptions,
+    filterName,
+    setSelectedOptions,
+    setSelectedIds,
+  ) {
+    handlePageMultiSelectChangeHandler({
+      selectedOptions,
+      filterName,
+      setSelectedOptions,
+      setSelectedIds,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function handleDistrictChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "district",
+      setSelectedDistrict,
+      setSelectedDistrictId,
+    );
+  }
+
+  function handleRegionChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "region",
+      setSelectedRegion,
+      setSelectedRegionId,
+    );
+  }
+
+  function handleParkChange(selectedOptions) {
+    handlePageMultiSelectChange(
+      selectedOptions,
+      "park",
+      setSelectedPark,
+      setSelectedParkId,
+    );
+  }
+
+  // Updates the selected program area filter and persists it to stored page filters.
+  // Resets pagination so results refresh from the first page after the filter changes.
+  function handleProgramAreaChange(option) {
+    setSelectedProgramArea(option ?? null);
+    resetToFirstPage();
+
+    setStoredFilters((currentFilters) => {
+      const nonProgramAreaPageFilters = currentFilters.filter(
+        (currentFilter) =>
+          !(
+            currentFilter.type === "page" &&
+            currentFilter.filterName === "programArea"
+          ),
+      );
+
+      return [
+        ...nonProgramAreaPageFilters,
+        {
+          type: "page",
+          filterName: "programArea",
+          filterValue: option?.value ?? "",
+        },
+      ];
+    });
+  }
+
+  function clearProgramAreaFilter() {
+    setSelectedProgramArea(null);
+    resetToFirstPage();
+    setStoredFilters((currentFilters) => {
+      const nonProgramAreaPageFilters = currentFilters.filter(
+        (currentFilter) =>
+          !(
+            currentFilter.type === "page" &&
+            currentFilter.filterName === "programArea"
+          ),
+      );
+
+      return [
+        ...nonProgramAreaPageFilters,
+        { type: "page", filterName: "programArea", filterValue: "" },
+      ];
+    });
+  }
+
+  function clearDistrictFilter(districtValue) {
+    clearDistrictFilterHandler({
+      districtValue,
+      selectedDistrict,
+      setSelectedDistrict,
+      setSelectedDistrictId,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function clearRegionFilter(regionValue) {
+    clearRegionFilterHandler({
+      regionValue,
+      selectedRegion,
+      setSelectedRegion,
+      setSelectedRegionId,
+      setSelectedPark,
+      setSelectedParkId,
+      resetToFirstPage,
+      setStoredFilters,
+      updateRegionAndParkFiltersFn: updateRegionAndParkFilters,
+    });
+  }
+
+  function clearParkFilter(parkValue) {
+    clearParkFilterHandler({
+      parkValue,
+      selectedPark,
+      setSelectedPark,
+      setSelectedParkId,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function clearTableFilter(field) {
+    clearTableFilterHandler({
+      field,
+      setTableFilterValues,
+      resetToFirstPage,
+      setStoredFilters,
+    });
+  }
+
+  function clearAllFilters() {
+    setSelectedProgramArea(null);
+    clearAllFiltersHandler({
+      setSelectedDistrict,
+      setSelectedDistrictId,
+      setSelectedRegion,
+      setSelectedRegionId,
+      setSelectedPark,
+      setSelectedParkId,
+      setShowUnpublished,
+      setTableFilterValues,
+      resetToFirstPage,
+      setStoredFilters,
+      defaultPageFilters,
+    });
+  }
+
+  // Load management areas, advisory statuses, urgencies, and published advisories once on mount.
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDashboardContext() {
+      try {
+        const [
+          regionsData,
+          managementAreasData,
+          protectedAreasData,
+          districtsData,
+          fetchedAdvisoryStatuses,
+          fetchedUrgencies,
+        ] = await Promise.all([
+          getRegions(),
+          getManagementAreas(),
+          getProtectedAreas(),
+          getRecreationDistricts(),
+          getAdvisoryStatuses(),
+          getUrgencies(),
+        ]);
+
+        if (!isMounted) return;
+
+        setRegions(regionsData);
+        setManagementAreas(managementAreasData);
+        setProtectedAreas(protectedAreasData);
+        setDistricts(districtsData);
+
+        // Fetch advisory statuses and urgencies for filter options and table icons
+        setAdvisoryStatuses(fetchedAdvisoryStatuses);
+        setUrgencies(fetchedUrgencies);
+
+        if (isMounted) {
+          // Preserve filters
+          const regionIds = normalizePageFilterValues(
+            getPageFilterValue(initialStoredFilters, "region", []),
+          );
+
+          if (regionIds.length > 0) {
+            const selectedRegions = regionsData
+              .filter((region) => regionIds.includes(region.documentId))
+              .map((region) => ({
+                label: `${region.regionName} Region`,
+                value: region.documentId,
+              }));
+
+            if (selectedRegions.length > 0) {
+              setSelectedRegionId(regionIds);
+              setSelectedRegion(selectedRegions);
+            }
+          }
+
+          const districtIds = normalizePageFilterValues(
+            getPageFilterValue(initialStoredFilters, "district", []),
+          );
+
+          if (districtIds.length > 0) {
+            const selectedDistricts = districtsData
+              .filter((district) => districtIds.includes(district.documentId))
+              .map((district) => ({
+                label: district.district,
+                value: district.documentId,
+              }));
+
+            if (selectedDistricts.length > 0) {
+              setSelectedDistrictId(districtIds);
+              setSelectedDistrict(selectedDistricts);
+            }
+          }
+
+          const parkIds = normalizePageFilterValues(
+            getPageFilterValue(initialStoredFilters, "park", []),
+          );
+
+          if (parkIds.length > 0) {
+            const selectedParks = protectedAreasData
+              .filter((park) => parkIds.includes(park.documentId))
+              .map((park) => ({
+                label: park.protectedAreaName,
+                value: park.documentId,
+              }));
+
+            if (selectedParks.length > 0) {
+              setSelectedParkId(parkIds);
+              setSelectedPark(selectedParks);
+            }
+          }
+
+          const programAreaValue = getPageFilterValue(
+            initialStoredFilters,
+            "programArea",
+            "",
+          );
+
+          const selectedProgramAreaOption = PROGRAM_AREA_OPTIONS.find(
+            (option) => option.value === programAreaValue,
+          );
+
+          if (selectedProgramAreaOption) {
+            setSelectedProgramArea(selectedProgramAreaOption);
+          }
+
+          setIsCmsDataLoaded(true);
+        }
+      } catch (error) {
+        console.error("Error loading dashboard context:", error);
+        setHasErrors(true);
+        setError({ status: 500, message: "Error loading data." });
+      }
+    }
+
+    loadDashboardContext();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    cmsGet,
+    getAdvisoryStatuses,
+    getManagementAreas,
+    getProtectedAreas,
+    getRecreationDistricts,
+    getRegions,
+    getUrgencies,
+    initialStoredFilters,
+    setError,
+  ]);
+
+  // Fetch one page of advisories whenever page, pageSize, or showUnpublished changes.
+  useEffect(() => {
+    let isMounted = true;
+
+    async function fetchAdvisories() {
+      setIsLoading(true);
+      setPublicAdvisories([]);
+
+      try {
+        // Build server-side filter params from column filter values and region/park dropdowns
+        const userFilterClauses = buildFilter(
+          debouncedTableFilterValues,
+          selectedRegionId,
+          selectedDistrictId,
+          selectedParkId,
+          selectedProgramArea?.value ?? "",
+        );
+
+        const reviewFilterClauses = buildReviewFilter({ isReviewDashboard });
+
+        // Filters applied to server queries, regardless of user-selected filters
+        const sharedBaseFilters = [{ isLatestRevision: true }];
+
+        // On the "All" tab, optionally exclude unpublished advisories
+        if (!isReviewDashboard && !showUnpublished) {
+          sharedBaseFilters.push({ advisoryStatus: { code: { $ne: "UNP" } } });
+        }
+
+        // Build filter sets for fetching data with and without user-selected filters
+        const filteredBaseFilters = [
+          ...sharedBaseFilters,
+          ...userFilterClauses,
+          ...reviewFilterClauses,
+        ];
+        const unfilteredBaseFilters = [
+          ...sharedBaseFilters,
+          ...reviewFilterClauses,
+        ];
+
+        // When "All" is selected, first fetch the current total with
+        // the active filters applied, then request exactly that many rows
+        let pagination;
+        let allTotal = null;
+
+        if (pageSize < 0) {
+          const countQuery = qs.stringify(
+            {
+              fields: ["id"],
+              filters: {
+                $and: filteredBaseFilters,
+              },
+              pagination: { page: 1, pageSize: 1 },
+            },
+            { encodeValuesOnly: true },
+          );
+          const countResult = await cmsGet(
+            `/public-advisory-audits?${countQuery}`,
+            {},
+            "",
+          );
+
+          allTotal = countResult.meta?.pagination?.total ?? DEFAULT_PAGE_SIZE;
+
+          pagination = { page: 1, pageSize: Math.max(allTotal, 1) };
+        } else {
+          pagination = { page: currentPage, pageSize };
+        }
+
+        const sort = buildSort(sortConfig, isReviewDashboard);
+
+        const query = qs.stringify(
+          {
+            fields: [
+              "advisoryNumber",
+              "createdAt",
+              "advisoryDate",
+              "title",
+              "effectiveDate",
+              "endDate",
+              "expiryDate",
+              "modifiedDate",
+              "updatedDate",
+              "updatedAt",
+              "reviewedDate",
+              "reviewedByName",
+              "revisionNumber",
+              "unpublishedDate",
+              "unpublishedByName",
+            ],
+            populate: {
+              protectedAreas: { fields: ["orcs", "protectedAreaName"] },
+              recreationResources: {
+                fields: ["recResourceId", "resourceName"],
+              },
+              accessStatus: { fields: ["accessStatus", "groupLabel"] },
+              advisoryStatus: { fields: ["advisoryStatus", "code"] },
+              eventType: { fields: ["eventType"] },
+              urgency: { fields: ["urgency"] },
+              regions: { fields: ["regionName"] },
+              recreationDistricts: { fields: ["district"] },
+            },
+            filters: {
+              $and: filteredBaseFilters,
+            },
+            pagination,
+            sort,
+          },
+          { encodeValuesOnly: true },
+        );
+
+        const result = await cmsGet(`/public-advisory-audits?${query}`, {}, "");
+        const rows = result.data ?? [];
+        const total = allTotal ?? result.meta?.pagination?.total ?? 0;
+        const updatedPublicAdvisories = updatePublicAdvisories(
+          rows,
+          managementAreas,
+        );
+
+        // Run an additional query without user-selected filters when we need
+        // to tell if the empty state is server-side or caused by user-selected filters.
+        // Only applies to the Review dashboard when user-selected filters are active
+        // and the main query returns zero results.
+        if (isReviewDashboard && userFilterClauses.length && total === 0) {
+          const unfilteredCountQuery = qs.stringify(
+            {
+              fields: ["id"],
+              filters: {
+                $and: unfilteredBaseFilters,
+              },
+              pagination: { page: 1, pageSize: 1 },
+            },
+            { encodeValuesOnly: true },
+          );
+
+          const unfilteredCountResult = await cmsGet(
+            `/public-advisory-audits?${unfilteredCountQuery}`,
+            {},
+            "",
+          );
+
+          if (isMounted) {
+            // Store the unfiltered total so we can know if the server-side review queue is empty.
+            setUnfilteredTotalItems(
+              unfilteredCountResult.meta?.pagination?.total ?? 0,
+            );
+          }
+        } else if (isMounted) {
+          setUnfilteredTotalItems(null);
+        }
+
+        if (isMounted) {
+          setPublicAdvisories(updatedPublicAdvisories);
+          totalPublicAdvisoriesRef.current = total;
+          setTotalPublicAdvisories(total);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error("Error fetching advisories:", error);
+        setError({
+          status: 500,
+          message: "Error loading data. Make sure Strapi is running.",
+        });
+        setToError(true);
+        setIsLoading(false);
+      }
+    }
+
+    if (isCmsDataLoaded) {
+      fetchAdvisories();
+    }
+
+    return () => {
+      isMounted = false;
+    };
+  }, [
+    cmsGet,
+    currentPage,
+    isCmsDataLoaded,
+    managementAreas,
+    pageSize,
+    selectedDistrictId,
+    selectedParkId,
+    selectedRegionId,
+    selectedProgramArea,
+    setError,
+    showUnpublished,
+    sortConfig,
+    isReviewDashboard,
+    debouncedTableFilterValues,
+    refreshKey,
+  ]);
+
+  const regionOptions = useMemo(
+    () =>
+      (regions || []).map((region) => ({
+        label: `${region.regionName} Region`,
+        value: region.documentId,
+      })),
+    [regions],
+  );
+
+  const districtOptions = useMemo(
+    () =>
+      (districts || []).map((district) => ({
+        label: district.district,
+        value: district.documentId,
+      })),
+    [districts],
+  );
+
+  const parkOptions = useMemo(
+    () =>
+      (protectedAreas || []).map((park) => ({
+        label: park.protectedAreaName,
+        value: park.documentId,
+      })),
+    [protectedAreas],
+  );
+
+  const tableColumns = useMemo(
+    () => [
+      {
+        field: "urgency.urgency",
+        title: (
+          <OverlayTrigger
+            placement="top"
+            overlay={<Tooltip id="advisory-urgency-tooltip">Urgency</Tooltip>}
+          >
+            <FontAwesomeIcon
+              icon={faTriangleExclamation}
+              className="warning-icon"
+            />
+          </OverlayTrigger>
+        ),
+        filterOnItemSelect: true,
+        lookup: urgencies.reduce((lookup, urgency) => {
+          lookup[urgency.urgency] = urgency.urgency;
+          return lookup;
+        }, {}),
+        headerStyle: {
+          width: 10,
+        },
+        cellStyle(e, rowData) {
+          const baseStyle = {
+            position: "relative",
+          };
+
+          if (rowData.urgency !== null) {
+            switch (rowData.urgency?.urgency?.toLowerCase()) {
+              case "low":
+                return {
+                  ...baseStyle,
+                  borderLeft: "8px solid #053662",
+                };
+              case "medium":
+                return {
+                  ...baseStyle,
+                  borderLeft: "8px solid #F8BB47",
+                };
+              case "high":
+                return {
+                  ...baseStyle,
+                  borderLeft: "8px solid #CE3E39",
+                };
+              default:
+                return baseStyle;
+            }
+          }
+
+          return baseStyle;
+        },
+        render(rowData) {
+          return (
+            <OverlayTrigger
+              placement="left"
+              overlay={
+                <Tooltip id={`urgency-${rowData.documentId || rowData.id}`}>
+                  {rowData.urgency
+                    ? rowData.urgency.urgency
+                    : "Urgency not set"}
+                </Tooltip>
+              }
+            >
+              <div className="urgency-column">&nbsp;</div>
+            </OverlayTrigger>
+          );
+        },
+      },
+      {
+        field: "advisoryStatus.advisoryStatus",
+        title: (
+          <>
+            Advisory /
+            <br />
+            closure status
+          </>
+        ),
+        filterOnItemSelect: true,
+        lookup: advisoryStatuses.reduce((lookup, status) => {
+          lookup[status.advisoryStatus] = status.advisoryStatus;
+          return lookup;
+        }, {}),
+        cellStyle: {
+          textAlign: "left",
+        },
+        render(rowData) {
+          const statusCode = rowData.advisoryStatus?.code;
+          const hasUnpublishedStatus =
+            isReviewDashboard &&
+            rowData.reviewStatuses?.includes(REVIEW_STATUS.UNPUBLISHED);
+
+          return (
+            <span className="d-inline-flex align-items-center gap-1">
+              {hasUnpublishedStatus && (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.UNPUBLISHED}
+                  rowId={rowData.documentId}
+                  icon={faCircleSmall}
+                />
+              )}
+              <StatusBadge
+                status={statusCode}
+                approver={isApprover}
+                className={"advisory-status-badge"}
+              />
+            </span>
+          );
+        },
+      },
+      {
+        field: "associatedResources",
+        title: "Associated Resource(s)",
+        headerStyle: { width: 400 },
+        cellStyle: { width: 400 },
+        render(rowData) {
+          const displayCount = 3;
+          const regionsCount = rowData.regions?.length;
+
+          if (regionsCount > 0) {
+            const displayedRegions = rowData?.regions?.slice(0, displayCount);
+
+            return (
+              <div>
+                {displayedRegions?.map((p, i) => (
+                  <span key={i}>
+                    {p.regionName} region
+                    <CountBadge
+                      label={`+${p.count}`}
+                      documentId={rowData.documentId}
+                      title={rowData.title}
+                      tooltipText={formatCountBadge(p.count, "resource")}
+                    />
+                    {displayedRegions.length - 1 > i && <br />}
+                  </span>
+                ))}
+                {regionsCount > displayCount && (
+                  <CountBadge
+                    label={`+${regionsCount - displayCount}`}
+                    documentId={rowData.documentId}
+                    title={rowData.title}
+                    tooltipText={formatCountBadge(
+                      regionsCount - displayCount,
+                      "region",
+                    )}
+                  />
+                )}
+              </div>
+            );
+          }
+
+          // Display parks and rec resources
+          const recResources = rowData.recreationResources ?? [];
+          const parks = rowData.protectedAreas ?? [];
+          const recResourcesCount = recResources.length;
+          const parksCount = parks.length;
+          const associatedResources = [
+            ...recResources.map((recResource) =>
+              recResource.recResourceId
+                ? `${recResource.resourceName} (${recResource.recResourceId})`
+                : recResource.resourceName,
+            ),
+            ...parks.map((park) => park.protectedAreaName),
+          ];
+          const displayedResources = associatedResources.slice(0, displayCount);
+          const remainingCount = Math.max(
+            associatedResources.length - displayCount,
+            0,
+          );
+
+          if (recResourcesCount > 0 || parksCount > 0) {
+            return (
+              <div>
+                {displayedResources.map((resource, index) => (
+                  <span key={`${resource}-${index}`}>
+                    {resource}
+                    {displayedResources.length - 1 > index && ", "}
+                  </span>
+                ))}
+                {remainingCount > 0 && (
+                  <CountBadge
+                    label={`+${remainingCount}`}
+                    documentId={rowData.documentId}
+                    title={rowData.title}
+                    tooltipText={formatCountBadge(remainingCount, "resource")}
+                  />
+                )}
+              </div>
+            );
+          }
+
+          return null;
+        },
+      },
+      {
+        field: "accessStatus.accessStatus",
+        title: (
+          <>
+            Public access
+            <br />
+            status
+          </>
+        ),
+        headerStyle: { minWidth: 120 },
+        cellStyle: { minWidth: 120 },
+        render(rowData) {
+          const accessStatus = rowData.accessStatus?.accessStatus || "";
+          const groupLabel = rowData.accessStatus?.groupLabel || "";
+
+          if (!accessStatus) return "";
+
+          return groupLabel && groupLabel !== accessStatus
+            ? `${groupLabel} - ${accessStatus}`
+            : accessStatus;
+        },
+      },
+      { field: "eventType.eventType", title: "Event type" },
+      {
+        field: "title",
+        title: "Headline",
+        headerStyle: { width: 250 },
+        cellStyle: { width: 250 },
+        render(rowData) {
+          const hasNewStatus =
+            isReviewDashboard &&
+            rowData.reviewStatuses?.includes(REVIEW_STATUS.NEW);
+
+          return (
+            <span className="d-inline-flex align-items-center gap-1">
+              {hasNewStatus && (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.NEW}
+                  rowId={rowData.documentId}
+                  icon={faStar}
+                />
+              )}
+              <OverlayTrigger
+                placement="top"
+                overlay={
+                  <Tooltip id={`headline-tooltip-${rowData.documentId}`}>
+                    {rowData.title}
+                  </Tooltip>
+                }
+              >
+                <Link
+                  to={
+                    isReviewDashboard
+                      ? `/advisory-summary/${rowData.documentId}?tab=review`
+                      : `/advisory-summary/${rowData.documentId}`
+                  }
+                  className="advisory-headline-link"
+                  aria-label={rowData.title}
+                >
+                  {rowData.title}
+                </Link>
+              </OverlayTrigger>
+            </span>
+          );
+        },
+      },
+      {
+        field: "modifiedDate",
+        title: "Last updated",
+        render(rowData) {
+          if (rowData.modifiedDate) {
+            const hasUpdatedStatus =
+              isReviewDashboard &&
+              rowData.reviewStatuses?.includes(REVIEW_STATUS.UPDATED);
+
+            return (
+              <span className="d-inline-flex align-items-center gap-1">
+                {hasUpdatedStatus && (
+                  <ReviewIcon
+                    reviewStatus={REVIEW_STATUS.UPDATED}
+                    rowId={rowData.documentId}
+                    icon={faCircleSmall}
+                  />
+                )}
+                <span
+                  className={classNames({
+                    [`review-status--${REVIEW_STATUS.UPDATED.toLowerCase()}`]:
+                      hasUpdatedStatus,
+                  })}
+                >
+                  {moment(rowData.modifiedDate).format("YYYY/MM/DD")}
+                </span>
+              </span>
+            );
+          }
+
+          return null;
+        },
+      },
+      {
+        field: "advisoryDate",
+        title: "Posting date",
+        render(rowData) {
+          if (rowData.advisoryDate) {
+            return moment(rowData.advisoryDate).format("YYYY/MM/DD");
+          }
+
+          return null;
+        },
+      },
+      ...(isReviewDashboard
+        ? [
+            {
+              field: "endDate",
+              title: "End date",
+              render(rowData) {
+                if (rowData.endDate) {
+                  const hasEndedStatus = rowData.reviewStatuses?.includes(
+                    REVIEW_STATUS.ENDED,
+                  );
+
+                  return (
+                    <span className="d-inline-flex align-items-center gap-1">
+                      {hasEndedStatus && (
+                        <ReviewIcon
+                          reviewStatus={REVIEW_STATUS.ENDED}
+                          rowId={rowData.documentId}
+                          icon={faTriangleExclamation}
+                        />
+                      )}
+                      <span
+                        className={classNames({
+                          [`review-status--${REVIEW_STATUS.ENDED.toLowerCase()}`]:
+                            hasEndedStatus,
+                        })}
+                      >
+                        {moment(rowData.endDate).format("YYYY/MM/DD")}
+                      </span>
+                    </span>
+                  );
+                }
+
+                return null;
+              },
+            },
+          ]
+        : []),
+      {
+        field: "expiryDate",
+        title: "Expiry date",
+        render(rowData) {
+          if (rowData.expiryDate) {
+            const hasExpiringStatus =
+              isReviewDashboard &&
+              rowData.reviewStatuses?.includes(REVIEW_STATUS.EXPIRING);
+            const hasExpiredStatus =
+              isReviewDashboard &&
+              rowData.reviewStatuses?.includes(REVIEW_STATUS.EXPIRED);
+            let expiryIcon = null;
+
+            if (hasExpiredStatus) {
+              expiryIcon = (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.EXPIRED}
+                  rowId={rowData.documentId}
+                  icon={faCircleExclamation}
+                />
+              );
+            } else if (hasExpiringStatus) {
+              expiryIcon = (
+                <ReviewIcon
+                  reviewStatus={REVIEW_STATUS.EXPIRING}
+                  rowId={rowData.documentId}
+                  icon={faTriangleExclamation}
+                />
+              );
+            }
+
+            return (
+              <span className="d-inline-flex align-items-center gap-1">
+                {expiryIcon}
+                <span
+                  className={classNames({
+                    [`review-status--${REVIEW_STATUS.EXPIRED.toLowerCase()}`]:
+                      hasExpiredStatus,
+                    [`review-status--${REVIEW_STATUS.EXPIRING.toLowerCase()}`]:
+                      hasExpiringStatus && !hasExpiredStatus,
+                  })}
+                >
+                  {moment(rowData.expiryDate).format("YYYY/MM/DD")}
+                </span>
+              </span>
+            );
+          }
+
+          return null;
+        },
+      },
+      {
+        title: "",
+        field: "id",
+        filtering: false,
+        sorting: false,
+        render: (rowData) => (
+          <TableActionButton
+            className="ms-1 me-3"
+            rowId={rowData.documentId}
+            canUnpublish={["SCH", "PUB"].includes(rowData.advisoryStatus?.code)}
+            viewPath={
+              isReviewDashboard
+                ? `/advisory-summary/${rowData.documentId}?tab=review`
+                : `/advisory-summary/${rowData.documentId}`
+            }
+            editPath={
+              isReviewDashboard
+                ? `/update-advisory/${rowData.documentId}?tab=review`
+                : `/update-advisory/${rowData.documentId}`
+            }
+            onUnpublish={() => handleUnpublish(rowData)}
+            // Only show "Mark reviewed" button on the review dashboard for approvers
+            {...(canMarkReviewed
+              ? { onMarkReviewed: () => handleMarkReviewed(rowData) }
+              : {})}
+          />
+        ),
+      },
+    ],
+    [
+      urgencies,
+      advisoryStatuses,
+      handleUnpublish,
+      handleMarkReviewed,
+      canMarkReviewed,
+      isApprover,
+      isReviewDashboard,
+    ],
+  );
+
+  if (toError || hasErrors) {
+    return <Navigate to="/error" />;
+  }
+
+  // Use the unfiltered comparison total when available; otherwise fall back
+  // to the currently displayed query total
+  const comparisonTotalItems = unfilteredTotalItems ?? totalPublicAdvisories;
+
+  // Show the review-specific empty state when there are no items to review on the server,
+  // regardless of client-side filters.
+  const showNoItemsToReviewMessage =
+    isReviewDashboard && !isLoading && comparisonTotalItems === 0;
+
+  const emptyState = showNoItemsToReviewMessage ? (
+    // When there are no advisories to review, show an empty state message
+    <ReviewEmptyState />
+  ) : (
+    // When filters are causing an empty state, show a message
+    <div>
+      <p>No records to display.</p>
+
+      {isReviewDashboard ? (
+        // The review dashboard has column filters only
+        <p className="fs-6">Try adjusting your filters to see more results.</p>
+      ) : (
+        // The main dashboard has both column filters and the "Include unpublished" toggle
+        <p className="fs-6">
+          Try adjusting your filters or check ‘Include unpublished advisories
+          and closures’ to see more results.
+        </p>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="advisory-dashboard-page-wrap advisories-styles layout landing-page-tabs">
+      <header className="section-tabs d-flex flex-column">
+        <div className="container-fluid">
+          <h1 className="title m-3 mb-4">Advisories and closures</h1>
+          <ul className="nav nav-tabs px-2">
+            <li className="nav-item">
+              <NavLink className="nav-link" to="/advisories-and-closures" end>
+                All
+              </NavLink>
+            </li>
+            {isApprover && (
+              <li className="nav-item">
+                <NavLink
+                  className="nav-link"
+                  to="/advisories-and-closures/review"
+                >
+                  Review
+                </NavLink>
+              </li>
+            )}
+          </ul>
+        </div>
+      </header>
+
+      <div className="container-fluid">
+        <div className="row">
+          <div
+            className={classNames(
+              "col-12 order-xl-0 order-1 d-flex flex-wrap",
+              {
+                "col-xl-9": !isReviewDashboard,
+              },
+            )}
+          >
+            <div className="row filter-row ">
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="RST recreation district"
+                  countLabel="RST recreation district"
+                  placeholder="Search or select a district"
+                  value={selectedDistrict}
+                  options={districtOptions}
+                  onChange={handleDistrictChange}
+                />
+              </div>
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="BC Parks region"
+                  countLabel="BC Parks region"
+                  placeholder="Search or select a region"
+                  value={selectedRegion}
+                  options={regionOptions}
+                  onChange={handleRegionChange}
+                />
+              </div>
+              <div className="filter-col col-md-6 col-12">
+                <MultiSelect
+                  label="BC Parks"
+                  countLabel="BC Parks"
+                  placeholder="Search or select a park"
+                  value={selectedPark}
+                  options={parkOptions}
+                  onChange={handleParkChange}
+                />
+              </div>
+              <div className="filter-col col-md-6 col-12">
+                <SingleSelect
+                  label="Program area"
+                  placeholder="Select a program area"
+                  value={selectedProgramArea}
+                  options={PROGRAM_AREA_OPTIONS}
+                  onChange={handleProgramAreaChange}
+                />
+              </div>
+            </div>
+          </div>
+          {!isReviewDashboard && (
+            <div className="col-xl-3 col-12 order-xl-1 order-0 d-flex align-items-start justify-content-end">
+              <Button
+                label={
+                  <>
+                    <FontAwesomeIcon icon={faPlus} className="plus-icon me-2" />
+                    Create advisory / closure
+                  </>
+                }
+                styling="btn-primary btn mt-3"
+                onClick={() => {
+                  navigate("/create-advisory");
+                }}
+              />
+            </div>
+          )}
+        </div>
+        {!isReviewDashboard && (
+          <div className="row">
+            <div className="col-12">
+              <Form.Check
+                className="advisory-unpublished-toggle mt-3"
+                type="checkbox"
+                id="show-unpublished"
+                checked={showUnpublished}
+                onChange={(e) => {
+                  setIsLoading(true);
+                  setShowUnpublished(e.target.checked);
+                  resetToFirstPage();
+                }}
+                label={
+                  <span>
+                    Include unpublished advisories and closures
+                    <LightTooltip
+                      arrow
+                      title={t("dashboard.showUnpublished.tooltip")}
+                    >
+                      <FontAwesomeIcon
+                        icon={faCircleQuestion}
+                        className="helpIcon"
+                      />
+                    </LightTooltip>
+                  </span>
+                }
+              />
+            </div>
+          </div>
+        )}
+        <FilterStatus
+          totalResults={totalPublicAdvisories}
+          isLoading={isLoading}
+          selectedDistrict={selectedDistrict}
+          onClearDistrict={clearDistrictFilter}
+          selectedRegion={selectedRegion}
+          onClearRegion={clearRegionFilter}
+          selectedPark={selectedPark}
+          onClearPark={clearParkFilter}
+          selectedProgramArea={selectedProgramArea?.label ?? ""}
+          onClearProgramArea={clearProgramAreaFilter}
+          selectedTableFilters={activeTableFilters}
+          onClearTableFilter={clearTableFilter}
+          hasAnyFilters={
+            selectedDistrict.length > 0 ||
+            selectedRegion.length > 0 ||
+            selectedPark.length > 0 ||
+            selectedProgramArea !== null ||
+            activeTableFilters.length > 0 ||
+            showUnpublished
+          }
+          onClearAll={clearAllFilters}
+        />
+        <div className="advisory-dashboard" data-testid="AdvisoryDashboard">
+          <br />
+          <div className="advisory-dashboard-table-wrap">
+            <DataTable
+              filtering
+              search={false}
+              initialSortConfig={{
+                columnId: "modifiedDate",
+                direction: isReviewDashboard ? "asc" : "desc",
+              }}
+              pageSize={pageSize}
+              pageSizeOptions={[25, 50, 1000]}
+              serverSide
+              totalItems={totalPublicAdvisories}
+              currentPage={currentPage}
+              onPageChange={setCurrentPage}
+              onPageSizeChange={(nextPageSize) => {
+                setPageSize(nextPageSize);
+                resetToFirstPage();
+              }}
+              onFilterChange={({ field, value }) => {
+                setTableFilterValues((prev) => ({ ...prev, [field]: value }));
+                resetToFirstPage();
+              }}
+              onSortChange={(next) => {
+                setSortConfig(next);
+                resetToFirstPage();
+              }}
+              initialFilterValues={initialTableFilterValues}
+              filterValues={tableFilterValues}
+              onFilterValuesChange={persistTableFilterValues}
+              columns={tableColumns}
+              data={publicAdvisories}
+              emptyState={emptyState}
+              title=""
+              components={{
+                Toolbar: () => <div></div>,
+              }}
+            />
+          </div>
+        </div>
+      </div>
+      {isLoading && (
+        <div className="page-loader">
+          <Loader page />
+        </div>
+      )}
+    </div>
+  );
+}
+
+AdvisoryDashboard.propTypes = {
+  filterStorageKey: PropTypes.string,
+  isReviewDashboard: PropTypes.bool,
+};

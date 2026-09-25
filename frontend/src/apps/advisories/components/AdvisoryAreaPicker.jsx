@@ -1,0 +1,543 @@
+import { useState, useEffect, useRef } from "react";
+import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
+import "./AdvisoryAreaPicker.scss";
+import Select from "react-select";
+import Form from "react-bootstrap/Form";
+import classNames from "classnames";
+import RecreationResourcePicker from "./RecreationResourcePicker";
+import LightTooltip from "@/apps/advisories/components/LightTooltip";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCircleQuestion,
+  faChevronDown,
+  faChevronUp,
+} from "@fa-kit/icons/classic/solid";
+import { validateRequiredAffectedResources } from "@/apps/advisories/utils/advisoryValidator";
+import { generateProtectedAreasListForSelectedRelations } from "@/apps/advisories/utils/advisoryUtil";
+import { getParkRelations } from "@/utils/cms/cmsDataUtil";
+
+export default function AdvisoryAreaPicker({
+  mode,
+  markChanged,
+  data: {
+    recreationResources,
+    selectedRecreationResources,
+    setSelectedRecreationResources,
+    protectedAreas,
+    selectedProtectedAreas,
+    setSelectedProtectedAreas,
+    regions,
+    selectedRegions,
+    setSelectedRegions,
+    sections,
+    selectedSections,
+    setSelectedSections,
+    managementAreas,
+    selectedManagementAreas,
+    setSelectedManagementAreas,
+    sites,
+    selectedSites,
+    setSelectedSites,
+    fireCentres,
+    selectedFireCentres,
+    setSelectedFireCentres,
+    fireZones,
+    selectedFireZones,
+    setSelectedFireZones,
+    naturalResourceDistricts,
+    selectedNaturalResourceDistricts,
+    setSelectedNaturalResourceDistricts,
+    advisoryData,
+    affectedResourceError,
+  },
+}) {
+  const { t } = useTranslation("act");
+  const [showOtherAreas, setShowOtherAreas] = useState(false);
+  // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
+  const autoExpandedOtherAreas = useRef(false);
+
+  // Reveal other areas in update mode if there are any
+  useEffect(() => {
+    if (
+      mode === "update" &&
+      autoExpandedOtherAreas.current === false &&
+      showOtherAreas === false &&
+      (selectedSites?.length ||
+        selectedFireCentres?.length ||
+        selectedFireZones?.length ||
+        selectedNaturalResourceDistricts?.length ||
+        selectedRegions?.length ||
+        selectedSections?.length ||
+        selectedManagementAreas?.length)
+    ) {
+      setShowOtherAreas(true);
+      autoExpandedOtherAreas.current = true;
+    } else if (showOtherAreas && !autoExpandedOtherAreas.current) {
+      // Don't auto-expand the section after the initial load: set the flag to true to skip future checks
+      autoExpandedOtherAreas.current = true;
+    }
+  }, [
+    mode,
+    showOtherAreas,
+    selectedSites,
+    selectedFireCentres,
+    selectedFireZones,
+    selectedNaturalResourceDistricts,
+    selectedRegions,
+    selectedSections,
+    selectedManagementAreas,
+  ]);
+
+  async function handleRemoveProtectedArea(updatedParksList) {
+    const deletedParks = selectedProtectedAreas.filter(
+      (park) => !updatedParksList?.includes(park),
+    );
+
+    if (deletedParks.length) {
+      const parkId = deletedParks[0]?.value;
+      const {
+        managementArea,
+        region,
+        section,
+        fireZone,
+        fireCentre,
+        naturalResourceDistrict,
+        sites: relatedSites,
+      } = await Promise.resolve(getParkRelations(parkId));
+
+      if (managementArea && selectedManagementAreas.length) {
+        const newManagementAreas = selectedManagementAreas.filter(
+          (ma) => ma.value !== managementArea.documentId,
+        );
+
+        setSelectedManagementAreas(newManagementAreas);
+      }
+      if (region && selectedRegions.length) {
+        const newRegions = selectedRegions.filter(
+          (r) => r.value !== region.documentId,
+        );
+
+        setSelectedRegions(newRegions);
+      }
+      if (section && selectedSections.length) {
+        const newSections = selectedSections.filter(
+          (s) => s.value !== section.documentId,
+        );
+
+        setSelectedSections(newSections);
+      }
+      if (fireZone && selectedFireZones.length) {
+        const newFireZones = selectedFireZones.filter(
+          (fz) => fz.value !== fireZone.documentId,
+        );
+
+        setSelectedFireZones(newFireZones);
+      }
+      if (fireCentre && selectedFireCentres.length) {
+        const newFireCentres = selectedFireCentres.filter(
+          (fc) => fc.value !== fireCentre.documentId,
+        );
+
+        setSelectedFireCentres(newFireCentres);
+      }
+      if (naturalResourceDistrict && selectedNaturalResourceDistricts.length) {
+        const newNaturalResourceDistricts =
+          selectedNaturalResourceDistricts.filter(
+            (nrd) => nrd.value !== naturalResourceDistrict.documentId,
+          );
+
+        setSelectedNaturalResourceDistricts(newNaturalResourceDistricts);
+      }
+      if (relatedSites && relatedSites.length && selectedSites.length) {
+        const parkSites = new Set(relatedSites.map((x) => x.documentId));
+        const newSites = selectedSites.filter((s) => !parkSites.has(s.value));
+
+        setSelectedSites(newSites);
+      }
+    }
+  }
+
+  function handleClearProtectedAreas() {
+    setSelectedManagementAreas([]);
+    setSelectedRegions([]);
+    setSelectedSections([]);
+    setSelectedFireZones([]);
+    setSelectedFireCentres([]);
+    setSelectedNaturalResourceDistricts([]);
+    setSelectedSites([]);
+  }
+
+  function handleChangeRelations({
+    updatedRegions,
+    updatedSections,
+    updatedManagementAreas,
+    updatedSites,
+    updatedFireZones,
+    updatedFireCentres,
+    updatedNaturalResourceDistricts,
+  }) {
+    // get current the list of park ids before the change
+    const currentlySelected = selectedProtectedAreas.map((x) => x.value);
+
+    // get the list of park ids based on the previously selected relations
+    const oldGeneratedList = generateProtectedAreasListForSelectedRelations(
+      selectedRegions,
+      selectedSections,
+      selectedManagementAreas,
+      selectedSites,
+      selectedFireCentres,
+      selectedFireZones,
+      selectedNaturalResourceDistricts,
+      managementAreas,
+      fireZones,
+      sites,
+    );
+
+    // get the difference (these are the extra/manual parks)
+    const manualList = currentlySelected.filter(
+      (id) => !new Set(oldGeneratedList).has(id),
+    );
+
+    // get the new list of park ids based on updated relations
+    const newGeneratedList = generateProtectedAreasListForSelectedRelations(
+      updatedRegions || selectedRegions,
+      updatedSections || selectedSections,
+      updatedManagementAreas || selectedManagementAreas,
+      updatedSites || selectedSites,
+      updatedFireCentres || selectedFireCentres,
+      updatedFireZones || selectedFireZones,
+      updatedNaturalResourceDistricts || selectedNaturalResourceDistricts,
+      managementAreas,
+      fireZones,
+      sites,
+    );
+
+    // add back the extra manual park ids
+    const newList = new Set([...newGeneratedList, ...manualList]);
+
+    // update the parks input with the new list
+    const parks = protectedAreas.filter((p) => newList.has(p.value));
+
+    setSelectedProtectedAreas(parks);
+
+    // Tell the page component that the form changed to enable the "Unsaved changes" prompt
+    markChanged();
+  }
+
+  const customSelectStyles = {
+    control: (provided) => ({
+      ...provided,
+      maxHeight: "400px",
+      overflowY: "auto",
+    }),
+    indicatorsContainer: (provided) => ({
+      ...provided,
+      height: "2.3rem",
+    }),
+  };
+
+  return (
+    <div className="advisory-area-picker">
+      <p>
+        <span className="append-required">
+          Select at least one resource <b>or</b> search for groups of resources
+          by other area(s)
+        </span>
+        <LightTooltip
+          arrow
+          title={t("advisoryAreaPicker.affectedResources.tooltip")}
+        >
+          <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+        </LightTooltip>
+      </p>
+
+      <Form.Group className="form-group" controlId="resources">
+        <Form.Label>Recreation Sites and Trails</Form.Label>
+        <div
+          className={classNames({
+            "bcgov-select-error": affectedResourceError !== "",
+          })}
+        >
+          <RecreationResourcePicker
+            options={recreationResources}
+            value={selectedRecreationResources}
+            onChange={(selected) => {
+              setSelectedRecreationResources(selected);
+              // Tell the page component that the form changed to enable the "Unsaved changes" prompt
+              markChanged();
+            }}
+            onBlur={() => {
+              validateRequiredAffectedResources(advisoryData.affectedResources);
+            }}
+          />
+        </div>
+      </Form.Group>
+
+      <Form.Group className="form-group" controlId="parks">
+        <Form.Label>BC Parks</Form.Label>
+        <div
+          className={classNames({
+            "bcgov-select-error": affectedResourceError !== "",
+          })}
+        >
+          <Select
+            id="parks"
+            options={protectedAreas}
+            maxHeight={200}
+            value={selectedProtectedAreas}
+            onChange={(e, action) => {
+              setSelectedProtectedAreas(e);
+              if (action.action === "clear") {
+                handleClearProtectedAreas();
+              } else {
+                handleRemoveProtectedArea(e);
+              }
+
+              // Tell the page component that the form changed to enable the "Unsaved changes" prompt
+              markChanged();
+            }}
+            placeholder="Search or select BC Parks"
+            isMulti
+            className="bcgov-select"
+            onBlur={() => {
+              validateRequiredAffectedResources(advisoryData.affectedResources);
+            }}
+            styles={customSelectStyles}
+          />
+        </div>
+      </Form.Group>
+
+      {/* Show errors for both "Park(s)" and "Recreation resources(s)" fields */}
+      {affectedResourceError && (
+        <div className="invalid-feedback d-block mb-2">
+          {affectedResourceError}
+        </div>
+      )}
+
+      {!showOtherAreas && (
+        <button
+          type="button"
+          className="btn mt-2 btn-link btn-boolean with-icon"
+          onClick={() => setShowOtherAreas(true)}
+        >
+          Show other areas
+          <FontAwesomeIcon icon={faChevronDown} />
+        </button>
+      )}
+
+      {showOtherAreas && (
+        <>
+          <Form.Group className="form-group" controlId="sites">
+            <Form.Label>BC Parks site(s)</Form.Label>
+            <Select
+              id="sites"
+              options={sites}
+              value={selectedSites}
+              onChange={(e) => {
+                setSelectedSites(e);
+                handleChangeRelations({ updatedSites: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks site(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="fire-centres">
+            <Form.Label>
+              Fire centre(s)
+              <br />
+              <span className="bc-parks-only">BC Parks only</span>
+            </Form.Label>
+            <Select
+              id="fire-centres"
+              options={fireCentres}
+              value={selectedFireCentres}
+              onChange={(e) => {
+                setSelectedFireCentres(e);
+                handleChangeRelations({ updatedFireCentres: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select fire centre(s)"
+              isMulti
+              className="bcgov-select"
+            />{" "}
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="fire-zones">
+            <Form.Label>
+              Fire zone(s)
+              <br />
+              <span className="bc-parks-only">BC Parks only</span>
+            </Form.Label>
+            <Select
+              id="fire-zones"
+              options={fireZones}
+              value={selectedFireZones}
+              onChange={(e) => {
+                setSelectedFireZones(e);
+                handleChangeRelations({ updatedFireZones: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select fire zone(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group
+            className="form-group"
+            controlId="natural-resource-districts"
+          >
+            <Form.Label>
+              Natural resource district(s)
+              <br />
+              <span className="bc-parks-only">BC Parks only</span>
+            </Form.Label>
+            <Select
+              id="natural-resource-districts"
+              options={naturalResourceDistricts}
+              value={selectedNaturalResourceDistricts}
+              onChange={(e) => {
+                setSelectedNaturalResourceDistricts(e);
+                handleChangeRelations({
+                  updatedNaturalResourceDistricts: e,
+                });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select natural resource district(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="regions">
+            <Form.Label>BC Parks region(s)</Form.Label>
+            <Select
+              id="regions"
+              options={regions}
+              value={selectedRegions}
+              onChange={(e) => {
+                setSelectedRegions(e);
+                handleChangeRelations({ updatedRegions: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks region(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="sections">
+            <Form.Label>BC Parks section(s)</Form.Label>
+            <Select
+              id="sections"
+              options={sections}
+              value={selectedSections}
+              onChange={(e) => {
+                setSelectedSections(e);
+                handleChangeRelations({ updatedSections: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks section(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <Form.Group className="form-group" controlId="management-areas">
+            <Form.Label>BC Parks management area(s)</Form.Label>
+            <Select
+              id="management-areas"
+              options={managementAreas}
+              value={selectedManagementAreas}
+              onChange={(e) => {
+                setSelectedManagementAreas(e);
+                handleChangeRelations({ updatedManagementAreas: e });
+              }}
+              onBlur={() => {
+                validateRequiredAffectedResources(
+                  advisoryData.affectedResources,
+                );
+              }}
+              placeholder="Search or select BC Parks management area(s)"
+              isMulti
+              className="bcgov-select"
+            />
+          </Form.Group>
+
+          <button
+            type="button"
+            className="btn mt-2 btn-link btn-boolean with-icon"
+            onClick={() => setShowOtherAreas(false)}
+          >
+            Hide other areas
+            <FontAwesomeIcon icon={faChevronUp} />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
+AdvisoryAreaPicker.propTypes = {
+  mode: PropTypes.string,
+  markChanged: PropTypes.func.isRequired,
+  data: PropTypes.shape({
+    recreationResources: PropTypes.array.isRequired,
+    selectedRecreationResources: PropTypes.array,
+    setSelectedRecreationResources: PropTypes.func.isRequired,
+    protectedAreas: PropTypes.array.isRequired,
+    selectedProtectedAreas: PropTypes.array,
+    setSelectedProtectedAreas: PropTypes.func.isRequired,
+    regions: PropTypes.array.isRequired,
+    selectedRegions: PropTypes.array,
+    setSelectedRegions: PropTypes.func.isRequired,
+    sections: PropTypes.array.isRequired,
+    selectedSections: PropTypes.array,
+    setSelectedSections: PropTypes.func.isRequired,
+    managementAreas: PropTypes.array.isRequired,
+    selectedManagementAreas: PropTypes.array,
+    setSelectedManagementAreas: PropTypes.func.isRequired,
+    sites: PropTypes.array.isRequired,
+    selectedSites: PropTypes.array,
+    setSelectedSites: PropTypes.func.isRequired,
+    fireCentres: PropTypes.array.isRequired,
+    selectedFireCentres: PropTypes.array,
+    setSelectedFireCentres: PropTypes.func.isRequired,
+    fireZones: PropTypes.array.isRequired,
+    selectedFireZones: PropTypes.array,
+    setSelectedFireZones: PropTypes.func.isRequired,
+    naturalResourceDistricts: PropTypes.array.isRequired,
+    selectedNaturalResourceDistricts: PropTypes.array,
+    setSelectedNaturalResourceDistricts: PropTypes.func.isRequired,
+    advisoryData: PropTypes.object,
+    affectedResourceError: PropTypes.string,
+  }).isRequired,
+};

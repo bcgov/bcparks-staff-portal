@@ -6,7 +6,6 @@ import "./TouchMenu.scss";
 import navItems from "./shared/navItems";
 
 export default function TouchMenu({ show = true, closeMenu, userName }) {
-
   const { hasAnyRole } = useAccess();
 
   return (

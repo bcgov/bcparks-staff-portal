@@ -1,9 +1,9 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 
-import act from "../ui-text/act";
+import act from "@/apps/advisories/ui-text";
 import common from "../ui-text/common";
-import doot from "../ui-text/doot";
+import doot from "@/apps/dates/ui-text";
 
 // react-i18next plugin config
 

@@ -2,9 +2,9 @@ import { useCallback, useContext, useEffect, useRef } from "react";
 import qs from "qs";
 import get from "lodash-es/get";
 import { useAuth } from "react-oidc-context";
-import { cmsAxios } from "@/lib/advisories/axios_config";
+import { cmsAxios } from "@/utils/cms/axiosConfig";
 import CmsDataContext from "@/contexts/CmsDataContext";
-import { calculateIsStatHoliday as calculateIsStatHolidayUtil } from "@/lib/advisories/utils/AdvisoryUtil";
+import { calculateIsStatHoliday as calculateIsStatHolidayUtil } from "@/utils/cms/statHolidayUtil";
 
 /**
  * Builds a sort query string with deterministic tie-breaking.
@@ -367,7 +367,7 @@ export default function useCms() {
 
   /**
    * Determines whether today is a statutory holiday and updates component state.
-   * Wraps the calculateIsStatHoliday function from AdvisoryUtil.js
+   * Wraps the calculateIsStatHoliday function from statHolidayUtil.js
    * @param {Function} setIsStatHoliday State setter to receive the boolean result
    * @returns {Promise<void>}
    */

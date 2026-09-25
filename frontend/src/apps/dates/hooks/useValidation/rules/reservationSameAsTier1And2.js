@@ -1,0 +1,77 @@
+import { isEqual } from "date-fns";
+import { groupBy } from "lodash-es";
+
+import consolidateRanges from "@/apps/dates/utils/consolidateDateRanges";
+import getDateTypeDisplayName from "@/apps/dates/utils/getDateTypeDisplayName";
+import * as FEATURE_TYPE from "@/apps/dates/constants/featureType";
+
+/**
+ * Validates that Frontcountry Campground Feature Reservation dates match the Park-level Tier 1 and 2 dates.
+ * Each feature's dates must be the same as the Park's combined Tier 1 and Tier 2 dates.
+ * @param {Object} seasonData The season form data to validate
+ * @param {Object} context Validation context with errors array
+ * @returns {void}
+ */
+export default function reservationSameAsTier1And2(seasonData, context) {
+  const { dateRanges, elements, parkTier1Dates, parkTier2Dates } = context;
+
+  // This rule applies to the Feature and ParkArea level. Skip for Parks
+  if (context.level === "park") return;
+
+  // Skip if the Park doesn't have Tier 1 dates
+  if (parkTier1Dates.length === 0) return;
+
+  // Get a list of the populated Frontcountry Campground Feature Reservation dates on this form
+  const frontcountryReservationDates = dateRanges.filter(
+    (dateRange) =>
+      dateRange.dateType.name === "Reservation" &&
+      dateRange.featureTypeNumber === FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND &&
+      dateRange.startDate &&
+      dateRange.endDate,
+  );
+
+  // Group reservation dates by dateableId
+  const reservationDatesByFeature = groupBy(
+    frontcountryReservationDates,
+    "dateableId",
+  );
+
+  // Consolidate Tier 1 + 2 ranges for comparison
+  const consolidatedTierDates = consolidateRanges([
+    ...parkTier1Dates,
+    ...parkTier2Dates,
+  ]);
+
+  // Compare each dateable Feature's reservation dates to the Park's Tier 1 and 2 dates
+  Object.entries(reservationDatesByFeature).forEach(
+    ([dateableId, reservationDates]) => {
+      // Consolidate Reservation dates for comparison
+      const consolidatedReservationDates = consolidateRanges(reservationDates);
+
+      // Compare consolidated date arrays
+      const sameDates =
+        consolidatedTierDates.length === consolidatedReservationDates.length &&
+        consolidatedTierDates.every((dateRangeA, index) => {
+          const dateRangeB = consolidatedReservationDates[index];
+
+          // Return true if the date range covers the same dates
+          return (
+            isEqual(dateRangeA.startDate, dateRangeB.startDate) &&
+            isEqual(dateRangeA.endDate, dateRangeB.endDate)
+          );
+        });
+
+      if (!sameDates) {
+        const errorText =
+          "The reservation dates must include all tier 1 and tier 2 dates. (To change tier 1 and tier 2 dates, edit the park)";
+        const reservationDisplayName = getDateTypeDisplayName("Reservation");
+
+        // Show the error below the Reservation dates section
+        context.addError(
+          elements.dateableDateType(dateableId, reservationDisplayName),
+          errorText,
+        );
+      }
+    },
+  );
+}

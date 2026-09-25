@@ -1,0 +1,138 @@
+import moment from "moment";
+import {
+  addProtectedAreas,
+  addProtectedAreasFromArea,
+} from "@/utils/cms/locationUtil";
+
+export function calculateAfterHours(businessHours) {
+  const currentDate = moment().format("YYYY-MM-DD");
+  const currentDay = moment().format("dddd");
+  const businessStartTime = moment(`${currentDate} ${businessHours.startTime}`);
+  const businessEndTime = moment(`${currentDate} ${businessHours.endTime}`);
+  const businessHour = moment().isBetween(businessStartTime, businessEndTime);
+
+  if (!businessHours[currentDay.toLowerCase()] || !businessHour) {
+    return true;
+  }
+  return false;
+}
+
+function setAreaValues(
+  areas,
+  selAreas,
+  selProtectedAreas,
+  selSites,
+  sites,
+  areaList,
+) {
+  if (areas && areas.length > 0) {
+    areas.forEach((a) => {
+      selAreas.push(a.value);
+      if (
+        a.type === "managementArea" ||
+        a.type === "fireZone" ||
+        a.type === "naturalResourceDistrict"
+      ) {
+        addProtectedAreas(
+          a.obj.protectedAreas,
+          sites,
+          selProtectedAreas,
+          selSites,
+        );
+      } else if (a.type === "site") {
+        selProtectedAreas.push(a.obj.protectedArea.documentId);
+      } else if (a.type === "region" || a.type === "section") {
+        addProtectedAreasFromArea(
+          a.obj,
+          "managementAreas",
+          selProtectedAreas,
+          selSites,
+          sites,
+          areaList,
+        );
+      } else if (a.type === "fireCentre") {
+        addProtectedAreasFromArea(
+          a.obj,
+          "fireZones",
+          selProtectedAreas,
+          selSites,
+          sites,
+          areaList,
+        );
+      }
+    });
+  }
+}
+
+export function generateProtectedAreasListForSelectedRelations(
+  selectedRegions,
+  selectedSections,
+  selectedManagementAreas,
+  selectedSites,
+  selectedFireCentres,
+  selectedFireZones,
+  selectedNaturalResourceDistricts,
+  managementAreas,
+  fireZones,
+  sites,
+) {
+  const selProtectedAreas = [];
+  const selRegions = [];
+  const selSections = [];
+  const selManagementAreas = [];
+  const selSites = [];
+  const selFireCentres = [];
+  const selFireZones = [];
+  const selNaturalResourceDistricts = [];
+
+  setAreaValues(
+    selectedRegions,
+    selRegions,
+    selProtectedAreas,
+    selSites,
+    sites,
+    managementAreas,
+  );
+  setAreaValues(
+    selectedSections,
+    selSections,
+    selProtectedAreas,
+    selSites,
+    sites,
+    managementAreas,
+  );
+  setAreaValues(
+    selectedManagementAreas,
+    selManagementAreas,
+    selProtectedAreas,
+    selSites,
+    sites,
+    null,
+  );
+  setAreaValues(selectedSites, selSites, selProtectedAreas, null, null, null);
+  setAreaValues(
+    selectedFireCentres,
+    selFireCentres,
+    selProtectedAreas,
+    selSites,
+    sites,
+    fireZones,
+  );
+  setAreaValues(
+    selectedFireZones,
+    selFireZones,
+    selProtectedAreas,
+    selSites,
+    sites,
+    null,
+  );
+  setAreaValues(
+    selectedNaturalResourceDistricts,
+    selNaturalResourceDistricts,
+    selProtectedAreas,
+    selSites,
+    sites,
+    null,
+  );
+  return selProtectedAreas;
+}
