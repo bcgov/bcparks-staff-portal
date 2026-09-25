@@ -1,6 +1,7 @@
 .advisory-dashboard-page-wrap {
   .advisory-dashboard {
     overflow-x: auto;
+    position: relative;
 
     &-table-wrap {
       min-width: min-content;
