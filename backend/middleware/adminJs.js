@@ -1,7 +1,7 @@
 import AdminJSExpress from "@adminjs/express";
 import AdminJS from "adminjs";
 import { owningRelationSettingsFeature } from "@adminjs/relations";
-import { ComponentLoader } from "adminjs";
+import { buildFeature, ComponentLoader } from "adminjs";
 import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
 import session from "express-session";
@@ -460,6 +460,17 @@ const GateDetailResource = {
   },
 };
 
+const DateChangeLogResource = {
+  resource: DateChangeLog,
+  options: {
+    actions: {
+      new: {
+        isAccessible: false,
+      },
+    },
+  },
+};
+
 const SeasonChangeLogResource = {
   resource: SeasonChangeLog,
   options: {
@@ -509,30 +520,7 @@ const SeasonChangeLogResource = {
         },
       },
       new: {
-        async before(request) {
-          if (request.payload) {
-            // Handle JSON string markers to preserve types
-            request.payload = parseMarkedJsonValues(request.payload, [
-              "gateDetailOldValue",
-              "gateDetailNewValue",
-            ]);
-
-            stripFlattenedKeys(request.payload, [
-              "gateDetailOldValue",
-              "gateDetailNewValue",
-            ]);
-          }
-          return request;
-        },
-        async after(response) {
-          if (response.record?.params) {
-            normalizeJsonProperties(response.record.params, [
-              "gateDetailOldValue",
-              "gateDetailNewValue",
-            ]);
-          }
-          return response;
-        },
+        isAccessible: false,
       },
       edit: {
         async before(request, context) {
@@ -949,6 +937,12 @@ const PendingReminderResource = {
   resource: PendingReminder,
   options: {
     properties: {
+      emailType: {
+        isDisabled: true,
+      },
+      numericData: {
+        isDisabled: true,
+      },
       createdAt: {
         isVisible: { list: true, filter: true, show: true, edit: true },
         isDisabled: true,
@@ -1035,6 +1029,13 @@ const PublishableResource = {
     { path: "gateDetail", model: GateDetail, resourceId: "GateDetails" },
   ]),
   features: [
+    // No editable columns, so the new and edit forms would be empty
+    buildFeature({
+      actions: {
+        new: { isAccessible: false },
+        edit: { isAccessible: false },
+      },
+    }),
     owningRelationSettingsFeature({
       componentLoader,
       licenseKey: LICENSE_KEY,
@@ -1066,6 +1067,13 @@ const DateableResource = {
     { path: "feature", model: Feature, resourceId: "Features" },
   ]),
   features: [
+    // No editable columns, so the new and edit forms would be empty
+    buildFeature({
+      actions: {
+        new: { isAccessible: false },
+        edit: { isAccessible: false },
+      },
+    }),
     owningRelationSettingsFeature({
       componentLoader,
       licenseKey: LICENSE_KEY,
@@ -1160,7 +1168,7 @@ const adminOptions = {
     AccessGroupResource,
     AppSettingResource,
     DateableResource,
-    DateChangeLog,
+    DateChangeLogResource,
     DateRangeAnnual,
     DateRangeResource,
     DateType,
