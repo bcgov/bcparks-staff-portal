@@ -5,15 +5,21 @@ export default (sequelize) => {
 
   PendingReminder.init(
     {
+      id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true,
+        allowNull: false,
+      },
       emailType: {
         type: DataTypes.STRING,
-        primaryKey: true,
         allowNull: false,
+        unique: "PendingReminders_emailType_numericData_unique",
       },
       numericData: {
         type: DataTypes.INTEGER,
-        primaryKey: true,
         allowNull: false,
+        unique: "PendingReminders_emailType_numericData_unique",
       },
       jsonData: DataTypes.JSONB,
       comparisonDate: {
