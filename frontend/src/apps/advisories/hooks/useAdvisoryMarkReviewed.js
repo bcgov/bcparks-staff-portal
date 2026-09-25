@@ -63,7 +63,7 @@ export default function useAdvisoryMarkReviewed({
       // Don't publish an advisory that has already expired
       if (isApproving && isNowOrPast(rowData.expiryDate)) {
         openMarkReviewedError(
-          `${rowData.title} has an expiry date in the past. Enter a future date.`,
+          `${rowData.title} has an expiry date in the past. Enter a future date or remove the expiry date.`,
         );
         return;
       }
