@@ -4,35 +4,61 @@ module.exports = {
     // Replace the composite primary key with a serial id (AdminJS only supports
     // single-column ids) and keep emailType + numericData unique for upserts.
     await queryInterface.sequelize.transaction(async (transaction) => {
-      // Only deployed to test environments so far, so existing reminders can be discarded
-      await queryInterface.bulkDelete("PendingReminders", null, {
-        transaction,
-      });
+      // Recreate the table so id is the first column. This table has only been
+      // deployed to test environments, so existing reminders can be discarded.
+      await queryInterface.dropTable("PendingReminders", { transaction });
 
-      await queryInterface.removeConstraint(
+      await queryInterface.createTable(
         "PendingReminders",
-        "PendingReminders_pkey",
-        { transaction },
-      );
-
-      await queryInterface.addColumn(
-        "PendingReminders",
-        "id",
         {
-          type: Sequelize.INTEGER,
-          autoIncrement: true,
-          allowNull: false,
+          id: {
+            type: Sequelize.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+            allowNull: false,
+          },
+          emailType: {
+            type: Sequelize.STRING,
+            allowNull: false,
+          },
+          numericData: {
+            type: Sequelize.INTEGER,
+            allowNull: false,
+          },
+          jsonData: {
+            type: Sequelize.JSONB,
+            allowNull: true,
+          },
+          comparisonDate: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
+          notifyManagementArea: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+          },
+          notifyInformationServices: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+          },
+          notifyReservationServices: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+          },
+          createdAt: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
+          followUpDate: {
+            type: Sequelize.DATEONLY,
+            allowNull: false,
+          },
         },
         { transaction },
       );
-
-      // addColumn ignores primaryKey on Postgres, so add it explicitly
-      await queryInterface.addConstraint("PendingReminders", {
-        fields: ["id"],
-        type: "primary key",
-        name: "PendingReminders_pkey",
-        transaction,
-      });
 
       await queryInterface.addConstraint("PendingReminders", {
         fields: ["emailType", "numericData"],
@@ -40,26 +66,69 @@ module.exports = {
         name: "PendingReminders_emailType_numericData_unique",
         transaction,
       });
+
+      await queryInterface.addIndex("PendingReminders", ["followUpDate"], {
+        name: "pending_reminders_follow_up_date_idx",
+        transaction,
+      });
     });
   },
 
-  async down(queryInterface) {
+  async down(queryInterface, Sequelize) {
+    // Restore the original table from 20260918191322-create-pending-reminder
     await queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.removeConstraint(
+      await queryInterface.dropTable("PendingReminders", { transaction });
+
+      await queryInterface.createTable(
         "PendingReminders",
-        "PendingReminders_emailType_numericData_unique",
+        {
+          emailType: {
+            type: Sequelize.STRING,
+            primaryKey: true,
+            allowNull: false,
+          },
+          numericData: {
+            type: Sequelize.INTEGER,
+            primaryKey: true,
+            allowNull: false,
+          },
+          jsonData: {
+            type: Sequelize.JSONB,
+            allowNull: true,
+          },
+          comparisonDate: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
+          notifyManagementArea: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+          },
+          notifyInformationServices: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+          },
+          notifyReservationServices: {
+            type: Sequelize.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+          },
+          createdAt: {
+            type: Sequelize.DATE,
+            allowNull: false,
+          },
+          followUpDate: {
+            type: Sequelize.DATEONLY,
+            allowNull: false,
+          },
+        },
         { transaction },
       );
 
-      // Dropping the column also drops its primary key and sequence
-      await queryInterface.removeColumn("PendingReminders", "id", {
-        transaction,
-      });
-
-      await queryInterface.addConstraint("PendingReminders", {
-        fields: ["emailType", "numericData"],
-        type: "primary key",
-        name: "PendingReminders_pkey",
+      await queryInterface.addIndex("PendingReminders", ["followUpDate"], {
+        name: "pending_reminders_follow_up_date_idx",
         transaction,
       });
     });
