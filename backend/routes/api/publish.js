@@ -25,7 +25,6 @@ import * as FEATURE_TYPE from "../../constants/featureType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
 import { queueStrapiTask } from "../../utils/strapi/strapiTaskQueue.js";
-import * as DATE_TYPE from "../../constants/dateType.js";
 
 const router = Router();
 
@@ -492,22 +491,6 @@ function formatGateInfo(gateDetails = {}) {
 }
 
 /**
- * Returns the date types that are allowed to have zero date ranges for this
- * park/season, so a missing date range doesn't mean "not applicable."
- * @param {Park} park The Park object for the season
- * @param {Season} season The season object
- * @returns {Array<number>} Optionally-removable date type numbers for this Park/season
- */
-function getOptionalDateTypeIds(park, season) {
-  if (season.seasonType !== SEASON_TYPE.REGULAR) return [];
-
-  return [
-    DATE_TYPE.PARK_GATE_OPEN,
-    ...(park.hasTier2Dates ? [DATE_TYPE.TIER_2] : []),
-  ];
-}
-
-/**
  * Fetches and formats Park-level data for publishing.
  * @param {Park} park The Park object for the season
  * @param {Season} season The season object
@@ -527,8 +510,8 @@ async function formatParkData(park, season) {
       // Strapi expects the ORCS code as a number
       orcs: Number(park.orcs),
       operatingYear: season.operatingYear,
+      seasonType: season.seasonType,
       dateRanges,
-      optionalDateTypeIds: getOptionalDateTypeIds(park, season),
       gateInfo,
     };
   } catch (error) {
@@ -556,6 +539,7 @@ async function formatFeatureData(feature, season, includeGateInfo = false) {
     const featureData = {
       orcsFeatureNumber: feature.orcsFeatureNumber,
       operatingYear: season.operatingYear,
+      seasonType: season.seasonType,
       dateRanges,
     };
 
@@ -642,13 +626,7 @@ router.post(
           model: Park,
           as: "park",
 
-          attributes: [
-            "id",
-            "orcs",
-            "publishableId",
-            "dateableId",
-            "hasTier2Dates",
-          ],
+          attributes: ["id", "orcs", "publishableId", "dateableId"],
 
           include: [
             {
