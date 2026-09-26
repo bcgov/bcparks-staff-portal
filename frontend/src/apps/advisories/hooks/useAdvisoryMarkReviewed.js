@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import { isFuture, isValid, parseISO } from "date-fns";
 
 import { buildReviewPayload } from "@/apps/advisories/utils/advisoryReviewPayload";
+import { isNowOrPast } from "@/apps/advisories/utils/advisoryValidator";
 import useCms from "@/hooks/useCms";
 
 function resolveReviewedStatus(rowData, advisoryStatuses) {
@@ -58,6 +59,14 @@ export default function useAdvisoryMarkReviewed({
     async (rowData) => {
       const reviewedStatus = resolveReviewedStatus(rowData, advisoryStatuses);
       const isApproving = rowData.advisoryStatus?.code === "HQR";
+
+      // Don't publish an advisory that has already expired
+      if (isApproving && isNowOrPast(rowData.expiryDate)) {
+        openMarkReviewedError(
+          `${rowData.title} has an expiry date in the past. Enter a future date or remove the expiry date.`,
+        );
+        return;
+      }
 
       if (!reviewedStatus) {
         openMarkReviewedError(

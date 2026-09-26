@@ -65,10 +65,12 @@ export default function MainLayout() {
       }
     }
 
-    document.addEventListener("click", handleClick);
+    // Use the capture phase so this runs before the clicked element's own handler.
+    // A message opened synchronously by that handler is then not closed by this click.
+    document.addEventListener("click", handleClick, true);
 
     return () => {
-      document.removeEventListener("click", handleClick);
+      document.removeEventListener("click", handleClick, true);
     };
   }, [globalFlashMessage]);
 

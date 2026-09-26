@@ -1,4 +1,5 @@
 import moment from "moment";
+import { isFuture, isValid as isValidDate, parseISO } from "date-fns";
 import { isEmpty } from "@/utils/appUtil";
 
 export function validateOptionalNumber(field) {
@@ -87,6 +88,19 @@ export function validateOptionalDate(field) {
 }
 
 /**
+ * Checks whether a date is now or in the past.
+ * @param {Date|string|null} value The date to check (Date object or ISO string)
+ * @returns {boolean} True if the value is a valid date that is now or in the past
+ */
+export function isNowOrPast(value) {
+  if (!value) return false;
+
+  const date = typeof value === "string" ? parseISO(value) : value;
+
+  return isValidDate(date) && !isFuture(date);
+}
+
+/**
  * Validates an optional date field that must be in the future when provided.
  * Mirrors the CMS advisory status logic, which sets the status to "Unpublished"
  * when the expiry date is now or in the past.
@@ -96,7 +110,7 @@ export function validateOptionalDate(field) {
 export function validateOptionalFutureDate(field) {
   if (!validateOptionalDate(field)) return false;
 
-  if (field.value && !moment(field.value).isAfter(moment())) {
+  if (isNowOrPast(field.value)) {
     field.setError("Enter a future date");
     return false;
   }
