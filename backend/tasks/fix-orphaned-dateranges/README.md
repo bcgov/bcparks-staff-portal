@@ -32,18 +32,35 @@ Fixes DateRanges when Features toggle between standalone status and being part o
 
 ## Prerequisites
 
-Run after `create-seasons.js` to address data inconsistencies from season creation.
+Run after the scheduled jobs (or `npm run cron-task`) to address data inconsistencies from season creation. The scheduled jobs import the latest Strapi data and then run `create-seasons.js`. See [cron/README.md](../../cron/README.md).
+
+The scheduled jobs run automatically once a day (OpenShift CronJob, `0 9 * * *`). To pick up Strapi changes right away, run them manually first.
 
 ## Usage
 
+From the `backend` directory:
+
+### Create seasons for updated features and park areas
+
 ```sh
-node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2027
+npm run cron-task
 ```
 
-Replace `2027` with the desired operating year.
+### Fix orphaned dateranges
+
+Run the script for the previous, current, and following operating years. The current year is the year staff are entering regular season dates for.
+
+For example, when staff are entering 2027 regular seaon dates:
+
+```sh
+node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2026
+node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2027
+node tasks/fix-orphaned-dateranges/fix-orphaned-dateranges.js 2028
+```
 
 ## Notes
 
 - Processes one operating year at a time.
+- Fixes all seasons for the specified operating year, both regular and winter.
 - Safe to run multiple times; only updates DateRanges still needing fixes.
 - All operations run in a transaction and roll back on errors.
