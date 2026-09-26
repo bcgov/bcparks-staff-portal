@@ -90,7 +90,6 @@ export default function Advisory({ mode }) {
   const [displayUpdatedDate, setDisplayUpdatedDate] = useState(false);
   const [notes, setNotes] = useState("");
   const [submittedByName, setSubmittedByName] = useState("");
-  const [submitter, setSubmitter] = useState("");
   const [listingRank, setListingRank] = useState(0);
   const [toError, setToError] = useState(false);
   const [isLoadingPage, setIsLoadingPage] = useState(true);
@@ -307,7 +306,6 @@ export default function Advisory({ mode }) {
               advisoryData.listingRank ? advisoryData.listingRank : 0,
             );
             setNotes(advisoryData.note || "");
-            setSubmittedByName(advisoryData.submittedByName || "");
             if (advisoryData.advisoryDate) {
               setAdvisoryDate(
                 moment(advisoryData.advisoryDate)
@@ -770,7 +768,6 @@ export default function Advisory({ mode }) {
             setIsLoadingPage(false);
           }
 
-          setSubmitter(auth.user?.profile?.name);
           setIsLoadingData(false);
         })
         .catch((error) => {
@@ -1113,7 +1110,7 @@ export default function Advisory({ mode }) {
         isSafetyRelated,
         listingRank: listingRank ? Number.parseInt(listingRank, 10) : 0,
         note: notes,
-        submittedByName: submittedByName ? submittedByName : submitter,
+        submittedByName,
         createdDate: moment().toISOString(),
         modifiedDate: moment().toISOString(),
         advisoryDate,

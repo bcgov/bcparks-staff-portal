@@ -75,7 +75,7 @@ For example:
     },
     requestedBy: {
       tooltip:
-        "Enter your name, or the name of the person who asked you to submit the advisory.",
+        "Enter the name of the person who asked you to submit the advisory. If you are the requester, leave this blank.",
     },
     listingRank: {
       tooltip:
