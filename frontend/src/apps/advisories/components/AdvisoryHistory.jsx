@@ -33,6 +33,7 @@ export default function AdvisoryHistory({
             actorName,
             displayText,
             date,
+            requesterName,
           }) {
             if (!date) return;
 
@@ -41,6 +42,11 @@ export default function AdvisoryHistory({
               actorName,
               displayText,
               date,
+              // Only show the requester when it's someone other than the actor
+              requesterName:
+                actorName && requesterName && actorName !== requesterName
+                  ? requesterName
+                  : "",
             });
           }
 
@@ -65,8 +71,6 @@ export default function AdvisoryHistory({
               if (ad.revisionNumber === 1) {
                 let creatorName = ad.createdByName || "";
                 let creationText = "drafted";
-                let includeRequestedBy = false;
-                let requesterName = "";
                 let statusDate; // override for "scheduled" and "submitted" events
 
                 if (status === "PUB") {
@@ -117,22 +121,12 @@ export default function AdvisoryHistory({
                   statusDate = ad.modifiedDate;
                 }
 
-                if (
-                  creatorName &&
-                  ad.submittedByName &&
-                  creatorName !== ad.submittedByName
-                ) {
-                  includeRequestedBy = true;
-                  requesterName = ad.submittedByName || "";
-                }
-
                 pushHistory({
                   revisionNumber: ad.revisionNumber,
-                  displayText: includeRequestedBy
-                    ? `${creationText} by ${creatorName} requested`
-                    : creationText,
-                  actorName: requesterName || creatorName,
+                  displayText: creationText,
+                  actorName: creatorName,
                   date: statusDate || ad.createdDate || ad.createdAt,
+                  requesterName: ad.submittedByName,
                 });
               } else {
                 if (status === "SCH") {
@@ -141,6 +135,7 @@ export default function AdvisoryHistory({
                     displayText: "scheduled",
                     actorName: ad.modifiedByName,
                     date: ad.modifiedDate,
+                    requesterName: ad.submittedByName,
                   });
                 }
 
@@ -151,18 +146,26 @@ export default function AdvisoryHistory({
                       displayText: "updated",
                       actorName: ad.modifiedByName,
                       date: ad.modifiedDate,
+                      requesterName: ad.submittedByName,
                     });
                   }
+
+                  const isSystemPublish = ad.publishedByName === "system";
+
                   pushHistory({
                     revisionNumber: ad.revisionNumber,
                     displayText: editorIsPublisher
                       ? "updated and published"
                       : "published",
-                    actorName:
-                      ad.publishedByName === "system"
-                        ? "system based on posting date"
-                        : statusActorName,
+                    actorName: isSystemPublish
+                      ? "system based on posting date"
+                      : statusActorName,
                     date: ad.publishedDate || ad.modifiedDate,
+                    // The requester only applies to the modification, not to a separate publish
+                    requesterName:
+                      editorIsPublisher && !isSystemPublish
+                        ? ad.submittedByName
+                        : "",
                   });
                 }
 
@@ -177,6 +180,7 @@ export default function AdvisoryHistory({
                     displayText: "updated",
                     actorName: ad.modifiedByName,
                     date: ad.modifiedDate,
+                    requesterName: ad.submittedByName,
                   });
                 }
               }
@@ -215,6 +219,7 @@ export default function AdvisoryHistory({
                 normalizeDisplayText(event1.displayText) ===
                   normalizeDisplayText(event2.displayText) &&
                 event1.actorName === event2.actorName &&
+                event1.requesterName === event2.requesterName &&
                 event1.date === event2.date
               );
             }
@@ -255,6 +260,7 @@ export default function AdvisoryHistory({
           >
             {formatTimestamp(ah.date)} {"\u2013"} Revision {ah.revisionNumber}{" "}
             {ah.displayText} {ah.actorName ? <> by {ah.actorName}</> : null}
+            {ah.requesterName ? <> requested by {ah.requesterName}</> : null}
           </div>
         ))}
     </div>
