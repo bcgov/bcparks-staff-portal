@@ -443,7 +443,7 @@ export default function AdvisorySummaryView({
           </Field>
         )}
 
-        {advisory.submittedByName && (
+        {advisory.submittedByName?.trim() && (
           <Field label="Requested by">{advisory.submittedByName}</Field>
         )}
 

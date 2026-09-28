@@ -249,6 +249,8 @@ export default function Advisory({ mode }) {
   // when navigating to a different advisory or changing editing modes
   useEffect(() => {
     originalDataLoaded.current = false;
+    // "Requested by" isn't populated from CMS data, so clear it here instead
+    setSubmittedByName("");
   }, [documentId, mode]);
 
   useEffect(() => {

@@ -36,6 +36,9 @@ export default function AdvisoryHistory({
             requesterName,
           }) {
             if (!date) return;
+            // normalize actor and requester names for comparison
+            const actor = actorName?.trim() || "";
+            const requester = requesterName?.trim() || "";
 
             advisoriesHistory.push({
               revisionNumber,
@@ -44,9 +47,7 @@ export default function AdvisoryHistory({
               date,
               // Only show the requester when it's someone other than the actor
               requesterName:
-                actorName && requesterName && actorName !== requesterName
-                  ? requesterName
-                  : "",
+                actor && requester && actor !== requester ? requesterName : "",
             });
           }
 
