@@ -129,6 +129,7 @@ function SeasonForm({
   dataChanged,
   setDataChanged,
   modal,
+  registerSaveDraftHandler,
 }) {
   // Global flash message context
   const flashMessage = useContext(globalFlashMessageContext);
@@ -271,23 +272,24 @@ function SeasonForm({
       hasShownStatusPrompt.current = true;
 
       if (season.status === "approved") {
-        const proceed = await modal.open(
-          "Edit approved dates?",
-          "Dates will need to be reviewed again to be approved.",
-          "Edit",
-          "Cancel",
-        );
+        const proceed = await modal.open({
+          title: "Edit approved dates?",
+          message: "Dates will need to be reviewed again to be approved.",
+          confirmButtonText: "Edit",
+          cancelButtonText: "Cancel",
+        });
 
         if (!proceed) {
           handleStatusCancelClose();
         }
       } else if (season.status === "published") {
-        const proceed = await modal.open(
-          "Edit public dates on API?",
-          "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
-          "Continue to edit",
-          "Cancel",
-        );
+        const proceed = await modal.open({
+          title: "Edit public dates on API?",
+          message:
+            "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
+          confirmButtonText: "Continue to edit",
+          cancelButtonText: "Cancel",
+        });
 
         if (!proceed) {
           handleStatusCancelClose();
@@ -636,22 +638,34 @@ function SeasonForm({
     }
   }
 
-  // If the season is not "requested" (e.g. it is submitted, approved, or published),
-  // prompt the user to confirm moving back to draft.
+  /**
+   * Saves the form as a draft. If the season is not "requested" (e.g. it is submitted, approved, or published),
+   * prompts the user to confirm moving back to draft first.
+   * @returns {Promise<boolean>} True if the draft was saved, false if cancelled or the save failed
+   */
   async function promptAndSave() {
     if (season.status !== STATUS.REQUESTED.value) {
-      const proceed = await modal.open(
-        "Move back to draft?",
-        `The dates will be moved back to draft and need to be submitted again to be reviewed.
-
-If dates have already been published, they will not be updated until new dates are submitted, approved, and published. `,
-        "Move to draft",
-        "Cancel",
-      );
+      const proceed = await modal.open({
+        title: "Move back to draft?",
+        message: (
+          <>
+            <p>
+              The dates will be moved back to draft and need to be submitted
+              again to be reviewed.
+            </p>
+            <p>
+              If dates have already been published, they will not be updated
+              until new dates are submitted, approved, and published.
+            </p>
+          </>
+        ),
+        confirmButtonText: "Move to draft",
+        cancelButtonText: "Cancel",
+      });
 
       // If the user cancels in the confirmation modal, don't close the edit form
       if (!proceed) {
-        return;
+        return false;
       }
     }
 
@@ -663,10 +677,30 @@ If dates have already been published, they will not be updated until new dates a
         "Dates saved as draft",
         `${seasonTitle} ${season.operatingYear} details saved`,
       );
+
+      return true;
     } catch (saveError) {
       console.error("Error saving season as draft:", saveError);
+      return false;
     }
   }
+
+  // Keep the latest save-draft function in a ref so the registered handler never goes stale
+  const saveDraftHandlerRef = useRef(promptAndSave);
+
+  saveDraftHandlerRef.current = promptAndSave;
+
+  useEffect(() => {
+    // Parent can call this when the "Unsaved changes" dialog chooses "Save draft".
+    // Drafts can't be saved in "Edit published seasons" mode, so register nothing.
+    registerSaveDraftHandler(
+      isEditingPublishedSeason
+        ? null
+        : async () => saveDraftHandlerRef.current(),
+    );
+
+    return () => registerSaveDraftHandler(null);
+  }, [registerSaveDraftHandler, isEditingPublishedSeason]);
 
   async function onApprove() {
     try {
@@ -939,6 +973,7 @@ SeasonForm.propTypes = {
   dataChanged: PropTypes.bool.isRequired,
   setDataChanged: PropTypes.func.isRequired,
   modal: PropTypes.object.isRequired,
+  registerSaveDraftHandler: PropTypes.func.isRequired,
 };
 
 function FormPanel({ show, setShow, formData, onDataUpdate }) {
@@ -948,6 +983,33 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
   const [selectedSeasonId, setSelectedSeasonId] = useState(null);
   const modal = useConfirmation();
   const closingFromStatusPrompt = useRef(false);
+
+  // SeasonForm registers its save-draft function here so the "Unsaved changes" dialog can call it
+  const saveDraftHandlerRef = useRef(null);
+
+  const registerSaveDraftHandler = useCallback((handler) => {
+    saveDraftHandlerRef.current = handler;
+  }, []);
+
+  /**
+   * Prompts the user to save or discard their unsaved changes.
+   * Falls back to a discard confirmation when drafts can't be saved (e.g. "Edit published seasons" mode).
+   * @returns {Promise<boolean>} True if the user should proceed, false to stay on the form
+   */
+  const confirmUnsavedChanges = useCallback(async () => {
+    const saveDraftHandler = saveDraftHandlerRef.current;
+
+    if (!saveDraftHandler) {
+      return modal.open({
+        title: "Discard changes?",
+        message: "Discarded changes will be permanently deleted.",
+        confirmButtonText: "Discard changes",
+        cancelButtonText: "Continue editing",
+      });
+    }
+
+    return modal.confirmUnsavedChanges(saveDraftHandler);
+  }, [modal]);
 
   useEffect(() => {
     setSelectedSeasonId(formData?.seasonId ?? null);
@@ -981,21 +1043,16 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
     }
 
     if (dataChanged) {
-      const proceed = await modal.open(
-        "Discard changes?",
-        "Discarded changes will be permanently deleted.",
-        "Discard changes",
-        "Continue editing",
-      );
+      const proceed = await confirmUnsavedChanges();
 
-      // If the user cancels in the confirmation modal, don't close the edit form
+      // If the user closes the confirmation modal, don't close the edit form
       if (!proceed) {
         return;
       }
     }
 
     closePanel();
-  }, [dataChanged, modal, closePanel]);
+  }, [dataChanged, confirmUnsavedChanges, closePanel]);
 
   const handleSeasonChange = useCallback(
     async (nextSeasonId) => {
@@ -1003,14 +1060,9 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         return;
       }
 
-      // If the form data has changed, prompt the user to confirm discarding changes before switching seasons
+      // If the form data has changed, prompt the user to save or discard changes before switching seasons
       if (dataChanged) {
-        const proceed = await modal.open(
-          "Discard changes?",
-          "Discarded changes will be permanently deleted.",
-          "Discard changes",
-          "Continue editing",
-        );
+        const proceed = await confirmUnsavedChanges();
 
         if (!proceed) {
           return;
@@ -1020,7 +1072,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
       setSelectedSeasonId(nextSeasonId);
       setDataChanged(false);
     },
-    [dataChanged, modal, selectedSeasonId],
+    [dataChanged, confirmUnsavedChanges, selectedSeasonId],
   );
 
   // Hide the form if no seasonId is provided
@@ -1047,6 +1099,7 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
             dataChanged={dataChanged}
             setDataChanged={setDataChanged}
             modal={modal}
+            registerSaveDraftHandler={registerSaveDraftHandler}
           />
         )}
       </Offcanvas>

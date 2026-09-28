@@ -82,12 +82,13 @@ function PublishPage() {
   }
 
   async function publishToApi() {
-    const proceed = await confirmation.open(
-      "Publish dates to API?",
-      "All dates that are marked ready to publish will be made public. This cannot be undone.",
-      "Publish",
-      "Cancel",
-    );
+    const proceed = await confirmation.open({
+      title: "Publish dates to API?",
+      message:
+        "All dates that are marked ready to publish will be made public. This cannot be undone.",
+      confirmButtonText: "Publish",
+      cancelButtonText: "Cancel",
+    });
 
     if (proceed) {
       try {
