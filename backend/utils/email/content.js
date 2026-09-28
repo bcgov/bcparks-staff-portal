@@ -48,7 +48,7 @@ export function getEmailContentByType(
       heading: "New dates or gate information submitted",
       message:
         "New dates or gate information has been submitted by " +
-        `${safeModifiedByName} to ${safeParkSeasonSubject}.` +
+        `${safeModifiedByName} for ${safeParkSeasonSubject}.` +
         "<br><br>" +
         "Please review the information for approval.",
       buttonText: "Review changes",
