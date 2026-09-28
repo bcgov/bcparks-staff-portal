@@ -58,8 +58,6 @@ export default function AdvisoryHistory({
 
               const creatorIsPublisher =
                 !!ad.publishedByName && ad.createdByName === ad.publishedByName;
-              const creatorIsEditor =
-                !!ad.modifiedByName && ad.createdByName === ad.modifiedByName;
               const editorIsPublisher =
                 !!ad.modifiedByName && ad.modifiedByName === ad.publishedByName;
 
@@ -82,25 +80,9 @@ export default function AdvisoryHistory({
                     creatorName = ad.createdByName;
                     creationText = "created";
 
-                    if (
-                      ad.modifiedByName &&
-                      !creatorIsEditor &&
-                      !editorIsPublisher
-                    ) {
-                      pushHistory({
-                        revisionNumber: ad.revisionNumber,
-                        displayText: "updated",
-                        actorName: ad.modifiedByName,
-                        date: ad.modifiedDate,
-                      });
-                    }
-
                     pushHistory({
                       revisionNumber: ad.revisionNumber,
-                      displayText:
-                        editorIsPublisher && !creatorIsEditor
-                          ? "updated and published"
-                          : "published",
+                      displayText: "published",
                       actorName:
                         ad.publishedByName === "system"
                           ? "system based on posting date"
