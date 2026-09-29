@@ -274,7 +274,8 @@ function SeasonForm({
       if (season.status === "approved") {
         const proceed = await modal.open({
           title: "Edit approved dates?",
-          message: "Dates will need to be reviewed again to be approved.",
+          message:
+            "Dates will need to be reviewed again to be approved. If reservations are already open, reservations may be affected.",
           confirmButtonText: "Edit",
           cancelButtonText: "Cancel",
         });
@@ -284,10 +285,10 @@ function SeasonForm({
         }
       } else if (season.status === "published") {
         const proceed = await modal.open({
-          title: "Edit public dates on API?",
+          title: "Edit published dates?",
           message:
-            "Dates will need to be reviewed again to be approved and published. If reservations have already begun, visitors will be affected.",
-          confirmButtonText: "Continue to edit",
+            "Dates will need to be reviewed again to be approved and published. If reservations are already open, reservations may be affected.",
+          confirmButtonText: "Edit",
           cancelButtonText: "Cancel",
         });
 
@@ -653,18 +654,8 @@ function SeasonForm({
     if (season.status !== STATUS.REQUESTED.value) {
       const proceed = await modal.open({
         title: "Move back to draft?",
-        message: (
-          <>
-            <p>
-              The dates will be moved back to draft and need to be submitted
-              again to be reviewed.
-            </p>
-            <p>
-              If dates have already been published, they will not be updated
-              until new dates are submitted, approved, and published.
-            </p>
-          </>
-        ),
+        message:
+          "The dates will be moved back to draft and need to be submitted again to be reviewed. If dates have already been published, they will not be updated until new dates are submitted, approved, and published.",
         confirmButtonText: "Move to draft",
         cancelButtonText: "Cancel",
       });

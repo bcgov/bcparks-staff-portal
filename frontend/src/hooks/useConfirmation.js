@@ -1,15 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { faTriangleExclamation } from "@fa-kit/icons/classic/regular";
 
 const ACTIONS = {
   PRIMARY: "primary",
   SECONDARY: "secondary",
   CLOSE: "close",
 };
-
-// Default title icon and variant (icon colour) for every dialog
-const DEFAULT_ICON = faTriangleExclamation;
-const DEFAULT_VARIANT = "destructive";
 
 const DEFAULT_UNSAVED_CHANGES_MESSAGE =
   "Unsaved changes will be permanently deleted if you do not save them.";
@@ -30,8 +25,6 @@ export default function useConfirmation() {
     primaryButtonText: "",
     secondaryButtonText: "",
     secondaryButtonVariant: "default",
-    variant: DEFAULT_VARIANT,
-    icon: DEFAULT_ICON,
   });
 
   // Ref to track whether the dialog is currently open to prevent multiple prompts from stacking
@@ -80,8 +73,6 @@ export default function useConfirmation() {
    * @param {React.ReactNode} params.message Dialog body content
    * @param {string} [params.confirmButtonText] Primary button text
    * @param {string} [params.cancelButtonText] Secondary button text
-   * @param {"info"|"confirmation"|"warning"|"error"|"destructive"} [params.variant] Dialog variant, sets the icon colour
-   * @param {Object} [params.icon] FontAwesome icon definition shown before the title
    * @returns {Promise<boolean>} True if confirmed, false if cancelled or dismissed
    */
   const open = useCallback(
@@ -90,8 +81,6 @@ export default function useConfirmation() {
       message,
       confirmButtonText = "Confirm",
       cancelButtonText = "Cancel",
-      variant = DEFAULT_VARIANT,
-      icon = DEFAULT_ICON,
     }) => {
       const action = await prompt({
         title,
@@ -99,8 +88,6 @@ export default function useConfirmation() {
         primaryButtonText: confirmButtonText,
         secondaryButtonText: cancelButtonText,
         secondaryButtonVariant: "default",
-        variant,
-        icon,
       });
 
       return action === ACTIONS.PRIMARY;
@@ -123,8 +110,6 @@ export default function useConfirmation() {
         primaryButtonText: "Save draft",
         secondaryButtonText: "Discard draft",
         secondaryButtonVariant: "danger",
-        variant: DEFAULT_VARIANT,
-        icon: DEFAULT_ICON,
       });
 
       // Discard draft: proceed without saving

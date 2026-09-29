@@ -5,7 +5,7 @@ import {
   Modal,
 } from "@bcgov/design-system-react-components";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTrash, faTriangleExclamation } from "@fa-kit/icons/classic/regular";
+import { faTrash } from "@fa-kit/icons/classic/regular";
 import "./ConfirmationDialog.scss";
 
 /**
@@ -18,8 +18,6 @@ import "./ConfirmationDialog.scss";
  * @param {string} props.primaryButtonText Text for the primary (right) button
  * @param {string} props.secondaryButtonText Text for the secondary (left) button
  * @param {"default"|"danger"} props.secondaryButtonVariant Style for the secondary button
- * @param {"info"|"confirmation"|"warning"|"error"|"destructive"} props.variant AlertDialog variant, sets the icon colour
- * @param {Object} props.icon FontAwesome icon definition shown before the title
  * @param {Function} props.onPrimary Called when the primary button is clicked
  * @param {Function} props.onSecondary Called when the secondary button is clicked
  * @param {Function} props.onClose Called on any dismissal (close button, Esc key, backdrop click)
@@ -32,8 +30,6 @@ export default function ConfirmationDialog({
   primaryButtonText,
   secondaryButtonText,
   secondaryButtonVariant = "default",
-  variant = "destructive",
-  icon = faTriangleExclamation,
   onPrimary,
   onSecondary,
   onClose,
@@ -53,25 +49,17 @@ export default function ConfirmationDialog({
       }}
     >
       <AlertDialog
-        variant={variant}
         // AlertDialog renders the title in a plain div, not a <Heading slot="title">,
         // so name the dialog explicitly for screen readers
         aria-label={title}
-        // Hide the built-in variant icon so we can show our own FontAwesome icon.
-        // It uses the same class, so the variant colour still applies.
+        // No title icon, per design
         isIconHidden
-        title={
-          <>
-            <span className="bcds-react-aria-AlertDialog--Icon me-2">
-              <FontAwesomeIcon icon={icon} />
-            </span>
-            {title}
-          </>
-        }
+        title={title}
         buttons={
           <>
             <Button
-              variant={isDanger ? "tertiary" : "secondary"}
+              // Borderless, to match the BC Design System dialog examples
+              variant="tertiary"
               danger={isDanger}
               onPress={onSecondary}
             >
@@ -97,14 +85,6 @@ ConfirmationDialog.propTypes = {
   primaryButtonText: PropTypes.string.isRequired,
   secondaryButtonText: PropTypes.string.isRequired,
   secondaryButtonVariant: PropTypes.oneOf(["default", "danger"]),
-  variant: PropTypes.oneOf([
-    "info",
-    "confirmation",
-    "warning",
-    "error",
-    "destructive",
-  ]),
-  icon: PropTypes.object,
   onPrimary: PropTypes.func.isRequired,
   onSecondary: PropTypes.func.isRequired,
   onClose: PropTypes.func.isRequired,
