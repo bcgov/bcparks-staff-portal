@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 import OverlayTrigger from "react-bootstrap/OverlayTrigger";
 import Tooltip from "react-bootstrap/Tooltip";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -6,6 +7,7 @@ import { REVIEW_STATUS } from "@/apps/advisories/constants/reviewStatus";
 import "./ReviewIcon.scss";
 
 export function ReviewIcon({ reviewStatus, rowId, icon }) {
+  const { t } = useTranslation("act");
   const statusSlug = reviewStatus.toLowerCase();
   const statusClassName = `review-status--${statusSlug}`;
   const tooltipId = `review-status--${statusSlug}-${rowId}`;
@@ -14,9 +16,9 @@ export function ReviewIcon({ reviewStatus, rowId, icon }) {
   let statusText = reviewStatus;
 
   if ([REVIEW_STATUS.ENDED, REVIEW_STATUS.EXPIRING].includes(reviewStatus)) {
-    statusText = "Warning";
+    statusText = t("reviewIcon.warning.tooltip");
   } else if (reviewStatus === REVIEW_STATUS.UNPUBLISHED) {
-    statusText = "Updated";
+    statusText = t("reviewIcon.updated.tooltip");
   }
 
   return (

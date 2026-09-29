@@ -2,6 +2,7 @@ import { faCircleInfo } from "@fa-kit/icons/classic/regular";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
+import { useTranslation } from "react-i18next";
 
 import DateRangeFields from "@/apps/dates/components/DateRangeFields";
 import PreviousDates from "@/apps/dates/components/SeasonForms/PreviousDates";
@@ -30,6 +31,8 @@ export default function GateForm({
   level,
   operatingYear,
 }) {
+  const { t } = useTranslation("doot");
+
   // Functions
   function handleCheckboxChange(e) {
     const { name, checked } = e.target;
@@ -107,10 +110,7 @@ export default function GateForm({
               Gate open hours{" "}
               <TooltipWrapper
                 placement="top"
-                content={`Regular daily hours the gate is open. If hours are irregular,
-                  or change throughout the year, leave this blank and enter the schedule
-                  in 'Internal notes'. If you would rather not publish gate hours,
-                  leave hours blank.`}
+                content={t("gateForm.gateOpenHours.tooltip")}
               >
                 <FontAwesomeIcon icon={faCircleInfo} />
               </TooltipWrapper>{" "}

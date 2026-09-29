@@ -99,15 +99,6 @@ function ReviewEmptyState() {
   );
 }
 
-// Format the tooltip text for count badges that indicate additional associated resources
-function formatCountBadge(
-  count,
-  singularLabel,
-  pluralLabel = `${singularLabel}s`,
-) {
-  return `Plus ${count} more ${count === 1 ? singularLabel : pluralLabel}`;
-}
-
 export default function AdvisoryDashboard({
   filterStorageKey = "advisoryFilters",
   isReviewDashboard = false,
@@ -943,7 +934,10 @@ export default function AdvisoryDashboard({
                       label={`+${p.count}`}
                       documentId={rowData.documentId}
                       title={rowData.title}
-                      tooltipText={formatCountBadge(p.count, "resource")}
+                      tooltipText={t(
+                        "dashboard.associatedResources.moreResources.tooltip",
+                        { count: p.count },
+                      )}
                     />
                     {displayedRegions.length - 1 > i && <br />}
                   </span>
@@ -953,9 +947,9 @@ export default function AdvisoryDashboard({
                     label={`+${regionsCount - displayCount}`}
                     documentId={rowData.documentId}
                     title={rowData.title}
-                    tooltipText={formatCountBadge(
-                      regionsCount - displayCount,
-                      "region",
+                    tooltipText={t(
+                      "dashboard.associatedResources.moreRegions.tooltip",
+                      { count: regionsCount - displayCount },
                     )}
                   />
                 )}
@@ -996,7 +990,10 @@ export default function AdvisoryDashboard({
                     label={`+${remainingCount}`}
                     documentId={rowData.documentId}
                     title={rowData.title}
-                    tooltipText={formatCountBadge(remainingCount, "resource")}
+                    tooltipText={t(
+                      "dashboard.associatedResources.moreResources.tooltip",
+                      { count: remainingCount },
+                    )}
                   />
                 )}
               </div>
@@ -1241,6 +1238,7 @@ export default function AdvisoryDashboard({
       canMarkReviewed,
       isApprover,
       isReviewDashboard,
+      t,
     ],
   );
 
