@@ -135,6 +135,7 @@ function SeasonForm({
   registerSaveDraftHandler,
   showContinueOption = false,
   continueToNext = false,
+  hasNextForm = false,
   setContinueToNext,
   getNextForm,
   openNextForm,
@@ -979,6 +980,7 @@ function SeasonForm({
               label="Continue to next form"
               id="continue-to-next-form"
               checked={continueToNext}
+              disabled={!hasNextForm}
               onChange={(e) => setContinueToNext(e.target.checked)}
             />
           )}
@@ -1014,6 +1016,7 @@ SeasonForm.propTypes = {
   registerSaveDraftHandler: PropTypes.func.isRequired,
   showContinueOption: PropTypes.bool,
   continueToNext: PropTypes.bool,
+  hasNextForm: PropTypes.bool,
   setContinueToNext: PropTypes.func,
   getNextForm: PropTypes.func,
   openNextForm: PropTypes.func,
@@ -1145,6 +1148,19 @@ function FormPanel({
     [formList, selectedSeasonId, selectedLevel],
   );
 
+  // True if there's a form to continue to after the current one
+  const hasNextForm = useMemo(() => getNextForm() !== null, [getNextForm]);
+
+  // If there are no more forms to continue to, uncheck the "Continue to next form" checkbox.
+  // The primary button then shows its normal text and returns to the table.
+  useEffect(() => {
+    if (!hasNextForm) {
+      setContinueToNext(false);
+    }
+  }, [hasNextForm]);
+
+  const shouldContinue = continueToNext && hasNextForm;
+
   // Opens the next form in the panel, without closing it
   const openNextForm = useCallback(
     (nextForm) => {
@@ -1203,7 +1219,8 @@ function FormPanel({
             modal={modal}
             registerSaveDraftHandler={registerSaveDraftHandler}
             showContinueOption={showContinueOption}
-            continueToNext={continueToNext}
+            continueToNext={shouldContinue}
+            hasNextForm={hasNextForm}
             setContinueToNext={setContinueToNext}
             getNextForm={getNextForm}
             openNextForm={openNextForm}
