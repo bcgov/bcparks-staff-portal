@@ -12,8 +12,8 @@ import "@/config/i18n.js";
 // include global styles
 import "@/styles/global.scss";
 
-// "BC Sans" font-face, used by the BC Design System components and tokens
-// (the Bootstrap theme only registers it as "BCSans")
+// "BC Sans" font-face, used by the BC Design System components and tokens.
+// global.scss points the Bootstrap theme at this font too.
 import "@bcgov/bc-sans/css/BC_Sans.css";
 
 const queryClient = new QueryClient();
