@@ -14,6 +14,7 @@ import useAccess from "@/hooks/useAccess";
 import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/apps/dates/contexts/RefreshTableContext";
 import getTableSortOrder from "@/apps/dates/utils/getTableSortOrder";
+import getEditableFormList from "@/apps/dates/utils/getEditableFormList";
 import {
   checkParkHard,
   checkParkSoft,
@@ -201,6 +202,21 @@ function SubmitPage() {
     }
   }, [params.seasonId]);
 
+  /**
+   * Opens the form panel for a season and updates the URL to match.
+   * @param {Object} form Form to open
+   * @param {number} form.seasonId Season ID
+   * @param {string} form.level Form level: "park", "park-area", or "feature"
+   * @returns {void}
+   */
+  function openForm({ seasonId, level }) {
+    setFormData({ seasonId, level });
+    setIsFormPanelOpen(true);
+
+    // Update URL to match the opened form within the DOOT route namespace
+    navigate(`/dates/edit/${level}/${seasonId}`);
+  }
+
   // open form panel when the Edit button is clicked
   function formPanelHandler(formDataObj) {
     const regularSeason = formDataObj.currentSeason.regular;
@@ -208,16 +224,7 @@ function SubmitPage() {
     const isWinterSeason = formDataObj.isWinterSeason || false;
     const season = isWinterSeason ? winterSeason : regularSeason;
 
-    const newFormData = {
-      seasonId: season.id,
-      level: formDataObj.level,
-    };
-
-    setFormData(newFormData);
-    setIsFormPanelOpen(true);
-
-    // Update URL to match the opened form within the DOOT route namespace
-    navigate(`/dates/edit/${formDataObj.level}/${season.id}`);
+    openForm({ seasonId: season.id, level: formDataObj.level });
   }
 
   function resetFilters() {
@@ -379,6 +386,13 @@ function SubmitPage() {
 
   const numParks = tableData.length;
 
+  // Ordered list of forms in the table (across all pages),
+  // used to find the next form for "Continue to next form"
+  const editableForms = useMemo(
+    () => getEditableFormList(tableData, tableSortOrder),
+    [tableData, tableSortOrder],
+  );
+
   const updateFilter = useCallback(
     (key, value) => {
       setFilters((prevFilters) => ({
@@ -413,6 +427,28 @@ function SubmitPage() {
 
     previousIsFormPanelOpenRef.current = isFormPanelOpen;
   }, [isFormPanelOpen, params.seasonId, navigate]);
+
+  // While the form panel is open, keep the table on the page with the open form's park,
+  // so the table stays there after continuing to other forms and closing the panel
+  useEffect(() => {
+    if (!isFormPanelOpen || !formData.seasonId) return;
+
+    const currentForm = editableForms.find(
+      (form) =>
+        form.seasonId === formData.seasonId && form.level === formData.level,
+    );
+
+    // Leave the page unchanged if the form isn't in the table (e.g. filtered out)
+    if (!currentForm) return;
+
+    const parkIndex = tableData.findIndex(
+      (park) => park.id === currentForm.parkId,
+    );
+
+    if (parkIndex === -1) return;
+
+    setPage(Math.floor(parkIndex / pageSize) + 1);
+  }, [isFormPanelOpen, formData, editableForms, tableData, pageSize]);
 
   // Slice the list of parks for pagination
   const pageData = useMemo(() => {
@@ -593,6 +629,8 @@ function SubmitPage() {
           setShow={setIsFormPanelOpen}
           formData={formData}
           onDataUpdate={refreshTable}
+          formList={editableForms}
+          onOpenForm={openForm}
         />
 
         <FilterPanel
