@@ -20,6 +20,7 @@ import { getPublishableDetails } from "./data.js";
  * @param {boolean} [options.notifyManagementArea=true] Whether to resolve and require Management Area recipient emails
  * @param {boolean} [options.notifyInformationServices=false] Whether to notify the Information Services team
  * @param {boolean} [options.notifyReservationServices=false] Whether to notify the Reservation Services team
+ * @param {boolean} [options.ccInformationServices=false] Whether to CC the Information Services team (ignored when they're already a recipient)
  * @param {Transaction} [transaction] Sequelize transaction
  * @returns {Promise<{noRecipientsError?: boolean, editTargetLabel: string, jsonData: Object}>} Outcome and diagnostic details of the queue attempt
  */
@@ -33,6 +34,7 @@ async function queueNotification(
     notifyManagementArea = true,
     notifyInformationServices = false,
     notifyReservationServices = false,
+    ccInformationServices = false,
   },
   transaction,
 ) {
@@ -65,11 +67,6 @@ async function queueNotification(
     }
   }
 
-  // Until a review tab is available, CC information services on reminder emails
-  // when they aren't already a recipient. Remove this when the review tab is
-  // implemented.
-  const ccInformationServices = isReminder && !shouldNotifyInformationServices;
-
   const { subject, heading, message, buttonText } = getEmailContentByType(
     emailType,
     isReminder,
@@ -83,7 +80,8 @@ async function queueNotification(
     subject,
     sendToIS: shouldNotifyInformationServices,
     sendToRS: notifyReservationServices,
-    ccIS: ccInformationServices,
+    // Don't CC Information Services when they are already a recipient
+    ccIS: ccInformationServices && !shouldNotifyInformationServices,
     buttonText,
     isReminder,
     triggeredBy: `bcparks-staff-portal::backend::${triggeredBy}`,

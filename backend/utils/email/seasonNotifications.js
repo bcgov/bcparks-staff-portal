@@ -118,6 +118,10 @@ async function notifyManagementArea(
       triggeredBy: "utils::email::seasonNotifications::notifyManagementArea",
       isReminder,
       notifyManagementArea: true,
+      // Until a review tab is available, CC Information Services on reminder
+      // emails. Remove this when the review tab is implemented.
+      ccInformationServices:
+        isReminder && settings.infoServicesNotificationsEnabled,
     },
     transaction,
   );
@@ -186,6 +190,11 @@ async function notifyHqApprovers(
       notifyManagementArea: false,
       notifyInformationServices: emailIS,
       notifyReservationServices: emailRS,
+      // Until a review tab is available, CC Information Services on reminder
+      // emails they aren't already receiving. Remove this when the review tab
+      // is implemented.
+      ccInformationServices:
+        isReminder && settings.infoServicesNotificationsEnabled && !emailIS,
     },
     transaction,
   );

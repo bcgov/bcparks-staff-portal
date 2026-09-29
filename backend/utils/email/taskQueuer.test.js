@@ -119,34 +119,40 @@ describe("queueNotification", () => {
       return queueStrapiTask.mock.calls.at(-1)[0].jsonData;
     }
 
-    it("CCs Information Services on reminders when they aren't a recipient", async () => {
-      const jsonData = await queueWith({ isReminder: true });
+    it("CCs Information Services when asked", async () => {
+      const jsonData = await queueWith({ ccInformationServices: true });
 
       expect(jsonData).toMatchObject({ sendToIS: false, ccIS: true });
     });
 
-    it("sends to Information Services instead of CCing them when they're a recipient", async () => {
+    it("doesn't CC Information Services by default", async () => {
+      const jsonData = await queueWith({ isReminder: true });
+
+      expect(jsonData).toMatchObject({ ccIS: false });
+    });
+
+    it("doesn't CC Information Services when they're already a recipient", async () => {
       const jsonData = await queueWith({
-        isReminder: true,
+        ccInformationServices: true,
         notifyInformationServices: true,
       });
 
       expect(jsonData).toMatchObject({ sendToIS: true, ccIS: false });
     });
 
-    it("doesn't CC Information Services on Reservation Services reminders", async () => {
-      const jsonData = await queueWith({
-        isReminder: true,
-        notifyReservationServices: true,
+    it("doesn't CC Information Services when the fallback makes them a recipient", async () => {
+      getPublishableDetails.mockReturnValue({
+        seasonFormSlug: "park",
+        recipientEmails: [],
       });
 
-      expect(jsonData).toMatchObject({ sendToRS: true, ccIS: false });
-    });
+      const jsonData = await queueWith({ ccInformationServices: true });
 
-    it("doesn't CC Information Services on emails that aren't reminders", async () => {
-      const jsonData = await queueWith({ isReminder: false });
-
-      expect(jsonData).toMatchObject({ sendToIS: false, ccIS: false });
+      expect(jsonData).toMatchObject({
+        noRecipientsError: true,
+        sendToIS: true,
+        ccIS: false,
+      });
     });
   });
 });
