@@ -68,10 +68,7 @@ async function queueNotification(
   // Until a review tab is available, CC information services on reminder emails
   // when they aren't already a recipient. Remove this when the review tab is
   // implemented.
-  const ccInformationServices =
-    isReminder &&
-    !shouldNotifyInformationServices &&
-    !notifyReservationServices;
+  const ccInformationServices = isReminder && !shouldNotifyInformationServices;
 
   const { subject, heading, message, buttonText } = getEmailContentByType(
     emailType,
