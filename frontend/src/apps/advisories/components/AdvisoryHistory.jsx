@@ -37,8 +37,8 @@ export default function AdvisoryHistory({
           }) {
             if (!date) return;
             // normalize actor and requester names for comparison
-            const actor = actorName?.trim() || "";
-            const requester = requesterName?.trim() || "";
+            const actor = actorName?.trim().toLowerCase() || "";
+            const requester = requesterName?.trim().toLowerCase() || "";
 
             advisoriesHistory.push({
               revisionNumber,
