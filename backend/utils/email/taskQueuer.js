@@ -81,7 +81,7 @@ async function queueNotification(
     sendToIS: shouldNotifyInformationServices,
     sendToRS: notifyReservationServices,
     // Don't CC Information Services when they are already a recipient
-    ccIS: ccInformationServices && !shouldNotifyInformationServices,
+    copyToIS: ccInformationServices && !shouldNotifyInformationServices,
     buttonText,
     isReminder,
     triggeredBy: `bcparks-staff-portal::backend::${triggeredBy}`,

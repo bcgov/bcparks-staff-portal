@@ -89,7 +89,7 @@ describe("queueNotification", () => {
         jsonData: expect.objectContaining({
           noRecipientsError: true,
           sendToIS: true,
-          ccIS: false,
+          copyToIS: false,
         }),
       }),
     );
@@ -122,13 +122,13 @@ describe("queueNotification", () => {
     it("CCs Information Services when asked", async () => {
       const jsonData = await queueWith({ ccInformationServices: true });
 
-      expect(jsonData).toMatchObject({ sendToIS: false, ccIS: true });
+      expect(jsonData).toMatchObject({ sendToIS: false, copyToIS: true });
     });
 
     it("doesn't CC Information Services by default", async () => {
       const jsonData = await queueWith({ isReminder: true });
 
-      expect(jsonData).toMatchObject({ ccIS: false });
+      expect(jsonData).toMatchObject({ copyToIS: false });
     });
 
     it("doesn't CC Information Services when they're already a recipient", async () => {
@@ -137,7 +137,7 @@ describe("queueNotification", () => {
         notifyInformationServices: true,
       });
 
-      expect(jsonData).toMatchObject({ sendToIS: true, ccIS: false });
+      expect(jsonData).toMatchObject({ sendToIS: true, copyToIS: false });
     });
 
     it("doesn't CC Information Services when the fallback makes them a recipient", async () => {
@@ -151,7 +151,7 @@ describe("queueNotification", () => {
       expect(jsonData).toMatchObject({
         noRecipientsError: true,
         sendToIS: true,
-        ccIS: false,
+        copyToIS: false,
       });
     });
   });
