@@ -89,8 +89,64 @@ describe("queueNotification", () => {
         jsonData: expect.objectContaining({
           noRecipientsError: true,
           sendToIS: true,
+          ccIS: false,
         }),
       }),
     );
+  });
+
+  describe("CC for Information Services", () => {
+    /**
+     * Queues a notification with the given recipient flags and returns its jsonData.
+     * @param {Object} options Options to override on queueNotification
+     * @returns {Promise<Object>} jsonData passed to the Strapi task
+     */
+    async function queueWith(options) {
+      await queueNotification({
+        emailType: EMAIL_TYPE.HQ_APPROVAL,
+        season: {
+          id: 123,
+          operatingYear: 2026,
+          publishableId: 217,
+          seasonType: "regular",
+        },
+        userFullName: "Reminder Runner",
+        triggeredBy: "test",
+        notifyManagementArea: true,
+        ...options,
+      });
+
+      return queueStrapiTask.mock.calls.at(-1)[0].jsonData;
+    }
+
+    it("CCs Information Services on reminders when they aren't a recipient", async () => {
+      const jsonData = await queueWith({ isReminder: true });
+
+      expect(jsonData).toMatchObject({ sendToIS: false, ccIS: true });
+    });
+
+    it("sends to Information Services instead of CCing them when they're a recipient", async () => {
+      const jsonData = await queueWith({
+        isReminder: true,
+        notifyInformationServices: true,
+      });
+
+      expect(jsonData).toMatchObject({ sendToIS: true, ccIS: false });
+    });
+
+    it("doesn't CC Information Services on Reservation Services reminders", async () => {
+      const jsonData = await queueWith({
+        isReminder: true,
+        notifyReservationServices: true,
+      });
+
+      expect(jsonData).toMatchObject({ sendToRS: true, ccIS: false });
+    });
+
+    it("doesn't CC Information Services on emails that aren't reminders", async () => {
+      const jsonData = await queueWith({ isReminder: false });
+
+      expect(jsonData).toMatchObject({ sendToIS: false, ccIS: false });
+    });
   });
 });

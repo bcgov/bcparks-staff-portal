@@ -40,11 +40,7 @@ async function queueNotification(
     throw new Error("Season must have a season type and operating year");
   }
 
-  // Until a review tab is available, CC information services on reminder emails,
-  // even when they are not an original recipient. Remove this when the review
-  // tab is implemented.
-  let shouldNotifyInformationServices =
-    notifyInformationServices || (isReminder && !notifyReservationServices);
+  let shouldNotifyInformationServices = notifyInformationServices;
   let noRecipientsError;
 
   const emailInfo = await getPublishableDetails(
@@ -69,6 +65,14 @@ async function queueNotification(
     }
   }
 
+  // Until a review tab is available, CC information services on reminder emails
+  // when they aren't already a recipient. Remove this when the review tab is
+  // implemented.
+  const ccInformationServices =
+    isReminder &&
+    !shouldNotifyInformationServices &&
+    !notifyReservationServices;
+
   const { subject, heading, message, buttonText } = getEmailContentByType(
     emailType,
     isReminder,
@@ -82,6 +86,7 @@ async function queueNotification(
     subject,
     sendToIS: shouldNotifyInformationServices,
     sendToRS: notifyReservationServices,
+    ccIS: ccInformationServices,
     buttonText,
     isReminder,
     triggeredBy: `bcparks-staff-portal::backend::${triggeredBy}`,
