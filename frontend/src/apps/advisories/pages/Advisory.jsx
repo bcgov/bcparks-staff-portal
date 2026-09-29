@@ -186,14 +186,24 @@ export default function Advisory({ mode }) {
     isBlockerActive.current = true;
 
     (async () => {
+      // Track whether a draft was saved, since saving navigates to the summary page itself
+      let savedDraft = false;
+
       // Wait for the user's choice in the "Unsaved changes" dialog and proceed with navigation accordingly
-      const shouldProceed = await confirmUnsavedChanges(
-        saveDraftFromForm,
-        "Changes for this advisory / closure will be permanently deleted if you do not save them.",
-      );
+      const shouldProceed = await confirmUnsavedChanges(async () => {
+        savedDraft = await saveDraftFromForm();
+        return savedDraft;
+      }, "Changes for this advisory / closure will be permanently deleted if you do not save them.");
 
       if (shouldProceed) {
         dataChanged.current = false;
+
+        // The save already navigated to the summary page and unblocked the router,
+        // so proceeding with the original navigation would be an invalid blocker transition.
+        if (savedDraft) {
+          return;
+        }
+
         // Defer the proceed call to the next tick in the event loop
         // to avoid race conditions with React router's internal state updates.
         setTimeout(() => blocker.proceed(), 0);
