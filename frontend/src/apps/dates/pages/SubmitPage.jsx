@@ -213,8 +213,10 @@ function SubmitPage() {
     setFormData({ seasonId, level });
     setIsFormPanelOpen(true);
 
-    // Update URL to match the opened form within the DOOT route namespace
-    navigate(`/dates/edit/${level}/${seasonId}`);
+    // Continuing replaces the edit entry so closing leaves no stale forms in history
+    navigate(`/dates/edit/${level}/${seasonId}`, {
+      replace: isFormPanelOpen,
+    });
   }
 
   // open form panel when the Edit button is clicked

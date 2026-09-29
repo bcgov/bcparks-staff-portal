@@ -92,10 +92,7 @@ export function findNextForm(formList, { seasonId, level }) {
   if (currentIndex === -1) return null;
 
   // Search forward from the current form, then wrap around to the start
-  const remainingForms = [
-    ...formList.slice(currentIndex + 1),
-    ...formList.slice(0, currentIndex),
-  ];
+  const remainingForms = formList.slice(currentIndex + 1);
 
   return (
     remainingForms.find(
