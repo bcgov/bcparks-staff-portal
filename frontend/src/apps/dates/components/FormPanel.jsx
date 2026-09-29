@@ -1135,6 +1135,26 @@ function FormPanel({
     [onOpenForm],
   );
 
+  // Finds the next form in the table that still needs to be submitted or approved
+  const getNextForm = useCallback(
+    () =>
+      findNextForm(formList, {
+        seasonId: selectedSeasonId,
+        level: selectedLevel,
+      }),
+    [formList, selectedSeasonId, selectedLevel],
+  );
+
+  // Opens the next form in the panel, without closing it
+  const openNextForm = useCallback(
+    (nextForm) => {
+      // The current form was just saved, so there are no unsaved changes
+      setDataChanged(false);
+      onOpenForm(nextForm);
+    },
+    [onOpenForm],
+  );
+
   const handleSeasonChange = useCallback(
     async (nextSeasonId) => {
       if (nextSeasonId === selectedSeasonId) {
