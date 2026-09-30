@@ -551,8 +551,14 @@ function SeasonForm({
    */
   async function saveForm(allowInvalid, status, resetAfterSave = true) {
     // saveForm is called on any kind of form submission, so validation happens here
-    // If the form is submitted by some other means, call the validation function there too
-    setSubmitted(true);
+    // If the form is submitted by some other means, call the validation function there too.
+
+    // Skip showing the error summary for drafts (allowInvalid), otherwise it flashes
+    // while saving until the refreshed data resets the submitted state.
+    // validateForm() always runs the full validation rules either way.
+    if (!allowInvalid) {
+      setSubmitted(true);
+    }
 
     // Validate the form before saving
     const validationErrors = validation.validateForm();
