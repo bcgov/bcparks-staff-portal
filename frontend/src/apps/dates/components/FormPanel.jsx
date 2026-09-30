@@ -64,14 +64,12 @@ function Buttons({
   onApprove,
   approver,
   submitter,
+  parkOperator = false,
   loading = false,
   disableDraftButton = false,
   disablePrimaryActionButton = false,
   continueToNext = false,
 }) {
-  // Park operators (not submitters or approvers)
-  const parkOperator = !approver && !submitter;
-
   return (
     <div>
       <button
@@ -132,6 +130,7 @@ Buttons.propTypes = {
   onApprove: PropTypes.func.isRequired,
   approver: PropTypes.bool.isRequired,
   submitter: PropTypes.bool.isRequired,
+  parkOperator: PropTypes.bool,
   loading: PropTypes.bool,
   disableDraftButton: PropTypes.bool,
   disablePrimaryActionButton: PropTypes.bool,
@@ -164,6 +163,9 @@ function SeasonForm({
   const { ROLES, checkAccess } = useAccess();
   const approver = checkAccess(ROLES.DOOT_APPROVER);
   const submitter = checkAccess(ROLES.DOOT_SUBMITTER);
+  // Park operators are contributors who aren't also submitters or approvers.
+  const parkOperator =
+    checkAccess(ROLES.DOOT_CONTRIBUTOR) && !approver && !submitter;
 
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
@@ -1001,7 +1003,7 @@ function SeasonForm({
 
           {/* Option to open the next form in the table after submitting/approving,
               or after saving a draft for park operators */}
-          {showContinueOption && (
+          {showContinueOption && (approver || submitter || parkOperator) && (
             <Form.Check
               className="mb-3"
               label="Continue to next form"
@@ -1015,6 +1017,7 @@ function SeasonForm({
           <Buttons
             approver={approver}
             submitter={submitter}
+            parkOperator={parkOperator}
             onApprove={onApprove}
             onSave={() => promptAndSave()}
             onSaveAndContinue={() => promptAndSave(true)}
