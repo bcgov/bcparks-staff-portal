@@ -68,6 +68,9 @@ function Buttons({
   disablePrimaryActionButton = false,
   continueToNext = false,
 }) {
+  // Park operators (not submitters or approvers)
+  const parkOperator = !approver && !submitter;
+
   return (
     <div>
       <button
@@ -76,7 +79,9 @@ function Buttons({
         className="btn btn-outline-primary form-btn fw-bold me-3"
         disabled={loading || disableDraftButton}
       >
-        Save draft
+        {parkOperator && continueToNext
+          ? "Save draft and continue"
+          : "Save draft"}
       </button>
 
       {/* Show the Approve button for users with the approver role */}
@@ -660,6 +665,12 @@ function SeasonForm({
    * @returns {Promise<boolean>} True if the draft was saved, false if cancelled or the save failed
    */
   async function promptAndSave() {
+    // Park operators (not submitters or approvers)
+    const parkOperator = !approver && !submitter;
+    // Park operators continue to the next form after saving a draft.
+    // Keep the next form from before saving, since the table data will refresh after saving
+    const formToOpen = continueToNext && parkOperator ? nextForm : null;
+
     if (season.status !== STATUS.REQUESTED.value) {
       const proceed = await modal.open({
         title: "Move back to draft?",
@@ -676,13 +687,18 @@ function SeasonForm({
     }
 
     try {
-      // Save draft, and allow saving with validation errors
-      await saveForm(true, STATUS.REQUESTED.value);
+      // Save draft, and allow saving with validation errors.
+      // Don't reset the form data when continuing, because the next form will replace it
+      await saveForm(true, STATUS.REQUESTED.value, !formToOpen);
 
       flashMessage.open(
         "Dates saved as draft",
         `${seasonTitle} ${season.operatingYear} details saved`,
       );
+
+      if (formToOpen) {
+        openNextForm(formToOpen);
+      }
 
       return true;
     } catch (saveError) {
@@ -973,8 +989,9 @@ function SeasonForm({
             </div>
           )}
 
-          {/* Option to open the next form in the table after submitting/approving */}
-          {showContinueOption && (approver || submitter) && (
+          {/* Option to open the next form in the table after submitting/approving,
+              or after saving a draft for park operators */}
+          {showContinueOption && (
             <Form.Check
               className="mb-3"
               label="Continue to next form"
