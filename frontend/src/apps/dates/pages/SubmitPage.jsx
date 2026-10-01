@@ -407,7 +407,8 @@ function SubmitPage() {
     const wasFormPanelOpen = previousIsFormPanelOpenRef.current;
 
     if (wasFormPanelOpen && !isFormPanelOpen && params.seasonId) {
-      navigate("/dates", { replace: true });
+      // Navigate to the SubmitPage route directly, so it stays mounted and keeps its filter state
+      navigate("/dates/submit", { replace: true });
     }
 
     previousIsFormPanelOpenRef.current = isFormPanelOpen;
