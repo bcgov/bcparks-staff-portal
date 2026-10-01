@@ -23,9 +23,9 @@ import qs from "qs";
 import useAccess from "@/hooks/useAccess";
 import useAdvisoryRole from "@/apps/advisories/hooks/useAdvisoryRole";
 import useCms from "@/hooks/useCms";
-import useUnsavedChangesDialog from "@/apps/advisories/hooks/useUnsavedChangesDialog";
+import useConfirmation from "@/hooks/useConfirmation";
 import useNavigationGuard from "@/hooks/useNavigationGuard";
-import UnsavedChangesDialog from "@/apps/advisories/components/UnsavedChangesDialog";
+import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import { ROLES } from "@/config/permissions";
@@ -163,10 +163,8 @@ export default function Advisory({ mode }) {
 
   // Use the custom hook to manage the "Unsaved changes" dialog and get the function to trigger it,
   // along with the props for the dialog component
-  const {
-    confirmNavigation: confirmUnsavedChangesNavigation,
-    props: unsavedChangesDialogProps,
-  } = useUnsavedChangesDialog(saveDraftFromForm);
+  const { confirmUnsavedChanges, props: unsavedChangesDialogProps } =
+    useConfirmation();
 
   // Set dataChanged to true when any of the form fields change, to enable the navigation guard
   const markChanged = useCallback(() => {
@@ -187,11 +185,24 @@ export default function Advisory({ mode }) {
     isBlockerActive.current = true;
 
     (async () => {
+      // Track whether a draft was saved, since saving navigates to the summary page itself
+      let savedDraft = false;
+
       // Wait for the user's choice in the "Unsaved changes" dialog and proceed with navigation accordingly
-      const shouldProceed = await confirmUnsavedChangesNavigation();
+      const shouldProceed = await confirmUnsavedChanges(async () => {
+        savedDraft = await saveDraftFromForm();
+        return savedDraft;
+      }, "Changes for this advisory / closure will be permanently deleted if you do not save them.");
 
       if (shouldProceed) {
         dataChanged.current = false;
+
+        // The save already navigated to the summary page and unblocked the router,
+        // so proceeding with the original navigation would be an invalid blocker transition.
+        if (savedDraft) {
+          return;
+        }
+
         // Defer the proceed call to the next tick in the event loop
         // to avoid race conditions with React router's internal state updates.
         setTimeout(() => blocker.proceed(), 0);
@@ -202,7 +213,7 @@ export default function Advisory({ mode }) {
         blocker.reset();
       }
     })();
-  }, [blocker, confirmUnsavedChangesNavigation]);
+  }, [blocker, confirmUnsavedChanges, saveDraftFromForm]);
 
   // Keep the blocked-navigation lock until the router confirms the transition is unblocked.
   // This prevents a second modal from opening on the same blocked navigation attempt.
@@ -1466,12 +1477,7 @@ export default function Advisory({ mode }) {
                 }}
               />
 
-              <UnsavedChangesDialog {...unsavedChangesDialogProps}>
-                <p>
-                  Changes for this advisory / closure will be permanently
-                  deleted if you do not save them.
-                </p>
-              </UnsavedChangesDialog>
+              <ConfirmationDialog {...unsavedChangesDialogProps} />
             </>
           )}
         </div>

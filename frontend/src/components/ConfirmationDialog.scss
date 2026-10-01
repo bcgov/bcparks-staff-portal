@@ -1,15 +1,18 @@
-.confirmation-dialog-modal {
-  &.modal-content {
-    border: none;
-    border-left: 5px solid var(--support-border-color-warning);
-  }
+// The BC Design System styles are injected at runtime after our stylesheets,
+// so these selectors need higher specificity to override them.
 
-  .modal-header {
-    border-bottom: none;
-  }
+// Raise the overlay above Bootstrap's Offcanvas (z-index 1045), e.g. in the DOOT form panel.
+.react-aria-ModalOverlay:has(
+  > .bcds-react-aria-Modal[data-confirmation-dialog]
+) {
+  z-index: 1055;
+}
 
-  .modal-footer {
-    border-top: none;
-    justify-content: space-between;
+.bcds-react-aria-Modal[data-confirmation-dialog] {
+  .bcds-react-aria-AlertDialog--children {
+    // No bottom margin for the last paragraph
+    p:last-child {
+      margin-bottom: 0;
+    }
   }
 }

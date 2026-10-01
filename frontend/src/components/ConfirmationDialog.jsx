@@ -1,56 +1,112 @@
 import PropTypes from "prop-types";
-import Modal from "react-bootstrap/Modal";
+import {
+  AlertDialog,
+  Button,
+  Modal,
+} from "@bcgov/design-system-react-components";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTrash, faTriangleExclamation } from "@fa-kit/icons/classic/regular";
 import "./ConfirmationDialog.scss";
 
-function ConfirmationDialog({
+/**
+ * Modal confirmation dialog used throughout the staff portal.
+ * Built on the BC Gov Design System AlertDialog.
+ * Use with the useConfirmation hook, which provides these props.
+ * @param {Object} props Component props
+ * @param {string} props.title Dialog title
+ * @param {React.ReactNode} props.message Body content. Strings are wrapped in a paragraph.
+ * @param {string} props.primaryButtonText Text for the primary (right) button
+ * @param {string} props.secondaryButtonText Text for the secondary (left) button
+ * @param {"default"|"danger"} props.secondaryButtonVariant Style for the secondary button
+ * @param {"info"|"confirmation"|"warning"|"error"|"destructive"} props.variant AlertDialog variant, sets the icon colour
+ * @param {Object} props.icon FontAwesome icon definition shown before the title
+ * @param {Function} props.onPrimary Called when the primary button is clicked
+ * @param {Function} props.onSecondary Called when the secondary button is clicked
+ * @param {Function} props.onClose Called on any dismissal (close button, Esc key, backdrop click)
+ * @param {boolean} props.isOpen Whether the dialog is visible
+ * @returns {JSX.Element} Confirmation dialog
+ */
+export default function ConfirmationDialog({
   title,
   message,
-  confirmButtonText,
-  cancelButtonText,
-  notes,
-  onCancel,
-  onConfirm,
+  primaryButtonText,
+  secondaryButtonText,
+  secondaryButtonVariant = "default",
+  variant = "destructive",
+  icon = faTriangleExclamation,
+  onPrimary,
+  onSecondary,
+  onClose,
   isOpen,
 }) {
+  const isDanger = secondaryButtonVariant === "danger";
+
   return (
     <Modal
-      centered
-      dialogClassName="confirmation-dialog-wrap"
-      contentClassName="confirmation-dialog-modal"
-      show={isOpen}
-      onHide={onCancel}
+      // Hook for the z-index override in ConfirmationDialog.scss
+      // (a className would replace the BC Design System class)
+      data-confirmation-dialog
+      isOpen={isOpen}
+      isDismissable
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
-      <Modal.Header closeButton>
-        <Modal.Title>{title}</Modal.Title>
-      </Modal.Header>
+      <AlertDialog
+        variant={variant}
+        // AlertDialog renders the title in a plain div, not a <Heading slot="title">,
+        // so name the dialog explicitly for screen readers
+        aria-label={title}
+        // Hide the built-in variant icon so we can show our own FontAwesome icon.
+        // It uses the same class, so the variant colour still applies.
+        isIconHidden
+        title={
+          <>
+            <span className="bcds-react-aria-AlertDialog--Icon me-2">
+              <FontAwesomeIcon icon={icon} />
+            </span>
+            {title}
+          </>
+        }
+        buttons={
+          <>
+            <Button
+              variant={isDanger ? "tertiary" : "secondary"}
+              danger={isDanger}
+              onPress={onSecondary}
+            >
+              {isDanger && <FontAwesomeIcon icon={faTrash} />}
+              {secondaryButtonText}
+            </Button>
 
-      <Modal.Body>
-        <p className="confirmation-dialog-message">{message}</p>
-        <p className="confirmation-dialog-message">{notes}</p>
-      </Modal.Body>
-
-      {/* Custom modal-footer markup so we can use different button classes */}
-      <div className="modal-footer">
-        <button className="btn btn-outline-primary" onClick={onCancel}>
-          {cancelButtonText}
-        </button>
-        <button className="btn btn-primary" onClick={onConfirm}>
-          {confirmButtonText}
-        </button>
-      </div>
+            <Button variant="primary" onPress={onPrimary}>
+              {primaryButtonText}
+            </Button>
+          </>
+        }
+      >
+        {typeof message === "string" ? <p>{message}</p> : message}
+      </AlertDialog>
     </Modal>
   );
 }
 
 ConfirmationDialog.propTypes = {
   title: PropTypes.string.isRequired,
-  message: PropTypes.string.isRequired,
-  confirmButtonText: PropTypes.string.isRequired,
-  cancelButtonText: PropTypes.string.isRequired,
-  notes: PropTypes.string.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  onConfirm: PropTypes.func.isRequired,
+  message: PropTypes.node,
+  primaryButtonText: PropTypes.string.isRequired,
+  secondaryButtonText: PropTypes.string.isRequired,
+  secondaryButtonVariant: PropTypes.oneOf(["default", "danger"]),
+  variant: PropTypes.oneOf([
+    "info",
+    "confirmation",
+    "warning",
+    "error",
+    "destructive",
+  ]),
+  icon: PropTypes.object,
+  onPrimary: PropTypes.func.isRequired,
+  onSecondary: PropTypes.func.isRequired,
+  onClose: PropTypes.func.isRequired,
   isOpen: PropTypes.bool.isRequired,
 };
-
-export default ConfirmationDialog;
