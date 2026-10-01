@@ -25,6 +25,7 @@ async function savePendingReminder(notificationOptions, jsonData, transaction) {
   const newJsonData = {
     sendToIS: jsonData.sendToIS,
     sendToRS: jsonData.sendToRS,
+    copyToIS: jsonData.copyToIS,
     userFullName: jsonData.userFullName,
     recipientEmails: jsonData.recipientEmails,
     noRecipientsError: jsonData.noRecipientsError,

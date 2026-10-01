@@ -20,6 +20,7 @@ import { getPublishableDetails } from "./data.js";
  * @param {boolean} [options.notifyManagementArea=true] Whether to resolve and require Management Area recipient emails
  * @param {boolean} [options.notifyInformationServices=false] Whether to notify the Information Services team
  * @param {boolean} [options.notifyReservationServices=false] Whether to notify the Reservation Services team
+ * @param {boolean} [options.ccInformationServices=false] Whether to CC the Information Services team (ignored when they're already a recipient)
  * @param {Transaction} [transaction] Sequelize transaction
  * @returns {Promise<{noRecipientsError?: boolean, editTargetLabel: string, jsonData: Object}>} Outcome and diagnostic details of the queue attempt
  */
@@ -33,6 +34,7 @@ async function queueNotification(
     notifyManagementArea = true,
     notifyInformationServices = false,
     notifyReservationServices = false,
+    ccInformationServices = false,
   },
   transaction,
 ) {
@@ -40,11 +42,7 @@ async function queueNotification(
     throw new Error("Season must have a season type and operating year");
   }
 
-  // Until a review tab is available, CC information services on reminder emails,
-  // even when they are not an original recipient. Remove this when the review
-  // tab is implemented.
-  let shouldNotifyInformationServices =
-    notifyInformationServices || (isReminder && !notifyReservationServices);
+  let shouldNotifyInformationServices = notifyInformationServices;
   let noRecipientsError;
 
   const emailInfo = await getPublishableDetails(
@@ -82,6 +80,8 @@ async function queueNotification(
     subject,
     sendToIS: shouldNotifyInformationServices,
     sendToRS: notifyReservationServices,
+    // Don't CC Information Services when they are already a recipient
+    copyToIS: ccInformationServices && !shouldNotifyInformationServices,
     buttonText,
     isReminder,
     triggeredBy: `bcparks-staff-portal::backend::${triggeredBy}`,
