@@ -24,6 +24,22 @@
 // UL and OL styles
 @use "list";
 
+// Use the design tokens' "BC Sans" font-face (from @bcgov/bc-sans, imported in main.jsx)
+// instead of the Bootstrap theme's "BCSans" copy, so the font only loads once
+:root,
+[data-bs-theme="light"] {
+  --bs-font-sans-serif:
+    var(--typography-font-families-bc-sans), "Noto Sans", Verdana, Arial,
+    sans-serif;
+  --bs-body-font-family: var(--bs-font-sans-serif);
+}
+
+// The theme sets these with a literal font-family instead of the variable
+.tooltip,
+.popover {
+  font-family: var(--bs-font-sans-serif);
+}
+
 // Break inside words on when nevessary on top-level headings
 h1 {
   overflow-wrap: break-word;
