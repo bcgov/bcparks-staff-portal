@@ -1121,12 +1121,8 @@ function FormPanel({
 
   // Finds the next form in the table that still needs to be submitted or approved
   const getNextForm = useCallback(
-    () =>
-      findNextForm(formList, {
-        seasonId: selectedSeasonId,
-        level: selectedLevel,
-      }),
-    [formList, selectedSeasonId, selectedLevel],
+    () => findNextForm(formList, selectedSeasonId),
+    [formList, selectedSeasonId],
   );
 
   // Opens the next form in the panel, without closing it

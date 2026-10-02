@@ -436,8 +436,7 @@ function SubmitPage() {
     if (!isFormPanelOpen || !formData.seasonId) return;
 
     const currentForm = editableForms.find(
-      (form) =>
-        form.seasonId === formData.seasonId && form.level === formData.level,
+      (form) => form.seasonId === formData.seasonId,
     );
 
     // Leave the page unchanged if the form isn't in the table (e.g. filtered out)

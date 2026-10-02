@@ -47,9 +47,7 @@ export default function getEditableFormList(tableData = [], sortOrder = []) {
           .filter(
             (parkArea) =>
               parkArea.parkAreaType?.parkAreaTypeNumber ===
-                groupingType.parkAreaTypeNumber &&
-              // Areas without any features aren't shown in the table
-              parkArea.features?.length > 0,
+              groupingType.parkAreaTypeNumber,
           )
           .forEach((parkArea) =>
             addForm(park, parkArea.currentSeason?.regular, "park-area"),
@@ -75,23 +73,20 @@ export default function getEditableFormList(tableData = [], sortOrder = []) {
 
 /**
  * Finds the next form after the current one that still needs to be submitted or approved.
- * Approved and published seasons are skipped. After the end of the list,
- * the search wraps around to the start of the list, up to the current form.
+ * Approved and published seasons are skipped.
  * @param {Array<{seasonId: number, level: string, status: string}>|null} formList Ordered list from getEditableFormList
- * @param {{seasonId: number, level: string}} currentForm The form currently open
+ * @param {number} seasonId Season ID of the form currently open (unique across all levels)
  * @returns {{seasonId: number, level: string, status: string}|null} The next form, or null if there isn't one
  */
-export function findNextForm(formList, { seasonId, level }) {
+export function findNextForm(formList, seasonId) {
   if (!formList) return null;
 
-  const currentIndex = formList.findIndex(
-    (form) => form.seasonId === seasonId && form.level === level,
-  );
+  const currentIndex = formList.findIndex((form) => form.seasonId === seasonId);
 
   // If the current form isn't in the table (e.g. filtered out), there's no "next" form
   if (currentIndex === -1) return null;
 
-  // Search forward from the current form, then wrap around to the start
+  // Search forward from the current form
   const remainingForms = formList.slice(currentIndex + 1);
 
   return (
