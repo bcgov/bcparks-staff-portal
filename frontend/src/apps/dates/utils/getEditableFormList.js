@@ -86,7 +86,7 @@ export function findNextForm(formList, seasonId) {
   // If the current form isn't in the table (e.g. filtered out), there's no "next" form
   if (currentIndex === -1) return null;
 
-  // Search forward from the current form, then wrap around to the start
+  // Search forward from the current form
   const remainingForms = formList.slice(currentIndex + 1);
 
   return (

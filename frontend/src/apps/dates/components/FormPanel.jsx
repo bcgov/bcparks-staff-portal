@@ -137,7 +137,7 @@ function SeasonForm({
   continueToNext = false,
   hasNextForm = false,
   setContinueToNext,
-  getNextForm,
+  nextForm = null,
   openNextForm,
 }) {
   // Global flash message context
@@ -709,8 +709,8 @@ function SeasonForm({
   }, [registerSaveDraftHandler, isEditingPublishedSeason]);
 
   async function onApprove() {
-    // Find the next form before saving, since the table data will refresh after saving
-    const nextForm = continueToNext ? getNextForm() : null;
+    // Keep the next form from before saving, since the table data will refresh after saving
+    const formToOpen = continueToNext ? nextForm : null;
 
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
@@ -729,8 +729,8 @@ function SeasonForm({
           `${seasonTitle} ${season.operatingYear} approval recorded; dates are still pending HQ review`,
         );
 
-        if (nextForm) {
-          openNextForm(nextForm);
+        if (formToOpen) {
+          openNextForm(formToOpen);
           return;
         }
 
@@ -747,8 +747,8 @@ function SeasonForm({
         `${seasonTitle} ${season.operatingYear} dates marked as approved`,
       );
 
-      if (nextForm) {
-        openNextForm(nextForm);
+      if (formToOpen) {
+        openNextForm(formToOpen);
         return;
       }
 
@@ -759,8 +759,8 @@ function SeasonForm({
   }
 
   async function onSubmit() {
-    // Find the next form before saving, since the table data will refresh after saving
-    const nextForm = continueToNext ? getNextForm() : null;
+    // Keep the next form from before saving, since the table data will refresh after saving
+    const formToOpen = continueToNext ? nextForm : null;
 
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
@@ -772,8 +772,8 @@ function SeasonForm({
         `${seasonTitle} ${season.operatingYear} dates submitted to HQ`,
       );
 
-      if (nextForm) {
-        openNextForm(nextForm);
+      if (formToOpen) {
+        openNextForm(formToOpen);
         return;
       }
 
@@ -1018,7 +1018,10 @@ SeasonForm.propTypes = {
   continueToNext: PropTypes.bool,
   hasNextForm: PropTypes.bool,
   setContinueToNext: PropTypes.func,
-  getNextForm: PropTypes.func,
+  nextForm: PropTypes.shape({
+    seasonId: PropTypes.number.isRequired,
+    level: PropTypes.string.isRequired,
+  }),
   openNextForm: PropTypes.func,
 };
 
@@ -1122,34 +1125,24 @@ function FormPanel({
     closePanel();
   }, [dataChanged, confirmUnsavedChanges, closePanel]);
 
-  // Finds the next form in the table that still needs to be submitted or approved
-  const getNextForm = useCallback(
+  // The next form in the table that still needs to be submitted or approved
+  const nextForm = useMemo(
     () => findNextForm(formList, selectedSeasonId),
     [formList, selectedSeasonId],
   );
 
   // Opens the next form in the panel, without closing it
   const openNextForm = useCallback(
-    (nextForm) => {
+    (form) => {
       // The current form was just saved, so there are no unsaved changes
       setDataChanged(false);
-      onOpenForm(nextForm);
+      onOpenForm(form);
     },
     [onOpenForm],
   );
 
-  // Finds the next form in the table that still needs to be submitted or approved
-  const getNextForm = useCallback(
-    () =>
-      findNextForm(formList, {
-        seasonId: selectedSeasonId,
-        level: selectedLevel,
-      }),
-    [formList, selectedSeasonId, selectedLevel],
-  );
-
   // True if there's a form to continue to after the current one
-  const hasNextForm = useMemo(() => getNextForm() !== null, [getNextForm]);
+  const hasNextForm = nextForm !== null;
 
   // If there are no more forms to continue to, uncheck the "Continue to next form" checkbox.
   // The primary button then shows its normal text and returns to the table.
@@ -1159,17 +1152,9 @@ function FormPanel({
     }
   }, [hasNextForm]);
 
+  // Only continue while there's a next form
+  // (covers the render before the effect above unchecks the checkbox)
   const shouldContinue = continueToNext && hasNextForm;
-
-  // Opens the next form in the panel, without closing it
-  const openNextForm = useCallback(
-    (nextForm) => {
-      // The current form was just saved, so there are no unsaved changes
-      setDataChanged(false);
-      onOpenForm(nextForm);
-    },
-    [onOpenForm],
-  );
 
   const handleSeasonChange = useCallback(
     async (nextSeasonId) => {
@@ -1222,7 +1207,7 @@ function FormPanel({
             continueToNext={shouldContinue}
             hasNextForm={hasNextForm}
             setContinueToNext={setContinueToNext}
-            getNextForm={getNextForm}
+            nextForm={nextForm}
             openNextForm={openNextForm}
           />
         )}
