@@ -34,6 +34,7 @@ import DataContext from "@/apps/dates/contexts/DataContext";
 import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus";
 import * as SEASON_TYPE from "@/apps/dates/constants/seasonType";
+import { findNextForm } from "@/apps/dates/utils/getEditableFormList";
 import "./FormPanel.scss";
 
 // Components
@@ -65,6 +66,7 @@ function Buttons({
   loading = false,
   disableDraftButton = false,
   disablePrimaryActionButton = false,
+  continueToNext = false,
 }) {
   return (
     <div>
@@ -85,7 +87,7 @@ function Buttons({
           className="btn btn-primary form-btn fw-bold me-2"
           disabled={loading || disablePrimaryActionButton}
         >
-          Mark approved
+          {continueToNext ? "Mark approved and continue" : "Mark approved"}
         </button>
       )}
 
@@ -97,7 +99,7 @@ function Buttons({
           className="btn btn-primary form-btn fw-bold me-2"
           disabled={loading || disablePrimaryActionButton}
         >
-          Submit to HQ
+          {continueToNext ? "Submit to HQ and continue" : "Submit to HQ"}
         </button>
       )}
 
@@ -116,6 +118,7 @@ Buttons.propTypes = {
   loading: PropTypes.bool,
   disableDraftButton: PropTypes.bool,
   disablePrimaryActionButton: PropTypes.bool,
+  continueToNext: PropTypes.bool,
 };
 
 function SeasonForm({
@@ -130,6 +133,11 @@ function SeasonForm({
   setDataChanged,
   modal,
   registerSaveDraftHandler,
+  showContinueOption = false,
+  continueToNext = false,
+  setContinueToNext,
+  getNextForm,
+  openNextForm,
 }) {
   // Global flash message context
   const flashMessage = useContext(globalFlashMessageContext);
@@ -700,6 +708,9 @@ function SeasonForm({
   }, [registerSaveDraftHandler, isEditingPublishedSeason]);
 
   async function onApprove() {
+    // Find the next form before saving, since the table data will refresh after saving
+    const nextForm = continueToNext ? getNextForm() : null;
+
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
       // Don't reset the form data after saving, because the panel will close
@@ -717,6 +728,11 @@ function SeasonForm({
           `${seasonTitle} ${season.operatingYear} approval recorded; dates are still pending HQ review`,
         );
 
+        if (nextForm) {
+          openNextForm(nextForm);
+          return;
+        }
+
         resetData();
         setNotes("");
         setDeletedDateRangeIds([]);
@@ -730,6 +746,11 @@ function SeasonForm({
         `${seasonTitle} ${season.operatingYear} dates marked as approved`,
       );
 
+      if (nextForm) {
+        openNextForm(nextForm);
+        return;
+      }
+
       closePanel();
     } catch (saveError) {
       console.error("Error approving season:", saveError);
@@ -737,6 +758,9 @@ function SeasonForm({
   }
 
   async function onSubmit() {
+    // Find the next form before saving, since the table data will refresh after saving
+    const nextForm = continueToNext ? getNextForm() : null;
+
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
       // Don't reset the form data after saving, because the panel will close
@@ -746,6 +770,11 @@ function SeasonForm({
         "Dates submitted to HQ",
         `${seasonTitle} ${season.operatingYear} dates submitted to HQ`,
       );
+
+      if (nextForm) {
+        openNextForm(nextForm);
+        return;
+      }
 
       closePanel();
     } catch (saveError) {
@@ -943,6 +972,17 @@ function SeasonForm({
             </div>
           )}
 
+          {/* Option to open the next form in the table after submitting/approving */}
+          {showContinueOption && (approver || submitter) && (
+            <Form.Check
+              className="mb-3"
+              label="Continue to next form"
+              id="continue-to-next-form"
+              checked={continueToNext}
+              onChange={(e) => setContinueToNext(e.target.checked)}
+            />
+          )}
+
           <Buttons
             approver={approver}
             submitter={submitter}
@@ -952,6 +992,7 @@ function SeasonForm({
             loading={sendingSave}
             disableDraftButton={disableDraftButton}
             disablePrimaryActionButton={disablePrimaryActionButton}
+            continueToNext={showContinueOption && continueToNext}
           />
         </Offcanvas.Body>
       </ValidationContext.Provider>
@@ -971,13 +1012,29 @@ SeasonForm.propTypes = {
   setDataChanged: PropTypes.func.isRequired,
   modal: PropTypes.object.isRequired,
   registerSaveDraftHandler: PropTypes.func.isRequired,
+  showContinueOption: PropTypes.bool,
+  continueToNext: PropTypes.bool,
+  setContinueToNext: PropTypes.func,
+  getNextForm: PropTypes.func,
+  openNextForm: PropTypes.func,
 };
 
-function FormPanel({ show, setShow, formData, onDataUpdate }) {
+function FormPanel({
+  show,
+  setShow,
+  formData,
+  onDataUpdate,
+  formList = null,
+  onOpenForm = null,
+}) {
   // Track if the form data has changed.
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
-  const [selectedSeasonId, setSelectedSeasonId] = useState(null);
+  // Keep the season ID and level together, so they always update in the same render.
+  // (A mismatched pair would request the wrong API endpoint, e.g. a Feature season at Park level.)
+  const [selectedForm, setSelectedForm] = useState(null);
+  const selectedSeasonId = selectedForm?.seasonId ?? null;
+  const selectedLevel = selectedForm?.level ?? null;
   const modal = useConfirmation();
   const closingFromStatusPrompt = useRef(false);
 
@@ -1007,10 +1064,21 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
 
     return modal.confirmUnsavedChanges(saveDraftHandler);
   }, [modal]);
+  // "Continue to next form" checkbox: stays selected between forms until the user deselects it
+  const [continueToNext, setContinueToNext] = useState(false);
+
+  // The option is only available when the parent page provides a list of forms,
+  // and never on the "Edit published dates" form
+  const showContinueOption =
+    Boolean(formList && onOpenForm) && !formData?.showOperatingYearSelect;
 
   useEffect(() => {
-    setSelectedSeasonId(formData?.seasonId ?? null);
-  }, [formData?.seasonId]);
+    setSelectedForm(
+      formData?.seasonId
+        ? { seasonId: formData.seasonId, level: formData.level }
+        : null,
+    );
+  }, [formData?.seasonId, formData?.level]);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
@@ -1051,6 +1119,22 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
     closePanel();
   }, [dataChanged, confirmUnsavedChanges, closePanel]);
 
+  // Finds the next form in the table that still needs to be submitted or approved
+  const getNextForm = useCallback(
+    () => findNextForm(formList, selectedSeasonId),
+    [formList, selectedSeasonId],
+  );
+
+  // Opens the next form in the panel, without closing it
+  const openNextForm = useCallback(
+    (nextForm) => {
+      // The current form was just saved, so there are no unsaved changes
+      setDataChanged(false);
+      onOpenForm(nextForm);
+    },
+    [onOpenForm],
+  );
+
   const handleSeasonChange = useCallback(
     async (nextSeasonId) => {
       if (nextSeasonId === selectedSeasonId) {
@@ -1066,7 +1150,8 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
         }
       }
 
-      setSelectedSeasonId(nextSeasonId);
+      // Switching operating years keeps the same level
+      setSelectedForm((prev) => ({ ...prev, seasonId: nextSeasonId }));
       setDataChanged(false);
     },
     [dataChanged, confirmUnsavedChanges, selectedSeasonId],
@@ -1083,9 +1168,9 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
       >
         {selectedSeasonId && (
           <SeasonForm
-            key={`${formData.level}-${selectedSeasonId}`}
+            key={`${selectedLevel}-${selectedSeasonId}`}
             seasonId={selectedSeasonId}
-            level={formData.level}
+            level={selectedLevel}
             showOperatingYearSelect={Boolean(formData.showOperatingYearSelect)}
             onSeasonChange={handleSeasonChange}
             closePanel={closePanel}
@@ -1097,6 +1182,11 @@ function FormPanel({ show, setShow, formData, onDataUpdate }) {
             setDataChanged={setDataChanged}
             modal={modal}
             registerSaveDraftHandler={registerSaveDraftHandler}
+            showContinueOption={showContinueOption}
+            continueToNext={continueToNext}
+            setContinueToNext={setContinueToNext}
+            getNextForm={getNextForm}
+            openNextForm={openNextForm}
           />
         )}
       </Offcanvas>
@@ -1113,4 +1203,12 @@ FormPanel.propTypes = {
   setShow: PropTypes.func.isRequired,
   formData: PropTypes.object,
   onDataUpdate: PropTypes.func.isRequired,
+  formList: PropTypes.arrayOf(
+    PropTypes.shape({
+      seasonId: PropTypes.number.isRequired,
+      level: PropTypes.string.isRequired,
+      status: PropTypes.string,
+    }),
+  ),
+  onOpenForm: PropTypes.func,
 };

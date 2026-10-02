@@ -445,6 +445,9 @@ router.get(
 
     const { park } = seasonModel;
 
+    // Throw a 404 if the season isn't a Park-level season (e.g. a Feature season ID)
+    checkSeasonExists(park);
+
     // Add the parkArea- and feature-level Frontcountry Campground reservation dates
     // to the payload (for Tier 1 and Tier 2 validation rules)
     const frontcountryFeatureReservationDates =
