@@ -59,10 +59,12 @@ ButtonLoading.propTypes = {
 
 function Buttons({
   onSave,
+  onSaveAndContinue,
   onSubmit,
   onApprove,
   approver,
   submitter,
+  parkOperator = false,
   loading = false,
   disableDraftButton = false,
   disablePrimaryActionButton = false,
@@ -78,6 +80,18 @@ function Buttons({
       >
         Save draft
       </button>
+
+      {/* Show the Save draft and continue button for park operators when continuing to the next form */}
+      {parkOperator && continueToNext && (
+        <button
+          type="button"
+          onClick={onSaveAndContinue}
+          className="btn btn-primary form-btn fw-bold me-2"
+          disabled={loading || disableDraftButton}
+        >
+          Save draft and continue
+        </button>
+      )}
 
       {/* Show the Approve button for users with the approver role */}
       {approver && (
@@ -111,10 +125,12 @@ function Buttons({
 
 Buttons.propTypes = {
   onSave: PropTypes.func.isRequired,
+  onSaveAndContinue: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
   approver: PropTypes.bool.isRequired,
   submitter: PropTypes.bool.isRequired,
+  parkOperator: PropTypes.bool,
   loading: PropTypes.bool,
   disableDraftButton: PropTypes.bool,
   disablePrimaryActionButton: PropTypes.bool,
@@ -147,6 +163,9 @@ function SeasonForm({
   const { ROLES, checkAccess } = useAccess();
   const approver = checkAccess(ROLES.DOOT_APPROVER);
   const submitter = checkAccess(ROLES.DOOT_SUBMITTER);
+  // Park operators are contributors who aren't also submitters or approvers.
+  const parkOperator =
+    checkAccess(ROLES.DOOT_CONTRIBUTOR) && !approver && !submitter;
 
   const [data, setData] = useState(null);
   const [notes, setNotes] = useState("");
@@ -657,9 +676,13 @@ function SeasonForm({
   /**
    * Saves the form as a draft. If the season is not "requested" (e.g. it is submitted, approved, or published),
    * prompts the user to confirm moving back to draft first.
+   * @param {boolean} [continueAfterSave=false] Open the next form after saving (park operators' "Save draft and continue")
    * @returns {Promise<boolean>} True if the draft was saved, false if cancelled or the save failed
    */
-  async function promptAndSave() {
+  async function promptAndSave(continueAfterSave = false) {
+    // Keep the next form from before saving, since the table data will refresh after saving
+    const formToOpen = continueAfterSave ? nextForm : null;
+
     if (season.status !== STATUS.REQUESTED.value) {
       const proceed = await modal.open({
         title: "Move back to draft?",
@@ -676,13 +699,18 @@ function SeasonForm({
     }
 
     try {
-      // Save draft, and allow saving with validation errors
-      await saveForm(true, STATUS.REQUESTED.value);
+      // Save draft, and allow saving with validation errors.
+      // Don't reset the form data when continuing, because the next form will replace it
+      await saveForm(true, STATUS.REQUESTED.value, !formToOpen);
 
       flashMessage.open(
         "Dates saved as draft",
         `${seasonTitle} ${season.operatingYear} details saved`,
       );
+
+      if (formToOpen) {
+        openNextForm(formToOpen);
+      }
 
       return true;
     } catch (saveError) {
@@ -973,8 +1001,9 @@ function SeasonForm({
             </div>
           )}
 
-          {/* Option to open the next form in the table after submitting/approving */}
-          {showContinueOption && (approver || submitter) && (
+          {/* Option to open the next form in the table after submitting/approving,
+              or after saving a draft for park operators */}
+          {showContinueOption && (approver || submitter || parkOperator) && (
             <Form.Check
               className="mb-3"
               label="Continue to next form"
@@ -988,8 +1017,10 @@ function SeasonForm({
           <Buttons
             approver={approver}
             submitter={submitter}
+            parkOperator={parkOperator}
             onApprove={onApprove}
-            onSave={promptAndSave}
+            onSave={() => promptAndSave()}
+            onSaveAndContinue={() => promptAndSave(true)}
             onSubmit={onSubmit}
             loading={sendingSave}
             disableDraftButton={disableDraftButton}
