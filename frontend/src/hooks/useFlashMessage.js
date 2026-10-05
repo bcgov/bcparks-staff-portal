@@ -29,5 +29,13 @@ export default function useFlashMessage() {
     open,
     close,
     isOpen,
+    // Props to be spread onto the FlashMessage component
+    props: {
+      title,
+      message,
+      variant,
+      isVisible: isOpen,
+      onClose: close,
+    },
   };
 }
