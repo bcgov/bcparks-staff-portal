@@ -1,10 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import useConfirmation from "@/hooks/useConfirmation";
-import useFlashMessage from "@/hooks/useFlashMessage";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import FlashMessage from "@/components/FlashMessage";
 import LoadingBar from "@/components/LoadingBar";
 import NotReadyFlag from "@/apps/dates/components/NotReadyFlag";
 import PaginationControls from "@/components/PaginationControls";
@@ -52,8 +51,7 @@ function PublishPage() {
 
   const confirmation = useConfirmation();
 
-  const successFlash = useFlashMessage();
-  const errorFlash = useFlashMessage();
+  const globalFlashMessage = useContext(FlashMessageContext);
 
   const { data, fetchData, loading, error } = useApiGet(
     "/publish/ready-to-publish/",
@@ -99,7 +97,7 @@ function PublishPage() {
 
         await publishData({ seasonIds });
 
-        successFlash.open(
+        globalFlashMessage.open(
           "Dates publishing to API",
           "Approved dates have been sent to the queue and publishing may take up to an hour.",
         );
@@ -109,9 +107,10 @@ function PublishPage() {
       } catch (publishError) {
         console.error("Error publishing to API", publishError);
 
-        errorFlash.open(
+        globalFlashMessage.open(
           "Publishing failed",
           "There was an error publishing data to the API. Please try again.",
+          { variant: "error" },
         );
       }
     }
@@ -123,21 +122,6 @@ function PublishPage() {
   return (
     <div className="container publish-container">
       <div className="page publish">
-        <FlashMessage
-          title={successFlash.title}
-          message={successFlash.message}
-          isVisible={successFlash.isOpen}
-          onClose={successFlash.close}
-        />
-
-        <FlashMessage
-          title={errorFlash.title}
-          message={errorFlash.message}
-          isVisible={errorFlash.isOpen}
-          onClose={errorFlash.close}
-          variant="error"
-        />
-
         <ConfirmationDialog {...confirmation.props} />
 
         <div className="d-flex justify-content-end mb-2">

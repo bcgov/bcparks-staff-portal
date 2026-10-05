@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { saveAs } from "file-saver";
 import Select from "react-select";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
@@ -6,15 +6,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { format } from "date-fns";
 
 import { useApiGet } from "@/hooks/useApi";
-import useFlashMessage from "@/hooks/useFlashMessage";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import LoadingBar from "@/components/LoadingBar";
-import FlashMessage from "@/components/FlashMessage";
 
 import "./ExportPage.scss";
 
 function ExportPage() {
-  const successFlash = useFlashMessage();
-  const errorFlash = useFlashMessage();
+  const globalFlashMessage = useContext(FlashMessageContext);
 
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
@@ -39,16 +37,17 @@ function ExportPage() {
 
       saveAs(blob, filename);
 
-      successFlash.open(
+      globalFlashMessage.open(
         "Export completed",
         "Check your downloads for the export.",
       );
     } catch (csvError) {
       console.error("Error generating CSV", csvError);
 
-      errorFlash.open(
+      globalFlashMessage.open(
         "Export failed",
         "There was an error generating the Excel document. Please try again.",
+        { variant: "error" },
       );
     }
   }
@@ -75,21 +74,6 @@ function ExportPage() {
   return (
     <div className="container">
       <div className="page export">
-        <FlashMessage
-          title={successFlash.title}
-          message={successFlash.message}
-          isVisible={successFlash.isOpen}
-          onClose={successFlash.close}
-        />
-
-        <FlashMessage
-          title={errorFlash.title}
-          message={errorFlash.message}
-          isVisible={errorFlash.isOpen}
-          onClose={errorFlash.close}
-          variant="error"
-        />
-
         <p>Select the information to include in your export:</p>
         <h3 className="mb-4">Dates</h3>
 
