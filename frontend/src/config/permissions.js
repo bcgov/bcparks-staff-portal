@@ -6,6 +6,8 @@ export const ROLES = {
   DOOT_CONTRIBUTOR: "doot-contributor",
   DOOT_USER: "doot-user",
   DOOT_ALL_PARK_ACCESS: "doot-all-park-access",
+  INFORMATION_SVC_APPROVER: "doot-information-svc-approver",
+  RESERVATION_SVC_APPROVER: "doot-reservation-svc-approver",
   ADVISORY_APPROVER: "advisory-approver",
   ADVISORY_SUBMITTER: "advisory-submitter",
   ADVISORY_CONTRIBUTOR: "advisory-contributor",
