@@ -715,6 +715,11 @@ function SeasonForm({
       return true;
     } catch (saveError) {
       console.error("Error saving season as draft:", saveError);
+      flashMessage.open(
+        "Could not save dates as a draft",
+        "Please try again.",
+        { variant: "error" },
+      );
       return false;
     }
   }
@@ -783,6 +788,11 @@ function SeasonForm({
       closePanel();
     } catch (saveError) {
       console.error("Error approving season:", saveError);
+      flashMessage.open(
+        "Could not approve dates",
+        "Please try again.",
+        { variant: "error" },
+      );
     }
   }
 
@@ -808,6 +818,11 @@ function SeasonForm({
       closePanel();
     } catch (saveError) {
       console.error("Error submitting season:", saveError);
+      flashMessage.open(
+        "Could not submit dates",
+        "Please try again.",
+        { variant: "error" },
+      );
     }
   }
 

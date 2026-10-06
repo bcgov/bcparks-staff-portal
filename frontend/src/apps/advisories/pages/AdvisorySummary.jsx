@@ -277,9 +277,14 @@ export default function AdvisorySummary() {
         setAdvisory(advisoryData);
       } catch (error) {
         console.error("Error refreshing advisory after unpublish:", error);
+        globalFlashMessage.open(
+          "Could not refresh advisory",
+          "The update was saved, but the latest details could not be loaded. Refresh the page.",
+          { variant: "error" },
+        );
       }
     }
-  }, [documentId, cmsGet, cmsData, setCmsData]);
+  }, [documentId, cmsGet, cmsData, setCmsData, globalFlashMessage]);
 
   // Extract advisory statuses from cmsData
   const advisoryStatuses = cmsData?.advisoryStatuses || [];

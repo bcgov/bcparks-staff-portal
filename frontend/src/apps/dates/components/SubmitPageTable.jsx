@@ -181,6 +181,7 @@ function getDisplayGroupedDateRanges(groupedDateRanges, showWinterFeeDates) {
 function ApproveButton({ seasonId, status, onApprove }) {
   // disable the approve button if a season is already approved, published, or requested by HQ
   const isDisabled = status !== "pending review";
+  const flashMessage = useContext(globalFlashMessageContext);
   const { refreshTable } = useContext(RefreshTableContext);
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
@@ -198,6 +199,11 @@ function ApproveButton({ seasonId, status, onApprove }) {
       onApprove(response.status);
     } catch (error) {
       console.error("Error approving season:", error);
+      flashMessage.open(
+        "Could not approve dates",
+        "Refresh the page to check the current status before trying again.",
+        { variant: "error" },
+      );
     }
   }
 

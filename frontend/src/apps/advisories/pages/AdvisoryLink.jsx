@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useContext, useEffect } from "react";
 import { cmsAxios } from "@/utils/cms/axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import getEnv from "@/config/getEnv";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 
 /*
   This component is used with React Router to create email redirect links to the
   advisory-summary page based on advisoryNumber instead of publicAdvisoryAuditId
 */
 export default function AdvisoryLink() {
+  const globalFlashMessage = useContext(FlashMessageContext);
   const navigate = useNavigate();
   const auth = useAuth();
   const initialized = !auth.isLoading;
@@ -44,13 +46,25 @@ export default function AdvisoryLink() {
             });
           })
           .catch(() => {
+            globalFlashMessage.open(
+              "Could not open advisory",
+              "The advisory could not be loaded. Try again from the advisories list.",
+              { variant: "error" },
+            );
             navigate(`/advisories-and-closures`, { replace: true });
           });
       }
     } else {
       navigate(`/`, { replace: true });
     }
-  }, [initialized, advisoryNumber, auth, keycloakToken, navigate]);
+  }, [
+    initialized,
+    advisoryNumber,
+    auth,
+    keycloakToken,
+    navigate,
+    globalFlashMessage,
+  ]);
 
   return <main></main>;
 }
