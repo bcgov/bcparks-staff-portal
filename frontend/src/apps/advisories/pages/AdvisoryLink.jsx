@@ -45,12 +45,13 @@ export default function AdvisoryLink() {
               replace: true,
             });
           })
-          .catch(() => {
+          .catch((error) => {
             globalFlashMessage.open(
               "Could not open advisory",
               "The advisory could not be loaded. Try again from the advisories list.",
               { variant: "error" },
             );
+            console.error("Error fetching advisory:", error);
             navigate(`/advisories-and-closures`, { replace: true });
           });
       }

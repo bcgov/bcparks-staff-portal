@@ -266,12 +266,35 @@ export default function Advisory({ mode }) {
 
   useEffect(() => {
     if (initialized && isAuthenticated) {
-      Promise.resolve(getBusinessHours()).then((res) => {
-        setIsAfterHours(calculateAfterHours(res));
+      getBusinessHours()
+        .then((res) => {
+          setIsAfterHours(calculateAfterHours(res));
+        })
+        .catch((error) => {
+          console.error("Error loading business hours:", error);
+          globalFlashMessage.open(
+            "Could not load form metadata",
+            "After-hours publishing information could not be loaded. Refresh and try again.",
+            { variant: "error" },
+          );
+        });
+
+      calculateIsStatHoliday(setIsStatHoliday).catch((error) => {
+        console.error("Error checking statutory holiday status:", error);
+        globalFlashMessage.open(
+          "Could not load form metadata",
+          "Holiday schedule information could not be loaded. Refresh and try again.",
+          { variant: "error" },
+        );
       });
-      calculateIsStatHoliday(setIsStatHoliday);
     }
-  }, [isAuthenticated, initialized, calculateIsStatHoliday, getBusinessHours]);
+  }, [
+    isAuthenticated,
+    initialized,
+    calculateIsStatHoliday,
+    getBusinessHours,
+    globalFlashMessage,
+  ]);
 
   function setLinkIds() {
     const linkIds = [];
