@@ -412,10 +412,10 @@ function SubmitPage() {
 
   /**
    * Fetches all the data from the API when something changes.
-   * @returns {void}
+   * @returns {Promise<object>} API response from the table refresh.
    */
   function refreshTable() {
-    fetchData();
+    return fetchData();
   }
 
   // Clear URL when form panel closes
