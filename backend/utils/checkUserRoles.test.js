@@ -29,8 +29,8 @@ describe("checkUserRoles", () => {
 describe("getRolesFromAuth", () => {
   it("returns the roles array from the staff-portal resource access", () => {
     const userAuth = {
+      // eslint-disable-next-line camelcase -- mirrors Keycloak's payload shape
       resource_access: {
-        // eslint-disable-line camelcase -- mirrors Keycloak's payload shape
         "staff-portal": { roles: [DOOT_APPROVER] },
       },
     };
