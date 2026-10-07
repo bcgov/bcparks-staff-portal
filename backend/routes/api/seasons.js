@@ -641,7 +641,7 @@ router.post(
       savedWithErrors = false,
       deletedDateRangeIds = [],
       dateRangeAnnuals = [],
-      gateDetail = {},
+      gateDetail = null,
       status,
     } = req.body;
     let { readyToPublish } = req.body;

@@ -29,11 +29,14 @@ module, `vi.spyOn()` to wrap an existing function.
 
 ## Current scope
 
-Only pure functions in `utils/*.js` are covered so far — nothing that touches
-Sequelize models, routes/controllers, or a real database. See
-[utils/seasonApprovalHelpers.test.js](utils/seasonApprovalHelpers.test.js) for the
-reference example, including a note on which exports were skipped because they
-query the database.
+Tests cover utility functions, including gate snapshots with mocked Sequelize
+models. See [utils/saveSeasonData.test.js](utils/saveSeasonData.test.js) for
+pre-write and post-write snapshot checks.
+
+[routes/api/publish.test.js](routes/api/publish.test.js) captures the publish
+handler with a mocked Express router and calls it directly. Models, permissions,
+and the Strapi queue are mocked, so no server or database is needed. These tests
+cover audit snapshots, not HTTP middleware or authentication.
 
 When a unit test needs to call code that queries a Sequelize model, mock the
 models module so the test doesn't hit a database:
@@ -46,7 +49,7 @@ vi.mock("../models/index.js", () => ({
 
 ## What's not set up yet
 
-- Route/controller tests (would need an HTTP-mocking layer, e.g. `supertest`)
+- HTTP-level route tests (would need an HTTP-mocking layer, e.g. `supertest`)
 - Integration tests against a database, mock database, or fixtures — approach TBD
 - An enforced coverage threshold
 
