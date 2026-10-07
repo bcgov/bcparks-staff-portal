@@ -79,7 +79,11 @@ apiRouter.use(usersMiddleware);
 
 apiRouter.use("/user", userRoutes);
 apiRouter.use("/parks", checkPermissions([ROLES.DOOT_USER]), parkRoutes);
-apiRouter.use("/edit-published", checkPermissions([ROLES.DOOT_USER]), editPublishedRoutes);
+apiRouter.use(
+  "/edit-published",
+  checkPermissions([ROLES.DOOT_USER]),
+  editPublishedRoutes,
+);
 apiRouter.use("/seasons", checkPermissions([ROLES.DOOT_USER]), seasonRoutes);
 apiRouter.use("/export", checkPermissions([ROLES.DOOT_USER]), exportRoutes);
 apiRouter.use("/publish", checkPermissions([ROLES.DOOT_USER]), publishRoutes);
