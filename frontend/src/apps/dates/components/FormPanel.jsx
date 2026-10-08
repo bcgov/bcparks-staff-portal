@@ -762,6 +762,13 @@ function SeasonForm({
           return;
         }
 
+        // On the Submit page (where "Continue to next form" is shown),
+        // return to the table, the same as a full approval
+        if (showContinueOption) {
+          closePanel();
+          return;
+        }
+
         resetData();
         setNotes("");
         setDeletedDateRangeIds([]);
@@ -1067,6 +1074,12 @@ function FormPanel({
   // Track if the form data has changed.
   // Synced with the computed value in the SeasonForm component
   const [dataChanged, setDataChanged] = useState(false);
+
+  // Check user's approval team
+  const { ROLES, checkAccess } = useAccess();
+  const isInformationSvcApprover = checkAccess(ROLES.INFORMATION_SVC_APPROVER);
+  const isReservationSvcApprover = checkAccess(ROLES.RESERVATION_SVC_APPROVER);
+
   // Keep the season ID and level together, so they always update in the same render.
   // (A mismatched pair would request the wrong API endpoint, e.g. a Feature season at Park level.)
   const [selectedForm, setSelectedForm] = useState(null);
@@ -1157,9 +1170,19 @@ function FormPanel({
   }, [dataChanged, confirmUnsavedChanges, closePanel]);
 
   // The next form in the table that still needs to be submitted or approved
+  // Skipping forms the user's approval team has already approved
   const nextForm = useMemo(
-    () => findNextForm(formList, selectedSeasonId),
-    [formList, selectedSeasonId],
+    () =>
+      findNextForm(formList, selectedSeasonId, {
+        isInformationSvcApprover,
+        isReservationSvcApprover,
+      }),
+    [
+      formList,
+      selectedSeasonId,
+      isInformationSvcApprover,
+      isReservationSvcApprover,
+    ],
   );
 
   // Opens the next form in the panel, without closing it
