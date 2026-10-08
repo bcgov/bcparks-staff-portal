@@ -18,7 +18,7 @@ function DootDatePickerComponent({
 }) {
   // Clone the date prop and store it in local state
   // This is so we can control the DatePicker without modifying the parent data
-  // until the field is blurred or Enter is pressed
+  // until the field is blurred, Enter is pressed, or a date is picked from the calendar
   const [localDate, setLocalDate] = useState(date && new Date(date));
 
   const { elements } = useValidationContext();
@@ -38,6 +38,9 @@ function DootDatePickerComponent({
           className={classNames("form-control", dateField)}
           selected={localDate}
           onChange={(newDate) => onDateChange(newDate)}
+          onSelect={(newDate) => {
+            onSelect(dateField, newDate);
+          }}
           onBlur={() => {
             // Update the `dates` object on blur
             onSelect(dateField, localDate);
