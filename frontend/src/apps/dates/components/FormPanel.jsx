@@ -762,6 +762,8 @@ function SeasonForm({
           return;
         }
 
+        // On the Submit page (where "Continue to next form" is shown),
+        // return to the table, the same as a full approval
         if (showContinueOption) {
           closePanel();
           return;
