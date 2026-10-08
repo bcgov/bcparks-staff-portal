@@ -356,6 +356,8 @@ const keyEditComponent = componentLoader.add(
   "../components/KeyEdit",
 );
 
+componentLoader.override("TopBar", "../components/AdminTopBar");
+
 /**
  * Adds nested JSONB values to AdminJS's flattened record params for custom components.
  * The original flattened params are preserved for AdminJS's normal record handling.

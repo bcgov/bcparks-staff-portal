@@ -54,6 +54,16 @@ export default [
     },
   },
 
+  // Without eslint-plugin-react, components used only in JSX look unused,
+  // so ignore PascalCase names (components) in JSX files
+  {
+    files: ["**/*.jsx"],
+
+    rules: {
+      "no-unused-vars": ["error", { varsIgnorePattern: "^[A-Z]" }],
+    },
+  },
+
   // Limit linting in seeders/migrations directories
   {
     files: ["migrations/**/*.js", "seeders/**/*.js"],
