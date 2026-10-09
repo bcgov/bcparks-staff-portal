@@ -5,7 +5,8 @@
   right: var(--layout-margin-medium);
   // Display above the offcanvas panel
   z-index: 1046;
-  max-width: 75vw;
+  // Full width, minus the margins
+  width: calc(100vw - 2 * var(--layout-margin-medium));
 
   display: flex;
   align-items: center;
@@ -16,8 +17,9 @@
   color: var(--typography-color-primary-invert);
   animation: slideIn 0.3s ease-out;
 
-  @include from-md {
-    max-width: min(40vw, 600px);
+  @include from-sm {
+    // Show in the top-right corner with a min/max width
+    width: clamp(25rem, 40vw, 40rem);
   }
 
   &.success {
