@@ -577,8 +577,7 @@ function SeasonForm({
    * @param {boolean} allowInvalid Allows saving even if the form has validation errors.
    * @param {string} status Status to set for the season.
    * @param {boolean} [resetAfterSave=true] Reset form state and refresh season data after saving.
-   * @returns {Promise<object>} API response from the save request.
-   * @throws {Error} When validation fails and invalid saves are not allowed.
+   * @returns {Promise<object>} Save outcome with the API response or blocking validation errors.
    */
   async function saveForm(allowInvalid, status, resetAfterSave = true) {
     // saveForm is called on any kind of form submission, so validation happens here
@@ -606,9 +605,12 @@ function SeasonForm({
       }
 
       // If there are validation errors and we're not allowing invalid saves, stop here
-      throw new Error(
+      console.error(
         `Validation failed with ${validationErrors.length} errors`,
+        validationErrors,
       );
+
+      return { saved: false, validationErrors };
     }
 
     // Clone the payload, and override the status with the provided value.
@@ -666,7 +668,7 @@ function SeasonForm({
         setSubmitWithErrors(false);
       }
 
-      return response;
+      return { saved: true, response };
     } catch (saveError) {
       console.error("Error saving season:", saveError);
       throw saveError;
@@ -701,7 +703,13 @@ function SeasonForm({
     try {
       // Save draft, and allow saving with validation errors.
       // Don't reset the form data when continuing, because the next form will replace it
-      await saveForm(true, STATUS.REQUESTED.value, !formToOpen);
+      const { saved } = await saveForm(
+        true,
+        STATUS.REQUESTED.value,
+        !formToOpen,
+      );
+
+      if (!saved) return false;
 
       flashMessage.open(
         "Dates saved as draft",
@@ -715,6 +723,11 @@ function SeasonForm({
       return true;
     } catch (saveError) {
       console.error("Error saving season as draft:", saveError);
+      flashMessage.open(
+        "Could not save dates as a draft",
+        "Please try again.",
+        { variant: "error" },
+      );
       return false;
     }
   }
@@ -743,11 +756,13 @@ function SeasonForm({
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
       // Don't reset the form data after saving, because the panel will close
-      const response = await saveForm(
+      const { saved, response } = await saveForm(
         allowSubmitWithErrors,
         STATUS.APPROVED.value,
         false,
       );
+
+      if (!saved) return;
 
       // This occurs when one required approval has been recorded,
       // but another required team approval is still missing.
@@ -790,6 +805,9 @@ function SeasonForm({
       closePanel();
     } catch (saveError) {
       console.error("Error approving season:", saveError);
+      flashMessage.open("Could not approve dates", "Please try again.", {
+        variant: "error",
+      });
     }
   }
 
@@ -800,7 +818,13 @@ function SeasonForm({
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
       // Don't reset the form data after saving, because the panel will close
-      await saveForm(allowSubmitWithErrors, STATUS.PENDING_REVIEW.value, false);
+      const { saved } = await saveForm(
+        allowSubmitWithErrors,
+        STATUS.PENDING_REVIEW.value,
+        false,
+      );
+
+      if (!saved) return;
 
       flashMessage.open(
         "Dates submitted to HQ",
@@ -815,6 +839,9 @@ function SeasonForm({
       closePanel();
     } catch (saveError) {
       console.error("Error submitting season:", saveError);
+      flashMessage.open("Could not submit dates", "Please try again.", {
+        variant: "error",
+      });
     }
   }
 

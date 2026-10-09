@@ -142,13 +142,7 @@ export default function MainLayout() {
           <Footer />
         </div>
 
-        <FlashMessage
-          title={globalFlashMessage.title}
-          message={globalFlashMessage.message}
-          isVisible={globalFlashMessage.isOpen}
-          onClose={globalFlashMessage.close}
-          variant={globalFlashMessage.variant}
-        />
+        <FlashMessage {...globalFlashMessage.props} />
       </UserContext.Provider>
     </FlashMessageContext.Provider>
   );
