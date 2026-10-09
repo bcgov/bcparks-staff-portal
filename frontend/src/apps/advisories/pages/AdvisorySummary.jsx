@@ -107,8 +107,14 @@ export default function AdvisorySummary() {
             setCurrentSiteUrls(siteUrlText);
             setOriginalIsLoaded(true);
           })
-          .catch(() => {
-            // Do nothing
+          .catch((error) => {
+            console.error("Error loading published advisory:", error);
+            setShowOriginalAdvisory(false);
+            globalFlashMessage.open(
+              "Could not load published advisory",
+              "Refresh the page and try again.",
+              { variant: "error" },
+            );
           });
       }
     }
@@ -124,6 +130,7 @@ export default function AdvisorySummary() {
     setOriginalIsLoaded,
     showOriginalAdvisory,
     cmsGet,
+    globalFlashMessage,
   ]);
 
   useEffect(() => {
@@ -277,9 +284,14 @@ export default function AdvisorySummary() {
         setAdvisory(advisoryData);
       } catch (error) {
         console.error("Error refreshing advisory after unpublish:", error);
+        globalFlashMessage.open(
+          "Could not refresh advisory",
+          "The update was saved, but the latest details could not be loaded. Refresh the page.",
+          { variant: "error" },
+        );
       }
     }
-  }, [documentId, cmsGet, cmsData, setCmsData]);
+  }, [documentId, cmsGet, cmsData, setCmsData, globalFlashMessage]);
 
   // Extract advisory statuses from cmsData
   const advisoryStatuses = cmsData?.advisoryStatuses || [];

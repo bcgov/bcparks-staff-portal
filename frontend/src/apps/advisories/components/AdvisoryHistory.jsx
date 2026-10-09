@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import PropTypes from "prop-types";
 import "./AdvisoryHistory.scss";
 import { format } from "date-fns";
 import { useAuth } from "react-oidc-context";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useCms from "@/hooks/useCms";
 import { advisoryHistoryCompare } from "@/utils/appUtil";
 
@@ -21,11 +22,12 @@ export default function AdvisoryHistory({
   const [advisoryHistory, setAdvisoryHistory] = useState([]);
   const auth = useAuth();
   const { cmsGet } = useCms();
+  const globalFlashMessage = useContext(FlashMessageContext);
 
   useEffect(() => {
     if (auth.isAuthenticated && !auth.isLoading && advisoryNumber) {
-      cmsGet(`public-advisory-audits/history/${advisoryNumber}`, {}, "").then(
-        (advisories) => {
+      cmsGet(`public-advisory-audits/history/${advisoryNumber}`, {}, "")
+        .then((advisories) => {
           const advisoriesHistory = [];
 
           function pushHistory({
@@ -219,8 +221,15 @@ export default function AdvisoryHistory({
             // Reverse the array to have the most recent first for display purposes
             setAdvisoryHistory([...uniqueAdvisoryHistory.reverse()]);
           }
-        },
-      );
+        })
+        .catch((error) => {
+          console.error("Error loading advisory history:", error);
+          globalFlashMessage.open(
+            "Could not load advisory history",
+            "Refresh the page and try again.",
+            { variant: "error" },
+          );
+        });
     }
   }, [
     advisoryNumber,
@@ -230,6 +239,7 @@ export default function AdvisoryHistory({
     reviewedDate,
     auth.isAuthenticated,
     auth.isLoading,
+    globalFlashMessage,
     setAdvisoryHistory,
     cmsGet,
   ]);
