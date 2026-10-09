@@ -349,17 +349,6 @@ function SubmitPage() {
     return results;
   }, [parks, filters, parkFiltersActive, metadataLoaded]);
 
-  // Count the number of "results" - Parks, Areas, and Features with a status
-  const numResults = useMemo(
-    () =>
-      // Filter out any Parks that don't match the filters;
-      // they will not count towards the total results and their season data won't show.
-      flattenedFilteredResults.filter(
-        (item) => item.entityType !== "park" || item.matchesFilters,
-      ).length,
-    [flattenedFilteredResults],
-  );
-
   // Format data for rendering in the table
   const tableData = useMemo(() => {
     // Group the flattened results by parkName for rendering in the table
@@ -394,6 +383,9 @@ function SubmitPage() {
     () => getEditableFormList(tableData, tableSortOrder),
     [tableData, tableSortOrder],
   );
+
+  // Count editable seasons matching the active filters across all pages.
+  const numResults = editableForms.length;
 
   const updateFilter = useCallback(
     (key, value) => {
