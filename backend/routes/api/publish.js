@@ -24,6 +24,7 @@ import * as STATUS from "../../constants/seasonStatus.js";
 import * as FEATURE_TYPE from "../../constants/featureType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import splitArray from "../../utils/splitArray.js";
+import { GATE_DETAIL_ATTRIBUTES } from "../../utils/seasonDataHelpers.js";
 import { queueStrapiTask } from "../../utils/strapi/strapiTaskQueue.js";
 
 const router = Router();
@@ -480,12 +481,12 @@ async function formatDateRanges(entity, season) {
  */
 function formatGateInfo(gateDetails = {}) {
   return {
-    hasGate: gateDetails.hasGate ?? false,
-    gateOpenTime: gateDetails.gateOpenTime ?? null,
-    gateCloseTime: gateDetails.gateCloseTime ?? null,
-    gateOpensAtDawn: gateDetails.gateOpensAtDawn ?? false,
-    gateClosesAtDusk: gateDetails.gateClosesAtDusk ?? false,
-    gateOpen24Hours: gateDetails.gateOpen24Hours ?? false,
+    hasGate: gateDetails?.hasGate ?? false,
+    gateOpenTime: gateDetails?.gateOpenTime ?? null,
+    gateCloseTime: gateDetails?.gateCloseTime ?? null,
+    gateOpensAtDawn: gateDetails?.gateOpensAtDawn ?? false,
+    gateClosesAtDusk: gateDetails?.gateClosesAtDusk ?? false,
+    gateOpen24Hours: gateDetails?.gateOpen24Hours ?? false,
     gateNote: "", // Currently no note field in GateDetails
   };
 }
@@ -632,6 +633,7 @@ router.post(
             {
               model: GateDetail,
               as: "gateDetails",
+              attributes: GATE_DETAIL_ATTRIBUTES,
             },
           ],
         },
@@ -646,6 +648,7 @@ router.post(
             {
               model: GateDetail,
               as: "gateDetails",
+              attributes: GATE_DETAIL_ATTRIBUTES,
             },
           ],
         },
@@ -660,11 +663,27 @@ router.post(
             {
               model: GateDetail,
               as: "gateDetails",
+              attributes: GATE_DETAIL_ATTRIBUTES,
             },
           ],
         },
       ],
     });
+
+    // Create a map of gate details by season ID for lookup when creating change logs
+    const gateDetailsBySeasonId = new Map(
+      seasons.map((season) => {
+        const entity = getPublishableEntity(season);
+        const gateDetails = entity?.[entity.type]?.gateDetails;
+
+        return [
+          season.id,
+          season.seasonType === SEASON_TYPE.WINTER
+            ? null
+            : (gateDetails?.toJSON() ?? null),
+        ];
+      }),
+    );
 
     // Build array of details for each season to be published
     const publishData = [];
@@ -795,7 +814,7 @@ router.post(
 
       const statusOldValue = lastLog?.statusNewValue || STATUS.APPROVED;
       const readyToPublishValue = lastLog?.readyToPublishNewValue ?? true;
-      const gateDetailValue = lastLog?.gateDetailNewValue || null;
+      const gateDetailValue = gateDetailsBySeasonId.get(season.id) ?? null;
 
       return {
         seasonId: season.id,

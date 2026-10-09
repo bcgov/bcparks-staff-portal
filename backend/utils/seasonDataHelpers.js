@@ -20,6 +20,17 @@ import {
   SEASON_ATTRIBUTES,
 } from "./seasonQueryHelpers.js";
 
+export const GATE_DETAIL_ATTRIBUTES = [
+  "id",
+  "publishableId",
+  "hasGate",
+  "gateOpenTime",
+  "gateCloseTime",
+  "gateOpensAtDawn",
+  "gateClosesAtDusk",
+  "gateOpen24Hours",
+];
+
 /**
  * Returns the previous Season's dates for a given current Season.
  * @param {Season} currentSeason The current season object with operatingYear and publishableId
@@ -89,7 +100,7 @@ export async function getDateRangeAnnuals(publishableId) {
 }
 
 /**
- * Returns the GateDetail for a given publishableId.
+ * Returns all gate fields for a given publishableId.
  * @param {number} publishableId The ID of the Publishable to get the GateDetail
  * @param {Transaction} [transaction=null] Optional Sequelize transaction object
  * @returns {Promise<Object|null>} GateDetail model, or null if not found
@@ -98,14 +109,7 @@ export async function getGateDetail(publishableId, transaction = null) {
   if (!publishableId) return null;
   return await GateDetail.findOne({
     where: { publishableId },
-    attributes: [
-      "id",
-      "hasGate",
-      "gateOpenTime",
-      "gateCloseTime",
-      "gateOpensAtDawn",
-      "gateClosesAtDusk",
-    ],
+    attributes: GATE_DETAIL_ATTRIBUTES,
     transaction,
   });
 }

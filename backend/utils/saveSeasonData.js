@@ -1,6 +1,7 @@
 import _ from "lodash";
 import { Op } from "sequelize";
 import * as DATE_TYPE from "../constants/dateType.js";
+import { GATE_DETAIL_ATTRIBUTES } from "./seasonDataHelpers.js";
 import {
   Season,
   DateRange,
@@ -81,12 +82,12 @@ export async function updateStatus(
 }
 
 /**
- * Saves season data (regular or winter season)
+ * Saves season data and any submitted gate details.
  * @param {Object} params Parameters for saving season data
  * @param {Season} params.season The season model instance
  * @param {Array} params.dateRanges Array of date ranges to save
  * @param {Array} params.dateRangeAnnuals Array of date range annuals to save
- * @param {Object|null} params.gateDetail Gate detail object (null for winter seasons)
+ * @param {Object|null} [params.gateDetail] Gate detail object; null or omitted skips gate update
  * @param {Object|null} params.oldGateDetail Existing gate detail object before save
  * @param {Array} params.deletedDateRangeIds Array of date range IDs to delete
  * @param {string} params.newStatus New status for the season
@@ -169,19 +170,28 @@ export async function saveSeasonData({
   );
 
   // Handle gateDetail for regular seasons only
-  let saveGateDetail = Promise.resolve();
-  let gateDetailToSave = null;
+  let gateDetailNewValue = null;
 
-  if (!isWinterSeason && gateDetail) {
-    gateDetailToSave = {
-      ...gateDetail,
-      // If gateDetail was created between form load and submission, reuse the existing id for upsert.
-      id: gateDetail?.id ?? oldGateDetail?.id,
-      publishableId: season.publishableId,
-    };
+  if (!isWinterSeason) {
+    if (gateDetail) {
+      const gateDetailToSave = {
+        ...gateDetail,
+        // If gateDetail was created between form load and submission, reuse the existing id for upsert.
+        id: gateDetail?.id ?? oldGateDetail?.id,
+        publishableId: season.publishableId,
+      };
 
-    saveGateDetail = GateDetail.upsert(gateDetailToSave, {
+      await GateDetail.upsert(gateDetailToSave, {
+        transaction,
+      });
+    }
+
+    // Retrieve the latest gate detail from the database after upsert.
+    gateDetailNewValue = await GateDetail.findOne({
+      where: { publishableId: season.publishableId },
+      attributes: GATE_DETAIL_ATTRIBUTES,
       transaction,
+      raw: true,
     });
   }
 
@@ -196,7 +206,7 @@ export async function saveSeasonData({
       readyToPublishOldValue: season.readyToPublish,
       readyToPublishNewValue: actualNewReadyToPublish,
       gateDetailOldValue: oldGateDetail,
-      gateDetailNewValue: gateDetailToSave,
+      gateDetailNewValue,
     },
     { transaction },
   );
@@ -275,7 +285,6 @@ export async function saveSeasonData({
     createChangeLogs,
     deleteDates,
     saveDateRangeAnnuals,
-    saveGateDetail,
   ]);
 
   return updatedSeason;
