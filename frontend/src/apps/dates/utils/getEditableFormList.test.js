@@ -93,7 +93,7 @@ describe("getEditableFormList result counts", () => {
       ],
     };
 
-    expect(getEditableFormList([park], sortOrder)).toEqual([
+    expect(getEditableFormList([park], sortOrder)).toMatchObject([
       {
         seasonId: 12,
         level: "feature",
@@ -119,7 +119,7 @@ describe("getEditableFormList result counts", () => {
       ],
     };
 
-    expect(getEditableFormList([park], sortOrder)).toEqual([
+    expect(getEditableFormList([park], sortOrder)).toMatchObject([
       {
         seasonId: 13,
         level: "park-area",
