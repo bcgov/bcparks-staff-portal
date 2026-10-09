@@ -57,8 +57,12 @@ describe("getSeasonReservationCoverage", () => {
 
 describe("changeLogHasGate / hasGateHistory", () => {
   it("detects a gate from either the old or new snapshot", () => {
-    expect(changeLogHasGate({ gateDetailOldValue: { hasGate: true } })).toBe(true);
-    expect(changeLogHasGate({ gateDetailNewValue: { hasGate: true } })).toBe(true);
+    expect(changeLogHasGate({ gateDetailOldValue: { hasGate: true } })).toBe(
+      true,
+    );
+    expect(changeLogHasGate({ gateDetailNewValue: { hasGate: true } })).toBe(
+      true,
+    );
     expect(changeLogHasGate({})).toBe(false);
   });
 
@@ -92,7 +96,9 @@ describe("requiresGateApproval", () => {
   it("requires approval if either the old or new gate detail has a gate", () => {
     expect(requiresGateApproval({ hasGate: true }, null)).toBe(true);
     expect(requiresGateApproval(null, { hasGate: true })).toBe(true);
-    expect(requiresGateApproval({ hasGate: false }, { hasGate: false })).toBe(false);
+    expect(requiresGateApproval({ hasGate: false }, { hasGate: false })).toBe(
+      false,
+    );
   });
 });
 
@@ -119,7 +125,10 @@ describe("getSeasonApprovalRequirements", () => {
   });
 
   it("requires Information Services approval when a gate exists on a regular season", () => {
-    const season = { seasonType: SEASON_TYPE.REGULAR, feature: { inReservationSystem: true } };
+    const season = {
+      seasonType: SEASON_TYPE.REGULAR,
+      feature: { inReservationSystem: true },
+    };
 
     expect(
       getSeasonApprovalRequirements({ season, gateDetail: { hasGate: true } }),

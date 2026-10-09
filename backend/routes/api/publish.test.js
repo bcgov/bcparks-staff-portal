@@ -81,14 +81,12 @@ describe("publish gate snapshots", () => {
         [entityType]: entity,
       };
 
-      Season.findAll
-        .mockResolvedValueOnce([season])
-        .mockResolvedValueOnce([
-          {
-            id: 1,
-            changeLogs: [{ gateDetailNewValue: { id: 96, publishableId: 84 } }],
-          },
-        ]);
+      Season.findAll.mockResolvedValueOnce([season]).mockResolvedValueOnce([
+        {
+          id: 1,
+          changeLogs: [{ gateDetailNewValue: { id: 96, publishableId: 84 } }],
+        },
+      ]);
       const res = { send: vi.fn() };
 
       await publishHandler({ body: { seasonIds: [1] }, user: { id: 2 } }, res);

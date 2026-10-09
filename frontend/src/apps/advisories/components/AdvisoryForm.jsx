@@ -415,7 +415,8 @@ export default function AdvisoryForm({
   // Removes a link row left empty when the user opens the file picker and cancels it
   function handleFileInputCancel(idx) {
     const link = linksRef.current[idx];
-    const isEmpty = link && !link.type && !link.title && !link.url && !link.file;
+    const isEmpty =
+      link && !link.type && !link.title && !link.url && !link.file;
 
     if (isEmpty) {
       removeLinkRow(idx);

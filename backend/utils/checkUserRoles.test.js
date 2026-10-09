@@ -1,12 +1,16 @@
 import { describe, it, expect } from "vitest";
 import checkUserRoles, { getRolesFromAuth } from "./checkUserRoles.js";
-import { SUPER_ADMIN, DOOT_APPROVER, DOOT_CONTRIBUTOR } from "../constants/userRoles.js";
+import {
+  SUPER_ADMIN,
+  DOOT_APPROVER,
+  DOOT_CONTRIBUTOR,
+} from "../constants/userRoles.js";
 
 describe("checkUserRoles", () => {
   it("returns true when the user has one of the desired roles", () => {
-    expect(checkUserRoles([DOOT_APPROVER], [DOOT_APPROVER, DOOT_CONTRIBUTOR])).toBe(
-      true,
-    );
+    expect(
+      checkUserRoles([DOOT_APPROVER], [DOOT_APPROVER, DOOT_CONTRIBUTOR]),
+    ).toBe(true);
   });
 
   it("returns false when the user has none of the desired roles", () => {
@@ -25,7 +29,8 @@ describe("checkUserRoles", () => {
 describe("getRolesFromAuth", () => {
   it("returns the roles array from the staff-portal resource access", () => {
     const userAuth = {
-      resource_access: { // eslint-disable-line camelcase -- mirrors Keycloak's payload shape
+      // eslint-disable-next-line camelcase -- mirrors Keycloak's payload shape
+      resource_access: {
         "staff-portal": { roles: [DOOT_APPROVER] },
       },
     };
