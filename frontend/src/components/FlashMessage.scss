@@ -1,12 +1,13 @@
 // FlashMessage.scss
 .flash-message {
   position: fixed;
-  top: var(--layout-margin-medium);
-  right: var(--layout-margin-medium);
+  // Full width, minus the layout margins
+  top: 0;
+  right: 0;
+  left: 0;
+  margin: var(--layout-margin-medium);
   // Display above the offcanvas panel
   z-index: 1046;
-  // Full width, minus the margins
-  width: calc(100vw - 2 * var(--layout-margin-medium));
 
   display: flex;
   align-items: center;
@@ -19,6 +20,7 @@
 
   @include from-sm {
     // Show in the top-right corner with a min/max width
+    left: auto;
     width: clamp(25rem, 40vw, 38rem);
   }
 
