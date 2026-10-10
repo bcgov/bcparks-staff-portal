@@ -19,7 +19,7 @@
 
   @include from-sm {
     // Show in the top-right corner with a min/max width
-    width: clamp(25rem, 40vw, 40rem);
+    width: clamp(25rem, 40vw, 38rem);
   }
 
   &.success {
@@ -35,7 +35,8 @@
   }
 
   &__icon {
-    font-size: 20px;
+    font-size: 2rem;
+    padding: 0.75rem;
   }
 
   &__content {
