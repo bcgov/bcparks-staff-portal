@@ -1,5 +1,6 @@
 cluster:
   domain: apps.silver.devops.gov.bc.ca
+  vanityTlsSecretName: bcparks-ssl-wildcard
   ssoAuthUrl: https://dev.loginproxy.gov.bc.ca/auth
   ssoRealm: bcparks-service-transformation
   ssoClientId: staff-portal
