@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import getEditableFormList from "./getEditableFormList.js";
+import getEditableFormList, { findNextForm } from "./getEditableFormList.js";
 import {
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
@@ -138,5 +138,66 @@ describe("getEditableFormList result counts", () => {
 
     expect(getEditableFormList([park], sortOrder)).toHaveLength(0);
     expect(getEditableFormList([createPark()], [])).toHaveLength(0);
+  });
+});
+
+describe("findNextForm", () => {
+  function form(seasonId, status, approvals = {}) {
+    return {
+      seasonId,
+      level: "feature",
+      status,
+      informationSvcApproved: false,
+      reservationSvcApproved: false,
+      ...approvals,
+    };
+  }
+
+  const formList = [
+    form(1, STATUS.REQUESTED.value),
+    form(2, STATUS.APPROVED.value),
+    form(3, STATUS.PUBLISHED.value),
+    form(4, STATUS.PENDING_REVIEW.value),
+  ];
+
+  it("skips approved and published forms", () => {
+    expect(findNextForm(formList, 1)).toEqual(formList[3]);
+  });
+
+  it.each([2, 3])(
+    "returns null when the current form is approved or published (%s)",
+    (seasonId) => {
+      expect(findNextForm(formList, seasonId)).toBeNull();
+    },
+  );
+
+  it("returns null at the end of the list or when the current form isn't in it", () => {
+    expect(findNextForm(formList, 4)).toBeNull();
+    expect(findNextForm(formList, 99)).toBeNull();
+    expect(findNextForm(null, 1)).toBeNull();
+  });
+
+  it("skips forms the user's approval team has already approved", () => {
+    const list = [
+      form(1, STATUS.PENDING_REVIEW.value),
+      form(2, STATUS.PENDING_REVIEW.value, { reservationSvcApproved: true }),
+      form(3, STATUS.PENDING_REVIEW.value, { informationSvcApproved: true }),
+    ];
+
+    expect(findNextForm(list, 1, { isReservationSvcApprover: true })).toEqual(
+      list[2],
+    );
+    expect(findNextForm(list, 1, { isInformationSvcApprover: true })).toEqual(
+      list[1],
+    );
+    // Users on both teams still need to give the missing approval
+    expect(
+      findNextForm(list, 1, {
+        isInformationSvcApprover: true,
+        isReservationSvcApprover: true,
+      }),
+    ).toEqual(list[1]);
+    // Users without a team role don't skip pending forms
+    expect(findNextForm(list, 1)).toEqual(list[1]);
   });
 });

@@ -96,8 +96,22 @@ function isApprovedByUserTeams(
 }
 
 /**
+ * Checks if a form is already approved or published, so it doesn't need any action.
+ * @param {Object} form Form from getEditableFormList
+ * @returns {boolean} True if the form is approved or published
+ */
+function isApprovedOrPublished(form) {
+  return (
+    form.status === STATUS.APPROVED.value ||
+    form.status === STATUS.PUBLISHED.value
+  );
+}
+
+/**
  * Finds the next form after the current one that still needs to be submitted or approved by the user.
  * Approved and published seasons are skipped, as are seasons the user's approval team has already approved.
+ * There's no next form when the current form is approved or published,
+ * so users only continue from forms that need action.
  * @param {Array<{seasonId: number, level: string, status: string}>|null} formList Ordered list from getEditableFormList
  * @param {number} seasonId Season ID of the form currently open (unique across all levels)
  * @param {Object} [approverTeams] The user's approval teams
@@ -117,14 +131,16 @@ export function findNextForm(
   // If the current form isn't in the table (e.g. filtered out), there's no "next" form
   if (currentIndex === -1) return null;
 
+  // Don't continue from an approved or published form, regardless of the table filters
+  if (isApprovedOrPublished(formList[currentIndex])) return null;
+
   // Search forward from the current form
   const remainingForms = formList.slice(currentIndex + 1);
 
   return (
     remainingForms.find(
       (form) =>
-        form.status !== STATUS.APPROVED.value &&
-        form.status !== STATUS.PUBLISHED.value &&
+        !isApprovedOrPublished(form) &&
         !isApprovedByUserTeams(form, {
           isInformationSvcApprover,
           isReservationSvcApprover,
