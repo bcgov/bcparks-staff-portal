@@ -28,10 +28,24 @@
     white-space: nowrap;
   }
 
-  .advisory-unpublished-toggle input {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-right: 0.5rem;
+  // Keep checkbox and label aligned
+  .advisory-unpublished-toggle {
+    display: flex;
+    align-items: flex-start;
+    padding-left: 0;
+
+    input.form-check-input {
+      width: 1.25rem;
+      height: 1.25rem;
+      margin: 0.2rem 0.5rem 0 0;
+    }
+
+    // Keep label and tooltip icon aligned
+    label.form-check-label {
+      button.tooltip-trigger {
+        vertical-align: top;
+      }
+    }
   }
 
   .filter-row {
