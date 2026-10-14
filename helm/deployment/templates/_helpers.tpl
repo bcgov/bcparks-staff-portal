@@ -72,3 +72,21 @@ Gets the suffix of the namespace. (-dev, -tools, ... )
 https://{{ .Release.Name }}-{{ .Values.frontend.componentName }}-{{ .Release.Namespace }}.{{ .Values.cluster.domain }}
 {{- end -}}
 
+
+{{/*
+Frontend vanity route name: vanity-staff for the main release, vanity-<release>-staff otherwise.
+*/}}
+{{ define "bcparks_frontend_vanity_route_name" -}}
+{{- if eq .Release.Name "main" -}}
+vanity-staff
+{{- else -}}
+vanity-{{ .Release.Name }}-staff
+{{- end -}}
+{{- end -}}
+
+{{/*
+Backend vanity route name: vanity-staff-api for the main release, vanity-<release>-staff-api otherwise.
+*/}}
+{{ define "bcparks_backend_vanity_route_name" -}}
+{{ include "bcparks_frontend_vanity_route_name" . }}-api
+{{- end -}}
