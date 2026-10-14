@@ -52,7 +52,15 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       parkId: DataTypes.INTEGER,
       strapiFeatureId: DataTypes.STRING,
-      featureTypeId: DataTypes.INTEGER,
+      featureTypeId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        validate: {
+          notNull: {
+            msg: "Please select a feature type.",
+          },
+        },
+      },
       dateableId: {
         type: DataTypes.INTEGER,
         unique: true,
