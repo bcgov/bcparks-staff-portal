@@ -2,7 +2,10 @@
   min-height: 2rem;
 
   .badge {
-    height: 1.8rem;
+    text-align: start;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding: 0.375rem 0.625rem !important;
   }
 
   .btn-close {
