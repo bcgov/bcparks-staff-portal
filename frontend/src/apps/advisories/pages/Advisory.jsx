@@ -1375,7 +1375,7 @@ export default function Advisory({ mode }) {
               <div>
                 <button
                   type="button"
-                  className="btn btn-link btn-back mt-4"
+                  className="btn btn-link btn-back text-start"
                   onClick={navigateBack}
                 >
                   <FontAwesomeIcon icon={faArrowLeft} className="me-1" />

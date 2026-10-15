@@ -464,7 +464,7 @@ export default function AdvisorySummary() {
                 <div>
                   <button
                     type="button"
-                    className="btn btn-link btn-back my-4"
+                    className="btn btn-link btn-back text-start"
                     onClick={() => {
                       navigate(dashboardPath, {
                         state: { index: index >= 0 ? index : 0 },
