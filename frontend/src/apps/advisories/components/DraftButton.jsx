@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
-import { Button } from "@/components/Button";
+import { ActionButton } from "@/components/ActionButton";
 
 export default function DraftButton({ onClick, hasLoader }) {
   return (
-    <Button
+    <ActionButton
       label="Save draft"
-      styling="btn-outline-primary btn"
+      variant="secondary"
       onClick={onClick}
       hasLoader={hasLoader}
     />

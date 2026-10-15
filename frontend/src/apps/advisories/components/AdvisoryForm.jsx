@@ -480,10 +480,10 @@ export default function AdvisoryForm({
 
     if (mode === "update") {
       // Update advisory with "Draft" status
-      return Boolean(await updateAdvisory(draftStatus));
+      return Boolean(await updateAdvisory(draftStatus, { saveAsDraft: true }));
     }
     // Create advisory with "Draft" status
-    return Boolean(await createAdvisory(draftStatus));
+    return Boolean(await createAdvisory(draftStatus, { saveAsDraft: true }));
   }
 
   saveDraftHandlerRef.current = handleSaveDraft;
@@ -1748,7 +1748,15 @@ export default function AdvisoryForm({
       <section className="action-buttons">
         {renderHelperText(formError, formError !== "", "mb-3")}
 
-        <div className="d-flex justify-content-start gap-2">
+        <div
+          className={classNames(
+            "d-flex",
+            "flex-column",
+            "flex-sm-row",
+            "justify-content-start",
+            "gap-2",
+          )}
+        >
           <DraftButton onClick={handleSaveDraft} hasLoader={isSavingDraft} />
 
           <PrimaryActions

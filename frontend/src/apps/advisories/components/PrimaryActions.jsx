@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import PropTypes from "prop-types";
-import { Button } from "@/components/Button";
+import { ActionButton } from "@/components/ActionButton";
 import useAccess from "@/hooks/useAccess";
 import { ROLES } from "@/config/permissions";
 
@@ -41,9 +41,8 @@ export default function PrimaryActions({
   if (!canPublish) {
     // Show a button to submit for review if the user can't publish directly
     return (
-      <Button
+      <ActionButton
         label="Submit for review"
-        styling="btn-primary btn"
         onClick={onSubmit}
         hasLoader={isSubmitting}
       />
@@ -52,9 +51,8 @@ export default function PrimaryActions({
 
   // Show a button to update directly if the user has permission
   return (
-    <Button
+    <ActionButton
       label={publishButtonLabel}
-      styling="btn-primary btn"
       onClick={onPublish}
       hasLoader={isSubmitting}
     />

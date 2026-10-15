@@ -24,7 +24,7 @@ import useAccess from "@/hooks/useAccess";
 import useCms from "@/hooks/useCms";
 import "./AdvisoryDashboard.scss";
 import emptyReviewQueueImage from "@/apps/advisories/assets/empty-review-queue.png";
-import { Button } from "@/components/Button";
+import { ActionButton } from "@/components/ActionButton";
 import { CountBadge } from "@/apps/advisories/components/CountBadge";
 import { MultiSelect } from "@/apps/advisories/components/MultiSelect";
 import { ReviewIcon } from "@/apps/advisories/components/ReviewIcon";
@@ -1305,9 +1305,13 @@ export default function AdvisoryDashboard({
         <div className="row">
           <div
             className={classNames(
-              "col-12 order-xl-0 order-1 d-flex flex-wrap",
+              "col-12",
+              "order-xl-0",
+              "order-1",
+              "d-flex",
+              "flex-wrap",
               {
-                "col-xl-9": !isReviewDashboard,
+                "col-xl": !isReviewDashboard,
               },
             )}
           >
@@ -1354,15 +1358,28 @@ export default function AdvisoryDashboard({
             </div>
           </div>
           {!isReviewDashboard && (
-            <div className="col-xl-3 col-12 order-xl-1 order-0 d-flex align-items-start justify-content-end">
-              <Button
+            <div
+              className={classNames(
+                "col-xl-auto",
+                "col-12",
+                "order-xl-1",
+                "order-0",
+                "d-flex",
+                "flex-column",
+                "flex-sm-row",
+                "align-items-stretch",
+                "align-items-sm-start",
+                "justify-content-end",
+              )}
+            >
+              <ActionButton
                 label={
                   <>
-                    <FontAwesomeIcon icon={faPlus} className="plus-icon me-2" />
+                    <FontAwesomeIcon icon={faPlus} className="plus-icon" />
                     Create advisory / closure
                   </>
                 }
-                styling="btn-primary btn mt-3"
+                className="mt-3"
                 onClick={() => {
                   navigate("/create-advisory");
                 }}
