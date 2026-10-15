@@ -12,6 +12,7 @@ export default function PrimaryActions({
   onPublish,
   onSubmit,
   isSubmitting,
+  isSavingDraft,
 }) {
   const { hasAnyRole } = useAccess();
 
@@ -45,6 +46,7 @@ export default function PrimaryActions({
         label="Submit for review"
         onClick={onSubmit}
         hasLoader={isSubmitting}
+        disabled={isSavingDraft || isSubmitting}
       />
     );
   }
@@ -55,6 +57,7 @@ export default function PrimaryActions({
       label={publishButtonLabel}
       onClick={onPublish}
       hasLoader={isSubmitting}
+      disabled={isSavingDraft || isSubmitting}
     />
   );
 }
@@ -65,6 +68,7 @@ PrimaryActions.propTypes = {
   onPublish: PropTypes.func.isRequired,
   onSubmit: PropTypes.func.isRequired,
   isSubmitting: PropTypes.bool,
+  isSavingDraft: PropTypes.bool,
   isUrgent: PropTypes.bool,
   isApprover: PropTypes.bool,
 };

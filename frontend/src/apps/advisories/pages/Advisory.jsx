@@ -1119,8 +1119,11 @@ export default function Advisory({ mode }) {
    */
   async function createAdvisory(status, { saveAsDraft = false } = {}) {
     try {
-      setIsSavingDraft(saveAsDraft);
-      setIsSubmitting(!saveAsDraft);
+      if (saveAsDraft) {
+        setIsSavingDraft(true);
+      } else {
+        setIsSubmitting(true);
+      }
 
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);
@@ -1233,8 +1236,11 @@ export default function Advisory({ mode }) {
    */
   async function updateAdvisory(status, { saveAsDraft = false } = {}) {
     try {
-      setIsSavingDraft(saveAsDraft);
-      setIsSubmitting(!saveAsDraft);
+      if (saveAsDraft) {
+        setIsSavingDraft(true);
+      } else {
+        setIsSubmitting(true);
+      }
 
       const selProtectedAreas = selectedProtectedAreas.map((x) => x.value);
       const selRegions = selectedRegions.map((x) => x.value);

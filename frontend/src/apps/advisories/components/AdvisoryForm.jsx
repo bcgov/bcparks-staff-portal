@@ -1757,7 +1757,11 @@ export default function AdvisoryForm({
             "gap-2",
           )}
         >
-          <DraftButton onClick={handleSaveDraft} hasLoader={isSavingDraft} />
+          <DraftButton
+            onClick={handleSaveDraft}
+            hasLoader={isSavingDraft}
+            disabled={isSavingDraft || isSubmitting}
+          />
 
           <PrimaryActions
             mode={mode}
@@ -1767,6 +1771,7 @@ export default function AdvisoryForm({
             onPublish={handlePublish}
             onSubmit={handleSubmitForReview}
             isSubmitting={isSubmitting}
+            isSavingDraft={isSavingDraft}
           />
         </div>
       </section>
