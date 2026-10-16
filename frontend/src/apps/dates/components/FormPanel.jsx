@@ -9,6 +9,7 @@ import {
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
+import { useBlocker } from "react-router-dom";
 import { isEqual, omit, keyBy } from "lodash-es";
 
 import FeatureIcon from "@/apps/dates/components/FeatureIcon";
@@ -1195,6 +1196,31 @@ function FormPanel({
 
     closePanel();
   }, [dataChanged, confirmUnsavedChanges, closePanel]);
+
+  // Prompt before the browser back/forward buttons leave a form with unsaved changes.
+  // Only POP navigations are blocked, so the panel's own URL updates aren't interrupted.
+  const blocker = useBlocker(
+    ({ historyAction }) => show && dataChanged && historyAction === "POP",
+  );
+  const isHandlingBlockerRef = useRef(false);
+
+  useEffect(() => {
+    if (blocker.state !== "blocked" || isHandlingBlockerRef.current) return;
+
+    isHandlingBlockerRef.current = true;
+
+    confirmUnsavedChanges().then((proceed) => {
+      isHandlingBlockerRef.current = false;
+
+      if (proceed) {
+        // The parent page closes the panel when the URL changes
+        setDataChanged(false);
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    });
+  }, [blocker, confirmUnsavedChanges]);
 
   // The next form in the table that still needs to be submitted or approved
   // Skipping forms the user's approval team has already approved

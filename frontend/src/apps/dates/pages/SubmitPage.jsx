@@ -184,9 +184,12 @@ function SubmitPage() {
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const previousIsFormPanelOpenRef = useRef(false);
 
-  // Initialize form from URL parameters if provided
+  // Open the form from URL parameters if provided,
+  // or close it when the URL leaves the edit route (e.g. the browser back button)
   useEffect(() => {
-    if (params.seasonId) {
+    if (!params.seasonId) {
+      setIsFormPanelOpen(false);
+    } else {
       // Extract level from pathname (park, park-area, or feature)
       const pathname = window.location.pathname;
       const match = pathname.match(/\/edit\/([^/]+)\/\d+/u);
