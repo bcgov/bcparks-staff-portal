@@ -167,9 +167,12 @@ export default function useConfirmation() {
       open,
       confirmUnsavedChanges,
 
+      // Closes any open dialog, settling its prompt as dismissed
+      dismiss: onClose,
+
       // Export all the component props as one object for convenience
       props,
     }),
-    [open, confirmUnsavedChanges, props],
+    [open, confirmUnsavedChanges, onClose, props],
   );
 }

@@ -1170,8 +1170,26 @@ function FormPanel({
     setDataChanged(false);
   }, [setShow, setDataChanged]);
 
+  // Latest "show" value, for async callbacks that resolve after the panel has closed
+  const showRef = useRef(show);
+
+  showRef.current = show;
+
+  // Dismiss any open dialog (e.g. the approved/published status prompt)
+  // when the panel closes from outside, like the browser back button
+  const { dismiss: dismissModal } = modal;
+
+  useEffect(() => {
+    if (!show) {
+      dismissModal();
+    }
+  }, [show, dismissModal]);
+
   // Close the panel when the status modal is dismissed
   const handleStatusCancelClose = useCallback(() => {
+    // Already closed (e.g. the prompt was dismissed by navigating back), so don't close again
+    if (!showRef.current) return;
+
     closingFromStatusPrompt.current = true;
     setShow(false);
     setDataChanged(false);
