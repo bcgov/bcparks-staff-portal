@@ -4,6 +4,7 @@ import {
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
 } from "./submitPageFilters.js";
+import * as FEATURE_TYPE from "@/apps/dates/constants/featureType.js";
 import * as STATUS from "@/constants/seasonStatus.js";
 
 const trailType = { name: "Trail", featureTypeNumber: 1 };
@@ -138,6 +139,39 @@ describe("getEditableFormList result counts", () => {
 
     expect(getEditableFormList([park], sortOrder)).toHaveLength(0);
     expect(getEditableFormList([createPark()], [])).toHaveLength(0);
+  });
+});
+
+describe("shouldShowWinterFeeSection feature type filter", () => {
+  function filters(featureTypes) {
+    return {
+      featureTypes,
+      status: [],
+      dateTypes: [],
+      isInReservationSystem: false,
+    };
+  }
+
+  it("shows the section when Frontcountry campground is selected", () => {
+    const frontcountry = {
+      name: "Renamed in Strapi",
+      featureTypeNumber: FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND,
+    };
+
+    expect(
+      shouldShowWinterFeeSection(createPark(), filters([frontcountry])),
+    ).toBe(true);
+  });
+
+  it("hides the section when only other feature types are selected", () => {
+    const groupCampground = {
+      name: "Frontcountry campground",
+      featureTypeNumber: FEATURE_TYPE.GROUP_CAMPGROUND,
+    };
+
+    expect(
+      shouldShowWinterFeeSection(createPark(), filters([groupCampground])),
+    ).toBe(false);
   });
 });
 
