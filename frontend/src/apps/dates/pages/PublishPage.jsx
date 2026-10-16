@@ -1,10 +1,12 @@
 import { useState, useEffect, useContext } from "react";
+import classNames from "classnames";
 import useConfirmation from "@/hooks/useConfirmation";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import LoadingBar from "@/components/LoadingBar";
+import { ActionButton } from "@/components/ActionButton";
 import NotReadyFlag from "@/apps/dates/components/NotReadyFlag";
 import PaginationControls from "@/components/PaginationControls";
 import * as SEASON_TYPE from "@/apps/dates/constants/seasonType";
@@ -124,21 +126,23 @@ function PublishPage() {
       <div className="page publish">
         <ConfirmationDialog {...confirmation.props} />
 
-        <div className="d-flex justify-content-end mb-2">
-          <button
+        <div
+          className={classNames(
+            "d-flex",
+            "flex-column",
+            "flex-sm-row",
+            "gap-2",
+            "gap-sm-0",
+            "justify-content-end",
+            "mb-2",
+          )}
+        >
+          <ActionButton
+            label="Publish to API"
             onClick={publishToApi}
             disabled={saving || !hasPublishableSeasons}
-            className="btn btn-primary"
-          >
-            Publish to API
-          </button>
-
-          {saving && (
-            <span
-              className="spinner-border text-primary align-self-center me-2"
-              aria-hidden="true"
-            ></span>
-          )}
+            hasLoader={saving}
+          />
         </div>
 
         <div className="table-responsive flex-fill">

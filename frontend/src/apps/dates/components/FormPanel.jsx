@@ -9,6 +9,7 @@ import {
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import { isEqual, omit, keyBy } from "lodash-es";
 
 import FeatureIcon from "@/apps/dates/components/FeatureIcon";
@@ -22,6 +23,7 @@ import FeatureSeasonForm from "@/apps/dates/components/SeasonForms/FeatureSeason
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import ErrorSummary from "@/apps/dates/components/FormErrorSummary";
 import StatusBadge from "@/components/StatusBadge";
+import { ActionButton } from "@/components/ActionButton";
 
 import { useApiGet, useApiPost } from "@/hooks/useApi";
 import useAccess from "@/hooks/useAccess";
@@ -39,24 +41,6 @@ import "./FormPanel.scss";
 
 // Components
 
-function ButtonLoading({ show }) {
-  if (show) {
-    return (
-      <span
-        className="spinner-border spinner-border-sm me-1"
-        role="status"
-        aria-hidden="true"
-      ></span>
-    );
-  }
-
-  return null;
-}
-
-ButtonLoading.propTypes = {
-  show: PropTypes.bool.isRequired,
-};
-
 function Buttons({
   onSave,
   onSaveAndContinue,
@@ -66,59 +50,56 @@ function Buttons({
   submitter,
   parkOperator = false,
   loading = false,
+  savingAction = null,
   disableDraftButton = false,
   disablePrimaryActionButton = false,
   continueToNext = false,
 }) {
   return (
-    <div>
-      <button
-        type="button"
+    <div className={classNames("d-flex", "flex-column", "d-sm-block", "gap-2")}>
+      <ActionButton
+        label="Save draft"
+        variant="secondary"
         onClick={onSave}
-        className="btn btn-outline-primary form-btn fw-bold me-3"
+        className={classNames("form-btn", "me-0", "me-sm-3")}
         disabled={loading || disableDraftButton}
-      >
-        Save draft
-      </button>
+        hasLoader={loading && savingAction === "draft"}
+      />
 
       {/* Show the Save draft and continue button for park operators when continuing to the next form */}
       {parkOperator && continueToNext && (
-        <button
-          type="button"
+        <ActionButton
+          label="Save draft and continue"
           onClick={onSaveAndContinue}
-          className="btn btn-primary form-btn fw-bold me-2"
+          className={classNames("form-btn", "me-0", "me-sm-2")}
           disabled={loading || disableDraftButton}
-        >
-          Save draft and continue
-        </button>
+          hasLoader={loading && savingAction === "draftAndContinue"}
+        />
       )}
 
       {/* Show the Approve button for users with the approver role */}
       {approver && (
-        <button
-          type="button"
+        <ActionButton
+          label={
+            continueToNext ? "Mark approved and continue" : "Mark approved"
+          }
           onClick={onApprove}
-          className="btn btn-primary form-btn fw-bold me-2"
+          className={classNames("form-btn", "me-0", "me-sm-2")}
           disabled={loading || disablePrimaryActionButton}
-        >
-          {continueToNext ? "Mark approved and continue" : "Mark approved"}
-        </button>
+          hasLoader={loading && savingAction === "approve"}
+        />
       )}
 
       {/* Show the Submit button for submitters, but hide it for approvers */}
       {submitter && !approver && (
-        <button
-          type="button"
+        <ActionButton
+          label={continueToNext ? "Submit to HQ and continue" : "Submit to HQ"}
           onClick={onSubmit}
-          className="btn btn-primary form-btn fw-bold me-2"
+          className={classNames("form-btn", "me-0", "me-sm-2")}
           disabled={loading || disablePrimaryActionButton}
-        >
-          {continueToNext ? "Submit to HQ and continue" : "Submit to HQ"}
-        </button>
+          hasLoader={loading && savingAction === "submit"}
+        />
       )}
-
-      {/* Show one loader for any loading state */}
-      <ButtonLoading show={loading} />
     </div>
   );
 }
@@ -132,6 +113,12 @@ Buttons.propTypes = {
   submitter: PropTypes.bool.isRequired,
   parkOperator: PropTypes.bool,
   loading: PropTypes.bool,
+  savingAction: PropTypes.oneOf([
+    "draft",
+    "draftAndContinue",
+    "approve",
+    "submit",
+  ]),
   disableDraftButton: PropTypes.bool,
   disablePrimaryActionButton: PropTypes.bool,
   continueToNext: PropTypes.bool,
@@ -225,6 +212,7 @@ function SeasonForm({
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
   );
+  const [savingAction, setSavingAction] = useState(null);
 
   const {
     data: apiData,
@@ -700,6 +688,8 @@ function SeasonForm({
       }
     }
 
+    setSavingAction(continueAfterSave ? "draftAndContinue" : "draft");
+
     try {
       // Save draft, and allow saving with validation errors.
       // Don't reset the form data when continuing, because the next form will replace it
@@ -729,6 +719,8 @@ function SeasonForm({
         { variant: "error" },
       );
       return false;
+    } finally {
+      setSavingAction(null);
     }
   }
 
@@ -752,6 +744,8 @@ function SeasonForm({
   async function onApprove() {
     // Keep the next form from before saving, since the table data will refresh after saving
     const formToOpen = continueToNext ? nextForm : null;
+
+    setSavingAction("approve");
 
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
@@ -808,12 +802,16 @@ function SeasonForm({
       flashMessage.open("Could not approve dates", "Please try again.", {
         variant: "error",
       });
+    } finally {
+      setSavingAction(null);
     }
   }
 
   async function onSubmit() {
     // Keep the next form from before saving, since the table data will refresh after saving
     const formToOpen = continueToNext ? nextForm : null;
+
+    setSavingAction("submit");
 
     try {
       // Save and update status, bypassing validation errors if the user has checked the "Submit with errors" checkbox
@@ -842,6 +840,8 @@ function SeasonForm({
       flashMessage.open("Could not submit dates", "Please try again.", {
         variant: "error",
       });
+    } finally {
+      setSavingAction(null);
     }
   }
 
@@ -1057,6 +1057,7 @@ function SeasonForm({
             onSaveAndContinue={() => promptAndSave(true)}
             onSubmit={onSubmit}
             loading={sendingSave}
+            savingAction={savingAction}
             disableDraftButton={disableDraftButton}
             disablePrimaryActionButton={disablePrimaryActionButton}
             continueToNext={showContinueOption && continueToNext}

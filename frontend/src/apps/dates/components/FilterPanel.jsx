@@ -1,6 +1,8 @@
 import PropTypes from "prop-types";
+import classNames from "classnames";
 import Offcanvas from "react-bootstrap/Offcanvas";
 import LoadingBar from "@/components/LoadingBar";
+import { ActionButton } from "@/components/ActionButton";
 import SwitchToggle from "@/apps/dates/components/SwitchToggle";
 import MultiSelectField from "@/apps/dates/components/MultiSelectField";
 import "./FilterPanel.scss";
@@ -125,10 +127,13 @@ function FilterPanel({
             </div>
           </>
         )}
-        <div className="mt-4">
-          <button className="btn btn-primary" onClick={() => handleClose()}>
-            {`Show ${filteredCount} result${filteredCount !== 1 ? "s" : ""}`}
-          </button>
+        <div
+          className={classNames("mt-4", "d-flex", "flex-column", "d-sm-block")}
+        >
+          <ActionButton
+            label={`Show ${filteredCount} result${filteredCount !== 1 ? "s" : ""}`}
+            onClick={() => handleClose()}
+          />
 
           <div className="mt-3">
             <ClearFilters />
