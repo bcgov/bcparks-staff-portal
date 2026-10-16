@@ -1187,15 +1187,8 @@ function FormPanel({
 
   // Functions
 
-  // Hides the form panel and resets the dataChanged state and modal
-  const closePanel = useCallback(() => {
-    closingFromStatusPrompt.current = false;
-    setShow(false);
-    setDataChanged(false);
-  }, [setShow, setDataChanged]);
-
   // Latest "show" value, for async callbacks that resolve after the panel has closed.
-  // Cleared on unmount too (e.g. Back leaves the page), so dismissed prompts can't navigate afterwards.
+  // Cleared on unmount too (e.g. Back leaves the page), so late callbacks can't navigate afterwards.
   // Declared before the dismiss effect below, so it's updated before any prompt is dismissed.
   const showRef = useRef(show);
 
@@ -1206,6 +1199,16 @@ function FormPanel({
       showRef.current = false;
     };
   }, [show]);
+
+  // Hides the form panel and resets the dataChanged state and modal
+  const closePanel = useCallback(() => {
+    // Already closed (e.g. a save finished after navigating back), so don't close again
+    if (!showRef.current) return;
+
+    closingFromStatusPrompt.current = false;
+    setShow(false);
+    setDataChanged(false);
+  }, [setShow, setDataChanged]);
 
   // Dismiss any open dialog (e.g. the approved/published status prompt)
   // when the panel closes from outside, like the browser back button.
@@ -1263,6 +1266,10 @@ function FormPanel({
 
     confirmUnsavedChanges().then((proceed) => {
       isHandlingBlockerRef.current = false;
+
+      // The panel closed while the prompt or its save was pending,
+      // so this blocker may already be released
+      if (!showRef.current) return;
 
       if (proceed) {
         // The parent page closes the panel when the URL changes
