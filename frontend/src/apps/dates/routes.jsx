@@ -28,17 +28,10 @@ const datesRoutes = [
         element: <SubmitPage />,
       },
 
-      // Edit season form routes
+      // Edit season form route: opens the form panel over the submit page
+      // (level is "park", "park-area", or "feature")
       {
-        path: "edit/park/:seasonId",
-        element: <SubmitPage />,
-      },
-      {
-        path: "edit/park-area/:seasonId",
-        element: <SubmitPage />,
-      },
-      {
-        path: "edit/feature/:seasonId",
+        path: "edit/:level/:seasonId",
         element: <SubmitPage />,
       },
 
