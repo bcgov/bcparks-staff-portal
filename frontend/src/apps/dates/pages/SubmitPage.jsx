@@ -228,10 +228,11 @@ function SubmitPage() {
   }
 
   // Close the form panel by navigating back to the table URL.
-  // Navigate to the SubmitPage route directly, so it stays mounted and keeps its filter state
-  function closeForm() {
+  // Navigate to the SubmitPage route directly, so it stays mounted and keeps its filter state.
+  // Memoized because FormPanel's closePanel depends on it, and SeasonForm resets its data when that changes.
+  const closeForm = useCallback(() => {
     navigate("/dates/submit", { replace: true });
-  }
+  }, [navigate]);
 
   // open form panel when the Edit button is clicked
   function formPanelHandler(formDataObj) {
