@@ -1,11 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
 import SubmitPageTable from "@/apps/dates/components/SubmitPageTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/apps/dates/components/MultiSelect";
-import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/apps/dates/components/FilterPanel";
 import FilterStatus from "@/apps/dates/components/FilterStatus";
@@ -46,6 +46,22 @@ function getCurrentSeason(seasons = []) {
     regular: regularSeason,
     winter: winterSeason,
   };
+}
+
+const FORM_LEVELS = new Set(["park", "park-area", "feature"]);
+
+/**
+ * Parses the open form from the edit route's URL parameters.
+ * @param {string} [level] Form level URL parameter
+ * @param {string} [seasonId] Season ID URL parameter
+ * @returns {{seasonId: number, level: string}|null} The form, or null if the URL has no valid form
+ */
+function getFormFromParams(level, seasonId) {
+  if (!FORM_LEVELS.has(level) || !/^\d+$/u.test(seasonId ?? "")) {
+    return null;
+  }
+
+  return { seasonId: parseInt(seasonId, 10), level };
 }
 
 function SubmitPage() {
@@ -179,45 +195,44 @@ function SubmitPage() {
     featureTypes: [],
     isInReservationSystem: false,
   });
-  const [formData, setFormData] = useState({});
-  const [isFormPanelOpen, setIsFormPanelOpen] = useState(false);
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const previousIsFormPanelOpenRef = useRef(false);
 
-  // Initialize form from URL parameters if provided
-  useEffect(() => {
-    if (params.seasonId) {
-      // Extract level from pathname (park, park-area, or feature)
-      const pathname = window.location.pathname;
-      const match = pathname.match(/\/edit\/([^/]+)\/\d+/u);
-      const level = match ? match[1] : "";
+  // The URL is the source of truth for the open form: /dates/edit/:level/:seasonId
+  const urlForm = useMemo(
+    () => getFormFromParams(params.level, params.seasonId),
+    [params.level, params.seasonId],
+  );
+  const isFormPanelOpen = Boolean(urlForm);
 
-      if (level) {
-        setFormData({
-          seasonId: parseInt(params.seasonId, 10),
-          level,
-        });
-        setIsFormPanelOpen(true);
-      }
-    }
-  }, [params.seasonId]);
+  // Keep the last opened form, so the panel keeps its content while it animates closed
+  const [lastForm, setLastForm] = useState(null);
+
+  if (urlForm && urlForm !== lastForm) {
+    setLastForm(urlForm);
+  }
+
+  const formData = urlForm ?? lastForm;
 
   /**
-   * Opens the form panel for a season and updates the URL to match.
+   * Opens the form panel for a season by navigating to its URL.
    * @param {Object} form Form to open
    * @param {number} form.seasonId Season ID
    * @param {string} form.level Form level: "park", "park-area", or "feature"
    * @returns {void}
    */
   function openForm({ seasonId, level }) {
-    setFormData({ seasonId, level });
-    setIsFormPanelOpen(true);
-
     // Continuing replaces the edit entry so closing leaves no stale forms in history
     navigate(`/dates/edit/${level}/${seasonId}`, {
       replace: isFormPanelOpen,
     });
   }
+
+  // Close the form panel by navigating back to the table URL.
+  // Navigate to the SubmitPage route directly, so it stays mounted and keeps its filter state.
+  // Memoized because FormPanel's closePanel depends on it, and SeasonForm resets its data when that changes.
+  const closeForm = useCallback(() => {
+    navigate("/dates/submit", { replace: true });
+  }, [navigate]);
 
   // open form panel when the Edit button is clicked
   function formPanelHandler(formDataObj) {
@@ -410,25 +425,13 @@ function SubmitPage() {
     return fetchData();
   }
 
-  // Clear URL when form panel closes
-  useEffect(() => {
-    const wasFormPanelOpen = previousIsFormPanelOpenRef.current;
-
-    if (wasFormPanelOpen && !isFormPanelOpen && params.seasonId) {
-      // Navigate to the SubmitPage route directly, so it stays mounted and keeps its filter state
-      navigate("/dates/submit", { replace: true });
-    }
-
-    previousIsFormPanelOpenRef.current = isFormPanelOpen;
-  }, [isFormPanelOpen, params.seasonId, navigate]);
-
   // While the form panel is open, keep the table on the page with the open form's park,
   // so the table stays there after continuing to other forms and closing the panel
   useEffect(() => {
-    if (!isFormPanelOpen || !formData.seasonId) return;
+    if (!urlForm) return;
 
     const currentForm = editableForms.find(
-      (form) => form.seasonId === formData.seasonId,
+      (form) => form.seasonId === urlForm.seasonId,
     );
 
     // Leave the page unchanged if the form isn't in the table (e.g. filtered out)
@@ -441,7 +444,7 @@ function SubmitPage() {
     if (parkIndex === -1) return;
 
     setPage(Math.floor(parkIndex / pageSize) + 1);
-  }, [isFormPanelOpen, formData, editableForms, tableData, pageSize]);
+  }, [urlForm, editableForms, tableData, pageSize]);
 
   // Slice the list of parks for pagination
   const pageData = useMemo(() => {
@@ -559,6 +562,11 @@ function SubmitPage() {
     );
   }
 
+  // Redirect invalid edit URLs (e.g. an unknown level) to the table
+  if (params.seasonId && !urlForm) {
+    return <Navigate to="/dates/submit" replace />;
+  }
+
   return (
     <div className="container">
       <div className="page dates-management">
@@ -619,7 +627,7 @@ function SubmitPage() {
 
         <FormPanel
           show={isFormPanelOpen}
-          setShow={setIsFormPanelOpen}
+          setShow={closeForm}
           formData={formData}
           onDataUpdate={refreshTable}
           formList={editableForms}

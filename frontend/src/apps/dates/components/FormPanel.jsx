@@ -9,6 +9,7 @@ import {
 import Offcanvas from "react-bootstrap/Offcanvas";
 import Form from "react-bootstrap/Form";
 import PropTypes from "prop-types";
+import { useBlocker } from "react-router-dom";
 import { isEqual, omit, keyBy } from "lodash-es";
 
 import FeatureIcon from "@/apps/dates/components/FeatureIcon";
@@ -1162,15 +1163,46 @@ function FormPanel({
 
   // Functions
 
+  // Latest "show" value, for async callbacks that resolve after the panel has closed.
+  // Cleared on unmount too (e.g. Back leaves the page), so late callbacks can't navigate afterwards.
+  // Declared before the dismiss effect below, so it's updated before any prompt is dismissed.
+  const showRef = useRef(show);
+
+  useEffect(() => {
+    showRef.current = show;
+
+    return () => {
+      showRef.current = false;
+    };
+  }, [show]);
+
   // Hides the form panel and resets the dataChanged state and modal
   const closePanel = useCallback(() => {
+    // Already closed (e.g. a save finished after navigating back), so don't close again
+    if (!showRef.current) return;
+
     closingFromStatusPrompt.current = false;
     setShow(false);
     setDataChanged(false);
   }, [setShow, setDataChanged]);
 
+  // Dismiss any open dialog (e.g. the approved/published status prompt)
+  // when the panel closes from outside, like the browser back button.
+  // Also dismisses dialogs that open while the panel animates closed (e.g. a status prompt after a late API response).
+  const { dismiss: dismissModal } = modal;
+  const isModalOpen = modal.props.isOpen;
+
+  useEffect(() => {
+    if (!show && isModalOpen) {
+      dismissModal();
+    }
+  }, [show, isModalOpen, dismissModal]);
+
   // Close the panel when the status modal is dismissed
   const handleStatusCancelClose = useCallback(() => {
+    // Already closed (e.g. the prompt was dismissed by navigating back), so don't close again
+    if (!showRef.current) return;
+
     closingFromStatusPrompt.current = true;
     setShow(false);
     setDataChanged(false);
@@ -1195,6 +1227,35 @@ function FormPanel({
 
     closePanel();
   }, [dataChanged, confirmUnsavedChanges, closePanel]);
+
+  // Prompt before the browser back/forward buttons leave a form with unsaved changes.
+  // Only POP navigations are blocked, so the panel's own URL updates aren't interrupted.
+  const blocker = useBlocker(
+    ({ historyAction }) => show && dataChanged && historyAction === "POP",
+  );
+  const isHandlingBlockerRef = useRef(false);
+
+  useEffect(() => {
+    if (blocker.state !== "blocked" || isHandlingBlockerRef.current) return;
+
+    isHandlingBlockerRef.current = true;
+
+    confirmUnsavedChanges().then((proceed) => {
+      isHandlingBlockerRef.current = false;
+
+      // The panel closed while the prompt or its save was pending,
+      // so this blocker may already be released
+      if (!showRef.current) return;
+
+      if (proceed) {
+        // The parent page closes the panel when the URL changes
+        setDataChanged(false);
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    });
+  }, [blocker, confirmUnsavedChanges]);
 
   // The next form in the table that still needs to be submitted or approved
   // Skipping forms the user's approval team has already approved
