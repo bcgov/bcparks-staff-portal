@@ -71,7 +71,6 @@ cron:
 
   successfulJobsHistoryLimit: 5
   failedJobsHistoryLimit: 2
-  backoffLimit: 0
 
   resources:
     limits:
