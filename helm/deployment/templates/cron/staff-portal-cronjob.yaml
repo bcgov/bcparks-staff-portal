@@ -17,7 +17,6 @@ spec:
         template: {{ .Release.Name }}-{{ .Values.cron.componentName }}-job
         cronjob: {{ .Release.Name }}-{{ .Values.cron.componentName }}
     spec:
-      backoffLimit: {{ .Values.cron.backoffLimit }}
       template:
         metadata:
           labels:
