@@ -865,12 +865,12 @@ function SeasonForm({
         <>
           <Offcanvas.Header closeButton>
             <Offcanvas.Title>
-              You do not have access to this park
+              You don&#39;t have access to this park
             </Offcanvas.Title>
           </Offcanvas.Header>
           <Offcanvas.Body>
             <p>
-              Your account does not have permission to view or edit dates for
+              Your account doesn&#39;t have permission to view or edit dates for
               this park. If you think you should have access, contact{" "}
               <a href="mailto:cardweb@gov.bc.ca?subject=Staff%20Portal%20park%20access">
                 cardweb@gov.bc.ca
