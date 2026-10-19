@@ -773,18 +773,25 @@ router.post(
     // Use the first item's operating year as numericData for all chunks
     const numericData = publishData[0].operatingYear;
 
-    // Send each chunk to the Strapi API with a brief delay
-    for (const [index, chunk] of publishDataChunks.entries()) {
-      // Send chunk of publish data to Strapi API
-      await queueStrapiTask({
-        action: "doot publish",
-        numericData,
-        jsonData: chunk,
-      });
+    // The training environment shares its CMS with dev, so don't send data to Strapi
+    if (process.env.BCPARKS_ENVIRONMENT === "training") {
+      console.log(
+        "Training environment: skipping Strapi publish queue. No data was sent to Strapi.",
+      );
+    } else {
+      // Send each chunk to the Strapi API with a brief delay
+      for (const [index, chunk] of publishDataChunks.entries()) {
+        // Send chunk of publish data to Strapi API
+        await queueStrapiTask({
+          action: "doot publish",
+          numericData,
+          jsonData: chunk,
+        });
 
-      // Sleep if there are more chunks remaining
-      if (index < publishDataChunks.length - 1) {
-        await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms
+        // Sleep if there are more chunks remaining
+        if (index < publishDataChunks.length - 1) {
+          await new Promise((resolve) => setTimeout(resolve, 100)); // 100ms
+        }
       }
     }
 

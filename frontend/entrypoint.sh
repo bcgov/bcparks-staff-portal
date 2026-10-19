@@ -37,6 +37,10 @@ if [ -n "$VITE_CKEDITOR_LICENSE_KEY" ]; then
   echo "window.envVars.VITE_CKEDITOR_LICENSE_KEY = \"$VITE_CKEDITOR_LICENSE_KEY\";" >> $APP_ROOT/env.js
 fi
 
+if [ -n "$VITE_BCPARKS_ENVIRONMENT" ]; then
+  echo "window.envVars.VITE_BCPARKS_ENVIRONMENT = \"$VITE_BCPARKS_ENVIRONMENT\";" >> $APP_ROOT/env.js
+fi
+
 # Start the server
 
 caddy run --config /etc/caddy/Caddyfile --adapter caddyfile
