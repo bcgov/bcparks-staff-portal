@@ -5,7 +5,7 @@ import { ParkAreaType } from "../../../models/index.js";
 import { getStrapiModelData } from "../../../utils/strapi/strapiDataService.js";
 
 /**
- * Imports/updates ParkAreaType records from Strapi park-area-type data by matching areaTypeId
+ * Imports/updates ParkAreaType records from Strapi park-area-type data by matching areaTypeNumber
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
@@ -43,22 +43,22 @@ export default async function importStrapiParkAreaTypes(transaction = null) {
     let unchangedCount = 0;
 
     for (const strapiParkAreaType of strapiParkAreaTypes) {
-      const { parkAreaType, areaTypeId, rank } = strapiParkAreaType;
+      const { parkAreaType, areaTypeNumber, rank } = strapiParkAreaType;
 
-      if (!areaTypeId) {
+      if (!areaTypeNumber) {
         console.warn(
-          `Skipping park area type "${parkAreaType}" - no areaTypeId found`,
+          `Skipping park area type "${parkAreaType}" - no areaTypeNumber found`,
         );
         skippedCount++;
         continue;
       }
 
-      // Find matched ParkAreaType by areaTypeId
-      const matchedParkAreaType = parkAreaTypeLookup.get(areaTypeId);
+      // Find matched ParkAreaType by areaTypeNumber
+      const matchedParkAreaType = parkAreaTypeLookup.get(areaTypeNumber);
 
       const parkAreaTypeToSave = {
         name: parkAreaType,
-        parkAreaTypeNumber: areaTypeId,
+        parkAreaTypeNumber: areaTypeNumber,
         rank: rank || 1000000,
       };
 
@@ -76,14 +76,14 @@ export default async function importStrapiParkAreaTypes(transaction = null) {
         // Update matched park area type
         await matchedParkAreaType.update(parkAreaTypeToSave, { transaction });
         console.log(
-          `Updated park area type: ${parkAreaType} (parkAreaTypeNumber: ${areaTypeId})`,
+          `Updated park area type: ${parkAreaType} (parkAreaTypeNumber: ${areaTypeNumber})`,
         );
         updatedCount++;
       } else {
         // Create new park area type
         await ParkAreaType.create(parkAreaTypeToSave, { transaction });
         console.log(
-          `Created park area type: ${parkAreaType} (parkAreaTypeNumber: ${areaTypeId})`,
+          `Created park area type: ${parkAreaType} (parkAreaTypeNumber: ${areaTypeNumber})`,
         );
         createdCount++;
       }

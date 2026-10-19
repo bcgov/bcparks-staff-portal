@@ -18,11 +18,11 @@ identifier, then creates or updates the local record:
 | ------------------- | ---------------- | ---------------------- | ---------------------- |
 | `section`           | `Section`        | `sectionNumber`        | `sectionNumber`        |
 | `management-area`   | `ManagementArea` | `managementAreaNumber` | `managementAreaNumber` |
-| `park-date-type`    | `DateType`       | `dateTypeNumber`       | `dateTypeId`           |
+| `park-date-type`    | `DateType`       | `dateTypeNumber`       | `dateTypeNumber`       |
 | `protected-area`    | `Park`           | `orcs`                 | `orcs`                 |
-| `park-area-type`    | `ParkAreaType`   | `parkAreaTypeNumber`   | `areaTypeId`           |
+| `park-area-type`    | `ParkAreaType`   | `parkAreaTypeNumber`   | `areaTypeNumber`       |
 | `park-area`         | `ParkArea`       | `orcsAreaNumber`       | `orcsAreaNumber`       |
-| `park-feature-type` | `FeatureType`    | `featureTypeNumber`    | `featureTypeId`        |
+| `park-feature-type` | `FeatureType`    | `featureTypeNumber`    | `featureTypeNumber`    |
 | `park-feature`      | `Feature`        | `orcsFeatureNumber`    | `orcsFeatureNumber`    |
 
 It can also be run directly to execute only the Strapi import pipeline:

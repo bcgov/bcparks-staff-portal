@@ -112,7 +112,7 @@ export default async function importStrapiParkAreas(transaction = null) {
       // Get the parkAreaTypeId from the related parkAreaType
       let parkAreaTypeId = null;
       const parkAreaTypeNumber =
-        strapiParkArea.parkAreaType?.areaTypeId ?? null;
+        strapiParkArea.parkAreaType?.areaTypeNumber ?? null;
 
       if (parkAreaTypeNumber) {
         const matchedParkAreaType =

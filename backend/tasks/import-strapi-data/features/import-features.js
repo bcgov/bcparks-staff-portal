@@ -145,7 +145,7 @@ export default async function importStrapiFeatures(transaction = null) {
       // Leave missing or unmatched types null so model validation rejects the save.
       // Transaction will roll back the import; fix upstream data rather than skipping incomplete records.
       let featureTypeId = null;
-      const featureTypeNumber = parkFeatureType?.featureTypeId;
+      const featureTypeNumber = parkFeatureType?.featureTypeNumber;
 
       if (featureTypeNumber) {
         const matchedFeatureType =

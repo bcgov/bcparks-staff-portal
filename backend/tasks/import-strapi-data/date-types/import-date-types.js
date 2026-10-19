@@ -5,7 +5,7 @@ import { DateType } from "../../../models/index.js";
 import { getStrapiModelData } from "../../../utils/strapi/strapiDataService.js";
 
 /**
- * Imports/updates DateType records from Strapi park-date-type data by matching dateTypeId
+ * Imports/updates DateType records from Strapi park-date-type data by matching dateTypeNumber
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
@@ -41,20 +41,22 @@ export default async function importStrapiDateTypes(transaction = null) {
     let unchangedCount = 0;
 
     for (const strapiDateType of strapiDateTypes) {
-      const { dateType, dateTypeId } = strapiDateType;
+      const { dateType, dateTypeNumber } = strapiDateType;
 
-      if (!dateTypeId) {
-        console.warn(`Skipping date type "${dateType}" - no dateTypeId found`);
+      if (!dateTypeNumber) {
+        console.warn(
+          `Skipping date type "${dateType}" - no dateTypeNumber found`,
+        );
         skippedCount++;
         continue;
       }
 
-      // Find matched DateType by dateTypeId
-      const matchedDateType = dateTypeLookup.get(dateTypeId);
+      // Find matched DateType by dateTypeNumber
+      const matchedDateType = dateTypeLookup.get(dateTypeNumber);
 
       const dateTypeToSave = {
         name: dateType,
-        dateTypeNumber: dateTypeId,
+        dateTypeNumber,
         description: strapiDateType.description,
         featureLevel: strapiDateType.featureLevel || false,
         parkLevel: strapiDateType.parkLevel || false,
@@ -74,14 +76,14 @@ export default async function importStrapiDateTypes(transaction = null) {
         // Update matched date type
         await matchedDateType.update(dateTypeToSave, { transaction });
         console.log(
-          `Updated date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
+          `Updated date type: ${dateType} (dateTypeNumber: ${dateTypeNumber})`,
         );
         updatedCount++;
       } else {
         // Create new date type
         await DateType.create(dateTypeToSave, { transaction });
         console.log(
-          `Created date type: ${dateType} (dateTypeNumber: ${dateTypeId})`,
+          `Created date type: ${dateType} (dateTypeNumber: ${dateTypeNumber})`,
         );
         createdCount++;
       }
