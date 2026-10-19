@@ -1113,12 +1113,13 @@ export default function Advisory({ mode }) {
    * @param {Object} status advisory-status document from the CMS
    * @param {string} status.code the code of the advisory-status to check
    * @param {string} status.documentId the documentId of the advisory-status to set for the advisory
+   * @param {Object} [options] the action being performed
+   * @param {boolean} [options.saveAsDraft=false] whether the draft action initiated the request
    * @returns {Promise<Object|null>} the saved advisory document, or null if the save fails
    */
-  async function createAdvisory(status) {
+  async function createAdvisory(status, { saveAsDraft = false } = {}) {
     try {
-      // Set loading status based on status code
-      if (status.code === "DFT") {
+      if (saveAsDraft) {
         setIsSavingDraft(true);
       } else {
         setIsSubmitting(true);
@@ -1229,12 +1230,13 @@ export default function Advisory({ mode }) {
    * @param {Object} status advisory-status document from the CMS
    * @param {string} status.code the code of the advisory-status to check
    * @param {string} status.documentId the documentId of the advisory-status to set for the advisory
+   * @param {Object} [options] the action being performed
+   * @param {boolean} [options.saveAsDraft=false] whether the draft action initiated the request
    * @returns {Promise<Object|null>} the updated advisory document, or null if the save fails
    */
-  async function updateAdvisory(status) {
+  async function updateAdvisory(status, { saveAsDraft = false } = {}) {
     try {
-      // Set loading status based on status code
-      if (status.code === "DFT") {
+      if (saveAsDraft) {
         setIsSavingDraft(true);
       } else {
         setIsSubmitting(true);

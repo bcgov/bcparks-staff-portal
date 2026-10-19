@@ -1,4 +1,5 @@
 import { useState, useContext } from "react";
+import classNames from "classnames";
 import { saveAs } from "file-saver";
 import Select from "react-select";
 import { faCalendarCheck } from "@fa-kit/icons/classic/regular";
@@ -8,6 +9,7 @@ import { format } from "date-fns";
 import { useApiGet } from "@/hooks/useApi";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import LoadingBar from "@/components/LoadingBar";
+import { ActionButton } from "@/components/ActionButton";
 
 import "./ExportPage.scss";
 
@@ -17,12 +19,15 @@ function ExportPage() {
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
 
-  const { generating, fetchData: fetchCsv } = useApiGet("/export/csv", {
-    instant: false,
-    params: {
-      year: exportYear?.value,
+  const { loading: generating, fetchData: fetchCsv } = useApiGet(
+    "/export/csv",
+    {
+      instant: false,
+      params: {
+        year: exportYear?.value,
+      },
     },
-  });
+  );
 
   // Fetches the CSV as plain text, and then saves it as a file.
   async function getCsv() {
@@ -105,22 +110,21 @@ function ExportPage() {
                 </div>
               )}
             </fieldset>
-            <fieldset className="d-flex">
-              <button
-                role="button"
-                className="btn btn-primary"
+            <fieldset
+              className={classNames(
+                "d-flex",
+                "flex-column",
+                "flex-sm-row",
+                "gap-2",
+                "gap-sm-0",
+              )}
+            >
+              <ActionButton
+                label="Export dates"
                 disabled={disableButton}
                 onClick={getCsv}
-              >
-                Export dates
-              </button>
-
-              {generating && (
-                <span
-                  className="spinner-border text-primary align-self-center ms-2"
-                  aria-hidden="true"
-                ></span>
-              )}
+                hasLoader={generating}
+              />
             </fieldset>
           </div>
         </div>
