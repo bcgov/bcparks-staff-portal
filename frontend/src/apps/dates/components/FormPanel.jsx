@@ -859,6 +859,29 @@ function SeasonForm({
   if (error || !season) {
     const errorCode = error?.response?.status ?? error?.status;
 
+    // Show a friendly message when the user lacks permission for this park
+    if (errorCode === 403) {
+      return (
+        <>
+          <Offcanvas.Header closeButton>
+            <Offcanvas.Title>
+              You do not have access to this park
+            </Offcanvas.Title>
+          </Offcanvas.Header>
+          <Offcanvas.Body>
+            <p>
+              Your account does not have permission to view or edit dates for
+              this park. If you think you should have access, contact{" "}
+              <a href="mailto:cardweb@gov.bc.ca?subject=Staff%20Portal%20park%20access">
+                cardweb@gov.bc.ca
+              </a>
+              .
+            </p>
+          </Offcanvas.Body>
+        </>
+      );
+    }
+
     return (
       <>
         <Offcanvas.Header closeButton>
