@@ -31,6 +31,11 @@ Imports and updates `Feature` records from Strapi's `park-feature` collection by
 
 ## Transaction Safety
 
+Validation reads the populated `parkArea.orcsAreaNumber` directly and checks
+that it starts with the related protected area's ORCS prefix. A missing park
+area or null area identifier remains optional. A mismatched prefix triggers
+safe mode, blocking inserts and deactivations caused by upstream removals.
+
 All operations are performed inside a transaction. If any error occurs, all changes are rolled back.
 
 ## How to run

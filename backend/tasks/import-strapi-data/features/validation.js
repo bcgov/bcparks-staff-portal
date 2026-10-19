@@ -81,7 +81,7 @@ export function validateStrapiFeatures(features) {
       isValid = false;
     }
 
-    const orcsAreaNumber = parkArea?.data?.orcsAreaNumber;
+    const orcsAreaNumber = parkArea?.orcsAreaNumber;
 
     // orcsAreaNumber is allowed to be null, so only validate if it exists
     if (orcsAreaNumber) {
