@@ -77,12 +77,9 @@ function PublishPage() {
     );
   }
 
+  // Throw load errors during render so the route's error boundary catches them
   if (error) {
-    return (
-      <div className="container">
-        <div>Error loading data: {error.message}</div>
-      </div>
-    );
+    throw error;
   }
 
   async function publishToApi() {

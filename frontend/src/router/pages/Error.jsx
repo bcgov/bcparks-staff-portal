@@ -1,32 +1,37 @@
-import { useContext } from "react";
-import { useRouteError } from "react-router-dom";
-import ErrorContext from "@/contexts/ErrorContext";
-import LegacyErrorPage from "./LegacyErrorPage";
+import { isRouteErrorResponse, Link, useRouteError } from "react-router-dom";
 
+/**
+ * Route error boundary page (used as `errorElement` in the router config).
+ * Shows the error thrown while rendering a route: either a render error,
+ * or a fatal error that a page re-threw from its own state.
+ * @returns {JSX.Element} The error page
+ */
 export default function ErrorPage() {
-  // Get the error from the route context (errorElement)
-  const routeError = useRouteError();
-  const { error: contextError } = useContext(ErrorContext) ?? { error: null };
+  const error = useRouteError();
 
-  // If the routeError is null, it means this page was rendered manually
-  // via setError in ErrorProvider, so get the error message from the ErrorProvider context instead.
-  if (routeError === null && contextError) {
-    console.error("contextError:", contextError);
-    // Render the Legacy error page with the context error message
-    return <LegacyErrorPage error={contextError} />;
+  console.error(error);
+
+  let message = "Unknown error";
+
+  if (isRouteErrorResponse(error)) {
+    message = `${error.status} ${error.statusText}`;
+  } else if (error?.message) {
+    message = error.message;
   }
 
-  console.error(routeError);
-
   return (
-    <div id="error-page">
-      <div className="container error-page-container">
-        <h1>Oops!</h1>
-        <p>Sorry, an unexpected error has occurred.</p>
-        <p>
-          <i>{routeError?.statusText || routeError?.message}</i>
-        </p>
-      </div>
+    <div className="container error-page-container">
+      <h1>An unexpected error has occurred</h1>
+      <p>
+        The error description is below. If this error persists, please try again
+        later.
+      </p>
+      <p>
+        <i>{message}</i>
+      </p>
+      <Link to="/" className="btn btn-primary">
+        Home
+      </Link>
     </div>
   );
 }

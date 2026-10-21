@@ -10,7 +10,6 @@ import ErrorPage from "./pages/Error";
 import LoginPage from "./pages/LoginPage";
 import { Unauthorized } from "@/components/Unauthorized";
 
-import { ErrorProvider } from "@/contexts/ErrorProvider";
 import { CmsDataProvider } from "@/contexts/CmsDataProvider";
 import ProtectedRoute from "./ProtectedRoute";
 
@@ -36,40 +35,42 @@ const RouterConfig = createBrowserRouter([
     // Protect the entire route with the ProtectedRoute component
     element: (
       <ProtectedRoute>
-        <ErrorProvider>
-          <CmsDataProvider>
-            <MainLayout />
-          </CmsDataProvider>
-        </ErrorProvider>
+        <CmsDataProvider>
+          <MainLayout />
+        </CmsDataProvider>
       </ProtectedRoute>
     ),
 
+    // Fallback for errors thrown by the layout itself (renders without the layout)
+    errorElement: <ErrorPage />,
+
     children: [
-      // "/" will redirect to "/advisories-and-closures" if authenticated
       {
-        path: "",
-        element: <Navigate to="/advisories-and-closures" replace />,
+        // Error boundary for page errors: renders the error page inside the layout
+        errorElement: <ErrorPage />,
+
+        children: [
+          // "/" will redirect to "/advisories-and-closures" if authenticated
+          {
+            path: "",
+            element: <Navigate to="/advisories-and-closures" replace />,
+          },
+
+          {
+            path: "logout",
+            element: <LogoutPage />,
+          },
+
+          // Advisories and closures
+          ...advisoriesRoutes,
+
+          // Park Access Status
+          ...accessStatusRoutes,
+
+          // Activities & Facilities
+          ...activitiesFacilitiesRoutes,
+        ],
       },
-
-      // Legacy staff portal error route
-      {
-        path: "error",
-        element: <ErrorPage />,
-      },
-
-      {
-        path: "logout",
-        element: <LogoutPage />,
-      },
-
-      // Advisories and closures
-      ...advisoriesRoutes,
-
-      // Park Access Status
-      ...accessStatusRoutes,
-
-      // Activities & Facilities
-      ...activitiesFacilitiesRoutes,
     ],
   },
 
@@ -92,9 +93,17 @@ const RouterConfig = createBrowserRouter([
         </AccessControlledRoute>
       </ProtectedRoute>
     ),
+
+    // Fallback for errors thrown by the layout itself (renders without the layout)
     errorElement: <ErrorPage />,
 
-    children: datesRoutes,
+    children: [
+      {
+        // Error boundary for page errors: renders the error page inside the layout
+        errorElement: <ErrorPage />,
+        children: datesRoutes,
+      },
+    ],
   },
 
   // Catch-all route for invalid paths

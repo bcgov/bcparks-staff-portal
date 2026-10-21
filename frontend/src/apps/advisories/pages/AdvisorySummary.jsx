@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext, useMemo, useCallback } from "react";
 import {
-  Navigate,
   useLocation,
   useNavigate,
   useParams,
@@ -8,7 +7,6 @@ import {
 } from "react-router-dom";
 import { format } from "date-fns";
 import classNames from "classnames";
-import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useCms from "@/hooks/useCms";
@@ -35,7 +33,6 @@ import useAdvisoryMarkReviewed from "@/apps/advisories/hooks/useAdvisoryMarkRevi
 import useAdvisoryUnpublish from "@/apps/advisories/hooks/useAdvisoryUnpublish";
 
 export default function AdvisorySummary() {
-  const { setError } = useContext(ErrorContext);
   const { cmsData, setCmsData } = useContext(CmsDataContext);
   const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
@@ -43,7 +40,7 @@ export default function AdvisorySummary() {
   const { cmsGet } = useCms();
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [isPublished, setIsPublished] = useState(false);
-  const [toError, setToError] = useState(false);
+  const [fatalError, setFatalError] = useState(null);
   const [advisory, setAdvisory] = useState({});
   const [parkUrls, setParkUrls] = useState("");
   const [siteUrls, setSiteUrls] = useState("");
@@ -173,19 +170,11 @@ export default function AdvisorySummary() {
         })
         .catch((error) => {
           console.error("error occurred fetching Public Advisory data", error);
-          setToError(true);
-          setError({
-            status: 500,
-            message: "Error fetching advisory",
-          });
+          setFatalError(new Error("Error fetching advisory", { cause: error }));
           setIsLoadingPage(false);
         });
     } else {
-      setToError(true);
-      setError({
-        status: 400,
-        message: "Advisory Id is not found",
-      });
+      setFatalError(new Error("Advisory Id is not found"));
       setIsLoadingPage(false);
     }
     if (snackPack.length && !snackMessageInfo) {
@@ -199,8 +188,6 @@ export default function AdvisorySummary() {
     }
   }, [
     documentId,
-    setError,
-    setToError,
     setIsLoadingPage,
     setAdvisory,
     setParkUrls,
@@ -445,8 +432,9 @@ export default function AdvisorySummary() {
     setSnackMessageInfo(null);
   }
 
-  if (toError) {
-    return <Navigate to="/error" />;
+  // Re-throw async errors during render so the route's error boundary catches them
+  if (fatalError) {
+    throw fatalError;
   }
 
   return (

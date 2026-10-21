@@ -1,8 +1,7 @@
-import { useState, useEffect, useContext, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { orderBy } from "lodash-es";
-import ErrorContext from "@/contexts/ErrorContext";
 import "./ParkInfo.scss";
-import { Navigate, useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Loader } from "@/components/Loader";
 import { useAuth } from "react-oidc-context";
 import useCms from "@/hooks/useCms";
@@ -15,9 +14,8 @@ import qs from "qs";
 
 export default function ParkInfo() {
   const { cmsGet, cmsPut, getRegions, getSections } = useCms();
-  const { setError } = useContext(ErrorContext);
   const [isLoading, setIsLoading] = useState(true);
-  const [toError, setToError] = useState(false);
+  const [fatalError, setFatalError] = useState(null);
   const [protectedArea, setProtectedArea] = useState();
   const [expandedActivities, setExpandedActivities] = useState([]);
   const [editableActivities, setEditableActivities] = useState([]);
@@ -163,16 +161,14 @@ export default function ParkInfo() {
         console.error("Error fetching park information", error);
 
         if (isMountedRef.current) {
-          setToError(true);
-          setError({
-            status: 500,
-            message: "Error fetching park information",
-          });
+          setFatalError(
+            new Error("Error fetching park information", { cause: error }),
+          );
           setIsLoading(false);
         }
       }
     },
-    [cmsGet, getRegions, getSections, setError],
+    [cmsGet, getRegions, getSections],
   );
 
   const isMountedRef = useRef(true);
@@ -293,11 +289,7 @@ export default function ParkInfo() {
       setLoadParkInfo(true);
     } catch (error) {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not update activity",
-      });
+      setFatalError(new Error("Could not update activity", { cause: error }));
     }
   }
 
@@ -424,11 +416,7 @@ export default function ParkInfo() {
       setLoadParkInfo(true);
     } catch (error) {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not update facility",
-      });
+      setFatalError(new Error("Could not update facility", { cause: error }));
     }
   }
 
@@ -559,11 +547,9 @@ export default function ParkInfo() {
       setLoadParkInfo(true);
     } catch (error) {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not update campingType",
-      });
+      setFatalError(
+        new Error("Could not update campingType", { cause: error }),
+      );
     }
   }
 
@@ -632,8 +618,9 @@ export default function ParkInfo() {
     setSubmittingCampingTypes([...currentCampingTypes]);
   }
 
-  if (toError) {
-    return <Navigate to="/error" />;
+  // Re-throw async errors during render so the route's error boundary catches them
+  if (fatalError) {
+    throw fatalError;
   }
 
   return (

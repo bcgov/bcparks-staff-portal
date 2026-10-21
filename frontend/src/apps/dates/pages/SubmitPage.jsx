@@ -460,12 +460,13 @@ function SubmitPage() {
       return <LoadingBar />;
     }
 
+    // Throw load errors during render so the route's error boundary catches them
     if (error) {
-      return <p>Error loading parks data: {error.message}</p>;
+      throw error;
     }
 
     if (metadataError) {
-      return <p>Error loading parks metadata: {metadataError.message}</p>;
+      throw metadataError;
     }
 
     return (
