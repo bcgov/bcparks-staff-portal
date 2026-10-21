@@ -1,21 +1,21 @@
 # import-park-area-types.js
 
-Imports and updates `ParkAreaType` records from Strapi's `park-area-type` collection by matching the `areaTypeId` with the `parkAreaTypeNumber` on existing park area types in the DOOT database.
+Imports and updates `ParkAreaType` records from Strapi's `park-area-type` collection by matching `areaTypeNumber` with `parkAreaTypeNumber` on existing park area types in the DOOT database.
 
 **The script:**
 
 - Fetches park area type data from Strapi using sync utilities
-- Matches existing DOOT park area types by comparing Strapi `areaTypeId` with DOOT `parkAreaTypeNumber`
+- Matches existing DOOT park area types by comparing Strapi `areaTypeNumber` with DOOT `parkAreaTypeNumber`
 - Creates or updates park area type records with name, parkAreaTypeNumber and rank
 - Uses efficient Map-based lookup for fast matching between systems
 
 **Data mapping:**
 
-| Strapi Field   | DOOT Field           | Notes                              |
-| -------------- | -------------------- | ---------------------------------- |
-| `parkAreaType` | `name`               | Park Area type name                |
-| `areaTypeId`   | `parkAreaTypeNumber` | Used for matching existing records |
-| `rank`         | `rank`               | Used for display sorting           |
+| Strapi Field     | DOOT Field           | Notes                              |
+| ---------------- | -------------------- | ---------------------------------- |
+| `parkAreaType`   | `name`               | Park Area type name                |
+| `areaTypeNumber` | `parkAreaTypeNumber` | Used for matching existing records |
+| `rank`           | `rank`               | Used for display sorting           |
 
 ## Transaction Safety
 
@@ -30,7 +30,7 @@ node tasks/import-strapi-data/park-area-types/import-park-area-types.js
 
 ## Output
 
-The script logs progress and provides summary counts of created, updated, and skipped records. Park Area types without valid `areaTypeId` values are skipped with warnings. The script shows:
+The script logs progress and provides summary counts of created, updated, and skipped records. Park Area types without valid `areaTypeNumber` values are skipped with warnings. The script shows:
 
 - Number of park area types found in Strapi
 - Existing `parkAreaTypeNumber` values in DOOT for debugging

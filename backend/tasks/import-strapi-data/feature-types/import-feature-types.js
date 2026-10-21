@@ -5,7 +5,7 @@ import { FeatureType } from "../../../models/index.js";
 import { getStrapiModelData } from "../../../utils/strapi/strapiDataService.js";
 
 /**
- * Imports/updates FeatureType records from Strapi park-feature-type data by matching featureTypeId
+ * Imports/updates FeatureType records from Strapi park-feature-type data by matching featureTypeNumber
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<Object>} Object containing counts of created and updated records
  */
@@ -43,22 +43,22 @@ export default async function importStrapiFeatureTypes(transaction = null) {
     let unchangedCount = 0;
 
     for (const strapiFeatureType of strapiFeatureTypes) {
-      const { parkFeatureType, featureTypeId, rank } = strapiFeatureType;
+      const { parkFeatureType, featureTypeNumber, rank } = strapiFeatureType;
 
-      if (!featureTypeId) {
+      if (!featureTypeNumber) {
         console.warn(
-          `Skipping feature type "${parkFeatureType}" - no featureTypeId found`,
+          `Skipping feature type "${parkFeatureType}" - no featureTypeNumber found`,
         );
         skippedCount++;
         continue;
       }
 
-      // Find matched FeatureType by featureTypeId
-      const matchedFeatureType = featureTypeLookup.get(featureTypeId);
+      // Find matched FeatureType by featureTypeNumber
+      const matchedFeatureType = featureTypeLookup.get(featureTypeNumber);
 
       const featureTypeToSave = {
         name: parkFeatureType,
-        featureTypeNumber: featureTypeId,
+        featureTypeNumber,
         rank: rank || 1000000,
       };
 
@@ -76,7 +76,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
         // Update matched feature type
         await matchedFeatureType.update(featureTypeToSave, { transaction });
         console.log(
-          `Updated feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
+          `Updated feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeNumber})`,
         );
         updatedCount++;
       } else {
@@ -86,7 +86,7 @@ export default async function importStrapiFeatureTypes(transaction = null) {
         // Create new feature type
         await FeatureType.create(featureTypeToSave, { transaction });
         console.log(
-          `Created feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeId})`,
+          `Created feature type: ${parkFeatureType} (featureTypeNumber: ${featureTypeNumber})`,
         );
         createdCount++;
       }

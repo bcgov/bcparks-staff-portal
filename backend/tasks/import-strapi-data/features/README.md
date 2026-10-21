@@ -7,29 +7,34 @@ Imports and updates `Feature` records from Strapi's `park-feature` collection by
 - Fetches park feature data from Strapi using sync utilities
 - Matches existing DOOT features by comparing Strapi `orcsFeatureNumber` with DOOT `orcsFeatureNumber`
 - Sets the `parkId` field in DOOT Feature by matching Strapi `protectedArea.orcs` to DOOT `Park.orcs`
-- Sets the `featureTypeId` relation by matching Strapi `parkFeatureType.featureTypeId` to DOOT `FeatureType.featureTypeNumber`.
+- Sets the `featureTypeId` relation by matching Strapi `parkFeatureType.featureTypeNumber` to DOOT `FeatureType.featureTypeNumber`.
 - Sets the `parkAreaId` relation by matching Strapi `parkArea.orcsAreaNumber` to DOOT `parkArea.orcsAreaNumber`.
 - Creates or updates feature records with name, active status, reservation system flags, and park relation
 - Uses efficient Map-based lookup for fast matching between systems
 
 **Data mapping:**
 
-| Strapi Field                    | DOOT Field              | Notes                                         |
-| ------------------------------- | ----------------------- | --------------------------------------------- |
-| `parkFeatureName`               | `name`                  | Feature name                                  |
-| `orcsFeatureNumber`             | `orcsFeatureNumber`     | Used for matching existing records            |
-| `isActive`                      | `active`                | Defaults to `false` if not provided           |
-| `inReservationSystem`           | `inReservationSystem`   | Defaults to `false` if not provided           |
-| `hasReservations`               | `hasReservations`       | Defaults to `false` if not provided           |
-| `hasBackcountryPermits`         | `hasBackcountryPermits` | Defaults to `false` if not provided           |
-| `hasDates`                      | `hasDates`              | Defaults to `false` if not provided           |
-| `hasWinterFee`                  | `hasWinterFeeDates`     | Defaults to `false` if not provided           |
-| `datesCanSpan2Years`            | `datesCanSpan2Years`    | Required boolean from Strapi (`true`/`false`) |
-| `parkFeatureType.featureTypeId` | `featureTypeId`         | DOOT Feature Type, matched by well-known key  |
-| `protectedArea.orcs`            | `parkId`                | DOOT Park, matched by well-known key          |
-| `parkArea.orcsAreaNumber`       | `parkAreaId`            | DOOT Park Area, matched by well-known key     |
+| Strapi Field                        | DOOT Field              | Notes                                         |
+| ----------------------------------- | ----------------------- | --------------------------------------------- |
+| `parkFeatureName`                   | `name`                  | Feature name                                  |
+| `orcsFeatureNumber`                 | `orcsFeatureNumber`     | Used for matching existing records            |
+| `isActive`                          | `active`                | Defaults to `false` if not provided           |
+| `inReservationSystem`               | `inReservationSystem`   | Defaults to `false` if not provided           |
+| `hasReservations`                   | `hasReservations`       | Defaults to `false` if not provided           |
+| `hasBackcountryPermits`             | `hasBackcountryPermits` | Defaults to `false` if not provided           |
+| `hasDates`                          | `hasDates`              | Defaults to `false` if not provided           |
+| `hasWinterFee`                      | `hasWinterFeeDates`     | Defaults to `false` if not provided           |
+| `datesCanSpan2Years`                | `datesCanSpan2Years`    | Required boolean from Strapi (`true`/`false`) |
+| `parkFeatureType.featureTypeNumber` | `featureTypeId`         | DOOT Feature Type, matched by well-known key  |
+| `protectedArea.orcs`                | `parkId`                | DOOT Park, matched by well-known key          |
+| `parkArea.orcsAreaNumber`           | `parkAreaId`            | DOOT Park Area, matched by well-known key     |
 
 ## Transaction Safety
+
+Validation reads the populated `parkArea.orcsAreaNumber` directly and checks
+that it starts with the related protected area's ORCS prefix. A missing park
+area or null area identifier remains optional. A mismatched prefix triggers
+safe mode, blocking inserts and deactivations caused by upstream removals.
 
 All operations are performed inside a transaction. If any error occurs, all changes are rolled back.
 

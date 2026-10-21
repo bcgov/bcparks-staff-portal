@@ -469,7 +469,7 @@ async function formatDateRanges(entity, season) {
       // Strapi removes it rather than keeping a stale value.
       startDate: hasStartDate ? formatDate(dateRange.startDate) : null,
       endDate: hasEndDate ? formatDate(dateRange.endDate) : null,
-      dateTypeId: dateRange.dateType.dateTypeNumber,
+      dateTypeNumber: dateRange.dateType.dateTypeNumber,
     };
   });
 }

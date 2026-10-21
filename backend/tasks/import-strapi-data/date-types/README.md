@@ -1,22 +1,22 @@
 # import-date-types.js
 
-Imports and updates `DateType` records from Strapi's `park-date-type` collection by matching the `dateTypeId` with the `dateTypeNumber` on existing date types in the DOOT database.
+Imports and updates `DateType` records from Strapi's `park-date-type` collection by matching `dateTypeNumber` with the same value on existing date types in the DOOT database.
 
 **The script:**
 
 - Fetches park date type data from Strapi using sync utilities
-- Matches existing DOOT date types by comparing Strapi `dateTypeId` with DOOT `dateTypeNumber`
+- Matches existing DOOT date types by comparing `dateTypeNumber` values
 - Creates or updates date type records the data mapped in the table below
 
 **Data mapping:**
 
-| Strapi Field   | DOOT Field       | Notes                        |
-| -------------- | ---------------- | ---------------------------- |
-| `dateType`     | `name`           | Date type name               |
-| `dateTypeId`   | `dateTypeNumber` | Well known key               |
-| `description`  | `description`    | Date type description        |
-| `featureLevel` | `featureLevel`   | Defaults to false if not set |
-| `parkLevel`    | `parkLevel`      | Defaults to false if not set |
+| Strapi Field     | DOOT Field       | Notes                        |
+| ---------------- | ---------------- | ---------------------------- |
+| `dateType`       | `name`           | Date type name               |
+| `dateTypeNumber` | `dateTypeNumber` | Well-known key               |
+| `description`    | `description`    | Date type description        |
+| `featureLevel`   | `featureLevel`   | Defaults to false if not set |
+| `parkLevel`      | `parkLevel`      | Defaults to false if not set |
 
 ## Transaction Safety
 
@@ -31,7 +31,7 @@ node tasks/import-strapi-data/date-types/import-date-types.js
 
 ## Output
 
-The script logs progress and provides summary counts of created, updated, and skipped records. Date types without valid `dateTypeId` values are skipped with warnings. The script shows:
+The script logs progress and provides summary counts of created, updated, and skipped records. Date types without valid `dateTypeNumber` values are skipped with warnings. The script shows:
 
 - Number of park date types found in Strapi
 - Existing `dateTypeNumber` values in DOOT for debugging

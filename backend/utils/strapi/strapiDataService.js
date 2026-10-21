@@ -33,7 +33,7 @@ const MODEL_CONFIG = {
         fields: ["orcs"],
       },
       parkAreaType: {
-        fields: ["areaTypeId"],
+        fields: ["areaTypeNumber"],
       },
     },
   },
@@ -116,7 +116,7 @@ const MODEL_CONFIG = {
         fields: ["orcsAreaNumber"],
       },
       parkFeatureType: {
-        fields: ["featureTypeId"],
+        fields: ["featureTypeNumber"],
       },
     },
   },
@@ -127,7 +127,7 @@ const MODEL_CONFIG = {
     endpoint: "/park-dates",
     populate: {
       parkDateType: {
-        fields: ["dateTypeId"],
+        fields: ["dateTypeNumber"],
       },
       protectedArea: {
         fields: ["orcs"],
