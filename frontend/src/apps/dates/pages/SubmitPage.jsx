@@ -294,9 +294,15 @@ function SubmitPage() {
         return [];
       }
 
+      // Show or hide the "Tiers and gate" / "Winter fee" sections if relevant filters are set.
+      const showTiersAndGate = shouldShowTiersAndGateSection(park, filters);
+      const showWinterFee = shouldShowWinterFeeSection(park, filters);
+
       // If the Park doesn't match the Park-level "soft" filters, store that result.
       // We'll continue to check its areas and features to see if any of them match.
-      const parkMatch = checkParkSoft(park, filters);
+      // The Park only matches if at least one of its sections matches all filters.
+      const parkMatch =
+        checkParkSoft(park, filters) && (showTiersAndGate || showWinterFee);
 
       // Gather matching park areas and features, and add annotations for grouping
       const matchingAreas = getMatchingAreas(park.parkAreas, filters).map(
@@ -350,9 +356,9 @@ function SubmitPage() {
           parkName: park.name,
 
           // Add properties to the Park object to show/hide
-          // the "Tiers and gate" / "Winter fee" sections if relevant filters are set.
-          showTiersAndGate: shouldShowTiersAndGateSection(park, filters),
-          showWinterFee: shouldShowWinterFeeSection(park, filters),
+          // the "Tiers and gate" / "Winter fee" sections
+          showTiersAndGate,
+          showWinterFee,
         },
 
         // Include Areas and Features within the park that match the filters

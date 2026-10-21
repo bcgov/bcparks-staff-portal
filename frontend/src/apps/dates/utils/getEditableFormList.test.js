@@ -4,6 +4,7 @@ import {
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
 } from "./submitPageFilters.js";
+import * as DATE_TYPE from "@/apps/dates/constants/dateType.js";
 import * as FEATURE_TYPE from "@/apps/dates/constants/featureType.js";
 import * as STATUS from "@/constants/seasonStatus.js";
 
@@ -172,6 +173,65 @@ describe("shouldShowWinterFeeSection feature type filter", () => {
     expect(
       shouldShowWinterFeeSection(createPark(), filters([groupCampground])),
     ).toBe(false);
+  });
+});
+
+describe("park sections with status and date type filters combined", () => {
+  const rsReviewSeason = {
+    status: STATUS.PENDING_REVIEW.value,
+    requiresReservationSvcApproval: true,
+    reservationSvcApproved: false,
+  };
+  const winterFeeFilters = {
+    featureTypes: [],
+    status: [STATUS.RS_REVIEW_FILTER.value],
+    dateTypes: [{ dateTypeNumber: DATE_TYPE.WINTER_FEE }],
+    isInReservationSystem: false,
+  };
+
+  function parkWithSeasons(regular, winter) {
+    return {
+      ...createPark(),
+      hasTier1Dates: true,
+      currentSeason: { regular, winter },
+    };
+  }
+
+  it("hides the Tiers and gate section even when its season is in RS review", () => {
+    const park = parkWithSeasons(rsReviewSeason, {
+      status: STATUS.REQUESTED.value,
+    });
+
+    expect(shouldShowTiersAndGateSection(park, winterFeeFilters)).toBe(false);
+  });
+
+  it("hides the Winter fee section when its season isn't in RS review", () => {
+    const park = parkWithSeasons(rsReviewSeason, {
+      status: STATUS.REQUESTED.value,
+    });
+
+    expect(shouldShowWinterFeeSection(park, winterFeeFilters)).toBe(false);
+  });
+
+  it("shows only the Winter fee section when its season is in RS review", () => {
+    const park = parkWithSeasons(
+      { status: STATUS.REQUESTED.value },
+      rsReviewSeason,
+    );
+
+    expect(shouldShowTiersAndGateSection(park, winterFeeFilters)).toBe(false);
+    expect(shouldShowWinterFeeSection(park, winterFeeFilters)).toBe(true);
+  });
+
+  it("hides the Winter fee section when its status matches but another date type is selected", () => {
+    const park = parkWithSeasons(rsReviewSeason, rsReviewSeason);
+    const filters = {
+      ...winterFeeFilters,
+      dateTypes: [{ dateTypeNumber: DATE_TYPE.TIER_1 }],
+    };
+
+    expect(shouldShowTiersAndGateSection(park, filters)).toBe(true);
+    expect(shouldShowWinterFeeSection(park, filters)).toBe(false);
   });
 });
 
