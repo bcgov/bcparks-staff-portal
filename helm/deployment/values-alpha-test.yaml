@@ -1,6 +1,7 @@
 cluster:
   ssoAuthUrl: https://test.loginproxy.gov.bc.ca/auth
   cmsUrl: https://alpha-test-cms.bcparks.ca
+  environment: alpha-test
 
 images:
   frontend:

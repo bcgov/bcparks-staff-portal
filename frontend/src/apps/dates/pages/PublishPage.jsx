@@ -3,6 +3,7 @@ import classNames from "classnames";
 import useConfirmation from "@/hooks/useConfirmation";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import { useApiGet, useApiPost } from "@/hooks/useApi";
+import getEnv from "@/config/getEnv";
 
 import ConfirmationDialog from "@/components/ConfirmationDialog";
 import LoadingBar from "@/components/LoadingBar";
@@ -11,6 +12,9 @@ import NotReadyFlag from "@/apps/dates/components/NotReadyFlag";
 import PaginationControls from "@/components/PaginationControls";
 import * as SEASON_TYPE from "@/apps/dates/constants/seasonType";
 import "./PublishPage.scss";
+
+// The training environment shares its CMS with dev, so publishing to Strapi is disabled there
+const isTrainingEnvironment = getEnv("VITE_BCPARKS_ENVIRONMENT") === "training";
 
 function formatSeasonType(seasonType, publishableType) {
   if (seasonType !== SEASON_TYPE.WINTER) {
@@ -99,10 +103,17 @@ function PublishPage() {
 
         await publishData({ seasonIds });
 
-        globalFlashMessage.open(
-          "Dates publishing to API",
-          "Approved dates have been sent to the queue and publishing may take up to an hour.",
-        );
+        if (isTrainingEnvironment) {
+          globalFlashMessage.open(
+            "Publishing skipped",
+            "Publishing to Strapi is disabled in the training environment. Queue processing completed successfully; no data was sent to Strapi.",
+          );
+        } else {
+          globalFlashMessage.open(
+            "Dates publishing to API",
+            "Approved dates have been sent to the queue and publishing may take up to an hour.",
+          );
+        }
 
         // Update the table by re-fetching the data
         await fetchData();

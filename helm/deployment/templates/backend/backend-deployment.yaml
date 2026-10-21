@@ -75,6 +75,8 @@ spec:
                   key: STRAPI_TOKEN
             - name: STRAPI_URL
               value: {{ .Values.cluster.cmsUrl }}
+            - name: BCPARKS_ENVIRONMENT
+              value: {{ .Values.cluster.environment }}
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-adminjs-secret

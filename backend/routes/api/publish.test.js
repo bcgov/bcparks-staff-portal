@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DateRange, Season, SeasonChangeLog } from "../../models/index.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
@@ -56,6 +56,10 @@ const publishHandler = router.post.mock.calls
 beforeEach(() => {
   vi.clearAllMocks();
   DateRange.findAll.mockResolvedValue([]);
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 describe("publish gate snapshots", () => {
@@ -151,4 +155,37 @@ describe("publish gate snapshots", () => {
       ]);
     },
   );
+});
+
+describe("training environment", () => {
+  it("publishes seasons locally without queuing a Strapi task", async () => {
+    vi.stubEnv("BCPARKS_ENVIRONMENT", "training");
+
+    Season.findAll
+      .mockResolvedValueOnce([
+        {
+          id: 1,
+          operatingYear: 2026,
+          seasonType: SEASON_TYPE.REGULAR,
+          park: { orcs: "123", gateDetails: null },
+        },
+      ])
+      .mockResolvedValueOnce([{ id: 1, changeLogs: [] }]);
+    const res = { send: vi.fn() };
+
+    await publishHandler({ body: { seasonIds: [1] }, user: { id: 2 } }, res);
+
+    expect(queueStrapiTask).not.toHaveBeenCalled();
+    expect(Season.update).toHaveBeenCalledWith(
+      { status: STATUS.PUBLISHED },
+      expect.anything(),
+    );
+    expect(SeasonChangeLog.bulkCreate).toHaveBeenCalledWith([
+      expect.objectContaining({
+        seasonId: 1,
+        statusNewValue: STATUS.PUBLISHED,
+      }),
+    ]);
+    expect(res.send).toHaveBeenCalledOnce();
+  });
 });
