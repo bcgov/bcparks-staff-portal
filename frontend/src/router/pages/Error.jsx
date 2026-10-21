@@ -23,11 +23,11 @@ export default function ErrorPage() {
     <div className="container error-page-container">
       <h1>An unexpected error has occurred</h1>
       <p>
-        The error description is below. If this error persists, please try again
-        later.
+        <i>{message}</i>
       </p>
       <p>
-        <i>{message}</i>
+        Refresh the page to try again. If the problem continues, contact{" "}
+        <a href="mailto:cardweb@gov.bc.ca">cardweb@gov.bc.ca</a>.
       </p>
       <Link to="/" className="btn btn-primary">
         Home

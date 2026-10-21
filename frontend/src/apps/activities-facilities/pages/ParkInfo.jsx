@@ -548,7 +548,7 @@ export default function ParkInfo() {
     } catch (error) {
       console.error("error occurred", error);
       setFatalError(
-        new Error("Could not update campingType", { cause: error }),
+        new Error("Could not update camping type", { cause: error }),
       );
     }
   }

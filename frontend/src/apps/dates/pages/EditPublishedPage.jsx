@@ -199,7 +199,7 @@ export default function EditPublishedPage() {
 
   // Throw load errors during render so the route's error boundary catches them
   if (error) {
-    throw error;
+    throw new Error("Could not load published dates", { cause: error });
   }
 
   return (

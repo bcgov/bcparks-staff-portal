@@ -170,11 +170,17 @@ export default function AdvisorySummary() {
         })
         .catch((error) => {
           console.error("error occurred fetching Public Advisory data", error);
-          setFatalError(new Error("Error fetching advisory", { cause: error }));
+          setFatalError(
+            new Error("Could not load advisory / closure", { cause: error }),
+          );
           setIsLoadingPage(false);
         });
     } else {
-      setFatalError(new Error("Advisory Id is not found"));
+      setFatalError(
+        new Error(
+          "Advisory / closure not found. Check the link and try again.",
+        ),
+      );
       setIsLoadingPage(false);
     }
     if (snackPack.length && !snackMessageInfo) {

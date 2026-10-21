@@ -550,12 +550,16 @@ export default function Advisory({ mode }) {
               error,
             );
             setFatalError(
-              new Error("Error fetching advisory", { cause: error }),
+              new Error("Could not load advisory / closure", { cause: error }),
             );
             setIsLoadingPage(false);
           });
       } else {
-        setFatalError(new Error("Advisory Id is not found"));
+        setFatalError(
+          new Error(
+            "Advisory / closure not found. Check the link and try again.",
+          ),
+        );
         setIsLoadingPage(false);
       }
     }
@@ -799,7 +803,7 @@ export default function Advisory({ mode }) {
         .catch((error) => {
           console.error("error occurred fetching dropdown data?", error);
 
-          setFatalError(new Error("Error occurred", { cause: error }));
+          setFatalError(new Error("Could not load the form", { cause: error }));
           setIsLoadingData(false);
           setIsLoadingPage(false);
         });
@@ -986,7 +990,7 @@ export default function Advisory({ mode }) {
     const res = await cmsPost(`links`, linkRequest).catch((error) => {
       console.error("error occurred", error);
       setFatalError(
-        new Error("Could not process advisory update", { cause: error }),
+        new Error("Could not save advisory / closure", { cause: error }),
       );
       return null;
     });
@@ -1012,7 +1016,7 @@ export default function Advisory({ mode }) {
     const res = await cmsPut(`links/${id}`, linkRequest).catch((error) => {
       console.error("error occurred", error);
       setFatalError(
-        new Error("Could not process advisory update", { cause: error }),
+        new Error("Could not save advisory / closure", { cause: error }),
       );
       return null;
     });
@@ -1182,7 +1186,7 @@ export default function Advisory({ mode }) {
     } catch (error) {
       console.error("error occurred", error);
       setFatalError(
-        new Error("Could not process advisory update", { cause: error }),
+        new Error("Could not save advisory / closure", { cause: error }),
       );
       return null;
     }
@@ -1314,7 +1318,7 @@ export default function Advisory({ mode }) {
     } catch (error) {
       console.error("error occurred", error);
       setFatalError(
-        new Error("Could not process advisory update", { cause: error }),
+        new Error("Could not save advisory / closure", { cause: error }),
       );
       return null;
     }

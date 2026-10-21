@@ -462,11 +462,11 @@ function SubmitPage() {
 
     // Throw load errors during render so the route's error boundary catches them
     if (error) {
-      throw error;
+      throw new Error("Could not load parks", { cause: error });
     }
 
     if (metadataError) {
-      throw metadataError;
+      throw new Error("Could not load park details", { cause: metadataError });
     }
 
     return (

@@ -559,7 +559,9 @@ export default function AdvisoryDashboard({
         }
       } catch (error) {
         console.error("Error loading dashboard context:", error);
-        setFatalError(new Error("Error loading data.", { cause: error }));
+        setFatalError(
+          new Error("Could not load the dashboard", { cause: error }),
+        );
       }
     }
 
@@ -738,7 +740,7 @@ export default function AdvisoryDashboard({
       } catch (error) {
         console.error("Error fetching advisories:", error);
         setFatalError(
-          new Error("Error loading data. Make sure Strapi is running.", {
+          new Error("Could not load advisories / closures", {
             cause: error,
           }),
         );
