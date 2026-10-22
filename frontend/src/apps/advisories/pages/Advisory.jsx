@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useContext, useCallback } from "react";
 import {
-  Navigate,
   useLocation,
   useNavigate,
   useBlocker,
@@ -26,12 +25,10 @@ import useCms from "@/hooks/useCms";
 import useConfirmation from "@/hooks/useConfirmation";
 import useNavigationGuard from "@/hooks/useNavigationGuard";
 import ConfirmationDialog from "@/components/ConfirmationDialog";
-import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import { ROLES } from "@/config/permissions";
 
 export default function Advisory({ mode }) {
-  const { setError } = useContext(ErrorContext);
   const globalFlashMessage = useContext(FlashMessageContext);
   const [searchParams] = useSearchParams();
   const location = useLocation();
@@ -91,7 +88,7 @@ export default function Advisory({ mode }) {
   const [notes, setNotes] = useState("");
   const [submittedByName, setSubmittedByName] = useState("");
   const [listingRank, setListingRank] = useState(0);
-  const [toError, setToError] = useState(false);
+  const [fatalError, setFatalError] = useState(null);
   const [isLoadingPage, setIsLoadingPage] = useState(true);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [isStatHoliday, setIsStatHoliday] = useState(false);
@@ -552,19 +549,17 @@ export default function Advisory({ mode }) {
               "error occurred fetching Public Advisory data",
               error,
             );
-            setToError(true);
-            setError({
-              status: 500,
-              message: "Error fetching advisory",
-            });
+            setFatalError(
+              new Error("Could not load advisory / closure", { cause: error }),
+            );
             setIsLoadingPage(false);
           });
       } else {
-        setToError(true);
-        setError({
-          status: 400,
-          message: "Advisory Id is not found",
-        });
+        setFatalError(
+          new Error(
+            "Advisory / closure not found. Check the link and try again.",
+          ),
+        );
         setIsLoadingPage(false);
       }
     }
@@ -573,7 +568,6 @@ export default function Advisory({ mode }) {
     query,
     mode,
     isLoadingData,
-    setError,
     standardMessages,
     protectedAreas,
     regions,
@@ -809,17 +803,12 @@ export default function Advisory({ mode }) {
         .catch((error) => {
           console.error("error occurred fetching dropdown data?", error);
 
-          setToError(true);
-          setError({
-            status: 500,
-            message: "Error occurred",
-          });
+          setFatalError(new Error("Could not load the form", { cause: error }));
           setIsLoadingData(false);
           setIsLoadingPage(false);
         });
     }
   }, [
-    setError,
     isAuthenticated,
     initialized,
     auth.user?.profile?.name,
@@ -905,11 +894,7 @@ export default function Advisory({ mode }) {
     };
     const res = await cmsPost(`links`, linkRequest).catch((error) => {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not save attachments",
-      });
+      setFatalError(new Error("Could not save attachments", { cause: error }));
       return null;
     });
 
@@ -934,11 +919,7 @@ export default function Advisory({ mode }) {
       },
     }).catch((error) => {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not save attachments",
-      });
+      setFatalError(new Error("Could not save attachments", { cause: error }));
       return null;
     });
 
@@ -947,11 +928,7 @@ export default function Advisory({ mode }) {
     if (res.length > 0) {
       return res[0];
     }
-    setToError(true);
-    setError({
-      status: 500,
-      message: "Could not save attachments",
-    });
+    setFatalError(new Error("Could not save attachments"));
 
     return null;
   }
@@ -974,11 +951,7 @@ export default function Advisory({ mode }) {
 
     const res = await cmsPut(`links/${id}`, linkRequest).catch((error) => {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not save attachments",
-      });
+      setFatalError(new Error("Could not save attachments", { cause: error }));
       return null;
     });
 
@@ -1016,11 +989,9 @@ export default function Advisory({ mode }) {
     };
     const res = await cmsPost(`links`, linkRequest).catch((error) => {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not process advisory update",
-      });
+      setFatalError(
+        new Error("Could not save advisory / closure", { cause: error }),
+      );
       return null;
     });
 
@@ -1044,11 +1015,9 @@ export default function Advisory({ mode }) {
     };
     const res = await cmsPut(`links/${id}`, linkRequest).catch((error) => {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not process advisory update",
-      });
+      setFatalError(
+        new Error("Could not save advisory / closure", { cause: error }),
+      );
       return null;
     });
 
@@ -1216,11 +1185,9 @@ export default function Advisory({ mode }) {
       return advisory;
     } catch (error) {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not process advisory update",
-      });
+      setFatalError(
+        new Error("Could not save advisory / closure", { cause: error }),
+      );
       return null;
     }
   }
@@ -1350,17 +1317,16 @@ export default function Advisory({ mode }) {
       return advisory;
     } catch (error) {
       console.error("error occurred", error);
-      setToError(true);
-      setError({
-        status: 500,
-        message: "Could not process advisory update",
-      });
+      setFatalError(
+        new Error("Could not save advisory / closure", { cause: error }),
+      );
       return null;
     }
   }
 
-  if (toError) {
-    return <Navigate to="/error" />;
+  // Re-throw async errors during render so the route's error boundary catches them
+  if (fatalError) {
+    throw fatalError;
   }
 
   return (
@@ -1515,7 +1481,6 @@ export default function Advisory({ mode }) {
 Advisory.propTypes = {
   mode: PropTypes.string.isRequired,
   page: PropTypes.shape({
-    setError: PropTypes.func.isRequired,
     cmsData: PropTypes.object.isRequired,
     setCmsData: PropTypes.func.isRequired,
   }).isRequired,

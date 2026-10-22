@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext } from "react";
-import ErrorContext from "@/contexts/ErrorContext";
 import CmsDataContext from "@/contexts/CmsDataContext";
 import "./ParkSearch.scss";
 // Include styles from AdvisoryForm component
@@ -24,7 +23,6 @@ import {
 import { isEmpty } from "@/utils/appUtil";
 
 export default function ParkSearch() {
-  const { setError } = useContext(ErrorContext);
   const { cmsData, setCmsData } = useContext(CmsDataContext);
   const [isLoading, setIsLoading] = useState(true);
   const [protectedAreas, setProtectedAreas] = useState([]);
@@ -41,7 +39,7 @@ export default function ParkSearch() {
   const auth = useAuth();
   const initialized = !auth.isLoading;
   const keycloak = auth.isAuthenticated ? auth.user : null;
-  const [toError, setToError] = useState(false);
+  const [fatalError, setFatalError] = useState(null);
   const [toDetails, setToDetails] = useState(false);
   const [parkList, setParkList] = useState([]);
 
@@ -192,15 +190,11 @@ export default function ParkSearch() {
           setIsLoading(false);
         })
         .catch(() => {
-          setToError(true);
-          setError({
-            status: 500,
-            message: "Error loading park search",
-          });
+          setFatalError(new Error("Error loading park search"));
           setIsLoading(false);
         });
     }
-  }, [cmsData, initialized, keycloak, setCmsData, setError, setIsLoading]);
+  }, [cmsData, initialized, keycloak, setCmsData, setIsLoading]);
 
   function filterSection(event) {
     if (event) {
@@ -230,8 +224,9 @@ export default function ParkSearch() {
     return <Navigate to={`/park-info/${protectedArea}`} />;
   }
 
-  if (toError) {
-    return <Navigate to="/error" />;
+  // Re-throw async errors during render so the route's error boundary catches them
+  if (fatalError) {
+    throw fatalError;
   }
 
   return (

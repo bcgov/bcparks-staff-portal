@@ -197,8 +197,9 @@ export default function EditPublishedPage() {
     );
   }
 
+  // Throw load errors during render so the route's error boundary catches them
   if (error) {
-    return <p>Error loading parks data: {error.message}</p>;
+    throw new Error("Could not load published dates", { cause: error });
   }
 
   return (

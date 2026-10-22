@@ -57,12 +57,9 @@ function ExportPage() {
     }
   }
 
+  // Throw load errors during render so the route's error boundary catches them
   if (error) {
-    return (
-      <div className="container">
-        <p className="px-3">Error loading options data: {error.message}</p>
-      </div>
-    );
+    throw new Error("Could not load export options", { cause: error });
   }
 
   if (loading)

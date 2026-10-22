@@ -15,10 +15,9 @@ import {
   useDebounceValue,
 } from "usehooks-ts";
 import qs from "qs";
-import { Link, Navigate, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { useTranslation } from "react-i18next";
-import ErrorContext from "@/contexts/ErrorContext";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import useAccess from "@/hooks/useAccess";
 import useCms from "@/hooks/useCms";
@@ -104,7 +103,6 @@ export default function AdvisoryDashboard({
   isReviewDashboard = false,
 }) {
   const { t } = useTranslation("act");
-  const { setError } = useContext(ErrorContext);
   const globalFlashMessage = useContext(FlashMessageContext);
   const auth = useAuth();
   const { hasAnyRole, ROLES } = useAccess();
@@ -120,7 +118,7 @@ export default function AdvisoryDashboard({
 
   const navigate = useNavigate();
 
-  const [toError, setToError] = useState(false);
+  const [fatalError, setFatalError] = useState(null);
   const [selectedRegionId, setSelectedRegionId] = useState([]);
   const [selectedRegion, setSelectedRegion] = useState([]);
   const [selectedDistrictId, setSelectedDistrictId] = useState([]);
@@ -129,7 +127,6 @@ export default function AdvisoryDashboard({
   const [selectedPark, setSelectedPark] = useState([]);
   const [selectedProgramArea, setSelectedProgramArea] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [hasErrors, setHasErrors] = useState(false);
   const [publicAdvisories, setPublicAdvisories] = useState([]);
   const [regions, setRegions] = useState([]);
   const [managementAreas, setManagementAreas] = useState([]);
@@ -562,8 +559,9 @@ export default function AdvisoryDashboard({
         }
       } catch (error) {
         console.error("Error loading dashboard context:", error);
-        setHasErrors(true);
-        setError({ status: 500, message: "Error loading data." });
+        setFatalError(
+          new Error("Could not load the dashboard", { cause: error }),
+        );
       }
     }
 
@@ -581,7 +579,6 @@ export default function AdvisoryDashboard({
     getRegions,
     getUrgencies,
     initialStoredFilters,
-    setError,
   ]);
 
   // Fetch one page of advisories whenever page, pageSize, or showUnpublished changes.
@@ -742,11 +739,11 @@ export default function AdvisoryDashboard({
         }
       } catch (error) {
         console.error("Error fetching advisories:", error);
-        setError({
-          status: 500,
-          message: "Error loading data. Make sure Strapi is running.",
-        });
-        setToError(true);
+        setFatalError(
+          new Error("Could not load advisories / closures", {
+            cause: error,
+          }),
+        );
         setIsLoading(false);
       }
     }
@@ -768,7 +765,6 @@ export default function AdvisoryDashboard({
     selectedParkId,
     selectedRegionId,
     selectedProgramArea,
-    setError,
     showUnpublished,
     sortConfig,
     isReviewDashboard,
@@ -1242,8 +1238,9 @@ export default function AdvisoryDashboard({
     ],
   );
 
-  if (toError || hasErrors) {
-    return <Navigate to="/error" />;
+  // Re-throw async errors during render so the route's error boundary catches them
+  if (fatalError) {
+    throw fatalError;
   }
 
   // Use the unfiltered comparison total when available; otherwise fall back
