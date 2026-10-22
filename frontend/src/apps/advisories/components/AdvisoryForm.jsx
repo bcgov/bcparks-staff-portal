@@ -1125,7 +1125,7 @@ export default function AdvisoryForm({
                     />
                   </div>
 
-                  <span className="time-zone">PT</span>
+                  <span className="time-zone">PCT</span>
                 </div>
 
                 {renderHelperText("hh:mm aa")}
@@ -1213,7 +1213,7 @@ export default function AdvisoryForm({
                     />
                   </div>
 
-                  <span className="time-zone">PT</span>
+                  <span className="time-zone">PCT</span>
                 </div>
 
                 {renderHelperText("hh:mm aa")}
@@ -1282,7 +1282,7 @@ export default function AdvisoryForm({
                       />
                     </div>
 
-                    <span className="time-zone">PT</span>
+                    <span className="time-zone">PCT</span>
                   </div>
 
                   {renderHelperText("hh:mm aa")}
@@ -1385,7 +1385,7 @@ export default function AdvisoryForm({
                         />
                       </div>
 
-                      <span className="time-zone">PT</span>
+                      <span className="time-zone">PCT</span>
                     </div>
 
                     {renderHelperText("hh:mm aa")}
@@ -1470,7 +1470,7 @@ export default function AdvisoryForm({
                         />
                       </div>
 
-                      <span className="time-zone">PT</span>
+                      <span className="time-zone">PCT</span>
                     </div>
 
                     {renderHelperText("hh:mm aa")}
