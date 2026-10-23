@@ -24,6 +24,13 @@ if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
 }
 
+// A plain `helm upgrade` (without helm-secrets) leaves Vault references unresolved
+if (process.env.ADMINJS_RELATIONS_LICENSE_KEY?.startsWith("ref+vault://")) {
+  throw new Error(
+    "ADMINJS_RELATIONS_LICENSE_KEY is an unresolved Vault reference. Redeploy with `helm secrets --evaluate-templates`.",
+  );
+}
+
 const app = express();
 
 // enable CORS for all routes

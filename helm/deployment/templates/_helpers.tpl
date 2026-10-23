@@ -72,3 +72,32 @@ Gets the suffix of the namespace. (-dev, -tools, ... )
 https://{{ .Release.Name }}-{{ .Values.frontend.componentName }}-{{ .Release.Namespace }}.{{ .Values.cluster.domain }}
 {{- end -}}
 
+
+{{/*
+Vault KV mount for the release namespace:
+<license plate>-prod in the prod namespace, otherwise <license plate>-nonprod.
+*/}}
+{{- define "bcparks.vaultMount" -}}
+{{- $licensePlate := (split "-" .Release.Namespace)._0 -}}
+{{- if eq (include "bcparks.namespaceSuffix" .) "prod" -}}
+{{- printf "%s-prod" $licensePlate -}}
+{{- else -}}
+{{- printf "%s-nonprod" $licensePlate -}}
+{{- end -}}
+{{- end }}
+
+{{/*
+Notice key added to every Vault-managed Opaque Secret.
+The "00_" prefix keeps it at the top of the key list in the OpenShift console.
+*/}}
+{{- define "bcparks.vaultManagedNotice" -}}
+00_VAULT_MANAGED_NOTICE: |-
+  This secret is managed by BC Government HashiCorp Vault. Vault is the authoritative source of truth. Changes made directly to this OpenShift Secret are NOT synchronized back to Vault and will be overwritten by the next Helm upgrade.
+
+  Vault access is limited by Platform Services and controlled through roles on registry.developer.gov.bc.ca. When this secret was created, only the Product Owner (Leah) and Technical Leads (Mike & Duncan) could be granted Vault access.
+
+  To make a change permanent, update the secret in Vault and then perform a Helm upgrade. See "Running a Helm Upgrade":
+  https://apps.nrs.gov.bc.ca/int/confluence/spaces/BCPRS/pages/317194679/Running+a+Helm+Upgrade
+
+  In test and prod, Vault also contains S3_ACCESS_KEY_ID and S3_ACCESS_SECRET, which go in the s3-pgbackrest secret. Helm upgrade doesn't update that secret. It is applied manually following steps in helm/crunchy-postgres/README.md.
+{{- end }}
