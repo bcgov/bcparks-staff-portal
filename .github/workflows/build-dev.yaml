@@ -27,9 +27,9 @@ jobs:
           echo "REGISTRY_IMAGE=${{ vars.OPENSHIFT_EXTERNAL_REPOSITORY }}/${{ vars.OPENSHIFT_LICENSE_PLATE }}-tools/${{ env.IMAGE_NAME }}" >> $GITHUB_ENV
 
       - name: Install OpenShift CLI tools
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@v3
         with:
-          oc: "4.16"
+          oc: "4.18"
           skip_cache: true
 
       - name: Login to OpenShift Container Repository
@@ -86,13 +86,13 @@ jobs:
     needs: [build-frontend, build-backend]
     steps:
       - name: Install OpenShift CLI tools
-        uses: redhat-actions/openshift-tools-installer@v1
+        uses: redhat-actions/openshift-tools-installer@v3
         with:
-          oc: "4.16"
+          oc: "4.18"
           skip_cache: true
 
       - name: Login OpenShift
-        uses: redhat-actions/oc-login@v1
+        uses: redhat-actions/oc-login@v2
         with:
           openshift_server_url: ${{ vars.OPENSHIFT_SERVER_URL }}
           openshift_token: ${{ secrets.OPENSHIFT_SERVICE_TOKEN }}
