@@ -65,9 +65,11 @@ spec:
               value: {{ .Values.backend.env.externalUrl }}/api
             - name: VITE_BCPARKS_ENVIRONMENT
               value: {{ .Values.cluster.environment }}
-          envFrom:
-            - secretRef:
-                name: {{ .Release.Name }}-ckeditor-license-key-secret
+            - name: VITE_CKEDITOR_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-vault-managed-secret
+                  key: CKEDITOR_LICENSE_KEY
           readinessProbe:
             httpGet:
               path: /

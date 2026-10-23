@@ -77,6 +77,11 @@ spec:
               value: {{ .Values.cluster.cmsUrl }}
             - name: BCPARKS_ENVIRONMENT
               value: {{ .Values.cluster.environment }}
+            - name: ADMINJS_RELATIONS_LICENSE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Release.Name }}-vault-managed-secret
+                  key: ADMINJS_RELATIONS_LICENSE_KEY
           envFrom:
             - secretRef:
                 name: {{ .Release.Name }}-adminjs-secret
