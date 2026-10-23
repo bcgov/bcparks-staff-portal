@@ -7,7 +7,7 @@
     "start:local": "OPENSHIFT_AUTH_TOKEN=\"$(oc whoami -t)\" OPENSHIFT_API_URL=\"$(oc whoami --show-server)/apis/image.openshift.io/v1\" node index.js"
   },
   "dependencies": {
-    "dotenv": "^16.0.3",
+    "dotenv": "^16.6.1",
     "phin": "^3.7.1"
   },
   "repository": {
