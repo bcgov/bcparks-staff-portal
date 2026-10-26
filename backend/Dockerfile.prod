@@ -1,5 +1,5 @@
 # Use the official Node.js image as a base
-FROM node:24.22.1
+FROM node:24.22
 
 WORKDIR /app
 
