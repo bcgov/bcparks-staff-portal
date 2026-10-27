@@ -195,8 +195,8 @@ export default function DateRangeFields({
 
   if (isWinterSeason) {
     // Winter seasons
-    minDate = new Date(operatingYear, 9, 1); // Oct 1 of the season's operating year
-    maxDate = new Date(operatingYear + 1, 2, 31); // Mar 31 of the year after that
+    minDate = new Date(operatingYear, 8, 15); // Sept 15 of the season's operating year
+    maxDate = new Date(operatingYear + 1, 4, 31); // May 31 of the year after that
   } else {
     // Regular seasons
     minDate = new Date(operatingYear, 0, 1); // Jan 1 of the season's operating year
