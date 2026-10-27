@@ -3,9 +3,9 @@ import getDateTypeDisplayName from "@/apps/dates/utils/getDateTypeDisplayName";
 
 /**
  * Validates that the start and end dates of winter fee date ranges fall in the correct years.
- * - Start dates must be after September 30 of the operating year.
- * - End dates must be before April 1 of the next year (can be in Oct-December of the current
- *   year, but can't be later than March 31 of next year).
+ * - Start dates must be between September 15 and December 31 of the operating year.
+ * - End dates must be before June 1 of the next year (can be in Sept-December of the current
+ *   year, but can't be later than May 31 of next year).
  * @param {Object} seasonData The season form data to validate
  * @param {Object} context Validation context with errors array
  * @returns {void}
@@ -28,14 +28,14 @@ export default function winterDateYears(seasonData, context) {
   // Get the operating year from the current season data
   const operatingYear = current.operatingYear;
 
-  // Start date must be October-December of the season operating year
+  // Start date must be September 15-December 31 of the season operating year
   const validStartDates = {
-    start: new Date(operatingYear, 9, 1), // October 1 of operating year
+    start: new Date(operatingYear, 8, 15), // September 15 of operating year
     end: new Date(operatingYear, 11, 31), // December 31 of operating year
   };
 
-  // End date must be before April of the next year
-  const april1 = new Date(operatingYear + 1, 3, 1);
+  // End date must be before June of the next year
+  const june1 = new Date(operatingYear + 1, 5, 1);
 
   // Check each winter date
   winterDates.forEach((winterDateRange) => {
@@ -44,27 +44,27 @@ export default function winterDateYears(seasonData, context) {
 
     if (startDate && !isWithinInterval(startDate, validStartDates)) {
       context.addError(
-        // Show the error below the empty start date field
+        // Show the error below the start date field
         elements.dateField(
           idOrTempId,
           "startDate",
           `${getDateTypeDisplayName(winterDateRange.dateType.name)} start date`,
           winterDateRange.dateableId,
         ),
-        `The start date must be between October 1 and December 31, ${operatingYear}`,
+        `The start date must be between September 15 and December 31, ${operatingYear}`,
       );
     }
 
-    if (endDate && !isBefore(endDate, april1)) {
+    if (endDate && !isBefore(endDate, june1)) {
       context.addError(
-        // Show the error below the empty end date field
+        // Show the error below the end date field
         elements.dateField(
           idOrTempId,
           "endDate",
           `${getDateTypeDisplayName(winterDateRange.dateType.name)} end date`,
           winterDateRange.dateableId,
         ),
-        `The end date must be before April 1, ${operatingYear + 1}`,
+        `The end date must be before June 1, ${operatingYear + 1}`,
       );
     }
   });
