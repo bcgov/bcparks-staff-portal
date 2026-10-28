@@ -5,6 +5,7 @@ import LoadingBar from "@/components/LoadingBar";
 import { ActionButton } from "@/components/ActionButton";
 import SwitchToggle from "@/apps/dates/components/SwitchToggle";
 import MultiSelectField from "@/apps/dates/components/MultiSelectField";
+import getDateTypeDisplayName from "@/apps/dates/utils/getDateTypeDisplayName";
 import "./FilterPanel.scss";
 
 function FilterPanel({
@@ -92,7 +93,9 @@ function FilterPanel({
                     value={filters.dateTypes}
                     onChange={(e) => updateFilter("dateTypes", e)}
                     placeholder="Select Date Type(s)"
-                    optionLabel="name"
+                    optionLabel={(dateType) =>
+                      getDateTypeDisplayName(dateType.name)
+                    }
                     optionValue="id"
                   />
                 </div>

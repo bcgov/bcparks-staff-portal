@@ -23,7 +23,9 @@ function MultiSelectField({
         options={options}
         onChange={onChange}
         placeholder={placeholder}
-        getOptionLabel={(e) => e[optionLabel]}
+        getOptionLabel={(e) =>
+          typeof optionLabel === "function" ? optionLabel(e) : e[optionLabel]
+        }
         getOptionValue={(e) => e[optionValue]}
         formatGroupLabel={(data) => (
           <span style={{ color: "var(--bs-gray-800)" }}>{data.label}</span>
@@ -42,7 +44,7 @@ MultiSelectField.propTypes = {
   value: PropTypes.arrayOf(PropTypes.object),
   onChange: PropTypes.func.isRequired,
   placeholder: PropTypes.string,
-  optionLabel: PropTypes.string,
+  optionLabel: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
   optionValue: PropTypes.string,
 };
 
