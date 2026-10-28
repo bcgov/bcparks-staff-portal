@@ -306,7 +306,7 @@ export default function ParkSeasonForm({
   return (
     <>
       {isWinterSeason ? (
-        <FormContainer>
+        <FormContainer dateType={winterDateType}>
           <FormSection
             dateTypes={[winterDateType]}
             park={park}
