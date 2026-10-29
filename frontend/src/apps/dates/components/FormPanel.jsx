@@ -359,12 +359,12 @@ function SeasonForm({
     return title;
   }, [level, season, seasonMetadata]);
 
-  const dateTypesByStrapiId = useMemo(
+  const dateTypesByNumber = useMemo(
     () => keyBy(seasonMetadata?.dateTypes || [], "dateTypeNumber"),
     [seasonMetadata],
   );
   // Find the "Park gate open" date type id
-  const gateTypeId = dateTypesByStrapiId[1]?.id;
+  const gateTypeId = dateTypesByNumber[1]?.id;
 
   // Build a map of Dateable IDs to their Feature names, for display in the Error Summary
   const dateableNames = useMemo(() => {
