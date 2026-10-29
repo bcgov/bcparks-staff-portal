@@ -18,6 +18,7 @@ import {
   faChevronDown,
   faChevronUp,
   faCircleQuestion,
+  faPlus,
   faTriangleExclamation,
 } from "@fa-kit/icons/classic/solid";
 import Select from "react-select";
@@ -981,7 +982,7 @@ export default function AdvisoryForm({
         ))}
 
         <Form.Group className="form-group">
-          <div className="d-flex align-items-center justify-content-center">
+          <div className="d-flex align-items-center">
             <input
               id="file-upload"
               hidden
@@ -1021,7 +1022,8 @@ export default function AdvisoryForm({
                   markChanged();
                 }}
               >
-                + Upload file
+                <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
+                Upload file
               </Btn>
             </label>
             <span className="mx-2">OR</span>
@@ -1039,6 +1041,7 @@ export default function AdvisoryForm({
                 markChanged();
               }}
             >
+              <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
               Add URL
             </Btn>
           </div>
