@@ -1050,6 +1050,9 @@ export default function AdvisoryForm({
 
         <div className="sub-section">
           <h4>Post date(s)</h4>
+          <p className="small-text">
+            Dates to control when the advisory/closure appears online
+          </p>
 
           <div className="row mb-3 date-time-row">
             <div className="col-12 col-sm-6 col-md-5">
@@ -1311,6 +1314,10 @@ export default function AdvisoryForm({
           <>
             <div className="sub-section">
               <h4>Event date(s)</h4>
+              <p className="small-text">
+                Dates related to an event (for example, when construction begins
+                and ends)
+              </p>
 
               <div className="row mb-3 date-time-row">
                 <div className="col-12 col-sm-6 col-md-5">
