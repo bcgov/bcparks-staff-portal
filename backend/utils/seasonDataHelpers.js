@@ -255,15 +255,15 @@ export async function getParkDates(park, operatingYear) {
   );
 
   // Group by dateTypeNumber
-  const datesByStrapiId = _.groupBy(
+  const datesByDateTypeNumber = _.groupBy(
     allRanges,
     (range) => range.dateType?.dateTypeNumber,
   );
 
   // Use constants for Tier 1, Tier 2, and Winter fee
-  const tier1Dates = datesByStrapiId[DATE_TYPE.TIER_1] || [];
-  const tier2Dates = datesByStrapiId[DATE_TYPE.TIER_2] || [];
-  const parkWinterDates = datesByStrapiId[DATE_TYPE.WINTER_FEE] || [];
+  const tier1Dates = datesByDateTypeNumber[DATE_TYPE.TIER_1] || [];
+  const tier2Dates = datesByDateTypeNumber[DATE_TYPE.TIER_2] || [];
+  const parkWinterDates = datesByDateTypeNumber[DATE_TYPE.WINTER_FEE] || [];
 
   // Only include tier dates if park supports them
   const parkTier1Dates = park.hasTier1Dates ? tier1Dates : [];

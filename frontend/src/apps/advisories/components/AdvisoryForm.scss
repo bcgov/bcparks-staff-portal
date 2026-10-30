@@ -56,7 +56,6 @@
 
   .link-sub-section {
     position: relative;
-    padding-top: 2.5rem;
 
     .remove-link-btn {
       position: absolute;
@@ -182,4 +181,8 @@
 
 .multi-line-select-option {
   white-space: pre-wrap !important;
+}
+
+.act-add-link .add-link-icon {
+  margin-right: 0.5rem;
 }

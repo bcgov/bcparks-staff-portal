@@ -18,6 +18,7 @@ import {
   faChevronDown,
   faChevronUp,
   faCircleQuestion,
+  faPlus,
   faTriangleExclamation,
 } from "@fa-kit/icons/classic/solid";
 import Select from "react-select";
@@ -803,11 +804,12 @@ export default function AdvisoryForm({
 
         {linksRef.current.map((link, idx) => (
           <div key={idx} className="sub-section link-sub-section">
+            <h4 className="fw-normal mb-4">Attachment {idx + 1}</h4>
             <button
               type="button"
               className="pointer btn remove-link-btn"
               tabIndex="0"
-              aria-label="Remove link"
+              aria-label={`Remove attachment ${idx + 1}`}
               onClick={() => {
                 removeLinkRow(idx);
               }}
@@ -981,7 +983,7 @@ export default function AdvisoryForm({
         ))}
 
         <Form.Group className="form-group">
-          <div className="d-flex align-items-center justify-content-center">
+          <div className="d-flex align-items-center">
             <input
               id="file-upload"
               hidden
@@ -1021,7 +1023,8 @@ export default function AdvisoryForm({
                   markChanged();
                 }}
               >
-                + Upload file
+                <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
+                Upload file
               </Btn>
             </label>
             <span className="mx-2">OR</span>
@@ -1039,6 +1042,7 @@ export default function AdvisoryForm({
                 markChanged();
               }}
             >
+              <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
               Add URL
             </Btn>
           </div>
@@ -1050,6 +1054,9 @@ export default function AdvisoryForm({
 
         <div className="sub-section">
           <h4>Post date(s)</h4>
+          <p className="small-text">
+            Dates to control when the advisory/closure appears online
+          </p>
 
           <div className="row mb-3 date-time-row">
             <div className="col-12 col-sm-6 col-md-5">
@@ -1311,6 +1318,10 @@ export default function AdvisoryForm({
           <>
             <div className="sub-section">
               <h4>Event date(s)</h4>
+              <p className="small-text">
+                Dates related to an event (for example, when construction begins
+                and ends)
+              </p>
 
               <div className="row mb-3 date-time-row">
                 <div className="col-12 col-sm-6 col-md-5">
