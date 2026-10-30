@@ -73,7 +73,7 @@ export default function Advisory({ mode }) {
   const [links, setLinks] = useState([]);
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
-  const [isSafetyRelated, setIsSafetyRelated] = useState(false);
+  const [isSafetyRelated, setIsSafetyRelated] = useState(null);
   const [advisoryDate, setAdvisoryDate] = useState(
     moment().tz("America/Vancouver").toDate(),
   );
@@ -332,9 +332,7 @@ export default function Advisory({ mode }) {
             setRevisionNumber(advisoryData.revisionNumber);
             setHeadline(advisoryData.title || "");
             setDescription(advisoryData.description || "");
-            if (advisoryData.isSafetyRelated) {
-              setIsSafetyRelated(advisoryData.isSafetyRelated);
-            }
+            setIsSafetyRelated(advisoryData.isSafetyRelated ?? null);
             setListingRank(
               advisoryData.listingRank ? advisoryData.listingRank : 0,
             );
