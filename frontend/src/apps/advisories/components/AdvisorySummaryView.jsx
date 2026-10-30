@@ -447,9 +447,11 @@ export default function AdvisorySummaryView({
           <Field label="Requested by">{advisory.submittedByName}</Field>
         )}
 
-        <Field label="Public safety related">
-          {advisory.isSafetyRelated ? "Yes" : "No"}
-        </Field>
+        {typeof advisory.isSafetyRelated === "boolean" && (
+          <Field label="Public safety related">
+            {advisory.isSafetyRelated ? "Yes" : "No"}
+          </Field>
+        )}
 
         {advisory.note && (
           <Field label="Internal notes">
