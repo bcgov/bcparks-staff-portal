@@ -804,11 +804,12 @@ export default function AdvisoryForm({
 
         {linksRef.current.map((link, idx) => (
           <div key={idx} className="sub-section link-sub-section">
+            <h4 className="fw-normal mb-4">Attachment {idx + 1}</h4>
             <button
               type="button"
               className="pointer btn remove-link-btn"
               tabIndex="0"
-              aria-label="Remove link"
+              aria-label={`Remove attachment ${idx + 1}`}
               onClick={() => {
                 removeLinkRow(idx);
               }}
