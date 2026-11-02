@@ -974,6 +974,7 @@ export default function AdvisoryForm({
                 <>
                   <FontAwesomeIcon icon={faTrash} />
                   Remove
+                  <span className="visually-hidden"> attachment {idx + 1}</span>
                 </>
               }
               variant="secondary"
