@@ -15,8 +15,6 @@ import {
 } from "@fa-kit/icons/classic/regular";
 import {
   faCheck,
-  faChevronDown,
-  faChevronUp,
   faCircleQuestion,
   faPlus,
   faTriangleExclamation,
@@ -148,8 +146,6 @@ export default function AdvisoryForm({
   const isRecreationUser = hasAnyRole([ROLES.RECREATION_USER]);
 
   const [showEventDates, setShowEventDates] = useState(false);
-  // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
-  const autoExpandedEventDates = useRef(false);
   const [affectedResourceError, setAffectedResourceError] = useState("");
   const [accessStatusError, setAccessStatusError] = useState("");
   const [eventTypeError, setEventTypeError] = useState("");
@@ -183,21 +179,13 @@ export default function AdvisoryForm({
   // Keep a stable callable for parent registration while always executing latest form state.
   const saveDraftHandlerRef = useRef(async () => false);
 
-  // Reveal event dates in update mode if there are any
+  // Reveal event dates if there are any (e.g. when returning to the form).
+  // Once revealed, the section stays visible.
   useEffect(() => {
-    if (
-      mode === "update" &&
-      autoExpandedEventDates.current === false &&
-      showEventDates === false &&
-      (startDate || endDate)
-    ) {
+    if (startDate || endDate) {
       setShowEventDates(true);
-      autoExpandedEventDates.current = true;
-    } else if (showEventDates && !autoExpandedEventDates.current) {
-      // Don't auto-expand the section after the initial load: set the flag to true to skip future checks
-      autoExpandedEventDates.current = true;
     }
-  }, [mode, showEventDates, startDate, endDate]);
+  }, [startDate, endDate]);
 
   const advisoryData = {
     listingRank: {
@@ -303,9 +291,9 @@ export default function AdvisoryForm({
   };
 
   const displayedDateOptions = [
-    { label: "Posting date", value: "posting" },
+    { label: "Posting date (Default)", value: "posting" },
     ...(mode === "update" ? [{ label: "Updated date", value: "updated" }] : []),
-    { label: "Start date", value: "start" },
+    { label: "Event start date", value: "start" },
     { label: "Event date range", value: "event" },
     { label: "No date", value: "no" },
   ];
@@ -1300,18 +1288,18 @@ export default function AdvisoryForm({
         </div>
 
         {!showEventDates && (
-          <p>
-            <button
-              type="button"
-              className="btn mt-2 btn-link btn-boolean with-icon"
+          <Form.Group className="form-group">
+            <Btn
+              variant="outline-secondary"
+              className="act-add-link"
               onClick={() => {
                 setShowEventDates(true);
               }}
             >
+              <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
               Add event dates
-              <FontAwesomeIcon icon={faChevronDown} />
-            </button>
-          </p>
+            </Btn>
+          </Form.Group>
         )}
 
         {showEventDates && (
@@ -1489,19 +1477,6 @@ export default function AdvisoryForm({
                 </div>
               </div>
             </div>
-
-            <p>
-              <button
-                type="button"
-                className="btn mt-2 btn-link btn-boolean with-icon"
-                onClick={() => {
-                  setShowEventDates(false);
-                }}
-              >
-                Hide event dates
-                <FontAwesomeIcon icon={faChevronUp} />
-              </button>
-            </p>
           </>
         )}
 
