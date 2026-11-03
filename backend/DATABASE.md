@@ -29,17 +29,18 @@ docker exec bcparks-staff-portal-db-1 psql -U user -d postgres -c "CREATE DATABA
 Requires access to the production OpenShift project (`a7dd13-prod`, not dev, test, or tools) and the [`oc` CLI](https://docs.openshift.com/container-platform/latest/cli_reference/openshift_cli/getting-started-cli.html). See [Crunchy Postgres backup and restore](../docs/crunchy-postgres-backup-and-restore.md) for how the production cluster is set up.
 
 1. Log in with `oc` (in the OpenShift web console, your name in the top right → **Copy login command**).
-2. Find the primary Postgres pod:
+2. Save the name of the primary Postgres pod in a variable:
 
    ```sh
-   oc get pods -n a7dd13-prod -l postgres-operator.crunchydata.com/role=master
+   POD=$(oc get pods -n a7dd13-prod -l postgres-operator.crunchydata.com/role=master -o name)
+   echo "$POD"   # should print one name, like pod/crunchy-postgres-ha-xxxx-0
    ```
 
-3. In a Bash terminal, stream a dump from that pod straight into the local database (replace `<pod>` with the primary pod name):
+3. In a Bash terminal, stream a dump from that pod straight into the local database:
 
    ```bash
    set -o pipefail
-   oc exec -n a7dd13-prod <pod> -c database -- pg_dump --no-owner --no-privileges crunchy-postgres \
+   oc exec -n a7dd13-prod "$POD" -c database -- pg_dump --no-owner --no-privileges crunchy-postgres \
      | docker exec -i bcparks-staff-portal-db-1 psql -v ON_ERROR_STOP=1 -U user -d mydatabase
    ```
 
