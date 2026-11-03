@@ -35,14 +35,15 @@ Requires access to the production OpenShift project (`a7dd13-prod`, not dev, tes
    oc get pods -n a7dd13-prod -l postgres-operator.crunchydata.com/role=master
    ```
 
-3. Stream a dump from that pod straight into the local database:
+3. In a Bash terminal, stream a dump from that pod straight into the local database (replace `<pod>` with the primary pod name):
 
-   ```sh
+   ```bash
+   set -o pipefail
    oc exec -n a7dd13-prod <pod> -c database -- pg_dump --no-owner --no-privileges crunchy-postgres \
-     | docker exec -i bcparks-staff-portal-db-1 psql -U user -d mydatabase
+     | docker exec -i bcparks-staff-portal-db-1 psql -v ON_ERROR_STOP=1 -U user -d mydatabase
    ```
 
-   If the restore pauses, press Enter. If the stream is interrupted, repeat step 1 and rerun this command.
+   If either command fails or the stream is interrupted, repeat [Reset the local database](#1-reset-the-local-database) before rerunning this command. Continue to migrations only after the pipeline succeeds.
 
 To keep a reusable copy instead, redirect the dump to a file (`> doot-backup.sql`) and load it later with `docker exec -i bcparks-staff-portal-db-1 psql -U user -d mydatabase < ./doot-backup.sql`. Keep that file outside the repository and delete it when you're done.
 
