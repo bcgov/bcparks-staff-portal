@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,
   faClock,
+  faTrash,
   faXmark,
 } from "@fa-kit/icons/classic/regular";
 import {
@@ -40,6 +41,7 @@ import LightTooltip from "@/apps/advisories/components/LightTooltip";
 import AdvisoryAreaPicker from "@/apps/advisories/components/AdvisoryAreaPicker";
 import CKEditor from "@/apps/advisories/components/CKEditor";
 import PrimaryActions from "@/apps/advisories/components/PrimaryActions";
+import { ActionButton } from "@/components/ActionButton";
 import DraftButton from "@/apps/advisories/components/DraftButton";
 import AccessStatusPicker from "@/apps/advisories/components/AccessStatusPicker";
 import EventTypePicker from "@/apps/advisories/components/EventTypePicker";
@@ -791,19 +793,8 @@ export default function AdvisoryForm({
         </Form.Group>
 
         {linksRef.current.map((link, idx) => (
-          <div key={idx} className="sub-section link-sub-section">
+          <div key={idx} className="sub-section">
             <h4 className="fw-normal mb-4">Attachment {idx + 1}</h4>
-            <button
-              type="button"
-              className="pointer btn remove-link-btn"
-              tabIndex="0"
-              aria-label={`Remove attachment ${idx + 1}`}
-              onClick={() => {
-                removeLinkRow(idx);
-              }}
-            >
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
 
             <Form.Group className="form-group" controlId={`link-type-${idx}`}>
               <Form.Label>
@@ -949,15 +940,13 @@ export default function AdvisoryForm({
                         if (e) e.oncancel = () => handleFileInputCancel(idx);
                       }}
                     />
-                    <label htmlFor={`file-upload-${idx}`}>
-                      <Btn
-                        variant="outline-secondary"
-                        as="span"
-                        className="act-add-link add-file ms-2"
-                      >
-                        Browse
-                      </Btn>
-                    </label>
+                    <ActionButton
+                      label="Browse"
+                      variant="secondary"
+                      onClick={() => {
+                        document.getElementById(`file-upload-${idx}`).click();
+                      }}
+                    />
                     {linkFileErrors[idx] && (
                       <span className="d-block text-danger act-helper-text">
                         Select a file
@@ -967,6 +956,21 @@ export default function AdvisoryForm({
                 )}
               </Form.Group>
             )}
+
+            <ActionButton
+              label={
+                <>
+                  <FontAwesomeIcon icon={faTrash} />
+                  Remove
+                  <span className="visually-hidden"> attachment {idx + 1}</span>
+                </>
+              }
+              variant="secondary"
+              className="mt-2"
+              onClick={() => {
+                removeLinkRow(idx);
+              }}
+            />
           </div>
         ))}
 
@@ -995,44 +999,34 @@ export default function AdvisoryForm({
                 }
               }}
             />
-            <label htmlFor="file-upload" className="mb-0">
-              <Btn
-                variant="outline-secondary"
-                as="span"
-                className="act-add-link add-file"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    addLink("file");
-                    markChanged();
-                  }
-                }}
-                onClick={() => {
-                  addLink("file");
-                  markChanged();
-                }}
-              >
-                <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
-                Upload file
-              </Btn>
-            </label>
-            <span className="mx-2">OR</span>
-            <Btn
-              variant="outline-secondary"
-              className="act-add-link add-url"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  addLink("url");
-                  markChanged();
-                }
+            <ActionButton
+              label={
+                <>
+                  <FontAwesomeIcon icon={faPlus} />
+                  Upload file
+                </>
+              }
+              variant="secondary"
+              onClick={() => {
+                addLink("file");
+                markChanged();
+                document.getElementById("file-upload").click();
               }}
+            />
+            <span className="mx-2">OR</span>
+            <ActionButton
+              label={
+                <>
+                  <FontAwesomeIcon icon={faPlus} />
+                  Add URL
+                </>
+              }
+              variant="secondary"
               onClick={() => {
                 addLink("url");
                 markChanged();
               }}
-            >
-              <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
-              Add URL
-            </Btn>
+            />
           </div>
         </Form.Group>
       </section>

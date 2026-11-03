@@ -1,9 +1,7 @@
 .advisory-form,
 .advisory-summary {
   .form-group {
-    &:not(:last-of-type) {
-      margin-bottom: 1rem;
-    }
+    margin-bottom: 1rem;
 
     .form-label,
     label {
@@ -52,21 +50,6 @@
     background: var(--color-background-grey);
     padding: 1rem;
     margin-bottom: 1rem;
-  }
-
-  .link-sub-section {
-    position: relative;
-
-    .remove-link-btn {
-      position: absolute;
-      top: 0.25rem;
-      right: 0.25rem;
-      width: 36px;
-      height: 36px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
   }
 
   // Read-only field: use "disabled" background color
@@ -181,8 +164,4 @@
 
 .multi-line-select-option {
   white-space: pre-wrap !important;
-}
-
-.act-add-link .add-link-icon {
-  margin-right: 0.5rem;
 }
