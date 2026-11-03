@@ -12,11 +12,11 @@ Local database defaults (name, user, password, port) are defined in [docker-comp
 ## Before you start
 
 - **Initial setup:** Complete the [backend Setup](./README.md#setup) first: open the `backend` Dev Container (which also starts the `db` container), run `npm install`, and create `.env.local`. The steps below need the `db` container running.
-- **Refreshing:** Everything in your local database is lost. To keep it, save a [snapshot](#saving-a-snapshot) first.
+- **Refreshing:** Everything in your local database is lost.
 
 ## 1. Reset the local database
 
-With the local `db` container running, run these from your host terminal to drop and recreate the database. On initial setup this just recreates the empty database.
+With the local `db` container running, run these from your host terminal (any directory) to drop and recreate the database. On initial setup this just recreates the empty database.
 
 ```sh
 docker exec bcparks-staff-portal-db-1 psql -U user -d postgres -c "SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE datname='mydatabase' AND pid <> pg_backend_pid();"
@@ -48,7 +48,7 @@ To keep a reusable copy instead, redirect the dump to a file (`> doot-backup.sql
 
 ## 3. Bring the database up to date
 
-Run these in the Dev Container's `backend` directory, or from your host terminal by prefixing each with `docker compose exec backend`:
+Steps 1 and 2 work from any directory. From here on, run the commands in the `backend` directory of the Dev Container. (From your host terminal, run them in the repository root, prefixing each with `docker compose -f docker-compose.dev.yml exec backend`.)
 
 ```sh
 # Apply any migrations newer than the production schema
@@ -64,11 +64,3 @@ npm run cron-task
 
 - Sign in to the AdminJS dashboard at <http://localhost:8100/admin/login>.
 - To browse the database, connect any Postgres client (such as DBeaver) to `localhost`, port `8102`, using the database, user, and password from [docker-compose.dev.yml](../docker-compose.dev.yml).
-
-## Saving a snapshot
-
-After any post-restore setup, you can save a copy of your local database so you can restore it again later:
-
-```sh
-docker exec bcparks-staff-portal-db-1 pg_dump -U user --no-owner --no-privileges mydatabase > snapshot.sql
-```
