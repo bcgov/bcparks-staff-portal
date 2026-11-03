@@ -108,9 +108,10 @@ Status is `ok` and there's a full backup from the last day. The earliest time yo
 
 In test and prod, run it again with `--repo=2` for S3.
 
-#### 4.2.2 Check that every backup file is intact:
+#### 4.2.2 Check that every backup file is intact (optional):
 
-Takes about 10 seconds for repo1.
+> [!WARNING]
+> This check is included for completeness. The pgBackRest pods don't have enough CPU to run it in practice on test or prod, which have a retention of 15. On test it ran for more than 7 minutes with `--repo=1` and was stopped. In the other environments, which have a retention of 2, it works on `--repo=1` and takes about 45 seconds. Skip it on test and prod, or only run it if you can wait a long time.
 
 ```sh
 oc exec -n $NS $REPOHOST -- pgbackrest verify --stanza=db --repo=1 --output=text --verbose
@@ -120,7 +121,7 @@ Each backup shows `status: valid` and `checksum invalid: 0`.
 
 This checks file integrity, not whether recovery to a particular time will succeed. Valid backups and zero checksum errors do not prove that the archived WAL is continuous through the target time.
 
-In test and prod, run it again with `--repo=2` for S3. Verifying S3 downloads every backup, so it's slower.
+In test and prod, `--repo=2` (S3) is even slower than repo1 because verifying S3 downloads every backup, so it is not practical either.
 
 #### 4.2.3 Check that the disk isn't filling up:
 
@@ -142,13 +143,15 @@ oc -n $NS get postgrescluster $C -o jsonpath='{.spec.backups.pgbackrest}' | jq '
 
 This should print `{}`. If it shows a leftover `restore` section, go to 6.9 to remove it, then run this check again.
 
-If it shows a leftover `manual` section, first confirm that no manual backup is still running:
+If it shows a leftover `manual` section, first **confirm that no manual backup is still running**:
 
 ```sh
 oc -n $NS get jobs -l $SEL,postgres-operator.crunchydata.com/pgbackrest-backup=manual
 ```
 
-Wait for any active manual backup to finish before removing its configuration. Once none is running:
+You should see `No resources found`. If a Job is listed, wait for it to finish. If it has been running for a long time, check its pod logs and delete it with `oc -n $NS delete job <job-name>`.
+
+Once no manual backup is running, remove its configuration:
 
 ```sh
 oc -n $NS patch postgrescluster $C --type=merge -p '{"spec":{"backups":{"pgbackrest":{"manual":null}}}}'
@@ -179,6 +182,8 @@ oc exec -n $NS $REPOHOST -- pgbackrest backup --stanza=db --repo=1 --type=full -
 The output should end with `expire command end: completed successfully`.
 
 In test and prod, run it again with `--repo=2` for S3. If a scheduled backup is running, it fails with a lock error: wait and run it again.
+
+`repo2` takes a lot longer than `repo1`.
 
 ### 5.3 Check that the new full backup is listed:
 
@@ -218,7 +223,7 @@ oc exec -n $NS $PRIMARY -- psql -Atc "select now()"
 oc exec -n $NS $PRIMARY -- patronictl list
 ```
 
-Write down the TL.
+Memorize the TL. In 6.7.1 you will check that it incremented by 1.
 
 ### 6.3 Rehearsal only: set T and make sure there's a commit after it:
 
@@ -330,6 +335,13 @@ oc -n $NS get pods -l $SEL -w
 ```
 
 The instance pods stop, a `<cluster>-pgbackrest-restore-*` pod runs, then the instances start again. Press Ctrl+C to stop watching.
+
+> [!NOTE]
+> This takes a long time. Pods can sit in `Terminating` for several minutes, and for a while after that there may be no instance pods and no pods with a recent age. The restore pod only appears once the instances are gone, and the instances only return after the restore finishes. Be patient and don't re-trigger the restore.
+>
+> If the watch seems frozen, press Ctrl+C and run `oc -n $NS get pods -l $SEL` again to see the current state. The watch can stop updating.
+>
+> A scheduled backup can start while the database is down. Its `crunchy-postgres-backup-*` pods show `Error` because there's no database to back up. Ignore them. They don't affect the restore.
 
 #### 6.5.2 Follow the restore log:
 
@@ -506,7 +518,7 @@ oc -n a7dd13-$ENV rollout restart deploy/main-backend
 | Date       | Who  | Env       | Procedure             | Repo  | Notes |
 | ---------- | ---- | --------- | --------------------- | ----- | ----- |
 | 2026-10-27 | Mike | alpha-dev | Point-in-time restore | repo1 |       |
-|            |      | test      | Point-in-time restore | repo2 |       |
+| 2026-11-03 | Mike | test      | Point-in-time restore | repo2 |       |
 |            |      | test      | Rebuild from S3       | repo2 |       |
 
 For the S3 rebuild rehearsal, also verify the full lifecycle: rebuild, disable `dataSource`, perform a subsequent point-in-time restore, and remove `restore`. Confirm that cleanup does not trigger another restore.
