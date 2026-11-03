@@ -533,6 +533,10 @@ export default function AdvisoryForm({
     }
   }
 
+  // Only preview the full message when it combines custom and standard messages
+  const showFullMessagePreview =
+    Boolean(description?.trim()) && selectedStandardMessages.length > 0;
+
   return (
     <form className="advisory-form" onChange={markChanged}>
       <section>
@@ -721,27 +725,6 @@ export default function AdvisoryForm({
 
         <h4>Description</h4>
 
-        <Form.Group className="form-group" controlId="standard-messages">
-          <Form.Label>
-            Standard message(s)
-            <LightTooltip
-              arrow
-              title={t("advisoryForm.standardMessages.tooltip")}
-            >
-              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
-            </LightTooltip>
-          </Form.Label>
-
-          <StandardMessagePicker
-            standardMessages={standardMessages}
-            selectedStandardMessages={selectedStandardMessages}
-            setSelectedStandardMessages={setSelectedStandardMessages}
-            selectedProtectedAreas={selectedProtectedAreas}
-            selectedRecreationResources={selectedRecreationResources}
-            markChanged={markChanged}
-          />
-        </Form.Group>
-
         <Form.Group className="form-group" controlId="custom-message">
           <Form.Label>
             Custom message
@@ -758,22 +741,61 @@ export default function AdvisoryForm({
             id="custom-message"
             value={description}
             onBlur={setDescription}
-            onChange={markChanged}
+            onChange={(editor) => {
+              // Update while typing so the full message preview stays current
+              setDescription(editor.getData());
+              markChanged();
+            }}
           />
         </Form.Group>
 
-        {/* Render a preview of selected standard messages */}
-        {selectedStandardMessages.length > 0 && (
-          <Form.Group
-            className="form-group"
-            controlId="standard-message-preview"
-          >
-            <Form.Label>Standard message preview</Form.Label>
-            <div className="bcgov-textarea standard-message-preview">
+        <Form.Group className="form-group" controlId="standard-messages">
+          <Form.Label>
+            Standard message(s)
+            <LightTooltip
+              arrow
+              title={t("advisoryForm.standardMessages.tooltip")}
+            >
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+            <br />
+            <span className="field-description">
+              Pre-written and approved messages to add below your custom message
+            </span>
+          </Form.Label>
+
+          <StandardMessagePicker
+            standardMessages={standardMessages}
+            selectedStandardMessages={selectedStandardMessages}
+            setSelectedStandardMessages={setSelectedStandardMessages}
+            selectedProtectedAreas={selectedProtectedAreas}
+            selectedRecreationResources={selectedRecreationResources}
+            markChanged={markChanged}
+          />
+        </Form.Group>
+
+        {/*
+          Preview the full message as it appears on the public website:
+          the custom message first, then the selected standard messages
+        */}
+        {showFullMessagePreview && (
+          <Form.Group className="form-group" controlId="full-message-preview">
+            <Form.Label>
+              Full message preview
+              <br />
+              <span className="field-description">
+                Read-only preview of custom and standard messages together
+              </span>
+            </Form.Label>
+            <div className="bcgov-textarea full-message-preview">
+              <div
+                className="preview-message"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
               {selectedStandardMessages.map((message, i) => (
                 <div
                   key={i}
-                  className="standard-message"
+                  className="preview-message"
                   dangerouslySetInnerHTML={{
                     __html: message.obj.description || "",
                   }}
