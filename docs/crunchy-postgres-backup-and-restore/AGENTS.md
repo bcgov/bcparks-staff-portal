@@ -11,7 +11,7 @@ These runbooks exist in two repos, at `docs/crunchy-postgres-backup-and-restore/
 
 The two checkouts are usually side by side, for example `~/Work/bcparks-staff-portal` and `~/Work/bcparks.ca`, often on the same branch.
 
-**Every change made in one repo must be made in the other**, unless it only concerns one app's values. This file is identical in both repos, so update it in both too.
+**Every change made in one repo must be made in the other**, unless it only concerns one app's values. This `AGENTS.md` is identical in both repos, so update it in both too.
 
 The only intended differences:
 
