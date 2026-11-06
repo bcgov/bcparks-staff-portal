@@ -15,21 +15,21 @@ The two checkouts are usually side by side, for example `~/Work/bcparks-staff-po
 
 The only intended differences:
 
-|                                    | bcparks-staff-portal                                                                                           | bcparks.ca                                                                                  |
-| ---------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| Namespaces                         | `a7dd13-*`                                                                                                     | `c1643c-*`                                                                                  |
-| Environments                       | alpha-dev, alpha-test, dev, test, training, prod                                                               | no training                                                                                 |
-| App variable in step 1             | `REL` (Helm release of the app)                                                                                | `BRANCH`                                                                                    |
-| App database                       | same name as the cluster                                                                                       | `cms`                                                                                       |
-| S3 buckets                         | `doottest`, `dootprod` (`doot$ENV`)                                                                            | `parks-cms-test`, `parks-cms-prod` (`parks-cms-$ENV`)                                       |
-| App restart                        | `deploy/$REL-backend`                                                                                          | `deploy/$BRANCH-cms deploy/$BRANCH-scheduler`                                               |
-| Damaged-data check after a restore | Staff Portal, tables in `backend/migrations`                                                                   | Strapi admin, `collectionName` in `src/cms/src/api/<type>/content-types/<type>/schema.json` |
-| Chart path                         | `helm/crunchy-postgres`                                                                                        | `infrastructure/helm/crunchy-postgres`                                                      |
-| Helm prerequisite link             | `../../helm/README.md#prerequisite`                                                                            | `../../infrastructure/helm/deployment/README.md#prerequisite`                               |
-| README "Connections" bullet        | yes                                                                                                            | no                                                                                          |
-| Rebuild from S3                    | marked "Not rehearsed yet"; the uninstall step notes that the alpha-test and training releases aren't affected | already rehearsed, so there's no note                                                       |
-| Rehearsal log                      | its own                                                                                                        | its own                                                                                     |
-| Prettier                           | `frontend/node_modules/.bin/prettier`                                                                          | `src/cms/node_modules/.bin/prettier`                                                        |
+|                                    | bcparks-staff-portal                                                               | bcparks.ca                                                                                  |
+| ---------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| Namespaces                         | `a7dd13-*`                                                                         | `c1643c-*`                                                                                  |
+| Environments                       | alpha-dev, alpha-test, dev, test, training, prod                                   | no training                                                                                 |
+| App variable in step 1             | `REL` (Helm release of the app)                                                    | `BRANCH`                                                                                    |
+| App database                       | same name as the cluster                                                           | `cms`                                                                                       |
+| S3 buckets                         | `doottest`, `dootprod` (`doot$ENV`)                                                | `parks-cms-test`, `parks-cms-prod` (`parks-cms-$ENV`)                                       |
+| App restart                        | `deploy/$REL-backend`                                                              | `deploy/$BRANCH-cms deploy/$BRANCH-scheduler`                                               |
+| Damaged-data check after a restore | Staff Portal, tables in `backend/migrations`                                       | Strapi admin, `collectionName` in `src/cms/src/api/<type>/content-types/<type>/schema.json` |
+| Chart path                         | `helm/crunchy-postgres`                                                            | `infrastructure/helm/crunchy-postgres`                                                      |
+| Helm prerequisite link             | `../../helm/README.md#prerequisite`                                                | `../../infrastructure/helm/deployment/README.md#prerequisite`                               |
+| README "Connections" bullet        | yes                                                                                | no                                                                                          |
+| Rebuild from S3                    | the uninstall step notes that the alpha-test and training releases aren't affected | no such note                                                                                |
+| Rehearsal log                      | its own                                                                            | its own                                                                                     |
+| Prettier                           | `frontend/node_modules/.bin/prettier`                                              | `src/cms/node_modules/.bin/prettier`                                                        |
 
 To check that the repos are in sync, run `diff -r` on the two folders. Every difference should be in this table.
 
@@ -67,4 +67,3 @@ To check that the repos are in sync, run `diff -r` on the two folders. Every dif
 - Check that every relative link resolves.
 - If you change the T check, test it in both `bash` and `zsh`.
 - Run `diff -r` on the two repos' folders, as described above.
-- In the Staff Portal, remove "Not rehearsed yet" from the top of `rebuild-from-s3.md` only once a rehearsal has been logged in its `README.md`.

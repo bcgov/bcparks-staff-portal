@@ -1,8 +1,5 @@
 # Rebuild from S3
 
-> [!IMPORTANT]
-> **Not rehearsed yet.**
-
 Recreates a lost cluster from the backups in `repo2` (the S3 bucket on the NRS object store). Restores to the latest point available in S3.
 
 Use this only when the `PostgresCluster` is gone (deleted, or the namespace was lost), so there's nothing to restore into. If the cluster still exists, use [Point-in-time restore from repo2](pitr-repo2.md) instead.
@@ -194,4 +191,4 @@ If it prints anything else, follow [Clear leftover config](clear-leftover-config
 
 ## Done
 
-For a rehearsal, add a row to the rehearsal log in [the index](README.md#rehearsal-log). Once it has been rehearsed, remove the **Not rehearsed yet** note at the top of this file.
+For a rehearsal, add a row to the rehearsal log in [the index](README.md#rehearsal-log).
