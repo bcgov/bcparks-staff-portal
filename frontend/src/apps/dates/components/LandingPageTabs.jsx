@@ -1,9 +1,8 @@
 import { useMemo, useContext } from "react";
-import { Outlet, NavLink } from "react-router-dom";
-import classNames from "classnames";
+import { Outlet } from "react-router-dom";
 import useAccess from "@/hooks/useAccess";
-import "./LandingPageTabs.scss";
 import UserContext from "@/contexts/UserContext";
+import PageLayout from "@/components/PageLayout";
 import { NoParkAccess } from "./NoParkAccess";
 
 export default function LandingPageTabs() {
@@ -20,6 +19,21 @@ export default function LandingPageTabs() {
     [checkAccess, hasAnyRole, ROLES.DOOT_APPROVER, ROLES.DOOT_ALL_PARK_ACCESS],
   );
 
+  // Only HQ staff have access to more than one tab
+  const tabs = useMemo(
+    () => [
+      { label: "Submit", to: "/dates/submit" },
+      ...(hqStaff
+        ? [
+            { label: "Publish", to: "/dates/publish" },
+            { label: "Edit published", to: "/dates/edit-published" },
+            { label: "Export", to: "/dates/export" },
+          ]
+        : []),
+    ],
+    [hqStaff],
+  );
+
   // This prevents flashing the tabs layout to unauthenticated users
   if (!isAuthenticated) return <></>;
 
@@ -29,45 +43,8 @@ export default function LandingPageTabs() {
   }
 
   return (
-    <div className="layout landing-page-tabs">
-      <header
-        className={classNames("section-tabs d-flex flex-column", {
-          "has-tabs": hqStaff,
-        })}
-      >
-        <div className="container-fluid">
-          <h1 className="my-4">Dates management</h1>
-
-          {/* Only HQ staff have access to more than one tab */}
-          {hqStaff && (
-            <ul className="nav nav-tabs">
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/dates/submit">
-                  Submit
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/dates/publish">
-                  Publish
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/dates/edit-published">
-                  Edit published
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/dates/export">
-                  Export
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </div>
-      </header>
-      <div className="flex-fill my-3">
-        <Outlet />
-      </div>
-    </div>
+    <PageLayout title="Dates management" tabs={tabs}>
+      <Outlet />
+    </PageLayout>
   );
 }

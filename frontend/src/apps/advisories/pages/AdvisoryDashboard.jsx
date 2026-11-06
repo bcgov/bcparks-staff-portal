@@ -15,7 +15,7 @@ import {
   useDebounceValue,
 } from "usehooks-ts";
 import qs from "qs";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "react-oidc-context";
 import { useTranslation } from "react-i18next";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
@@ -30,6 +30,7 @@ import { ReviewIcon } from "@/apps/advisories/components/ReviewIcon";
 import { SingleSelect } from "@/apps/advisories/components/SingleSelect";
 import { TableActionButton } from "@/apps/advisories/components/TableActionButton";
 import DataTable from "@/components/DataTable";
+import PageLayout from "@/components/PageLayout";
 import StatusBadge from "@/components/StatusBadge";
 import FilterStatus from "@/apps/advisories/components/FilterStatus";
 import moment from "moment";
@@ -214,6 +215,17 @@ export default function AdvisoryDashboard({
 
   const isApprover = hasAnyRole([ROLES.ADVISORY_APPROVER]);
   const canMarkReviewed = isReviewDashboard && isApprover;
+
+  // Only approvers have access to more than one tab
+  const dashboardTabs = useMemo(
+    () => [
+      { label: "All", to: "/advisories-and-closures", end: true },
+      ...(isApprover
+        ? [{ label: "Review", to: "/advisories-and-closures/review" }]
+        : []),
+    ],
+    [isApprover],
+  );
 
   const defaultPageFilters = [
     { filterName: "region", filterValue: [], type: "page" },
@@ -1274,36 +1286,11 @@ export default function AdvisoryDashboard({
   );
 
   return (
-    <div className="advisory-dashboard-page-wrap advisories-styles layout landing-page-tabs">
-      <header
-        className={classNames("section-tabs d-flex flex-column", {
-          "has-tabs": isApprover,
-        })}
-      >
-        <div className="container-fluid">
-          <h1 className="title my-4">Advisories and closures</h1>
-
-          {/* Only approvers have access to more than one tab */}
-          {isApprover && (
-            <ul className="nav nav-tabs">
-              <li className="nav-item">
-                <NavLink className="nav-link" to="/advisories-and-closures" end>
-                  All
-                </NavLink>
-              </li>
-              <li className="nav-item">
-                <NavLink
-                  className="nav-link"
-                  to="/advisories-and-closures/review"
-                >
-                  Review
-                </NavLink>
-              </li>
-            </ul>
-          )}
-        </div>
-      </header>
-
+    <PageLayout
+      title="Advisories and closures"
+      tabs={dashboardTabs}
+      className="advisory-dashboard-page-wrap advisories-styles"
+    >
       <div className="container-fluid">
         <div className="row">
           <div
@@ -1491,7 +1478,7 @@ export default function AdvisoryDashboard({
           <Loader page />
         </div>
       )}
-    </div>
+    </PageLayout>
   );
 }
 
