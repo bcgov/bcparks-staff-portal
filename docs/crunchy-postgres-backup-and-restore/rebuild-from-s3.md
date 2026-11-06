@@ -192,19 +192,6 @@ This should print `{}`.
 
 If it prints anything else, follow [Clear leftover config](clear-leftover-config.md), then run this check again.
 
-## 14. Rehearsal only: check that a later restore doesn't fall back to S3
-
-Skip this step after a real rebuild.
-
-1. Do a full rehearsal of [Point-in-time restore from repo2](pitr-repo2.md) on this cluster, including its step 19 (Remove the `restore` section).
-2. Then watch the pods for a few minutes:
-
-   ```sh
-   oc -n $NS get pods -l $SEL -w
-   ```
-
-   No new `<cluster>-pgbackrest-restore-*` pod may appear, and the instance pods must not restart. Press Ctrl+C to stop watching.
-
 ## Done
 
 For a rehearsal, add a row to the rehearsal log in [the index](README.md#rehearsal-log). Once it has been rehearsed, remove the **Not rehearsed yet** note at the top of this file.

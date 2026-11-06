@@ -52,7 +52,7 @@ Everything runs from a terminal on your workstation, in bash or zsh, with `oc` a
 | ---------- | ---- | --------- | --------------------- | ----- | ----- |
 | 2026-10-27 | Mike | alpha-dev | Point-in-time restore | repo1 |       |
 | 2026-11-03 | Mike | test      | Point-in-time restore | repo2 |       |
-|            |      | test      | Rebuild from S3       | repo2 |       |
+| 2026-11-05 | Mike | test      | Rebuild from S3       | repo2 |       |
 
 ## References
 
