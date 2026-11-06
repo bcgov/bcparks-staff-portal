@@ -101,3 +101,21 @@ The "00_" prefix keeps it at the top of the key list in the OpenShift console.
 
   In test and prod, Vault also contains S3_ACCESS_KEY_ID and S3_ACCESS_SECRET, which go in the s3-pgbackrest secret. Helm upgrade doesn't update that secret. It is applied manually following steps in helm/crunchy-postgres/README.md.
 {{- end }}
+
+{{/*
+Frontend vanity route name: vanity-staff for the main release, vanity-<release>-staff otherwise.
+*/}}
+{{ define "bcparks_frontend_vanity_route_name" -}}
+{{- if eq .Release.Name "main" -}}
+vanity-staff
+{{- else -}}
+vanity-{{ .Release.Name }}-staff
+{{- end -}}
+{{- end -}}
+
+{{/*
+Backend vanity route name: vanity-staff-api for the main release, vanity-<release>-staff-api otherwise.
+*/}}
+{{ define "bcparks_backend_vanity_route_name" -}}
+{{ include "bcparks_frontend_vanity_route_name" . }}-api
+{{- end -}}
