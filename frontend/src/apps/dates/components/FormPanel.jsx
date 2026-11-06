@@ -469,9 +469,10 @@ function SeasonForm({
         );
 
     // Clear gateDetail if hasGate is false
+    // Keep the other API fields (e.g. publishableId) so the dirty check can compare with the API data.
     if (gateDetail && gateDetail.hasGate === false) {
       gateDetail = {
-        id: gateDetail.id,
+        ...gateDetail,
         hasGate: false,
         gateOpenTime: null,
         gateCloseTime: null,
