@@ -6,7 +6,7 @@ import "./TouchMenu.scss";
 import navItems from "./shared/navItems";
 
 export default function TouchMenu({ show = true, closeMenu, userName }) {
-  const { hasAnyRole } = useAccess();
+  const { hasAnyRole, isParkOperator } = useAccess();
 
   return (
     <div
@@ -17,16 +17,29 @@ export default function TouchMenu({ show = true, closeMenu, userName }) {
     >
       <ul className="navbar-nav">
         {navItems
-          .filter((item) => hasAnyRole(item.allowedRoles))
-          // eslint-disable-next-line no-unused-vars -- allowedRoles is intentionally destructured to avoid passing it to DOM elements
-          .map(({ Tag, label, allowedRoles, ...itemProps }) => (
-            <li key={label} className="nav-item">
-              {/* Use "a" for external links and Router Link components for internal links */}
-              <Tag className="nav-link" onClick={closeMenu} {...itemProps}>
-                {label}
-              </Tag>
-            </li>
-          ))}
+          .filter(
+            (item) =>
+              hasAnyRole(item.allowedRoles) &&
+              !(item.excludeParkOperators && isParkOperator),
+          )
+          .map(
+            ({
+              Tag,
+              label,
+              /* eslint-disable no-unused-vars -- intentionally destructured to avoid passing them to DOM elements */
+              allowedRoles,
+              excludeParkOperators,
+              /* eslint-enable no-unused-vars -- end of non-DOM props */
+              ...itemProps
+            }) => (
+              <li key={label} className="nav-item">
+                {/* Use "a" for external links and Router Link components for internal links */}
+                <Tag className="nav-link" onClick={closeMenu} {...itemProps}>
+                  {label}
+                </Tag>
+              </li>
+            ),
+          )}
         <li className="nav-item">
           {/* Full width logout link with the user's name */}
           <NavLink

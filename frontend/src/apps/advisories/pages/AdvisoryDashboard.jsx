@@ -1275,16 +1275,22 @@ export default function AdvisoryDashboard({
 
   return (
     <div className="advisory-dashboard-page-wrap advisories-styles layout landing-page-tabs">
-      <header className="section-tabs d-flex flex-column">
+      <header
+        className={classNames("section-tabs d-flex flex-column", {
+          "has-tabs": isApprover,
+        })}
+      >
         <div className="container-fluid">
-          <h1 className="title m-3 mb-4">Advisories and closures</h1>
-          <ul className="nav nav-tabs px-2">
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/advisories-and-closures" end>
-                All
-              </NavLink>
-            </li>
-            {isApprover && (
+          <h1 className="title my-4">Advisories and closures</h1>
+
+          {/* Only approvers have access to more than one tab */}
+          {isApprover && (
+            <ul className="nav nav-tabs">
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/advisories-and-closures" end>
+                  All
+                </NavLink>
+              </li>
               <li className="nav-item">
                 <NavLink
                   className="nav-link"
@@ -1293,8 +1299,8 @@ export default function AdvisoryDashboard({
                   Review
                 </NavLink>
               </li>
-            )}
-          </ul>
+            </ul>
+          )}
         </div>
       </header>
 

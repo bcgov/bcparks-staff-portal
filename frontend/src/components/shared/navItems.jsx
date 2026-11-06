@@ -13,6 +13,8 @@ const navItems = [
     Tag: NavLink,
     to: "/park-access-status",
     allowedRoles: [ROLES.BCPARKS_USER],
+    // Park operators don't have access to the park access status
+    excludeParkOperators: true,
   },
   {
     label: "Activities and facilities",

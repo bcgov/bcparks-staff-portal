@@ -1,5 +1,6 @@
 import { useMemo, useContext } from "react";
 import { Outlet, NavLink } from "react-router-dom";
+import classNames from "classnames";
 import useAccess from "@/hooks/useAccess";
 import "./LandingPageTabs.scss";
 import UserContext from "@/contexts/UserContext";
@@ -29,36 +30,39 @@ export default function LandingPageTabs() {
 
   return (
     <div className="layout landing-page-tabs">
-      <header className="section-tabs d-flex flex-column">
+      <header
+        className={classNames("section-tabs d-flex flex-column", {
+          "has-tabs": hqStaff,
+        })}
+      >
         <div className="container-fluid">
-          <h1 className="m-3 mb-4">Dates management</h1>
+          <h1 className="my-4">Dates management</h1>
 
-          <ul className="nav nav-tabs px-2">
-            <li className="nav-item">
-              <NavLink className="nav-link" to="/dates/submit">
-                Submit
-              </NavLink>
-            </li>
-            {hqStaff && (
-              <>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/dates/publish">
-                    Publish
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/dates/edit-published">
-                    Edit published
-                  </NavLink>
-                </li>
-                <li className="nav-item">
-                  <NavLink className="nav-link" to="/dates/export">
-                    Export
-                  </NavLink>
-                </li>
-              </>
-            )}
-          </ul>
+          {/* Only HQ staff have access to more than one tab */}
+          {hqStaff && (
+            <ul className="nav nav-tabs">
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/dates/submit">
+                  Submit
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/dates/publish">
+                  Publish
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/dates/edit-published">
+                  Edit published
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink className="nav-link" to="/dates/export">
+                  Export
+                </NavLink>
+              </li>
+            </ul>
+          )}
         </div>
       </header>
       <div className="flex-fill my-3">
