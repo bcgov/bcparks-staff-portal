@@ -1,10 +1,15 @@
 # BC Parks Staff Portal
 
-Expanding and modernizing the BC Parks Advisories and Dates of Operation tools.
+Staff tools for BC Parks:
+
+- **DOOT** (Dates of Operation Tool): manage park, area, and feature dates of operation.
+- **ACT** (Advisories and Closures Tool): manage public advisories and closures.
 
 ## Structure
 
-This project consists of a REST API server in `backend/` and a React JS frontend in `frontend/`. For more details, refer to the specific [backend README](./backend/README.md) and [frontend README](./frontend/README.md) files. The "Advisories" pages also communicate directly with the Strapi CMS via its REST API.
+This project consists of a REST API server in `backend/` and a React JS frontend in `frontend/`. For more details, refer to the specific [backend README](./backend/README.md) and [frontend README](./frontend/README.md) files. DOOT uses the backend API and its database. ACT communicates directly with the Strapi CMS via its REST API.
+
+The `access-status` and `activities-facilities` apps in `frontend/src/apps/` are legacy code from the original 2021 project. They are not actively maintained, so you can ignore them.
 
 Openshift Helm charts are located in `helm/`.
 
@@ -45,3 +50,10 @@ Alternatively, you can stop the project's containers from the command line with 
 # Stop the dev containers
 docker compose -f docker-compose.dev.yml stop
 ```
+
+## Next steps
+
+Once the containers are open, continue with the README for each part:
+
+1. [Backend README](./backend/README.md): install dependencies, configure `.env.local`, start the API server, and [load local data](./backend/DATABASE.md).
+2. [Frontend README](./frontend/README.md): install dependencies (requires a FontAwesome Pro token), configure `.env.local`, and start the dev server.

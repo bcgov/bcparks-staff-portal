@@ -121,6 +121,7 @@ function sortFlattenedSeasons(seasons) {
 
 /**
  * Groups the sorted flattened seasons into rows with featureNames arrays.
+ * Each row is one season, so every row's id can be published.
  * @param {Array} flattened the sorted flattened array of season objects
  * @returns {Array} the grouped array of season objects
  */
@@ -130,7 +131,9 @@ function groupSeasons(flattened) {
   const seasonMap = new Map();
 
   flattened.forEach((item) => {
-    const key = `${item.parkName}-${item.operatingYear}-${item.seasonType}-${item.parkAreaName}-${item.readyToPublish}-${item.publishableType}`;
+    // Park Area seasons flatten into one item per Feature with the same season id,
+    // so grouping by id rebuilds those rows without merging separate seasons
+    const key = item.id;
 
     if (seasonMap.has(key)) {
       if (item.featureName) {
