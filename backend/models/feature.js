@@ -51,7 +51,6 @@ export default (sequelize) => {
     {
       name: DataTypes.STRING,
       parkId: DataTypes.INTEGER,
-      strapiFeatureId: DataTypes.STRING,
       featureTypeId: {
         type: DataTypes.INTEGER,
         allowNull: false,
@@ -68,7 +67,6 @@ export default (sequelize) => {
       hasReservations: DataTypes.BOOLEAN,
       parkAreaId: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
-      strapiId: DataTypes.INTEGER,
 
       inReservationSystem: {
         type: DataTypes.BOOLEAN,
