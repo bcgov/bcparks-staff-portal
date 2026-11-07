@@ -4,10 +4,7 @@
   flex-direction: column;
   header.section-tabs {
     background-color: var(--surface-color-background-light-gray);
-    // Only show the bottom border when the tabs are displayed
-    &.has-tabs {
-      border-bottom: 1px solid var(--theme-gray-50);
-    }
+    border-bottom: 1px solid var(--theme-gray-50);
 
     .nav-tabs {
       border-bottom: none;

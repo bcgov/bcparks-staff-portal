@@ -1,18 +1,19 @@
 .park-access-status-page-wrap {
+  // Scroll only the table horizontally (at all widths), not the whole page
+  .data-table .table-responsive-md {
+    overflow-x: auto;
+  }
+
   .page-loader {
     padding-top: 2% !important;
     text-align: center !important;
   }
 
-  #park-status-container.container-fluid {
-    padding: 0 2rem;
+  #park-status-container a {
+    text-decoration: none;
 
-    a {
-      text-decoration: none;
-
-      &:hover {
-        text-decoration: underline;
-      }
+    &:hover {
+      text-decoration: underline;
     }
   }
 }

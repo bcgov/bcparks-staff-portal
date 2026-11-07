@@ -1,5 +1,8 @@
 #portal-nav-sidebar {
   box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
+  // Keep the shadow above page content backgrounds (e.g. page header)
+  position: relative;
+  z-index: 1;
   width: clamp(17em, 20%, 20em);
   align-self: stretch;
   flex-shrink: 0;

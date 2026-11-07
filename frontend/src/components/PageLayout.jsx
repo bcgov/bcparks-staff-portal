@@ -20,11 +20,7 @@ export default function PageLayout({ title, tabs = [], className, children }) {
 
   return (
     <div className={classNames("layout page-layout", className)}>
-      <header
-        className={classNames("section-tabs d-flex flex-column", {
-          "has-tabs": showTabs,
-        })}
-      >
+      <header className="section-tabs d-flex flex-column">
         <div className="container-fluid">
           <h1 className="my-4">{title}</h1>
 
