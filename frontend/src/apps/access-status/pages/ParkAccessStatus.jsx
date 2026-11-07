@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { cmsAxios } from "@/utils/cms/axiosConfig";
 import DataTable from "@/components/DataTable";
 import { Loader } from "@/components/Loader";
+import PageLayout from "@/components/PageLayout";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import { exportPdf } from "@/apps/access-status/utils/exportPdfUtil";
@@ -69,9 +70,11 @@ export default function ParkAccessStatus() {
   ).format("YYYYMMDD")}`;
 
   return (
-    <div className="park-access-status-page-wrap advisories-styles">
+    <PageLayout
+      title="Park access status"
+      className="park-access-status-page-wrap advisories-styles"
+    >
       <div id="park-status-container" className="container-fluid">
-        <p>{isLoading}</p>
         {isLoading && (
           <div className="page-loader">
             <Loader page />
@@ -150,11 +153,10 @@ export default function ParkAccessStatus() {
               },
             ]}
             data={data}
-            title={title}
           />
         )}
       </div>
-    </div>
+    </PageLayout>
   );
 }
 

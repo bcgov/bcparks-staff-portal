@@ -34,3 +34,9 @@ table {
     }
   }
 }
+
+// Shrink-to-fit wrapper: as wide as the widest park table, and at least full width
+.park-tables {
+  width: fit-content;
+  min-width: 100%;
+}

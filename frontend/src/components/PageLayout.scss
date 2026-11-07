@@ -1,9 +1,9 @@
-.layout.landing-page-tabs {
+.layout.page-layout {
   height: 100%;
   display: flex;
   flex-direction: column;
   header.section-tabs {
-    background-color: var(--surface-color-background-light-blue);
+    background-color: var(--surface-color-background-light-gray);
     border-bottom: 1px solid var(--theme-gray-50);
 
     .nav-tabs {
@@ -14,5 +14,10 @@
         text-decoration: none;
       }
     }
+  }
+
+  .container,
+  .container-fluid {
+    padding: 0 2rem;
   }
 }
