@@ -31,6 +31,7 @@ import SummaryActionButton from "@/apps/advisories/components/SummaryActionButto
 import useAccess from "@/hooks/useAccess";
 import useAdvisoryMarkReviewed from "@/apps/advisories/hooks/useAdvisoryMarkReviewed";
 import useAdvisoryUnpublish from "@/apps/advisories/hooks/useAdvisoryUnpublish";
+import getFirstPosted from "@/apps/advisories/utils/getFirstPosted";
 
 export default function AdvisorySummary() {
   const { cmsData, setCmsData } = useContext(CmsDataContext);
@@ -61,6 +62,8 @@ export default function AdvisorySummary() {
   const [currentSiteUrls, setCurrentSiteUrls] = useState("");
   const [isUnpublishing, setIsUnpublishing] = useState(false);
   const [isMarkingReviewed, setIsMarkingReviewed] = useState(false);
+  // All revisions of the advisory, loaded by the History section
+  const [advisoryRevisions, setAdvisoryRevisions] = useState([]);
 
   const isRequestingCms = useMemo(
     () => isUnpublishing || isMarkingReviewed,
@@ -351,39 +354,18 @@ export default function AdvisorySummary() {
     );
   }, [advisory.modifiedDate, advisory.modifiedByName, buildTimestampString]);
 
-  // Formatted string for "Posted..." timestamp, if any
-  const postingDateString = useMemo(() => {
-    if (!advisory.advisoryDate) return null;
+  // Formatted string for "First posted..." timestamp, if it was ever published
+  const firstPostedString = useMemo(() => {
+    const firstPosted = getFirstPosted(advisoryRevisions);
 
-    // Only display for published or scheduled advisories
-    if (advisoryStatusCode !== "SCH" && advisoryStatusCode !== "PUB") return "";
-
-    const prefix =
-      advisoryStatusCode === "PUB" ? "Posted" : "Scheduled posting";
-
-    return buildTimestampString(prefix, null, advisory.advisoryDate);
-  }, [advisory.advisoryDate, advisoryStatusCode, buildTimestampString]);
-
-  // Formatted string for "Reviewed..." timestamp, if any
-  const reviewedDateString = useMemo(() => {
-    if (!advisory.reviewedDate) return null;
-
-    // don't show reviewed info if it's the same as the modified info
-    if (advisory.reviewedByName === advisory.modifiedByName) {
-      return null;
-    }
+    if (!firstPosted) return null;
 
     return buildTimestampString(
-      "Reviewed",
-      advisory.reviewedByName,
-      advisory.reviewedDate,
+      "First posted",
+      firstPosted.actorName,
+      firstPosted.date,
     );
-  }, [
-    advisory.reviewedDate,
-    advisory.reviewedByName,
-    advisory.modifiedByName,
-    buildTimestampString,
-  ]);
+  }, [advisoryRevisions, buildTimestampString]);
 
   // Determine if the advisory can be unpublished
   const canUnpublish = useMemo(() => {
@@ -497,17 +479,19 @@ export default function AdvisorySummary() {
                               className="ms-2 advisory-status-badge"
                             ></StatusBadge>
                           </p>
-                          <h2>{advisory.title}</h2>
-
-                          {postingDateString && (
-                            <p className="mb-2">{postingDateString}</p>
-                          )}
+                          <h2 className="mb-3">{advisory.title}</h2>
 
                           {lastUpdatedString && (
-                            <p className="mb-2">{lastUpdatedString}</p>
+                            <p className="mb-2 text-secondary-grey">
+                              {lastUpdatedString}
+                            </p>
                           )}
 
-                          {reviewedDateString && <p>{reviewedDateString}</p>}
+                          {firstPostedString && (
+                            <p className="text-secondary-grey">
+                              {firstPostedString}
+                            </p>
+                          )}
                         </div>
                       </div>
 
@@ -584,6 +568,7 @@ export default function AdvisorySummary() {
                           siteUrls,
                           handleOpenSnackBar,
                           showOriginalAdvisory,
+                          onHistoryLoaded: setAdvisoryRevisions,
                         }}
                       />
                     </div>
