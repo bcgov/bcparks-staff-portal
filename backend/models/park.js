@@ -63,7 +63,6 @@ export default (sequelize) => {
       name: DataTypes.STRING,
       orcs: DataTypes.STRING,
       dateableId: DataTypes.INTEGER,
-      strapiId: DataTypes.INTEGER,
       // store raw json for Management Area and Section names,
       // since they're only needed for display in the CSV export
       managementAreas: DataTypes.JSONB,
