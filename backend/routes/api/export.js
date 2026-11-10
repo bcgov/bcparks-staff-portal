@@ -2,6 +2,7 @@ import { Router } from "express";
 import { Sequelize } from "sequelize";
 import asyncHandler from "express-async-handler";
 import { writeToString } from "@fast-csv/format";
+import writeExcelFile, { getSheetData } from "write-excel-file/node";
 import _ from "lodash";
 import { format, parse as parseDate } from "date-fns";
 import { TZDate } from "@date-fns/tz";
@@ -104,13 +105,13 @@ function formatChangeLog(changeLog) {
 }
 
 /**
- * Formats a date string as "Weekday, Month Day, Year"
+ * Formats a date string as "Wkd, Mon Day, Year" (e.g., "Thu, Jan 1, 2026")
  * @param {string} date parseable date string (e.g., "2023-07-15")
  * @returns {string} Formatted date string, or empty string if date is falsy
  */
 function formatDate(date) {
   if (!date) return "";
-  return format(date, "EEEE, MMMM d, yyyy");
+  return format(date, "EEE, MMM d, yyyy");
 }
 
 /**
@@ -125,6 +126,19 @@ function formatChangeLogDate(date) {
   const bcDate = new TZDate(date, "America/Vancouver");
 
   return format(bcDate, "yyyy-MM-dd HH:mm:ss");
+}
+
+/**
+ * Converts a "yyyy-MM-dd" or "yyyy-MM-dd HH:mm:ss" string to a Date at that wall-clock time in UTC.
+ * write-excel-file writes Dates as UTC serials, so the cell shows exactly this date/time with no timezone shift.
+ * @param {string|null} value Date-only (DATEONLY) or BC-local datetime string
+ * @returns {Date|null} Date for an xlsx cell, or null if value is empty
+ */
+function toExcelDate(value) {
+  if (!value) return null;
+  const [date, time = "00:00:00"] = value.split(" ");
+
+  return new Date(`${date}T${time}Z`);
 }
 
 /**
@@ -674,6 +688,15 @@ router.get(
             .filter((changeLog) => changeLog.notes?.trim())
             .map(formatChangeLog)
             .join("\n"),
+
+          // Raw date values for xlsx date cells (not a CSV column; fast-csv only writes the listed headers)
+          xlsxDates: {
+            [colNames.START_DATE]: dateRange.startDate,
+            [colNames.END_DATE]: dateRange.endDate,
+            [colNames.UPDATE_TIME]: formatChangeLogDate(
+              latestChangeLog?.createdAt,
+            ),
+          },
         };
       })
       .filter(Boolean);
@@ -687,9 +710,47 @@ router.get(
       "Start date",
     ]);
 
+    // Optional xlsx output: text cells stay text (e.g. ORCS feature number "41-2"), and dates are real date cells
+    if (req.query.format === "xlsx") {
+      const dateFormats = {
+        [colNames.START_DATE]: "ddd, mmm d, yyyy",
+        [colNames.END_DATE]: "ddd, mmm d, yyyy",
+        [colNames.UPDATE_TIME]: "yyyy-mm-dd hh:mm:ss",
+      };
+
+      const columns = Object.values(colNames).map((header) => ({
+        header,
+        // Date columns need a width, or Excel shows "#####"
+        width: dateFormats[header] ? 20 : null,
+        cell: (row) =>
+          header in row.xlsxDates
+            ? {
+                value: toExcelDate(row.xlsxDates[header]),
+                type: Date,
+                format: dateFormats[header],
+              }
+            : { value: row[header] },
+      }));
+
+      // getSheetData keeps the header row even when there are no rows
+      const xlsx = await writeExcelFile(getSheetData(sortedRows, columns), {
+        columns,
+      }).toBuffer();
+
+      res.type("xlsx").send(xlsx);
+      return;
+    }
+
     // Convert to CSV string
     const csv = await writeToString(sortedRows, {
       headers: Object.values(colNames),
+      // Prefix ORCS feature number with "F", or Excel converts values like "41-2" to dates
+      transform: (row) => ({
+        ...row,
+        [colNames.ORCS_FEATURE_NUMBER]:
+          row[colNames.ORCS_FEATURE_NUMBER] &&
+          `F${row[colNames.ORCS_FEATURE_NUMBER]}`,
+      }),
       // Write the header row, even if there's no data
       alwaysWriteHeaders: true,
     });
