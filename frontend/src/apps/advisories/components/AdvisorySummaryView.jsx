@@ -34,6 +34,7 @@ export default function AdvisorySummaryView({
     siteUrls,
     handleOpenSnackBar,
     showOriginalAdvisory,
+    onHistoryLoaded,
   },
 }) {
   const publicUrl = getEnv("VITE_BCPARKS_PUBLIC_URL");
@@ -466,6 +467,7 @@ export default function AdvisorySummaryView({
           latestRevisionNumber={advisory.revisionNumber}
           advisoryNumber={advisory.advisoryNumber}
           reviewedDate={advisory.reviewedDate}
+          onHistoryLoaded={onHistoryLoaded}
         />
       </section>
     </>
@@ -480,5 +482,6 @@ AdvisorySummaryView.propTypes = {
     siteUrls: PropTypes.string,
     handleOpenSnackBar: PropTypes.func.isRequired,
     showOriginalAdvisory: PropTypes.bool,
+    onHistoryLoaded: PropTypes.func,
   }).isRequired,
 };
