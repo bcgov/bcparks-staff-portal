@@ -34,6 +34,7 @@ export default function AdvisorySummaryView({
     siteUrls,
     handleOpenSnackBar,
     showOriginalAdvisory,
+    onHistoryLoaded,
   },
 }) {
   const publicUrl = getEnv("VITE_BCPARKS_PUBLIC_URL");
@@ -447,9 +448,11 @@ export default function AdvisorySummaryView({
           <Field label="Requested by">{advisory.submittedByName}</Field>
         )}
 
-        <Field label="Public safety related">
-          {advisory.isSafetyRelated ? "Yes" : "No"}
-        </Field>
+        {typeof advisory.isSafetyRelated === "boolean" && (
+          <Field label="Public safety related">
+            {advisory.isSafetyRelated ? "Yes" : "No"}
+          </Field>
+        )}
 
         {advisory.note && (
           <Field label="Internal notes">
@@ -464,6 +467,7 @@ export default function AdvisorySummaryView({
           latestRevisionNumber={advisory.revisionNumber}
           advisoryNumber={advisory.advisoryNumber}
           reviewedDate={advisory.reviewedDate}
+          onHistoryLoaded={onHistoryLoaded}
         />
       </section>
     </>
@@ -478,5 +482,6 @@ AdvisorySummaryView.propTypes = {
     siteUrls: PropTypes.string,
     handleOpenSnackBar: PropTypes.func.isRequired,
     showOriginalAdvisory: PropTypes.bool,
+    onHistoryLoaded: PropTypes.func,
   }).isRequired,
 };

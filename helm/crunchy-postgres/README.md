@@ -2,7 +2,7 @@
 
 ## Prerequisites
 
-- Install the tools listed in the [deployment README](../README.md#prerequisite).
+- Install Helm 4 and the other tools listed in [Prerequisite](../README.md#prerequisite) in the deployment README
 
 ## Installing
 
