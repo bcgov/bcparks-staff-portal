@@ -102,7 +102,7 @@ export default function MainLayout() {
 
             {isAuthenticated && !showSidebar && (
               <button
-                className="navbar-toggler ms-auto"
+                className="navbar-toggler ms-auto p-2"
                 type="button"
                 aria-label={showTouchMenu ? "Close menu" : "Open menu"}
                 aria-controls="touch-menu"

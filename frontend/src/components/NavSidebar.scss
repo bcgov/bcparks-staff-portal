@@ -48,7 +48,7 @@
     gap: var(--layout-margin-small);
     margin-inline: var(--sidebar-item-inset);
     padding: var(--layout-padding-xsmall) var(--layout-padding-medium);
-    color: var(--typography-color-secondary);
+    color: #656565;
     line-height: 1.6;
   }
 
@@ -65,7 +65,7 @@
 
     .btn {
       padding: var(--layout-padding-xsmall);
-      font-size: 1.5rem;
+      font-size: 1.125rem;
       line-height: 1;
       color: var(--icons-color-info);
 

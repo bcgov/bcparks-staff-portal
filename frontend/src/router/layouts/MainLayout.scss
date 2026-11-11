@@ -12,11 +12,17 @@
     flex-wrap: nowrap;
     border-bottom: 2px solid var(--theme-primary-gold);
 
-    .navbar-toggler .close-icon {
-      width: 1.5em;
-      height: 1.5em;
-      vertical-align: middle;
-      color: var(--typography-color-primary-invert);
+    .navbar-toggler {
+      &-icon,
+      .close-icon {
+        width: 1.25em;
+        height: 1.25em;
+      }
+
+      .close-icon {
+        vertical-align: middle;
+        color: var(--typography-color-primary-invert);
+      }
     }
 
     .logo-link {

@@ -6,7 +6,6 @@
   position: relative;
   color: var(--typography-color-primary);
   line-height: 1.6;
-  border-radius: var(--layout-border-radius-medium);
   text-decoration: none;
 
   .nav-icon {
@@ -27,14 +26,12 @@
 
   &:hover {
     background: var(--surface-color-secondary-button-hover);
-    border-radius: 0;
   }
 
   // Selected item: light blue background
   // (on hover, the grey background is used)
   &.active {
     font-weight: 700;
-    border-radius: 0;
 
     &:not(:hover) {
       background: var(--surface-color-background-light-blue);
