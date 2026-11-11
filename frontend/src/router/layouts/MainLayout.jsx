@@ -1,20 +1,22 @@
 import { useMemo, useState, useEffect } from "react";
 import { Link, Outlet } from "react-router-dom";
+import classNames from "classnames";
+import { useMediaQuery } from "usehooks-ts";
 import "./MainLayout.scss";
 import useAccess from "@/hooks/useAccess";
 import { useApiGet } from "@/hooks/useApi";
 import NavSidebar from "@/components/NavSidebar.jsx";
+import { SIDEBAR_MEDIA_QUERY } from "@/components/shared/navItems";
 import TouchMenu from "@/components/TouchMenu";
 import LoadingBar from "@/components/LoadingBar";
 import FlashMessage from "@/components/FlashMessage";
 import HeaderTitle from "@/components/HeaderTitle";
-import Footer from "@/components/Footer";
 import FlashMessageContext from "@/contexts/FlashMessageContext";
 import UserContext from "@/contexts/UserContext";
 import useFlashMessage from "@/hooks/useFlashMessage";
 import { Alert } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleExclamation } from "@fa-kit/icons/classic/regular";
+import { faCircleExclamation, faXmark } from "@fa-kit/icons/classic/regular";
 
 export default function MainLayout() {
   const { isAuthenticated } = useAccess();
@@ -30,6 +32,9 @@ export default function MainLayout() {
 
   // Show or hide the touch menu
   const [showTouchMenu, setShowTouchMenu] = useState(false);
+
+  // Show the side nav if it fits on screen, otherwise use the touch menu
+  const showSidebar = useMediaQuery(SIDEBAR_MEDIA_QUERY);
 
   const userName = useMemo(() => {
     if (!isAuthenticated || userDetails.loading || userDetails.error) return "";
@@ -77,38 +82,49 @@ export default function MainLayout() {
   return (
     <FlashMessageContext.Provider value={flashMessageContextValue}>
       <UserContext.Provider value={userDetails}>
-        <div className="layout main">
+        <div
+          className={classNames("layout main", {
+            "has-sidebar": isAuthenticated && showSidebar,
+          })}
+        >
           <header className="bcparks-global navbar navbar-dark px-3 d-flex align-items-center container-fluid py-1 bg-primary-nav">
             <HeaderTitle />
 
-            {isAuthenticated && (
-              <>
-                <div className="user-controls d-none d-lg-flex text-white align-items-center ms-auto">
-                  <div className="user-name me-3">{userName}</div>
+            {isAuthenticated && showSidebar && (
+              <div className="user-controls d-flex text-white align-items-center ms-auto">
+                <div className="user-name me-3">{userName}</div>
 
-                  <Link to="/logout" className="btn btn-text text-white">
-                    Logout
-                  </Link>
-                </div>
+                <Link to="/logout" className="btn btn-text text-white">
+                  Logout
+                </Link>
+              </div>
+            )}
 
-                <button
-                  className="navbar-toggler d-block d-lg-none"
-                  type="button"
-                  data-toggle="collapse"
-                  data-target="#touch-menu"
-                  onClick={() => setShowTouchMenu(!showTouchMenu)}
-                >
+            {isAuthenticated && !showSidebar && (
+              <button
+                className="navbar-toggler ms-auto"
+                type="button"
+                aria-label={showTouchMenu ? "Close menu" : "Open menu"}
+                aria-controls="touch-menu"
+                aria-expanded={showTouchMenu}
+                onClick={() => setShowTouchMenu(!showTouchMenu)}
+              >
+                {showTouchMenu ? (
+                  <FontAwesomeIcon icon={faXmark} className="close-icon" />
+                ) : (
                   <span className="navbar-toggler-icon"></span>
-                </button>
-              </>
+                )}
+              </button>
             )}
           </header>
 
-          <TouchMenu
-            show={showTouchMenu}
-            closeMenu={() => setShowTouchMenu(false)}
-            userName={userName}
-          />
+          {!showSidebar && (
+            <TouchMenu
+              show={showTouchMenu}
+              closeMenu={() => setShowTouchMenu(false)}
+              userName={userName}
+            />
+          )}
 
           {!isProduction && (
             <Alert
@@ -125,7 +141,7 @@ export default function MainLayout() {
             {/* Authenticated user with roles: show sidebar and main content */}
             {isAuthenticated && (
               <>
-                <NavSidebar />
+                {showSidebar && <NavSidebar />}
                 <div className="flex-fill" style={{ overflowX: "auto" }}>
                   {userDetails.loading ? (
                     <div className="container mt-3">
@@ -138,8 +154,6 @@ export default function MainLayout() {
               </>
             )}
           </main>
-
-          <Footer />
         </div>
 
         <FlashMessage {...globalFlashMessage.props} />

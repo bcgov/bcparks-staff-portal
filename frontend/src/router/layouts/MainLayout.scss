@@ -1,14 +1,23 @@
 .layout.main {
   display: flex;
   flex-direction: column;
+  position: relative;
   min-height: 100vh;
 
-  --top-nav-height: 4.5rem;
+  // 80px logo + padding + border
+  --top-nav-height: 90px;
 
   & > header {
     min-height: var(--top-nav-height);
     flex-wrap: nowrap;
     border-bottom: 2px solid var(--theme-primary-gold);
+
+    .navbar-toggler .close-icon {
+      width: 1.5em;
+      height: 1.5em;
+      vertical-align: middle;
+      color: var(--typography-color-primary-invert);
+    }
 
     .logo-link {
       text-decoration: none;
@@ -23,6 +32,14 @@
         margin-bottom: 6px;
       }
     }
+  }
+
+  // Keep the header in view so the side nav fits below it
+  &.has-sidebar > header {
+    position: sticky;
+    top: 0;
+    z-index: 1020; // Bootstrap $zindex-sticky
+    height: var(--top-nav-height);
   }
 
   & > main {

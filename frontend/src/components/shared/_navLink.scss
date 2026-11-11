@@ -1,0 +1,43 @@
+// Shared nav link styles for the side nav and touch menu
+@mixin portal-nav-link {
+  display: flex;
+  align-items: center;
+  gap: var(--layout-margin-small);
+  position: relative;
+  color: var(--typography-color-primary);
+  line-height: 1.6;
+  border-radius: var(--layout-border-radius-medium);
+  text-decoration: none;
+
+  .nav-icon {
+    flex-shrink: 0;
+    width: 1em;
+    color: var(--icons-color-info);
+  }
+
+  // Bar on the left, shown on hover and for the selected item
+  &:hover::before,
+  &.active::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 4px;
+    background: var(--surface-color-primary-button-default);
+  }
+
+  &:hover {
+    background: var(--surface-color-secondary-button-hover);
+    border-radius: 0;
+  }
+
+  // Selected item: light blue background
+  // (on hover, the grey background is used)
+  &.active {
+    font-weight: 700;
+    border-radius: 0;
+
+    &:not(:hover) {
+      background: var(--surface-color-background-light-blue);
+    }
+  }
+}
