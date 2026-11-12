@@ -43,7 +43,7 @@
 
   // Description below a form label
   .field-description {
-    font-size: 0.8em;
+    font-size: 0.875em;
   }
 
   .sub-section {
@@ -52,9 +52,21 @@
     margin-bottom: 1rem;
   }
 
-  // Read-only field: use "disabled" background color
-  .standard-message-preview {
-    background: var(--surface-color-primary-disabled);
+  // Read-only preview: use "info" colors so it doesn't look like a disabled field
+  .bcgov-textarea.full-message-preview {
+    background: var(--support-surface-color-info);
+    border-color: var(--support-border-color-info);
+    color: var(--typography-color-primary);
+    max-height: none;
+    overflow: visible;
+
+    a {
+      color: var(--typography-color-link);
+    }
+
+    .preview-message:not(:last-of-type) {
+      margin-bottom: 16px;
+    }
   }
 }
 
