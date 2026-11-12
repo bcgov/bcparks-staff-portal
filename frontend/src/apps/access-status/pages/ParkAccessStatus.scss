@@ -1,5 +1,8 @@
 .park-access-status-page-wrap {
-  padding: 1rem;
+  // Scroll only the table horizontally (at all widths), not the whole page
+  .data-table .table-responsive-md {
+    overflow-x: auto;
+  }
 
   .page-loader {
     padding-top: 2% !important;
@@ -8,9 +11,9 @@
 
   #park-status-container a {
     text-decoration: none;
-  }
 
-  #park-status-container a:hover {
-    text-decoration: underline;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }

@@ -3,8 +3,13 @@ import { Navigate } from "react-router-dom";
 import useAccess from "@/hooks/useAccess";
 import { ROLES } from "@/config/permissions";
 
-export default function AccessControlledRoute({ children, allowedRoles }) {
-  const { hasAnyRole, isAuthenticated, checkAccess } = useAccess();
+export default function AccessControlledRoute({
+  children,
+  allowedRoles,
+  excludeParkOperators = false,
+}) {
+  const { hasAnyRole, isAuthenticated, checkAccess, isParkOperator } =
+    useAccess();
 
   // If not authenticated, redirect to login
   if (!isAuthenticated) {
@@ -12,7 +17,8 @@ export default function AccessControlledRoute({ children, allowedRoles }) {
   }
 
   // If authenticated but lacks required roles, redirect appropriately
-  const hasAccess = hasAnyRole(allowedRoles);
+  const hasAccess =
+    hasAnyRole(allowedRoles) && !(excludeParkOperators && isParkOperator);
 
   if (!hasAccess) {
     // Use smart role-based redirect
@@ -34,4 +40,5 @@ export default function AccessControlledRoute({ children, allowedRoles }) {
 AccessControlledRoute.propTypes = {
   children: PropTypes.node.isRequired,
   allowedRoles: PropTypes.array.isRequired,
+  excludeParkOperators: PropTypes.bool,
 };
