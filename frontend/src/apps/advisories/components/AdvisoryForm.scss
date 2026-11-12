@@ -57,6 +57,8 @@
     background: var(--support-surface-color-info);
     border-color: var(--support-border-color-info);
     color: var(--typography-color-primary);
+    max-height: none;
+    overflow: visible;
 
     a {
       color: var(--typography-color-link);
