@@ -225,8 +225,8 @@ export default function AdvisoryHistory({
         .catch((error) => {
           console.error("Error loading advisory history:", error);
           globalFlashMessage.open(
-            "Could not load advisory history",
-            "Refresh the page and try again.",
+            "Could not load history",
+            "Refresh and try again.",
             { variant: "error" },
           );
         });

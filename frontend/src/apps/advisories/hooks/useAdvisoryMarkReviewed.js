@@ -70,7 +70,7 @@ export default function useAdvisoryMarkReviewed({
 
       if (!reviewedStatus) {
         openMarkReviewedError(
-          "Could not resolve the new status for the reviewed advisory.",
+          `Could not find the new status for ${rowData.title}. Contact cardweb@gov.bc.ca.`,
         );
         return;
       }
