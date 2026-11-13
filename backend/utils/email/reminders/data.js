@@ -1,4 +1,4 @@
-import { addDays, format } from "date-fns";
+import { format } from "date-fns";
 import { Op } from "sequelize";
 import {
   PendingReminder,
@@ -6,8 +6,9 @@ import {
   SeasonChangeLog,
 } from "../../../models/index.js";
 import { executeWithRetry } from "../../../db/transaction.js";
+import { addBCBusinessDays } from "./statutoryHoliday.js";
 
-const FOLLOW_UP_DAYS = 14;
+const FOLLOW_UP_BUSINESS_DAYS = 3;
 
 /**
  * Saves the information needed to send a follow-up, overwriting any existing
@@ -20,6 +21,7 @@ const FOLLOW_UP_DAYS = 14;
 async function savePendingReminder(notificationOptions, jsonData, transaction) {
   const { season } = notificationOptions;
   const now = new Date();
+  const followUpDate = await addBCBusinessDays(now, FOLLOW_UP_BUSINESS_DAYS);
 
   // remove some stuff from the jsonData to prevent confusion
   const newJsonData = {
@@ -41,7 +43,7 @@ async function savePendingReminder(notificationOptions, jsonData, transaction) {
       notifyInformationServices: notificationOptions.notifyInformationServices,
       notifyReservationServices: notificationOptions.notifyReservationServices,
       createdAt: now,
-      followUpDate: format(addDays(now, FOLLOW_UP_DAYS), "yyyy-MM-dd"),
+      followUpDate,
     },
     { transaction },
   );
