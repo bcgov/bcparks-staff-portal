@@ -19,6 +19,7 @@ import publishRoutes from "./routes/api/publish.js";
 import filterOptionsRoutes from "./routes/api/filter-options.js";
 import { checkPermissions } from "./middleware/permissions.js";
 import * as ROLES from "./constants/userRoles.js";
+import { preloadHolidays } from "./utils/email/reminders/statutoryHoliday.js";
 
 if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
   throw new Error("Required environment variables are not set");
@@ -119,6 +120,9 @@ app.use((err, req, res, next) => {
 try {
   app.listen(8100, "0.0.0.0", () => {
     console.log("Server listening at http://localhost:8100");
+
+    // Cache statutory holidays for email reminder dates in the background
+    preloadHolidays();
   });
 } catch (err) {
   console.error("Error starting server", err);
