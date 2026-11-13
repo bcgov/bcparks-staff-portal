@@ -6,17 +6,36 @@ const queueNotification = vi.fn(() => ({
   jsonData: {},
 }));
 const loadNotificationSettings = vi.fn();
+const commitTransaction = vi.fn();
 
-vi.mock("../../db/connection.js", () => ({ default: {} }));
+vi.mock("../../db/connection.js", () => ({
+  default: {
+    transaction: vi.fn(async () => ({
+      finished: false,
+      commit: commitTransaction,
+      rollback: vi.fn(),
+    })),
+  },
+}));
 vi.mock("./taskQueuer.js", () => ({
   queueNotification,
   EMAIL_TYPE: { HQ_APPROVAL: "hq-approval", DRAFT_REVIEW: "draft-review" },
 }));
 vi.mock("./notificationSettings.js", () => ({ loadNotificationSettings }));
-vi.mock("./reminders/data.js", () => ({ savePendingReminder: vi.fn() }));
+const deletePendingReminder = vi.fn(async () => 1);
 
-const { notifyManagementArea, notifyHqApprovers, EMAIL_TYPE } =
-  await import("./seasonNotifications.js");
+vi.mock("./reminders/data.js", () => ({
+  savePendingReminder: vi.fn(),
+  deletePendingReminder,
+}));
+
+const {
+  notifyManagementArea,
+  notifyHqApprovers,
+  sendSeasonNotifications,
+  EMAIL_TYPE,
+} = await import("./seasonNotifications.js");
+const { REQUESTED } = await import("../../constants/seasonStatus.js");
 
 const season = { id: 123, operatingYear: 2026, seasonType: "regular" };
 
@@ -54,13 +73,7 @@ describe("CC for Information Services", () => {
 
   describe("notifyManagementArea", () => {
     it("CCs Information Services on reminders", async () => {
-      await notifyManagementArea(
-        EMAIL_TYPE.DRAFT_REVIEW,
-        season,
-        "Reminder Runner",
-        null,
-        true,
-      );
+      await notifyManagementArea(season, "Reminder Runner", null, true);
 
       expect(lastQueuedOptions()).toMatchObject({
         ccInformationServices: true,
@@ -70,13 +83,7 @@ describe("CC for Information Services", () => {
     it("doesn't CC Information Services when their notifications are disabled", async () => {
       mockSettings({ infoServicesNotificationsEnabled: false });
 
-      await notifyManagementArea(
-        EMAIL_TYPE.DRAFT_REVIEW,
-        season,
-        "Reminder Runner",
-        null,
-        true,
-      );
+      await notifyManagementArea(season, "Reminder Runner", null, true);
 
       expect(lastQueuedOptions()).toMatchObject({
         ccInformationServices: false,
@@ -84,9 +91,10 @@ describe("CC for Information Services", () => {
     });
 
     it("doesn't CC Information Services on emails that aren't reminders", async () => {
-      await notifyManagementArea(EMAIL_TYPE.DRAFT_REVIEW, season, "Submitter");
+      await notifyManagementArea(season, "Submitter");
 
       expect(lastQueuedOptions()).toMatchObject({
+        emailType: EMAIL_TYPE.DRAFT_REVIEW,
         ccInformationServices: false,
       });
     });
@@ -150,5 +158,99 @@ describe("CC for Information Services", () => {
         ccInformationServices: false,
       });
     });
+  });
+});
+
+describe("sendSeasonNotifications", () => {
+  const draftSeason = { ...season, status: REQUESTED };
+
+  beforeEach(() => {
+    queueNotification.mockClear();
+    deletePendingReminder.mockClear();
+    commitTransaction.mockReset();
+    mockSettings();
+  });
+
+  it("emails the Management Area when a contributor saves a draft", async () => {
+    await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Contributor",
+      isOnlyContributor: true,
+      isOnlySubmitter: false,
+      isApprover: false,
+    });
+
+    expect(queueNotification).toHaveBeenCalledTimes(1);
+    expect(lastQueuedOptions()).toMatchObject({
+      emailType: EMAIL_TYPE.DRAFT_REVIEW,
+    });
+    expect(deletePendingReminder).not.toHaveBeenCalled();
+  });
+
+  // HQ moving a season back to draft (rejecting it) intentionally sends no
+  // email, and cancels the reminder asking HQ to approve it.
+  it("cancels the HQ approval reminder without emailing when an approver saves a draft", async () => {
+    await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Approver",
+      isOnlyContributor: false,
+      isOnlySubmitter: false,
+      isApprover: true,
+    });
+
+    expect(queueNotification).not.toHaveBeenCalled();
+    expect(deletePendingReminder).toHaveBeenCalledWith(
+      EMAIL_TYPE.HQ_APPROVAL,
+      draftSeason.id,
+      expect.anything(),
+    );
+  });
+
+  it("still reports success when the HQ approval reminder can't be cancelled", async () => {
+    deletePendingReminder.mockRejectedValueOnce(new Error("DB error"));
+    vi.spyOn(console, "error").mockImplementationOnce(() => {});
+
+    const diagnostics = await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Approver",
+      isOnlyContributor: false,
+      isOnlySubmitter: false,
+      isApprover: true,
+    });
+
+    expect(diagnostics).toEqual([
+      expect.stringContaining("could not be cancelled"),
+    ]);
+  });
+
+  it("reports the cancelled reminder after the transaction commits", async () => {
+    const diagnostics = await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Approver",
+      isOnlyContributor: false,
+      isOnlySubmitter: false,
+      isApprover: true,
+    });
+
+    expect(diagnostics).toEqual([
+      `Pending HQ approval reminder was cancelled for season ${draftSeason.id}.`,
+    ]);
+  });
+
+  it("doesn't report the reminder as cancelled when the commit fails", async () => {
+    commitTransaction.mockRejectedValueOnce(new Error("Commit failed"));
+    vi.spyOn(console, "error").mockImplementationOnce(() => {});
+
+    const diagnostics = await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Approver",
+      isOnlyContributor: false,
+      isOnlySubmitter: false,
+      isApprover: true,
+    });
+
+    expect(diagnostics).toEqual([
+      "Season saved, but email notification failed.",
+    ]);
   });
 });

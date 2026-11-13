@@ -127,7 +127,6 @@ async function processPendingReminder(reminder, transaction) {
     ));
   } else {
     ({ queued } = await notifyManagementArea(
-      reminder.emailType,
       season,
       reminder.jsonData.userFullName,
       transaction,
