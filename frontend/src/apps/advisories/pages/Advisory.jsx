@@ -270,8 +270,8 @@ export default function Advisory({ mode }) {
         .catch((error) => {
           console.error("Error loading business hours:", error);
           globalFlashMessage.open(
-            "Could not load form metadata",
-            "After-hours publishing information could not be loaded. Refresh and try again.",
+            "Could not load after-hours publishing information",
+            "Refresh and try again.",
             { variant: "error" },
           );
         });
@@ -279,8 +279,8 @@ export default function Advisory({ mode }) {
       calculateIsStatHoliday(setIsStatHoliday).catch((error) => {
         console.error("Error checking statutory holiday status:", error);
         globalFlashMessage.open(
-          "Could not load form metadata",
-          "Holiday schedule information could not be loaded. Refresh and try again.",
+          "Could not load holiday schedule information",
+          "Refresh and try again.",
           { variant: "error" },
         );
       });

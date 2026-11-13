@@ -47,8 +47,8 @@ export default function AdvisoryLink() {
           })
           .catch((error) => {
             globalFlashMessage.open(
-              "Could not open advisory",
-              "The advisory could not be loaded. Try again from the advisories list.",
+              "Could not open advisory / closure",
+              "Try again from the advisories / closures list.",
               { variant: "error" },
             );
             console.error("Error fetching advisory:", error);
