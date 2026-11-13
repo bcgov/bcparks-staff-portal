@@ -227,6 +227,7 @@ async function sendSeasonNotifications({
   const newStatus = updatedSeason.status;
   const diagnostics = [];
   let notificationTransaction;
+  let cancelledReminderCount = 0;
 
   try {
     notificationTransaction = await sequelize.transaction();
@@ -261,17 +262,11 @@ async function sendSeasonNotifications({
     // HQ no longer needs a reminder to approve them.
     if (isApprover && newStatus === STATUS.REQUESTED) {
       try {
-        const deletedCount = await deletePendingReminder(
+        cancelledReminderCount = await deletePendingReminder(
           EMAIL_TYPE.HQ_APPROVAL,
           updatedSeason.id,
           notificationTransaction,
         );
-
-        if (deletedCount) {
-          diagnostics.push(
-            `Pending HQ approval reminder was cancelled for season ${updatedSeason.id}.`,
-          );
-        }
       } catch (error) {
         console.error(
           `Failed to cancel HQ approval reminder for season ${updatedSeason.id}:`,
@@ -285,6 +280,13 @@ async function sendSeasonNotifications({
 
     if (!notificationTransaction.finished) {
       await notificationTransaction.commit();
+    }
+
+    // Only report the cancellation once the delete has been committed
+    if (cancelledReminderCount) {
+      diagnostics.push(
+        `Pending HQ approval reminder was cancelled for season ${updatedSeason.id}.`,
+      );
     }
   } catch (error) {
     if (notificationTransaction && !notificationTransaction.finished) {

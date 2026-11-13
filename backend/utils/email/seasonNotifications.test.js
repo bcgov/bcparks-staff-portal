@@ -6,12 +6,13 @@ const queueNotification = vi.fn(() => ({
   jsonData: {},
 }));
 const loadNotificationSettings = vi.fn();
+const commitTransaction = vi.fn();
 
 vi.mock("../../db/connection.js", () => ({
   default: {
     transaction: vi.fn(async () => ({
       finished: false,
-      commit: vi.fn(),
+      commit: commitTransaction,
       rollback: vi.fn(),
     })),
   },
@@ -166,6 +167,7 @@ describe("sendSeasonNotifications", () => {
   beforeEach(() => {
     queueNotification.mockClear();
     deletePendingReminder.mockClear();
+    commitTransaction.mockReset();
     mockSettings();
   });
 
@@ -218,6 +220,37 @@ describe("sendSeasonNotifications", () => {
 
     expect(diagnostics).toEqual([
       expect.stringContaining("could not be cancelled"),
+    ]);
+  });
+
+  it("reports the cancelled reminder after the transaction commits", async () => {
+    const diagnostics = await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Approver",
+      isOnlyContributor: false,
+      isOnlySubmitter: false,
+      isApprover: true,
+    });
+
+    expect(diagnostics).toEqual([
+      `Pending HQ approval reminder was cancelled for season ${draftSeason.id}.`,
+    ]);
+  });
+
+  it("doesn't report the reminder as cancelled when the commit fails", async () => {
+    commitTransaction.mockRejectedValueOnce(new Error("Commit failed"));
+    vi.spyOn(console, "error").mockImplementationOnce(() => {});
+
+    const diagnostics = await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Approver",
+      isOnlyContributor: false,
+      isOnlySubmitter: false,
+      isApprover: true,
+    });
+
+    expect(diagnostics).toEqual([
+      "Season saved, but email notification failed.",
     ]);
   });
 });
