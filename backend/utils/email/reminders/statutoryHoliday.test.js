@@ -128,6 +128,17 @@ describe("addBCBusinessDays without holidays loaded", () => {
     expect(requestedYears()).toEqual([2026, 2027]);
   });
 
+  it("doesn't retry a failed lookup within the same save", async () => {
+    axiosGet.mockRejectedValueOnce(new Error("connect ECONNREFUSED"));
+
+    // Monday -> Thursday: Remembrance Day isn't skipped
+    expect(await addBCBusinessDays(new Date("2026-11-09T20:00:00Z"), 3)).toBe(
+      "2026-11-12",
+    );
+    expect(axiosGet).toHaveBeenCalledTimes(1);
+    expect(console.error).toHaveBeenCalledTimes(1);
+  });
+
   it("stops waiting after 2 seconds and only skips weekends", async () => {
     vi.useFakeTimers();
 

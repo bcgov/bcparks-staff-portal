@@ -76,13 +76,14 @@ function preloadHolidays(now = new Date()) {
 
 /**
  * Adds business days to a date in BC time using only the holidays already
- * cached. Starts loading any uncached years in the background.
+ * cached. Starts loading uncached years in the background, unless they've
+ * already been attempted.
  * @param {Date} fromDate Starting date and time
  * @param {number} days Number of business days to add
- * @param {Set<number>} missingYears Collects the years that weren't cached
+ * @param {Set<number>} attemptedYears Uncached years already requested for this save; new ones are added
  * @returns {string} Resulting BC date as "yyyy-MM-dd"
  */
-function countBusinessDays(fromDate, days, missingYears) {
+function countBusinessDays(fromDate, days, attemptedYears) {
   let date = new TZDate(fromDate, BC_TIMEZONE);
   let remaining = days;
 
@@ -92,8 +93,8 @@ function countBusinessDays(fromDate, days, missingYears) {
     if (!isWeekend(date)) {
       const year = date.getFullYear();
 
-      if (!holidayCache.has(year)) {
-        missingYears.add(year);
+      if (!holidayCache.has(year) && !attemptedYears.has(year)) {
+        attemptedYears.add(year);
         loadHolidays(year);
       }
 
@@ -135,15 +136,16 @@ async function waitForHolidays(years, maxWaitMs) {
  * @returns {Promise<string>} Resulting BC date as "yyyy-MM-dd"
  */
 async function addBCBusinessDays(fromDate, days) {
-  const missingYears = new Set();
-  const result = countBusinessDays(fromDate, days, missingYears);
+  const attemptedYears = new Set();
+  const result = countBusinessDays(fromDate, days, attemptedYears);
 
-  if (!missingYears.size) return result;
+  if (!attemptedYears.size) return result;
 
-  await waitForHolidays([...missingYears], SAVE_WAIT_MS);
+  await waitForHolidays([...attemptedYears], SAVE_WAIT_MS);
 
-  // Recount with whatever loaded. Any newly needed year loads in the background.
-  return countBusinessDays(fromDate, days, new Set());
+  // Recount with whatever loaded. Years that failed aren't retried until the
+  // next save; any newly needed year loads in the background.
+  return countBusinessDays(fromDate, days, attemptedYears);
 }
 
 /**
