@@ -1,29 +1,94 @@
+@use "./shared/navLink" as *;
+
 #portal-nav-sidebar {
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25);
-  // Keep the shadow above page content backgrounds (e.g. page header)
-  position: relative;
-  z-index: 1;
-  width: clamp(17em, 20%, 20em);
-  align-self: stretch;
+  --sidebar-item-inset: var(--layout-margin-small);
+  width: 250px;
   flex-shrink: 0;
+  align-self: stretch;
+  background: var(--surface-color-menus-default);
+  border-right: 1px solid var(--surface-color-border-medium);
+  box-shadow: var(--surface-shadow-small);
+
+  // Keep the whole menu in view while the page scrolls.
+  // The height is updated in NavSidebar.jsx to fit below any content above it.
+  .sidebar-content {
+    position: sticky;
+    top: var(--top-nav-height);
+    height: calc(100vh - var(--top-nav-height));
+    display: flex;
+    flex-direction: column;
+    padding-top: var(--layout-padding-medium);
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
 
   .nav {
-    position: sticky;
-    top: 3rem;
+    gap: var(--layout-margin-xsmall);
+    flex-wrap: nowrap;
+  }
 
-    .nav-link {
-      padding: 0.75rem 1.5rem;
-      text-align: left;
+  .nav-link {
+    @include portal-nav-link;
+
+    // Links span the full sidebar width, so the hover and selected
+    // backgrounds reach the edges
+    padding: var(--layout-padding-small)
+      calc(var(--sidebar-item-inset) + var(--layout-padding-medium));
+    border-radius: 0;
+    white-space: nowrap;
+  }
+
+  .quick-links {
+    padding-top: var(--layout-padding-large);
+  }
+
+  .quick-links-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--layout-margin-small);
+    margin-inline: var(--sidebar-item-inset);
+    padding: var(--layout-padding-xsmall) var(--layout-padding-medium);
+    color: #656565;
+    line-height: 1.6;
+  }
+
+  .quick-links-divider {
+    margin: var(--layout-margin-medium) var(--layout-margin-medium);
+    border-color: var(--surface-color-border-medium);
+    opacity: 1;
+  }
+
+  .collapse-toggle {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--layout-padding-small) var(--layout-padding-medium);
+
+    .btn {
+      padding: var(--layout-padding-xsmall);
+      font-size: 1.125rem;
+      line-height: 1;
+      color: var(--icons-color-info);
 
       &:hover {
-        background: var(--surface-color-menus-hover);
-        text-decoration: none;
+        background: var(--surface-color-secondary-button-hover);
       }
+    }
+  }
 
-      &.active {
-        background: var(--surface-color-menus-hover);
-        font-weight: 700;
-      }
+  // Icon-only view
+  &.collapsed {
+    width: 66px;
+
+    .nav-link {
+      justify-content: center;
+      padding-inline: calc(
+        var(--sidebar-item-inset) + var(--layout-padding-small)
+      );
+    }
+
+    .collapse-toggle {
+      justify-content: center;
+      padding-inline: 0;
     }
   }
 }

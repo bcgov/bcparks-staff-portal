@@ -1,34 +1,52 @@
+@use "./shared/navLink" as *;
+
 // Make the menu show over the content
 #touch-menu {
   position: absolute;
-  // 90px = mobile navbar height
-  top: 90px;
+  top: var(--top-nav-height);
   left: 0;
   right: 0;
   z-index: 999;
+  padding-top: var(--layout-padding-large);
   background: var(--surface-color-menus-default);
   box-shadow: var(--surface-shadow-small);
 
-  .nav-item {
-    border-bottom: 1px solid var(--surface-color-border-default);
+  .navbar-nav {
+    gap: var(--layout-margin-small);
+  }
 
-    &:hover {
-      background: var(--surface-color-menus-hover);
-    }
+  .nav-link {
+    @include portal-nav-link;
 
-    .nav-link {
-      color: var(--bs-link-color);
-      padding: 1.25em 1.5em;
-      line-height: 1.5;
+    padding: var(--layout-padding-medium) var(--layout-padding-large);
 
-      &:hover {
-        text-decoration: none;
-      }
-
-      &.active {
-        background: var(--surface-color-menus-hover);
-        font-weight: 700;
-      }
+    .external-icon {
+      color: var(--typography-color-secondary);
     }
   }
+
+  .quick-links-heading {
+    display: flex;
+    align-items: center;
+    gap: var(--layout-margin-small);
+    padding: var(--layout-padding-large) var(--layout-padding-large)
+      var(--layout-padding-medium);
+    color: #656565;
+    line-height: 1.6;
+  }
+
+  // Divider between the menu and the user info
+  .user-controls {
+    margin: var(--layout-margin-large) var(--layout-margin-large) 0;
+    padding-block: var(--layout-padding-medium);
+    border-top: 1px solid var(--surface-color-border-medium);
+    line-height: 1.5;
+  }
+}
+
+.touch-menu-backdrop {
+  position: absolute;
+  inset: var(--top-nav-height) 0 0;
+  z-index: 998;
+  background: var(--surface-color-overlay-default);
 }

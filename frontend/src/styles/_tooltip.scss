@@ -1,4 +1,33 @@
-.tooltip {
+// Match the BC Gov design system Tooltip component
+// https://www2.gov.bc.ca/gov/content/digital/design-system/components/tooltip
+// (except LightTooltip, which keeps its own white style)
+.tooltip:not(.light-tooltip) {
+  --bs-tooltip-opacity: 1;
+
+  .tooltip-inner {
+    background-color: var(--theme-gray-110);
+    border-radius: var(--layout-border-radius-medium);
+    box-shadow: var(--surface-shadow-small);
+    color: var(--typography-color-primary-invert);
+    font: var(--typography-regular-small-body);
+    padding: var(--layout-padding-xsmall) var(--layout-padding-small);
+  }
+  &.bs-tooltip-top .tooltip-arrow::before {
+    border-top-color: var(--theme-gray-110);
+  }
+  &.bs-tooltip-bottom .tooltip-arrow::before {
+    border-bottom-color: var(--theme-gray-110);
+  }
+  &.bs-tooltip-start .tooltip-arrow::before {
+    border-left-color: var(--theme-gray-110);
+  }
+  &.bs-tooltip-end .tooltip-arrow::before {
+    border-right-color: var(--theme-gray-110);
+  }
+}
+
+// Previous shared tooltip styles, kept for LightTooltip
+.tooltip.light-tooltip {
   .tooltip-inner {
     background-color: var(--typography-color-primary);
   }
