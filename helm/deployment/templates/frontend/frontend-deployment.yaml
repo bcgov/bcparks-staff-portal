@@ -50,9 +50,9 @@ spec:
             - name: REACT_APP_KEYCLOAK_CLIENT_ID
               value: {{ .Values.cluster.ssoClientId }}
             - name: VITE_STAT_HOLIDAY_API
-              value: {{ .Values.frontend.env.statHolidayApi }}
+              value: {{ .Values.cluster.statHolidayApi }}
             - name: REACT_APP_STAT_HOLIDAY_API
-              value: {{ .Values.frontend.env.statHolidayApi }}
+              value: {{ .Values.cluster.statHolidayApi }}
             - name: VITE_BCPARKS_PUBLIC_URL
               value: {{ .Values.frontend.env.publicUrl }}
             - name: REACT_APP_PUBLIC_URL
