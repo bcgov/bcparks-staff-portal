@@ -29,10 +29,10 @@ export function getEmailContentByType(
   // doot-contributor role saves a draft.
   if (emailType === EMAIL_TYPE.DRAFT_REVIEW) {
     return {
-      subject: `${actionText}: Review and submit new dates`,
+      subject: `${actionText}: Review and approve new dates`,
       heading: "New dates or gate information to review",
       message:
-        "New dates or gate information has been saved by " +
+        "New dates or gate information has been requested by " +
         `${safeModifiedByName} to ${safeParkSeasonSubject}.` +
         "<br><br>" +
         "Please review the changes and, if approved, submit them to HQ.",
