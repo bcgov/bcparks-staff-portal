@@ -28,6 +28,7 @@ async function savePendingReminder(notificationOptions, jsonData, transaction) {
     sendToIS: jsonData.sendToIS,
     sendToRS: jsonData.sendToRS,
     copyToIS: jsonData.copyToIS,
+    copyToRS: jsonData.copyToRS,
     userFullName: jsonData.userFullName,
     recipientEmails: jsonData.recipientEmails,
     noRecipientsError: jsonData.noRecipientsError,

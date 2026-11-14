@@ -73,7 +73,7 @@ describe("CC for Information Services", () => {
 
   describe("notifyManagementArea", () => {
     it("CCs Information Services on reminders", async () => {
-      await notifyManagementArea(season, "Reminder Runner", null, true);
+      await notifyManagementArea(season, "Reminder Runner", false, null, true);
 
       expect(lastQueuedOptions()).toMatchObject({
         ccInformationServices: true,
@@ -83,7 +83,7 @@ describe("CC for Information Services", () => {
     it("doesn't CC Information Services when their notifications are disabled", async () => {
       mockSettings({ infoServicesNotificationsEnabled: false });
 
-      await notifyManagementArea(season, "Reminder Runner", null, true);
+      await notifyManagementArea(season, "Reminder Runner", false, null, true);
 
       expect(lastQueuedOptions()).toMatchObject({
         ccInformationServices: false,
@@ -91,7 +91,7 @@ describe("CC for Information Services", () => {
     });
 
     it("doesn't CC Information Services on emails that aren't reminders", async () => {
-      await notifyManagementArea(season, "Submitter");
+      await notifyManagementArea(season, "Submitter", false);
 
       expect(lastQueuedOptions()).toMatchObject({
         emailType: EMAIL_TYPE.DRAFT_REVIEW,
@@ -161,6 +161,49 @@ describe("CC for Information Services", () => {
   });
 });
 
+describe("CC for Reservation Services", () => {
+  beforeEach(() => {
+    queueNotification.mockClear();
+    mockSettings();
+  });
+
+  it("CCs Reservation Services on draft review emails when asked", async () => {
+    await notifyManagementArea(season, "Contributor", true);
+
+    expect(lastQueuedOptions()).toMatchObject({
+      emailType: EMAIL_TYPE.DRAFT_REVIEW,
+      ccReservationServices: true,
+    });
+  });
+
+  it("CCs Reservation Services on draft review reminders when asked", async () => {
+    await notifyManagementArea(season, "Reminder Runner", true, null, true);
+
+    expect(lastQueuedOptions()).toMatchObject({
+      isReminder: true,
+      ccReservationServices: true,
+    });
+  });
+
+  it("doesn't CC Reservation Services when not asked", async () => {
+    await notifyManagementArea(season, "Contributor", false);
+
+    expect(lastQueuedOptions()).toMatchObject({
+      ccReservationServices: false,
+    });
+  });
+
+  it("doesn't CC Reservation Services when their notifications are disabled", async () => {
+    mockSettings({ reservationServicesNotificationsEnabled: false });
+
+    await notifyManagementArea(season, "Contributor", true);
+
+    expect(lastQueuedOptions()).toMatchObject({
+      ccReservationServices: false,
+    });
+  });
+});
+
 describe("sendSeasonNotifications", () => {
   const draftSeason = { ...season, status: REQUESTED };
 
@@ -185,6 +228,23 @@ describe("sendSeasonNotifications", () => {
       emailType: EMAIL_TYPE.DRAFT_REVIEW,
     });
     expect(deletePendingReminder).not.toHaveBeenCalled();
+  });
+
+  it("CCs Reservation Services on a contributor's draft when they'll review it", async () => {
+    await sendSeasonNotifications({
+      updatedSeason: draftSeason,
+      userFullName: "Contributor",
+      isOnlyContributor: true,
+      isOnlySubmitter: false,
+      isApprover: false,
+      requiresInformationSvcApproval: false,
+      requiresReservationSvcApproval: true,
+    });
+
+    expect(lastQueuedOptions()).toMatchObject({
+      emailType: EMAIL_TYPE.DRAFT_REVIEW,
+      ccReservationServices: true,
+    });
   });
 
   // HQ moving a season back to draft (rejecting it) intentionally sends no

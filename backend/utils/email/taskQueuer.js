@@ -21,6 +21,7 @@ import { getPublishableDetails } from "./data.js";
  * @param {boolean} [options.notifyInformationServices=false] Whether to notify the Information Services team
  * @param {boolean} [options.notifyReservationServices=false] Whether to notify the Reservation Services team
  * @param {boolean} [options.ccInformationServices=false] Whether to CC the Information Services team (ignored when they're already a recipient)
+ * @param {boolean} [options.ccReservationServices=false] Whether to CC the Reservation Services team (ignored when they're already a recipient)
  * @param {Transaction} [transaction] Sequelize transaction
  * @returns {Promise<{noRecipientsError?: boolean, editTargetLabel: string, jsonData: Object}>} Outcome and diagnostic details of the queue attempt
  */
@@ -35,6 +36,7 @@ async function queueNotification(
     notifyInformationServices = false,
     notifyReservationServices = false,
     ccInformationServices = false,
+    ccReservationServices = false,
   },
   transaction,
 ) {
@@ -82,6 +84,8 @@ async function queueNotification(
     sendToRS: notifyReservationServices,
     // Don't CC Information Services when they are already a recipient
     copyToIS: ccInformationServices && !shouldNotifyInformationServices,
+    // Don't CC Reservation Services when they are already a recipient
+    copyToRS: ccReservationServices && !notifyReservationServices,
     buttonText,
     isReminder,
     triggeredBy: `bcparks-staff-portal::backend::${triggeredBy}`,

@@ -154,5 +154,26 @@ describe("queueNotification", () => {
         copyToIS: false,
       });
     });
+
+    it("CCs Reservation Services when asked", async () => {
+      const jsonData = await queueWith({ ccReservationServices: true });
+
+      expect(jsonData).toMatchObject({ sendToRS: false, copyToRS: true });
+    });
+
+    it("doesn't CC Reservation Services by default", async () => {
+      const jsonData = await queueWith({ isReminder: true });
+
+      expect(jsonData).toMatchObject({ copyToRS: false });
+    });
+
+    it("doesn't CC Reservation Services when they're already a recipient", async () => {
+      const jsonData = await queueWith({
+        ccReservationServices: true,
+        notifyReservationServices: true,
+      });
+
+      expect(jsonData).toMatchObject({ sendToRS: true, copyToRS: false });
+    });
   });
 });
