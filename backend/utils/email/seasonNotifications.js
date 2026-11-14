@@ -79,6 +79,7 @@ async function queueNotificationWithDiagnostics(
  * Queues a draft review email to the Management Area.
  * @param {Season} season Season the notification is about
  * @param {string} userFullName Full name of the user who triggered the notification
+ * @param {boolean} ccReservationServices Whether to CC the Reservation Services team because they'll review the season
  * @param {Transaction} [transaction] Sequelize transaction
  * @param {boolean} [isReminder=false] Whether the notification is a reminder
  * @returns {Promise<{queued: boolean, diagnostics: Array<string>}>} Whether the email was queued, and diagnostics describing the outcome
@@ -86,6 +87,7 @@ async function queueNotificationWithDiagnostics(
 async function notifyManagementArea(
   season,
   userFullName,
+  ccReservationServices,
   transaction,
   isReminder = false,
 ) {
@@ -123,6 +125,9 @@ async function notifyManagementArea(
       // emails. Remove this when the review tab is implemented.
       ccInformationServices:
         isReminder && settings.infoServicesNotificationsEnabled,
+      ccReservationServices:
+        ccReservationServices &&
+        settings.reservationServicesNotificationsEnabled,
     },
     transaction,
   );
@@ -238,6 +243,7 @@ async function sendSeasonNotifications({
           await notifyManagementArea(
             updatedSeason,
             userFullName,
+            requiresReservationSvcApproval,
             notificationTransaction,
           )
         ).diagnostics,
