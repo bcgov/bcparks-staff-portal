@@ -129,6 +129,7 @@ async function processPendingReminder(reminder, transaction) {
     ({ queued } = await notifyManagementArea(
       season,
       reminder.jsonData.userFullName,
+      Boolean(reminder.jsonData.copyToRS),
       transaction,
       true,
     ));
