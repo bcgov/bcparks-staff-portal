@@ -3,7 +3,6 @@ import _ from "lodash";
 export const EMAIL_TYPE = {
   DRAFT_REVIEW: "draft-review",
   HQ_APPROVAL: "hq-approval",
-  APPROVAL_REJECTED: "approval-rejected",
 };
 
 /**
@@ -52,19 +51,6 @@ export function getEmailContentByType(
         "<br><br>" +
         "Please review the information for approval.",
       buttonText: "Review changes",
-    };
-  }
-
-  // HQ rejects the dates and requests changes.
-  if (emailType === EMAIL_TYPE.APPROVAL_REJECTED) {
-    return {
-      subject: `${actionText}: Date update request`,
-      heading: "New dates requested",
-      message:
-        `HQ has reviewed your dates for ${safeParkSeasonSubject}. ` +
-        "<br><br>" +
-        "Please review the comment and re-submit to HQ.",
-      buttonText: "Update dates",
     };
   }
 

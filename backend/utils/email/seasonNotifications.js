@@ -4,7 +4,10 @@ import sequelize from "../../db/connection.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import { queueNotification, EMAIL_TYPE } from "./taskQueuer.js";
 import { loadNotificationSettings } from "./notificationSettings.js";
-import { savePendingReminder } from "./reminders/data.js";
+import {
+  deletePendingReminder,
+  savePendingReminder,
+} from "./reminders/data.js";
 
 /**
  * Queues a notification email, catching and logging any error so a failed queue
@@ -73,8 +76,7 @@ async function queueNotificationWithDiagnostics(
 }
 
 /**
- * Queues a Management Area notification email.
- * @param {string} emailType Notification email type
+ * Queues a draft review email to the Management Area.
  * @param {Season} season Season the notification is about
  * @param {string} userFullName Full name of the user who triggered the notification
  * @param {Transaction} [transaction] Sequelize transaction
@@ -82,7 +84,6 @@ async function queueNotificationWithDiagnostics(
  * @returns {Promise<{queued: boolean, diagnostics: Array<string>}>} Whether the email was queued, and diagnostics describing the outcome
  */
 async function notifyManagementArea(
-  emailType,
   season,
   userFullName,
   transaction,
@@ -112,7 +113,7 @@ async function notifyManagementArea(
   return queueNotificationWithDiagnostics(
     "regional staff",
     {
-      emailType,
+      emailType: EMAIL_TYPE.DRAFT_REVIEW,
       season,
       userFullName,
       triggeredBy: "utils::email::seasonNotifications::notifyManagementArea",
@@ -226,6 +227,7 @@ async function sendSeasonNotifications({
   const newStatus = updatedSeason.status;
   const diagnostics = [];
   let notificationTransaction;
+  let cancelledReminderCount = 0;
 
   try {
     notificationTransaction = await sequelize.transaction();
@@ -234,7 +236,6 @@ async function sendSeasonNotifications({
       diagnostics.push(
         ...(
           await notifyManagementArea(
-            EMAIL_TYPE.DRAFT_REVIEW,
             updatedSeason,
             userFullName,
             notificationTransaction,
@@ -257,21 +258,35 @@ async function sendSeasonNotifications({
       );
     }
 
+    // approver role hits 'Save draft' button: HQ has rejected the dates, so
+    // HQ no longer needs a reminder to approve them.
     if (isApprover && newStatus === STATUS.REQUESTED) {
-      diagnostics.push(
-        ...(
-          await notifyManagementArea(
-            EMAIL_TYPE.APPROVAL_REJECTED,
-            updatedSeason,
-            userFullName,
-            notificationTransaction,
-          )
-        ).diagnostics,
-      );
+      try {
+        cancelledReminderCount = await deletePendingReminder(
+          EMAIL_TYPE.HQ_APPROVAL,
+          updatedSeason.id,
+          notificationTransaction,
+        );
+      } catch (error) {
+        console.error(
+          `Failed to cancel HQ approval reminder for season ${updatedSeason.id}:`,
+          error,
+        );
+        diagnostics.push(
+          "The pending HQ approval reminder for this season could not be cancelled. Check the backend server logs for error details.",
+        );
+      }
     }
 
     if (!notificationTransaction.finished) {
       await notificationTransaction.commit();
+    }
+
+    // Only report the cancellation once the delete has been committed
+    if (cancelledReminderCount) {
+      diagnostics.push(
+        `Pending HQ approval reminder was cancelled for season ${updatedSeason.id}.`,
+      );
     }
   } catch (error) {
     if (notificationTransaction && !notificationTransaction.finished) {
