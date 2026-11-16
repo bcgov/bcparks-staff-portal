@@ -29,7 +29,7 @@
     "eslint-config-prettier": "^10.1.8",
     "globals": "^15.15.0",
     "nodemon": "^3.1.14",
-    "prettier": "3.9.10",
+    "prettier": "3.10.1",
     "vitest": "^5.0.5"
   },
   "dependencies": {
@@ -40,7 +40,7 @@
     "@dotenvx/dotenvx": "^1.75.1",
     "@fast-csv/format": "^5.0.8",
     "adminjs": "^7.8.17",
-    "axios": "^1.21.0",
+    "axios": "^1.21.1",
     "compression": "^1.8.2",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.6",
