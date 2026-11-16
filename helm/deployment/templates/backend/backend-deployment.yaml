@@ -77,6 +77,8 @@ spec:
               value: {{ .Values.cluster.cmsUrl }}
             - name: BCPARKS_ENVIRONMENT
               value: {{ .Values.cluster.environment }}
+            - name: STAT_HOLIDAY_API
+              value: {{ .Values.cluster.statHolidayApi }}
             - name: ADMINJS_RELATIONS_LICENSE_KEY
               valueFrom:
                 secretKeyRef:
