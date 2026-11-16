@@ -38,6 +38,8 @@ import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus";
 import * as SEASON_TYPE from "@/apps/dates/constants/seasonType";
 import { findNextForm } from "@/apps/dates/utils/getEditableFormList";
+import { format } from "date-fns";
+import { tz } from "@date-fns/tz";
 import "./FormPanel.scss";
 
 // Components
@@ -221,6 +223,9 @@ function SeasonForm({
     error,
     fetchData: refreshData,
   } = useApiGet(`/seasons/${level}/${seasonId}`);
+
+  // Record when the load error happened, so support can find the matching log entry
+  const errorTime = useMemo(() => (error ? new Date() : null), [error]);
 
   const { data: seasonOptionsData, loading: loadingSeasonOptions } = useApiGet(
     `/seasons/options/${seasonId}`,
@@ -845,7 +850,8 @@ function SeasonForm({
     }
   }
 
-  if (loading) {
+  // Season data is copied from the API response in an effect, so show the loader until it's set
+  if (loading || (!error && !season)) {
     return (
       <>
         <Offcanvas.Header closeButton></Offcanvas.Header>
@@ -856,7 +862,7 @@ function SeasonForm({
     );
   }
 
-  if (error || !season) {
+  if (error) {
     const errorCode = error?.response?.status ?? error?.status;
 
     // Show a friendly message when the user lacks permission for this park
@@ -882,6 +888,7 @@ function SeasonForm({
       );
     }
 
+    // Show a generic error message for other load errors
     return (
       <>
         <Offcanvas.Header closeButton>
@@ -891,7 +898,21 @@ function SeasonForm({
               : "Error loading season data"}
           </Offcanvas.Title>
         </Offcanvas.Header>
-        <Offcanvas.Body></Offcanvas.Body>
+        <Offcanvas.Body>
+          <p>
+            Refresh the page to try again. If the problem continues, contact{" "}
+            <a href="mailto:cardweb@gov.bc.ca">cardweb@gov.bc.ca</a>.
+          </p>
+          {errorCode >= 500 && (
+            <p className="text-muted small mt-4">
+              This error was logged on the DOOT backend server at{" "}
+              {format(errorTime, "yyyy-MM-dd h:mm:ss a", {
+                in: tz("-07:00"),
+              })}{" "}
+              PCT. Please share this if you email support.
+            </p>
+          )}
+        </Offcanvas.Body>
       </>
     );
   }
