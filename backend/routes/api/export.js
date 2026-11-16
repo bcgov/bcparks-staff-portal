@@ -105,13 +105,13 @@ function formatChangeLog(changeLog) {
 }
 
 /**
- * Formats a date string as "Wkd, Mon Day, Year" (e.g., "Thu, Jan 1, 2026")
+ * Formats a date string as "Mon Day, Year" (e.g., "Jan 1, 2026")
  * @param {string} date parseable date string (e.g., "2023-07-15")
  * @returns {string} Formatted date string, or empty string if date is falsy
  */
 function formatDate(date) {
   if (!date) return "";
-  return format(date, "EEE, MMM d, yyyy");
+  return format(date, "MMM d, yyyy");
 }
 
 /**
@@ -713,8 +713,8 @@ router.get(
     // Optional xlsx output: text cells stay text (e.g. ORCS feature number "41-2"), and dates are real date cells
     if (req.query.format === "xlsx") {
       const dateFormats = {
-        [colNames.START_DATE]: "ddd, mmm d, yyyy",
-        [colNames.END_DATE]: "ddd, mmm d, yyyy",
+        [colNames.START_DATE]: "mmm d, yyyy",
+        [colNames.END_DATE]: "mmm d, yyyy",
         [colNames.UPDATE_TIME]: "yyyy-mm-dd hh:mm:ss",
       };
 
