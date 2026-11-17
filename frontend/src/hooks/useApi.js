@@ -67,7 +67,7 @@ export function useApiGet(endpoint, options = {}) {
       requestSent.current = true;
 
       // Build request configuration object
-      const config = { params };
+      const config = { params, responseType: options.responseType };
 
       // Add the Keycloak token to the request headers
       if (includeToken) {

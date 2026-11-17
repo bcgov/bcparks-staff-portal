@@ -149,13 +149,9 @@ export default function AdvisoryDashboard({
   // Flash message functions for unpublish actions
   const openUnpublishError = useCallback(
     (message) => {
-      globalFlashMessage.open(
-        "Failed to unpublish advisory / closure",
-        message,
-        {
-          variant: "error",
-        },
-      );
+      globalFlashMessage.open("Could not unpublish", message, {
+        variant: "error",
+      });
     },
     [globalFlashMessage],
   );
@@ -171,13 +167,9 @@ export default function AdvisoryDashboard({
 
   const openMarkReviewedError = useCallback(
     (message) => {
-      globalFlashMessage.open(
-        "Failed to mark advisory / closure reviewed",
-        message,
-        {
-          variant: "error",
-        },
-      );
+      globalFlashMessage.open("Failed to mark reviewed", message, {
+        variant: "error",
+      });
     },
     [globalFlashMessage],
   );

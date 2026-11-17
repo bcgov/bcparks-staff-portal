@@ -40,7 +40,7 @@ spec:
             - name: VITE_FRONTEND_BASE_URL
               value: {{ .Values.frontend.env.externalUrl }}
             - name: VITE_STAT_HOLIDAY_API
-              value: {{ .Values.frontend.env.statHolidayApi }}
+              value: {{ .Values.cluster.statHolidayApi }}
             - name: VITE_BCPARKS_PUBLIC_URL
               value: {{ .Values.frontend.env.publicUrl }}
             - name: VITE_OIDC_AUTHORITY

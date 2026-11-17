@@ -715,11 +715,9 @@ function SeasonForm({
       return true;
     } catch (saveError) {
       console.error("Error saving season as draft:", saveError);
-      flashMessage.open(
-        "Could not save dates as a draft",
-        "Please try again.",
-        { variant: "error" },
-      );
+      flashMessage.open("Could not save draft", "Please try again.", {
+        variant: "error",
+      });
       return false;
     } finally {
       setSavingAction(null);

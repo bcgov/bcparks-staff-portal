@@ -18,40 +18,41 @@ function ExportPage() {
 
   const { data: options, loading, error } = useApiGet("/export/options");
   const [exportYear, setExportYear] = useState();
+  const [exportFormat, setExportFormat] = useState("xlsx");
 
-  const { loading: generating, fetchData: fetchCsv } = useApiGet(
+  const { loading: generating, fetchData: fetchExport } = useApiGet(
     "/export/csv",
     {
       instant: false,
       params: {
         year: exportYear?.value,
+        format: exportFormat,
       },
+      responseType: "blob",
     },
   );
 
-  // Fetches the CSV as plain text, and then saves it as a file.
-  async function getCsv() {
+  // Fetches the export in the selected format as a blob, and then saves it as a file.
+  async function exportDates() {
     try {
-      const csvData = await fetchCsv();
+      const fileBlob = await fetchExport();
 
       const exportDate = format(new Date(), "yyyyMMdd-HHmm");
-      const filename = `DOOT ${exportYear.value} - all dates - exported ${exportDate}.csv`;
+      const filename = `DOOT ${exportYear.value} - all dates - exported ${exportDate}.${exportFormat}`;
 
-      // Convert CSV string to blob and save in the browser
-      const blob = new Blob([csvData], { type: "text/csv;charset=utf-8;" });
-
-      saveAs(blob, filename);
+      // Save the blob in the browser
+      saveAs(fileBlob, filename);
 
       globalFlashMessage.open(
         "Export completed",
         "Check your downloads for the export.",
       );
-    } catch (csvError) {
-      console.error("Error generating CSV", csvError);
+    } catch (exportError) {
+      console.error(`Error generating ${exportFormat} export`, exportError);
 
       globalFlashMessage.open(
         "Export failed",
-        "There was an error generating the Excel document. Please try again.",
+        "There was an error generating the export. Please try again.",
         { variant: "error" },
       );
     }
@@ -106,6 +107,21 @@ function ExportPage() {
                   Required
                 </div>
               )}
+
+              <h6 className="fw-normal mt-3">
+                <label htmlFor="format">File format</label>
+              </h6>
+              <div className="col-8 col-sm-6">
+                <select
+                  id="format"
+                  className="form-select"
+                  value={exportFormat}
+                  onChange={(event) => setExportFormat(event.target.value)}
+                >
+                  <option value="xlsx">Excel</option>
+                  <option value="csv">CSV</option>
+                </select>
+              </div>
             </fieldset>
             <fieldset
               className={classNames(
@@ -119,7 +135,7 @@ function ExportPage() {
               <ActionButton
                 label="Export dates"
                 disabled={disableButton}
-                onClick={getCsv}
+                onClick={exportDates}
                 hasLoader={generating}
               />
             </fieldset>

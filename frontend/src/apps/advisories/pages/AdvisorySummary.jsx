@@ -111,8 +111,8 @@ export default function AdvisorySummary() {
             console.error("Error loading published advisory:", error);
             setShowOriginalAdvisory(false);
             globalFlashMessage.open(
-              "Could not load published advisory",
-              "Refresh the page and try again.",
+              "Could not load published advisory / closure",
+              "Refresh and try again.",
               { variant: "error" },
             );
           });
@@ -219,13 +219,9 @@ export default function AdvisorySummary() {
   const openUnpublishError = useCallback(
     (message) => {
       setIsUnpublishing(false);
-      globalFlashMessage.open(
-        "Failed to unpublish advisory / closure",
-        message,
-        {
-          variant: "error",
-        },
-      );
+      globalFlashMessage.open("Could not unpublish", message, {
+        variant: "error",
+      });
     },
     [globalFlashMessage],
   );
@@ -245,13 +241,9 @@ export default function AdvisorySummary() {
   const openMarkReviewedError = useCallback(
     (message) => {
       setIsMarkingReviewed(false);
-      globalFlashMessage.open(
-        "Failed to mark advisory / closure reviewed",
-        message,
-        {
-          variant: "error",
-        },
-      );
+      globalFlashMessage.open("Failed to mark reviewed", message, {
+        variant: "error",
+      });
     },
     [globalFlashMessage],
   );
@@ -281,8 +273,8 @@ export default function AdvisorySummary() {
       } catch (error) {
         console.error("Error refreshing advisory after unpublish:", error);
         globalFlashMessage.open(
-          "Could not refresh advisory",
-          "The update was saved, but the latest details could not be loaded. Refresh the page.",
+          "Could not refresh advisory / closure",
+          "Your update was saved but the latest version could not be loaded. Refresh the page.",
           { variant: "error" },
         );
       }

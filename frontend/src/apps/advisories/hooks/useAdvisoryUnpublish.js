@@ -22,7 +22,9 @@ export default function useAdvisoryUnpublish({
       );
 
       if (!unpublishedStatus?.documentId) {
-        openUnpublishError("Could not resolve unpublished advisory status.");
+        openUnpublishError(
+          `Could not find the unpublished status for ${rowData.title}. Contact cardweb@gov.bc.ca.`,
+        );
         return;
       }
 
