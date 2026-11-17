@@ -51,3 +51,7 @@ export const BCPARKS_USER = "bcparks-user";
 
 // RST user (may be used in the future to distinguish between BC Parks and RST)
 export const RECREATION_USER = "recreation-user";
+
+// AdminJS access: developers can do everything, editors manage access groups and settings
+export const ADMINJS_DEVELOPER = "adminjs-developer";
+export const ADMINJS_EDITOR = "adminjs-editor";

@@ -1,7 +1,7 @@
 import { expressjwt } from "express-jwt";
 import jwksRsa from "jwks-rsa";
 
-const jwtMiddleware = expressjwt({
+const jwtOptions = {
   secret: jwksRsa.expressJwtSecret({
     cache: true,
     rateLimit: true,
@@ -22,6 +22,15 @@ const jwtMiddleware = expressjwt({
   onExpired(req, err) {
     console.error("JWT expired:", err.message);
   },
+};
+
+const jwtMiddleware = expressjwt(jwtOptions);
+
+// Validates a token the server fetched itself (e.g. during the AdminJS
+// Keycloak login) instead of one from the Authorization header
+export const checkJwtFromToken = expressjwt({
+  ...jwtOptions,
+  getToken: (req) => req.keycloakAccessToken,
 });
 
 // Wrapper to handle JWT validation errors and return 401 status
