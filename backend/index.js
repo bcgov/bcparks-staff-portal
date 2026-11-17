@@ -107,10 +107,8 @@ app.use("/api", apiRouter);
 // error handling middleware
 // eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware
 app.use((err, req, res, next) => {
-  console.error(
-    `[${new Date().toISOString()}] Error occurred: ${req.method} ${req.originalUrl}:`,
-    err.message,
-  );
+  // The request log line has the method and URL; keep user input out of the format string
+  console.error(`[${new Date().toISOString()}] Error occurred:`, err.message);
   console.error(err.stack);
 
   const status = err.status || 500;
