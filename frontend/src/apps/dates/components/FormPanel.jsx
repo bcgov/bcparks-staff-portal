@@ -38,8 +38,7 @@ import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus";
 import * as SEASON_TYPE from "@/apps/dates/constants/seasonType";
 import { findNextForm } from "@/apps/dates/utils/getEditableFormList";
-import { format } from "date-fns";
-import { tz } from "@date-fns/tz";
+import { formatServerErrorTimestamp } from "@/utils";
 import "./FormPanel.scss";
 
 // Components
@@ -906,10 +905,8 @@ function SeasonForm({
           {errorCode >= 500 && (
             <p className="text-muted small mt-4">
               This error was logged on the DOOT backend server at{" "}
-              {format(errorTime, "yyyy-MM-dd h:mm:ss a", {
-                in: tz("-07:00"),
-              })}{" "}
-              PCT. Please share this if you email support.
+              {formatServerErrorTimestamp(errorTime)}. Please share this if you
+              email support.
             </p>
           )}
         </Offcanvas.Body>

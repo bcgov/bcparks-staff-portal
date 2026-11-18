@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { isRouteErrorResponse, Link, useRouteError } from "react-router-dom";
-import { format } from "date-fns";
-import { tz } from "@date-fns/tz";
+import { formatServerErrorTimestamp } from "@/utils";
 import getEnv from "@/config/getEnv";
 
 /**
@@ -68,8 +67,8 @@ export default function ErrorPage() {
       {serverErrorBackend && (
         <p className="text-muted small mt-4">
           This error was logged on the {serverErrorBackend} at{" "}
-          {format(errorTime, "yyyy-MM-dd h:mm:ss a", { in: tz("-07:00") })} PCT.
-          Please share this if you email support.
+          {formatServerErrorTimestamp(errorTime)}. Please share this if you
+          email support.
         </p>
       )}
     </div>
