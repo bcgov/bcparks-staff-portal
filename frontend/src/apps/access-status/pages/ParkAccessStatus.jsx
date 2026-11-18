@@ -57,11 +57,16 @@ export default function ParkAccessStatus() {
   const ALL_PAGE_SIZE = -1;
   const STALE_TIME_MILLISECONDS = 10 * 60 * 1000; // 10 minutes
   const [pageSize, setPageSize] = useState(50);
-  const { isLoading, data } = useQuery({
+  const { isLoading, data, error } = useQuery({
     queryKey: ["parkAccessStatus"],
     queryFn: fetchParkAccessStatus,
     staleTime: STALE_TIME_MILLISECONDS,
   });
+
+  // Re-throw fetch errors so the route error page shows them
+  if (error) {
+    throw new Error("Could not load park access status", { cause: error });
+  }
 
   const title = "Park Access Status";
   const exportFilename = `${title.toLowerCase().replaceAll(" ", "-")}-${moment(

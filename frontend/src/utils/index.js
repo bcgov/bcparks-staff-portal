@@ -1,4 +1,5 @@
 import { format, parse } from "date-fns";
+import { tz } from "@date-fns/tz";
 
 // Month, day, year
 const DATE_FORMAT_DEFAULT = "MMMM d, yyyy";
@@ -123,4 +124,15 @@ export function updateDateRangeAnnualsArray(annuals, updatedAnnual) {
     annualToAdd = { ...updatedAnnual, tempId: crypto.randomUUID() };
   }
   return [...annuals, { ...annualToAdd, changed: true }];
+}
+
+/**
+ * Formats when an error happened for error page messages, e.g. "2026-11-17 11:22:58 AM PCT".
+ * Uses a fixed UTC-7 offset (BC's permanent daylight time) instead of "America/Vancouver",
+ * because browsers with tz data older than 2026b would still show BC winter times at UTC-8.
+ * @param {Date} date When the error happened
+ * @returns {string} Formatted time with the "PCT" label
+ */
+export function formatServerErrorTimestamp(date) {
+  return `${format(date, "yyyy-MM-dd h:mm:ss a", { in: tz("-07:00") })} PCT`;
 }

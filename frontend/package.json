@@ -19,6 +19,7 @@
     "@bcgov/design-system-react-components": "0.8.1",
     "@bcgov/design-tokens": "^5.0.0",
     "@ckeditor/ckeditor5-react": "^12.0.0",
+    "@date-fns/tz": "^1.5.0",
     "@digitalspace/bcparks-bootstrap-theme": "^1.4.6",
     "@fortawesome/fontawesome-svg-core": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.6",
