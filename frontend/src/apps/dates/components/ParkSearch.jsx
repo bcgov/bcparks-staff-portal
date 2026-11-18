@@ -11,7 +11,12 @@ function SearchIndicator(props) {
   );
 }
 
-export default function ParkSearch({ options, value, onChange }) {
+export default function ParkSearch({
+  options,
+  value,
+  onChange,
+  isDisabled = false,
+}) {
   return (
     <>
       <label htmlFor="park-name" className="form-label">
@@ -23,6 +28,7 @@ export default function ParkSearch({ options, value, onChange }) {
         options={options}
         onChange={onChange}
         isClearable
+        isDisabled={isDisabled}
         isSearchable
         placeholder="Search or select park name"
         classNamePrefix="react-select"
@@ -47,4 +53,5 @@ ParkSearch.propTypes = {
     label: PropTypes.string.isRequired,
   }),
   onChange: PropTypes.func.isRequired,
+  isDisabled: PropTypes.bool,
 };
