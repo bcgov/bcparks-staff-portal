@@ -626,26 +626,23 @@ export default function ParkInfo() {
   return (
     <main className="advisories-styles">
       <div className="ParkInfo" data-testid="ParkInfo">
-        <div className="container">
+        <div className="container-fluid">
           {isLoading && (
             <div className="page-loader">
               <Loader page />
             </div>
           )}
           {!isLoading && (
-            <div className="container-fluid">
-              <div className="container-fluid">
-                <Button
-                  label="Back"
-                  styling="btn-outline-primary btn mt-4"
-                  onClick={() => {
-                    navigate("/activities-and-facilities");
-                  }}
-                />
-              </div>
-              <br />
+            <>
+              <Button
+                label="Back"
+                styling="btn-outline-primary btn mt-4"
+                onClick={() => {
+                  navigate("/activities-and-facilities");
+                }}
+              />
               <div className="pt10b30">
-                <div className="container-fluid">
+                <div>
                   <h3>{protectedArea.protectedAreaName}</h3>
                   {protectedArea.regionName && (
                     <div>{protectedArea.regionName} Region</div>
@@ -659,7 +656,7 @@ export default function ParkInfo() {
                     </div>
                   )}
                 </div>
-                <div className="container park-tabs mt20">
+                <div className="park-tabs mt20">
                   <Tabs
                     activeKey={`${tabIndex}`}
                     aria-label="Park-Info"
@@ -1152,7 +1149,7 @@ export default function ParkInfo() {
                   </Tabs>
                 </div>
               </div>
-            </div>
+            </>
           )}
         </div>
       </div>

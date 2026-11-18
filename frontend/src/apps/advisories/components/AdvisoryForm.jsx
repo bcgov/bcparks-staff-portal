@@ -11,13 +11,13 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCalendarCheck,
   faClock,
+  faTrash,
   faXmark,
 } from "@fa-kit/icons/classic/regular";
 import {
   faCheck,
-  faChevronDown,
-  faChevronUp,
   faCircleQuestion,
+  faPlus,
   faTriangleExclamation,
 } from "@fa-kit/icons/classic/solid";
 import Select from "react-select";
@@ -41,6 +41,7 @@ import LightTooltip from "@/apps/advisories/components/LightTooltip";
 import AdvisoryAreaPicker from "@/apps/advisories/components/AdvisoryAreaPicker";
 import CKEditor from "@/apps/advisories/components/CKEditor";
 import PrimaryActions from "@/apps/advisories/components/PrimaryActions";
+import { ActionButton } from "@/components/ActionButton";
 import DraftButton from "@/apps/advisories/components/DraftButton";
 import AccessStatusPicker from "@/apps/advisories/components/AccessStatusPicker";
 import EventTypePicker from "@/apps/advisories/components/EventTypePicker";
@@ -147,8 +148,6 @@ export default function AdvisoryForm({
   const isRecreationUser = hasAnyRole([ROLES.RECREATION_USER]);
 
   const [showEventDates, setShowEventDates] = useState(false);
-  // Track if hidden fields have been expanded once (to prevent auto-expanding it if the user manually closes it
-  const autoExpandedEventDates = useRef(false);
   const [affectedResourceError, setAffectedResourceError] = useState("");
   const [accessStatusError, setAccessStatusError] = useState("");
   const [eventTypeError, setEventTypeError] = useState("");
@@ -182,21 +181,13 @@ export default function AdvisoryForm({
   // Keep a stable callable for parent registration while always executing latest form state.
   const saveDraftHandlerRef = useRef(async () => false);
 
-  // Reveal event dates in update mode if there are any
+  // Reveal event dates if there are any (e.g. when returning to the form).
+  // Once revealed, the section stays visible.
   useEffect(() => {
-    if (
-      mode === "update" &&
-      autoExpandedEventDates.current === false &&
-      showEventDates === false &&
-      (startDate || endDate)
-    ) {
+    if (startDate || endDate) {
       setShowEventDates(true);
-      autoExpandedEventDates.current = true;
-    } else if (showEventDates && !autoExpandedEventDates.current) {
-      // Don't auto-expand the section after the initial load: set the flag to true to skip future checks
-      autoExpandedEventDates.current = true;
     }
-  }, [mode, showEventDates, startDate, endDate]);
+  }, [startDate, endDate]);
 
   const advisoryData = {
     listingRank: {
@@ -302,9 +293,9 @@ export default function AdvisoryForm({
   };
 
   const displayedDateOptions = [
-    { label: "Posting date", value: "posting" },
+    { label: "Posting date (Default)", value: "posting" },
     ...(mode === "update" ? [{ label: "Updated date", value: "updated" }] : []),
-    { label: "Start date", value: "start" },
+    { label: "Event start date", value: "start" },
     { label: "Event date range", value: "event" },
     { label: "No date", value: "no" },
   ];
@@ -542,6 +533,10 @@ export default function AdvisoryForm({
     }
   }
 
+  // Only preview the full message when it combines custom and standard messages
+  const showFullMessagePreview =
+    Boolean(description?.trim()) && selectedStandardMessages.length > 0;
+
   return (
     <form className="advisory-form" onChange={markChanged}>
       <section>
@@ -730,27 +725,6 @@ export default function AdvisoryForm({
 
         <h4>Description</h4>
 
-        <Form.Group className="form-group" controlId="standard-messages">
-          <Form.Label>
-            Standard message(s)
-            <LightTooltip
-              arrow
-              title={t("advisoryForm.standardMessages.tooltip")}
-            >
-              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
-            </LightTooltip>
-          </Form.Label>
-
-          <StandardMessagePicker
-            standardMessages={standardMessages}
-            selectedStandardMessages={selectedStandardMessages}
-            setSelectedStandardMessages={setSelectedStandardMessages}
-            selectedProtectedAreas={selectedProtectedAreas}
-            selectedRecreationResources={selectedRecreationResources}
-            markChanged={markChanged}
-          />
-        </Form.Group>
-
         <Form.Group className="form-group" controlId="custom-message">
           <Form.Label>
             Custom message
@@ -767,22 +741,61 @@ export default function AdvisoryForm({
             id="custom-message"
             value={description}
             onBlur={setDescription}
-            onChange={markChanged}
+            onChange={(editor) => {
+              // Update while typing so the full message preview stays current
+              setDescription(editor.getData());
+              markChanged();
+            }}
           />
         </Form.Group>
 
-        {/* Render a preview of selected standard messages */}
-        {selectedStandardMessages.length > 0 && (
-          <Form.Group
-            className="form-group"
-            controlId="standard-message-preview"
-          >
-            <Form.Label>Standard message preview</Form.Label>
-            <div className="bcgov-textarea standard-message-preview">
+        <Form.Group className="form-group" controlId="standard-messages">
+          <Form.Label>
+            Standard message(s)
+            <LightTooltip
+              arrow
+              title={t("advisoryForm.standardMessages.tooltip")}
+            >
+              <FontAwesomeIcon icon={faCircleQuestion} className="helpIcon" />
+            </LightTooltip>
+            <br />
+            <span className="field-description">
+              Pre-written and approved messages to add below your custom message
+            </span>
+          </Form.Label>
+
+          <StandardMessagePicker
+            standardMessages={standardMessages}
+            selectedStandardMessages={selectedStandardMessages}
+            setSelectedStandardMessages={setSelectedStandardMessages}
+            selectedProtectedAreas={selectedProtectedAreas}
+            selectedRecreationResources={selectedRecreationResources}
+            markChanged={markChanged}
+          />
+        </Form.Group>
+
+        {/*
+          Preview the full message as it appears on the public website:
+          the custom message first, then the selected standard messages
+        */}
+        {showFullMessagePreview && (
+          <Form.Group className="form-group" controlId="full-message-preview">
+            <Form.Label>
+              Full message preview
+              <br />
+              <span className="field-description">
+                Read-only preview of custom and standard messages together
+              </span>
+            </Form.Label>
+            <div className="bcgov-textarea full-message-preview">
+              <div
+                className="preview-message"
+                dangerouslySetInnerHTML={{ __html: description }}
+              />
               {selectedStandardMessages.map((message, i) => (
                 <div
                   key={i}
-                  className="standard-message"
+                  className="preview-message"
                   dangerouslySetInnerHTML={{
                     __html: message.obj.description || "",
                   }}
@@ -802,18 +815,8 @@ export default function AdvisoryForm({
         </Form.Group>
 
         {linksRef.current.map((link, idx) => (
-          <div key={idx} className="sub-section link-sub-section">
-            <button
-              type="button"
-              className="pointer btn remove-link-btn"
-              tabIndex="0"
-              aria-label="Remove link"
-              onClick={() => {
-                removeLinkRow(idx);
-              }}
-            >
-              <FontAwesomeIcon icon={faXmark} />
-            </button>
+          <div key={idx} className="sub-section">
+            <h4 className="fw-normal mb-4">Attachment {idx + 1}</h4>
 
             <Form.Group className="form-group" controlId={`link-type-${idx}`}>
               <Form.Label>
@@ -959,15 +962,13 @@ export default function AdvisoryForm({
                         if (e) e.oncancel = () => handleFileInputCancel(idx);
                       }}
                     />
-                    <label htmlFor={`file-upload-${idx}`}>
-                      <Btn
-                        variant="outline-secondary"
-                        as="span"
-                        className="act-add-link add-file ms-2"
-                      >
-                        Browse
-                      </Btn>
-                    </label>
+                    <ActionButton
+                      label="Browse"
+                      variant="secondary"
+                      onClick={() => {
+                        document.getElementById(`file-upload-${idx}`).click();
+                      }}
+                    />
                     {linkFileErrors[idx] && (
                       <span className="d-block text-danger act-helper-text">
                         Select a file
@@ -977,11 +978,26 @@ export default function AdvisoryForm({
                 )}
               </Form.Group>
             )}
+
+            <ActionButton
+              label={
+                <>
+                  <FontAwesomeIcon icon={faTrash} />
+                  Remove
+                  <span className="visually-hidden"> attachment {idx + 1}</span>
+                </>
+              }
+              variant="secondary"
+              className="mt-2"
+              onClick={() => {
+                removeLinkRow(idx);
+              }}
+            />
           </div>
         ))}
 
         <Form.Group className="form-group">
-          <div className="d-flex align-items-center justify-content-center">
+          <div className="d-flex align-items-center">
             <input
               id="file-upload"
               hidden
@@ -1005,42 +1021,34 @@ export default function AdvisoryForm({
                 }
               }}
             />
-            <label htmlFor="file-upload" className="mb-0">
-              <Btn
-                variant="outline-secondary"
-                as="span"
-                className="act-add-link add-file"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    addLink("file");
-                    markChanged();
-                  }
-                }}
-                onClick={() => {
-                  addLink("file");
-                  markChanged();
-                }}
-              >
-                + Upload file
-              </Btn>
-            </label>
-            <span className="mx-2">OR</span>
-            <Btn
-              variant="outline-secondary"
-              className="act-add-link add-url"
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  addLink("url");
-                  markChanged();
-                }
+            <ActionButton
+              label={
+                <>
+                  <FontAwesomeIcon icon={faPlus} />
+                  Upload file
+                </>
+              }
+              variant="secondary"
+              onClick={() => {
+                addLink("file");
+                markChanged();
+                document.getElementById("file-upload").click();
               }}
+            />
+            <span className="mx-2">OR</span>
+            <ActionButton
+              label={
+                <>
+                  <FontAwesomeIcon icon={faPlus} />
+                  Add URL
+                </>
+              }
+              variant="secondary"
               onClick={() => {
                 addLink("url");
                 markChanged();
               }}
-            >
-              Add URL
-            </Btn>
+            />
           </div>
         </Form.Group>
       </section>
@@ -1050,6 +1058,9 @@ export default function AdvisoryForm({
 
         <div className="sub-section">
           <h4>Post date(s)</h4>
+          <p className="small-text">
+            Dates to control when the advisory/closure appears online
+          </p>
 
           <div className="row mb-3 date-time-row">
             <div className="col-12 col-sm-6 col-md-5">
@@ -1293,24 +1304,28 @@ export default function AdvisoryForm({
         </div>
 
         {!showEventDates && (
-          <p>
-            <button
-              type="button"
-              className="btn mt-2 btn-link btn-boolean with-icon"
+          <Form.Group className="form-group">
+            <Btn
+              variant="outline-secondary"
+              className="act-add-link"
               onClick={() => {
                 setShowEventDates(true);
               }}
             >
+              <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
               Add event dates
-              <FontAwesomeIcon icon={faChevronDown} />
-            </button>
-          </p>
+            </Btn>
+          </Form.Group>
         )}
 
         {showEventDates && (
           <>
             <div className="sub-section">
               <h4>Event date(s)</h4>
+              <p className="small-text">
+                Dates related to an event (for example, when construction begins
+                and ends)
+              </p>
 
               <div className="row mb-3 date-time-row">
                 <div className="col-12 col-sm-6 col-md-5">
@@ -1478,19 +1493,6 @@ export default function AdvisoryForm({
                 </div>
               </div>
             </div>
-
-            <p>
-              <button
-                type="button"
-                className="btn mt-2 btn-link btn-boolean with-icon"
-                onClick={() => {
-                  setShowEventDates(false);
-                }}
-              >
-                Hide event dates
-                <FontAwesomeIcon icon={faChevronUp} />
-              </button>
-            </p>
           </>
         )}
 

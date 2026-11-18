@@ -33,7 +33,6 @@ const park = await Park.create(
     orcs: "9991234",
     dateableId: dateable.id,
     publishableId: publishable.id,
-    strapiId: null,
 
     // Can't be empty: Copied from Aleza Lake Ecological Reserve
     managementAreas: [
@@ -41,12 +40,10 @@ const park = await Park.create(
         section: {
           name: "Omineca",
           number: 3,
-          strapiId: 4,
         },
         mgmtArea: {
           name: "Robson",
           number: 28,
-          strapiId: 5,
         },
       },
     ],
@@ -77,7 +74,6 @@ for (const featureType of featureTypes) {
     {
       name: `Test Feature - ${featureType.name}`,
       parkId: park.id,
-      strapiFeatureId: null,
       featureTypeId: featureType.id,
       dateableId: featureDateable.id,
       publishableId: featurePublishable.id,
@@ -85,7 +81,6 @@ for (const featureType of featureTypes) {
       parkAreaId: null,
       active: true,
       hasDates: true,
-      strapiId: null,
       inReservationSystem: true,
       hasBackcountryPermits: true,
       orcsFeatureNumber: null,
@@ -122,7 +117,6 @@ for (const featureType of featureTypes) {
       {
         name: `Test Area Feature 1/2 - ${featureType.name}`,
         parkId: park.id,
-        strapiFeatureId: null,
         featureTypeId: featureType.id,
         dateableId: areaFeatureDateable1.id,
         publishableId: null,
@@ -130,7 +124,6 @@ for (const featureType of featureTypes) {
         parkAreaId: parkArea.id,
         active: true,
         hasDates: true,
-        strapiId: null,
         inReservationSystem: true,
         hasBackcountryPermits: true,
         orcsFeatureNumber: null,
@@ -138,7 +131,6 @@ for (const featureType of featureTypes) {
       {
         name: `Test Area Feature 2/2 - ${featureType.name}`,
         parkId: park.id,
-        strapiFeatureId: null,
         featureTypeId: featureType.id,
         dateableId: areaFeatureDateable2.id,
         publishableId: null,
@@ -146,7 +138,6 @@ for (const featureType of featureTypes) {
         parkAreaId: parkArea.id,
         active: true,
         hasDates: true,
-        strapiId: null,
         inReservationSystem: true,
         hasBackcountryPermits: true,
         orcsFeatureNumber: null,

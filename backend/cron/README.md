@@ -8,9 +8,16 @@
 3. Ensure winter seasons and date ranges exist for the previous and current
    collection years.
 4. Ensure gate-detail records exist.
+5. Queue email reminders.
 
-The sequence runs in one Sequelize transaction. If any job fails, the
-transaction is rolled back; otherwise, all changes are committed.
+Steps 1–4 run in one Sequelize transaction. If any of them fails, the
+transaction is rolled back; otherwise, all changes are committed. Step 5 runs
+after the commit and manages its own transactions.
+
+## Tasks involved
+
+The jobs run in the order above. See the [tasks README](../tasks/README.md)
+for the list of individual tasks run by the cron job.
 
 The Strapi import pipeline is implemented in
 `tasks/import-strapi-data/index.js`. See its README for details about the

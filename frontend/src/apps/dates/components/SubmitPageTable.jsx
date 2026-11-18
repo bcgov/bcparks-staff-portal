@@ -667,14 +667,17 @@ export default function SubmitPageTable({
 }) {
   return (
     <div className="table-responsive">
-      {data.map((park) => (
-        <Table
-          key={park.id}
-          park={park}
-          formPanelHandler={formPanelHandler}
-          sortOrder={sortOrder}
-        />
-      ))}
+      {/* Size all park tables to the widest one, so they match on narrow screens */}
+      <div className="park-tables">
+        {data.map((park) => (
+          <Table
+            key={park.id}
+            park={park}
+            formPanelHandler={formPanelHandler}
+            sortOrder={sortOrder}
+          />
+        ))}
+      </div>
 
       {data.length === 0 && (
         <div className="text-center">

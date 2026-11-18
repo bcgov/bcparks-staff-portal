@@ -14,6 +14,7 @@ import { useAuth } from "react-oidc-context";
 import { calculateAfterHours } from "@/apps/advisories/utils/advisoryUtil";
 import AdvisoryForm from "@/apps/advisories/components/AdvisoryForm";
 import { Loader } from "@/components/Loader";
+import { InlineAlert } from "@/components/InlineAlert";
 import { labelCompare } from "@/utils/appUtil";
 import getEnv from "@/config/getEnv";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -73,7 +74,7 @@ export default function Advisory({ mode }) {
   const [links, setLinks] = useState([]);
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
-  const [isSafetyRelated, setIsSafetyRelated] = useState(false);
+  const [isSafetyRelated, setIsSafetyRelated] = useState(null);
   const [advisoryDate, setAdvisoryDate] = useState(
     moment().tz("America/Vancouver").toDate(),
   );
@@ -332,9 +333,7 @@ export default function Advisory({ mode }) {
             setRevisionNumber(advisoryData.revisionNumber);
             setHeadline(advisoryData.title || "");
             setDescription(advisoryData.description || "");
-            if (advisoryData.isSafetyRelated) {
-              setIsSafetyRelated(advisoryData.isSafetyRelated);
-            }
+            setIsSafetyRelated(advisoryData.isSafetyRelated ?? null);
             setListingRank(
               advisoryData.listingRank ? advisoryData.listingRank : 0,
             );
@@ -1361,15 +1360,15 @@ export default function Advisory({ mode }) {
                     field
                   </small>
                 </p>
-                <p>
-                  <a
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    href="https://intranet.gov.bc.ca/intranet/content?id=947AF902C9DC482D9A5CBC4D343A86C8"
-                  >
-                    View guide for creating an advisory / closure
-                  </a>
-                </p>
+                <InlineAlert
+                  className="mb-4"
+                  title="Need help posting an advisory?"
+                  description="Learn how to create, update and remove advisories in the guide."
+                  link={{
+                    href: "https://intranet.gov.bc.ca/intranet/content?id=947AF902C9DC482D9A5CBC4D343A86C8",
+                    label: "Read the ‘Create an advisory’ guide",
+                  }}
+                />
               </div>
               <AdvisoryForm
                 mode={mode}

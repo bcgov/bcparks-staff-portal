@@ -1,5 +1,8 @@
 # VSCode devcontainer configuration
 
+# Fixed project name keeps volume names (and the logins stored in them) stable and project-specific
+name: bcparks-staff-portal
+
 services:
   frontend:
     build:
@@ -12,6 +15,7 @@ services:
     volumes:
       - .:/app:cached
       - ${HOME}/.config/git:/home/node/.config/git:ro
+      - dev-home:/home/node # Persists CLI logins and tool state across rebuilds
     command: sleep infinity # Keep the container running
     # Just send SIGKILL to stop the container (no grace period for `sleep infinity`)
     # https://docs.docker.com/compose/faq/#why-do-my-services-take-10-seconds-to-recreate-or-stop
@@ -32,6 +36,7 @@ services:
     volumes:
       - .:/app:cached
       - ${HOME}/.config/git:/home/node/.config/git:ro
+      - dev-home:/home/node # Persists CLI logins and tool state across rebuilds
     command: sleep infinity # Keep the container running
     depends_on:
       - db
@@ -53,3 +58,4 @@ services:
 
 volumes:
   db-data:
+  dev-home:

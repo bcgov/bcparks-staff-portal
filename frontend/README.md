@@ -5,7 +5,7 @@ This directory contains the code for the frontend Staff Portal web application, 
 ## Project structure
 
 - `src/`: Directory containing the main application code.
-  - `apps/`: One folder per portal tool (`advisories`, `dates`, `access-status`, `activities-facilities`). Each has its own `routes.jsx` and `components/`, `hooks/`, `pages/`, `utils/` etc. as needed. Apps must not import from each other (enforced by ESLint).
+  - `apps/`: One folder per portal tool (`advisories`, `dates`, `access-status`, `activities-facilities`). `access-status` and `activities-facilities` are legacy apps that are not actively maintained. Each has its own `routes.jsx` and `components/`, `hooks/`, `pages/`, `utils/` etc. as needed. Apps must not import from each other (enforced by ESLint).
   - `components/`, `contexts/`, `hooks/`, `utils/`, `constants/`: Code shared across apps, including the portal shell (navigation, header, footer).
   - `router/`: Root router configuration that mounts each app's routes, plus portal-level pages and layouts.
   - `config/`, `styles/`, `assets/`, `ui-text/`: Portal configuration, global styles, shared images/icons, and shared UI text.
@@ -75,3 +75,15 @@ To manually run Prettier and apply formatting changes to all files:
 ```sh
 npx prettier . --write
 ```
+
+### Testing
+
+Tests use [Vitest](https://vitest.dev/):
+
+```sh
+npm test               # run the full suite once
+npm run test:watch     # re-run affected tests on file changes
+npm run test:coverage  # run once with a coverage report
+```
+
+See [TESTING.md](./TESTING.md) for details on running individual tests and writing new ones.

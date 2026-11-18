@@ -8,7 +8,10 @@ const accessStatusRoutes = [
   {
     path: "park-access-status",
     element: (
-      <AccessControlledRoute allowedRoles={[ROLES.BCPARKS_USER]}>
+      <AccessControlledRoute
+        allowedRoles={[ROLES.BCPARKS_USER]}
+        excludeParkOperators
+      >
         <ParkAccessStatus />
       </AccessControlledRoute>
     ),

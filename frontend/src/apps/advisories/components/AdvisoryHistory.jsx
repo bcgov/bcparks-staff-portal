@@ -18,6 +18,7 @@ export default function AdvisoryHistory({
   advisoryNumber,
   latestRevisionNumber,
   reviewedDate,
+  onHistoryLoaded,
 }) {
   const [advisoryHistory, setAdvisoryHistory] = useState([]);
   const auth = useAuth();
@@ -28,6 +29,9 @@ export default function AdvisoryHistory({
     if (auth.isAuthenticated && !auth.isLoading && advisoryNumber) {
       cmsGet(`public-advisory-audits/history/${advisoryNumber}`, {}, "")
         .then((advisories) => {
+          // Share the raw revisions with the parent (e.g. for the "First posted" header)
+          onHistoryLoaded?.(advisories ?? []);
+
           const advisoriesHistory = [];
 
           function pushHistory({
@@ -242,6 +246,7 @@ export default function AdvisoryHistory({
     globalFlashMessage,
     setAdvisoryHistory,
     cmsGet,
+    onHistoryLoaded,
   ]);
   return (
     <div className="act-history-container">
@@ -264,4 +269,5 @@ AdvisoryHistory.propTypes = {
   advisoryNumber: PropTypes.number.isRequired,
   latestRevisionNumber: PropTypes.number.isRequired,
   reviewedDate: PropTypes.string,
+  onHistoryLoaded: PropTypes.func,
 };

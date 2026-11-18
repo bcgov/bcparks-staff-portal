@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { DateRange, Season, SeasonChangeLog } from "../../models/index.js";
+import {
+  DateRange,
+  Feature,
+  Park,
+  ParkArea,
+  Season,
+  SeasonChangeLog,
+} from "../../models/index.js";
 import * as STATUS from "../../constants/seasonStatus.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import { queueStrapiTask } from "../../utils/strapi/strapiTaskQueue.js";
@@ -24,11 +31,11 @@ vi.mock("../../models/index.js", () => ({
   DateRangeAnnual: {},
   DateType: {},
   Dateable: {},
-  Feature: {},
+  Feature: { findAll: vi.fn() },
   FeatureType: {},
   GateDetail: {},
-  Park: {},
-  ParkArea: {},
+  Park: { findAll: vi.fn() },
+  ParkArea: { findAll: vi.fn() },
   User: {},
   SeasonChangeLog: { bulkCreate: vi.fn() },
 }));
@@ -51,6 +58,19 @@ const gateDetail = {
 const publishHandler = router.post.mock.calls
   .find(([path]) => path === "/publish-to-api/")
   .at(-1);
+
+const readyToPublishHandler = router.get.mock.calls
+  .find(([path]) => path === "/ready-to-publish")
+  .at(-1);
+
+/**
+ * Wraps a plain object like a Sequelize instance for the ready-to-publish handler.
+ * @param {Object} data the model values
+ * @returns {Object} the values plus a toJSON method
+ */
+function modelRow(data) {
+  return { ...data, toJSON: () => data };
+}
 
 /** Reset model responses while retaining the registered route handler. */
 beforeEach(() => {
@@ -187,5 +207,70 @@ describe("training environment", () => {
       }),
     ]);
     expect(res.send).toHaveBeenCalledOnce();
+  });
+});
+
+describe("ready-to-publish rows", () => {
+  it("returns separate rows for standalone Features in the same park and year", async () => {
+    const park = { id: 1, name: "Test Park" };
+    const featureType = { featureTypeNumber: 6 };
+
+    Season.findAll.mockResolvedValueOnce([
+      {
+        id: 10,
+        publishableId: 100,
+        operatingYear: 2026,
+        readyToPublish: true,
+        seasonType: SEASON_TYPE.REGULAR,
+      },
+      {
+        id: 11,
+        publishableId: 101,
+        operatingYear: 2026,
+        readyToPublish: true,
+        seasonType: SEASON_TYPE.REGULAR,
+      },
+      {
+        id: 12,
+        publishableId: 102,
+        operatingYear: 2026,
+        readyToPublish: true,
+        seasonType: SEASON_TYPE.REGULAR,
+      },
+    ]);
+    Park.findAll.mockResolvedValueOnce([]);
+    ParkArea.findAll.mockResolvedValueOnce([
+      modelRow({
+        id: 5,
+        publishableId: 102,
+        name: "North Area",
+        park,
+        features: [
+          { id: 3, name: "Loop B", featureType },
+          { id: 4, name: "Loop A", featureType },
+        ],
+      }),
+    ]);
+    Feature.findAll.mockResolvedValueOnce(
+      [
+        { id: 1, publishableId: 100, name: "Beach Campground" },
+        { id: 2, publishableId: 101, name: "Alpine Campground" },
+      ].map((feature) =>
+        modelRow({ ...feature, park, parkArea: null, featureType }),
+      ),
+    );
+    const res = { send: vi.fn() };
+
+    await readyToPublishHandler({}, res);
+
+    const { seasons } = res.send.mock.calls[0][0];
+
+    expect(
+      seasons.map(({ id, featureNames }) => ({ id, featureNames })),
+    ).toEqual([
+      { id: 11, featureNames: ["Alpine Campground"] },
+      { id: 10, featureNames: ["Beach Campground"] },
+      { id: 12, featureNames: ["Loop A", "Loop B"] },
+    ]);
   });
 });

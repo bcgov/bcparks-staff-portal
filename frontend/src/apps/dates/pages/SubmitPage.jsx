@@ -575,7 +575,7 @@ function SubmitPage() {
   }
 
   return (
-    <div className="container">
+    <div className="container-fluid">
       <div className="page dates-management">
         <div className="table-filters row mb-4">
           <div className="col-lg-3 col-md-6 col-12 mb-2 mb-md-0">

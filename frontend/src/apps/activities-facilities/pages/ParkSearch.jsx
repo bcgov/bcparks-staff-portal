@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faMagnifyingGlass } from "@fa-kit/icons/classic/solid";
 import Select, { components } from "react-select";
 import { Loader } from "@/components/Loader";
+import PageLayout from "@/components/PageLayout";
 import ListGroup from "react-bootstrap/ListGroup";
 import {
   getProtectedAreas,
@@ -232,12 +233,12 @@ export default function ParkSearch() {
   }
 
   return (
-    <main className="advisories-styles">
+    <PageLayout title="Activities and facilities" className="advisories-styles">
       <div
         className="ParkSearch park-search-page-wrap"
         data-testid="ParkSearch"
       >
-        <div className="container">
+        <div className="container-fluid">
           {isLoading && (
             <div className="page-loader">
               <Loader page />
@@ -246,7 +247,7 @@ export default function ParkSearch() {
           {!isLoading && (
             <>
               <form>
-                <div className="container-fluid act-form">
+                <div className="act-form">
                   <div className="row mt20">
                     <div className="col-lg-6 col-md-8 col-sm-12 act-auto-margin">
                       <Select
@@ -314,7 +315,7 @@ export default function ParkSearch() {
                 </div>
               </form>
               {parkList.length > 0 && (
-                <div className="container">
+                <div>
                   <div className="row mt20">
                     <div className="col-lg-10 col-md-12 col-sm-12 act-auto-margin">
                       <ListGroup as="div">
@@ -347,6 +348,6 @@ export default function ParkSearch() {
         </div>
         <br />
       </div>
-    </main>
+    </PageLayout>
   );
 }

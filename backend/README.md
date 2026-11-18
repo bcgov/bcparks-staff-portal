@@ -5,16 +5,16 @@ This directory contains the code for the backend REST API server built with Expr
 ## Project structure
 
 - `index.js`: Express server entry point and AdminJS route registration.
-- `routes/`: HTTP route handlers, including the public API under `routes/api/`.
+- `routes/`: Express route handlers that define the API endpoints.
 - `middleware/`: Express middleware, authentication, permissions, user handling, and AdminJS configuration.
 - `components/`: Custom React components used by AdminJS for editing and displaying JSON and other specialized fields.
 - `models/`: Sequelize model definitions and associations.
 - `migrations/`: Timestamped Sequelize migrations that create and modify the database schema.
 - `db/`: Database connection and Sequelize configuration.
 - `constants/`: Shared application constants, including season statuses, types, feature types, and user roles.
-- `cron/`: Scheduled-job orchestration. Runs the Strapi import and follow-up season and gate-detail jobs in one transaction.
-- `tasks/`: Standalone data-maintenance and batch jobs, including Strapi imports, season creation, date-range population, and access-group updates.
-- `utils/`: Reusable application helpers, including email notifications, data access, season logic, task queues, and save utilities.
+- `cron/`: Scheduled jobs that keep the data up to date. See the [cron README](./cron/README.md).
+- `tasks/`: Standalone data-maintenance and batch jobs. See the [tasks README](./tasks/README.md).
+- `utils/`: Shared helper functions used by routes, tasks, and scheduled jobs.
 
 ## Setup
 
@@ -30,12 +30,11 @@ Inside the dev container, install the project dependencies with `npm`:
 npm install
 ```
 
-Create a `.env` file to set environment variables for local development.
+Create a `.env.local` file to set environment variables for local development.
 
 ```sh
-# Create ".env.local"
-# and refer to .env.example and the shared vault in your password manager
-cp .env.example .env.local
+# Refer to .env.local.example and the shared vault in your password manager
+cp .env.local.example .env.local
 ```
 
 ### Running the server
@@ -49,70 +48,40 @@ The Express server runs in development mode with `nodemon`. The server will auto
 npm run dev
 ```
 
-To manually restart the `nodemon` process, type `rs<enter>` in the terminal. (Or stop it with `CTRL+C` and run `npm run dev` again.)
+The server listens on port `8100` (`http://localhost:8100`).
 
 ### Code formatting
 
-The Dev Container is configured with Prettier and ESLint. Code will be automatically formatted on save.
+Code is formatted with Prettier on save in the Dev Container. Lint with ESLint by running `npm run lint`.
+
+### Testing
+
+Tests use [Vitest](https://vitest.dev/):
+
+```sh
+npm test               # run the full suite once
+npm run test:watch     # re-run affected tests on file changes
+npm run test:coverage  # run once with a coverage report
+```
+
+See [TESTING.md](./TESTING.md) for details on running individual tests and writing new ones.
 
 ### DB migrations
 
-Migrations are files that keep track of the changes we make to the DB schema.
+Migrations are Sequelize files in `migrations/` that track changes to the DB schema.
 
-#### Create a migration
+```sh
+# Create a new migration file in migrations/
+npx sequelize-cli migration:generate --name my-migration-name
 
-run the command `npx sequelize-cli migration:generate --name my-migration-name` in the container. A file will be created inside the migrations folder. Inside that file you will see 2 methods.
+# Apply pending migrations
+npm run migrate
+```
 
-- `up(queryInterface, Sequelize)`: here you add the changes you want to make to the DB
-- `down(queryInterface, Sequelize)`: here you add how you would undo the changes.
-
-#### Run migrations
-
-Only creating the files will not apply the change to the DB. You have to run the migrations.
-After you're done editing the migration file, run `npm run migrate` to apply the changes.
-Sequelize will keep track of which migration have been run.
+Fill in the `up` method with the schema change and the `down` method with how to undo it. Creating the file does not change the DB until you run `npm run migrate`.
 
 ### Adding data to the DB
 
-For realistic local development data, restore both databases from production
-backups before running the application:
+To load realistic local data, restore a copy of the production database. Use this for initial setup and to refresh from prod. See [DATABASE.md](./DATABASE.md) for the full steps, including `npm run migrate` and `npm run cron-task` (which needs Strapi running locally with an API token).
 
-Follow the team Confluence instructions titled **"Copying prod data to Docker
-Desktop"**. These instructions are the preferred procedure for restoring both
-the local Docker Postgres database used by the backend and the local Strapi
-database.
-
-For additional Strapi development context, see the [Strapi development
-README](https://github.com/bcgov/bcparks.ca/blob/main/src/cms/README.md).
-
-After restoring both databases, configure the local environment to connect to
-the restored Strapi instance and database, then verify the `STRAPI_URL` and
-`STRAPI_TOKEN` values. Run any pending backend migrations with
-`npm run migrate`.
-
-Use the team's approved backup and restore procedure for the database engines
-and environments involved. Do not commit backup files or production
-credentials to the repository.
-
-After the restores and migrations are complete, run the Strapi import and
-other one-time setup tasks required for the local environment. See the
-[Strapi import README](./tasks/import-strapi-data/README.md) for the import
-pipeline and [cron README](./cron/README.md) for the full scheduled job.
-
-Sign in to the AdminJS dashboard using the credentials configured in `.env.local`.
-
-Do not commit `.env.local` or share the configured password.
-
-`http://localhost:8100/admin/login`
-
-### Creating new seasons
-
-Add blank seasons for new operating years with the `create-seasons` NPM script:
-
-```bash
-# Example: create seasons for 2028
-# (This will also create Group Camping seasons for the next year, 2029)
-npm run create-seasons 2028
-```
-
-This will create new records in the Seasons table for all Parks, ParkAreas, and Features that will be requesting dates for the 2028 operating year. Group Campground features for the year after (2029) will also be requested by this script.
+Sign in to the AdminJS dashboard at `http://localhost:8100/admin/login` with `ADMIN_USER` and `ADMIN_PASSWORD` from `.env.local`. Do not commit `.env.local` or any production data.
