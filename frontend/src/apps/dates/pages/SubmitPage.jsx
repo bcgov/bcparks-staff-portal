@@ -5,12 +5,13 @@ import { useParams, useNavigate, Navigate } from "react-router-dom";
 import SubmitPageTable from "@/apps/dates/components/SubmitPageTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/apps/dates/components/MultiSelect";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useContext } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/apps/dates/components/FilterPanel";
 import FilterStatus from "@/apps/dates/components/FilterStatus";
 import FormPanel from "@/apps/dates/components/FormPanel";
 import useAccess from "@/hooks/useAccess";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/apps/dates/contexts/RefreshTableContext";
 import getTableSortOrder from "@/apps/dates/utils/getTableSortOrder";
@@ -68,6 +69,7 @@ function SubmitPage() {
   const params = useParams();
   const navigate = useNavigate();
   const { hasAnyRole, ROLES } = useAccess();
+  const globalFlashMessage = useContext(FlashMessageContext);
 
   // Load Park data for the table
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -236,10 +238,18 @@ function SubmitPage() {
 
   // open form panel when the Edit button is clicked
   function formPanelHandler(formDataObj) {
-    const regularSeason = formDataObj.currentSeason.regular;
-    const winterSeason = formDataObj.currentSeason.winter || {};
-    const isWinterSeason = formDataObj.isWinterSeason || false;
-    const season = isWinterSeason ? winterSeason : regularSeason;
+    const season = formDataObj.isWinterSeason
+      ? formDataObj.currentSeason.winter
+      : formDataObj.currentSeason.regular;
+
+    if (!season?.id) {
+      globalFlashMessage.open(
+        "Could not load season details",
+        "The season details are unavailable. Refresh the page and try again.",
+        { variant: "error" },
+      );
+      return;
+    }
 
     openForm({ seasonId: season.id, level: formDataObj.level });
   }
