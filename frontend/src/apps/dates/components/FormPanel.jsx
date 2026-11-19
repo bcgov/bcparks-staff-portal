@@ -186,30 +186,6 @@ function SeasonForm({
 
   // Track form submission state: run more validation rules after the first submit
   const [submitted, setSubmitted] = useState(false);
-  const validationContext = useMemo(
-    () => ({ level, notes, submitted }),
-    [level, notes, submitted],
-  );
-  const validation = useValidation(data, validationContext);
-
-  const INTERNAL_NOTES_ERROR_ID = validation.elements.INTERNAL_NOTES.id;
-
-  // Show validation summary only after submit/approve attempts.
-  const shouldShowErrorSummary = useMemo(() => {
-    if (!submitted) return false;
-
-    return validation.errors.length > 0;
-  }, [submitted, validation.errors]);
-
-  // Controls the "Submit anyway"
-  // Only show it when there are errors beyond internal notes
-  const shouldShowSubmitAnyway = useMemo(() => {
-    if (!shouldShowErrorSummary) return false;
-
-    return validation.errors.some(
-      (error) => error.id !== INTERNAL_NOTES_ERROR_ID,
-    );
-  }, [shouldShowErrorSummary, validation.errors, INTERNAL_NOTES_ERROR_ID]);
 
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
@@ -508,6 +484,26 @@ function SeasonForm({
     isEditingPublishedSeason,
   ]);
 
+  // True if any dates, date annuals, or gate details differ from the saved season
+  const hasDateChanges = useMemo(() => {
+    if (!season || !changesPayload) return false;
+
+    if (changesPayload.dateRanges.length) return true;
+    if (changesPayload.deletedDateRangeIds.length) return true;
+    if (changesPayload.dateRangeAnnuals.length) return true;
+
+    // Gate details only apply to regular seasons
+    return (
+      season.seasonType === SEASON_TYPE.REGULAR &&
+      !isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail)
+    );
+  }, [season, changesPayload, apiData]);
+
+  // True if the "Ready to publish" toggle differs from the saved season
+  const readyToPublishChanged =
+    !!changesPayload &&
+    changesPayload.readyToPublish !== apiData?.current?.readyToPublish;
+
   // Calculate if the form data has changed, and sync the result to the parent via setDataChanged.
   // Once true, dataChanged stays true for the rest of the form's lifecycle (until new data loads).
   useEffect(() => {
@@ -519,35 +515,14 @@ function SeasonForm({
     // Skip further checks if dataChanged is already true
     if (dataChanged) return;
 
-    // True if date ranges were updated
-    if (changesPayload.dateRanges.length) {
-      setDataChanged(true);
-      return;
-    }
-
-    // True if date ranges were deleted
-    if (changesPayload.deletedDateRangeIds.length) {
+    // True if dates, date annuals, or gate details changed
+    if (hasDateChanges) {
       setDataChanged(true);
       return;
     }
 
     // True if readyToPublish changed
-    if (changesPayload.readyToPublish !== apiData?.current?.readyToPublish) {
-      setDataChanged(true);
-      return;
-    }
-
-    // True if any date annuals were updated
-    if (changesPayload.dateRangeAnnuals.length) {
-      setDataChanged(true);
-      return;
-    }
-
-    // True if any gateDetail values changed (for regular seasons)
-    if (
-      season.seasonType === SEASON_TYPE.REGULAR &&
-      !isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail)
-    ) {
+    if (readyToPublishChanged) {
       setDataChanged(true);
       return;
     }
@@ -556,7 +531,42 @@ function SeasonForm({
     if (changesPayload.notes.length > 0) {
       setDataChanged(true);
     }
-  }, [season, changesPayload, apiData, dataChanged, setDataChanged]);
+  }, [
+    season,
+    changesPayload,
+    hasDateChanges,
+    readyToPublishChanged,
+    dataChanged,
+    setDataChanged,
+  ]);
+
+  // Toggling "Ready to publish" by itself doesn't need a change note
+  const onlyReadyToPublishChanged = readyToPublishChanged && !hasDateChanges;
+
+  const validationContext = useMemo(
+    () => ({ level, notes, submitted, onlyReadyToPublishChanged }),
+    [level, notes, submitted, onlyReadyToPublishChanged],
+  );
+  const validation = useValidation(data, validationContext);
+
+  const INTERNAL_NOTES_ERROR_ID = validation.elements.INTERNAL_NOTES.id;
+
+  // Show validation summary only after submit/approve attempts.
+  const shouldShowErrorSummary = useMemo(() => {
+    if (!submitted) return false;
+
+    return validation.errors.length > 0;
+  }, [submitted, validation.errors]);
+
+  // Controls the "Submit anyway"
+  // Only show it when there are errors beyond internal notes
+  const shouldShowSubmitAnyway = useMemo(() => {
+    if (!shouldShowErrorSummary) return false;
+
+    return validation.errors.some(
+      (validationError) => validationError.id !== INTERNAL_NOTES_ERROR_ID,
+    );
+  }, [shouldShowErrorSummary, validation.errors, INTERNAL_NOTES_ERROR_ID]);
 
   // Primary action button is disabled in "Edit published seasons" mode when the form has no changes.
   // Primary action button is always enabled on regular season forms.
