@@ -7,10 +7,13 @@
  */
 export default function changeNoteRequired(seasonData, context) {
   const { current } = seasonData;
-  const { elements, notes } = context;
+  const { elements, notes, onlyReadyToPublishChanged } = context;
 
   // Only applies to approved or published seasons
   if (current.status !== "approved" && current.status !== "published") return;
+
+  // Toggling "Ready to publish" by itself doesn't change any dates, so no note is needed
+  if (onlyReadyToPublishChanged) return;
 
   if (!notes.trim()) {
     context.addError(
