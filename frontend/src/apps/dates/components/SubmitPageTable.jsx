@@ -680,7 +680,7 @@ export default function SubmitPageTable({
       </div>
 
       {data.length === 0 && (
-        <div className="text-center">
+        <div className="no-results text-center">
           <p>No records match your filters. </p>
           <p>
             <button onClick={onResetFilters} className="btn btn-primary">
