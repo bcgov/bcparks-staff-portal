@@ -41,6 +41,32 @@ import { findNextForm } from "@/apps/dates/utils/getEditableFormList";
 import { formatServerErrorTimestamp } from "@/utils";
 import "./FormPanel.scss";
 
+// Helpers
+
+/**
+ * Collects all the date ranges shown on a season form.
+ * @param {string} level "park", "park-area", or "feature"
+ * @param {Object} season Season data, as returned by the API
+ * @returns {Array} Flat array of date range objects
+ */
+function getSeasonDateRanges(level, season) {
+  if (level === "park") return [...season.park.dateable.dateRanges];
+
+  if (level === "feature") return [...season.feature.dateable.dateRanges];
+
+  if (level === "park-area") {
+    // Area-level dates, plus feature-level dates within the area
+    return [
+      ...season.parkArea.dateable.dateRanges,
+      ...season.parkArea.features.flatMap(
+        (feature) => feature.dateable.dateRanges,
+      ),
+    ];
+  }
+
+  return [];
+}
+
 // Components
 
 function Buttons({
@@ -396,24 +422,7 @@ function SeasonForm({
     if (!season) return null;
 
     // Format the data for the API
-    const seasonDateRanges = [];
-
-    if (level === "park") {
-      seasonDateRanges.push(...season.park.dateable.dateRanges);
-    } else if (level === "feature") {
-      seasonDateRanges.push(...season.feature.dateable.dateRanges);
-    } else if (level === "park-area") {
-      // Area-level dates
-      const areaDateRanges = season.parkArea.dateable.dateRanges;
-
-      // Feature-level dates within the area
-      const featureDateRanges = season.parkArea.features.flatMap(
-        (feature) => feature.dateable.dateRanges,
-      );
-
-      // Combine area and feature date ranges
-      seasonDateRanges.push(...areaDateRanges, ...featureDateRanges);
-    }
+    const seasonDateRanges = getSeasonDateRanges(level, season);
 
     let gateDetail = season.gateDetail;
     let filteredDateRanges = seasonDateRanges;
@@ -484,20 +493,55 @@ function SeasonForm({
     isEditingPublishedSeason,
   ]);
 
-  // True if any dates, date annuals, or gate details differ from the saved season
+  // True if any dates, date annuals, or gate details differ from the saved season.
+  // Compares values with the API data instead of the "changed" flags,
+  // because those flags stay set if the user changes a value back.
   const hasDateChanges = useMemo(() => {
-    if (!season || !changesPayload) return false;
+    if (!season || !changesPayload || !apiData?.current) return false;
 
-    if (changesPayload.dateRanges.length) return true;
+    const savedSeason = apiData.current;
+
+    // Saved ranges were deleted
     if (changesPayload.deletedDateRangeIds.length) return true;
-    if (changesPayload.dateRangeAnnuals.length) return true;
+
+    // Ranges were added, or saved ranges have different dates
+    const savedDateRangesById = keyBy(
+      getSeasonDateRanges(level, savedSeason),
+      "id",
+    );
+    const dateRangesChanged = changesPayload.dateRanges.some((dateRange) => {
+      // New ranges (with a tempId) aren't saved yet
+      const savedDateRange = dateRange.id && savedDateRangesById[dateRange.id];
+
+      if (!savedDateRange) return true;
+
+      return (
+        !isEqual(dateRange.startDate, savedDateRange.startDate) ||
+        !isEqual(dateRange.endDate, savedDateRange.endDate)
+      );
+    });
+
+    if (dateRangesChanged) return true;
+
+    // "Dates are the same every year" checkboxes differ from the saved values
+    const savedAnnualsById = keyBy(savedSeason.dateRangeAnnuals ?? [], "id");
+    const annualsChanged = changesPayload.dateRangeAnnuals.some((annual) => {
+      const savedAnnual = annual.id && savedAnnualsById[annual.id];
+
+      // Unsaved annuals default to unchecked
+      return (
+        annual.isDateRangeAnnual !== (savedAnnual?.isDateRangeAnnual ?? false)
+      );
+    });
+
+    if (annualsChanged) return true;
 
     // Gate details only apply to regular seasons
     return (
       season.seasonType === SEASON_TYPE.REGULAR &&
-      !isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail)
+      !isEqual(changesPayload.gateDetail, savedSeason.gateDetail)
     );
-  }, [season, changesPayload, apiData]);
+  }, [level, season, changesPayload, apiData]);
 
   // True if the "Ready to publish" toggle differs from the saved season
   const readyToPublishChanged =
