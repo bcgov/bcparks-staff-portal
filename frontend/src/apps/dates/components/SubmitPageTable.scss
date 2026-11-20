@@ -40,3 +40,8 @@ table {
   width: fit-content;
   min-width: 100%;
 }
+
+// Empty state when filters match no records
+.no-results {
+  margin-top: 60px;
+}
