@@ -20,11 +20,6 @@ table {
     }
     &--note {
       td {
-        width: 30%;
-        &:first-child {
-          width: 20%;
-        }
-
         ul li {
           + li {
             margin-top: 1rem;
@@ -39,6 +34,15 @@ table {
 .park-tables {
   width: fit-content;
   min-width: 100%;
+
+  // Fixed layout: column widths come from the first row (the park name header,
+  // which spans all 3 columns), so every park table splits into equal thirds
+  // and the year columns line up regardless of each table's content.
+  // The min-width makes narrow screens scroll instead of squashing the columns.
+  table {
+    table-layout: fixed;
+    min-width: 40rem;
+  }
 }
 
 // Empty state when filters match no records
