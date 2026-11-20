@@ -297,7 +297,7 @@ function StatusTableRow({
       </th>
 
       {season ? (
-        <th scope="col" className="align-middle text-end text-nowrap">
+        <th scope="col" className="align-middle text-end">
           <div className="d-inline-block me-2">
             <StatusBadge
               status={season.status}
@@ -306,15 +306,18 @@ function StatusTableRow({
             />
           </div>
 
-          <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
+          {/* Keep the buttons together when the cell wraps on narrow screens */}
+          <div className="d-inline-block text-nowrap">
+            <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
 
-          {approver && (
-            <ApproveButton
-              seasonId={season.id}
-              status={season.status}
-              onApprove={onApprove}
-            />
-          )}
+            {approver && (
+              <ApproveButton
+                seasonId={season.id}
+                status={season.status}
+                onApprove={onApprove}
+              />
+            )}
+          </div>
         </th>
       ) : (
         <th scope="col" className="align-middle text-end text-nowrap">
