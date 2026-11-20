@@ -4,6 +4,7 @@ import { owningRelationSettingsFeature } from "@adminjs/relations";
 import { buildFeature, ComponentLoader } from "adminjs";
 import * as AdminJSSequelize from "@adminjs/sequelize";
 import Connect from "connect-pg-simple";
+import express from "express";
 import session from "express-session";
 import { Op } from "sequelize";
 import flat from "flat";
@@ -37,6 +38,10 @@ import {
 } from "../models/index.js";
 
 import { connectionConfig } from "../db/connection.js";
+import {
+  addKeycloakLoginRoutes,
+  applyRolePermissions,
+} from "./adminKeycloak.js";
 
 AdminJS.registerAdapter({
   Resource: AdminJSSequelize.Resource,
@@ -45,16 +50,12 @@ AdminJS.registerAdapter({
 
 const componentLoader = new ComponentLoader();
 
-// authenticate hardcoded credentials from environment variables
-const DEFAULT_ADMIN = {
-  email: process.env.ADMIN_USER,
-  password: process.env.ADMIN_PASSWORD,
-};
-
-async function authenticate(email, password) {
-  if (email === DEFAULT_ADMIN.email && password === DEFAULT_ADMIN.password) {
-    return Promise.resolve(DEFAULT_ADMIN);
-  }
+/**
+ * Rejects every username/password login. AdminJS requires an authenticate
+ * function, but users log in with IDIR through the Keycloak routes instead.
+ * @returns {Promise<null>} Always null
+ */
+async function authenticate() {
   return null;
 }
 
@@ -284,6 +285,11 @@ const UserResource = {
             joinKey: "id",
             targetPropertyKey: "id",
           },
+          // Only unassign here; access groups are deleted from their own list
+          deleteOptions: {
+            enableDeleteRelation: true,
+            enableDeleteRelatedRecord: false,
+          },
         },
       },
     }),
@@ -355,6 +361,9 @@ const keyEditComponent = componentLoader.add(
   "KeyEdit",
   "../components/KeyEdit",
 );
+
+// Login page with IDIR login instead of the password form
+componentLoader.override("Login", "../components/AdminLogin");
 
 /**
  * Adds nested JSONB values to AdminJS's flattened record params for custom components.
@@ -913,6 +922,11 @@ const ParkResource = {
             joinKey: "id",
             targetPropertyKey: "id",
           },
+          // Only unassign here; access groups are deleted from their own list
+          deleteOptions: {
+            enableDeleteRelation: true,
+            enableDeleteRelatedRecord: false,
+          },
         },
         features: {
           type: "one-to-many",
@@ -1191,10 +1205,29 @@ const adminOptions = {
     companyName: "BC Parks Staff Portal Admin",
     logo: false,
   },
+  locale: {
+    language: "en",
+    translations: {
+      en: {
+        // Login errors from the Keycloak routes (middleware/adminKeycloak.js)
+        messages: {
+          keycloakLoginFailed:
+            "The IDIR login was cancelled or failed. Please try again.",
+          keycloakLoginExpired: "Your login attempt expired. Please try again.",
+          keycloakTokenInvalid:
+            "We couldn't verify your IDIR login. Please try again.",
+          keycloakNoAdminRole:
+            "Your account doesn't have an AdminJS role for the staff portal.",
+        },
+      },
+    },
+  },
 };
 
 // AdminJS plugin
 export const admin = new AdminJS(adminOptions);
+
+applyRolePermissions(admin);
 
 const ConnectSession = Connect(session);
 const sessionStore = new ConnectSession({
@@ -1221,6 +1254,30 @@ if (process.env.NODE_ENV === "production") {
   cookieOptions.secure = true;
 }
 
+const sessionOptions = {
+  store: sessionStore,
+  resave: false,
+  saveUninitialized: true,
+  secret: process.env.ADMIN_SESSION_SECRET,
+  cookie: cookieOptions,
+  name: process.env.ADMIN_COOKIE_NAME,
+};
+
+// The Keycloak login routes must run before AdminJS's protected-routes handler,
+// so they get their own copy of the session middleware. It uses the same secret
+// and cookie name that AdminJS applies, and AdminJS's session middleware then
+// skips itself because req.session already exists.
+const adminAuthRouter = express.Router();
+
+adminAuthRouter.use(
+  session({
+    ...sessionOptions,
+    secret: process.env.ADMIN_COOKIE_PASSWORD,
+    name: process.env.ADMIN_COOKIE_NAME,
+  }),
+);
+addKeycloakLoginRoutes(adminAuthRouter, admin);
+
 export const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
   admin,
   {
@@ -1228,15 +1285,8 @@ export const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
     cookieName: process.env.ADMIN_COOKIE_NAME,
     cookiePassword: process.env.ADMIN_COOKIE_PASSWORD,
   },
-  null,
-  {
-    store: sessionStore,
-    resave: false,
-    saveUninitialized: true,
-    secret: process.env.ADMIN_SESSION_SECRET,
-    cookie: cookieOptions,
-    name: process.env.ADMIN_COOKIE_NAME,
-  },
+  adminAuthRouter,
+  sessionOptions,
 );
 
 // https://docs.adminjs.co/installation/getting-started#frontend-bundling

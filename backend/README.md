@@ -84,4 +84,4 @@ Fill in the `up` method with the schema change and the `down` method with how to
 
 To load realistic local data, restore a copy of the production database. Use this for initial setup and to refresh from prod. See [DATABASE.md](./DATABASE.md) for the full steps, including `npm run migrate` and `npm run cron-task` (which needs Strapi running locally with an API token).
 
-Sign in to the AdminJS dashboard at `http://localhost:8100/admin/login` with `ADMIN_USER` and `ADMIN_PASSWORD` from `.env.local`. Do not commit `.env.local` or any production data.
+Sign in to the AdminJS dashboard at `http://localhost:8100/admin/login` with IDIR. Your account needs the `adminjs-developer` or `adminjs-editor` role on the `staff-portal` Keycloak client. Do not commit `.env.local` or any production data.
