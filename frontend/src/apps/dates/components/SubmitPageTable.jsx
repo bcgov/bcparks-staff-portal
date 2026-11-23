@@ -287,38 +287,50 @@ function StatusTableRow({
         isWinterSeason && "winter",
       )}
     >
+      {/*
+        One cell across all columns: the status block keeps its natural width
+        and doesn't wrap; the name takes the rest of the width and wraps
+      */}
       <th
         scope="col"
-        colSpan="2"
+        colSpan="3"
         className={classNames("align-middle", nameCellClass)}
       >
-        {name}
-        {typeName && (
-          <div className="fw-normal feature-type-name">{typeName}</div>
-        )}
+        <div className="d-flex align-items-center gap-3">
+          <div className="flex-grow-1">
+            {name}
+            {typeName && (
+              <div className="fw-normal feature-type-name">{typeName}</div>
+            )}
 
-        <LastUpdatedInfo lastUpdated={season.lastUpdated} />
-      </th>
+            <LastUpdatedInfo lastUpdated={season.lastUpdated} />
+          </div>
 
-      <th scope="col" className="align-middle text-end">
-        <div className="d-inline-block me-2">
-          <StatusBadge
-            status={season.status}
-            informationSvcApproved={informationSvcApproved}
-            reservationSvcApproved={reservationSvcApproved}
-          />
-        </div>
+          {/* No currentSeason: nothing to edit or approve */}
+          {season && (
+            <div className="flex-shrink-0 text-end text-nowrap">
+              <div className="d-inline-block me-2">
+                <StatusBadge
+                  status={season.status}
+                  informationSvcApproved={informationSvcApproved}
+                  reservationSvcApproved={reservationSvcApproved}
+                />
+              </div>
 
-        {/* Keep the buttons together when the cell wraps on narrow screens */}
-        <div className="d-inline-block text-nowrap">
-          <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
+              <IconButton
+                icon={faPen}
+                label="Edit"
+                onClick={formPanelHandler}
+              />
 
-          {approver && (
-            <ApproveButton
-              seasonId={season.id}
-              status={season.status}
-              onApprove={onApprove}
-            />
+              {approver && (
+                <ApproveButton
+                  seasonId={season.id}
+                  status={season.status}
+                  onApprove={onApprove}
+                />
+              )}
+            </div>
           )}
         </div>
       </th>
