@@ -158,15 +158,6 @@ export default async function importStrapiParkAreas(transaction = null) {
         parkAreaTypeId,
       };
 
-      if (
-        matchedDootParkArea?.hasWinterFeeDates &&
-        dootParkAreaToSave.hasWinterFeeDates === false
-      ) {
-        console.warn(
-          `Winter fee flag removed for ParkArea ${parkAreaName} (${orcsAreaNumber}). Existing winter seasons may need manual review.`,
-        );
-      }
-
       if (matchedDootParkArea) {
         if (isActive && !matchedDootParkArea.active) {
           if (

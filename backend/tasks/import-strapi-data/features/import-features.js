@@ -180,15 +180,6 @@ export default async function importStrapiFeatures(transaction = null) {
         featureTypeId,
       };
 
-      if (
-        matchedDootFeature?.hasWinterFeeDates &&
-        dootFeatureToSave.hasWinterFeeDates === false
-      ) {
-        console.warn(
-          `Winter fee flag removed for Feature ${parkFeatureName} (${orcsFeatureNumber}). Existing winter seasons may need manual review.`,
-        );
-      }
-
       if (matchedDootFeature) {
         if (isActive && !matchedDootFeature.active) {
           if (

@@ -9,6 +9,7 @@ import importStrapiFeatureTypes from "./feature-types/import-feature-types.js";
 import importStrapiFeatures from "./features/import-features.js";
 import importStrapiProtectedAreas from "./parks/import-parks.js";
 import importStrapiDateTypes from "./date-types/import-date-types.js";
+import deleteStaleWinterFeeDates from "./delete-stale-winter-fee-dates.js";
 
 /**
  * Syncs data from Strapi to our database
@@ -28,6 +29,7 @@ export async function syncStrapiData(transaction) {
   await importStrapiParkAreas(transaction);
   await importStrapiFeatureTypes(transaction);
   await importStrapiFeatures(transaction);
+  await deleteStaleWinterFeeDates(transaction);
 }
 
 // Run directly
