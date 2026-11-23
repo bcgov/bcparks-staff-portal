@@ -36,6 +36,30 @@ describe("isValidStoredFilters", () => {
     );
   });
 
+  it("accepts option filters with valid selections", () => {
+    expect(
+      isValidStoredFilters({
+        ...savedFilters,
+        accessGroups: [{ id: 1, name: "Bundle A" }],
+        sections: [{ id: 2, name: "North", sectionNumber: 1 }],
+      }),
+    ).toBe(true);
+  });
+
+  it.each([
+    ["accessGroups", [null]],
+    ["sections", ["North"]],
+    ["managementAreas", [{ id: 3 }]],
+    ["dateTypes", [{ id: 4, name: 5 }]],
+    ["featureTypes", [[]]],
+    ["status", [null]],
+    ["status", [{ value: "approved" }]],
+  ])("rejects malformed %s selections: %j", (name, value) => {
+    expect(isValidStoredFilters({ ...DEFAULT_FILTERS, [name]: value })).toBe(
+      false,
+    );
+  });
+
   it("rejects non-object values", () => {
     expect(isValidStoredFilters(null)).toBe(false);
     expect(isValidStoredFilters([])).toBe(false);
@@ -68,6 +92,13 @@ describe("deserializeFilters", () => {
     delete outdated.name;
 
     expect(deserializeFilters(JSON.stringify(outdated))).toBe(DEFAULT_FILTERS);
+    expect(removeItem).toHaveBeenCalledWith(FILTERS_STORAGE_KEY);
+  });
+
+  it("clears malformed selections and returns defaults", () => {
+    const malformed = { ...savedFilters, accessGroups: [null] };
+
+    expect(deserializeFilters(JSON.stringify(malformed))).toBe(DEFAULT_FILTERS);
     expect(removeItem).toHaveBeenCalledWith(FILTERS_STORAGE_KEY);
   });
 

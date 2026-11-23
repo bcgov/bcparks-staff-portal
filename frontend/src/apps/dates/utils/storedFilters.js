@@ -23,8 +23,54 @@ function getValueType(value) {
 }
 
 /**
+ * Checks that a value is a selected multi-select option: a non-null object with a string name.
+ * @param {any} option Array entry from a persisted multi-select filter
+ * @returns {boolean} True if the option can be rendered and filtered on
+ */
+function isValidOption(option) {
+  return getValueType(option) === "object" && typeof option?.name === "string";
+}
+
+/**
+ * Checks that a value is a selected status: a string.
+ * @param {any} status Array entry from the persisted status filter
+ * @returns {boolean} True if the status is a string
+ */
+function isValidStatus(status) {
+  return typeof status === "string";
+}
+
+// Validators for the entries of each array filter
+const ARRAY_ENTRY_VALIDATORS = {
+  accessGroups: isValidOption,
+  status: isValidStatus,
+  sections: isValidOption,
+  managementAreas: isValidOption,
+  dateTypes: isValidOption,
+  featureTypes: isValidOption,
+};
+
+/**
+ * Checks that a persisted filter value has the same type as its default,
+ * and that every array entry is valid for that filter.
+ * @param {string} name Filter name
+ * @param {any} value Persisted filter value
+ * @returns {boolean} True if the value can be loaded into component state
+ */
+function isValidFilterValue(name, value) {
+  if (getValueType(value) !== getValueType(DEFAULT_FILTERS[name])) {
+    return false;
+  }
+
+  if (!Array.isArray(value)) return true;
+
+  return value.every(ARRAY_ENTRY_VALIDATORS[name]);
+}
+
+/**
  * Checks that persisted filters have exactly the current filter names,
- * and that each value has the same type as its default.
+ * that each value has the same type as its default,
+ * and that array filters only contain valid entries.
  * @param {any} filters Parsed filters from localStorage
  * @returns {boolean} True if the filters can be loaded into component state
  */
@@ -38,8 +84,7 @@ export function isValidStoredFilters(filters) {
 
   return defaultNames.every(
     (name) =>
-      Object.hasOwn(filters, name) &&
-      getValueType(filters[name]) === getValueType(DEFAULT_FILTERS[name]),
+      Object.hasOwn(filters, name) && isValidFilterValue(name, filters[name]),
   );
 }
 
