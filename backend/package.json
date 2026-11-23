@@ -23,7 +23,7 @@
     "@babel/core": "^7.29.13",
     "@babel/eslint-parser": "^7.29.13",
     "@babel/preset-react": "^7.29.7",
-    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.1",
     "eslint": "^9.39.5",
     "eslint-config-eslint": "^11.0.0",
     "eslint-config-prettier": "^10.1.8",
