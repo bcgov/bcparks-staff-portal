@@ -68,11 +68,8 @@ function matchesStatusFilters(season, statusFilters) {
  * @returns {boolean} False if the entire park should be filtered out, true if it should be included for area/feature checks
  */
 export function checkParkHard(park, filters) {
-  // If a name filter is set, filter out parks that don't match
-  if (
-    filters.name.length > 0 &&
-    !park.name.toLocaleLowerCase().includes(filters.name.toLocaleLowerCase())
-  ) {
+  // If a park is selected, filter out all other parks
+  if (filters.park && park.id !== filters.park.value) {
     return false;
   }
 

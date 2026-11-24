@@ -1,10 +1,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
+import { faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import SubmitPageTable from "@/apps/dates/components/SubmitPageTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/apps/dates/components/MultiSelect";
+import ParkSearch from "@/apps/dates/components/ParkSearch";
 import { useMemo, useState, useEffect, useCallback } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/apps/dates/components/FilterPanel";
@@ -23,7 +24,7 @@ import {
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
 } from "@/apps/dates/utils/submitPageFilters";
-import { groupBy, maxBy } from "lodash-es";
+import { groupBy, maxBy, sortBy } from "lodash-es";
 
 // Build the currentSeason object for a Park from its seasons array.
 // Same logic used in the backend for Feature-level currentSeason objects.
@@ -121,6 +122,16 @@ function SubmitPage() {
     [filterOptionsData],
   );
 
+  // Options for the park name search, sorted by name
+  const parkOptions = useMemo(
+    () =>
+      sortBy(
+        parks.map((park) => ({ value: park.id, label: park.name })),
+        "label",
+      ),
+    [parks],
+  );
+
   const isApprover = hasAnyRole([ROLES.DOOT_APPROVER]);
 
   const statusOptions = useMemo(() => {
@@ -186,7 +197,7 @@ function SubmitPage() {
 
   // table filter state
   const [filters, setFilters] = useState({
-    name: "",
+    park: null,
     accessGroups: [],
     status: [],
     sections: [],
@@ -247,7 +258,7 @@ function SubmitPage() {
   function resetFilters() {
     setPage(1);
     setFilters({
-      name: "",
+      park: null,
       accessGroups: [],
       status: [],
       sections: [],
@@ -261,7 +272,7 @@ function SubmitPage() {
   // Track if any Park-level filters are active
   const parkFiltersActive = useMemo(
     () =>
-      filters.name.length ||
+      filters.park ||
       filters.accessGroups.length ||
       filters.sections.length ||
       filters.managementAreas.length ||
@@ -579,28 +590,15 @@ function SubmitPage() {
       <div className="page dates-management">
         <div className="table-filters row mb-4">
           <div className="col-lg-3 col-md-6 col-12 mb-2 mb-md-0">
-            <label htmlFor="parkName" className="form-label">
-              Park name
-            </label>
-
-            <div className="input-with-append">
-              <input
-                type="text"
-                className="form-control input-search"
-                id="parkName"
-                placeholder="Search by park name"
-                value={filters.name}
-                onChange={(e) => {
-                  setPage(1);
-                  updateFilter("name", e.target.value);
-                }}
-                disabled={!metadataLoaded}
-              />
-              <FontAwesomeIcon
-                className="append-content"
-                icon={faMagnifyingGlass}
-              />
-            </div>
+            <ParkSearch
+              options={parkOptions}
+              value={filters.park}
+              onChange={(selected) => {
+                setPage(1);
+                updateFilter("park", selected);
+              }}
+              isDisabled={!metadataLoaded}
+            />
           </div>
 
           <div className="col-12 col-md-auto d-flex">

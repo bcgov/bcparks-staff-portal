@@ -18,13 +18,13 @@ export default function FilterStatus({
     // Filter tags data: objects with `label` and a `remove` function
     const tags = [];
 
-    // Park name filter (text input box)
-    if (activeFilters.name) {
+    // Park name filter (park search select)
+    if (activeFilters.park) {
       tags.push({
-        label: `Name: ${activeFilters.name}`,
+        label: `Name: ${activeFilters.park.label}`,
 
         remove() {
-          updateFilter("name", "");
+          updateFilter("park", null);
         },
       });
     }
@@ -195,7 +195,10 @@ export default function FilterStatus({
 
 FilterStatus.propTypes = {
   activeFilters: PropTypes.shape({
-    name: PropTypes.string,
+    park: PropTypes.shape({
+      value: PropTypes.number.isRequired,
+      label: PropTypes.string.isRequired,
+    }),
     accessGroups: PropTypes.arrayOf(
       PropTypes.shape({
         id: PropTypes.number.isRequired,
