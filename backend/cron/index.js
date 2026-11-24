@@ -8,12 +8,16 @@ import { syncStrapiData } from "../tasks/import-strapi-data/index.js";
 import createSeasons from "../tasks/create-seasons/create-seasons.js";
 import createWinterSeasons from "../tasks/create-winter-seasons/create-winter-seasons.js";
 import createGateDetails from "../tasks/create-gate-details/create-gate-details.js";
+import propagateWinterFeeDates, {
+  clearWinterFeeDatesForUnflaggedParks,
+} from "../utils/propagateWinterFeeDates.js";
 import { queueEmailReminders } from "../tasks/queue-email-reminders/queue-email-reminders.js";
 
 /**
  * Runs the scheduled data-maintenance jobs in a single transaction.
  * Imports Strapi data, ensures regular and winter seasons and date ranges exist
- * for newly imported entities, and ensures gate-detail records exist.
+ * for newly imported entities, recalculates derived Feature winter fee dates
+ * (clearing stale ones), and ensures gate-detail records exist.
  * @returns {Promise<void>} Resolves when all jobs have completed
  */
 async function runAllJobs() {
@@ -40,8 +44,32 @@ async function runAllJobs() {
       transaction,
     );
 
-    await createWinterSeasons(currentWinterDateCollectionYear - 1, transaction);
-    await createWinterSeasons(currentWinterDateCollectionYear, transaction);
+    for (const winterYear of [
+      currentWinterDateCollectionYear - 1,
+      currentWinterDateCollectionYear,
+    ]) {
+      const { parkWinterSeasonIds = [] } = await createWinterSeasons(
+        winterYear,
+        transaction,
+      );
+
+      // Recalculate derived Feature winter fee dates so Strapi flag changes
+      // (e.g. a Feature's winter fee turned off) clear stale dates.
+      for (const parkWinterSeasonId of parkWinterSeasonIds) {
+        await propagateWinterFeeDates(parkWinterSeasonId, transaction);
+      }
+
+      // Parks with the flag off aren't propagated above, so clear their
+      // Features' derived dates directly.
+      const clearedCount = await clearWinterFeeDatesForUnflaggedParks(
+        winterYear,
+        transaction,
+      );
+
+      console.log(
+        `Winter fee propagation for ${winterYear}: ${parkWinterSeasonIds.length} park seasons, ${clearedCount} stale dates cleared for unflagged parks`,
+      );
+    }
 
     // Ensure gate-detail records exist for newly imported entities.
     await createGateDetails(transaction);

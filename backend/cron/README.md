@@ -6,7 +6,10 @@
 2. Ensure regular seasons and date ranges exist for the previous and current
    collection years.
 3. Ensure winter seasons and date ranges exist for the previous and current
-   collection years.
+   collection years, then recalculate derived Feature winter fee dates
+   (`utils/propagateWinterFeeDates.js`). Derived dates that no longer apply
+   (Feature or Park winter fee flag off, inactive Feature, Park winter dates not
+   approved) are cleared.
 4. Ensure gate-detail records exist.
 5. Queue email reminders.
 

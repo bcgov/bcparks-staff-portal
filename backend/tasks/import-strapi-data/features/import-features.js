@@ -185,7 +185,7 @@ export default async function importStrapiFeatures(transaction = null) {
         dootFeatureToSave.hasWinterFeeDates === false
       ) {
         console.warn(
-          `Winter fee flag removed for Feature ${parkFeatureName} (${orcsFeatureNumber}). Existing winter seasons may need manual review.`,
+          `Winter fee flag removed for Feature ${parkFeatureName} (${orcsFeatureNumber}). Derived winter fee dates will be cleared by winter fee propagation; the empty winter season remains.`,
         );
       }
 
