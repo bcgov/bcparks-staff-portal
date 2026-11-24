@@ -3,7 +3,6 @@ import { syncStrapiData } from "./index.js";
 import importStrapiProtectedAreas from "./parks/import-parks.js";
 import importStrapiParkAreas from "./park-areas/import-park-areas.js";
 import importStrapiFeatures from "./features/import-features.js";
-import deleteStaleWinterFeeDates from "./delete-stale-winter-fee-dates.js";
 
 vi.mock("../../models/index.js", () => ({ Park: {} }));
 vi.mock("./sections/import-sections.js", () => ({ default: vi.fn() }));
@@ -20,9 +19,7 @@ vi.mock("./feature-types/import-feature-types.js", () => ({
   default: vi.fn(),
 }));
 vi.mock("./features/import-features.js", () => ({ default: vi.fn() }));
-vi.mock("./delete-stale-winter-fee-dates.js", () => ({ default: vi.fn() }));
-
-it("deletes imported stale winter fees in the same transaction", async () => {
+it("returns named importer results and disabled Winter fee dateables", async () => {
   const transaction = {};
 
   importStrapiProtectedAreas.mockResolvedValue({
@@ -35,14 +32,11 @@ it("deletes imported stale winter fees in the same transaction", async () => {
     dateableIdsWithWinterFeesDisabled: [30],
   });
 
-  await syncStrapiData(transaction);
+  const syncResult = await syncStrapiData(transaction);
 
   expect(importStrapiFeatures).toHaveBeenCalledWith(transaction);
-  expect(deleteStaleWinterFeeDates).toHaveBeenCalledWith(
-    [10, 20, 30],
-    transaction,
-  );
-  expect(deleteStaleWinterFeeDates.mock.invocationCallOrder[0]).toBeGreaterThan(
-    importStrapiFeatures.mock.invocationCallOrder[0],
-  );
+  expect(syncResult.parks.dateableIdsWithWinterFeesDisabled).toEqual([10]);
+  expect(syncResult.parkAreas.dateableIdsWithWinterFeesDisabled).toEqual([20]);
+  expect(syncResult.features.dateableIdsWithWinterFeesDisabled).toEqual([30]);
+  expect(syncResult.dateableIdsWithWinterFeesDisabled).toEqual([10, 20, 30]);
 });

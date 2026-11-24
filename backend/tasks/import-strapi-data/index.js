@@ -16,34 +16,41 @@ import deleteStaleWinterFeeDates from "./delete-stale-winter-fee-dates.js";
  * Focuses on sections, managementAreas, dateTypes, parks, parkAreaTypes, parkAreas,
  * featureTypes, and features
  * @param {Transaction} transaction Sequelize transaction
- * @returns {Promise[Object]} resolves when all data has been synced
+ * @returns {Promise<Object>} Results from each importer and IDs needed for Winter fee cleanup
  */
 export async function syncStrapiData(transaction) {
   // Import data from Strapi
 
-  await importStrapiSections(transaction);
-  await importStrapiManagementAreas(transaction);
-  await importStrapiDateTypes(transaction);
+  const sections = await importStrapiSections(transaction);
+  const managementAreas = await importStrapiManagementAreas(transaction);
+  const dateTypes = await importStrapiDateTypes(transaction);
 
   const parkImport = await importStrapiProtectedAreas(transaction);
 
-  await importStrapiParkAreaTypes(transaction);
+  const parkAreaTypes = await importStrapiParkAreaTypes(transaction);
 
   const parkAreaImport = await importStrapiParkAreas(transaction);
 
-  await importStrapiFeatureTypes(transaction);
+  const featureTypes = await importStrapiFeatureTypes(transaction);
 
   const featureImport = await importStrapiFeatures(transaction);
 
-  // Delete ranges only for records returned by this Strapi sync.
-  await deleteStaleWinterFeeDates(
-    [
+  // Return importer results and the IDs needed for downstream Winter fee cleanup.
+  return {
+    sections,
+    managementAreas,
+    dateTypes,
+    parks: parkImport,
+    parkAreaTypes,
+    parkAreas: parkAreaImport,
+    featureTypes,
+    features: featureImport,
+    dateableIdsWithWinterFeesDisabled: [
       ...(parkImport?.dateableIdsWithWinterFeesDisabled ?? []),
       ...(parkAreaImport?.dateableIdsWithWinterFeesDisabled ?? []),
       ...(featureImport?.dateableIdsWithWinterFeesDisabled ?? []),
     ],
-    transaction,
-  );
+  };
 }
 
 // Run directly
@@ -51,7 +58,12 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   const transaction = await Park.sequelize.transaction();
 
   try {
-    await syncStrapiData(transaction);
+    const syncResult = await syncStrapiData(transaction);
+
+    await deleteStaleWinterFeeDates(
+      syncResult.dateableIdsWithWinterFeesDisabled,
+      transaction,
+    );
     await transaction.commit();
     console.log("\nTransaction committed successfully");
   } catch (err) {

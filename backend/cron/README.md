@@ -7,11 +7,14 @@
    collection years.
 3. Ensure winter seasons and date ranges exist for the previous and current
    collection years.
-4. Ensure gate-detail records exist.
-5. Queue email reminders.
+4. Remove current-year Winter fee dates for entities whose imported Winter fee flag is disabled.
+5. Ensure gate-detail records exist.
+6. Queue email reminders.
 
-Steps 1–4 run in one Sequelize transaction. If any of them fails, the
-transaction is rolled back; otherwise, all changes are committed. Step 5 runs
+Steps 1–5 run in one Sequelize transaction. Cleanup runs after season and date
+population so annual ranges cannot recreate disabled Winter fee dates. If any
+of these steps fails, the
+transaction is rolled back; otherwise, all changes are committed. Step 6 runs
 after the commit and manages its own transactions.
 
 ## Tasks involved

@@ -5,6 +5,7 @@ import { createTransactionWithRetry } from "../db/transaction.js";
 import { getCurrentDateCollectionYear } from "../utils/operatingYearHelper.js";
 
 import { syncStrapiData } from "../tasks/import-strapi-data/index.js";
+import deleteStaleWinterFeeDates from "../tasks/import-strapi-data/delete-stale-winter-fee-dates.js";
 import createSeasons from "../tasks/create-seasons/create-seasons.js";
 import createWinterSeasons from "../tasks/create-winter-seasons/create-winter-seasons.js";
 import createGateDetails from "../tasks/create-gate-details/create-gate-details.js";
@@ -23,7 +24,7 @@ async function runAllJobs() {
     transaction = await createTransactionWithRetry();
 
     // Import data from Strapi.
-    await syncStrapiData(transaction);
+    const syncResult = await syncStrapiData(transaction);
 
     // Ensure seasons and date ranges exist for newly imported entities.
     const currentDateCollectionYear = await getCurrentDateCollectionYear(
@@ -42,6 +43,12 @@ async function runAllJobs() {
 
     await createWinterSeasons(currentWinterDateCollectionYear - 1, transaction);
     await createWinterSeasons(currentWinterDateCollectionYear, transaction);
+
+    // Annual population can recreate disabled Winter fee ranges; remove them after generation.
+    await deleteStaleWinterFeeDates(
+      syncResult.dateableIdsWithWinterFeesDisabled,
+      transaction,
+    );
 
     // Ensure gate-detail records exist for newly imported entities.
     await createGateDetails(transaction);
