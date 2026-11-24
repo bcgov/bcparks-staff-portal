@@ -87,6 +87,8 @@ export default async function importStrapiProtectedAreas(transaction = null) {
     let updatedCount = 0;
     let skippedCount = 0;
     let unchangedCount = 0;
+    // Track imported Parks whose resolved winter-fee flag is disabled.
+    const dateableIdsWithWinterFeesDisabled = new Set();
 
     for (const strapiProtectedArea of strapiProtectedAreas) {
       const { orcs, protectedAreaName, parkOperation, managementAreas } =
@@ -165,6 +167,10 @@ export default async function importStrapiProtectedAreas(transaction = null) {
         } else {
           unchangedCount++;
         }
+
+        if (!dootParkToSave.hasWinterFeeDates && matchedDootPark.dateableId) {
+          dateableIdsWithWinterFeesDisabled.add(matchedDootPark.dateableId);
+        }
       } else {
         // Create new park area
         await Park.create(dootParkToSave, { transaction });
@@ -184,6 +190,7 @@ export default async function importStrapiProtectedAreas(transaction = null) {
       updated: updatedCount,
       skipped: skippedCount,
       unchanged: unchangedCount,
+      dateableIdsWithWinterFeesDisabled: [...dateableIdsWithWinterFeesDisabled],
     };
   } catch (error) {
     console.error("Error importing ProtectedAreas from Strapi:", error);

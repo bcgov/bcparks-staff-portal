@@ -24,12 +24,26 @@ export async function syncStrapiData(transaction) {
   await importStrapiSections(transaction);
   await importStrapiManagementAreas(transaction);
   await importStrapiDateTypes(transaction);
-  await importStrapiProtectedAreas(transaction);
+
+  const parkImport = await importStrapiProtectedAreas(transaction);
+
   await importStrapiParkAreaTypes(transaction);
-  await importStrapiParkAreas(transaction);
+
+  const parkAreaImport = await importStrapiParkAreas(transaction);
+
   await importStrapiFeatureTypes(transaction);
-  await importStrapiFeatures(transaction);
-  await deleteStaleWinterFeeDates(transaction);
+
+  const featureImport = await importStrapiFeatures(transaction);
+
+  // Delete ranges only for records returned by this Strapi sync.
+  await deleteStaleWinterFeeDates(
+    [
+      ...(parkImport?.dateableIdsWithWinterFeesDisabled ?? []),
+      ...(parkAreaImport?.dateableIdsWithWinterFeesDisabled ?? []),
+      ...(featureImport?.dateableIdsWithWinterFeesDisabled ?? []),
+    ],
+    transaction,
+  );
 }
 
 // Run directly

@@ -1,12 +1,5 @@
 import { Op } from "sequelize";
-import {
-  DateRange,
-  DateType,
-  Feature,
-  Park,
-  ParkArea,
-  Season,
-} from "../../models/index.js";
+import { DateRange, DateType, Season } from "../../models/index.js";
 import * as DATE_TYPE from "../../constants/dateType.js";
 import * as SEASON_TYPE from "../../constants/seasonType.js";
 import { getCurrentDateCollectionYear } from "../../utils/operatingYearHelper.js";
@@ -14,10 +7,23 @@ import { getCurrentDateCollectionYear } from "../../utils/operatingYearHelper.js
 /**
  * Deletes current-year Winter fee dates that are stale because their entity's
  * hasWinterFeeDates flag is false.
+ * @param {number[]} dateableIdsWithWinterFeesDisabled Imported entities whose Winter fee flag is false
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @returns {Promise<number>} Number of deleted date ranges
  */
-export default async function deleteStaleWinterFeeDates(transaction = null) {
+export default async function deleteStaleWinterFeeDates(
+  dateableIdsWithWinterFeesDisabled = [],
+  transaction = null,
+) {
+  // Only process records present in this Strapi response
+  const dateableIds = [...new Set(dateableIdsWithWinterFeesDisabled)].filter(
+    Boolean,
+  );
+
+  if (!dateableIds.length) {
+    return 0;
+  }
+
   // Resolve the Winter fee type so unrelated date ranges are never selected.
   const winterFeeType = await DateType.findOne({
     attributes: ["id"],
@@ -27,25 +33,6 @@ export default async function deleteStaleWinterFeeDates(transaction = null) {
 
   if (!winterFeeType) {
     throw new Error("Winter fee DateType not found.");
-  }
-
-  // Find disabled records at each level, then collect their dateable IDs.
-  const disabledRecords = await Promise.all(
-    [Park, ParkArea, Feature].map((model) =>
-      model.findAll({
-        attributes: ["dateableId"],
-        where: { hasWinterFeeDates: false },
-        transaction,
-      }),
-    ),
-  );
-  const dateableIds = disabledRecords
-    .flat()
-    .map((record) => record.dateableId)
-    .filter(Boolean);
-
-  if (!dateableIds.length) {
-    return 0;
   }
 
   // Limit removal to the current Winter date-collection year.

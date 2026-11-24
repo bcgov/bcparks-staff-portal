@@ -96,6 +96,8 @@ export default async function importStrapiFeatures(transaction = null) {
     let skippedCount = 0;
     let deactivatedCount = 0;
     let unchangedCount = 0;
+    // Track imported Features whose resolved winter-fee flag is disabled.
+    const dateableIdsWithWinterFeesDisabled = new Set();
 
     for (const strapiParkFeature of strapiParkFeatures) {
       const {
@@ -221,6 +223,13 @@ export default async function importStrapiFeatures(transaction = null) {
         } else {
           unchangedCount++;
         }
+
+        if (
+          !dootFeatureToSave.hasWinterFeeDates &&
+          matchedDootFeature.dateableId
+        ) {
+          dateableIdsWithWinterFeesDisabled.add(matchedDootFeature.dateableId);
+        }
       } else if (!useSafeMode) {
         // Create new feature
         await Feature.create(dootFeatureToSave, { transaction });
@@ -276,6 +285,7 @@ export default async function importStrapiFeatures(transaction = null) {
       skipped: skippedCount,
       deactivated: deactivatedCount,
       unchanged: unchangedCount,
+      dateableIdsWithWinterFeesDisabled: [...dateableIdsWithWinterFeesDisabled],
     };
   } catch (error) {
     console.error("Error importing Features from Strapi:", error);

@@ -6,7 +6,7 @@ Standalone data-maintenance and batch jobs. Each task has its own README with us
 
 These run as part of the scheduled job in [cron](../cron/README.md) (`npm run cron-task`), in the order listed below, and can also be run manually. All but the email reminders run in one transaction; the email reminders run afterward.
 
-After the Strapi import, [deleteStaleWinterFeeDates](./import-strapi-data/delete-stale-winter-fee-dates.js) removes Winter fee dates in the current winter date-collection year when the owning entity's `hasWinterFeeDates` flag is false. Other years, seasons, and date types are retained; feature dates in a shared park-area season are controlled by each feature's flag.
+After the Strapi import, [deleteStaleWinterFeeDates](./import-strapi-data/delete-stale-winter-fee-dates.js) removes current-year Winter fee dates for imported entities whose `hasWinterFee` flag is false, missing, or null. A missing flag is imported as false; entities absent from the Strapi response are not processed. Other years, seasons, and date types are retained.
 
 | Task                                                       | Purpose                                                                                            |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
