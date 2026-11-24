@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Op } from "sequelize";
 
-import { DateRange, Season } from "../models/index.js";
+import { DateRange, Feature, Season } from "../models/index.js";
 import hasApprovedOperationSeasonForFeature from "./hasApprovedOperationSeasonForFeature.js";
 import propagateWinterFeeDates, {
   clearWinterFeeDatesForUnflaggedParks,
@@ -62,15 +62,19 @@ vi.mock("../models/index.js", () => ({
   },
   ParkArea: {},
   Feature: {
-    findAll: vi.fn(async ({ where }) =>
-      db.features
+    findAll: vi.fn(async ({ where, include = [] }) => {
+      const parkWhere = include.find((item) => item.as === "park")?.where;
+
+      return db.features
         .filter((feature) => matches(feature, where))
         .map((feature) => ({
           ...feature,
+          park: db.parks.find((park) => park.id === feature.parkId),
           parkArea:
             db.parkAreas.find((area) => area.id === feature.parkAreaId) ?? null,
-        })),
-    ),
+        }))
+        .filter((feature) => !parkWhere || matches(feature.park, parkWhere));
+    }),
   },
   Season: {
     findByPk: vi.fn(async (id) => {
@@ -459,6 +463,56 @@ describe("clearWinterFeeDatesForUnflaggedParks", () => {
     db.parks[0].hasWinterFeeDates = false;
 
     expect(await clearWinterFeeDatesForUnflaggedParks(2025)).toBe(0);
+  });
+
+  it("does nothing for Parks with the flag on", async () => {
+    expect(await clearWinterFeeDatesForUnflaggedParks(2026)).toBe(0);
+    expect(winterRows(700, 300)).toHaveLength(1);
+  });
+
+  it("keeps placeholders for flagged Features but not unflagged ones", async () => {
+    db.parks[0].hasWinterFeeDates = false;
+    db.ranges = db.ranges.filter(
+      (range) => range.dateTypeId !== WINTER_FEE || range.dateableId === 100,
+    );
+    // Placeholder that createWinterSeasons re-adds for flagged Feature 1
+    addRange({
+      seasonId: 600,
+      dateableId: 200,
+      dateTypeId: WINTER_FEE,
+      startDate: null,
+      endDate: null,
+    });
+    // Leftover placeholder for unflagged Feature 2
+    addRange({
+      seasonId: 700,
+      dateableId: 300,
+      dateTypeId: WINTER_FEE,
+      startDate: null,
+      endDate: null,
+    });
+
+    const deleted = await clearWinterFeeDatesForUnflaggedParks(2026);
+
+    expect(deleted).toBe(1);
+    expect(winterRows(600, 200)).toHaveLength(1);
+    expect(winterRows(700, 300)).toEqual([]);
+    expect(DateRange.destroy).toHaveBeenCalledTimes(1);
+  });
+
+  it("runs the same number of queries regardless of Park count", async () => {
+    db.parks[0].hasWinterFeeDates = false;
+    db.parks.push({
+      id: 2,
+      publishableId: 11,
+      dateableId: 101,
+      hasWinterFeeDates: false,
+    });
+
+    await clearWinterFeeDatesForUnflaggedParks(2026);
+
+    expect(Feature.findAll).toHaveBeenCalledTimes(1);
+    expect(DateRange.findAll).toHaveBeenCalledTimes(1);
   });
 });
 
