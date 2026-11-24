@@ -153,18 +153,18 @@ describe("shouldShowWinterFeeSection feature type filter", () => {
     };
   }
 
-  it("shows the section when Frontcountry campground is selected", () => {
+  it("hides the section when Frontcountry campground is selected", () => {
     const frontcountry = {
-      name: "Renamed in Strapi",
+      name: "Frontcountry campground",
       featureTypeNumber: FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND,
     };
 
     expect(
       shouldShowWinterFeeSection(createPark(), filters([frontcountry])),
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it("hides the section when only other feature types are selected", () => {
+  it("hides the section when other feature types are selected", () => {
     const groupCampground = {
       name: "Frontcountry campground",
       featureTypeNumber: FEATURE_TYPE.GROUP_CAMPGROUND,
