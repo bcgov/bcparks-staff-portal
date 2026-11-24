@@ -9,7 +9,7 @@ import { getCurrentDateCollectionYear } from "../../utils/operatingYearHelper.js
  * hasWinterFeeDates flag is false.
  * @param {number[]} dateableIdsWithWinterFeesDisabled Imported entities whose Winter fee flag is false
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Promise<number>} Number of deleted date ranges
+ * @returns {Promise<{deletedCount:number, affectedSeasonIds:number[]}>} Deletion summary
  */
 export default async function deleteStaleWinterFeeDates(
   dateableIdsWithWinterFeesDisabled = [],
@@ -21,7 +21,7 @@ export default async function deleteStaleWinterFeeDates(
   );
 
   if (!dateableIds.length) {
-    return 0;
+    return { deletedCount: 0, affectedSeasonIds: [] };
   }
 
   // Resolve the Winter fee type so unrelated date ranges are never selected.
@@ -43,7 +43,7 @@ export default async function deleteStaleWinterFeeDates(
 
   // Select only Winter fee ranges belonging to those entities and that year.
   const ranges = await DateRange.findAll({
-    attributes: ["id"],
+    attributes: ["id", "seasonId"],
     where: {
       dateTypeId: winterFeeType.id,
       dateableId: { [Op.in]: dateableIds },
@@ -52,7 +52,7 @@ export default async function deleteStaleWinterFeeDates(
       {
         model: Season,
         as: "season",
-        attributes: [],
+        attributes: ["id"],
         required: true,
         where: { seasonType: SEASON_TYPE.WINTER, operatingYear },
       },
@@ -61,12 +61,20 @@ export default async function deleteStaleWinterFeeDates(
   });
 
   if (!ranges.length) {
-    return 0;
+    return { deletedCount: 0, affectedSeasonIds: [] };
   }
 
+  // Preserve the affected seasons so propagation can rebuild derived Area and
+  // Feature ranges after the Park or entity source ranges are removed.
+  const affectedSeasonIds = [
+    ...new Set(ranges.map((range) => range.seasonId)),
+  ].filter(Boolean);
+
   // Remove only the selected stale ranges; keep seasons and other years intact.
-  return DateRange.destroy({
+  const deletedCount = await DateRange.destroy({
     where: { id: { [Op.in]: ranges.map((range) => range.id) } },
     transaction,
   });
+
+  return { deletedCount, affectedSeasonIds };
 }

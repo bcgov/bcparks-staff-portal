@@ -10,6 +10,7 @@ import importStrapiFeatures from "./features/import-features.js";
 import importStrapiProtectedAreas from "./parks/import-parks.js";
 import importStrapiDateTypes from "./date-types/import-date-types.js";
 import deleteStaleWinterFeeDates from "./delete-stale-winter-fee-dates.js";
+import propagateWinterFeeDates from "../../utils/propagateWinterFeeDates.js";
 
 /**
  * Syncs data from Strapi to our database
@@ -60,10 +61,14 @@ if (process.argv[1] === new URL(import.meta.url).pathname) {
   try {
     const syncResult = await syncStrapiData(transaction);
 
-    await deleteStaleWinterFeeDates(
+    const cleanup = await deleteStaleWinterFeeDates(
       syncResult.dateableIdsWithWinterFeesDisabled,
       transaction,
     );
+
+    for (const seasonId of cleanup.affectedSeasonIds) {
+      await propagateWinterFeeDates(seasonId, transaction);
+    }
     await transaction.commit();
     console.log("\nTransaction committed successfully");
   } catch (err) {

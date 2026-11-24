@@ -558,32 +558,12 @@ export default async function propagateWinterFeeDates(
     transaction,
   );
 
-  // Do not recalculate derived Feature winter dates
-  // until Park winter dates are in an approved/published season.
-  if (!parkWinter.season) {
-    // For regular-season edits, a missing prior winter season should not block
-    // recalculation of the same-year winter season.
-    if (
-      sourceSeason.seasonType === SEASON_TYPE.REGULAR &&
-      targetWinterOperatingYear === null
-    ) {
-      return propagateWinterFeeDates(seasonId, transaction, {
-        ...options,
-        targetWinterOperatingYear: sourceSeason.operatingYear,
-      });
-    }
-
-    return {
-      updatedFeatures: 0,
-      skippedFeatures: 0,
-      updatedParkAreas: 0,
-      skippedParkAreas: 0,
-      diagnostics,
-    };
-  }
-
-  // If there is no Park-level Winter season, or it has no complete dates, clear derived Feature winter ranges.
+  // An approved/published Park Winter season is the source for derived ranges.
+  // If that season is missing or unapproved, or has no complete ranges, do not
+  // preserve the old derived ranges: continue with no source dates so the rebuild
+  // below clears stale Feature and ParkArea Winter fee ranges.
   const winterDates = parkWinter.ranges || [];
+  const hasWinterSource = winterDates.length > 0;
 
   const features = await Feature.findAll({
     attributes: ["id", "name", "publishableId", "dateableId", "parkAreaId"],
@@ -703,10 +683,10 @@ export default async function propagateWinterFeeDates(
         transaction,
       );
 
-    // Skip until this Feature has an approved/published REGULAR season.
-    // If the season exists but has no complete Operation dates, we still
-    // proceed so overlaps=[] can clear derived Winter fee ranges.
-    if (!hasApprovedOperationSeason) {
+    // Skip until this Feature has an approved/published REGULAR season when a
+    // valid Park Winter source exists. If the Park source is missing or empty,
+    // rebuild with [] instead so stale derived Winter fee ranges are cleared.
+    if (!hasApprovedOperationSeason && hasWinterSource) {
       diagnostics.push(
         `Feature ${feature.id} (${feature.name}) does not have an approved/published regular season for operating year ${
           winterOperatingYear + 1
@@ -722,27 +702,29 @@ export default async function propagateWinterFeeDates(
       continue;
     }
 
-    const previousOperationRanges = await getFeatureOperationRanges(
-      feature,
-      winterOperatingYear,
-      operationTypeId,
-      transaction,
-    );
+    let overlaps = [];
 
-    const currentOperationRanges = await getFeatureOperationRanges(
-      feature,
-      winterOperatingYear + 1,
-      operationTypeId,
-      transaction,
-    );
+    if (hasWinterSource) {
+      const previousOperationRanges = await getFeatureOperationRanges(
+        feature,
+        winterOperatingYear,
+        operationTypeId,
+        transaction,
+      );
 
-    const winterFeeOverlapRanges = getWinterFeeRangeWindow(
-      winterDates,
-      previousOperationRanges,
-      currentOperationRanges,
-    );
+      const currentOperationRanges = await getFeatureOperationRanges(
+        feature,
+        winterOperatingYear + 1,
+        operationTypeId,
+        transaction,
+      );
 
-    const overlaps = winterFeeOverlapRanges;
+      overlaps = getWinterFeeRangeWindow(
+        winterDates,
+        previousOperationRanges,
+        currentOperationRanges,
+      );
+    }
 
     const updated = featureHasParentParkArea
       ? await syncFeatureWinterDatesOnParkAreaSeason(

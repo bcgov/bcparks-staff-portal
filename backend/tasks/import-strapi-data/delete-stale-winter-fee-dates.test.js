@@ -25,12 +25,15 @@ describe("deleteStaleWinterFeeDates", () => {
     const transaction = {};
 
     DateType.findOne.mockResolvedValue({ id: 4 });
-    DateRange.findAll.mockResolvedValue([{ id: 101 }, { id: 102 }]);
+    DateRange.findAll.mockResolvedValue([
+      { id: 101, seasonId: 501 },
+      { id: 102, seasonId: 501 },
+    ]);
     DateRange.destroy.mockResolvedValue(2);
 
     expect(
       await deleteStaleWinterFeeDates([10, 20, 10, null], transaction),
-    ).toBe(2);
+    ).toEqual({ deletedCount: 2, affectedSeasonIds: [501] });
     expect(getCurrentDateCollectionYear).toHaveBeenCalledWith(
       SEASON_TYPE.WINTER,
       transaction,
@@ -41,13 +44,13 @@ describe("deleteStaleWinterFeeDates", () => {
       transaction,
     });
     expect(DateRange.findAll).toHaveBeenCalledWith({
-      attributes: ["id"],
+      attributes: ["id", "seasonId"],
       where: { dateTypeId: 4, dateableId: { [Op.in]: [10, 20] } },
       include: [
         {
           model: Season,
           as: "season",
-          attributes: [],
+          attributes: ["id"],
           required: true,
           where: { seasonType: SEASON_TYPE.WINTER, operatingYear: 2026 },
         },
@@ -61,7 +64,10 @@ describe("deleteStaleWinterFeeDates", () => {
   });
 
   it("does not delete anything when the import reports no stale dateables", async () => {
-    expect(await deleteStaleWinterFeeDates([], {})).toBe(0);
+    expect(await deleteStaleWinterFeeDates([], {})).toEqual({
+      deletedCount: 0,
+      affectedSeasonIds: [],
+    });
     expect(DateType.findOne).not.toHaveBeenCalled();
     expect(DateRange.findAll).not.toHaveBeenCalled();
     expect(DateRange.destroy).not.toHaveBeenCalled();
@@ -71,7 +77,10 @@ describe("deleteStaleWinterFeeDates", () => {
     DateType.findOne.mockResolvedValue({ id: 4 });
     DateRange.findAll.mockResolvedValue([]);
 
-    expect(await deleteStaleWinterFeeDates([30])).toBe(0);
+    expect(await deleteStaleWinterFeeDates([30])).toEqual({
+      deletedCount: 0,
+      affectedSeasonIds: [],
+    });
     expect(DateRange.destroy).not.toHaveBeenCalled();
   });
 

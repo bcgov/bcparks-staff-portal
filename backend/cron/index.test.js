@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   createSeasons: vi.fn(),
   createWinterSeasons: vi.fn(),
   deleteStaleWinterFeeDates: vi.fn(),
+  propagateWinterFeeDates: vi.fn(),
   createGateDetails: vi.fn(),
   queueEmailReminders: vi.fn(),
 }));
@@ -28,6 +29,9 @@ vi.mock("../tasks/create-winter-seasons/create-winter-seasons.js", () => ({
 }));
 vi.mock("../tasks/import-strapi-data/delete-stale-winter-fee-dates.js", () => ({
   default: mocks.deleteStaleWinterFeeDates,
+}));
+vi.mock("../utils/propagateWinterFeeDates.js", () => ({
+  default: mocks.propagateWinterFeeDates,
 }));
 vi.mock("../tasks/create-gate-details/create-gate-details.js", () => ({
   default: mocks.createGateDetails,
@@ -65,7 +69,9 @@ describe("runAllJobs", () => {
       if (dateableIds.includes(disabledDateableId)) {
         winterFeeRangeExists = false;
       }
+      return { deletedCount: 1, affectedSeasonIds: [501] };
     });
+    mocks.propagateWinterFeeDates.mockResolvedValue({});
     mocks.createGateDetails.mockResolvedValue();
     mocks.queueEmailReminders.mockResolvedValue({ failedCount: 0 });
 
@@ -82,6 +88,15 @@ describe("runAllJobs", () => {
       mocks.deleteStaleWinterFeeDates.mock.invocationCallOrder[0],
     ).toBeGreaterThan(
       mocks.createWinterSeasons.mock.invocationCallOrder.at(-1),
+    );
+    expect(mocks.propagateWinterFeeDates).toHaveBeenCalledWith(
+      501,
+      transaction,
+    );
+    expect(
+      mocks.propagateWinterFeeDates.mock.invocationCallOrder[0],
+    ).toBeGreaterThan(
+      mocks.deleteStaleWinterFeeDates.mock.invocationCallOrder[0],
     );
     expect(winterFeeRangeExists).toBe(false);
   });
