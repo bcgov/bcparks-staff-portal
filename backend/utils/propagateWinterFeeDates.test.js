@@ -358,6 +358,34 @@ describe("propagateWinterFeeDates", () => {
     expect(winterRows(600, 200)).toEqual([]);
   });
 
+  it("treats Features sharing a ParkArea season independently", async () => {
+    // Unflagged Feature in the same ParkArea (season 800) as flagged Feature 3
+    db.features.push({
+      id: 4,
+      name: "Unflagged sibling",
+      parkId: 1,
+      publishableId: null,
+      dateableId: 410,
+      parkAreaId: 4,
+      hasWinterFeeDates: false,
+      active: true,
+    });
+    addRange({
+      seasonId: 800,
+      dateableId: 410,
+      dateTypeId: WINTER_FEE,
+      startDate: "2026-11-01",
+      endDate: "2026-12-31",
+    });
+
+    await propagateWinterFeeDates(500);
+
+    // Only the unflagged Feature's rows are cleared; the flagged sibling is calculated
+    expect(winterRows(800, 410)).toEqual([]);
+    expect(winterRows(800, 400)).toHaveLength(1);
+    expect(winterRows(800, 400)[0].startDate).not.toBeNull();
+  });
+
   it("resets derived dates to placeholders when the Park winter season isn't approved", async () => {
     addRange({
       seasonId: 600,
