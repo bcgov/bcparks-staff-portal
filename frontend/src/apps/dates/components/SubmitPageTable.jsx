@@ -234,13 +234,17 @@ function StatusTableRow({
   formPanelHandler,
 }) {
   const flashMessage = useContext(globalFlashMessageContext);
-  const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
     () => checkAccess(ROLES.DOOT_APPROVER),
     [checkAccess, ROLES.DOOT_APPROVER],
   );
+
+  // If the season data is missing, don't render this row
+  if (!season?.id) return null;
+
+  const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
 
   // Show a team's icon when its approval is required,
   // or when that team has already approved even though it wasn't required
@@ -296,35 +300,28 @@ function StatusTableRow({
         <LastUpdatedInfo lastUpdated={season.lastUpdated} />
       </th>
 
-      {season ? (
-        <th scope="col" className="align-middle text-end">
-          <div className="d-inline-block me-2">
-            <StatusBadge
+      <th scope="col" className="align-middle text-end">
+        <div className="d-inline-block me-2">
+          <StatusBadge
+            status={season.status}
+            informationSvcApproved={informationSvcApproved}
+            reservationSvcApproved={reservationSvcApproved}
+          />
+        </div>
+
+        {/* Keep the buttons together when the cell wraps on narrow screens */}
+        <div className="d-inline-block text-nowrap">
+          <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
+
+          {approver && (
+            <ApproveButton
+              seasonId={season.id}
               status={season.status}
-              informationSvcApproved={informationSvcApproved}
-              reservationSvcApproved={reservationSvcApproved}
+              onApprove={onApprove}
             />
-          </div>
-
-          {/* Keep the buttons together when the cell wraps on narrow screens */}
-          <div className="d-inline-block text-nowrap">
-            <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
-
-            {approver && (
-              <ApproveButton
-                seasonId={season.id}
-                status={season.status}
-                onApprove={onApprove}
-              />
-            )}
-          </div>
-        </th>
-      ) : (
-        <th scope="col" className="align-middle text-end text-nowrap">
-          {/* No currentSeason: nothing to edit or approve */}
-          &nbsp;
-        </th>
-      )}
+          )}
+        </div>
+      </th>
     </tr>
   );
 }

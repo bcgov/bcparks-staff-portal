@@ -1148,6 +1148,7 @@ function FormPanel({
   const { ROLES, checkAccess } = useAccess();
   const isInformationSvcApprover = checkAccess(ROLES.INFORMATION_SVC_APPROVER);
   const isReservationSvcApprover = checkAccess(ROLES.RESERVATION_SVC_APPROVER);
+  const globalFlashMessage = useContext(globalFlashMessageContext);
 
   // Keep the season ID and level together, so they always update in the same render.
   // (A mismatched pair would request the wrong API endpoint, e.g. a Feature season at Park level.)
@@ -1198,6 +1199,18 @@ function FormPanel({
         : null,
     );
   }, [formData?.seasonId, formData?.level]);
+
+  // Show an error message if the panel is opened without a valid season ID
+  useEffect(() => {
+    if (!show || formData?.seasonId) return;
+
+    globalFlashMessage.open(
+      "Could not load season details",
+      "The season details are unavailable. Refresh the page and try again.",
+      { variant: "error" },
+    );
+    setShow(false);
+  }, [show, formData?.seasonId, globalFlashMessage, setShow]);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);
