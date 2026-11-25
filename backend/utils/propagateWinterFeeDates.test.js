@@ -414,6 +414,26 @@ describe("propagateWinterFeeDates", () => {
     expect(featureSeason.save).not.toHaveBeenCalled();
   });
 
+  it("doesn't recreate derived dates for a Park with the flag off", async () => {
+    // Approved Park winter dates are kept after the flag is turned off
+    db.parks[0].hasWinterFeeDates = false;
+
+    await propagateWinterFeeDates(500);
+
+    expect(winterRows(600, 200)).toEqual([
+      expect.objectContaining({ startDate: null, endDate: null }),
+    ]);
+    expect(winterRows(800, 400)).toEqual([
+      expect.objectContaining({ startDate: null, endDate: null }),
+    ]);
+    expect(winterRows(700, 300)).toEqual([]);
+    // Park source dates and derived season status untouched
+    expect(winterRows(500, 100)).toHaveLength(1);
+    expect(db.seasons.find((season) => season.id === 600).status).toBe(
+      "published",
+    );
+  });
+
   it("resets a Feature without an approved Operation season to a placeholder", async () => {
     addRange({
       seasonId: 600,

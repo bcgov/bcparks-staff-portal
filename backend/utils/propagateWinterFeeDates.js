@@ -837,12 +837,17 @@ export default async function propagateWinterFeeDates(
 
   const { winterTypeId, operationTypeId } = await getDateTypeIds(transaction);
 
-  const parkWinter = await getParkWinterDateRanges(
-    park,
-    winterOperatingYear,
-    winterTypeId,
-    transaction,
-  );
+  // A Park with the winter fee flag off keeps its own winter dates, but they
+  // aren't a source for derived dates, so treat it as having no winter season.
+  const parkWinter =
+    park.hasWinterFeeDates === false
+      ? { season: null, ranges: [] }
+      : await getParkWinterDateRanges(
+          park,
+          winterOperatingYear,
+          winterTypeId,
+          transaction,
+        );
 
   // Features that should currently have derived Winter fee dates
   const features = await Feature.findAll({
