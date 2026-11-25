@@ -464,6 +464,26 @@ describe("propagateWinterFeeDates", () => {
     expect(featureSeason.status).toBe("approved");
     expect(featureSeason.save).toHaveBeenCalled();
   });
+
+  it("syncs readyToPublish when it changes but the dates don't", async () => {
+    await propagateWinterFeeDates(500);
+
+    const rangeIds = db.ranges.map((range) => range.id);
+
+    // Park marked not ready; calculated overlaps stay the same
+    db.seasons.find((season) => season.id === 500).readyToPublish = false;
+
+    await propagateWinterFeeDates(500);
+
+    // Dates untouched, readiness copied to standalone and ParkArea seasons
+    expect(db.ranges.map((range) => range.id)).toEqual(rangeIds);
+    expect(db.seasons.find((season) => season.id === 600).readyToPublish).toBe(
+      false,
+    );
+    expect(db.seasons.find((season) => season.id === 800).readyToPublish).toBe(
+      false,
+    );
+  });
 });
 
 describe("clearWinterFeeDatesForUnflaggedParks", () => {

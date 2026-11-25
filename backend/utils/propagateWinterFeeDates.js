@@ -436,6 +436,21 @@ async function syncWinterSeasonState({
 }
 
 /**
+ * Returns whether a derived Winter season's readyToPublish differs from the
+ * Park winter season's value (ignoring a missing Park value).
+ * @param {Season} winterSeason Derived Winter season
+ * @param {boolean|null|undefined} parkWinterReadyToPublish Park winter readyToPublish
+ * @returns {boolean} True when the derived season needs the Park value copied
+ */
+function hasReadinessMismatch(winterSeason, parkWinterReadyToPublish) {
+  return (
+    parkWinterReadyToPublish !== null &&
+    typeof parkWinterReadyToPublish !== "undefined" &&
+    winterSeason.readyToPublish !== parkWinterReadyToPublish
+  );
+}
+
+/**
  * Rebuilds a Feature winter season's Winter fee DateRanges from the Park-level
  * Winter fee dates and the Feature's Operation date ranges.
  * @param {Feature} feature Feature record to recalculate
@@ -476,9 +491,12 @@ async function syncFeatureWinterSeason(
     transaction,
   });
 
-  // Only touch status/readyToPublish when the dates changed, so repeated runs
-  // (e.g. cron) don't move published seasons back to approved.
-  if (rangesChanged) {
+  // Only touch status/readyToPublish when the dates or the Park's readiness
+  // changed, so repeated runs (e.g. cron) don't move published seasons back to approved.
+  if (
+    rangesChanged ||
+    hasReadinessMismatch(winterSeason, parkWinterReadyToPublish)
+  ) {
     await syncWinterSeasonState({
       winterSeason,
       parkWinterReadyToPublish,
@@ -547,9 +565,12 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
     rangesChanged = rangesChanged || deletedCount > 0;
   }
 
-  // Only touch status/readyToPublish when the dates changed, so repeated runs
-  // (e.g. cron) don't move published seasons back to approved.
-  if (rangesChanged) {
+  // Only touch status/readyToPublish when the dates or the Park's readiness
+  // changed, so repeated runs (e.g. cron) don't move published seasons back to approved.
+  if (
+    rangesChanged ||
+    hasReadinessMismatch(winterSeason, parkWinterReadyToPublish)
+  ) {
     await syncWinterSeasonState({
       winterSeason,
       parkWinterReadyToPublish,
