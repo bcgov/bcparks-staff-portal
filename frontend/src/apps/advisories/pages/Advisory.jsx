@@ -71,7 +71,8 @@ export default function Advisory({ mode }) {
   const [advisoryStatuses, setAdvisoryStatuses] = useState([]);
   const [advisoryStatus, setAdvisoryStatus] = useState(null);
   const [linkTypes, setLinkTypes] = useState([]);
-  const [links, setLinks] = useState([]);
+  // Re-renders the form when linksRef changes
+  const [, setLinks] = useState([]);
   const [headline, setHeadline] = useState("");
   const [description, setDescription] = useState("");
   const [isSafetyRelated, setIsSafetyRelated] = useState(null);
@@ -1029,7 +1030,10 @@ export default function Advisory({ mode }) {
     const savedLinks = [];
 
     for (const link of linksRef.current) {
-      if (isValidLink(link)) {
+      if (!isValidLink(link)) {
+        // Keep unchanged existing links in their form position
+        if (link.id) savedLinks.push(link.id);
+      } else {
         if (link.id) {
           const savedLink = await saveLink(link, link.id);
 
@@ -1223,8 +1227,6 @@ export default function Advisory({ mode }) {
       );
 
       const savedLinks = await saveLinks();
-      const updatedLinks =
-        savedLinks.length > 0 ? [...links, ...savedLinks] : links;
       const updatedAdvisory = {
         title: headline,
         description,
@@ -1244,7 +1246,7 @@ export default function Advisory({ mode }) {
         standardMessages: selectedStandardMessages.map((s) => s.value),
         protectedAreas: selProtectedAreas,
         advisoryStatus: status.documentId,
-        links: updatedLinks,
+        links: savedLinks,
         regions: selRegions,
         sections: selSections,
         managementAreas: selManagementAreas,
