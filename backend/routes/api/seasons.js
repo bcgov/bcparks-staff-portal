@@ -844,7 +844,7 @@ router.post(
       // makes its derived Winter fee dates stale, so propagate to clear them.
       const leftApprovedStatus =
         [STATUS.APPROVED, STATUS.PUBLISHED].includes(season.status) &&
-        newStatus !== STATUS.APPROVED;
+        ![STATUS.APPROVED, STATUS.PUBLISHED].includes(newStatus);
 
       // Recalculate feature-level Winter fee dates on approved saves, and clear
       // them when a season leaves approved/published.
