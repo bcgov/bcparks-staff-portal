@@ -1034,15 +1034,15 @@ export default function Advisory({ mode }) {
         // Keep unchanged existing links in their form position
         if (link.id) savedLinks.push(link.id);
       } else {
-        if (link.id) {
-          const savedLink = await saveLink(link, link.id);
+        const savedLink = link.id
+          ? await saveLink(link, link.id)
+          : await createLink(link);
 
-          if (savedLink) savedLinks.push(savedLink.documentId);
-        } else {
-          const savedLink = await createLink(link);
-
-          if (savedLink) savedLinks.push(savedLink.documentId);
+        if (!savedLink) {
+          throw new Error(`Could not save attachment "${link.title}"`);
         }
+
+        savedLinks.push(savedLink.documentId);
       }
     }
     return savedLinks;
