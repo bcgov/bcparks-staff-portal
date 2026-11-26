@@ -57,7 +57,7 @@ For example:
     },
     urgencyLevel: {
       tooltip:
-        "Used to prioritize the order and visibility of advisories on the same page. For example, choosing 'high' will place the advisory at the top of the list and highlight it with a red icon.",
+        "Choose 'Low' for advisories that require visitor discretion, 'Medium' for health or safety-related advisories, or 'High' for closures or immediate danger. Urgency is used to prioritize visibility of the advisory. Higher urgency advisories are displayed more prominently.",
     },
     standardMessages: {
       tooltip:
@@ -101,7 +101,7 @@ For example:
     },
     listingRank: {
       tooltip:
-        "Advisories are listed chronologically and by urgency by default. To change this, enter a number representing where you would like the advisory to appear in the list. For example, advisories with a higher number will appear first.",
+        "Used to manually control the order advisories appear for each affected resource. Listing rank takes priority over other sort orders (for example, by date or urgency). Advisories with a higher listing rank appear first. Multiples of 10 recommended. The default is 0, and there is no maximum.",
     },
     publicSafetyRelated: {
       tooltip: "Check the box if visitor safety may be affected by the event.",
