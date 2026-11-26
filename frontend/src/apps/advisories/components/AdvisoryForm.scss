@@ -64,6 +64,11 @@
       color: var(--typography-color-link);
     }
 
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
     .preview-message:not(:last-of-type) {
       margin-bottom: 16px;
     }
