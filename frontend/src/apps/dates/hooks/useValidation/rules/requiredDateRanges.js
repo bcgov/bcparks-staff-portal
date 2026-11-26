@@ -43,22 +43,15 @@ export default function requiredDateRanges(seasonData, context) {
       }
     }
 
-    // If the level is "feature", check if the feature has the boolean value for the date type
-    if (level === "feature" && dateTypeNumber === DATE_TYPE.WINTER_FEE) {
-      if (feature && !feature.hasWinterFeeDates) {
-        return false;
-      }
-    }
-
     return true;
   });
 
   // Add errors for all invalid dates (missing startDate and/or endDate)
   requiredRanges.forEach((dateRange) => {
     if (!dateRange.startDate) {
-      context.addError(
-        // Show the error below the start date field
-        elements.dateField(
+    context.addError(
+      // Show the error below the start date field
+      elements.dateField(
           dateRange.id || dateRange.tempId,
           "startDate",
           `${getDateTypeDisplayName(dateRange.dateType.name)} start date`,
