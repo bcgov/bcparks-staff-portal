@@ -92,10 +92,18 @@ function Buttons({
         />
       )}
 
-      {/* Show the Submit button for submitters, but hide it for approvers */}
+      {/*
+        Show the Submit button for submitters, but hide it for approvers.
+        BCP Regional Staff has a Keycloak group but no specific role.
+        Submitters without the approver role are assumed to be BCP Regional Staff.
+      */}
       {submitter && !approver && (
         <ActionButton
-          label={continueToNext ? "Submit to HQ and continue" : "Submit to HQ"}
+          label={
+            continueToNext
+              ? "Approve, submit to HQ, and continue"
+              : "Approve and submit to HQ"
+          }
           onClick={onSubmit}
           className={classNames("form-btn", "me-0", "me-sm-2")}
           disabled={loading || disablePrimaryActionButton}
