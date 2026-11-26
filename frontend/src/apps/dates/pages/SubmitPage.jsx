@@ -599,7 +599,7 @@ function SubmitPage() {
     <div className="container-fluid">
       <div className="page dates-management">
         <div className="table-filters row mb-4">
-          <div className="col-lg-3 col-md-6 col-12 mb-2 mb-md-0">
+          <div className="col-12 col-md-auto col-lg-4 mb-2 mb-md-0">
             <ParkSearch
               options={parkOptions}
               value={filters.park}
