@@ -230,6 +230,9 @@ router.get(
               "hasWinterFeeDates",
               "datesCanSpan2Years",
             ],
+            // Match the Features that formatParkAreaData publishes to Strapi
+            where: { active: true, hasDates: true },
+            required: false,
             include: [
               {
                 model: FeatureType,
