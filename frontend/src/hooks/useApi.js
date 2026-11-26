@@ -44,6 +44,15 @@ export function useApiGet(endpoint, options = {}) {
 
   const auth = useAuth();
 
+  // Keep the latest token in a ref so fetchData sends the current token when
+  // it's called again later (e.g. a table refresh), not the one from the
+  // first render, without recreating fetchData when the token renews
+  const accessTokenRef = useRef(auth?.user?.access_token);
+
+  useEffect(() => {
+    accessTokenRef.current = auth?.user?.access_token;
+  }, [auth?.user?.access_token]);
+
   // Parse options:
   // URL parameters
   const params = options.params ?? {};
@@ -72,7 +81,7 @@ export function useApiGet(endpoint, options = {}) {
       // Add the Keycloak token to the request headers
       if (includeToken) {
         config.headers = {
-          Authorization: `Bearer ${auth?.user?.access_token}`,
+          Authorization: `Bearer ${accessTokenRef.current}`,
         };
       }
 
