@@ -18,9 +18,11 @@ const jwtMiddleware = expressjwt({
   algorithms: ["RS256", "ES256"],
   issuer: process.env.JWT_ISSUER,
 
-  // Log expired token errors
+  // Log expired tokens, then reject them. express-jwt accepts an expired
+  // token if onExpired returns without throwing.
   onExpired(req, err) {
     console.error("JWT expired:", err.message);
+    throw err;
   },
 });
 
