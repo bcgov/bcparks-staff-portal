@@ -904,9 +904,9 @@ function SeasonForm({
           </p>
           {errorCode >= 500 && (
             <p className="text-muted small mt-4">
-              This error was logged on the DOOT backend server at{" "}
-              {formatServerErrorTimestamp(errorTime)}. Please share this if you
-              email support.
+              This error was logged on the DOOT backend at{" "}
+              {formatServerErrorTimestamp(errorTime)}. Please include this in
+              your email.
             </p>
           )}
         </Offcanvas.Body>
