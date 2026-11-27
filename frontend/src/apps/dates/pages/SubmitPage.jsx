@@ -25,7 +25,16 @@ import {
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
 } from "@/apps/dates/utils/submitPageFilters";
+import {
+  FILTERS_STORAGE_KEY,
+  DEFAULT_FILTERS,
+  deserializeFilters,
+} from "@/apps/dates/utils/storedFilters";
 import { groupBy, maxBy, sortBy } from "lodash-es";
+import { useLocalStorage } from "usehooks-ts";
+
+// Stable options object, so useLocalStorage doesn't recreate its callbacks every render
+const FILTERS_STORAGE_OPTIONS = { deserializer: deserializeFilters };
 
 // Build the currentSeason object for a Park from its seasons array.
 // Same logic used in the backend for Feature-level currentSeason objects.
@@ -197,17 +206,12 @@ function SubmitPage() {
     setPage(1);
   }
 
-  // table filter state
-  const [filters, setFilters] = useState({
-    park: null,
-    accessGroups: [],
-    status: [],
-    sections: [],
-    managementAreas: [],
-    dateTypes: [],
-    featureTypes: [],
-    isInReservationSystem: false,
-  });
+  // table filter state, persisted in localStorage so it's remembered across sessions
+  const [filters, setFilters] = useLocalStorage(
+    FILTERS_STORAGE_KEY,
+    DEFAULT_FILTERS,
+    FILTERS_STORAGE_OPTIONS,
+  );
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   // The URL is the source of truth for the open form: /dates/edit/:level/:seasonId
@@ -267,16 +271,7 @@ function SubmitPage() {
 
   function resetFilters() {
     setPage(1);
-    setFilters({
-      park: null,
-      accessGroups: [],
-      status: [],
-      sections: [],
-      managementAreas: [],
-      dateTypes: [],
-      featureTypes: [],
-      isInReservationSystem: false,
-    });
+    setFilters(DEFAULT_FILTERS);
   }
 
   // Track if any Park-level filters are active
