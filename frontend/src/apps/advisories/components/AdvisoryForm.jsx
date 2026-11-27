@@ -816,7 +816,7 @@ export default function AdvisoryForm({
 
         {linksRef.current.map((link, idx) => (
           <div key={idx} className="sub-section">
-            <h4 className="fw-normal mb-4">Attachment {idx + 1}</h4>
+            <h4 className="fw-normal mb-4">Attachment #{idx + 1}</h4>
 
             <Form.Group className="form-group" controlId={`link-type-${idx}`}>
               <Form.Label>
