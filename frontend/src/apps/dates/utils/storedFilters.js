@@ -40,6 +40,20 @@ function isValidStatus(status) {
   return typeof status === "string";
 }
 
+/**
+ * Checks that a value is the park search selection: null, or a park option with a numeric value and string label.
+ * @param {any} park Persisted park filter value
+ * @returns {boolean} True if the park selection can be rendered and filtered on
+ */
+function isValidPark(park) {
+  return (
+    park === null ||
+    (getValueType(park) === "object" &&
+      typeof park.value === "number" &&
+      typeof park.label === "string")
+  );
+}
+
 // Validators for the entries of each array filter
 const ARRAY_ENTRY_VALIDATORS = {
   accessGroups: isValidOption,
@@ -58,6 +72,8 @@ const ARRAY_ENTRY_VALIDATORS = {
  * @returns {boolean} True if the value can be loaded into component state
  */
 function isValidFilterValue(name, value) {
+  if (name === "park") return isValidPark(value);
+
   if (getValueType(value) !== getValueType(DEFAULT_FILTERS[name])) {
     return false;
   }

@@ -8,7 +8,7 @@ import {
 
 const savedFilters = {
   ...DEFAULT_FILTERS,
-  name: "Golden Ears",
+  park: { value: 12, label: "Golden Ears" },
   status: ["approved"],
   isInReservationSystem: true,
 };
@@ -54,6 +54,10 @@ describe("isValidStoredFilters", () => {
     ["featureTypes", [[]]],
     ["status", [null]],
     ["status", [{ value: "approved" }]],
+    ["park", {}],
+    ["park", { value: "12", label: "Golden Ears" }],
+    ["park", { value: 12 }],
+    ["park", "Golden Ears"],
   ])("rejects malformed %s selections: %j", (name, value) => {
     expect(isValidStoredFilters({ ...DEFAULT_FILTERS, [name]: value })).toBe(
       false,
@@ -87,9 +91,10 @@ describe("deserializeFilters", () => {
   });
 
   it("clears persisted filters with outdated names and returns defaults", () => {
-    const outdated = { ...savedFilters, parkName: "Golden Ears" };
+    // Filters saved before the park name search replaced the "name" text filter
+    const outdated = { ...savedFilters, name: "Golden Ears" };
 
-    delete outdated.name;
+    delete outdated.park;
 
     expect(deserializeFilters(JSON.stringify(outdated))).toBe(DEFAULT_FILTERS);
     expect(removeItem).toHaveBeenCalledWith(FILTERS_STORAGE_KEY);
