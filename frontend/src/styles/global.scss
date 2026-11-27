@@ -209,6 +209,11 @@ a:not(.btn):focus {
   background-color: var(--surface-color-forms-disabled);
   color: var(--typography-color-disabled);
   cursor: not-allowed;
+
+  // placeholders (e.g. "Dawn"/"Dusk" in gate times) are styled separately by Bootstrap
+  &::placeholder {
+    color: var(--typography-color-disabled);
+  }
 }
 
 // override bootstrap theme styles: don't shrink radio/checkbox labels
