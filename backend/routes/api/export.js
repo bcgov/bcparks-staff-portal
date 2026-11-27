@@ -744,13 +744,6 @@ router.get(
     // Convert to CSV string
     const csv = await writeToString(sortedRows, {
       headers: Object.values(colNames),
-      // Prefix ORCS feature number with "F", or Excel converts values like "41-2" to dates
-      transform: (row) => ({
-        ...row,
-        [colNames.ORCS_FEATURE_NUMBER]:
-          row[colNames.ORCS_FEATURE_NUMBER] &&
-          `F${row[colNames.ORCS_FEATURE_NUMBER]}`,
-      }),
       // Write the header row, even if there's no data
       alwaysWriteHeaders: true,
     });
