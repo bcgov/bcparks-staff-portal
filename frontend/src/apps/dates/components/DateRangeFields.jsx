@@ -31,6 +31,9 @@ function DateRange({
 
   const { elements } = useValidationContext();
 
+  // Lock the range when "Dates are the same every year" is checked
+  const isDisabled = isDateRangeAnnual && !hideAnnualCheckbox;
+
   // Call the update method from the parent
   const onSelect = useCallback(
     (dateField, dateObj) => {
@@ -55,7 +58,7 @@ function DateRange({
             dateField="startDate"
             minDate={minDate}
             maxDate={maxDate}
-            disabled={isDateRangeAnnual && !hideAnnualCheckbox}
+            disabled={isDisabled}
             date={dateRange.startDate}
             onSelect={onSelect}
           />
@@ -74,7 +77,7 @@ function DateRange({
               dateRange.startDate ? addDays(dateRange.startDate, 1) : minDate
             }
             maxDate={maxDate}
-            disabled={isDateRangeAnnual && !hideAnnualCheckbox}
+            disabled={isDisabled}
             date={dateRange.endDate}
             onSelect={onSelect}
           />
@@ -91,7 +94,8 @@ function DateRange({
             className={classNames("btn btn-text text-link", {
               invisible: !removable,
             })}
-            disabled={!removable}
+            // Also disable (but still show) it when the range is locked
+            disabled={!removable || isDisabled}
             onClick={() => removeDateRange(dateRange)}
           >
             <FontAwesomeIcon icon={faXmark} />

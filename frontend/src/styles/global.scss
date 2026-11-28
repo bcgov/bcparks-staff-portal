@@ -87,6 +87,11 @@ header.page-header {
     top: 0.75rem;
     pointer-events: none;
   }
+
+  // grey out the icon when the input is disabled
+  &:has(:disabled) .append-content {
+    color: var(--icons-color-disabled);
+  }
 }
 
 // required field label
@@ -197,6 +202,18 @@ a:not(.btn):focus {
 .form-control.is-invalid {
   // don't show the circle icon; we'll append a FontAwesomeIcon
   background-image: none;
+}
+
+// BC design system disabled input style: grey fill and text, not-allowed cursor
+.form-control:disabled {
+  background-color: var(--surface-color-forms-disabled);
+  color: var(--typography-color-disabled);
+  cursor: not-allowed;
+
+  // placeholders (e.g. "Dawn"/"Dusk" in gate times) are styled separately by Bootstrap
+  &::placeholder {
+    color: var(--typography-color-disabled);
+  }
 }
 
 // override bootstrap theme styles: don't shrink radio/checkbox labels
