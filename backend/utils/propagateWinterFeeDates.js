@@ -1,5 +1,6 @@
 // Recalculate Feature-level Winter fee dates from Park-level Winter fee dates.
-// This runs on Winter fee date or Operation date saves so derived Winter ranges stay current.
+// This runs on Winter fee date or Operation date saves, status changes, and the
+// cron task, so derived Winter ranges stay current and stale ones are cleared.
 
 import { Op } from "sequelize";
 
@@ -322,7 +323,31 @@ export function getWinterFeeRangeWindow(
 }
 
 /**
- * Replaces Winter fee DateRanges for a season/dateable pair.
+ * Builds an order-independent key for a list of date ranges, compared at UTC
+ * day precision. Null dates (placeholders) are kept as "null".
+ * @param {Array<{startDate: Date|string|null, endDate: Date|string|null}>} ranges Date ranges
+ * @returns {string} Comparable key for the ranges
+ */
+export function getRangesSignature(ranges) {
+  /**
+   * Converts one date to its UTC day key, keeping nulls distinct.
+   * @param {Date|string|null} date Date to convert
+   * @returns {string} Day key
+   */
+  function toKey(date) {
+    return date ? String(toUtcDayTimestamp(date)) : "null";
+  }
+
+  return ranges
+    .map((range) => `${toKey(range.startDate)}-${toKey(range.endDate)}`)
+    .sort()
+    .join(",");
+}
+
+/**
+ * Replaces Winter fee DateRanges for a season/dateable pair when they differ
+ * from the desired ranges. Unchanged rows are left alone so their IDs (and any
+ * cascading DateChangeLogs) survive repeated propagation runs.
  * @param {Object} params Replacement parameters
  * @param {number} params.seasonId Season ID to update
  * @param {number} params.dateableId Dateable ID to update
@@ -330,7 +355,7 @@ export function getWinterFeeRangeWindow(
  * @param {Array} params.ranges New date ranges to insert
  * @param {boolean} [params.createPlaceholderWhenEmpty=false] Whether to insert a single empty placeholder when ranges is empty
  * @param {Transaction} [params.transaction] Optional Sequelize transaction
- * @returns {Promise<void>}
+ * @returns {Promise<boolean>} True when the stored ranges were changed
  */
 async function rebuildWinterDateRanges({
   seasonId,
@@ -340,31 +365,49 @@ async function rebuildWinterDateRanges({
   createPlaceholderWhenEmpty = false,
   transaction = null,
 }) {
-  await DateRange.destroy({
-    where: {
-      seasonId,
-      dateableId,
-      dateTypeId,
-    },
+  const where = {
+    seasonId,
+    dateableId,
+    dateTypeId,
+  };
+
+  const desiredRanges =
+    ranges.length || !createPlaceholderWhenEmpty
+      ? ranges
+      : [{ startDate: null, endDate: null }];
+
+  // Skip the write when the stored ranges already match the desired ranges
+  const existingRanges = await DateRange.findAll({
+    attributes: ["startDate", "endDate"],
+    where,
     transaction,
   });
 
-  if (!ranges.length && !createPlaceholderWhenEmpty) {
-    return;
+  if (
+    getRangesSignature(existingRanges.map((range) => range.toJSON())) ===
+    getRangesSignature(desiredRanges)
+  ) {
+    return false;
+  }
+
+  await DateRange.destroy({ where, transaction });
+
+  if (!desiredRanges.length) {
+    return true;
   }
 
   await DateRange.bulkCreate(
-    (ranges.length ? ranges : [{ startDate: null, endDate: null }]).map(
-      (range) => ({
-        seasonId,
-        dateableId,
-        dateTypeId,
-        startDate: range.startDate,
-        endDate: range.endDate,
-      }),
-    ),
+    desiredRanges.map((range) => ({
+      seasonId,
+      dateableId,
+      dateTypeId,
+      startDate: range.startDate,
+      endDate: range.endDate,
+    })),
     { transaction },
   );
+
+  return true;
 }
 
 /**
@@ -393,6 +436,21 @@ async function syncWinterSeasonState({
 }
 
 /**
+ * Returns whether a derived Winter season's readyToPublish differs from the
+ * Park winter season's value (ignoring a missing Park value).
+ * @param {Season} winterSeason Derived Winter season
+ * @param {boolean|null|undefined} parkWinterReadyToPublish Park winter readyToPublish
+ * @returns {boolean} True when the derived season needs the Park value copied
+ */
+function hasReadinessMismatch(winterSeason, parkWinterReadyToPublish) {
+  return (
+    parkWinterReadyToPublish !== null &&
+    typeof parkWinterReadyToPublish !== "undefined" &&
+    winterSeason.readyToPublish !== parkWinterReadyToPublish
+  );
+}
+
+/**
  * Rebuilds a Feature winter season's Winter fee DateRanges from the Park-level
  * Winter fee dates and the Feature's Operation date ranges.
  * @param {Feature} feature Feature record to recalculate
@@ -401,7 +459,7 @@ async function syncWinterSeasonState({
  * @param {number} winterTypeId Winter fee DateType ID
  * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Promise<boolean>} True when the Feature winter season was updated, false when it did not exist
+ * @returns {Promise<boolean>} True when the Feature winter season exists (dates were reconciled), false when it did not exist
  */
 async function syncFeatureWinterSeason(
   feature,
@@ -424,7 +482,7 @@ async function syncFeatureWinterSeason(
     return false;
   }
 
-  await rebuildWinterDateRanges({
+  const rangesChanged = await rebuildWinterDateRanges({
     seasonId: winterSeason.id,
     dateableId: feature.dateableId,
     dateTypeId: winterTypeId,
@@ -433,11 +491,18 @@ async function syncFeatureWinterSeason(
     transaction,
   });
 
-  await syncWinterSeasonState({
-    winterSeason,
-    parkWinterReadyToPublish,
-    transaction,
-  });
+  // Only touch status/readyToPublish when the dates or the Park's readiness
+  // changed, so repeated runs (e.g. cron) don't move published seasons back to approved.
+  if (
+    rangesChanged ||
+    hasReadinessMismatch(winterSeason, parkWinterReadyToPublish)
+  ) {
+    await syncWinterSeasonState({
+      winterSeason,
+      parkWinterReadyToPublish,
+      transaction,
+    });
+  }
 
   return true;
 }
@@ -453,7 +518,7 @@ async function syncFeatureWinterSeason(
  * @param {number} winterTypeId Winter fee DateType ID
  * @param {boolean|null} parkWinterReadyToPublish Ready-to-publish state to copy from the Park winter season
  * @param {Transaction} [transaction] Optional Sequelize transaction
- * @returns {Promise<boolean>} True when the parent ParkArea winter season was updated, false when it did not exist
+ * @returns {Promise<boolean>} True when the parent ParkArea winter season exists (dates were reconciled), false when it did not exist
  */
 async function syncFeatureWinterDatesOnParkAreaSeason(
   feature,
@@ -478,7 +543,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
     return false;
   }
 
-  await rebuildWinterDateRanges({
+  let rangesChanged = await rebuildWinterDateRanges({
     seasonId: winterSeason.id,
     dateableId: feature.dateableId,
     dateTypeId: winterTypeId,
@@ -488,7 +553,7 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
   });
 
   if (parkAreaDateableId) {
-    await DateRange.destroy({
+    const deletedCount = await DateRange.destroy({
       where: {
         seasonId: winterSeason.id,
         dateableId: parkAreaDateableId,
@@ -496,24 +561,245 @@ async function syncFeatureWinterDatesOnParkAreaSeason(
       },
       transaction,
     });
+
+    rangesChanged = rangesChanged || deletedCount > 0;
   }
 
-  await syncWinterSeasonState({
-    winterSeason,
-    parkWinterReadyToPublish,
-    transaction,
-  });
+  // Only touch status/readyToPublish when the dates or the Park's readiness
+  // changed, so repeated runs (e.g. cron) don't move published seasons back to approved.
+  if (
+    rangesChanged ||
+    hasReadinessMismatch(winterSeason, parkWinterReadyToPublish)
+  ) {
+    await syncWinterSeasonState({
+      winterSeason,
+      parkWinterReadyToPublish,
+      transaction,
+    });
+  }
 
   return true;
 }
 
 /**
+ * Returns the Winter season that owns a Feature's derived Winter fee dates:
+ * the parent ParkArea's season, or the Feature's own season when it has no ParkArea.
+ * @param {Feature} feature Feature record (with optional parkArea)
+ * @param {Map<number, Season>} winterSeasonByPublishableId Winter seasons keyed by Publishable ID
+ * @returns {Season|null} Owner Winter season, or null when none exists
+ */
+function getOwnerWinterSeason(feature, winterSeasonByPublishableId) {
+  const ownerPublishableId = feature.parkArea
+    ? feature.parkArea.publishableId
+    : feature.publishableId;
+
+  return winterSeasonByPublishableId.get(ownerPublishableId) ?? null;
+}
+
+/**
+ * Loads the Winter seasons for an operating year that own the given Features'
+ * derived Winter fee dates.
+ * @param {Array<Feature>} features Features (with optional parkArea)
+ * @param {number} operatingYear Winter operating year
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<Map<number, Season>>} Winter seasons keyed by Publishable ID
+ */
+async function getOwnerWinterSeasons(features, operatingYear, transaction) {
+  const publishableIds = [
+    ...new Set(
+      features
+        .map((feature) =>
+          feature.parkArea
+            ? feature.parkArea.publishableId
+            : feature.publishableId,
+        )
+        .filter(Boolean),
+    ),
+  ];
+
+  if (!publishableIds.length) {
+    return new Map();
+  }
+
+  const seasons = await Season.findAll({
+    where: {
+      publishableId: {
+        [Op.in]: publishableIds,
+      },
+      operatingYear,
+      seasonType: SEASON_TYPE.WINTER,
+    },
+    transaction,
+  });
+
+  return new Map(seasons.map((season) => [season.publishableId, season]));
+}
+
+/**
+ * Deletes Winter fee DateRanges for the given Feature dateables in one Winter
+ * operating year, except rows on the season listed for that dateable in
+ * keepSeasonIdByDateableId, and empty placeholders for dateables in
+ * keepPlaceholderDateableIds.
+ * @param {Object} params Delete parameters
+ * @param {Array<number>} params.dateableIds Feature Dateable IDs to check
+ * @param {number} params.operatingYear Winter operating year
+ * @param {number} params.winterTypeId Winter fee DateType ID
+ * @param {Map<number, number>} [params.keepSeasonIdByDateableId] Dateable ID -> Winter season ID to keep
+ * @param {Set<number>} [params.keepPlaceholderDateableIds] Dateable IDs whose empty placeholders are kept
+ * @param {Transaction} [params.transaction] Optional Sequelize transaction
+ * @returns {Promise<number>} Number of DateRanges deleted
+ */
+async function deleteStaleWinterFeeRanges({
+  dateableIds,
+  operatingYear,
+  winterTypeId,
+  keepSeasonIdByDateableId = new Map(),
+  keepPlaceholderDateableIds = new Set(),
+  transaction = null,
+}) {
+  if (!dateableIds.length) {
+    return 0;
+  }
+
+  const derivedRanges = await DateRange.findAll({
+    attributes: ["id", "seasonId", "dateableId", "startDate", "endDate"],
+    include: [
+      {
+        model: Season,
+        as: "season",
+        attributes: ["id"],
+        required: true,
+        where: {
+          operatingYear,
+          seasonType: SEASON_TYPE.WINTER,
+        },
+      },
+    ],
+    where: {
+      dateableId: {
+        [Op.in]: dateableIds,
+      },
+      dateTypeId: winterTypeId,
+    },
+    transaction,
+  });
+
+  const staleRangeIds = derivedRanges
+    .filter((range) => {
+      if (keepSeasonIdByDateableId.get(range.dateableId) === range.seasonId) {
+        return false;
+      }
+
+      // Keep placeholders that createWinterSeasons would just re-add,
+      // so repeated cron runs don't create and delete the same row
+      const isPlaceholder = !range.startDate && !range.endDate;
+
+      return !(
+        isPlaceholder && keepPlaceholderDateableIds.has(range.dateableId)
+      );
+    })
+    .map((range) => range.id);
+
+  if (!staleRangeIds.length) {
+    return 0;
+  }
+
+  return await DateRange.destroy({
+    where: {
+      id: {
+        [Op.in]: staleRangeIds,
+      },
+    },
+    transaction,
+  });
+}
+
+/**
+ * Deletes stale derived Winter fee DateRanges for a Park's Features in one
+ * Winter operating year. A Feature's rows are kept only on the season listed
+ * for its dateable in keepSeasonIdByDateableId (its current owner season while
+ * it still has winter fees). Everything else is stale: Features with the flag
+ * turned off, inactive Features, and rows left on a former parent ParkArea.
+ * Park-level (source) Winter fee rows are never deleted.
+ * @param {Object} params Clear parameters
+ * @param {Park} params.park Park record (needs id and dateableId)
+ * @param {number} params.operatingYear Winter operating year to clear
+ * @param {number} params.winterTypeId Winter fee DateType ID
+ * @param {Map<number, number>} [params.keepSeasonIdByDateableId] Feature dateable ID -> Winter season ID to keep
+ * @param {Transaction} [params.transaction] Optional Sequelize transaction
+ * @returns {Promise<number>} Number of DateRanges deleted
+ */
+async function clearDerivedWinterFeeDates({
+  park,
+  operatingYear,
+  winterTypeId,
+  keepSeasonIdByDateableId = new Map(),
+  transaction = null,
+}) {
+  // All of the Park's Features, regardless of winter flag or active status
+  const parkFeatures = await Feature.findAll({
+    attributes: ["id", "dateableId"],
+    where: {
+      parkId: park.id,
+      dateableId: {
+        [Op.ne]: null,
+      },
+    },
+    transaction,
+  });
+
+  return await deleteStaleWinterFeeRanges({
+    dateableIds: parkFeatures
+      .map((feature) => feature.dateableId)
+      .filter((dateableId) => dateableId !== park.dateableId),
+    operatingYear,
+    winterTypeId,
+    keepSeasonIdByDateableId,
+    transaction,
+  });
+}
+
+/**
+ * Replaces a Feature's derived Winter fee dates with a single empty placeholder
+ * so the form stays usable while the dates can't be calculated.
+ * Season status is left unchanged.
+ * @param {Season|null} winterSeason Owner Winter season (no-op when null)
+ * @param {number} dateableId Feature Dateable ID
+ * @param {number} winterTypeId Winter fee DateType ID
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<void>}
+ */
+async function resetToPlaceholder(
+  winterSeason,
+  dateableId,
+  winterTypeId,
+  transaction = null,
+) {
+  if (!winterSeason) {
+    return;
+  }
+
+  await rebuildWinterDateRanges({
+    seasonId: winterSeason.id,
+    dateableId,
+    dateTypeId: winterTypeId,
+    ranges: [],
+    createPlaceholderWhenEmpty: true,
+    transaction,
+  });
+}
+
+/**
  * Recalculates Feature-level Winter fee dates for a park + operating year.
- * Trigger this on Winter fee or Operation date saves.
+ * Trigger this on Winter fee or Operation date saves, when a source season
+ * leaves approved/published, and from the scheduled cron task.
+ * Derived dates that no longer apply (Feature flag off, inactive, Park dates
+ * not approved, no approved Operation dates) are cleared or reset to placeholders.
  * @param {number} seasonId The season being approved/saved
  * @param {Transaction} [transaction] Optional Sequelize transaction
  * @param {Object} [options] Optional propagation controls
  * @param {boolean} [options.syncStateOnly=false] Sync only readyToPublish/status on derived winter seasons
+ * @param {number|null} [options.targetWinterOperatingYear=null] Winter operating year to process (defaults from the source season)
  * @returns {Promise<{updatedFeatures:number, skippedFeatures:number, updatedParkAreas:number, skippedParkAreas:number, diagnostics:string[]}>}
  * Summary counts for propagated and skipped records, plus diagnostic information explaining why features were skipped.
  */
@@ -551,16 +837,85 @@ export default async function propagateWinterFeeDates(
 
   const { winterTypeId, operationTypeId } = await getDateTypeIds(transaction);
 
-  const parkWinter = await getParkWinterDateRanges(
-    park,
-    winterOperatingYear,
-    winterTypeId,
+  // A Park with the winter fee flag off keeps its own winter dates, but they
+  // aren't a source for derived dates, so treat it as having no winter season.
+  const parkWinter =
+    park.hasWinterFeeDates === false
+      ? { season: null, ranges: [] }
+      : await getParkWinterDateRanges(
+          park,
+          winterOperatingYear,
+          winterTypeId,
+          transaction,
+        );
+
+  // Features that should currently have derived Winter fee dates
+  const features = await Feature.findAll({
+    attributes: ["id", "name", "publishableId", "dateableId", "parkAreaId"],
+    where: {
+      parkId: park.id,
+      hasWinterFeeDates: true,
+      active: true,
+    },
+    include: [
+      {
+        model: ParkArea,
+        as: "parkArea",
+        attributes: ["id", "publishableId", "dateableId"],
+        required: false,
+      },
+    ],
     transaction,
-  );
+  });
+
+  const winterSeasonByPublishableId = syncStateOnly
+    ? new Map()
+    : await getOwnerWinterSeasons(features, winterOperatingYear, transaction);
+
+  if (!syncStateOnly) {
+    // Clear derived dates that no longer apply (flag off, inactive, or left on
+    // a former ParkArea) before recalculating. Only each flagged Feature's
+    // current owner season is kept; it is reconciled below.
+    const keepSeasonIdByDateableId = new Map();
+
+    for (const feature of features) {
+      const ownerSeason = getOwnerWinterSeason(
+        feature,
+        winterSeasonByPublishableId,
+      );
+
+      if (feature.dateableId && ownerSeason) {
+        keepSeasonIdByDateableId.set(feature.dateableId, ownerSeason.id);
+      }
+    }
+
+    await clearDerivedWinterFeeDates({
+      park,
+      operatingYear: winterOperatingYear,
+      winterTypeId,
+      keepSeasonIdByDateableId,
+      transaction,
+    });
+  }
 
   // Do not recalculate derived Feature winter dates
   // until Park winter dates are in an approved/published season.
   if (!parkWinter.season) {
+    // The Park dates are missing or being revised, so the derived dates are stale.
+    // Reset them to placeholders without changing the derived season status.
+    if (!syncStateOnly) {
+      for (const feature of features) {
+        if (feature.dateableId) {
+          await resetToPlaceholder(
+            getOwnerWinterSeason(feature, winterSeasonByPublishableId),
+            feature.dateableId,
+            winterTypeId,
+            transaction,
+          );
+        }
+      }
+    }
+
     // For regular-season edits, a missing prior winter season should not block
     // recalculation of the same-year winter season.
     if (
@@ -582,26 +937,9 @@ export default async function propagateWinterFeeDates(
     };
   }
 
-  // If there is no Park-level Winter season, or it has no complete dates, clear derived Feature winter ranges.
+  // If the Park-level Winter season has no complete dates, overlaps are empty
+  // and derived Feature winter ranges are reset to placeholders.
   const winterDates = parkWinter.ranges || [];
-
-  const features = await Feature.findAll({
-    attributes: ["id", "name", "publishableId", "dateableId", "parkAreaId"],
-    where: {
-      parkId: park.id,
-      hasWinterFeeDates: true,
-      active: true,
-    },
-    include: [
-      {
-        model: ParkArea,
-        as: "parkArea",
-        attributes: ["id", "publishableId", "dateableId"],
-        required: false,
-      },
-    ],
-    transaction,
-  });
 
   if (!features.length) {
     return {
@@ -705,8 +1043,17 @@ export default async function propagateWinterFeeDates(
 
     // Skip until this Feature has an approved/published REGULAR season.
     // If the season exists but has no complete Operation dates, we still
-    // proceed so overlaps=[] can clear derived Winter fee ranges.
+    // proceed so overlaps=[] resets derived Winter fee ranges to a placeholder.
     if (!hasApprovedOperationSeason) {
+      // Without approved Operation dates the derived dates can't be calculated,
+      // so any previous dates are stale.
+      await resetToPlaceholder(
+        getOwnerWinterSeason(feature, winterSeasonByPublishableId),
+        feature.dateableId,
+        winterTypeId,
+        transaction,
+      );
+
       diagnostics.push(
         `Feature ${feature.id} (${feature.name}) does not have an approved/published regular season for operating year ${
           winterOperatingYear + 1
@@ -819,4 +1166,62 @@ export default async function propagateWinterFeeDates(
   }
 
   return output;
+}
+
+/**
+ * Clears derived Feature Winter fee dates for Parks whose hasWinterFeeDates
+ * flag is off. Normal propagation only runs for flagged Parks, so this catches
+ * Features left behind when a Park's flag is turned off in Strapi.
+ * Runs as a single batch across all unflagged Parks so it stays cheap on every
+ * cron run. Empty placeholders for flagged, active Features are kept because
+ * createWinterSeasons re-adds them on each run.
+ * The Parks' own Winter fee dates and seasons are left untouched.
+ * @param {number} operatingYear Winter operating year to clear
+ * @param {Transaction} [transaction] Optional Sequelize transaction
+ * @returns {Promise<number>} Number of DateRanges deleted
+ */
+export async function clearWinterFeeDatesForUnflaggedParks(
+  operatingYear,
+  transaction = null,
+) {
+  const { winterTypeId } = await getDateTypeIds(transaction);
+
+  // One query for every Feature in a Park with the flag off
+  const features = await Feature.findAll({
+    attributes: ["id", "dateableId", "hasWinterFeeDates", "active"],
+    where: {
+      dateableId: {
+        [Op.ne]: null,
+      },
+    },
+    include: [
+      {
+        model: Park,
+        as: "park",
+        attributes: ["id", "dateableId"],
+        required: true,
+        where: {
+          hasWinterFeeDates: false,
+        },
+      },
+    ],
+    transaction,
+  });
+
+  // Never touch the Parks' own (source) Winter fee rows
+  const featureDateables = features.filter(
+    (feature) => feature.dateableId !== feature.park.dateableId,
+  );
+
+  return await deleteStaleWinterFeeRanges({
+    dateableIds: featureDateables.map((feature) => feature.dateableId),
+    operatingYear,
+    winterTypeId,
+    keepPlaceholderDateableIds: new Set(
+      featureDateables
+        .filter((feature) => feature.hasWinterFeeDates && feature.active)
+        .map((feature) => feature.dateableId),
+    ),
+    transaction,
+  });
 }

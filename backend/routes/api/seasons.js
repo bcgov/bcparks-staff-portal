@@ -840,8 +840,15 @@ router.post(
         isWinterSeason,
       });
 
-      // Recalculate feature-level Winter fee dates only on approved saves.
-      // This avoids recalculation during draft/requested/pending-review saves.
+      // A season moving back out of approved/published (e.g. to draft for edits)
+      // makes its derived Winter fee dates stale, so propagate to clear them.
+      const leftApprovedStatus =
+        [STATUS.APPROVED, STATUS.PUBLISHED].includes(season.status) &&
+        ![STATUS.APPROVED, STATUS.PUBLISHED].includes(newStatus);
+
+      // Recalculate feature-level Winter fee dates on approved saves, and clear
+      // them when a season leaves approved/published.
+      // This avoids recalculation during other draft/requested/pending-review saves.
       // Also recalculate when Winter season readyToPublish changes while approved,
       // so derived feature/parkArea Winter seasons inherit the park value.
       // Intentionally exclude approved -> published-only transitions.
@@ -850,14 +857,16 @@ router.post(
         readyToPublishChanged &&
         !operationDateChanged &&
         !winterFeeDateChanged &&
-        season.status === STATUS.APPROVED;
+        season.status === STATUS.APPROVED &&
+        !leftApprovedStatus;
 
       if (
-        newStatus === STATUS.APPROVED &&
-        (operationDateChanged ||
-          winterFeeDateChanged ||
-          season.status !== STATUS.APPROVED ||
-          (isWinterSeason && readyToPublishChanged))
+        leftApprovedStatus ||
+        (newStatus === STATUS.APPROVED &&
+          (operationDateChanged ||
+            winterFeeDateChanged ||
+            season.status !== STATUS.APPROVED ||
+            (isWinterSeason && readyToPublishChanged)))
       ) {
         const result = await propagateWinterFeeDates(season.id, transaction, {
           syncStateOnly: shouldSyncStateOnly,
