@@ -279,6 +279,22 @@ function getFeatureForDateRange(dateRange) {
 }
 
 /**
+ * Returns true if a ParkArea Season's DateRange belongs to a Feature that isn't
+ * active (or has no dates), so it isn't in the ParkArea's included Features.
+ * DateRanges on the ParkArea's own Dateable are not Feature dates.
+ * @param {DateRange} dateRange The DateRange with its season details
+ * @returns {boolean} True if the DateRange belongs to an excluded Feature
+ */
+function isExcludedFeatureDateRange(dateRange) {
+  const { parkArea } = dateRange.season;
+
+  if (!parkArea) return false;
+  if (dateRange.dateableId === parkArea.dateableId) return false;
+
+  return !getFeatureForDateRange(dateRange);
+}
+
+/**
  * Calculates the GateDetail display values for a DateRange.
  * @param {DateRange} dateRange The DateRange object
  * @param {Object} gateDetail The GateDetail object from the season
@@ -420,7 +436,7 @@ router.get(
             {
               model: ParkArea,
               as: "parkArea",
-              attributes: ["id", "name", "inReservationSystem"],
+              attributes: ["id", "name", "dateableId", "inReservationSystem"],
               required: false,
               where: {
                 active: true,
@@ -580,6 +596,11 @@ router.get(
         // Skip this row if park is null.
         // This can happen if the Season's Dateable entity is inactive
         if (!park) {
+          return null;
+        }
+
+        // Skip dates for inactive Features in a ParkArea
+        if (isExcludedFeatureDateRange(dateRange)) {
           return null;
         }
 
