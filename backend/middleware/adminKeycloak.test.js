@@ -236,7 +236,7 @@ describe("Keycloak login routes", () => {
     expect(req.session.adminUser).toBeUndefined();
   });
 
-  it("logs in a super admin and sends the PKCE verifier", async () => {
+  it("logs in a developer and sends the PKCE verifier", async () => {
     const req = makeRequest(
       { code: "code", state: "expected" },
       { state: "expected", codeVerifier: "verifier" },
