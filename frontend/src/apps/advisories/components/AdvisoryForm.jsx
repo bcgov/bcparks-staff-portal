@@ -816,7 +816,7 @@ export default function AdvisoryForm({
 
         {linksRef.current.map((link, idx) => (
           <div key={idx} className="sub-section">
-            <h4 className="fw-normal mb-4">Attachment {idx + 1}</h4>
+            <h4 className="fw-normal mb-4">Attachment #{idx + 1}</h4>
 
             <Form.Group className="form-group" controlId={`link-type-${idx}`}>
               <Form.Label>
@@ -1305,16 +1305,18 @@ export default function AdvisoryForm({
 
         {!showEventDates && (
           <Form.Group className="form-group">
-            <Btn
-              variant="outline-secondary"
-              className="act-add-link"
+            <ActionButton
+              label={
+                <>
+                  <FontAwesomeIcon icon={faPlus} />
+                  Add event dates
+                </>
+              }
+              variant="secondary"
               onClick={() => {
                 setShowEventDates(true);
               }}
-            >
-              <FontAwesomeIcon icon={faPlus} className="add-link-icon" />
-              Add event dates
-            </Btn>
+            />
           </Form.Group>
         )}
 

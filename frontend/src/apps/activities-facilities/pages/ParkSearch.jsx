@@ -190,8 +190,10 @@ export default function ParkSearch() {
           // setSites([...sites]);
           setIsLoading(false);
         })
-        .catch(() => {
-          setFatalError(new Error("Error loading park search"));
+        .catch((error) => {
+          setFatalError(
+            new Error("Error loading park search", { cause: error }),
+          );
           setIsLoading(false);
         });
     }

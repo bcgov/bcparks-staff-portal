@@ -1,16 +1,18 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faMagnifyingGlass, faFilter } from "@fa-kit/icons/classic/solid";
+import { faFilter } from "@fa-kit/icons/classic/solid";
 import { useApiGet } from "@/hooks/useApi";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import SubmitPageTable from "@/apps/dates/components/SubmitPageTable";
 import LoadingBar from "@/components/LoadingBar";
 import MultiSelect from "@/apps/dates/components/MultiSelect";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import ParkSearch from "@/apps/dates/components/ParkSearch";
+import { useMemo, useState, useEffect, useCallback, useContext } from "react";
 import PaginationControls from "@/components/PaginationControls";
 import FilterPanel from "@/apps/dates/components/FilterPanel";
 import FilterStatus from "@/apps/dates/components/FilterStatus";
 import FormPanel from "@/apps/dates/components/FormPanel";
 import useAccess from "@/hooks/useAccess";
+import FlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus.js";
 import RefreshTableContext from "@/apps/dates/contexts/RefreshTableContext";
 import getTableSortOrder from "@/apps/dates/utils/getTableSortOrder";
@@ -23,7 +25,16 @@ import {
   shouldShowTiersAndGateSection,
   shouldShowWinterFeeSection,
 } from "@/apps/dates/utils/submitPageFilters";
-import { groupBy, maxBy } from "lodash-es";
+import {
+  FILTERS_STORAGE_KEY,
+  DEFAULT_FILTERS,
+  deserializeFilters,
+} from "@/apps/dates/utils/storedFilters";
+import { groupBy, maxBy, sortBy } from "lodash-es";
+import { useLocalStorage } from "usehooks-ts";
+
+// Stable options object, so useLocalStorage doesn't recreate its callbacks every render
+const FILTERS_STORAGE_OPTIONS = { deserializer: deserializeFilters };
 
 // Build the currentSeason object for a Park from its seasons array.
 // Same logic used in the backend for Feature-level currentSeason objects.
@@ -68,6 +79,7 @@ function SubmitPage() {
   const params = useParams();
   const navigate = useNavigate();
   const { hasAnyRole, ROLES } = useAccess();
+  const globalFlashMessage = useContext(FlashMessageContext);
 
   // Load Park data for the table
   const { data, loading, error, fetchData } = useApiGet("/parks");
@@ -119,6 +131,16 @@ function SubmitPage() {
   const filterOptions = useMemo(
     () => filterOptionsData ?? {},
     [filterOptionsData],
+  );
+
+  // Options for the park name search, sorted by name
+  const parkOptions = useMemo(
+    () =>
+      sortBy(
+        parks.map((park) => ({ value: park.id, label: park.name })),
+        "label",
+      ),
+    [parks],
   );
 
   const isApprover = hasAnyRole([ROLES.DOOT_APPROVER]);
@@ -184,17 +206,12 @@ function SubmitPage() {
     setPage(1);
   }
 
-  // table filter state
-  const [filters, setFilters] = useState({
-    name: "",
-    accessGroups: [],
-    status: [],
-    sections: [],
-    managementAreas: [],
-    dateTypes: [],
-    featureTypes: [],
-    isInReservationSystem: false,
-  });
+  // table filter state, persisted in localStorage so it's remembered across sessions
+  const [filters, setFilters] = useLocalStorage(
+    FILTERS_STORAGE_KEY,
+    DEFAULT_FILTERS,
+    FILTERS_STORAGE_OPTIONS,
+  );
   const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   // The URL is the source of truth for the open form: /dates/edit/:level/:seasonId
@@ -236,32 +253,31 @@ function SubmitPage() {
 
   // open form panel when the Edit button is clicked
   function formPanelHandler(formDataObj) {
-    const regularSeason = formDataObj.currentSeason.regular;
-    const winterSeason = formDataObj.currentSeason.winter || {};
-    const isWinterSeason = formDataObj.isWinterSeason || false;
-    const season = isWinterSeason ? winterSeason : regularSeason;
+    const season = formDataObj.isWinterSeason
+      ? formDataObj.currentSeason.winter
+      : formDataObj.currentSeason.regular;
+
+    if (!season?.id) {
+      globalFlashMessage.open(
+        "Could not load season details",
+        "The season details are unavailable. Refresh the page and try again.",
+        { variant: "error" },
+      );
+      return;
+    }
 
     openForm({ seasonId: season.id, level: formDataObj.level });
   }
 
   function resetFilters() {
     setPage(1);
-    setFilters({
-      name: "",
-      accessGroups: [],
-      status: [],
-      sections: [],
-      managementAreas: [],
-      dateTypes: [],
-      featureTypes: [],
-      isInReservationSystem: false,
-    });
+    setFilters(DEFAULT_FILTERS);
   }
 
   // Track if any Park-level filters are active
   const parkFiltersActive = useMemo(
     () =>
-      filters.name.length ||
+      filters.park ||
       filters.accessGroups.length ||
       filters.sections.length ||
       filters.managementAreas.length ||
@@ -579,28 +595,15 @@ function SubmitPage() {
       <div className="page dates-management">
         <div className="table-filters row mb-4">
           <div className="col-lg-3 col-md-6 col-12 mb-2 mb-md-0">
-            <label htmlFor="parkName" className="form-label">
-              Park name
-            </label>
-
-            <div className="input-with-append">
-              <input
-                type="text"
-                className="form-control input-search"
-                id="parkName"
-                placeholder="Search by park name"
-                value={filters.name}
-                onChange={(e) => {
-                  setPage(1);
-                  updateFilter("name", e.target.value);
-                }}
-                disabled={!metadataLoaded}
-              />
-              <FontAwesomeIcon
-                className="append-content"
-                icon={faMagnifyingGlass}
-              />
-            </div>
+            <ParkSearch
+              options={parkOptions}
+              value={filters.park}
+              onChange={(selected) => {
+                setPage(1);
+                updateFilter("park", selected);
+              }}
+              isDisabled={!metadataLoaded}
+            />
           </div>
 
           <div className="col-12 col-md-auto d-flex">

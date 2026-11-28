@@ -1,5 +1,4 @@
 import * as DATE_TYPES from "@/apps/dates/constants/dateType.js";
-import * as FEATURE_TYPE from "@/apps/dates/constants/featureType.js";
 import * as STATUS from "@/constants/seasonStatus.js";
 
 function matchesStatusFilters(season, statusFilters) {
@@ -68,11 +67,8 @@ function matchesStatusFilters(season, statusFilters) {
  * @returns {boolean} False if the entire park should be filtered out, true if it should be included for area/feature checks
  */
 export function checkParkHard(park, filters) {
-  // If a name filter is set, filter out parks that don't match
-  if (
-    filters.name.length > 0 &&
-    !park.name.toLocaleLowerCase().includes(filters.name.toLocaleLowerCase())
-  ) {
+  // If a park is selected, filter out all other parks
+  if (filters.park && park.id !== filters.park.value) {
     return false;
   }
 
@@ -427,19 +423,10 @@ export function shouldShowWinterFeeSection(park, filters) {
   // If the Park has no winter fee dates, never show the section
   if (!park.hasWinterFeeDates) return false;
 
-  // If "Feature type" filters are set
+  // If "Feature type" filters are set, hide the section.
+  // Winter fee dates are Park-level and have no feature type.
   if (filters.featureTypes.length) {
-    // If "Frontcountry campground" feature type is not selected, hide the section
-    // Winter fees only apply to frontcountry campgrounds
-    if (
-      !filters.featureTypes.some(
-        (featureType) =>
-          featureType.featureTypeNumber ===
-          FEATURE_TYPE.FRONTCOUNTRY_CAMPGROUND,
-      )
-    ) {
-      return false;
-    }
+    return false;
   }
 
   // If "Status" filters are set, the park's winter season status must match

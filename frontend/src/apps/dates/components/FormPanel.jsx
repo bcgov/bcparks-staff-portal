@@ -38,6 +38,7 @@ import globalFlashMessageContext from "@/contexts/FlashMessageContext";
 import * as STATUS from "@/constants/seasonStatus";
 import * as SEASON_TYPE from "@/apps/dates/constants/seasonType";
 import { findNextForm } from "@/apps/dates/utils/getEditableFormList";
+import { formatServerErrorTimestamp } from "@/utils";
 import "./FormPanel.scss";
 
 // Components
@@ -91,10 +92,18 @@ function Buttons({
         />
       )}
 
-      {/* Show the Submit button for submitters, but hide it for approvers */}
+      {/*
+        Show the Submit button for submitters, but hide it for approvers.
+        BCP Regional Staff has a Keycloak group but no specific role.
+        Submitters without the approver role are assumed to be BCP Regional Staff.
+      */}
       {submitter && !approver && (
         <ActionButton
-          label={continueToNext ? "Submit to HQ and continue" : "Submit to HQ"}
+          label={
+            continueToNext
+              ? "Approve, submit to HQ, and continue"
+              : "Approve and submit to HQ"
+          }
           onClick={onSubmit}
           className={classNames("form-btn", "me-0", "me-sm-2")}
           disabled={loading || disablePrimaryActionButton}
@@ -221,6 +230,9 @@ function SeasonForm({
     error,
     fetchData: refreshData,
   } = useApiGet(`/seasons/${level}/${seasonId}`);
+
+  // Record when the load error happened, so support can find the matching log entry
+  const errorTime = useMemo(() => (error ? new Date() : null), [error]);
 
   const { data: seasonOptionsData, loading: loadingSeasonOptions } = useApiGet(
     `/seasons/options/${seasonId}`,
@@ -845,7 +857,8 @@ function SeasonForm({
     }
   }
 
-  if (loading) {
+  // Season data is copied from the API response in an effect, so show the loader until it's set
+  if (loading || (!error && !season)) {
     return (
       <>
         <Offcanvas.Header closeButton></Offcanvas.Header>
@@ -856,7 +869,7 @@ function SeasonForm({
     );
   }
 
-  if (error || !season) {
+  if (error) {
     const errorCode = error?.response?.status ?? error?.status;
 
     // Show a friendly message when the user lacks permission for this park
@@ -882,6 +895,7 @@ function SeasonForm({
       );
     }
 
+    // Show a generic error message for other load errors
     return (
       <>
         <Offcanvas.Header closeButton>
@@ -891,7 +905,19 @@ function SeasonForm({
               : "Error loading season data"}
           </Offcanvas.Title>
         </Offcanvas.Header>
-        <Offcanvas.Body></Offcanvas.Body>
+        <Offcanvas.Body>
+          <p>
+            Refresh the page to try again. If the problem continues, contact{" "}
+            <a href="mailto:cardweb@gov.bc.ca">cardweb@gov.bc.ca</a>.
+          </p>
+          {errorCode >= 500 && (
+            <p className="text-muted small mt-4">
+              This error was logged on the DOOT backend at{" "}
+              {formatServerErrorTimestamp(errorTime)}. Please include this in
+              your email.
+            </p>
+          )}
+        </Offcanvas.Body>
       </>
     );
   }
@@ -1130,6 +1156,7 @@ function FormPanel({
   const { ROLES, checkAccess } = useAccess();
   const isInformationSvcApprover = checkAccess(ROLES.INFORMATION_SVC_APPROVER);
   const isReservationSvcApprover = checkAccess(ROLES.RESERVATION_SVC_APPROVER);
+  const globalFlashMessage = useContext(globalFlashMessageContext);
 
   // Keep the season ID and level together, so they always update in the same render.
   // (A mismatched pair would request the wrong API endpoint, e.g. a Feature season at Park level.)
@@ -1180,6 +1207,18 @@ function FormPanel({
         : null,
     );
   }, [formData?.seasonId, formData?.level]);
+
+  // Show an error message if the panel is opened without a valid season ID
+  useEffect(() => {
+    if (!show || formData?.seasonId) return;
+
+    globalFlashMessage.open(
+      "Could not load season details",
+      "The season details are unavailable. Refresh the page and try again.",
+      { variant: "error" },
+    );
+    setShow(false);
+  }, [show, formData?.seasonId, globalFlashMessage, setShow]);
 
   // Prevent navigating away if the data has changed
   useNavigationGuard(dataChanged);

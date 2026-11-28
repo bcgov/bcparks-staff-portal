@@ -234,13 +234,17 @@ function StatusTableRow({
   formPanelHandler,
 }) {
   const flashMessage = useContext(globalFlashMessageContext);
-  const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
   // user role
   const { ROLES, checkAccess } = useAccess();
   const approver = useMemo(
     () => checkAccess(ROLES.DOOT_APPROVER),
     [checkAccess, ROLES.DOOT_APPROVER],
   );
+
+  // If the season data is missing, don't render this row
+  if (!season?.id) return null;
+
+  const isWinterSeason = season.seasonType === SEASON_TYPE.WINTER;
 
   // Show a team's icon when its approval is required,
   // or when that team has already approved even though it wasn't required
@@ -283,45 +287,53 @@ function StatusTableRow({
         isWinterSeason && "winter",
       )}
     >
+      {/*
+        One cell across all columns: the status block keeps its natural width
+        and doesn't wrap; the name takes the rest of the width and wraps
+      */}
       <th
         scope="col"
-        colSpan="2"
+        colSpan="3"
         className={classNames("align-middle", nameCellClass)}
       >
-        {name}
-        {typeName && (
-          <div className="fw-normal feature-type-name">{typeName}</div>
-        )}
+        <div className="d-flex align-items-center gap-3">
+          <div className="flex-grow-1">
+            {name}
+            {typeName && (
+              <div className="fw-normal feature-type-name">{typeName}</div>
+            )}
 
-        <LastUpdatedInfo lastUpdated={season.lastUpdated} />
-      </th>
-
-      {season ? (
-        <th scope="col" className="align-middle text-end text-nowrap">
-          <div className="d-inline-block me-2">
-            <StatusBadge
-              status={season.status}
-              informationSvcApproved={informationSvcApproved}
-              reservationSvcApproved={reservationSvcApproved}
-            />
+            <LastUpdatedInfo lastUpdated={season.lastUpdated} />
           </div>
 
-          <IconButton icon={faPen} label="Edit" onClick={formPanelHandler} />
-
-          {approver && (
-            <ApproveButton
-              seasonId={season.id}
-              status={season.status}
-              onApprove={onApprove}
-            />
-          )}
-        </th>
-      ) : (
-        <th scope="col" className="align-middle text-end text-nowrap">
           {/* No currentSeason: nothing to edit or approve */}
-          &nbsp;
-        </th>
-      )}
+          {season && (
+            <div className="flex-shrink-0 text-end text-nowrap">
+              <div className="d-inline-block me-2">
+                <StatusBadge
+                  status={season.status}
+                  informationSvcApproved={informationSvcApproved}
+                  reservationSvcApproved={reservationSvcApproved}
+                />
+              </div>
+
+              <IconButton
+                icon={faPen}
+                label="Edit"
+                onClick={formPanelHandler}
+              />
+
+              {approver && (
+                <ApproveButton
+                  seasonId={season.id}
+                  status={season.status}
+                  onApprove={onApprove}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      </th>
     </tr>
   );
 }
@@ -680,7 +692,7 @@ export default function SubmitPageTable({
       </div>
 
       {data.length === 0 && (
-        <div className="text-center">
+        <div className="no-results text-center">
           <p>No records match your filters. </p>
           <p>
             <button onClick={onResetFilters} className="btn btn-primary">

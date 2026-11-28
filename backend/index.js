@@ -42,8 +42,13 @@ if (process.env.NODE_ENV === "production") {
   app.set("trust proxy", 1);
 }
 
-// Logging middleware
-app.use(morgan("dev"));
+// Logging middleware: the "dev" format plus a UTC timestamp (like Strapi's logs),
+// so error times reported by users can be matched against these logs
+app.use(
+  morgan(
+    "[:date[iso]] :method :url :status :response-time ms - :res[content-length]",
+  ),
+);
 
 // Helmet security middleware
 app.use(
@@ -102,7 +107,8 @@ app.use("/api", apiRouter);
 // error handling middleware
 // eslint-disable-next-line no-unused-vars -- required signature for Express error-handling middleware
 app.use((err, req, res, next) => {
-  console.error("Error occurred:", err.message);
+  // The request log line has the method and URL; keep user input out of the format string
+  console.error(`[${new Date().toISOString()}] Error occurred:`, err.message);
   console.error(err.stack);
 
   const status = err.status || 500;
