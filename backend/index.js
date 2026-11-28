@@ -21,7 +21,7 @@ import { checkPermissions } from "./middleware/permissions.js";
 import * as ROLES from "./constants/userRoles.js";
 import { preloadHolidays } from "./utils/email/reminders/statutoryHoliday.js";
 
-if (!process.env.POSTGRES_SERVER || !process.env.ADMIN_PASSWORD) {
+if (!process.env.POSTGRES_SERVER) {
   throw new Error("Required environment variables are not set");
 }
 

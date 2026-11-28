@@ -64,8 +64,6 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.backend.postgresSecret }}
                   key: password
-            - name: JWKS_URI
-              value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}/protocol/openid-connect/certs
             - name: JWT_ISSUER
               value: {{ .Values.cluster.ssoAuthUrl }}/realms/{{ .Values.cluster.ssoRealm }}
             - name: STRAPI_TOKEN
