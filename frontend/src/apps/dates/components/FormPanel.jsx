@@ -41,6 +41,32 @@ import { findNextForm } from "@/apps/dates/utils/getEditableFormList";
 import { formatServerErrorTimestamp } from "@/utils";
 import "./FormPanel.scss";
 
+// Helpers
+
+/**
+ * Collects all the date ranges shown on a season form.
+ * @param {string} level "park", "park-area", or "feature"
+ * @param {Object} season Season data, as returned by the API
+ * @returns {Array} Flat array of date range objects
+ */
+function getSeasonDateRanges(level, season) {
+  if (level === "park") return [...season.park.dateable.dateRanges];
+
+  if (level === "feature") return [...season.feature.dateable.dateRanges];
+
+  if (level === "park-area") {
+    // Area-level dates, plus feature-level dates within the area
+    return [
+      ...season.parkArea.dateable.dateRanges,
+      ...season.parkArea.features.flatMap(
+        (feature) => feature.dateable.dateRanges,
+      ),
+    ];
+  }
+
+  return [];
+}
+
 // Components
 
 function Buttons({
@@ -194,30 +220,6 @@ function SeasonForm({
 
   // Track form submission state: run more validation rules after the first submit
   const [submitted, setSubmitted] = useState(false);
-  const validationContext = useMemo(
-    () => ({ level, notes, submitted }),
-    [level, notes, submitted],
-  );
-  const validation = useValidation(data, validationContext);
-
-  const INTERNAL_NOTES_ERROR_ID = validation.elements.INTERNAL_NOTES.id;
-
-  // Show validation summary only after submit/approve attempts.
-  const shouldShowErrorSummary = useMemo(() => {
-    if (!submitted) return false;
-
-    return validation.errors.length > 0;
-  }, [submitted, validation.errors]);
-
-  // Controls the "Submit anyway"
-  // Only show it when there are errors beyond internal notes
-  const shouldShowSubmitAnyway = useMemo(() => {
-    if (!shouldShowErrorSummary) return false;
-
-    return validation.errors.some(
-      (error) => error.id !== INTERNAL_NOTES_ERROR_ID,
-    );
-  }, [shouldShowErrorSummary, validation.errors, INTERNAL_NOTES_ERROR_ID]);
 
   const { sendData: sendSave, loading: sendingSave } = useApiPost(
     `/seasons/${seasonId}/save/`,
@@ -428,24 +430,7 @@ function SeasonForm({
     if (!season) return null;
 
     // Format the data for the API
-    const seasonDateRanges = [];
-
-    if (level === "park") {
-      seasonDateRanges.push(...season.park.dateable.dateRanges);
-    } else if (level === "feature") {
-      seasonDateRanges.push(...season.feature.dateable.dateRanges);
-    } else if (level === "park-area") {
-      // Area-level dates
-      const areaDateRanges = season.parkArea.dateable.dateRanges;
-
-      // Feature-level dates within the area
-      const featureDateRanges = season.parkArea.features.flatMap(
-        (feature) => feature.dateable.dateRanges,
-      );
-
-      // Combine area and feature date ranges
-      seasonDateRanges.push(...areaDateRanges, ...featureDateRanges);
-    }
+    const seasonDateRanges = getSeasonDateRanges(level, season);
 
     let gateDetail = season.gateDetail;
     let filteredDateRanges = seasonDateRanges;
@@ -516,6 +501,61 @@ function SeasonForm({
     isEditingPublishedSeason,
   ]);
 
+  // True if any dates, date annuals, or gate details differ from the saved season.
+  // Compares values with the API data instead of the "changed" flags,
+  // because those flags stay set if the user changes a value back.
+  const hasDateChanges = useMemo(() => {
+    if (!season || !changesPayload || !apiData?.current) return false;
+
+    const savedSeason = apiData.current;
+
+    // Saved ranges were deleted
+    if (changesPayload.deletedDateRangeIds.length) return true;
+
+    // Ranges were added, or saved ranges have different dates
+    const savedDateRangesById = keyBy(
+      getSeasonDateRanges(level, savedSeason),
+      "id",
+    );
+    const dateRangesChanged = changesPayload.dateRanges.some((dateRange) => {
+      // New ranges (with a tempId) aren't saved yet
+      const savedDateRange = dateRange.id && savedDateRangesById[dateRange.id];
+
+      if (!savedDateRange) return true;
+
+      return (
+        !isEqual(dateRange.startDate, savedDateRange.startDate) ||
+        !isEqual(dateRange.endDate, savedDateRange.endDate)
+      );
+    });
+
+    if (dateRangesChanged) return true;
+
+    // "Dates are the same every year" checkboxes differ from the saved values
+    const savedAnnualsById = keyBy(savedSeason.dateRangeAnnuals ?? [], "id");
+    const annualsChanged = changesPayload.dateRangeAnnuals.some((annual) => {
+      const savedAnnual = annual.id && savedAnnualsById[annual.id];
+
+      // Unsaved annuals default to unchecked
+      return (
+        annual.isDateRangeAnnual !== (savedAnnual?.isDateRangeAnnual ?? false)
+      );
+    });
+
+    if (annualsChanged) return true;
+
+    // Gate details only apply to regular seasons
+    return (
+      season.seasonType === SEASON_TYPE.REGULAR &&
+      !isEqual(changesPayload.gateDetail, savedSeason.gateDetail)
+    );
+  }, [level, season, changesPayload, apiData]);
+
+  // True if the "Ready to publish" toggle differs from the saved season
+  const readyToPublishChanged =
+    !!changesPayload &&
+    changesPayload.readyToPublish !== apiData?.current?.readyToPublish;
+
   // Calculate if the form data has changed, and sync the result to the parent via setDataChanged.
   // Once true, dataChanged stays true for the rest of the form's lifecycle (until new data loads).
   useEffect(() => {
@@ -527,35 +567,14 @@ function SeasonForm({
     // Skip further checks if dataChanged is already true
     if (dataChanged) return;
 
-    // True if date ranges were updated
-    if (changesPayload.dateRanges.length) {
-      setDataChanged(true);
-      return;
-    }
-
-    // True if date ranges were deleted
-    if (changesPayload.deletedDateRangeIds.length) {
+    // True if dates, date annuals, or gate details changed
+    if (hasDateChanges) {
       setDataChanged(true);
       return;
     }
 
     // True if readyToPublish changed
-    if (changesPayload.readyToPublish !== apiData?.current?.readyToPublish) {
-      setDataChanged(true);
-      return;
-    }
-
-    // True if any date annuals were updated
-    if (changesPayload.dateRangeAnnuals.length) {
-      setDataChanged(true);
-      return;
-    }
-
-    // True if any gateDetail values changed (for regular seasons)
-    if (
-      season.seasonType === SEASON_TYPE.REGULAR &&
-      !isEqual(changesPayload.gateDetail, apiData?.current?.gateDetail)
-    ) {
+    if (readyToPublishChanged) {
       setDataChanged(true);
       return;
     }
@@ -564,7 +583,42 @@ function SeasonForm({
     if (changesPayload.notes.length > 0) {
       setDataChanged(true);
     }
-  }, [season, changesPayload, apiData, dataChanged, setDataChanged]);
+  }, [
+    season,
+    changesPayload,
+    hasDateChanges,
+    readyToPublishChanged,
+    dataChanged,
+    setDataChanged,
+  ]);
+
+  // Toggling "Ready to publish" by itself doesn't need a change note
+  const onlyReadyToPublishChanged = readyToPublishChanged && !hasDateChanges;
+
+  const validationContext = useMemo(
+    () => ({ level, notes, submitted, onlyReadyToPublishChanged }),
+    [level, notes, submitted, onlyReadyToPublishChanged],
+  );
+  const validation = useValidation(data, validationContext);
+
+  const INTERNAL_NOTES_ERROR_ID = validation.elements.INTERNAL_NOTES.id;
+
+  // Show validation summary only after submit/approve attempts.
+  const shouldShowErrorSummary = useMemo(() => {
+    if (!submitted) return false;
+
+    return validation.errors.length > 0;
+  }, [submitted, validation.errors]);
+
+  // Controls the "Submit anyway"
+  // Only show it when there are errors beyond internal notes
+  const shouldShowSubmitAnyway = useMemo(() => {
+    if (!shouldShowErrorSummary) return false;
+
+    return validation.errors.some(
+      (validationError) => validationError.id !== INTERNAL_NOTES_ERROR_ID,
+    );
+  }, [shouldShowErrorSummary, validation.errors, INTERNAL_NOTES_ERROR_ID]);
 
   // Primary action button is disabled in "Edit published seasons" mode when the form has no changes.
   // Primary action button is always enabled on regular season forms.
