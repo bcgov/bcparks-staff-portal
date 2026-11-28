@@ -305,7 +305,7 @@ export default function AdvisorySummaryView({
 
       <section className="shown-on-public-site">
         <h3>Public advisory / closure content</h3>
-        <p>This information is displayed on the public website.</p>
+        <p>This information displays on the public website.</p>
 
         <Field label="Headline">
           <div dangerouslySetInnerHTML={{ __html: advisory.title }}></div>

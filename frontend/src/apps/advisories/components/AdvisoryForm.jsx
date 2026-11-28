@@ -580,7 +580,7 @@ export default function AdvisoryForm({
 
       <section className="shown-on-public-site">
         <h3>Public advisory / closure content</h3>
-        <p>This information is displayed on the public website.</p>
+        <p>This information displays on the public website.</p>
 
         <Form.Group className="form-group" controlId="resource-status">
           <Form.Label>
