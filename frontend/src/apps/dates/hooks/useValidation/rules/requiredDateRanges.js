@@ -12,6 +12,8 @@ const PARK_APPLICABILITY_BY_DATE_TYPE = {
 /**
  * Validates that the date ranges are provided for required date types.
  * This rule applies to all date types except those that are optional based on the dateType and level.
+ * Only flags ranges where both dates are blank; partially-filled ranges are handled by
+ * the completeDateRanges rule.
  * @param {Object} seasonData The season form data to validate
  * @param {Object} context Validation context with errors array
  * @returns {void}
@@ -24,7 +26,6 @@ export default function requiredDateRanges(seasonData, context) {
 
   const { dateRanges } = context;
   const park = seasonData?.current?.park;
-  const feature = seasonData?.current?.feature;
 
   // Filter out date ranges with optional date types
   const requiredRanges = dateRanges.filter((dateRange) => {
@@ -43,42 +44,35 @@ export default function requiredDateRanges(seasonData, context) {
       }
     }
 
-    // If the level is "feature", check if the feature has the boolean value for the date type
-    if (level === "feature" && dateTypeNumber === DATE_TYPE.WINTER_FEE) {
-      if (feature && !feature.hasWinterFeeDates) {
-        return false;
-      }
-    }
-
     return true;
   });
 
-  // Add errors for all invalid dates (missing startDate and/or endDate)
+  // Add errors for required ranges with both dates missing
+  // (completeDateRanges handles ranges with only one date missing)
   requiredRanges.forEach((dateRange) => {
-    if (!dateRange.startDate) {
-      context.addError(
-        // Show the error below the start date field
-        elements.dateField(
-          dateRange.id || dateRange.tempId,
-          "startDate",
-          `${getDateTypeDisplayName(dateRange.dateType.name)} start date`,
-          dateRange.dateableId,
-        ),
-        "Required",
-      );
-    }
+    // Skip ranges that have at least one date filled in
+    if (dateRange.startDate || dateRange.endDate) return;
 
-    if (!dateRange.endDate) {
-      context.addError(
-        // Show the error below the end date field
-        elements.dateField(
-          dateRange.id || dateRange.tempId,
-          "endDate",
-          `${getDateTypeDisplayName(dateRange.dateType.name)} end date`,
-          dateRange.dateableId,
-        ),
-        "Required",
-      );
-    }
+    context.addError(
+      // Show the error below the start date field
+      elements.dateField(
+        dateRange.id || dateRange.tempId,
+        "startDate",
+        `${getDateTypeDisplayName(dateRange.dateType.name)} start date`,
+        dateRange.dateableId,
+      ),
+      "Required",
+    );
+
+    context.addError(
+      // Show the error below the end date field
+      elements.dateField(
+        dateRange.id || dateRange.tempId,
+        "endDate",
+        `${getDateTypeDisplayName(dateRange.dateType.name)} end date`,
+        dateRange.dateableId,
+      ),
+      "Required",
+    );
   });
 }
